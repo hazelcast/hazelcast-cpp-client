@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_SPI_CLIENTCLUSTERSERVICE_H_
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/Client.h"
 #include "hazelcast/client/Member.h"
@@ -57,7 +57,7 @@ namespace hazelcast {
                  * @param address The address of the member to look up.
                  * @return The member that was found, or null if not found. If address is null, null is returned.
                  */
-                virtual boost::shared_ptr<Member> getMember(const Address &address) = 0;
+                virtual std::shared_ptr<Member> getMember(const Address &address) = 0;
 
                 /**
                  * Gets the member with the given UUID.
@@ -65,7 +65,7 @@ namespace hazelcast {
                  * @param uuid The UUID of the member.
                  * @return The member that was found, or null if not found. If UUID is null, null is returned.
                  */
-                virtual boost::shared_ptr<Member> getMember(const std::string &uuid) = 0;
+                virtual std::shared_ptr<Member> getMember(const std::string &uuid) = 0;
 
                 /**
                  * Gets the collection of members.
@@ -87,7 +87,7 @@ namespace hazelcast {
                  * @param listener The listener to be registered.
                  * @return The registration ID
                  */
-                virtual std::string addMembershipListener(const boost::shared_ptr<MembershipListener> &listener) = 0;
+                virtual std::string addMembershipListener(const std::shared_ptr<MembershipListener> &listener) = 0;
 
                 /**
                  * @param registrationId The registrationId of the listener to be removed.

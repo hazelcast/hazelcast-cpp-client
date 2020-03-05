@@ -206,13 +206,26 @@ namespace hazelcast {
                                                                size_t dataLen,
                                                                unsigned char *hash) const {
                     #ifdef HZ_BUILD_WITH_SSL
-                    HMAC_CTX hmac;
-                    HMAC_CTX_init(&hmac);
-                    HMAC_Init_ex(&hmac, keyBuffer, keyLen, EVP_sha256(), NULL);
-                    HMAC_Update(&hmac, data, dataLen);
+
+                    #if OPENSSL_VERSION_NUMBER > 0x10100000L
+                    HMAC_CTX *hmac = HMAC_CTX_new();
+                    #else
+                    HMAC_CTX *hmac = new HMAC_CTX;
+                    HMAC_CTX_init(hmac);
+                    #endif
+
+                    HMAC_Init_ex(hmac, keyBuffer, keyLen, EVP_sha256(), NULL);
+                    HMAC_Update(hmac, data, dataLen);
                     unsigned int len = 32;
-                    HMAC_Final(&hmac, hash, &len);
-                    HMAC_CTX_cleanup(&hmac);
+                    HMAC_Final(hmac, hash, &len);
+
+                    #if OPENSSL_VERSION_NUMBER > 0x10100000L
+                    HMAC_CTX_free(hmac);
+                    #else
+                    HMAC_CTX_cleanup(hmac);
+                    delete hmac;
+                    #endif
+
                     return len;
                     #else
                     util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");

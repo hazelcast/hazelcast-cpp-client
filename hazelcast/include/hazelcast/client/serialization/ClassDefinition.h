@@ -29,7 +29,7 @@
 #include <map>
 #include <vector>
 #include <memory>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -151,7 +151,7 @@ namespace hazelcast {
 
                 std::map<std::string, FieldDefinition> fieldDefinitionsMap;
 
-                std::auto_ptr<std::vector<byte> > binary;
+                std::unique_ptr<std::vector<byte> > binary;
 
             };
         }

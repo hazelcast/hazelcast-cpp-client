@@ -16,7 +16,7 @@
 //
 // Created by sancar koyunlu on 7/31/13.
 
-#include <boost/foreach.hpp>
+
 #include <sstream>
 
 #include "hazelcast/util/ILogger.h"
@@ -29,18 +29,18 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializerHolder::SerializerHolder(const boost::shared_ptr<StreamSerializer> &globalSerializer)
+                SerializerHolder::SerializerHolder(const std::shared_ptr<StreamSerializer> &globalSerializer)
                         : active(true), globalSerializer(globalSerializer) {
                 }
 
-                bool SerializerHolder::registerSerializer(const boost::shared_ptr<StreamSerializer> &serializer) {
-                    boost::shared_ptr<SerializerBase> available = serializers.putIfAbsent(
+                bool SerializerHolder::registerSerializer(const std::shared_ptr<StreamSerializer> &serializer) {
+                    std::shared_ptr<SerializerBase> available = serializers.putIfAbsent(
                             serializer->getHazelcastTypeId(), serializer);
                     return available.get() == NULL;
                 }
 
-                boost::shared_ptr<StreamSerializer> SerializerHolder::serializerFor(int typeId) {
-                    boost::shared_ptr<StreamSerializer> serializer = serializers.get(typeId);
+                std::shared_ptr<StreamSerializer> SerializerHolder::serializerFor(int typeId) {
+                    std::shared_ptr<StreamSerializer> serializer = serializers.get(typeId);
 
                     if (serializer.get()) {
                         return serializer;
@@ -61,18 +61,18 @@ namespace hazelcast {
                 }
 
                 void SerializerHolder::dispose() {
-                    active = false;
+                    active.store(false);
 
-                    BOOST_FOREACH(boost::shared_ptr<StreamSerializer> serializer, serializers.values()) {
+                    for (std::shared_ptr<StreamSerializer> serializer : serializers.values()) {
                                     serializer->destroy();
                                 }
 
                     serializers.clear();
                 }
 
-                boost::shared_ptr<StreamSerializer> SerializerHolder::lookupGlobalSerializer(int typeId) {
+                std::shared_ptr<StreamSerializer> SerializerHolder::lookupGlobalSerializer(int typeId) {
                     if (!globalSerializer.get()) {
-                        return boost::shared_ptr<StreamSerializer>();
+                        return std::shared_ptr<StreamSerializer>();
                     }
 
                     serializers.putIfAbsent(typeId, globalSerializer);

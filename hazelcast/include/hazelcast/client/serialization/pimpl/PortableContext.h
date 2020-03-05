@@ -31,7 +31,7 @@
 #include <vector>
 #include <memory>
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -64,15 +64,15 @@ namespace hazelcast {
 
                     void setClassVersion(int factoryId, int classId, int version);
 
-                    boost::shared_ptr<ClassDefinition> lookupClassDefinition(int factoryId, int classId, int version);
+                    std::shared_ptr<ClassDefinition> lookupClassDefinition(int factoryId, int classId, int version);
 
-                    boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
+                    std::shared_ptr<ClassDefinition> registerClassDefinition(std::shared_ptr<ClassDefinition>);
 
-                    boost::shared_ptr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
+                    std::shared_ptr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
 
                     int getVersion();
 
-                    boost::shared_ptr<ClassDefinition> readClassDefinition(ObjectDataInput &input, int id, int classId,
+                    std::shared_ptr<ClassDefinition> readClassDefinition(ObjectDataInput &input, int id, int classId,
                                                                            int version);
 
                     SerializerHolder &getSerializerHolder();

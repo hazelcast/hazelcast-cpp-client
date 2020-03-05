@@ -13,10 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 
 #include <TestHelperFunctions.h>
@@ -32,12 +28,12 @@ namespace hazelcast {
             class BasicClientReplicatedMapNearCacheTest
                     : public ClientTestSupport, public ::testing::WithParamInterface<config::InMemoryFormat> {
             public:
-                static void SetUpTestCase() {
+                static void SetUpTestSuite() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
                 }
 
-                static void TearDownTestCase() {
+                static void TearDownTestSuite() {
                     delete instance2;
                     delete instance;
                     instance2 = NULL;
@@ -77,9 +73,9 @@ namespace hazelcast {
                      * @return the {@link NearCacheConfig}
                      */
                     template<typename K, typename V>
-                    static boost::shared_ptr<config::NearCacheConfig<K, V> > createNearCacheConfig(
+                    static std::shared_ptr<config::NearCacheConfig<K, V> > createNearCacheConfig(
                             config::InMemoryFormat inMemoryFormat, const std::string &mapName) {
-                        boost::shared_ptr<config::NearCacheConfig<K, V> > nearCacheConfig(
+                        std::shared_ptr<config::NearCacheConfig<K, V> > nearCacheConfig(
                                 new config::NearCacheConfig<K, V>());
 
                         nearCacheConfig->setName(mapName).setInMemoryFormat(inMemoryFormat).setInvalidateOnChange(true);
@@ -170,14 +166,14 @@ namespace hazelcast {
                 }
 
                 void createNoNearCacheContext() {
-                    client = std::auto_ptr<HazelcastClient>(new HazelcastClient(getConfig()));
+                    client = std::unique_ptr<HazelcastClient>(new HazelcastClient(getConfig()));
                     noNearCacheMap = client->getReplicatedMap<int, std::string>(getTestName());
                 }
 
                 void createNearCacheContext() {
                     ClientConfig nearCachedClientConfig = getConfig();
                     nearCachedClientConfig.addNearCacheConfig(nearCacheConfig);
-                    nearCachedClient = std::auto_ptr<HazelcastClient>(new HazelcastClient(nearCachedClientConfig));
+                    nearCachedClient = std::unique_ptr<HazelcastClient>(new HazelcastClient(nearCachedClientConfig));
                     nearCachedMap = nearCachedClient->getReplicatedMap<int, std::string>(getTestName());
                     spi::ClientContext clientContext(*nearCachedClient);
                     nearCacheManager = &clientContext.getNearCacheManager();
@@ -207,7 +203,7 @@ namespace hazelcast {
                     ASSERT_FALSE(nearCachedMap->containsKey(5));
 
                     // remove a key which is in the Near Cache
-                    boost::shared_ptr<ReplicatedMap<int, std::string> > &adapter = useNearCachedMapForRemoval
+                    std::shared_ptr<ReplicatedMap<int, std::string> > &adapter = useNearCachedMapForRemoval
                                                                                    ? nearCachedMap
                                                                                    : noNearCacheMap;
                     adapter->remove(1);
@@ -246,14 +242,14 @@ namespace hazelcast {
                 void populateNearCache() {
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        boost::shared_ptr<string> value = nearCachedMap->get(i);
+                        std::shared_ptr<string> value = nearCachedMap->get(i);
                         ASSERT_NOTNULL(value.get(), std::string);
                         util::hz_snprintf(buf, 30, "value-%d", i);
                         ASSERT_EQ(buf, *value);
                     }
                 }
 
-                boost::shared_ptr<serialization::pimpl::Data> getNearCacheKey(int key) {
+                std::shared_ptr<serialization::pimpl::Data> getNearCacheKey(int key) {
                     spi::ClientContext clientContext(*client);
                     return clientContext.getSerializationService().toSharedData<int>(&key);
                 }
@@ -277,7 +273,7 @@ namespace hazelcast {
                 }
 
                 bool checkMissesAndHits(int64_t &expectedMisses, int64_t &expectedHits,
-                                        boost::shared_ptr<std::string> &value) {
+                                        std::shared_ptr<std::string> &value) {
                     expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
                     expectedHits = getExpectedHitsWithLocalUpdatePolicy();
 
@@ -310,7 +306,7 @@ namespace hazelcast {
                     }
 
                     // this should invalidate the Near Cache
-                    boost::shared_ptr<ReplicatedMap<int, std::string> > &adapter = useNearCacheAdapter ? nearCachedMap
+                    std::shared_ptr<ReplicatedMap<int, std::string> > &adapter = useNearCacheAdapter ? nearCachedMap
                                                                                                        : noNearCacheMap;
                     adapter->putAll(invalidationMap);
 
@@ -318,13 +314,13 @@ namespace hazelcast {
                     ASSERT_EQ(0, nearCache->size()) << "Invalidation is not working on putAll()";
                 }
 
-                boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig;
-                std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<HazelcastClient> nearCachedClient;
-                boost::shared_ptr<ReplicatedMap<int, std::string> > noNearCacheMap;
-                boost::shared_ptr<ReplicatedMap<int, std::string> > nearCachedMap;
+                std::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig;
+                std::unique_ptr<HazelcastClient> client;
+                std::unique_ptr<HazelcastClient> nearCachedClient;
+                std::shared_ptr<ReplicatedMap<int, std::string> > noNearCacheMap;
+                std::shared_ptr<ReplicatedMap<int, std::string> > nearCachedMap;
                 internal::nearcache::NearCacheManager *nearCacheManager;
-                boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, std::string> > nearCache;
+                std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, std::string> > nearCache;
                 monitor::NearCacheStats *stats;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
@@ -370,11 +366,11 @@ namespace hazelcast {
                                 nearCachedMap->get(i).get(), std::string);
 
                     // fetch internal value directly from Near Cache
-                    boost::shared_ptr<serialization::pimpl::Data> key = getNearCacheKey(i);
-                    boost::shared_ptr<std::string> value = nearCache->get(key);
+                    std::shared_ptr<serialization::pimpl::Data> key = getNearCacheKey(i);
+                    std::shared_ptr<std::string> value = nearCache->get(key);
                     if (value.get() != NULL) {
                         // the internal value should either be `null` or `NULL_OBJECT`
-                        boost::shared_ptr<std::string> nullObj = boost::static_pointer_cast<std::string>(
+                        std::shared_ptr<std::string> nullObj = std::static_pointer_cast<std::string>(
                                 internal::nearcache::NearCache<int, std::string>::NULL_OBJECT);
                         ASSERT_EQ(nullObj, nearCache->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
                     }
@@ -405,7 +401,7 @@ namespace hazelcast {
                 populateNearCache();
 
                 ASSERT_EQ(size, nearCache->size());
-                boost::shared_ptr<std::string> value = nearCachedMap->get(1);
+                std::shared_ptr<std::string> value = nearCachedMap->get(1);
                 ASSERT_NOTNULL(value.get(), std::string);
                 ASSERT_EQ("value-1", *value);
 
@@ -447,7 +443,7 @@ namespace hazelcast {
                 populateNearCache();
 
                 ASSERT_EQ(size, nearCache->size());
-                boost::shared_ptr<std::string> value = nearCachedMap->get(1);
+                std::shared_ptr<std::string> value = nearCachedMap->get(1);
                 ASSERT_NOTNULL(value.get(), std::string);
                 ASSERT_EQ("value-1", *value);
 
@@ -554,7 +550,7 @@ namespace hazelcast {
                                                          expectedEvictions, 0);
             }
 
-            INSTANTIATE_TEST_CASE_P(ReplicatedMapNearCacheTest, BasicClientReplicatedMapNearCacheTest,
+            INSTANTIATE_TEST_SUITE_P(ReplicatedMapNearCacheTest, BasicClientReplicatedMapNearCacheTest,
                                     ::testing::Values(config::BINARY, config::OBJECT));
         }
     }

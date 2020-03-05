@@ -17,7 +17,7 @@
 #ifndef HAZELCAST_CLIENT_PROTOCOL_IMESSAGEHANDLER_H_
 #define HAZELCAST_CLIENT_PROTOCOL_IMESSAGEHANDLER_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -35,8 +35,8 @@ namespace hazelcast {
             public:
                 virtual ~IMessageHandler() { }
 
-                virtual void handleClientMessage(const boost::shared_ptr<connection::Connection> &connection,
-                                                 const boost::shared_ptr<ClientMessage> &message) = 0;
+                virtual void handleClientMessage(const std::shared_ptr<connection::Connection> &connection,
+                                                 const std::shared_ptr<ClientMessage> &message) = 0;
             };
         }
     }

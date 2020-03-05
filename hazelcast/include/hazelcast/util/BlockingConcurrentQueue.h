@@ -45,11 +45,11 @@ namespace hazelcast {
             void push(const T &e) {
                 util::LockGuard lg(m);
                 while (internalQueue.size() == capacity) {
-                    // wait on condition
-                    notFull.wait(m);
                     if (isInterrupted) {
                         throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
                     }
+                    // wait on condition
+                    notFull.wait(m);
                 }
                 internalQueue.push_back(e);
                 notEmpty.notify();
@@ -58,11 +58,11 @@ namespace hazelcast {
             T pop() {
                 util::LockGuard lg(m);
                 while (internalQueue.empty()) {
-                    // wait for notEmpty condition
-                    notEmpty.wait(m);
                     if (isInterrupted) {
                         throw client::exception::InterruptedException("BlockingConcurrentQueue::pop");
                     }
+                    // wait for notEmpty condition
+                    notEmpty.wait(m);
                 }
                 T element = internalQueue.front();
                 internalQueue.pop_front();

@@ -41,10 +41,10 @@ namespace hazelcast {
         public:
             TypedData();
 
-            TypedData(std::auto_ptr<serialization::pimpl::Data> data,
+            TypedData(std::unique_ptr<serialization::pimpl::Data> &data,
                       serialization::pimpl::SerializationService &serializationService);
 
-            TypedData(const boost::shared_ptr<serialization::pimpl::Data> &data,
+            TypedData(const std::shared_ptr<serialization::pimpl::Data> &data,
                       serialization::pimpl::SerializationService &serializationService);
 
             virtual ~TypedData();
@@ -65,7 +65,7 @@ namespace hazelcast {
              * @return The object instance of type T.
              */
             template <typename T>
-            std::auto_ptr<T> get() const {
+            std::unique_ptr<T> get() const {
                 return ss->toObject<T>(data.get());
             }
 
@@ -73,10 +73,10 @@ namespace hazelcast {
              * Internal API
              * @return The pointer to the internal binary data.
              */
-            const boost::shared_ptr<serialization::pimpl::Data> getData() const;
+            const std::shared_ptr<serialization::pimpl::Data> getData() const;
 
         private:
-            boost::shared_ptr<serialization::pimpl::Data> data;
+            std::shared_ptr<serialization::pimpl::Data> data;
             serialization::pimpl::SerializationService *ss;
         };
 

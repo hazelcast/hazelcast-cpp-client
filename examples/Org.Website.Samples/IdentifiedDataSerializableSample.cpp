@@ -50,12 +50,12 @@ class SampleDataSerializableFactory : public serialization::DataSerializableFact
 public:
     static const int FACTORY_ID = 1000;
 
-    virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId) {
+    virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId) {
         switch (classId) {
             case 100:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Employee());
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Employee());
             default:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>();
         }
 
     }
@@ -64,7 +64,7 @@ public:
 int main() {
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().addDataSerializableFactory(SampleDataSerializableFactory::FACTORY_ID,
-                                                                     boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                                     std::shared_ptr<serialization::DataSerializableFactory>(
                                                                              new SampleDataSerializableFactory()));
 
     HazelcastClient hz(clientConfig);

@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_IDGENERATOR_H_
 
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/impl/IdGeneratorInterface.h"
@@ -54,9 +54,9 @@ namespace hazelcast {
             virtual int64_t newId();
 
         private:
-            IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl);
+            IdGenerator(const std::shared_ptr<impl::IdGeneratorInterface> &impl);
 
-            boost::shared_ptr<impl::IdGeneratorInterface> impl;
+            std::shared_ptr<impl::IdGeneratorInterface> impl;
         };
     }
 }

@@ -7,32 +7,8 @@
 
 @SET EXECUTABLE_NAME=clientTest_%HZ_LIB_TYPE%_%HZ_BIT_VERSION%.exe
 
-if %HZ_BIT_VERSION% == 32 (
-    @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
-    @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win32\lib
-    set PYTHON_LIB_DIR=C:\Python-2.7.14\PCbuild
-) else (
-    set SOLUTIONTYPE="Visual Studio 12 Win64"
-    @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
-    @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win64\lib
-    set PYTHON_LIB_DIR=C:\Python-2.7.14\PCbuild\amd64
-)
-
-if %HZ_BUILD_TYPE% == Debug (
-    set PYTHON_LIB_FILE_NAME=python27_d.lib
-) else (
-    set PYTHON_LIB_FILE_NAME=python27.lib
-)
-
-set PYTHON_LIBRARY_PATH=%PYTHON_LIB_DIR%\%PYTHON_LIB_FILE_NAME%
-
 call scripts/build-windows.bat %HZ_BIT_VERSION% %HZ_LIB_TYPE% %HZ_BUILD_TYPE% %COMPILE_WITHOUT_SSL% || (
     echo "Failed to build the project!"
-    exit /b 1
-)
-
-pip install --user -r hazelcast/test/test_requirements.txt || (
-    echo "Failed to install python hazelcast-remote-controller library."
     exit /b 1
 )
 
@@ -75,10 +51,7 @@ exit /b 1
 
 echo "Starting the client test now."
 
-set PYTHONHOME=C:\Python27
-set PYTHONPATH=%PYTHON_LIB_DIR%
 SET PATH=%BUILD_DIR%\%HZ_BUILD_TYPE%;%PATH%
-SET PATH=%PYTHON_LIB_DIR%;%PATH%
 
 %BUILD_DIR%\hazelcast\test\src\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% --gtest_output="xml:CPP_Client_Test_Report.xml"
 set result=%errorlevel%

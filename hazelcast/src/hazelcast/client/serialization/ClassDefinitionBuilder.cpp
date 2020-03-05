@@ -120,7 +120,7 @@ namespace hazelcast {
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
+            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableField(const std::string& fieldName, std::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
@@ -132,7 +132,7 @@ namespace hazelcast {
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableArrayField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
+            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableArrayField(const std::string& fieldName, std::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
@@ -158,9 +158,9 @@ namespace hazelcast {
                 return *this;
             }
 
-            boost::shared_ptr<ClassDefinition> ClassDefinitionBuilder::build() {
+            std::shared_ptr<ClassDefinition> ClassDefinitionBuilder::build() {
                 done = true;
-                boost::shared_ptr<ClassDefinition> cd(new ClassDefinition(factoryId, classId, version));
+                std::shared_ptr<ClassDefinition> cd(new ClassDefinition(factoryId, classId, version));
 
                 std::vector<FieldDefinition>::iterator fdIt;
                 for (fdIt = fieldDefinitions.begin(); fdIt != fieldDefinitions.end(); fdIt++) {

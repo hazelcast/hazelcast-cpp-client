@@ -18,8 +18,7 @@
 #define HAZELCAST_CLIENT_IMPL_CLIENTLOCKREFERENCEIDGENERATOR_H_
 
 #include <stdint.h>
-
-#include <hazelcast/util/Atomic.h>
+#include <atomic>
 
 namespace hazelcast {
     namespace client {
@@ -40,7 +39,7 @@ namespace hazelcast {
                  */
                 int64_t getNextReferenceId();
             private:
-                util::Atomic<int64_t> referenceIdCounter;
+                std::atomic<int64_t> referenceIdCounter;
             };
         }
     }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/util/IOUtil.h"
@@ -58,47 +58,60 @@ namespace hazelcast {
                                                                   INT32_MAX));
                 }
 
-                void ClientExecutionServiceImpl::execute(const boost::shared_ptr<util::Runnable> &command) {
+                void ClientExecutionServiceImpl::execute(const std::shared_ptr<util::Runnable> &command) {
                     internalExecutor->execute(command);
                 }
 
+                void ClientExecutionServiceImpl::start() {
+                    userExecutor->start();
+                    internalExecutor->start();
+                }
+
                 void ClientExecutionServiceImpl::shutdown() {
+                    shutdownExecutor("user", *userExecutor, logger);
                     shutdownExecutor("internal", *internalExecutor, logger);
                 }
 
                 void
                 ClientExecutionServiceImpl::shutdownExecutor(const std::string &name, util::ExecutorService &executor,
                                                              util::ILogger &logger) {
-                    executor.shutdown();
                     try {
                         int64_t startTimeMilliseconds = util::currentTimeMillis();
                         bool success = false;
                         // Wait indefinitely until the threads gracefully shutdown an log the problem periodically.
                         while (!success) {
-                            success = executor.awaitTerminationSeconds(SHUTDOWN_CHECK_INTERVAL_SECONDS);
+                            int64_t waitTimeMillis = 100;
+                            auto intervalStartTimeMillis = util::currentTimeMillis();
+                            while (!success && util::currentTimeMillis() - intervalStartTimeMillis <
+                                               1000 * SHUTDOWN_CHECK_INTERVAL_SECONDS) {
+                                executor.shutdown();
+                                auto &executorService = static_cast<util::impl::SimpleExecutorService &>(executor);
+                                success = executorService.awaitTerminationMilliseconds(waitTimeMillis);
+                            }
+
                             if (!success) {
-                                logger.warning() << name << " executor awaitTermination could not be completed in "
-                                                 << (util::currentTimeMillis() - startTimeMilliseconds) << " msecs.";
+                                logger.warning(name, " executor awaitTermination could not be completed in ",
+                                               (util::currentTimeMillis() - startTimeMilliseconds), " msecs.");
                             }
                         }
                     } catch (exception::InterruptedException &e) {
-                        logger.warning() << name << " executor await termination is interrupted. " << e;
+                        logger.warning(name, " executor await termination is interrupted. " , e);
                     }
                 }
 
                 void
-                ClientExecutionServiceImpl::scheduleWithRepetition(const boost::shared_ptr<util::Runnable> &command,
+                ClientExecutionServiceImpl::scheduleWithRepetition(const std::shared_ptr<util::Runnable> &command,
                                                                    int64_t initialDelayInMillis,
                                                                    int64_t periodInMillis) {
                     internalExecutor->scheduleAtFixedRate(command, initialDelayInMillis, periodInMillis);
                 }
 
-                void ClientExecutionServiceImpl::schedule(const boost::shared_ptr<util::Runnable> &command,
+                void ClientExecutionServiceImpl::schedule(const std::shared_ptr<util::Runnable> &command,
                                                           int64_t initialDelayInMillis) {
                     internalExecutor->schedule(command, initialDelayInMillis);
                 }
 
-                const boost::shared_ptr<util::ExecutorService> ClientExecutionServiceImpl::getUserExecutor() const {
+                const std::shared_ptr<util::ExecutorService> ClientExecutionServiceImpl::getUserExecutor() const {
                     return userExecutor;
                 }
             }

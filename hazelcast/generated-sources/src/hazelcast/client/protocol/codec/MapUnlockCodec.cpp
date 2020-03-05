@@ -28,13 +28,13 @@ namespace hazelcast {
                 const bool MapUnlockCodec::RETRYABLE = true;
                 const ResponseMessageConst MapUnlockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> MapUnlockCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapUnlockCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &key,
                         int64_t threadId,
                         int64_t referenceId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, referenceId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapUnlockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

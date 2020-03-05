@@ -111,17 +111,17 @@ int main() {
     ClientConfig config;
     SerializationConfig &serializationConfig = config.getSerializationConfig();
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
 
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
 
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
 
     HazelcastClient client(config);
 
-    boost::shared_ptr<Ringbuffer<BaseCustom> > ringBuffer = client.getRingbuffer<BaseCustom>("MyRingBuffer");
+    std::shared_ptr<Ringbuffer<BaseCustom> > ringBuffer = client.getRingbuffer<BaseCustom>("MyRingBuffer");
 
     BaseCustom baseCustom;
     Derived1Custom derived1Custom;
@@ -131,7 +131,7 @@ int main() {
     ringBuffer->add(derived2Custom);
 
     int64_t sequence = ringBuffer->headSequence();
-    std::auto_ptr<BaseCustom> value = ringBuffer->readOne(sequence);
+    std::unique_ptr<BaseCustom> value = ringBuffer->readOne(sequence);
     std::cout << "Got the first value from the ringbuffer. The value is:" << value->getValue() << std::endl;
 
     value = ringBuffer->readOne(sequence + 1);

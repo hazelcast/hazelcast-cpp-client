@@ -36,8 +36,8 @@ namespace hazelcast {
             class ClientListenerService {
             public:
                 virtual std::string
-                registerListener(const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
-                                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) = 0;
+                registerListener(const std::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
+                                 const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) = 0;
 
                 virtual bool deregisterListener(const std::string &registrationId) = 0;
             };

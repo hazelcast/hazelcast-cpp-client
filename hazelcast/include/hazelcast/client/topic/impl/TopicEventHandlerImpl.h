@@ -50,12 +50,12 @@ namespace hazelcast {
 
                     virtual void handleTopicEventV10(const serialization::pimpl::Data &item, const int64_t &publishTime,
                                              const std::string &uuid) {
-                        boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                        std::shared_ptr<Member> member = clusterService.getMember(uuid);
 
-                        std::auto_ptr<E> object = serializationService.toObject<E>(item);
+                        std::unique_ptr<E> object = serializationService.toObject<E>(item);
 
-                        std::auto_ptr<Message<E> > listenerMsg(new impl::MessageImpl<E>(instanceName, object, publishTime, member));
-                        listener.onMessage(listenerMsg);
+                        std::unique_ptr<Message<E> > listenerMsg(new impl::MessageImpl<E>(instanceName, object, publishTime, member));
+                        listener.onMessage(std::move(listenerMsg));
                     }
                 private:
                     const std::string &instanceName;
@@ -81,15 +81,15 @@ namespace hazelcast {
 
                         virtual void handleTopicEventV10(const serialization::pimpl::Data &item, const int64_t &publishTime,
                                                  const std::string &uuid) {
-                            boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                            std::shared_ptr<Member> member = clusterService.getMember(uuid);
 
-                            std::auto_ptr<TypedData> object(new TypedData(
-                                    std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(item)),
+                            std::unique_ptr<TypedData> object(new TypedData(
+                                    std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(item)),
                                     serializationService));
 
-                            std::auto_ptr<client::topic::Message<TypedData> > listenerMsg(
+                            std::unique_ptr<client::topic::Message<TypedData> > listenerMsg(
                                     new impl::MessageImpl(instanceName, object, publishTime, member));
-                            listener.onMessage(listenerMsg);
+                            listener.onMessage(std::move(listenerMsg));
                         }
                     private:
                         const std::string &instanceName;

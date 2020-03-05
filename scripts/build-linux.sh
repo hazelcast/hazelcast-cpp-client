@@ -35,16 +35,13 @@ if [ "$4" == "WITH_COVERAGE" ]; then
 echo "Code coverage is ON. Cmake flag: ${HZ_COVERAGE_STRING}"
 fi
 
-# Let the submodule code be downloaded
-git submodule update --init
-
 rm -rf ${BUILD_DIR}
 mkdir ${BUILD_DIR}
 
 cd ${BUILD_DIR}
 
 echo "Running cmake to compose Makefiles for compilation."
-cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=${HZ_COMPILE_WITH_SSL}
+cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=${HZ_COMPILE_WITH_SSL} -DBUILD_GMOCK=OFF -DINSTALL_GTEST=OFF
 if [ $? -ne 0 ]; then
     echo "Cmake failed !"
     exit 1

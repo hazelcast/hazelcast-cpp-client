@@ -28,10 +28,10 @@ namespace hazelcast {
                 class DataAwareEntryEvent : public EntryEvent<K, V> {
                 public:
                     DataAwareEntryEvent(const std::string &name, const Member &member, const EntryEventType &eventType,
-                                        const boost::shared_ptr<serialization::pimpl::Data> &dataKey,
-                                        const boost::shared_ptr<serialization::pimpl::Data> &dataNewValue,
-                                        const boost::shared_ptr<serialization::pimpl::Data> &dataOldValue,
-                                        const boost::shared_ptr<serialization::pimpl::Data> &dataMergingValue,
+                                        const std::shared_ptr<serialization::pimpl::Data> &dataKey,
+                                        const std::shared_ptr<serialization::pimpl::Data> &dataNewValue,
+                                        const std::shared_ptr<serialization::pimpl::Data> &dataOldValue,
+                                        const std::shared_ptr<serialization::pimpl::Data> &dataMergingValue,
                                         serialization::pimpl::SerializationService &serializationService)
                             : EntryEvent<K, V>(name, member, eventType), keyData(dataKey), newValueData(dataNewValue),
                               oldValueData(dataOldValue), mergingValueData(dataMergingValue),
@@ -45,30 +45,30 @@ namespace hazelcast {
                         EntryEvent<K, V>::mergingValue = serializationService.toObject<V>(mergingValueData.get());
                     }
 
-                    const boost::shared_ptr<serialization::pimpl::Data> &getKeyData() const {
+                    const std::shared_ptr<serialization::pimpl::Data> &getKeyData() const {
                         return keyData;
                     }
 
-                    const boost::shared_ptr<serialization::pimpl::Data> &getNewValueData() const {
+                    const std::shared_ptr<serialization::pimpl::Data> &getNewValueData() const {
                         return newValueData;
                     }
 
-                    const boost::shared_ptr<serialization::pimpl::Data> &getOldValueData() const {
+                    const std::shared_ptr<serialization::pimpl::Data> &getOldValueData() const {
                         return oldValueData;
                     }
 
-                    const boost::shared_ptr<serialization::pimpl::Data> &getMergingValueData() const {
+                    const std::shared_ptr<serialization::pimpl::Data> &getMergingValueData() const {
                         return mergingValueData;
                     }
 
                 private:
-                    const boost::shared_ptr<serialization::pimpl::Data> keyData;
+                    const std::shared_ptr<serialization::pimpl::Data> keyData;
 
-                    const boost::shared_ptr<serialization::pimpl::Data> newValueData;
+                    const std::shared_ptr<serialization::pimpl::Data> newValueData;
 
-                    const boost::shared_ptr<serialization::pimpl::Data> oldValueData;
+                    const std::shared_ptr<serialization::pimpl::Data> oldValueData;
 
-                    const boost::shared_ptr<serialization::pimpl::Data> mergingValueData;
+                    const std::shared_ptr<serialization::pimpl::Data> mergingValueData;
 
                     serialization::pimpl::SerializationService &serializationService;
                 };

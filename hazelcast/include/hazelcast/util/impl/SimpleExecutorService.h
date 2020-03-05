@@ -20,10 +20,10 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
+#include <atomic>
 
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Future.h"
 #include "hazelcast/util/Executor.h"
 #include "hazelcast/util/Callable.h"
@@ -52,7 +52,7 @@ namespace hazelcast {
 
                 virtual ~SimpleExecutorService();
 
-                void execute(const boost::shared_ptr<Runnable> &command);
+                void execute(const std::shared_ptr<Runnable> &command);
 
                 /**
                  * Submits a value-returning task for execution and returns a
@@ -74,17 +74,19 @@ namespace hazelcast {
                  * @throws NullPointerException if the task is null
                  */
                 template<typename T>
-                boost::shared_ptr<Future<T> > submit(const boost::shared_ptr<Callable<T> > &task) {
-                    boost::shared_ptr<CallableRunnableAdaptor<T> > runnable(new CallableRunnableAdaptor<T>(task, logger));
+                std::shared_ptr<Future<T> > submit(const std::shared_ptr<Callable<T> > &task) {
+                    std::shared_ptr<CallableRunnableAdaptor<T> > runnable(new CallableRunnableAdaptor<T>(task, logger));
                     execute(runnable);
                     return runnable->getFuture();
                 }
 
-                virtual void schedule(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis);
+                virtual void schedule(const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis);
 
                 virtual void
-                scheduleAtFixedRate(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                scheduleAtFixedRate(const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
                                     int64_t periodInMillis);
+
+                void start() ;
 
                 /**
                  * Shuts down this Executor.
@@ -99,11 +101,13 @@ namespace hazelcast {
 
                 virtual bool awaitTerminationMilliseconds(int64_t timeoutMilliseconds);
 
+                const std::string &getThreadNamePrefix() const;
+
             protected:
                 template<typename T>
                 class CallableRunnableAdaptor : public Runnable {
                 public:
-                    CallableRunnableAdaptor(const boost::shared_ptr<Callable<T> > &callable, util::ILogger &logger)
+                    CallableRunnableAdaptor(const std::shared_ptr<Callable<T> > &callable, util::ILogger &logger)
                             : callable(callable), future(new Future<T>(logger)) {
                     }
 
@@ -112,10 +116,10 @@ namespace hazelcast {
 
                     virtual void run() {
                         try {
-                            boost::shared_ptr<T> result = callable->call();
+                            std::shared_ptr<T> result = callable->call();
                             future->set_value(result);
                         } catch (client::exception::IException &e) {
-                            future->set_exception(e.clone());
+                            future->complete(e);
                         }
                     }
 
@@ -123,17 +127,17 @@ namespace hazelcast {
                         return callable->getName();
                     }
 
-                    const boost::shared_ptr<Callable<T> > &getCallable() const {
+                    const std::shared_ptr<Callable<T> > &getCallable() const {
                         return callable;
                     }
 
-                    const boost::shared_ptr<Future<T> > &getFuture() const {
+                    const std::shared_ptr<Future<T> > &getFuture() const {
                         return future;
                     }
 
                 private:
-                    boost::shared_ptr<Callable<T> > callable;
-                    boost::shared_ptr<Future<T> > future;
+                    std::shared_ptr<Callable<T> > callable;
+                    std::shared_ptr<Future<T> > future;
                 };
 
                 class Worker : public util::Runnable {
@@ -146,7 +150,7 @@ namespace hazelcast {
 
                     virtual const std::string getName() const;
 
-                    void schedule(const boost::shared_ptr<Runnable> &runnable);
+                    void schedule(const std::shared_ptr<Runnable> &runnable);
 
                     void start();
 
@@ -160,16 +164,16 @@ namespace hazelcast {
                     SimpleExecutorService &executorService;
                     std::string name;
                     // TODO: Should it be non blocking rejecting queue when compared to Java?
-                    util::BlockingConcurrentQueue<boost::shared_ptr<Runnable> > workQueue;
+                    util::BlockingConcurrentQueue<std::shared_ptr<Runnable> > workQueue;
                     util::Thread thread;
                 };
 
                 class DelayedRunner : public util::Runnable {
                 public:
-                    DelayedRunner(const std::string &threadNamePrefix, const boost::shared_ptr<Runnable> &command,
+                    DelayedRunner(const std::string &threadNamePrefix, const std::shared_ptr<Runnable> &command,
                             int64_t initialDelayInMillis, util::ILogger &logger);
 
-                    DelayedRunner(const std::string &threadNamePrefix, const boost::shared_ptr<Runnable> &command,
+                    DelayedRunner(const std::string &threadNamePrefix, const std::shared_ptr<Runnable> &command,
                             int64_t initialDelayInMillis, int64_t periodInMillis, util::ILogger &logger);
 
                     virtual void run();
@@ -181,7 +185,7 @@ namespace hazelcast {
                     void setStartTimeMillis(Thread *pThread);
 
                 protected:
-                    const boost::shared_ptr<util::Runnable> command;
+                    const std::shared_ptr<util::Runnable> command;
                     int64_t initialDelayInMillis;
                     int64_t periodInMillis;
                     util::AtomicBoolean live;
@@ -191,27 +195,20 @@ namespace hazelcast {
                     const std::string threadNamePrefix;
                 };
 
-                virtual boost::shared_ptr<Worker> getWorker(const boost::shared_ptr<Runnable> &runnable);
-
-                void startWorkers() ;
+                virtual std::shared_ptr<Worker> getWorker(const std::shared_ptr<Runnable> &runnable);
 
                 util::ILogger &logger;
                 const std::string threadNamePrefix;
                 int threadCount;
                 util::AtomicBoolean live;
-                util::Atomic<int64_t> threadIdGenerator;
-                std::vector<boost::shared_ptr<Worker> > workers;
+                util::AtomicBoolean isStarted;
+                std::atomic<int64_t> threadIdGenerator;
+                std::vector<std::shared_ptr<Worker> > workers;
                 int32_t maximumQueueCapacity;
                 util::SynchronizedQueue<util::Thread> delayedRunners;
             };
 
         }
-
-        class HAZELCAST_API Executors {
-        public:
-            static boost::shared_ptr<ExecutorService> newSingleThreadExecutor(const std::string &name,
-                    util::ILogger &logger);
-        };
 
     }
 }

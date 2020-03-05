@@ -27,10 +27,10 @@ namespace hazelcast {
                 const bool QueueIsEmptyCodec::RETRYABLE = false;
                 const ResponseMessageConst QueueIsEmptyCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> QueueIsEmptyCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> QueueIsEmptyCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueIsEmptyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

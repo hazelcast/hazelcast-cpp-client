@@ -13,12 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
-
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 
@@ -39,7 +34,7 @@ namespace hazelcast {
 
                         HazelcastClient client;
 
-                        boost::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
+                        std::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
 
                         ASSERT_THROW(pnCounter->addAndGet(5), exception::NoDataMemberInClusterException);

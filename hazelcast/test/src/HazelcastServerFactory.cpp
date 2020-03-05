@@ -13,18 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/26/13.
-
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 
 #include <iostream>
-#include <sstream>
-#include <fstream>
 
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
@@ -37,186 +28,76 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            std::string HazelcastServerFactory::serverAddress;
-            PyObject *HazelcastServerFactory::rcObject;
-
-            void HazelcastServerFactory::init(const std::string &server) {
-                const char *moduleName = "hzrc.client";
-                PyObject *moduleNameObj = PyString_FromString(moduleName);
-                PyObject *moduleObj = PyImport_Import(moduleNameObj);
-                Py_DECREF(moduleNameObj);
-
-                if (NULL == moduleObj) {
-                    std::ostringstream out;
-                    out << "Failed to load Python module " << moduleName;
-                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
-                }
-
-                PyObject *rcAttribute = PyObject_GetAttrString(moduleObj, "HzRemoteController");
-
-                if (NULL == rcAttribute) {
-                    Py_DECREF(moduleObj);
-                    std::ostringstream out;
-                    out << "The HzRemoteController class could not be found in Python module " << moduleName;
-                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
-                }
-
-                if (!PyCallable_Check(rcAttribute)) {
-                    Py_DECREF(moduleObj);
-                    std::ostringstream out;
-                    out << "The HzRemoteController class is not callable in Python module " << moduleName;
-                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
-                }
-
-                serverAddress = server;
-                long portNum = 9701;
-
-                PyObject *pArgs = PyTuple_New(2);
-                PyTuple_SetItem(pArgs, 0, PyString_FromString(serverAddress.c_str()));
-                PyTuple_SetItem(pArgs, 1, PyInt_FromLong(portNum));
-                rcObject = PyObject_CallObject(rcAttribute, pArgs);
-                Py_DECREF(pArgs);
-                if (rcObject == NULL) {
-                    Py_DECREF(moduleObj);
-                    std::ostringstream out;
-                    out << "Failed to connect to remote controller at " << serverAddress << ":" << portNum;
-                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
-                }
-            }
+            extern HazelcastServerFactory *g_srvFactory;
+            extern std::shared_ptr<RemoteControllerClient> remoteController;
 
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
-                    : logger(new util::ILogger("HazelcastServerFactory", "HazelcastServerFactory", "testversion",
-                            config::LoggerConfig())) {
+                    : HazelcastServerFactory::HazelcastServerFactory(g_srvFactory->getServerAddress(),
+                                                                     serverXmlConfigFilePath) {
+            }
+
+            HazelcastServerFactory::HazelcastServerFactory(const std::string &serverAddress,
+                                                           const std::string &serverXmlConfigFilePath)
+                    : logger("HazelcastServerFactory", "HazelcastServerFactory", "testversion", config::LoggerConfig()),
+                      serverAddress(serverAddress) {
+
+                if (!logger.start()) {
+                    throw (client::exception::ExceptionBuilder<client::exception::IllegalStateException>(
+                            "HazelcastServerFactory::HazelcastServerFactory") << "Could not start logger "
+                                                                              << logger.getInstanceName()).build();
+                }
+
                 std::string xmlConfig = readFromXmlFile(serverXmlConfigFilePath);
 
-                PyObject *clusterObject = PyObject_CallMethod(rcObject, const_cast<char *>("createCluster"),
-                                                              const_cast<char *>("(ss)"), "3.9",
-                                                              xmlConfig.c_str());
-                if (clusterObject == NULL) {
-                    std::ostringstream out;
-                    out << "Failed to create cluster with xml file path: " << serverXmlConfigFilePath;
-                    throw exception::IllegalStateException("HazelcastServerFactory::HazelcastServerFactory", out.str());
-                }
+                Cluster cluster;
+                remoteController->createCluster(cluster, HAZELCAST_VERSION, xmlConfig);
 
-                PyObject *clusterUUID = PyObject_GetAttrString(clusterObject, "id");
-                if (clusterUUID == NULL) {
-                    Py_DECREF(clusterObject);
-                    throw exception::IllegalStateException("HazelcastServerFactory::init",
-                                                           "Could not retrieve cluster id as string");
-                }
-
-                clusterId = PyString_AsString(clusterUUID);
-                Py_DECREF(clusterUUID);
+                this->clusterId = cluster.id;
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-                PyObject *resultObj = PyObject_CallMethod(rcObject, const_cast<char *>("shutdownCluster"),
-                                                              const_cast<char *>("(s)"), clusterId.c_str());
-
-                if (resultObj == NULL || resultObj == Py_False) {
-                    std::ostringstream out;
-                    out << "Failed to shutdown the cluster with id " << clusterId;
-                    logger->severe(out.str());
-                }
-
-                Py_XDECREF(resultObj);
+                remoteController->shutdownCluster(clusterId);
             }
 
-            HazelcastServerFactory::MemberInfo HazelcastServerFactory::startServer() {
-                PyObject *memberObject = PyObject_CallMethod(rcObject, const_cast<char *>("startMember"),
-                                                             const_cast<char *>("(s)"), clusterId.c_str());
-                if (memberObject == NULL) {
-                    std::ostringstream out;
-                    out << "Failed to start member at cluster " << clusterId;
-                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
-                }
-
-                PyObject *uuidObj = PyObject_GetAttrString(memberObject, "uuid");
-                PyObject *hostObj = PyObject_GetAttrString(memberObject, "host");
-                PyObject *portStringObj = PyString_FromString("port");
-                PyObject *portObj = PyObject_GenericGetAttr(memberObject, portStringObj);
-
-                HazelcastServerFactory::MemberInfo memberInfo(PyString_AsString(uuidObj), PyString_AsString(hostObj),
-                                                              PyInt_AsLong(portObj));
-
-
-                Py_DECREF(memberObject);
-                Py_DECREF(uuidObj);
-                Py_DECREF(hostObj);
-                Py_DECREF(portStringObj);
-                Py_DECREF(portObj);
-
-                return memberInfo;
+            remote::Member HazelcastServerFactory::startServer() {
+                remote::Member member;
+                remoteController->startMember(member, clusterId);
+                return member;
             }
 
             bool HazelcastServerFactory::setAttributes(int memberStartOrder) {
                 std::ostringstream script;
                 script << "function attrs() { "
-                        "var member = instance_" << memberStartOrder << ".getCluster().getLocalMember(); "
-                        "member.setIntAttribute(\"intAttr\", 211); "
-                        "member.setBooleanAttribute(\"boolAttr\", true); "
-                        "member.setByteAttribute(\"byteAttr\", 7); "
-                        "member.setDoubleAttribute(\"doubleAttr\", 2.0); "
-                        "member.setFloatAttribute(\"floatAttr\", 1.2); "
-                        "member.setShortAttribute(\"shortAttr\", 3); "
-                        "return member.setStringAttribute(\"strAttr\", \"strAttr\");} "
-                        " result=attrs(); ";
+                          "var member = instance_" << memberStartOrder << ".getCluster().getLocalMember(); "
+                                                                          "member.setIntAttribute(\"intAttr\", 211); "
+                                                                          "member.setBooleanAttribute(\"boolAttr\", true); "
+                                                                          "member.setByteAttribute(\"byteAttr\", 7); "
+                                                                          "member.setDoubleAttribute(\"doubleAttr\", 2.0); "
+                                                                          "member.setFloatAttribute(\"floatAttr\", 1.2); "
+                                                                          "member.setShortAttribute(\"shortAttr\", 3); "
+                                                                          "return member.setStringAttribute(\"strAttr\", \"strAttr\");} "
+                                                                          " result=attrs(); ";
 
 
-                Response response = executeOnController(script.str().c_str(), JAVASCRIPT);
-
+                Response response;
+                remoteController->executeOnController(response, clusterId, script.str().c_str(), Lang::JAVASCRIPT);
                 return response.success;
             }
 
-            bool HazelcastServerFactory::shutdownServer(const MemberInfo &member) {
-                PyObject *resultObj = PyObject_CallMethod(rcObject, const_cast<char *>("shutdownMember"),
-                                                             const_cast<char *>("(ss)"), clusterId.c_str(),
-                                                          member.getUuid().c_str());
-
-                if (resultObj == NULL || resultObj == Py_False) {
-                    Py_XDECREF(resultObj);
-                    std::ostringstream out;
-                    out << "Failed to shutdown the member " << member;
-                    logger->severe(out.str());
-                    return false;
-                }
-
-                Py_DECREF(resultObj);
-                return true;
+            bool HazelcastServerFactory::shutdownServer(const remote::Member &member) {
+                return remoteController->shutdownMember(clusterId, member.uuid);
             }
 
-            bool HazelcastServerFactory::terminateServer(const MemberInfo &member) {
-                PyObject *resultObj = PyObject_CallMethod(rcObject, const_cast<char *>("terminateMember"),
-                                                             const_cast<char *>("(ss)"), clusterId.c_str(),
-                                                          member.getUuid().c_str());
-
-                if (resultObj == NULL || resultObj == Py_False) {
-                    Py_XDECREF(resultObj);
-                    std::ostringstream out;
-                    out << "Failed to terminate the member " << member;
-                    logger->severe(out.str());
-                    return false;
-                }
-
-                Py_DECREF(resultObj);
-                return true;
+            bool HazelcastServerFactory::terminateServer(const remote::Member &member) {
+                return remoteController->terminateMember(clusterId, member.uuid);
             }
 
             const std::string &HazelcastServerFactory::getServerAddress() {
                 return serverAddress;
             }
 
-            HazelcastServerFactory::MemberInfo::MemberInfo(const string &uuid, const string &ip, int port) : uuid(uuid),
-                                                                                                             ip(ip),
-                                                                                                             port(port) {}
-
-            ostream &operator<<(ostream &os, const HazelcastServerFactory::MemberInfo &info) {
-                os << "MemberInfo{uuid: " << info.uuid << " ip: " << info.ip << " port: " << info.port << "}";
-                return os;
-            }
-
             std::string HazelcastServerFactory::readFromXmlFile(const std::string &xmlFilePath) {
-                std::ifstream xmlFile (xmlFilePath.c_str());
+                std::ifstream xmlFile(xmlFilePath.c_str());
                 if (!xmlFile) {
                     std::ostringstream out;
                     out << "Failed to read from xml file to at " << xmlFilePath;
@@ -232,61 +113,6 @@ namespace hazelcast {
                 return buffer.str();
             }
 
-            HazelcastServerFactory::Response HazelcastServerFactory::executeOnController(const std::string &script,
-                                                                                         HazelcastServerFactory::Lang language) {
-                PyObject *responseObj = PyObject_CallMethod(rcObject, const_cast<char *>("executeOnController"),
-                                                            const_cast<char *>("(ssi)"), clusterId.c_str(),
-                                                            script.c_str(), language);
-
-                PyObject *successObjAttrName = PyString_FromString("success");
-                PyObject *isSuccessObj = PyObject_GenericGetAttr(responseObj, successObjAttrName);
-
-                HazelcastServerFactory::Response response;
-                if (isSuccessObj == NULL || isSuccessObj == Py_False) {
-                    response.success = false;
-
-                    logger->severe() << "Failed to execute script " << script << " on cluster " << clusterId;
-                } else {
-                    response.success = true;
-
-                    PyObject *messageObjAttrName = PyString_FromString("message");
-                    PyObject *messageObj = PyObject_GenericGetAttr(responseObj, messageObjAttrName);
-
-                    if (messageObj != NULL && messageObj != Py_None) {
-                        response.message = PyString_AsString(messageObj);
-                    }
-
-                    PyObject *resultObjAttrName = PyString_FromString("result");
-                    PyObject *resultObj = PyObject_GenericGetAttr(responseObj, resultObjAttrName);
-
-                    if (resultObj != NULL && resultObj != Py_None) {
-                        PyObject *byteArrayObj = PyByteArray_FromObject(resultObj);
-                        response.result = PyByteArray_AsString(byteArrayObj);
-                        Py_DECREF(byteArrayObj);
-                    }
-
-                    Py_XDECREF(resultObj);
-                    Py_DECREF(resultObjAttrName);
-
-                    Py_XDECREF(messageObj);
-                    Py_DECREF(messageObjAttrName);
-                }
-
-                Py_DECREF(responseObj);
-                Py_DECREF(successObjAttrName);
-                Py_XDECREF(isSuccessObj);
-                return response;
-            }
-
-            HazelcastServerFactory::MemberInfo::MemberInfo() : port(-1) {}
-
-            const string &HazelcastServerFactory::MemberInfo::getUuid() const {
-                return uuid;
-            }
-
-            Address HazelcastServerFactory::MemberInfo::getAddress() const {
-                return Address(ip, port);
-            }
         }
     }
 }

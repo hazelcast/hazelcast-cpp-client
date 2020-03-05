@@ -32,7 +32,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DefaultPortableWriter::DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, ObjectDataOutput &output)
+                DefaultPortableWriter::DefaultPortableWriter(PortableContext& portableContext, std::shared_ptr<ClassDefinition> cd, ObjectDataOutput &output)
                 : raw(false)
                 , serializerHolder(portableContext.getSerializerHolder())
                 , dataOutput(*output.getDataOutput())
@@ -187,7 +187,7 @@ namespace hazelcast {
                 }
 
                 void DefaultPortableWriter::write(const Portable& p) {
-                    boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
+                    std::shared_ptr<PortableSerializer> serializer = std::static_pointer_cast<PortableSerializer>(
                             serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
                     serializer->writeInternal(objectDataOutput, &p);
                 }

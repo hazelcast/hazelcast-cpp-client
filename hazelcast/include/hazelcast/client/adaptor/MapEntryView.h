@@ -40,21 +40,21 @@ namespace hazelcast {
             /**
              * Constructor
              */
-            MapEntryView(std::auto_ptr<map::DataEntryView> v, serialization::pimpl::SerializationService &srv)
-                    : dataView(v), serializationService(srv) {
+            MapEntryView(std::unique_ptr<map::DataEntryView> &v, serialization::pimpl::SerializationService &srv)
+                    : dataView(std::move(v)), serializationService(srv) {
             }
 
             /**
              * @return Returns the deserialized key object for the entry, performs lazy deserialization.
              */
-            std::auto_ptr<K> getKey() const {
+            std::unique_ptr<K> getKey() const {
                 return serializationService.toObject<K>(dataView->getKey());
             }
 
             /**
              * @return Returns the deserialized value object for the entry, performs lazy deserialization.
              */
-            std::auto_ptr<V> getValue() const {
+            std::unique_ptr<V> getValue() const {
                 return serializationService.toObject<V>(dataView->getValue());
             }
 
@@ -115,7 +115,7 @@ namespace hazelcast {
             }
 
         private:
-            std::auto_ptr<map::DataEntryView> dataView;
+            std::unique_ptr<map::DataEntryView> dataView;
 
             serialization::pimpl::SerializationService &serializationService;
         };

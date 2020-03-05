@@ -19,9 +19,11 @@
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
-#include <boost/shared_ptr.hpp>
+#include <atomic>
 #include <stdint.h>
 #include <memory>
+#include <random>
+#include <future>
 
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
@@ -33,8 +35,9 @@
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/protocol/Principal.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
-#include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/Sync.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/client/connection/AddressTranslator.h"
@@ -56,8 +59,6 @@ namespace hazelcast {
         class SocketInterceptor;
 
         namespace spi {
-            class ClientContext;
-
             namespace impl {
                 class ClientExecutionServiceImpl;
 
@@ -88,8 +89,8 @@ namespace hazelcast {
             class HAZELCAST_API ClientConnectionManagerImpl : public ConnectionListenable {
             public:
                 ClientConnectionManagerImpl(spi::ClientContext &client,
-                                            const boost::shared_ptr<AddressTranslator> &addressTranslator,
-                                            const std::vector<boost::shared_ptr<AddressProvider> > &addressProviders);
+                                            const std::shared_ptr<AddressTranslator> &addressTranslator,
+                                            const std::vector<std::shared_ptr<AddressProvider> > &addressProviders);
 
                 virtual ~ClientConnectionManagerImpl();
 
@@ -108,84 +109,81 @@ namespace hazelcast {
                  * @return associated connection if available, creates new connection otherwise
                  * @throws IOException if connection is not established
                  */
-                boost::shared_ptr<Connection> getOrConnect(const Address &address);
+                std::shared_ptr<Connection> getOrConnect(const Address &address);
 
                 /**
                  * @param address to be connected
                  * @return associated connection if available, returns null and triggers new connection creation otherwise
                  * @throws IOException if connection is not able to be triggered
                  */
-                boost::shared_ptr<Connection> getOrTriggerConnect(const Address &target);
+                std::shared_ptr<Connection> getOrTriggerConnect(const Address &target);
 
                 /**
                  * Connects to the translated ip address (if translation is needed, such as when aws is used)
                 * @param address
                 * @return Return the newly created connection.
                 */
-                boost::shared_ptr<Connection> connectAsOwner(const Address &address);
+                std::shared_ptr<Connection> connectAsOwner(const Address &address);
 
                 /**
                 * @param address
                 * @param ownerConnection
                 */
-                std::vector<boost::shared_ptr<Connection> > getActiveConnections();
+                std::vector<std::shared_ptr<Connection> > getActiveConnections();
 
-                boost::shared_ptr<Address> getOwnerConnectionAddress();
+                std::shared_ptr<Address> getOwnerConnectionAddress();
 
-                void setOwnerConnectionAddress(const boost::shared_ptr<Address> &ownerConnectionAddress);
+                void setOwnerConnectionAddress(const std::shared_ptr<Address> &ownerConnectionAddress);
 
-                boost::shared_ptr<Connection> getActiveConnection(const Address &target);
+                std::shared_ptr<Connection> getActiveConnection(const Address &target);
 
-                boost::shared_ptr<Connection> getActiveConnection(int fileDescriptor);
+                std::shared_ptr<Connection> getActiveConnection(int fileDescriptor);
 
-                boost::shared_ptr<Connection> getOwnerConnection();
+                std::shared_ptr<Connection> getOwnerConnection();
 
-                const boost::shared_ptr<protocol::Principal> getPrincipal();
+                const std::shared_ptr<protocol::Principal> getPrincipal();
 
-                void setPrincipal(const boost::shared_ptr<protocol::Principal> &principal);
+                void setPrincipal(const std::shared_ptr<protocol::Principal> &principal);
 
                 void connectToCluster();
 
-                boost::shared_ptr<util::Future<bool> > connectToClusterAsync();
+                std::shared_ptr<util::Future<bool> > connectToClusterAsync();
 
                 bool isAlive();
 
                 void onClose(Connection &connection);
 
-                virtual void addConnectionListener(const boost::shared_ptr<ConnectionListener> &connectionListener);
+                virtual void addConnectionListener(const std::shared_ptr<ConnectionListener> &connectionListener);
 
                 util::ILogger &getLogger();
             private:
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC;
 
-                boost::shared_ptr<Connection> getConnection(const Address &target, bool asOwner);
+                std::shared_ptr<Connection> getConnection(const Address &target, bool asOwner);
 
-                boost::shared_ptr<AuthenticationFuture> triggerConnect(const Address &target, bool asOwner);
+                std::shared_ptr<AuthenticationFuture> triggerConnect(const Address &target, bool asOwner);
 
-                boost::shared_ptr<Connection> createSocketConnection(const Address &address);
+                std::shared_ptr<Connection> createSocketConnection(const Address &address);
 
-                boost::shared_ptr<Connection> getOrConnect(const Address &address, bool asOwner);
+                std::shared_ptr<Connection> getOrConnect(const Address &address, bool asOwner);
 
-                void authenticate(const Address &target, boost::shared_ptr<Connection> &connection, bool asOwner,
-                                  boost::shared_ptr<AuthenticationFuture> &future);
+                void authenticate(const Address &target, std::shared_ptr<Connection> &connection, bool asOwner,
+                                  std::shared_ptr<AuthenticationFuture> &future);
 
-                std::auto_ptr<protocol::ClientMessage>
+                std::unique_ptr<protocol::ClientMessage>
                 encodeAuthenticationRequest(bool asOwner, serialization::pimpl::SerializationService &ss,
                                             const protocol::Principal *principal);
 
-                void onAuthenticated(const Address &target, const boost::shared_ptr<Connection> &connection);
+                void onAuthenticated(const Address &target, const std::shared_ptr<Connection> &connection);
 
-                void fireConnectionAddedEvent(const boost::shared_ptr<Connection> &connection);
+                void fireConnectionAddedEvent(const std::shared_ptr<Connection> &connection);
 
-                void removeFromActiveConnections(const boost::shared_ptr<Connection> &connection);
+                void removeFromActiveConnections(const std::shared_ptr<Connection> &connection);
 
-                void fireConnectionRemovedEvent(const boost::shared_ptr<Connection> &connection);
+                void fireConnectionRemovedEvent(const std::shared_ptr<Connection> &connection);
 
-                void disconnectFromCluster(const boost::shared_ptr<Connection> &connection);
-
-                boost::shared_ptr<util::impl::SimpleExecutorService>
-                createSingleThreadExecutorService(spi::ClientContext &client);
+                void disconnectFromCluster(const std::shared_ptr<Connection> &connection);
 
                 void fireConnectionEvent(const hazelcast::client::LifecycleEvent::LifeCycleState &state);
 
@@ -193,16 +191,18 @@ namespace hazelcast {
 
                 std::set<Address> getPossibleMemberAddresses();
 
-                std::auto_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &client);
+                std::unique_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &client);
 
                 void startEventLoopGroup();
 
                 void stopEventLoopGroup();
 
+                void shuffle(std::vector<Address> &memberAddresses) const;
+
                 class InitConnectionTask : public util::Runnable {
                 public:
                     InitConnectionTask(const Address &target, const bool asOwner,
-                                       const boost::shared_ptr<AuthenticationFuture> &future,
+                                       const std::shared_ptr<AuthenticationFuture> &future,
                                        ClientConnectionManagerImpl &connectionManager);
 
                     void run();
@@ -210,39 +210,51 @@ namespace hazelcast {
                     const std::string getName() const;
 
                 private:
-                    boost::shared_ptr<Connection> getConnection(const Address &target);
+                    std::shared_ptr<Connection> getConnection(const Address &target);
 
                     const Address target;
                     const bool asOwner;
-                    boost::shared_ptr<AuthenticationFuture> future;
+                    std::shared_ptr<AuthenticationFuture> future;
                     ClientConnectionManagerImpl &connectionManager;
                     util::ILogger &logger;
                 };
 
                 class AuthCallback : public ExecutionCallback<protocol::ClientMessage> {
                 public:
-                    AuthCallback(const boost::shared_ptr<Connection> &connection, bool asOwner, const Address &target,
-                                 boost::shared_ptr<AuthenticationFuture> &future,
+                    AuthCallback(std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture,
+                                 const std::shared_ptr<Connection> &connection, bool asOwner, const Address &target,
+                                 std::shared_ptr<AuthenticationFuture> &future,
                                  ClientConnectionManagerImpl &connectionManager);
 
-                    virtual void onResponse(const boost::shared_ptr<protocol::ClientMessage> &response);
+                    virtual void onResponse(const std::shared_ptr<protocol::ClientMessage> &response);
 
-                    virtual void onFailure(const boost::shared_ptr<exception::IException> &e);
+                    virtual void onFailure(const std::shared_ptr<exception::IException> &e);
 
                 private:
-                    const boost::shared_ptr<Connection> connection;
+                    std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture;
+                    const std::shared_ptr<Connection> connection;
                     bool asOwner;
                     Address target;
-                    boost::shared_ptr<AuthenticationFuture> future;
+                    std::shared_ptr<AuthenticationFuture> future;
                     ClientConnectionManagerImpl &connectionManager;
+                    std::future<void> timeoutTaskFuture;
+                    std::mutex timeoutMutex;
+                    std::condition_variable timeoutCondition;
+                    bool cancelled;
 
-                    void onAuthenticationFailed(const Address &target, const boost::shared_ptr<Connection> &connection,
-                                                const boost::shared_ptr<exception::IException> &cause);
+                    void onAuthenticationFailed(const Address &target, const std::shared_ptr<Connection> &connection,
+                                                const std::shared_ptr<exception::IException> &cause);
+
+                    virtual void handleAuthenticationException(const std::shared_ptr<exception::IException> &e);
+
+                    void cancelTimeoutTask();
+
+                    void scheduleTimeoutTask();
                 };
 
                 class DisconnecFromClusterTask : public util::Runnable {
                 public:
-                    DisconnecFromClusterTask(const boost::shared_ptr<Connection> &connection,
+                    DisconnecFromClusterTask(const std::shared_ptr<Connection> &connection,
                                              ClientConnectionManagerImpl &connectionManager,
                                              ClientConnectionStrategy &connectionStrategy);
 
@@ -251,49 +263,21 @@ namespace hazelcast {
                     virtual const std::string getName() const;
 
                 private:
-                    const boost::shared_ptr<Connection> connection;
+                    const std::shared_ptr<Connection> connection;
                     ClientConnectionManagerImpl &connectionManager;
                     ClientConnectionStrategy &connectionStrategy;
                 };
 
                 class ConnectToClusterTask : public util::Callable<bool> {
                 public:
-                    ConnectToClusterTask(ClientConnectionManagerImpl &connectionManager);
+                    ConnectToClusterTask(const spi::ClientContext &clientContext);
 
-                    virtual boost::shared_ptr<bool> call();
-
-                    virtual const std::string getName() const;
-
-                private:
-                    ClientConnectionManagerImpl &connectionManager;
-                };
-
-                class ShutdownTask : public util::Runnable {
-                public:
-                    ShutdownTask(spi::ClientContext &clientContext);
-
-                    virtual void run();
+                    virtual std::shared_ptr<bool> call();
 
                     virtual const std::string getName() const;
 
                 private:
-                    // Keep weak_ptr for preventing cyclic dependency
-                    boost::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl;
-                    util::ILogger &logger;
-                };
-
-                class TimeoutAuthenticationTask : public util::Runnable {
-                public:
-                    TimeoutAuthenticationTask(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &future,
-                                              ClientConnectionManagerImpl &clientConnectionManager);
-
-                    virtual void run();
-
-                    virtual const std::string getName() const;
-
-                private:
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> future;
-                    ClientConnectionManagerImpl &clientConnectionManager;
+                    spi::ClientContext clientContext;
                 };
 
                 util::AtomicBoolean alive;
@@ -311,34 +295,31 @@ namespace hazelcast {
 
                 spi::impl::ClientExecutionServiceImpl &executionService;
 
-                boost::shared_ptr<AddressTranslator> translator;
+                std::shared_ptr<AddressTranslator> translator;
                 util::SynchronizedMap<Address, Connection> activeConnections;
                 util::SynchronizedMap<int, Connection> activeConnectionsFileDescriptors;
                 util::SynchronizedMap<int, Connection> pendingSocketIdToConnection;
                 util::SynchronizedMap<Address, AuthenticationFuture> connectionsInProgress;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
-                util::ConcurrentSet<boost::shared_ptr<ConnectionListener> > connectionListeners;
+                util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
                 const Credentials *credentials;
 
-                util::Atomic<boost::shared_ptr<Address> > ownerConnectionAddress;
-                util::Atomic<boost::shared_ptr<Address> > previousOwnerConnectionAddress;
+                util::Sync<std::shared_ptr<Address> > ownerConnectionAddress;
+                util::Sync<std::shared_ptr<Address> > previousOwnerConnectionAddress;
 
-                util::Atomic<boost::shared_ptr<protocol::Principal> > principal;
-                std::auto_ptr<ClientConnectionStrategy> connectionStrategy;
-                boost::shared_ptr<util::impl::SimpleExecutorService> clusterConnectionExecutor;
+                util::Sync<std::shared_ptr<protocol::Principal> > principal;
+                std::unique_ptr<ClientConnectionStrategy> connectionStrategy;
+                std::shared_ptr<util::impl::SimpleExecutorService> clusterConnectionExecutor;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
                 bool shuffleMemberList;
-                std::vector<boost::shared_ptr<AddressProvider> > addressProviders;
+                std::vector<std::shared_ptr<AddressProvider> > addressProviders;
 
-                util::Atomic<int> connectionIdGen;
+                std::atomic<int> connectionIdGen;
                 internal::socket::SocketFactory socketFactory;
 
                 util::Mutex lock;
-                std::auto_ptr<HeartbeatManager> heartbeat;
-
-                // This queue is used for avoiding memory leak
-                util::SynchronizedQueue<util::Thread> shutdownThreads;
+                std::unique_ptr<HeartbeatManager> heartbeat;
             };
         }
     }

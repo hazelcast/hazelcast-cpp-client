@@ -23,7 +23,7 @@
 
 #include <vector>
 #include <set>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/Member.h"
 

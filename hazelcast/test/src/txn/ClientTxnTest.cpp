@@ -16,10 +16,6 @@
 //
 // Created by sancar koyunlu on 9/18/13.
 
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 
 #include "ClientTestSupport.h"
@@ -38,10 +34,10 @@ namespace hazelcast {
 
             protected:
                 HazelcastServerFactory & hazelcastInstanceFactory;
-                std::auto_ptr<HazelcastServer> server;
-                std::auto_ptr<HazelcastServer> second;
-                std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<LoadBalancer> loadBalancer;
+                std::unique_ptr<HazelcastServer> server;
+                std::unique_ptr<HazelcastServer> second;
+                std::unique_ptr<HazelcastClient> client;
+                std::unique_ptr<LoadBalancer> loadBalancer;
             };
 
             class MyLoadBalancer : public impl::AbstractLoadBalancer {
@@ -129,7 +125,7 @@ namespace hazelcast {
                 context.commitTransaction();
 
                 IQueue <string> q = client->getQueue<std::string>(queueName);
-                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
             }
@@ -150,7 +146,7 @@ namespace hazelcast {
                 context.commitTransaction();
 
                 IQueue <string> q = uniSocketClient.getQueue<std::string>(queueName);
-                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
             }
@@ -172,7 +168,7 @@ namespace hazelcast {
                 context.commitTransaction();
 
                 IQueue <string> q = client->getQueue<std::string>(queueName);
-                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
             }

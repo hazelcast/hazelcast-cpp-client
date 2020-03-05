@@ -22,8 +22,8 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
 
-            Principal::Principal(std::auto_ptr<std::string> id, std::auto_ptr<std::string> owner) : uuid(id),
-                                                                                                    ownerUuid(owner) {
+            Principal::Principal(std::unique_ptr<std::string> &id, std::unique_ptr<std::string> &owner) : uuid(std::move(id)),
+                                                                                                    ownerUuid(std::move(owner)) {
             }
 
             const std::string *Principal::getUuid() const {

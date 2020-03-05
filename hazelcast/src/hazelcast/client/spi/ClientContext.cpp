@@ -27,7 +27,8 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            ClientContext::ClientContext(client::HazelcastClient &hazelcastClient) : hazelcastClient(
+
+            ClientContext::ClientContext(const client::HazelcastClient &hazelcastClient) : hazelcastClient(
                     *hazelcastClient.clientImpl) {
             }
 
@@ -79,7 +80,7 @@ namespace hazelcast {
                 return hazelcastClient.cluster;
             }
 
-            boost::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
+            std::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
                 return hazelcastClient.callIdSequence;
             }
 
@@ -95,19 +96,17 @@ namespace hazelcast {
                 return *hazelcastClient.executionService;
             }
 
-            void ClientContext::onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection) {
+            void ClientContext::onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection) {
                 hazelcastClient.onClusterConnect(ownerConnection);
             }
 
-            const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
+            const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
             ClientContext::getLockReferenceIdGenerator() {
                 return hazelcastClient.getLockReferenceIdGenerator();
             }
 
-            boost::shared_ptr<client::impl::HazelcastClientInstanceImpl>
-                    ClientContext::getHazelcastClientImplementation() {
-                boost::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl = hazelcastClient.weak_from_this();
-                return clientImpl.lock();
+            std::shared_ptr<client::impl::HazelcastClientInstanceImpl> ClientContext::getHazelcastClientImplementation() {
+                return hazelcastClient.shared_from_this();
             }
 
             spi::ProxyManager &ClientContext::getProxyManager() {
@@ -121,7 +120,6 @@ namespace hazelcast {
             client::impl::statistics::Statistics &ClientContext::getClientstatistics() {
                 return *hazelcastClient.statistics;
             }
-
         }
 
     }

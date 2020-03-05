@@ -46,7 +46,7 @@ namespace hazelcast {
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    static std::auto_ptr<ClientMessage> encodeRequest();
+                    static std::unique_ptr<ClientMessage> encodeRequest();
 
                     static int32_t calculateDataSize();
                     //************************ REQUEST ENDS ********************************************************************//
@@ -58,7 +58,7 @@ namespace hazelcast {
                     public:
                         virtual ~AbstractEventHandler();
 
-                        void handle(std::auto_ptr<protocol::ClientMessage> message);
+                        void handle(std::unique_ptr<protocol::ClientMessage> message);
 
 
                         virtual void handlePartitionsEventV15(

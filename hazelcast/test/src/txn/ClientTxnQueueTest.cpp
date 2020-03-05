@@ -16,10 +16,6 @@
 //
 // Created by sancar koyunlu on 9/18/13.
 
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 
 #include "ClientTestSupport.h"
@@ -90,7 +86,7 @@ namespace hazelcast {
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");
                 TransactionalQueue<std::string> q1 = context.getQueue<std::string>("defQueue1");
-                boost::shared_ptr<std::string> s;
+                std::shared_ptr<std::string> s;
                 latch.countDown();
                 s = q0.poll(10 * 1000);
                 ASSERT_EQ("item0", *s);

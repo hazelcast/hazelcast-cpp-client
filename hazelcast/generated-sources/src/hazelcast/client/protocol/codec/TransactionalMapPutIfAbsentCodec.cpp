@@ -28,14 +28,14 @@ namespace hazelcast {
                 const bool TransactionalMapPutIfAbsentCodec::RETRYABLE = false;
                 const ResponseMessageConst TransactionalMapPutIfAbsentCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> TransactionalMapPutIfAbsentCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> TransactionalMapPutIfAbsentCodec::encodeRequest(
                         const std::string &name,
                         const std::string &txnId,
                         int64_t threadId,
                         const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapPutIfAbsentCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -76,7 +76,7 @@ namespace hazelcast {
 
                 TransactionalMapPutIfAbsentCodec::ResponseParameters::ResponseParameters(
                         const TransactionalMapPutIfAbsentCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

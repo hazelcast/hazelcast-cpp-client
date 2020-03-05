@@ -26,7 +26,7 @@ namespace hazelcast {
                 AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &awsConfig, util::ILogger &logger)
                 : logger(logger) {
                     if (awsConfig.isEnabled() && !awsConfig.isInsideAws()) {
-                        awsClient = std::auto_ptr<AWSClient>(new AWSClient(awsConfig, logger));
+                        awsClient = std::unique_ptr<AWSClient>(new AWSClient(awsConfig, logger));
                     }
                 }
 
@@ -55,7 +55,7 @@ namespace hazelcast {
 
                 void AwsAddressTranslator::refresh() {
                     try {
-                        privateToPublic = boost::shared_ptr<std::map<std::string, std::string> >(
+                        privateToPublic = std::shared_ptr<std::map<std::string, std::string> >(
                                 new std::map<std::string, std::string>(awsClient->getAddresses()));
                     } catch (exception::IException &e) {
                         logger.warning(std::string("AWS addresses failed to load: ") + e.what());
@@ -63,7 +63,7 @@ namespace hazelcast {
                 }
 
                 bool AwsAddressTranslator::findFromCache(const Address &address, Address &translatedAddress) {
-                    boost::shared_ptr<std::map<std::string, std::string> > mapping = privateToPublic;
+                    std::shared_ptr<std::map<std::string, std::string> > mapping = privateToPublic;
                     if (mapping.get() == NULL) {
                         return false;
                     }

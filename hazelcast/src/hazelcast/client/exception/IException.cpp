@@ -51,7 +51,7 @@ namespace hazelcast {
 
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, int32_t errorNo,
-                                   const boost::shared_ptr<IException> &cause, bool isRuntime, bool retryable) : src(source), msg(message),
+                                   const std::shared_ptr<IException> &cause, bool isRuntime, bool retryable) : src(source), msg(message),
                                                                                  errorCode(errorNo), cause(cause), runtimeException(isRuntime), retryable(retryable) {
                 std::ostringstream out;
                 out << exceptionName << " {" << message << " Error code:" << errorNo << ", Caused by:" << *cause
@@ -84,12 +84,12 @@ namespace hazelcast {
                 return os;
             }
 
-            const boost::shared_ptr<IException> &IException::getCause() const {
+            const std::shared_ptr<IException> &IException::getCause() const {
                 return cause;
             }
 
-            std::auto_ptr<IException> IException::clone() const {
-                return std::auto_ptr<IException>(new IException(*this));
+            std::unique_ptr<IException> IException::clone() const {
+                return std::unique_ptr<IException>(new IException(*this));
             }
 
             const std::string &IException::getDetails() const {

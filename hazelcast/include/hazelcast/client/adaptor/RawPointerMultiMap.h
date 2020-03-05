@@ -53,8 +53,8 @@ namespace hazelcast {
                 * @param key the key whose associated values are to be returned
                 * @return the multimap of the values associated with the key.
                 */
-                std::auto_ptr<DataArray<V> > get(const K &key) {
-                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
+                std::unique_ptr<DataArray<V> > get(const K &key) {
+                    return std::unique_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
                             map.getData(serializationService.toData<K>(&key)), serializationService));
                 }
 
@@ -76,8 +76,8 @@ namespace hazelcast {
                 * @return the multimap of removed values associated with the given key. Returned multimap
                 *         might be modifiable but it has no effect on the multimap
                 */
-                std::auto_ptr<DataArray<V> > remove(const K &key) {
-                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
+                std::unique_ptr<DataArray<V> > remove(const K &key) {
+                    return std::unique_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
                             map.removeData(serializationService.toData<K>(&key)), serializationService));
                 }
 
@@ -87,8 +87,8 @@ namespace hazelcast {
                 * @return the set of keys in the multimap. Returned set might be modifiable
                 *         but it has no effect on the multimap
                 */
-                std::auto_ptr<DataArray<K> > keySet() {
-                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(
+                std::unique_ptr<DataArray<K> > keySet() {
+                    return std::unique_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(
                             map.keySetData(), serializationService));
                 }
 
@@ -98,8 +98,8 @@ namespace hazelcast {
                 * @return the multimap of values in the multimap. Returned multimap might be modifiable
                 *         but it has no effect on the multimap
                 */
-                std::auto_ptr<DataArray<V> > values() {
-                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
+                std::unique_ptr<DataArray<V> > values() {
+                    return std::unique_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
                             map.valuesData(), serializationService));
                 }
 
@@ -109,8 +109,8 @@ namespace hazelcast {
                 * @return the set of key-value pairs in the multimap. Returned set might be modifiable
                 *         but it has no effect on the multimap
                 */
-                std::auto_ptr<EntryArray<K, V> > entrySet() {
-                    return std::auto_ptr<EntryArray<K, V> >(new hazelcast::client::impl::EntryArrayImpl<K, V>(
+                std::unique_ptr<EntryArray<K, V> > entrySet() {
+                    return std::unique_ptr<EntryArray<K, V> >(new hazelcast::client::impl::EntryArrayImpl<K, V>(
                             map.entrySetData(), serializationService)) ;
                 }
 

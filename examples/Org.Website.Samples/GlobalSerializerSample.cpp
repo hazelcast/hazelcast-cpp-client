@@ -37,7 +37,7 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().setGlobalSerializer(
-            boost::shared_ptr<serialization::StreamSerializer>(new GlobalSerializer()));
+            std::shared_ptr<serialization::StreamSerializer>(new GlobalSerializer()));
 
     HazelcastClient hz(clientConfig);
 

@@ -13,19 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 26/02/14.
-//
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
-#include "HazelcastServer.h"
-
 #include <gtest/gtest.h>
+
+#include "HazelcastServer.h"
 #include <ClientTestSupport.h>
 #include "ClientTestSupportBase.h"
 #include "HazelcastServerFactory.h"
+
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
@@ -170,9 +164,9 @@ namespace hazelcast {
                 util::CountDownLatch attributeLatch(7);
                 util::CountDownLatch attributeLatchInit(7);
 
-                boost::shared_ptr<MembershipListener> sampleInitialListener(
+                std::shared_ptr<MembershipListener> sampleInitialListener(
                         new SampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit));
-                boost::shared_ptr<MembershipListener> sampleListener(
+                std::shared_ptr<MembershipListener> sampleListener(
                         new SampleListenerInSimpleListenerTest(memberAdded, attributeLatch, memberRemoved));
 
                 std::string initialListenerRegistrationId = cluster.addMembershipListener(sampleInitialListener);
@@ -294,7 +288,7 @@ namespace hazelcast {
                 assertTrue(map.removeEntryListener(listenerRegistrationId));
             }
 
-            INSTANTIATE_TEST_CASE_P(All,
+            INSTANTIATE_TEST_SUITE_P(All,
                                     SimpleListenerTest,
                                     ::testing::Values(new SmartTcpClientConfig(), new NonSmartTcpClientConfig()));
         }

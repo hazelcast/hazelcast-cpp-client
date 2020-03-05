@@ -13,40 +13,21 @@
 @echo BUILD_DIR=%BUILD_DIR%
 @echo EXECUTABLE_NAME=%EXECUTABLE_NAME%
 
-@REM Let the submodule code be downloaded
-git submodule update --init
+set SOLUTIONTYPE="Visual Studio 16 2019"
 
 if %HZ_BIT_VERSION% == 32 (
     set BUILDFORPLATFORM="win32"
-    set SOLUTIONTYPE="Visual Studio 12"
-    @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
-    @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win32\lib
-    set PYTHON_LIB_DIR=C:\Python-2.7.14\PCbuild
+    @SET OPENSSL_ROOT_DIR=C:\OpenSSL-Win32
 ) else (
     set BUILDFORPLATFORM="x64"
-    set SOLUTIONTYPE="Visual Studio 12 Win64"
-    @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
-    @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win64\lib
-    set PYTHON_LIB_DIR=C:\Python-2.7.14\PCbuild\amd64
+    @SET OPENSSL_ROOT_DIR=C:\OpenSSL-Win64
 )
 
 if "%COMPILE_WITHOUT_SSL%" == "COMPILE_WITHOUT_SSL" (
     set HZ_COMPILE_WITH_SSL=OFF
-    set RUN_TESTS=%5
 ) else (
     set HZ_COMPILE_WITH_SSL=ON
-    set RUN_TESTS=%4
 )
-
-if %HZ_BUILD_TYPE% == Debug (
-    set PYTHON_LIB_FILE_NAME=python27_d.lib
-) else (
-    set PYTHON_LIB_FILE_NAME=python27.lib
-)
-
-set PYTHON_LIBRARY_PATH=%PYTHON_LIB_DIR%\%PYTHON_LIB_FILE_NAME%
-
-echo "Using Python library at %PYTHON_LIBRARY_PATH%"
 
 RD /S /Q %BUILD_DIR%
 mkdir %BUILD_DIR%
@@ -54,11 +35,8 @@ mkdir %BUILD_DIR%
 pushd %BUILD_DIR%
 
 echo "Generating the solution files for compilation"
-cmake .. -G %SOLUTIONTYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_OPENSSL_INCLUDE_DIR=%HZ_OPENSSL_INCLUDE_DIR% -DHZ_OPENSSL_LIB_DIR=%HZ_OPENSSL_LIB_DIR% -DHZ_COMPILE_WITH_SSL=%HZ_COMPILE_WITH_SSL% -DPYTHON_INCLUDE_DIR=C:\Python27\include -DPYTHON_LIBRARY=%PYTHON_LIBRARY_PATH% || exit /b 1
-
-echo "Building for platform %BUILDFORPLATFORM%"
-
-MSBuild.exe HazelcastClient.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_BUILD_TYPE%;VisualStudioVersion=12.0;Platform=%BUILDFORPLATFORM%;PlatformTarget=%BUILDFORPLATFORM% /verbosity:n || exit /b 1
+cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -Dgtest_force_shared_crt=ON -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DBUILD_GMOCK=OFF -DHZ_BUILD_EXAMPLES=ON -DOPENSSL_ROOT_DIR=%OPENSSL_ROOT_DIR% -DHZ_COMPILE_WITH_SSL=%HZ_COMPILE_WITH_SSL% -DBUILD_GMOCK=OFF -DINSTALL_GTEST=OFF || exit /b 1
+cmake --build . --parallel -v
 
 popd
 

@@ -17,7 +17,7 @@
 #ifndef HAZELCAST_UTIL_CALLABLE_H_
 #define HAZELCAST_UTIL_CALLABLE_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/Named.h"
 
@@ -39,7 +39,7 @@ namespace hazelcast {
         template <typename V>
         class Callable : public Named {
         public:
-            virtual boost::shared_ptr<V> call() = 0;
+            virtual std::shared_ptr<V> call() = 0;
         };
     }
 }

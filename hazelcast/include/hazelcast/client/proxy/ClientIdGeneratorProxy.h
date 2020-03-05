@@ -16,6 +16,8 @@
 #ifndef HAZELCAST_CLIENT_PROXY_IDGENERATORPROXY_H_
 #define HAZELCAST_CLIENT_PROXY_IDGENERATORPROXY_H_
 
+#include <atomic>
+
 #include "hazelcast/client/impl/IdGeneratorInterface.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/IAtomicLong.h"
@@ -59,9 +61,9 @@ namespace hazelcast {
                 void destroy();
             private:
                 IAtomicLong atomicLong;
-                boost::shared_ptr<util::Atomic<int64_t> > local;
-                boost::shared_ptr<util::Atomic<int32_t> > residue;
-                boost::shared_ptr<util::Mutex> localLock;
+                std::shared_ptr<std::atomic<int64_t> > local;
+                std::shared_ptr<std::atomic<int32_t> > residue;
+                std::shared_ptr<util::Mutex> localLock;
 
             };
         }

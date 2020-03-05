@@ -19,7 +19,7 @@
 namespace hazelcast {
     namespace client {
         namespace mixedtype {
-            IMap::IMap(boost::shared_ptr<mixedtype::ClientMapProxy> proxy) : mapImpl(proxy) {
+            IMap::IMap(std::shared_ptr<mixedtype::ClientMapProxy> proxy) : mapImpl(proxy) {
             }
 
             void IMap::removeAll(const query::Predicate &predicate) {

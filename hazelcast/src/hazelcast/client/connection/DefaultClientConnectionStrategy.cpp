@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <thread>
+
 #include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
@@ -21,6 +23,7 @@
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/util/Executor.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -29,7 +32,8 @@ namespace hazelcast {
             DefaultClientConnectionStrategy::DefaultClientConnectionStrategy(spi::ClientContext &clientContext,
                                                                              util::ILogger &logger,
                                                                              const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig)
-                    : ClientConnectionStrategy(clientContext, logger, clientConnectionStrategyConfig) {
+                    : ClientConnectionStrategy(clientContext, logger, clientConnectionStrategyConfig),
+                      isShutdown(false) {
             }
 
             void DefaultClientConnectionStrategy::start() {
@@ -43,6 +47,8 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::beforeGetConnection(const Address &target) {
+                checkShutdown("DefaultClientConnectionStrategy::beforeGetConnection");
+
                 if (isClusterAvailable()) {
                     return;
                 }
@@ -57,6 +63,8 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::beforeOpenConnection(const Address &target) {
+                checkShutdown("DefaultClientConnectionStrategy::beforeOpenConnection");
+
                 if (isClusterAvailable()) {
                     return;
                 }
@@ -67,56 +75,70 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::onConnectToCluster() {
+                checkShutdown("DefaultClientConnectionStrategy::onConnectToCluster");
+
+                disconnectedFromCluster.store(false);
             }
 
             void DefaultClientConnectionStrategy::onDisconnectFromCluster() {
-                disconnectedFromCluster = true;
+                checkShutdown("DefaultClientConnectionStrategy::onDisconnectFromCluster");
+
+                disconnectedFromCluster.store(true);
                 if (reconnectMode == config::ClientConnectionStrategyConfig::OFF) {
-                    shutdownWithExternalThread();
+                    shutdownWithExternalThread(clientContext.getHazelcastClientImplementation());
                     return;
                 }
                 if (clientContext.getLifecycleService().isRunning()) {
                     try {
                         clientContext.getConnectionManager().connectToClusterAsync();
                     } catch (exception::RejectedExecutionException &) {
-                        shutdownWithExternalThread();
+                        shutdownWithExternalThread(clientContext.getHazelcastClientImplementation());
                     }
                 }
             }
 
-            void DefaultClientConnectionStrategy::onConnect(const boost::shared_ptr<Connection> &connection) {
+            void DefaultClientConnectionStrategy::onConnect(const std::shared_ptr<Connection> &connection) {
+                checkShutdown("DefaultClientConnectionStrategy::onConnect");
             }
 
-            void DefaultClientConnectionStrategy::onDisconnect(const boost::shared_ptr<Connection> &connection) {
+            void DefaultClientConnectionStrategy::onDisconnect(const std::shared_ptr<Connection> &connection) {
+                checkShutdown("DefaultClientConnectionStrategy::onDisconnect");
             }
 
             void DefaultClientConnectionStrategy::shutdown() {
+                isShutdown = true;
             }
 
             bool DefaultClientConnectionStrategy::isClusterAvailable() const {
                 return clientContext.getConnectionManager().getOwnerConnectionAddress().get() != NULL;
             }
 
-            void DefaultClientConnectionStrategy::shutdownWithExternalThread() {
-                boost::shared_ptr<util::Thread> shutdownThread(
-                        new util::Thread(boost::shared_ptr<util::Runnable>(new ShutdownTask(clientContext)),logger));
-                shutdownThread->start();
-                shutdownThreads.offer(shutdownThread);
+            void
+            DefaultClientConnectionStrategy::shutdownWithExternalThread(
+                    std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl) {
+
+                std::thread shutdownThread([=] {
+                    std::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
+                    if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
+                        return;
+                    }
+
+                    try {
+                        clientInstance->getLifecycleService().shutdown();
+                    } catch (exception::IException &exception) {
+                        clientInstance->getLogger()->severe("Exception during client shutdown task ",
+                                                            clientInstance->getName() + ".clientShutdown-", ":",
+                                                            exception);
+                    }
+                });
+
+                shutdownThread.detach();
             }
 
-            DefaultClientConnectionStrategy::ShutdownTask::ShutdownTask(spi::ClientContext &clientContext)
-                    : clientContext(clientContext) {}
-
-            void DefaultClientConnectionStrategy::ShutdownTask::run() {
-                try {
-                    clientContext.getLifecycleService().shutdown();
-                } catch (exception::IException &exception) {
-                    clientContext.getLogger().severe() << "Exception during client shutdown " << exception;
+            void DefaultClientConnectionStrategy::checkShutdown(const std::string &methodName) {
+                if (isShutdown) {
+                    throw exception::IllegalStateException(methodName, "Client is shutdown.");
                 }
-            }
-
-            const std::string DefaultClientConnectionStrategy::ShutdownTask::getName() const {
-                return clientContext.getName() + ".clientShutdown-";
             }
         }
     }

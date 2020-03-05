@@ -28,12 +28,12 @@ namespace hazelcast {
                 const bool ListAddWithIndexCodec::RETRYABLE = false;
                 const ResponseMessageConst ListAddWithIndexCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> ListAddWithIndexCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ListAddWithIndexCodec::encodeRequest(
                         const std::string &name,
                         int32_t index,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, index, value);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListAddWithIndexCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

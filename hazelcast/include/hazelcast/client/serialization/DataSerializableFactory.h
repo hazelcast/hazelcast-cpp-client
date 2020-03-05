@@ -45,7 +45,7 @@ namespace hazelcast {
                  * @param classId IdentifiedDataSerializable type ID
                  * @return IdentifiedDataSerializable instance or {@code null} if type ID is not known by this factory
                  */
-                virtual std::auto_ptr<IdentifiedDataSerializable> create(int32_t classId) = 0;
+                virtual std::unique_ptr<IdentifiedDataSerializable> create(int32_t classId) = 0;
             };
         }
     }

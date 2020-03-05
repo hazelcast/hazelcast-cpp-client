@@ -207,7 +207,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if sequence is smaller than 0 or larger than {@link #tailSequence()}+1.
              * @throws InterruptedException               if the call is interrupted while blocking.
              */
-            virtual std::auto_ptr<E> readOne(int64_t sequence) = 0;
+            virtual std::unique_ptr<E> readOne(int64_t sequence) = 0;
 
             /**
              * Asynchronously writes an item with a configurable {@link OverflowPolicy}.
@@ -241,7 +241,7 @@ namespace hazelcast {
              * @param overflowPolicy the OverflowPolicy to use.
              * @return the sequenceId of the added item, or -1 if the add failed.
              */
-            virtual boost::shared_ptr<ICompletableFuture<int64_t> >
+            virtual std::shared_ptr<ICompletableFuture<int64_t> >
             addAsync(const E &item, OverflowPolicy overflowPolicy) = 0;
 
             /**
@@ -268,7 +268,7 @@ namespace hazelcast {
              * @return the ICompletableFuture to synchronize on completion.
              * @throws IllegalArgumentException if items is empty
              */
-            virtual boost::shared_ptr<ICompletableFuture<int64_t> >
+            virtual std::shared_ptr<ICompletableFuture<int64_t> >
             addAllAsync(const std::vector<E> &items, OverflowPolicy overflowPolicy) = 0;
 
             /**
@@ -311,14 +311,14 @@ namespace hazelcast {
              *                                  or if maxCount larger than 1000 (to prevent overload)
              */
             template<typename IFUNCTION>
-            boost::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
+            std::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
             readManyAsync(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter) {
                 return readManyAsyncInternal(startSequence, minCount, maxCount,
                                              getSerializationService().template toData<IFUNCTION>(filter));
             }
 
         protected:
-            virtual boost::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
+            virtual std::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
             readManyAsyncInternal(int64_t startSequence, int32_t minCount, int32_t maxCount,
                                   const serialization::pimpl::Data &filterData) = 0;
 

@@ -18,7 +18,7 @@
 
 #include <assert.h>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -53,9 +53,9 @@ namespace hazelcast {
                      *
                      * @return the underlying {@link EvictionPolicyComparator}
                      */
-                    virtual const boost::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > getEvictionPolicyComparator() const {
+                    virtual const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > getEvictionPolicyComparator() const {
                         assert(0);
-                        return boost::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> >();
+                        return std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> >();
                     }
 
                     /**
@@ -68,10 +68,10 @@ namespace hazelcast {
                      *
                      * @return multiple {@link EvictionCandidate}s that are available to be evicted
                      */
-                    virtual std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evaluate(
+                    virtual std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evaluate(
                             util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidates) const {
                         assert(0);
-                        return std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > >();
+                        return std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > >();
                     };
                 };
             }

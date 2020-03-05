@@ -48,11 +48,11 @@ namespace hazelcast {
             void TransactionalObject::destroy() {
                 onDestroy();
 
-                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::encodeRequest(
+                std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::encodeRequest(
                         name, serviceName);
 
-                boost::shared_ptr<connection::Connection> connection = context->getConnection();
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                std::shared_ptr<connection::Connection> connection = context->getConnection();
+                std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         context->getClientContext(), request, name, connection);
                 invocation->invoke()->get();
             }
@@ -69,10 +69,10 @@ namespace hazelcast {
                 return context->getTimeoutSeconds() * MILLISECONDS_IN_A_SECOND;
             }
 
-            boost::shared_ptr<protocol::ClientMessage> TransactionalObject::invoke(
-                    std::auto_ptr<protocol::ClientMessage> request) {
-                boost::shared_ptr<connection::Connection> connection = context->getConnection();
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+            std::shared_ptr<protocol::ClientMessage> TransactionalObject::invoke(
+                    std::unique_ptr<protocol::ClientMessage> &request) {
+                std::shared_ptr<connection::Connection> connection = context->getConnection();
+                std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         context->getClientContext(), request, name, connection);
                 return invocation->invoke()->get();
             }

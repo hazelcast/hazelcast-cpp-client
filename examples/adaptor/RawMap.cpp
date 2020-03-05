@@ -67,8 +67,8 @@ int main() {
     map.put("3", "New York");
     std::cout << "Finished loading map" << std::endl;
 
-    std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = map.values();
-    std::auto_ptr<hazelcast::client::EntryArray<std::string, std::string> > entries = map.entrySet();
+    std::unique_ptr<hazelcast::client::DataArray<std::string> > vals = map.values();
+    std::unique_ptr<hazelcast::client::EntryArray<std::string, std::string> > entries = map.entrySet();
 
     std::cout << "There are " << vals->size() << " values in the map" << std::endl;
     std::cout << "There are " << entries->size() << " entries in the map" << std::endl;
@@ -78,7 +78,7 @@ int main() {
         if ((std::string *) NULL == key) {
             std::cout << "The key at index " << i << " is NULL" << std::endl;
         } else {
-            std::auto_ptr<std::string> val = entries->releaseValue(i);
+            std::unique_ptr<std::string> val = entries->releaseValue(i);
             std::cout << "(Key, Value) for index " << i << " is: (" << *key << ", " <<
                 (val.get() == NULL ? "NULL" : *val) << ")" << std::endl;
         }

@@ -18,9 +18,9 @@
 #define HAZELCAST_UTIL_ATOMICARRAY_H_
 
 #include <vector>
+#include <memory>
+#include <mutex>
 
-#include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/LockGuard.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
 namespace hazelcast {
@@ -34,7 +34,7 @@ namespace hazelcast {
              * @param length the length of the array
              */
             AtomicArray(size_t length) : array(length) {
-                locks = new util::Mutex[length];
+                locks = new std::mutex[length];
                 for (size_t i = 0; i < length; ++i) {
                     array[i] = 0;
                 }
@@ -52,7 +52,7 @@ namespace hazelcast {
              */
             T get(size_t i) {
                 checkIndexBound(i);
-                util::LockGuard guard(locks[i]);
+                std::lock_guard<std::mutex> guard(locks[i]);
                 return array[i];
             }
 
@@ -65,7 +65,7 @@ namespace hazelcast {
              */
             T getAndAdd(size_t i, T delta) {
                 checkIndexBound(i);
-                util::LockGuard guard(locks[i]);
+                std::lock_guard<std::mutex> guard(locks[i]);
                 T value = array[i];
                 array[i] = value + delta;
                 return value;
@@ -87,7 +87,7 @@ namespace hazelcast {
             void operator = (const AtomicArray &rhs);
 
             std::vector<T> array;
-            util::Mutex *locks;
+            std::mutex *locks;
 
             void checkIndexBound(size_t i) {
                 if (i >= array.size()) {

@@ -21,7 +21,7 @@
 #ifndef HAZELCAST_SerializationConfig
 #define HAZELCAST_SerializationConfig
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 #include <map>
 
@@ -74,17 +74,17 @@ namespace hazelcast {
              *
              * @return vector of registered custom serializers
              */
-            std::vector<boost::shared_ptr<serialization::SerializerBase> > const &getSerializers() const;
+            std::vector<std::shared_ptr<serialization::SerializerBase> > const &getSerializers() const;
 
             /**
-             * @deprecated Please use registerSerializer(boost::shared_ptr<serialization::StreamSerializer> serializer)
+             * @deprecated Please use registerSerializer(std::shared_ptr<serialization::StreamSerializer> serializer)
              *
              * One can implement custom serializers other than Portable and IdentifiedDataSerializable
              * to be used in serialization of user objects. For details @see Serializer
              *
              * @param serializer custom serializer to be registered
              */
-            SerializationConfig& registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer);
+            SerializationConfig& registerSerializer(std::shared_ptr<serialization::SerializerBase> serializer);
 
 
             /**
@@ -93,7 +93,7 @@ namespace hazelcast {
              *
              * @param serializer custom serializer to be registered
              */
-            SerializationConfig& registerSerializer(boost::shared_ptr<serialization::StreamSerializer> serializer);
+            SerializationConfig& registerSerializer(std::shared_ptr<serialization::StreamSerializer> serializer);
 
             /**
              * @param factoryId               factory ID of DataSerializableFactory to be registered
@@ -102,7 +102,7 @@ namespace hazelcast {
              * @see DataSerializableFactory
              */
             SerializationConfig &addDataSerializableFactory(int32_t factoryId,
-                                                            boost::shared_ptr<serialization::DataSerializableFactory> dataSerializableFactory);
+                                                            std::shared_ptr<serialization::DataSerializableFactory> dataSerializableFactory);
 
             /**
              * @param factoryId       factory ID of portableFactory to be registered
@@ -111,12 +111,12 @@ namespace hazelcast {
              * @see PortableFactory
              */
             SerializationConfig &
-            addPortableFactory(int32_t factoryId, boost::shared_ptr<serialization::PortableFactory> portableFactory);
+            addPortableFactory(int32_t factoryId, std::shared_ptr<serialization::PortableFactory> portableFactory);
 
-            const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &
+            const std::map<int32_t, std::shared_ptr<serialization::DataSerializableFactory> > &
             getDataSerializableFactories() const;
 
-            const std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > &getPortableFactories() const;
+            const std::map<int32_t, std::shared_ptr<serialization::PortableFactory> > &getPortableFactories() const;
 
             /**
              * If no other serializer exists for a received binary data type id, then this registered serializer will
@@ -125,20 +125,20 @@ namespace hazelcast {
              * @return The serialization configuration reference.
              */
             SerializationConfig &
-            setGlobalSerializer(const boost::shared_ptr<serialization::StreamSerializer> &serializer);
+            setGlobalSerializer(const std::shared_ptr<serialization::StreamSerializer> &serializer);
 
             /**
              *
              * @return The configured global serializer.
              */
-            const boost::shared_ptr<serialization::StreamSerializer> &getGlobalSerializer() const;
+            const std::shared_ptr<serialization::StreamSerializer> &getGlobalSerializer() const;
 
         private:
             int version;
-            std::vector<boost::shared_ptr<serialization::SerializerBase> > serializers;
-            std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > dataSerializableFactories;
-            std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > portableFactories;
-            boost::shared_ptr<serialization::StreamSerializer> globalSerializer;
+            std::vector<std::shared_ptr<serialization::SerializerBase> > serializers;
+            std::map<int32_t, std::shared_ptr<serialization::DataSerializableFactory> > dataSerializableFactories;
+            std::map<int32_t, std::shared_ptr<serialization::PortableFactory> > portableFactories;
+            std::shared_ptr<serialization::StreamSerializer> globalSerializer;
         };
     }
 }

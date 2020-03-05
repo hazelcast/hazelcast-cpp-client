@@ -501,7 +501,7 @@ namespace hazelcast {
                 * @see EntryView
                 */
                 template <typename K>
-                std::auto_ptr<EntryView<TypedData, TypedData> > getEntryView(const K &key) {
+                std::unique_ptr<EntryView<TypedData, TypedData> > getEntryView(const K &key) {
                     return mapImpl->getEntryView<K>(key);
                 }
 
@@ -838,9 +838,9 @@ namespace hazelcast {
                 monitor::LocalMapStats &getLocalMapStats();
 
             private:
-                IMap(boost::shared_ptr<mixedtype::ClientMapProxy> proxy);
+                IMap(std::shared_ptr<mixedtype::ClientMapProxy> proxy);
 
-                boost::shared_ptr<mixedtype::ClientMapProxy> mapImpl;
+                std::shared_ptr<mixedtype::ClientMapProxy> mapImpl;
             };
         }
     }

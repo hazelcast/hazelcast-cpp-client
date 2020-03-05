@@ -20,7 +20,7 @@
 #define HAZELCAST_UTIL_ITERATOR_H_
 
 #include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace hazelcast {
     namespace util {
@@ -45,9 +45,9 @@ namespace hazelcast {
              * @return the next element in the iteration.
              * @exception NoSuchElementException iteration has no more elements.
              */
-            virtual boost::shared_ptr<E> next() {
+            virtual std::shared_ptr<E> next() {
                 assert(0);
-                return boost::shared_ptr<E>();
+                return std::shared_ptr<E>();
             }
 
             /**

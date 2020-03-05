@@ -60,16 +60,16 @@ public:
 
 class PolymorphicDataSerializableFactory : public serialization::DataSerializableFactory {
 public:
-    virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
+    virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
         switch (typeId) {
             case 10:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
             case 11:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
             case 12:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
             default:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>();
         }
     }
 };
@@ -78,12 +78,12 @@ int main() {
     ClientConfig config;
     SerializationConfig &serializationConfig = config.getSerializationConfig();
     serializationConfig.addDataSerializableFactory(666,
-                                                   boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                   std::shared_ptr<serialization::DataSerializableFactory>(
                                                            new PolymorphicDataSerializableFactory()));
 
     HazelcastClient client(config);
 
-    boost::shared_ptr<Ringbuffer<BaseDataSerializable> > ringBuffer =
+    std::shared_ptr<Ringbuffer<BaseDataSerializable> > ringBuffer =
             client.getRingbuffer<BaseDataSerializable>("MyRingBuffer");
 
     BaseDataSerializable base;
@@ -94,7 +94,7 @@ int main() {
     ringBuffer->add(derived2);
 
     int64_t sequence = ringBuffer->headSequence();
-    std::auto_ptr<BaseDataSerializable> value = ringBuffer->readOne(sequence);
+    std::unique_ptr<BaseDataSerializable> value = ringBuffer->readOne(sequence);
     std::cout << "Got the first value from the ringbuffer. The class id is:" << value->getClassId() << std::endl;
 
     value = ringBuffer->readOne(sequence + 1);

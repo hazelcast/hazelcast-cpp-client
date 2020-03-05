@@ -45,14 +45,14 @@ public:
         cout << "Starting pipelined with depth:" << depth << endl;
         int64_t startMs = currentTimeMillis();
         for (int i = 0; i < iterations; i++) {
-            boost::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(depth);
+            std::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(depth);
             for (long k = 0; k < getsPerIteration; k++) {
                 int key = rand() % keyDomain;
                 pipelining->add(map.getAsync(key));
             }
 
             // wait for completion
-            vector<boost::shared_ptr<string> > results = pipelining->results();
+            vector<std::shared_ptr<string> > results = pipelining->results();
             // and verification we got the appropriate number of results.
             if ((int) results.size() != getsPerIteration) {
                 throw hazelcast::client::exception::IllegalStateException("pipelined", "Incorrect number of results");

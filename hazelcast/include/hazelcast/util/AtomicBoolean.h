@@ -21,31 +21,17 @@
 #ifndef HAZELCAST_AtomicBoolean
 #define HAZELCAST_AtomicBoolean
 
+#include <atomic>
+
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/Mutex.h"
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API AtomicBoolean {
+    class HAZELCAST_API AtomicBoolean : public std::atomic<bool> {
         public:
             AtomicBoolean();
 
             AtomicBoolean(bool i);
-
-            bool operator!();
-
-            void operator =(bool i);
-
-            operator bool();
-
-            bool compareAndSet(bool compareValue, bool setValue);
-        private:
-            Mutex mutex;
-            bool v;
-
-            AtomicBoolean(const AtomicBoolean &rhs);
-
-            void operator = (const AtomicBoolean &rhs);
         };
     }
 }

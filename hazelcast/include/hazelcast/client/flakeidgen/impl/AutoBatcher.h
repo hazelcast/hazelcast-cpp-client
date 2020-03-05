@@ -17,9 +17,11 @@
 #define HAZELCAST_CLIENT_FLAKEIDGEN_IMPL_AUTOBATCHER_H
 
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
+#include <atomic>
+#include <mutex>
 
-#include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/Sync.h"
 #include "hazelcast/client/flakeidgen/impl/IdBatch.h"
 
 namespace hazelcast {
@@ -40,7 +42,7 @@ namespace hazelcast {
                     };
 
                     AutoBatcher(int32_t batchSize, int64_t validity,
-                                const boost::shared_ptr<IdBatchSupplier> &batchIdSupplier);
+                                const std::shared_ptr<IdBatchSupplier> &batchIdSupplier);
 
                     /**
                      * Return next ID from current batch or get new batch from supplier if
@@ -60,15 +62,15 @@ namespace hazelcast {
                     private:
                         IdBatch idBatch;
                         int64_t invalidSince;
-                        util::Atomic<int32_t> numReturned;
+                        std::atomic<int32_t> numReturned;
                     };
 
                     int32_t batchSize;
                     int64_t validity;
-                    boost::shared_ptr<IdBatchSupplier> batchIdSupplier;
+                    std::shared_ptr<IdBatchSupplier> batchIdSupplier;
 
-                    util::Atomic<boost::shared_ptr<Block> > block;
-                    util::Mutex lock;
+                    util::Sync<std::shared_ptr<Block> > block;
+                    std::mutex lock;
                 };
             }
         }

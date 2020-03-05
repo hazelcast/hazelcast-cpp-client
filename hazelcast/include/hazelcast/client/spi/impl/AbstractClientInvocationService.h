@@ -55,8 +55,8 @@ namespace hazelcast {
 
                     bool isRedoOperation();
 
-                    void handleClientMessage(const boost::shared_ptr<connection::Connection> &connection,
-                                             const boost::shared_ptr<protocol::ClientMessage> &message);
+                    void handleClientMessage(const std::shared_ptr<connection::Connection> &connection,
+                                             const std::shared_ptr<protocol::ClientMessage> &message);
 
                 protected:
 
@@ -72,12 +72,12 @@ namespace hazelcast {
 
                         virtual const std::string getName() const;
 
-                        void interrupt();
+                        void shutdown();
 
                         void start();
 
                         // TODO: implement java MPSCQueue and replace this
-                        util::BlockingConcurrentQueue<boost::shared_ptr<protocol::ClientMessage> > responseQueue;
+                        util::BlockingConcurrentQueue<std::shared_ptr<protocol::ClientMessage> > responseQueue;
                     private:
                         util::ILogger &invocationLogger;
                         AbstractClientInvocationService &invocationService;
@@ -86,9 +86,9 @@ namespace hazelcast {
 
                         void doRun();
 
-                        void process(const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
+                        void process(const std::shared_ptr<protocol::ClientMessage> &clientMessage);
 
-                        void handleClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
+                        void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage);
                     };
 
                     class CleanResourcesTask : public util::Runnable {
@@ -101,7 +101,7 @@ namespace hazelcast {
 
                     private:
                         void notifyException(ClientInvocation &invocation,
-                                             boost::shared_ptr<connection::Connection> &connection);
+                                             std::shared_ptr<connection::Connection> &connection);
 
                         util::SynchronizedMap<int64_t, ClientInvocation> &invocations;
                     };
@@ -120,15 +120,15 @@ namespace hazelcast {
                     int64_t invocationRetryPauseMillis;
                     ResponseThread responseThread;
 
-                    boost::shared_ptr<ClientInvocation> deRegisterCallId(int64_t callId);
+                    std::shared_ptr<ClientInvocation> deRegisterCallId(int64_t callId);
 
-                    void registerInvocation(const boost::shared_ptr<ClientInvocation> &clientInvocation);
+                    void registerInvocation(const std::shared_ptr<ClientInvocation> &clientInvocation);
 
                     bool writeToConnection(connection::Connection &connection,
-                                           const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
+                                           const std::shared_ptr<protocol::ClientMessage> &clientMessage);
 
-                    void send(boost::shared_ptr<impl::ClientInvocation> invocation,
-                              boost::shared_ptr<connection::Connection> connection);
+                    void send(std::shared_ptr<impl::ClientInvocation> invocation,
+                              std::shared_ptr<connection::Connection> connection);
                 };
             }
         }

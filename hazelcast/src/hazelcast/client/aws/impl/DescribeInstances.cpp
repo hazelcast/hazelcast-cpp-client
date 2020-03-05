@@ -48,7 +48,7 @@ namespace hazelcast {
                     checkKeysFromIamRoles();
 
                     std::string timeStamp = getFormattedTimestamp();
-                    rs = std::auto_ptr<security::EC2RequestSigner>(
+                    rs = std::unique_ptr<security::EC2RequestSigner>(
                             new security::EC2RequestSigner(awsConfig, timeStamp, endpoint));
                     attributes["Action"] = "DescribeInstances";
                     attributes["Version"] = impl::Constants::DOC_VERSION;
@@ -84,7 +84,7 @@ namespace hazelcast {
 
                 std::istream &DescribeInstances::callService() {
                     std::string query = rs->getCanonicalizedQueryString(attributes);
-                    httpsClient = std::auto_ptr<util::SyncHttpsClient>(
+                    httpsClient = std::unique_ptr<util::SyncHttpsClient>(
                             new util::SyncHttpsClient(endpoint.c_str(), QUERY_PREFIX + query));
                     return httpsClient->openConnection();
                 }
@@ -114,7 +114,7 @@ namespace hazelcast {
                         awsConfig.setIamRole(roleName);
                     } catch (exception::IOException &e) {
                         throw exception::InvalidConfigurationException("tryGetDefaultIamRole",
-                                                                       std::string("Invalid Aws Configuration") +
+                                                                       std::string("Invalid Aws Configuration. ") +
                                                                        e.what());
                     }
                 }
@@ -123,7 +123,7 @@ namespace hazelcast {
                     // before giving up, attempt to discover whether we're running in an ECS Container,
                     // in which case, AWS_CONTAINER_CREDENTIALS_RELATIVE_URI will exist as an env var.
                     const char *uri = getenv(Constants::ECS_CREDENTIALS_ENV_VAR_NAME);
-                    if (uri) {
+                    if (!uri) {
                         throw exception::IllegalArgumentException("getKeysFromIamTaskRole",
                                                                   "Could not acquire credentials! Did not find declared AWS access key or IAM Role, and could not discover IAM Task Role or default role.");
                     }

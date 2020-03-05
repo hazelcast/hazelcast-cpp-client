@@ -29,12 +29,12 @@ namespace hazelcast {
             ClientFlakeIdGeneratorProxy::ClientFlakeIdGeneratorProxy(const std::string &objectName,
                                                                      spi::ClientContext *context)
                     : ProxyImpl(SERVICE_NAME, objectName, context) {
-                boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = getContext().getClientConfig().findFlakeIdGeneratorConfig(
+                std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = getContext().getClientConfig().findFlakeIdGeneratorConfig(
                         getName());
                 batcher.reset(
                         new flakeidgen::impl::AutoBatcher(config->getPrefetchCount(),
                                                           config->getPrefetchValidityMillis(),
-                                                          boost::shared_ptr<flakeidgen::impl::AutoBatcher::IdBatchSupplier>(
+                                                          std::shared_ptr<flakeidgen::impl::AutoBatcher::IdBatchSupplier>(
                                                                   new FlakeIdBatchSupplier(*this))));
             }
 
@@ -43,9 +43,9 @@ namespace hazelcast {
             }
 
             flakeidgen::impl::IdBatch ClientFlakeIdGeneratorProxy::newIdBatch(int32_t batchSize) {
-                std::auto_ptr<protocol::ClientMessage> requestMsg = protocol::codec::FlakeIdGeneratorNewIdBatchCodec::encodeRequest(
+                std::unique_ptr<protocol::ClientMessage> requestMsg = protocol::codec::FlakeIdGeneratorNewIdBatchCodec::encodeRequest(
                         getName(), batchSize);
-                boost::shared_ptr<protocol::ClientMessage> responseMsg = spi::impl::ClientInvocation::create(
+                std::shared_ptr<protocol::ClientMessage> responseMsg = spi::impl::ClientInvocation::create(
                         getContext(), requestMsg, getName())->invoke()->get();
                 protocol::codec::FlakeIdGeneratorNewIdBatchCodec::ResponseParameters response =
                         protocol::codec::FlakeIdGeneratorNewIdBatchCodec::ResponseParameters::decode(*responseMsg);

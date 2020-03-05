@@ -48,7 +48,7 @@ namespace hazelcast {
                             memberRemoved(member);
                             break;
                         default:
-                            logger.warning() << "Unknown event type: " << eventType;
+                            logger.warning("Unknown event type: " , eventType);
                     }
                     partitionService.refreshPartitions();
                 }
@@ -56,13 +56,13 @@ namespace hazelcast {
                 void ClientMembershipListener::handleMemberListEventV10(const std::vector<Member> &initialMembers) {
                     std::map<std::string, Member> prevMembers;
                     if (!members.empty()) {
-                        BOOST_FOREACH (const Member &member, members) {
+                        for (const Member &member : members) {
                                         prevMembers[member.getUuid()] = member;
                                     }
                         members.clear();
                     }
 
-                    BOOST_FOREACH (const Member &initialMember, initialMembers) {
+                    for (const Member &initialMember : initialMembers) {
                                     members.insert(initialMember);
                                 }
 
@@ -84,9 +84,9 @@ namespace hazelcast {
                 void
                 ClientMembershipListener::handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
                                                                       const int32_t &operationType,
-                                                                      std::auto_ptr<std::string> value) {
+                                                                      std::unique_ptr<std::string> &value) {
                     std::vector<Member> members = clusterService.getMemberList();
-                    BOOST_FOREACH (Member &target, members) {
+                    for (Member &target : members) {
                                     if (target.getUuid() == uuid) {
                                         Member::MemberAttributeOperationType type = (Member::MemberAttributeOperationType) operationType;
                                         target.updateAttribute(type, key, value);
@@ -102,7 +102,7 @@ namespace hazelcast {
 
                 void ClientMembershipListener::memberAdded(const Member &member) {
                     members.insert(member);
-                    logger.info() << membersString();
+                    logger.info(membersString());
                     MembershipEvent event(client.getCluster(), member, MembershipEvent::MEMBER_ADDED,
                                           std::vector<Member>(members.begin(), members.end()));
                     clusterService.handleMembershipEvent(event);
@@ -112,7 +112,7 @@ namespace hazelcast {
                     std::stringstream out;
                     out << std::endl << std::endl << "Members [" << members.size() << "]  {";
 
-                    BOOST_FOREACH(const Member &member, members) {
+                    for (const Member &member : members) {
                                     out << std::endl << "\t" << member;
                                 }
                     out << std::endl << "}" << std::endl;
@@ -122,8 +122,8 @@ namespace hazelcast {
 
                 void ClientMembershipListener::memberRemoved(const Member &member) {
                     members.erase(member);
-                    logger.info() << membersString();
-                    boost::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
+                    logger.info(membersString());
+                    std::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
                             member.getAddress());
                     if (connection.get() != NULL) {
                         connection->close("", newTargetDisconnectedExceptionCausedByMemberLeftEvent(connection));
@@ -133,9 +133,9 @@ namespace hazelcast {
                     clusterService.handleMembershipEvent(event);
                 }
 
-                boost::shared_ptr<exception::IException>
+                std::shared_ptr<exception::IException>
                 ClientMembershipListener::newTargetDisconnectedExceptionCausedByMemberLeftEvent(
-                        const boost::shared_ptr<connection::Connection> &connection) {
+                        const std::shared_ptr<connection::Connection> &connection) {
                     return (exception::ExceptionBuilder<exception::TargetDisconnectedException>(
                             "ClientMembershipListener::newTargetDisconnectedExceptionCausedByMemberLeftEvent")
                             << "The client has closed the connection to this member, after receiving a member left event from the cluster. "
@@ -149,7 +149,7 @@ namespace hazelcast {
                     const std::set<Member> &eventMembers = members;
 
                     std::vector<Member> newMembers;
-                    BOOST_FOREACH (const Member &member, members) {
+                    for (const Member &member : members) {
                                     std::map<std::string, Member>::iterator formerEntry = prevMembers.find(
                                             member.getUuid());
                                     if (formerEntry != prevMembers.end()) {
@@ -161,14 +161,14 @@ namespace hazelcast {
 
                     // removal events should be added before added events
                     typedef const std::map<std::string, Member> MemberMap;
-                    BOOST_FOREACH (const MemberMap::value_type &member, prevMembers) {
+                    for (const MemberMap::value_type &member : prevMembers) {
                                     events.push_back(MembershipEvent(client.getCluster(), member.second,
                                                                      MembershipEvent::MEMBER_REMOVED,
                                                                      std::vector<Member>(eventMembers.begin(),
                                                                                          eventMembers.end())));
                                     const Address &address = member.second.getAddress();
                                     if (clusterService.getMember(address).get() == NULL) {
-                                        boost::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
+                                        std::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
                                                 address);
                                         if (connection.get() != NULL) {
                                             connection->close("",
@@ -177,7 +177,7 @@ namespace hazelcast {
                                         }
                                     }
                                 }
-                    BOOST_FOREACH (const Member &member, newMembers) {
+                    for (const Member &member : newMembers) {
                                     events.push_back(
                                             MembershipEvent(client.getCluster(), member, MembershipEvent::MEMBER_ADDED,
                                                             std::vector<Member>(eventMembers.begin(),
@@ -188,20 +188,20 @@ namespace hazelcast {
                 }
 
                 void ClientMembershipListener::fireMembershipEvent(std::vector<MembershipEvent> &events) {
-                    BOOST_FOREACH (const MembershipEvent &event, events) {
+                    for (const MembershipEvent &event : events) {
                                     clusterService.handleMembershipEvent(event);
                                 }
                 }
 
                 void
                 ClientMembershipListener::listenMembershipEvents(
-                        const boost::shared_ptr<ClientMembershipListener> &listener,
-                        const boost::shared_ptr<connection::Connection> &ownerConnection) {
-                    listener->initialListFetchedLatch = boost::shared_ptr<util::CountDownLatch>(
+                        const std::shared_ptr<ClientMembershipListener> &listener,
+                        const std::shared_ptr<connection::Connection> &ownerConnection) {
+                    listener->initialListFetchedLatch = std::shared_ptr<util::CountDownLatch>(
                             new util::CountDownLatch(1));
-                    std::auto_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientAddMembershipListenerCodec::encodeRequest(
+                    std::unique_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientAddMembershipListenerCodec::encodeRequest(
                             false);
-                    boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(listener->client,
+                    std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(listener->client,
                                                                                               clientMessage, "",
                                                                                               ownerConnection);
                     invocation->setEventHandler(listener);

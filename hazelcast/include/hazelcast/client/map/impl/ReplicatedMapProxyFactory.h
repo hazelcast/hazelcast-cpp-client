@@ -31,8 +31,8 @@ namespace hazelcast {
                     }
 
                     //@Override
-                    boost::shared_ptr<spi::ClientProxy> create(const std::string &name) {
-                        return boost::shared_ptr<spi::ClientProxy>(
+                    std::shared_ptr<spi::ClientProxy> create(const std::string &name) {
+                        return std::shared_ptr<spi::ClientProxy>(
                                 new proxy::ClientReplicatedMapProxy<K, V>(name, clientContext));
                     }
 

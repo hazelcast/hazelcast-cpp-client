@@ -16,10 +16,10 @@
 #ifndef HAZELCAST_CLIENT_IMPL_HAZELCASTCLIENTIMPL_H_
 #define HAZELCAST_CLIENT_IMPL_HAZELCASTCLIENTIMPL_H_
 
+#include <atomic>
 #include <memory>
 #include <stdint.h>
 #include <vector>
-#include <boost/enable_shared_from_this.hpp>
 
 #include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
@@ -113,7 +113,7 @@ namespace hazelcast {
             class ClientLockReferenceIdGenerator;
 
             class HAZELCAST_API HazelcastClientInstanceImpl
-                    : public boost::enable_shared_from_this<HazelcastClientInstanceImpl> {
+                    : public std::enable_shared_from_this<HazelcastClientInstanceImpl> {
                 friend class spi::ClientContext;
                 friend class mixedtype::impl::HazelcastClientImpl;
 
@@ -129,6 +129,8 @@ namespace hazelcast {
                 * Destructor
                 */
                 ~HazelcastClientInstanceImpl();
+
+                void start();
 
                 /**
                  * Returns the name of this Hazelcast instance.
@@ -161,7 +163,7 @@ namespace hazelcast {
                 template<typename K, typename V>
                 IMap<K, V> getMap(const std::string &name) {
                     map::impl::ClientMapProxyFactory<K, V> factory(&clientContext);
-                    boost::shared_ptr<spi::ClientProxy> proxy =
+                    std::shared_ptr<spi::ClientProxy> proxy =
                             getDistributedObjectForService(IMap<K, V>::SERVICE_NAME, name, factory);
 
                     return IMap<K, V>(proxy);
@@ -179,12 +181,12 @@ namespace hazelcast {
                 }
 
                 template<typename K, typename V>
-                boost::shared_ptr<ReplicatedMap<K, V> > getReplicatedMap(const std::string &name) {
+                std::shared_ptr<ReplicatedMap<K, V> > getReplicatedMap(const std::string &name) {
                     map::impl::ReplicatedMapProxyFactory<K, V> factory(&clientContext);
-                    boost::shared_ptr<spi::ClientProxy> proxy =
+                    std::shared_ptr<spi::ClientProxy> proxy =
                             getDistributedObjectForService(proxy::ClientReplicatedMapProxy<K, V>::SERVICE_NAME, name, factory);
 
-                    return boost::static_pointer_cast<ReplicatedMap<K, V> >(boost::static_pointer_cast<proxy::ClientReplicatedMapProxy<K, V> >(proxy));
+                    return std::static_pointer_cast<ReplicatedMap<K, V> >(std::static_pointer_cast<proxy::ClientReplicatedMapProxy<K, V> >(proxy));
                 }
 
                 /**
@@ -241,10 +243,10 @@ namespace hazelcast {
                 * @return distributed topic instance with the specified name
                 */
                 template<typename E>
-                boost::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
-                    boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
+                std::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
+                    std::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
                             getRingbuffer<topic::impl::reliable::ReliableTopicMessage>(TOPIC_RB_PREFIX + name);
-                    return boost::shared_ptr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
+                    return std::shared_ptr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
                 }
 
                 /**
@@ -280,7 +282,7 @@ namespace hazelcast {
                  * @param name the name of the PN counter
                  * @return a {@link com::hazelcast::crdt::pncounter::PNCounter}
                  */
-                boost::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
+                std::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
 
                 /**
                 * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed
@@ -325,13 +327,13 @@ namespace hazelcast {
                  * @return distributed RingBuffer instance with the specified name
                  */
                 template <typename E>
-                boost::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
+                std::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
                     ringbuffer::impl::RingbufferProxyFactory<E> factory(&clientContext);
-                    boost::shared_ptr<spi::ClientProxy> proxy =
+                    std::shared_ptr<spi::ClientProxy> proxy =
                             getDistributedObjectForService(proxy::ClientRingbufferProxy<E>::SERVICE_NAME, name,
                                                            factory);
 
-                    return boost::static_pointer_cast<proxy::ClientRingbufferProxy<E> >(proxy);
+                    return std::static_pointer_cast<proxy::ClientRingbufferProxy<E> >(proxy);
                 }
 
                 /**
@@ -354,7 +356,7 @@ namespace hazelcast {
                  * @param name name of the executor service
                  * @return the distributed executor service for the given name
                  */
-                boost::shared_ptr<IExecutorService> getExecutorService(const std::string &name);
+                std::shared_ptr<IExecutorService> getExecutorService(const std::string &name);
 
                 /**
                 *
@@ -427,59 +429,60 @@ namespace hazelcast {
 
                 const protocol::ClientExceptionFactory &getExceptionFactory() const;
 
-                void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
+                void onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection);
 
-                const boost::shared_ptr<ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator() const;
+                const std::shared_ptr<ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator() const;
 
                 spi::ProxyManager &getProxyManager();
+
+                const std::shared_ptr <util::ILogger> &getLogger() const;
 
             private:
                 ClientConfig clientConfig;
                 ClientProperties clientProperties;
-                util::CountDownLatch shutdownLatch;
                 spi::ClientContext clientContext;
                 serialization::pimpl::SerializationService serializationService;
-                std::auto_ptr<connection::ClientConnectionManagerImpl> connectionManager;
-                std::auto_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
+                std::unique_ptr<connection::ClientConnectionManagerImpl> connectionManager;
+                std::unique_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
                 spi::impl::ClientClusterServiceImpl clusterService;
-                boost::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
-                boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
-                std::auto_ptr<spi::ClientInvocationService> invocationService;
-                boost::shared_ptr<spi::ClientListenerService> listenerService;
+                std::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
+                std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
+                std::unique_ptr<spi::ClientInvocationService> invocationService;
+                std::shared_ptr<spi::ClientListenerService> listenerService;
                 spi::impl::ClientTransactionManagerServiceImpl transactionManager;
                 Cluster cluster;
                 spi::LifecycleService lifecycleService;
                 spi::ProxyManager proxyManager;
-                std::auto_ptr<mixedtype::HazelcastClient> mixedTypeSupportAdaptor;
-                boost::shared_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
-                std::auto_ptr<statistics::Statistics> statistics;
+                std::unique_ptr<mixedtype::HazelcastClient> mixedTypeSupportAdaptor;
+                std::shared_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
+                std::unique_ptr<statistics::Statistics> statistics;
                 protocol::ClientExceptionFactory exceptionFactory;
                 std::string instanceName;
-                static util::Atomic<int32_t> CLIENT_ID;
+                static std::atomic<int32_t> CLIENT_ID;
                 int32_t id;
-                boost::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
+                std::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
                 const std::string TOPIC_RB_PREFIX;
-                boost::shared_ptr<util::ILogger> logger;
+                std::shared_ptr<util::ILogger> logger;
                 HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs);
 
                 void operator=(const HazelcastClientInstanceImpl& rhs);
 
-                boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
+                std::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
                                                                                    const std::string &name,
                                                                                    spi::ClientProxyFactory &factory);
 
-                boost::shared_ptr<spi::ClientListenerService> initListenerService();
+                std::shared_ptr<spi::ClientListenerService> initListenerService();
 
-                std::auto_ptr<spi::ClientInvocationService> initInvocationService();
+                std::unique_ptr<spi::ClientInvocationService> initInvocationService();
 
-                boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
+                std::shared_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
 
-                std::auto_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
-                        const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders);
+                std::unique_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
+                        const std::vector<std::shared_ptr<connection::AddressProvider> > &addressProviders);
 
-                std::vector<boost::shared_ptr<connection::AddressProvider> > createAddressProviders();
+                std::vector<std::shared_ptr<connection::AddressProvider> > createAddressProviders();
 
-                void initLogger();
+                void startLogger();
 
                 void initalizeNearCacheManager();
             };

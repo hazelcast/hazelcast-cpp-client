@@ -29,11 +29,11 @@ namespace hazelcast {
                 const bool TopicAddMessageListenerCodec::RETRYABLE = false;
                 const ResponseMessageConst TopicAddMessageListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                std::auto_ptr<ClientMessage> TopicAddMessageListenerCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> TopicAddMessageListenerCodec::encodeRequest(
                         const std::string &name,
                         bool localOnly) {
                     int32_t requiredDataSize = calculateDataSize(name, localOnly);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TopicAddMessageListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -69,7 +69,7 @@ namespace hazelcast {
                 }
 
                 void TopicAddMessageListenerCodec::AbstractEventHandler::handle(
-                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                        std::unique_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
                         case protocol::EVENT_TOPIC: {
@@ -84,9 +84,7 @@ namespace hazelcast {
                             break;
                         }
                         default:
-                            getLogger()->warning()
-                                    << "[TopicAddMessageListenerCodec::AbstractEventHandler::handle] Unknown message type ("
-                                    << messageType << ") received on event handler.";
+                            getLogger()->warning( "[TopicAddMessageListenerCodec::AbstractEventHandler::handle] Unknown message type (",  messageType ,  ") received on event handler.");
                     }
                 }
                 //************************ EVENTS END **************************************************************************//

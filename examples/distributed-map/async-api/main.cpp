@@ -21,7 +21,7 @@
  */
 class PrinterCallback : public hazelcast::client::ExecutionCallback<std::string> {
 public:
-    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
+    virtual void onResponse(const std::shared_ptr<std::string> &response) {
         std::cout << "Response was received. ";
         if (response.get()) {
             std::cout << "Received response is : " << *response << std::endl;
@@ -30,7 +30,7 @@ public:
         }
     }
 
-    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
         std::cerr << "A failure occured. The exception is:" << e << std::endl;
     }
 };
@@ -42,10 +42,10 @@ int main() {
             hz.getMap<std::string, std::string>("themap");
 
     // initiate map put in an unblocking way
-    boost::shared_ptr<ICompletableFuture<std::string> > future = map.putAsync("key", "value");
+    std::shared_ptr<ICompletableFuture<std::string> > future = map.putAsync("key", "value");
 
     // later on get the result of the put operation
-    boost::shared_ptr<std::string> result = future->get();
+    std::shared_ptr<std::string> result = future->get();
     if (result.get()) {
         std::cout << "There was a previous value for key. The value was:" << *result << std::endl;
     } else {
@@ -57,7 +57,7 @@ int main() {
 
     // Let the callback handle the response when received and print the appropriate message
     // The callback will be called using the user executor thread.
-    boost::shared_ptr<hazelcast::client::ExecutionCallback<std::string> > callback(new PrinterCallback);
+    std::shared_ptr<hazelcast::client::ExecutionCallback<std::string> > callback(new PrinterCallback);
     future->andThen(callback);
 
     // Set the value to a new value in an unblocking manner

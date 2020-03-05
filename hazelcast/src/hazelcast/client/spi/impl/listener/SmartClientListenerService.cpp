@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
 #include "hazelcast/util/UuidUtil.h"
@@ -41,15 +41,15 @@ namespace hazelcast {
                         AbstractClientListenerService::start();
 
                         registrationExecutor.scheduleAtFixedRate(
-                                boost::shared_ptr<util::Runnable>(new AsyncConnectToAllMembersTask(
-                                        boost::static_pointer_cast<SmartClientListenerService>(shared_from_this()))),
+                                std::shared_ptr<util::Runnable>(new AsyncConnectToAllMembersTask(
+                                        std::static_pointer_cast<SmartClientListenerService>(shared_from_this()))),
                                 1000, 1000);
                     }
 
                     std::string
                     SmartClientListenerService::registerListener(
-                            const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
-                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
+                            const std::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
+                            const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
                         //This method should not be called from registrationExecutor
 /*                      TODO
                         assert (!Thread.currentThread().getName().contains("eventRegistration"));
@@ -65,9 +65,9 @@ namespace hazelcast {
 
                         do {
                             Member lastFailedMember;
-                            boost::shared_ptr<exception::IException> lastException;
+                            std::shared_ptr<exception::IException> lastException;
 
-                            BOOST_FOREACH (const Member &member, clientClusterService.getMemberList()) {
+                            for (const Member &member : clientClusterService.getMemberList()) {
                                             try {
                                                 clientConnectionManager.getOrConnect(member.getAddress());
                                             } catch (exception::IException &e) {
@@ -88,7 +88,7 @@ namespace hazelcast {
 
                     void SmartClientListenerService::timeOutOrSleepBeforeNextTry(int64_t startMillis,
                                                                                  const Member &lastFailedMember,
-                                                                                 boost::shared_ptr<exception::IException> &lastException) {
+                                                                                 std::shared_ptr<exception::IException> &lastException) {
                         int64_t nowInMillis = util::currentTimeMillis();
                         int64_t elapsedMillis = nowInMillis - startMillis;
                         bool timedOut = elapsedMillis > invocationTimeoutMillis;
@@ -106,7 +106,7 @@ namespace hazelcast {
                     SmartClientListenerService::throwOperationTimeoutException(int64_t startMillis, int64_t nowInMillis,
                                                                                int64_t elapsedMillis,
                                                                                const Member &lastFailedMember,
-                                                                               boost::shared_ptr<exception::IException> &lastException) {
+                                                                               std::shared_ptr<exception::IException> &lastException) {
                         throw (exception::ExceptionBuilder<exception::OperationTimeoutException>(
                                 "SmartClientListenerService::throwOperationTimeoutException")
                                 << "Registering listeners is timed out."
@@ -129,8 +129,11 @@ namespace hazelcast {
 
                     void SmartClientListenerService::asyncConnectToAllMembersInternal() {
                         std::vector<Member> memberList = clientContext.getClientClusterService().getMemberList();
-                        BOOST_FOREACH (const Member &member, memberList) {
+                        for (const Member &member : memberList) {
                                         try {
+                                            if (!clientContext.getLifecycleService().isRunning()) {
+                                                return;
+                                            }
                                             clientContext.getConnectionManager().getOrTriggerConnect(
                                                     member.getAddress());
                                         } catch (exception::IOException &) {
@@ -141,7 +144,7 @@ namespace hazelcast {
                     }
 
                     SmartClientListenerService::AsyncConnectToAllMembersTask::AsyncConnectToAllMembersTask(
-                            const boost::shared_ptr<SmartClientListenerService> &listenerService) : listenerService(
+                            const std::shared_ptr<SmartClientListenerService> &listenerService) : listenerService(
                             listenerService) {}
 
                     void SmartClientListenerService::AsyncConnectToAllMembersTask::run() {

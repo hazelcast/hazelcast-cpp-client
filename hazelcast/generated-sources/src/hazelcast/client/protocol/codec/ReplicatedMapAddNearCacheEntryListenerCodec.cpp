@@ -29,12 +29,12 @@ namespace hazelcast {
                 const bool ReplicatedMapAddNearCacheEntryListenerCodec::RETRYABLE = false;
                 const ResponseMessageConst ReplicatedMapAddNearCacheEntryListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                std::auto_ptr<ClientMessage> ReplicatedMapAddNearCacheEntryListenerCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ReplicatedMapAddNearCacheEntryListenerCodec::encodeRequest(
                         const std::string &name, 
                         bool includeValue, 
                         bool localOnly) {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, localOnly);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ReplicatedMapAddNearCacheEntryListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -73,18 +73,18 @@ namespace hazelcast {
                 ReplicatedMapAddNearCacheEntryListenerCodec::AbstractEventHandler::~AbstractEventHandler() {
                 }
 
-                void ReplicatedMapAddNearCacheEntryListenerCodec::AbstractEventHandler::handle(std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                void ReplicatedMapAddNearCacheEntryListenerCodec::AbstractEventHandler::handle(std::unique_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
                         case protocol::EVENT_ENTRY:
                         {
-                            std::auto_ptr<serialization::pimpl::Data > key = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::unique_ptr<serialization::pimpl::Data > key = clientMessage->getNullable<serialization::pimpl::Data >();
 
-                            std::auto_ptr<serialization::pimpl::Data > value = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::unique_ptr<serialization::pimpl::Data > value = clientMessage->getNullable<serialization::pimpl::Data >();
 
-                            std::auto_ptr<serialization::pimpl::Data > oldValue = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::unique_ptr<serialization::pimpl::Data > oldValue = clientMessage->getNullable<serialization::pimpl::Data >();
 
-                            std::auto_ptr<serialization::pimpl::Data > mergingValue = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::unique_ptr<serialization::pimpl::Data > mergingValue = clientMessage->getNullable<serialization::pimpl::Data >();
 
                             int32_t eventType = clientMessage->get<int32_t >();
                             
@@ -97,7 +97,7 @@ namespace hazelcast {
                                 break;
                         }
                         default:
-                            getLogger()->warning() << "[ReplicatedMapAddNearCacheEntryListenerCodec::AbstractEventHandler::handle] Unknown message type (" << messageType << ") received on event handler.";
+                            getLogger()->warning("[ReplicatedMapAddNearCacheEntryListenerCodec::AbstractEventHandler::handle] Unknown message type (", messageType, ") received on event handler.");
                     }
                 }
                 //************************ EVENTS END **************************************************************************//

@@ -69,28 +69,34 @@ namespace hazelcast {
                         processListenerQueue();
                         listenInternal();
                     }catch(exception::IException &e){
-                        logger.warning(std::string("Exception at IOSelector::listen() ") + e.what());
+                        if (isAlive) {
+                            logger.warning(std::string("Exception at IOSelector::run() ") + e.what());
+                        } else {
+                            if (logger.isFinestEnabled()) {
+                                logger.finest(std::string("Exception at IOSelector::run() ") + e.what());
+                            }
+                        }
                     }
                 }
             }
 
             bool IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
-                hazelcast::util::ServerSocket serverSocket(0);
-                int p = serverSocket.getPort();
+                serverSocket = std::make_unique<util::ServerSocket>(0);
+                int p = serverSocket->getPort();
                 std::string localAddress;
-                if (serverSocket.isIpv4())
+                if (serverSocket->isIpv4())
                     localAddress = "127.0.0.1";
                 else
                     localAddress = "::1";
 
-                wakeUpSocket.reset(new internal::socket::TcpSocket(Address(localAddress, p), NULL));
+                wakeUpSocket.reset(new internal::socket::TcpSocket(Address(localAddress, p), &socketOptions));
                 int error = wakeUpSocket->connect(5000);
                 if (error == 0) {
-                    sleepingSocket.reset(serverSocket.accept());
+                    sleepingSocket.reset(serverSocket->accept());
                     sleepingSocket->setBlocking(false);
                     wakeUpSocketSet.insertSocket(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
-                    isAlive = true;
+                    isAlive.store(true);
                     return true;
                 } else {
                     logger.severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
@@ -99,7 +105,8 @@ namespace hazelcast {
             }
 
             void IOSelector::shutdown() {
-                if (!isAlive.compareAndSet(true, false)) {
+                bool expected = true;
+                if (!isAlive.compare_exchange_strong(expected, false)) {
                     return;
                 }
                 try {
@@ -107,6 +114,10 @@ namespace hazelcast {
                 } catch (exception::IOException &) {
                     // suppress io exception
                 }
+
+                sleepingSocket->close();
+                wakeUpSocket->close();
+                serverSocket->close();
             }
 
             void IOSelector::addTask(ListenerTask *listenerTask) {

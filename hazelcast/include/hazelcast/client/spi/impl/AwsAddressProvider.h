@@ -20,7 +20,7 @@
 #include <map>
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/aws/AWSClient.h"
-#include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/Sync.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 
@@ -48,7 +48,7 @@ namespace hazelcast {
                     std::string awsMemberPort;
                     util::ILogger &logger;
                     aws::AWSClient awsClient;
-                    util::Atomic<std::map<std::string, std::string> > privateToPublic;
+                    util::Sync<std::map<std::string, std::string> > privateToPublic;
 
                     void updateLookupTable();
 

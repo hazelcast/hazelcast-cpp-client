@@ -3303,7 +3303,6 @@ In order to test Hazelcast C++ client locally, you will need the following:
 * Maven
 * cmake
 * OpenSSL
-* Python 2 and pip (Needed for RemoteController used for controlling server instances)
 
 You can also pull our test docker images from the docker hub using the following command: `docker pull ihsan/gcc_346_ssl`. These images have all the tools for building the project.
 

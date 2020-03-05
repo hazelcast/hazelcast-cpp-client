@@ -28,7 +28,7 @@ namespace hazelcast {
                 StackTraceElement StackTraceElementCodec::decode(ClientMessage &clientMessage) {
                     std::string className = clientMessage.getStringUtf8();
                     std::string methodName = clientMessage.getStringUtf8();
-                    std::auto_ptr<std::string> fileName = clientMessage.getNullable<std::string>();
+                    std::unique_ptr<std::string> fileName = clientMessage.getNullable<std::string>();
                     int32_t lineNumber = clientMessage.getInt32();
                     
                     return StackTraceElement(className, methodName, fileName, lineNumber);

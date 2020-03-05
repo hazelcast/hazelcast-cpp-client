@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool ListGetCodec::RETRYABLE = true;
                 const ResponseMessageConst ListGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> ListGetCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ListGetCodec::encodeRequest(
                         const std::string &name,
                         int32_t index) {
                     int32_t requiredDataSize = calculateDataSize(name, index);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListGetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -63,7 +63,7 @@ namespace hazelcast {
                 }
 
                 ListGetCodec::ResponseParameters::ResponseParameters(const ListGetCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

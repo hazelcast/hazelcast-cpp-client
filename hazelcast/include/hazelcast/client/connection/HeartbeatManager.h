@@ -18,7 +18,7 @@
 #define HAZELCAST_CLIENT_CONNECTION_HEARBEATMANAGER_H_
 
 #include "hazelcast/util/Thread.h"
-#include "hazelcast/util/Atomic.h"
+
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/util/Executor.h"
 
@@ -61,9 +61,9 @@ namespace hazelcast {
                 int64_t heartbeatInterval;
                 int64_t heartbeatTimeout;
 
-                void checkConnection(int64_t now, boost::shared_ptr<Connection> &connection);
+                void checkConnection(int64_t now, std::shared_ptr<Connection> &connection);
 
-                void onHeartbeatStopped(boost::shared_ptr<Connection> &connection, const std::string &reason);
+                void onHeartbeatStopped(std::shared_ptr<Connection> &connection, const std::string &reason);
             };
         }
     }

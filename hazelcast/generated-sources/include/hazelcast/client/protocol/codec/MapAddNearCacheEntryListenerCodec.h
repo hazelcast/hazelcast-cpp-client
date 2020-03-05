@@ -51,7 +51,7 @@ namespace hazelcast {
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    static std::auto_ptr<ClientMessage> encodeRequest(
+                    static std::unique_ptr<ClientMessage> encodeRequest(
                             const std::string &name,
                             int32_t listenerFlags,
                             bool localOnly);
@@ -81,13 +81,13 @@ namespace hazelcast {
                     public:
                         virtual ~AbstractEventHandler();
 
-                        void handle(std::auto_ptr<protocol::ClientMessage> message);
+                        void handle(std::unique_ptr<protocol::ClientMessage> message);
 
 
-                        virtual void handleIMapInvalidationEventV10(std::auto_ptr<serialization::pimpl::Data> key) = 0;
+                        virtual void handleIMapInvalidationEventV10(std::unique_ptr<serialization::pimpl::Data> &key) = 0;
 
 
-                        virtual void handleIMapInvalidationEventV14(std::auto_ptr<serialization::pimpl::Data> key,
+                        virtual void handleIMapInvalidationEventV14(std::unique_ptr<serialization::pimpl::Data> &key,
                                                                     const std::string &sourceUuid,
                                                                     const util::UUID &partitionUuid,
                                                                     const int64_t &sequence) = 0;

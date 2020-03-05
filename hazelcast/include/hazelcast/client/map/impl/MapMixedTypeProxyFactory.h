@@ -38,8 +38,8 @@ namespace hazelcast {
                     }
 
                     //@Override
-                    boost::shared_ptr<spi::ClientProxy> create(const std::string &name) {
-                        const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig =
+                    std::shared_ptr<spi::ClientProxy> create(const std::string &name) {
+                        const std::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig =
                                 clientContext->getClientConfig().getMixedNearCacheConfig(name);
                         spi::ClientProxy *proxy;
                         if (nearCacheConfig != NULL) {
@@ -49,7 +49,7 @@ namespace hazelcast {
                             proxy = new mixedtype::ClientMapProxy(name, clientContext);
                         }
 
-                        return boost::shared_ptr<spi::ClientProxy>(proxy);
+                        return std::shared_ptr<spi::ClientProxy>(proxy);
                     }
                 private:
                     spi::ClientContext *clientContext;

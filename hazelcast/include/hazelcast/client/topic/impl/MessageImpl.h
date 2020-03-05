@@ -20,7 +20,7 @@
 #define HAZELCAST_CLIENT_TOPIC_IMPL_MESSAGEIMPL_H_
 
 #include <memory>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/Member.h"
@@ -38,9 +38,9 @@ namespace hazelcast {
                 template <typename E>
                 class MessageImpl : public Message<E> {
                 public:
-                    MessageImpl(std::string topicName, std::auto_ptr<E> message, int64_t publishTime,
-                                const boost::shared_ptr<Member> &member)
-                            : messageObject(message)
+                    MessageImpl(std::string topicName, std::unique_ptr<E> &message, int64_t publishTime,
+                                const std::shared_ptr<Member> &member)
+                            : messageObject(std::move(message))
                             , publishTime(publishTime)
                             , publishingMember(member)
                             , name(topicName) {
@@ -52,8 +52,8 @@ namespace hazelcast {
                         return messageObject.get();
                     }
 
-                    virtual std::auto_ptr<E> releaseMessageObject() {
-                        return messageObject;
+                    virtual std::unique_ptr<E> &&releaseMessageObject() {
+                        return std::move(messageObject);
                     }
 
                     int64_t getPublishTime() const {
@@ -72,9 +72,9 @@ namespace hazelcast {
                         return name;
                     }
                 private:
-                    std::auto_ptr<E> messageObject;
+                    std::unique_ptr<E> messageObject;
                     int64_t publishTime;
-                    boost::shared_ptr<Member> publishingMember;
+                    std::shared_ptr<Member> publishingMember;
                     std::string name;
                 };
             }
@@ -85,9 +85,9 @@ namespace hazelcast {
                 namespace impl {
                     class HAZELCAST_API MessageImpl : public client::topic::Message<TypedData> {
                     public:
-                        MessageImpl(std::string topicName, std::auto_ptr<TypedData> message, int64_t publishTime,
-                                    const boost::shared_ptr<Member> &member)
-                                : messageObject(message)
+                        MessageImpl(std::string topicName, std::unique_ptr<TypedData> &message, int64_t publishTime,
+                                    const std::shared_ptr<Member> &member)
+                                : messageObject(std::move(message))
                                 , publishTime(publishTime)
                                 , publishingMember(member)
                                 , name(topicName) {
@@ -99,8 +99,8 @@ namespace hazelcast {
                             return messageObject.get();
                         }
 
-                        virtual std::auto_ptr<TypedData> releaseMessageObject() {
-                            return messageObject;
+                        virtual std::unique_ptr<TypedData> &&releaseMessageObject() {
+                            return std::move(messageObject);
                         }
 
                         int64_t getPublishTime() const {
@@ -119,9 +119,9 @@ namespace hazelcast {
                             return name;
                         }
                     private:
-                        std::auto_ptr<TypedData> messageObject;
+                        std::unique_ptr<TypedData> messageObject;
                         int64_t publishTime;
-                        boost::shared_ptr<Member> publishingMember;
+                        std::shared_ptr<Member> publishingMember;
                         std::string name;
                     };
                 }

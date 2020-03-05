@@ -33,7 +33,7 @@ public:
         if (rhs.name.get() == NULL) {
             name.reset();
         } else {
-            name = std::auto_ptr<std::string>(new std::string(*rhs.name));
+            name = std::unique_ptr<std::string>(new std::string(*rhs.name));
         }
     }
 
@@ -58,7 +58,7 @@ public:
     }
 
 private:
-    std::auto_ptr<std::string> name;
+    std::unique_ptr<std::string> name;
 };
 
 std::ostream &operator<<(std::ostream &out, const Person &p) {

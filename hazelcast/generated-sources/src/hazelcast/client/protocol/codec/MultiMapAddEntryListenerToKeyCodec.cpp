@@ -29,13 +29,13 @@ namespace hazelcast {
                 const bool MultiMapAddEntryListenerToKeyCodec::RETRYABLE = false;
                 const ResponseMessageConst MultiMapAddEntryListenerToKeyCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                std::auto_ptr<ClientMessage> MultiMapAddEntryListenerToKeyCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MultiMapAddEntryListenerToKeyCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &key,
                         bool includeValue,
                         bool localOnly) {
                     int32_t requiredDataSize = calculateDataSize(name, key, includeValue, localOnly);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapAddEntryListenerToKeyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -78,17 +78,17 @@ namespace hazelcast {
                 }
 
                 void MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle(
-                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                        std::unique_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
                         case protocol::EVENT_ENTRY: {
-                            std::auto_ptr<serialization::pimpl::Data> key = clientMessage->getNullable<serialization::pimpl::Data>();
+                            std::unique_ptr<serialization::pimpl::Data> key = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data> value = clientMessage->getNullable<serialization::pimpl::Data>();
+                            std::unique_ptr<serialization::pimpl::Data> value = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data> oldValue = clientMessage->getNullable<serialization::pimpl::Data>();
+                            std::unique_ptr<serialization::pimpl::Data> oldValue = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data> mergingValue = clientMessage->getNullable<serialization::pimpl::Data>();
+                            std::unique_ptr<serialization::pimpl::Data> mergingValue = clientMessage->getNullable<serialization::pimpl::Data>();
 
                             int32_t eventType = clientMessage->get<int32_t>();
 
@@ -102,9 +102,7 @@ namespace hazelcast {
                             break;
                         }
                         default:
-                            getLogger()->warning()
-                                    << "[MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle] Unknown message type ("
-                                    << messageType << ") received on event handler.";
+                            getLogger()->warning( "[MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle] Unknown message type (",  messageType ,  ") received on event handler.");
                     }
                 }
                 //************************ EVENTS END **************************************************************************//

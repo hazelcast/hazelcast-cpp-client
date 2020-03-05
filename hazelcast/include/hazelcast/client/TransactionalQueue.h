@@ -63,7 +63,7 @@ namespace hazelcast {
             *
             * @see IQueue::poll()
             */
-            boost::shared_ptr<E> poll() {
+            std::shared_ptr<E> poll() {
                 return poll(0);
             }
 
@@ -72,8 +72,8 @@ namespace hazelcast {
             *
             * @see IQueue::poll(long timeoutInMillis)
             */
-            boost::shared_ptr<E> poll(long timeoutInMillis) {
-                return boost::shared_ptr<E>(toObject<E>(proxy::TransactionalQueueImpl::pollData(timeoutInMillis)));
+            std::shared_ptr<E> poll(long timeoutInMillis) {
+                return std::shared_ptr<E>(toObject<E>(proxy::TransactionalQueueImpl::pollData(timeoutInMillis)));
             }
 
             /**

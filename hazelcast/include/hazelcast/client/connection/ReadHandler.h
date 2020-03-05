@@ -21,8 +21,9 @@
 #define HAZELCAST_ReadHandler
 
 #include<stdint.h>
+#include<atomic>
 
-#include "hazelcast/util/Atomic.h"
+
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
@@ -63,7 +64,7 @@ namespace hazelcast {
                 util::ByteBuffer byteBuffer;
 
                 protocol::ClientMessageBuilder builder;
-                util::Atomic<int64_t> lastReadTimeMillis;
+                std::atomic<int64_t> lastReadTimeMillis;
             };
         }
     }

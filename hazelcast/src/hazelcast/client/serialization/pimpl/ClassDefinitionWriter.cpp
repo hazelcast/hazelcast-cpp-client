@@ -32,8 +32,8 @@ namespace hazelcast {
                 , context(portableContext) {
                 }
 
-                boost::shared_ptr<ClassDefinition> ClassDefinitionWriter::registerAndGet() {
-                    boost::shared_ptr<ClassDefinition> cd = builder.build();
+                std::shared_ptr<ClassDefinition> ClassDefinitionWriter::registerAndGet() {
+                    std::shared_ptr<ClassDefinition> cd = builder.build();
                     return context.registerClassDefinition(cd);
                 }
 
@@ -116,7 +116,7 @@ namespace hazelcast {
 
                 }
 
-                boost::shared_ptr<ClassDefinition> ClassDefinitionWriter::createNestedClassDef(const Portable& portable) {
+                std::shared_ptr<ClassDefinition> ClassDefinitionWriter::createNestedClassDef(const Portable& portable) {
                     int version = pimpl::PortableVersionHelper::getVersion(&portable, context.getVersion());
                     ClassDefinitionBuilder definitionBuilder(portable.getFactoryId(), portable.getClassId(), version);
 

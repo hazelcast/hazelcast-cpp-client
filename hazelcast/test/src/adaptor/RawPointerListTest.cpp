@@ -13,12 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 21/3/16.
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 
 #include "hazelcast/client/HazelcastClient.h"
@@ -111,7 +105,7 @@ namespace hazelcast {
                     ASSERT_TRUE(list->add("item2"));
                     list->add(0, "item3");
                     ASSERT_EQ(3, list->size());
-                    std::auto_ptr<std::string> temp = list->set(2, "item4");
+                    std::unique_ptr<std::string> temp = list->set(2, "item4");
                     ASSERT_EQ("item2", *temp);
 
                     ASSERT_EQ(3, list->size());
@@ -148,7 +142,7 @@ namespace hazelcast {
                     ASSERT_TRUE(list->add("item1"));
                     ASSERT_TRUE(list->add("item4"));
 
-                    std::auto_ptr<client::DataArray<std::string> > ar = list->toArray();
+                    std::unique_ptr<client::DataArray<std::string> > ar = list->toArray();
 
                     ASSERT_EQ((size_t)4, ar->size());
                     ASSERT_NE((std::string *)NULL, ar->get(0));

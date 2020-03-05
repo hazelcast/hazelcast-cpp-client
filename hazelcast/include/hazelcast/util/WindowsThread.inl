@@ -36,14 +36,15 @@ namespace hazelcast {
 
         class HAZELCAST_API Thread : public impl::AbstractThread {
         public:
-            Thread(const boost::shared_ptr<Runnable> &runnable, util::ILogger &logger)
+            Thread(const std::shared_ptr<Runnable> &runnable, util::ILogger &logger)
                 : impl::AbstractThread(runnable, logger) {
             }
 
             virtual ~Thread() {
                 cancel();
 
-                if (handleClosed.compareAndSet(false, true)) {
+                bool expected = true;
+                if (handleSet.compare_exchange_strong(expected, false)) {
                     CloseHandle(thread);
                 }
             }
@@ -60,15 +61,15 @@ namespace hazelcast {
             static DWORD WINAPI runnableThread(LPVOID args) {
                 RunnableInfo *info = static_cast<RunnableInfo *>(args);
 
-                boost::shared_ptr<Runnable> target = info->target;
+                std::shared_ptr<Runnable> target = info->target;
                 try {
                     target->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {
-                    info->logger->warning() << "Thread " << target->getName() << " is interrupted. " << e;
+                    info->logger->warning("Thread ", target->getName(), " is interrupted. ", e);
                 } catch (hazelcast::client::exception::IException &e) {
-                    info->logger->warning() << "Thread " << target->getName() << " is cancelled with exception " << e;
+                    info->logger->warning("Thread ", target->getName(), " is cancelled with exception ", e);
                 } catch (...) {
-                    info->logger->warning() << "Thread " << target->getName() << " is cancelled with an unexpected exception";
+                    info->logger->warning("Thread ", target->getName(), " is cancelled with an unexpected exception");
 
                     info->finishWaitLatch->countDown();
 
@@ -77,7 +78,7 @@ namespace hazelcast {
                     return 1L;
                 }
 
-                info->logger->finest() << "Thread " << target->getName() << " is finished.";
+                info->logger->finest("Thread ", target->getName(), " is finished.");
 
                 info->finishWaitLatch->countDown();
 
@@ -104,7 +105,7 @@ namespace hazelcast {
 
             HANDLE thread;
             DWORD id;
-            util::AtomicBoolean handleClosed;
+            util::AtomicBoolean handleSet;
         };
     }
 }

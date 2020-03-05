@@ -29,7 +29,7 @@ int main() {
     set.add("New York");
     std::cout << "Finished loading set" << std::endl;
 
-    std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = set.toArray();
+    std::unique_ptr<hazelcast::client::DataArray<std::string> > vals = set.toArray();
 
     std::cout << "There are " << set.size() << " values in the set" << std::endl;
 

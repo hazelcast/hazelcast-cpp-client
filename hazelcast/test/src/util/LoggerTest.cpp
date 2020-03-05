@@ -57,7 +57,7 @@ namespace hazelcast {
             };
 
             TEST_F(LoggerTest, testPrintObject) {
-                logger.info() << "This is an info message. " << TestObject(5);
+                logger.info("This is an info message. ", TestObject(5));
 
                 const std::string &printedString = buffer.str();
                 size_t index = printedString.find("This is an info message. objectCount: 5");
@@ -90,7 +90,8 @@ namespace hazelcast {
                 const char *testName = testing::UnitTest::GetInstance()->current_test_info()->name();
                 config::LoggerConfig loggerConfig;
                 loggerConfig.setLogLevel(client::LoggerLevel::WARNING);
-                boost::shared_ptr<util::ILogger> logger(new util::ILogger(testName, testName, "TestVersion", loggerConfig));
+                std::shared_ptr<util::ILogger> logger(new util::ILogger(testName, testName, "TestVersion", loggerConfig));
+                ASSERT_TRUE(logger->start());
 
                 ASSERT_FALSE(logger->isFinestEnabled());
                 ASSERT_FALSE(logger->isEnabled(client::LoggerLevel::FINEST));

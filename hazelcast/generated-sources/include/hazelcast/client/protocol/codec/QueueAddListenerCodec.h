@@ -50,7 +50,7 @@ namespace hazelcast {
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    static std::auto_ptr<ClientMessage> encodeRequest(
+                    static std::unique_ptr<ClientMessage> encodeRequest(
                             const std::string &name,
                             bool includeValue,
                             bool localOnly);
@@ -80,11 +80,11 @@ namespace hazelcast {
                     public:
                         virtual ~AbstractEventHandler();
 
-                        void handle(std::auto_ptr<protocol::ClientMessage> message);
+                        void handle(std::unique_ptr<protocol::ClientMessage> message);
 
 
                         virtual void
-                        handleItemEventV10(std::auto_ptr<serialization::pimpl::Data> item, const std::string &uuid,
+                        handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
                                            const int32_t &eventType) = 0;
 
                     };

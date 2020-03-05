@@ -51,7 +51,7 @@ namespace hazelcast {
             public:
 
                 LifecycleService(ClientContext &clientContext, const std::set<LifecycleListener *> &lifecycleListeners,
-                                 util::CountDownLatch &shutdownLatch, LoadBalancer *const loadBalancer, Cluster &cluster);
+                                 LoadBalancer *const loadBalancer, Cluster &cluster);
 
                 virtual ~LifecycleService();
 
@@ -73,9 +73,9 @@ namespace hazelcast {
                 std::set<LifecycleListener *> listeners;
                 util::Mutex listenerLock;
                 util::AtomicBoolean active;
-                util::CountDownLatch &shutdownLatch;
                 LoadBalancer *loadBalancer;
                 Cluster &cluster;
+                util::CountDownLatch shutdownCompletedLatch;
             };
 
         }

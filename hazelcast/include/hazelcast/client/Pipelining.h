@@ -73,7 +73,7 @@ namespace hazelcast {
          * @param <E>
          */
         template<typename E>
-        class Pipelining : public boost::enable_shared_from_this<Pipelining<E> > {
+        class Pipelining : public std::enable_shared_from_this<Pipelining<E> > {
         public:
             /**
              * Creates a Pipelining with the given depth.
@@ -86,10 +86,10 @@ namespace hazelcast {
              * @throws IllegalArgumentException if depth smaller than 1. But if you use depth 1, it means that
              *                                  every call is sync and you will not benefit from pipelining at all.
              */
-            static boost::shared_ptr<Pipelining> create(int depth) {
+            static std::shared_ptr<Pipelining> create(int depth) {
                 util::Preconditions::checkPositive(depth, "depth must be positive");
 
-                return boost::shared_ptr<Pipelining>(new Pipelining(depth));
+                return std::shared_ptr<Pipelining>(new Pipelining(depth));
             }
 
             /**
@@ -102,8 +102,8 @@ namespace hazelcast {
              * @return the List of results.
              * @throws IException if something fails getting the results.
              */
-            std::vector<boost::shared_ptr<E> > results() {
-                std::vector<boost::shared_ptr<E> > result;
+            std::vector<std::shared_ptr<E> > results() {
+                std::vector<std::shared_ptr<E> > result;
                 result.reserve(futures.size());
                 for (typename FuturesVector::const_iterator it = futures.begin(); it != futures.end(); ++it) {
                     result.push_back((*it)->get());
@@ -121,13 +121,13 @@ namespace hazelcast {
              * @return the future added.
              * @throws NullPointerException if future is null.
              */
-            const boost::shared_ptr<ICompletableFuture<E> > &
-            add(const boost::shared_ptr<ICompletableFuture<E> > &future) {
+            const std::shared_ptr<ICompletableFuture<E> > &
+            add(const std::shared_ptr<ICompletableFuture<E> > &future) {
                 util::Preconditions::checkNotNull<ICompletableFuture<E> >(future, "future can't be null");
 
                 down();
                 futures.push_back(future);
-                future->andThen(boost::shared_ptr<ExecutionCallback<E> >(
+                future->andThen(std::shared_ptr<ExecutionCallback<E> >(
                         new PipeliningExecutionCallback(this->shared_from_this())),
                                 util::concurrent::ConcurrencyUtil::CALLER_RUNS());
                 return future;
@@ -136,18 +136,18 @@ namespace hazelcast {
         private:
             class PipeliningExecutionCallback : public ExecutionCallback<E> {
             public:
-                PipeliningExecutionCallback(const boost::shared_ptr<Pipelining> &pipelining) : pipelining(pipelining) {}
+                PipeliningExecutionCallback(const std::shared_ptr<Pipelining> &pipelining) : pipelining(pipelining) {}
 
-                virtual void onResponse(const boost::shared_ptr<E> &response) {
+                virtual void onResponse(const std::shared_ptr<E> &response) {
                     pipelining->up();
                 }
 
-                virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+                virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
                     pipelining->up();
                 }
 
             private:
-                const boost::shared_ptr<Pipelining> pipelining;
+                const std::shared_ptr<Pipelining> pipelining;
             };
 
             Pipelining(int depth) : permits(util::Preconditions::checkPositive(depth, "depth must be positive")) {
@@ -170,7 +170,7 @@ namespace hazelcast {
                 ++permits;
             }
 
-            typedef std::vector<boost::shared_ptr<ICompletableFuture<E> > > FuturesVector;
+            typedef std::vector<std::shared_ptr<ICompletableFuture<E> > > FuturesVector;
             int permits;
             FuturesVector futures;
             util::ConditionVariable conditionVariable;

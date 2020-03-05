@@ -19,15 +19,17 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/TimeUtil.h"
 
-#include <boost/tokenizer.hpp>
-#include <boost/foreach.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
+#include <chrono>
 #include <string.h>
 #include <algorithm>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <thread>
+#include <regex>
+#include <regex>
+#include <sstream>
+#include <iomanip>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
@@ -36,6 +38,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <iomanip>
+#include <sstream>
 
 #endif
 
@@ -64,14 +68,6 @@ namespace hazelcast {
 			::usleep((useconds_t)(1000 * milliseconds));
         #endif
 		}
-
-        char *strtok(char *str, const char *sep, char **context) {
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                return strtok_s(str, sep, context);
-            #else
-                return strtok_r(str, sep, context);
-            #endif
-        }
 
         int localtime(const time_t *clock, struct tm *result) {
             int returnCode = -1;
@@ -113,13 +109,13 @@ namespace hazelcast {
         }
 
         int64_t currentTimeMillis() {
-            boost::posix_time::time_duration diff = TimeUtil::getDurationSinceEpoch();
-            return diff.total_milliseconds();
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
         }
 
         int64_t currentTimeNanos() {
-            boost::posix_time::time_duration diff = TimeUtil::getDurationSinceEpoch();
-            return diff.total_nanoseconds();
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
         }
 
         int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
@@ -171,12 +167,17 @@ namespace hazelcast {
         }
 
         std::string StringUtil::timeToString(int64_t timeInMillis) {
-            boost::posix_time::time_facet* facet = new boost::posix_time::time_facet("%Y-%m-%d %H:%M:%S.%f");
-            std::stringstream dateStream;
-            dateStream.imbue(std::locale(dateStream.getloc(), facet));
-            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
-            dateStream << epoch + boost::posix_time::milliseconds(timeInMillis);
-            return dateStream.str();
+            using namespace std::chrono;
+
+            auto timePoint = system_clock::time_point() + milliseconds(timeInMillis);
+            auto brokenTime = system_clock::to_time_t(timePoint);
+            auto localBrokenTime = std::localtime(&brokenTime);
+
+            std::ostringstream oss;
+            oss << std::put_time(localBrokenTime, "%Y-%m-%d %H:%M:%S");
+            oss << '.' << std::setfill('0') << std::setw(3) << timeInMillis % 1000;
+
+            return oss.str();
         }
 
         std::string StringUtil::timeToStringFriendly(int64_t timeInMillis) {
@@ -184,16 +185,10 @@ namespace hazelcast {
         }
 
         std::vector<std::string> StringUtil::tokenizeVersionString(const std::string &version) {
-            typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-            boost::char_separator<char> sep(".");
-            tokenizer tok(version, sep);
-
-            std::vector<std::string> tokens;
-            BOOST_FOREACH(const std::string &token , tok) {
-                            tokens.push_back(token);
-            }
-
-            return tokens;
+            // passing -1 as the submatch index parameter performs splitting
+            std::regex re(".");
+            std::sregex_token_iterator first{version.begin(), version.end(), re, -1}, last;
+            return {first, last};
         }
 
         int Int64Util::numberOfLeadingZeros(int64_t i) {

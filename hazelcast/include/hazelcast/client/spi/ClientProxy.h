@@ -18,7 +18,7 @@
 #define HAZELCAST_CLIENT_SPI_CLIENTPROXY_H_
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/DistributedObject.h"
@@ -94,7 +94,7 @@ namespace hazelcast {
                 * @param codec The codec used for listener register/deregister
                 * @param handler Event handler for the listener
                 */
-                std::string registerListener(const boost::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
+                std::string registerListener(const std::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
                                              client::impl::BaseEventHandler *handler);
 
                 /**
@@ -103,8 +103,8 @@ namespace hazelcast {
                 * @param listenerMessageCodec The codec used for listener register/deregister
                 * @param handler Event handler for the listener
                 */
-                std::string registerListener(const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
-                                             const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+                std::string registerListener(const std::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
+                                             const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
 
                 /**
                 * Internal API.
@@ -139,7 +139,7 @@ namespace hazelcast {
                 public:
                     EventHandlerDelegator(client::impl::BaseEventHandler *handler);
 
-                    virtual void handle(const boost::shared_ptr<protocol::ClientMessage> &event);
+                    virtual void handle(const std::shared_ptr<protocol::ClientMessage> &event);
 
                     virtual void beforeListenerRegister();
 

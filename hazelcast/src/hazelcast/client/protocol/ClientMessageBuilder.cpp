@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <cassert>
 
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
@@ -48,7 +49,7 @@ namespace hazelcast {
                     if (offset == frameLen) {
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
-                            connection.handleClientMessage(boost::shared_ptr<ClientMessage>(message));
+                            connection.handleClientMessage(std::move(message));
                             isCompleted = true;
                         } else {
                             if (message->isFlagSet(ClientMessage::BEGIN_FLAG)) {
@@ -66,12 +67,12 @@ namespace hazelcast {
                 return isCompleted;
             }
 
-            void ClientMessageBuilder::addToPartialMessages(std::auto_ptr<ClientMessage> message) {
+            void ClientMessageBuilder::addToPartialMessages(std::unique_ptr<ClientMessage> &message) {
                 int64_t id = message->getCorrelationId();
-                partialMessages[id] = message;
+                partialMessages[id] = std::move(message);
             }
 
-            bool ClientMessageBuilder::appendExistingPartialMessage(std::auto_ptr<ClientMessage> message) {
+            bool ClientMessageBuilder::appendExistingPartialMessage(std::unique_ptr<ClientMessage> &message) {
                 bool result = false;
 
                 MessageMap::iterator foundItemIter = partialMessages.find(message->getCorrelationId());
@@ -79,7 +80,7 @@ namespace hazelcast {
                     foundItemIter->second->append(message.get());
                     if (message->isFlagSet(ClientMessage::END_FLAG)) {
                         // remove from message from map
-                        boost::shared_ptr<ClientMessage> foundMessage(foundItemIter->second);
+                        std::shared_ptr<ClientMessage> foundMessage(foundItemIter->second);
 
                         partialMessages.erase(foundItemIter, foundItemIter);
 

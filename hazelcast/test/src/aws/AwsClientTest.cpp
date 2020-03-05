@@ -52,7 +52,7 @@ namespace hazelcast {
 
                     IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
                     map.put(5, 20);
-                    boost::shared_ptr<int> val = map.get(5);
+                    std::shared_ptr<int> val = map.get(5);
                     ASSERT_NE((int *) NULL, val.get());
                     ASSERT_EQ(20, *val);
                 }
@@ -76,11 +76,13 @@ namespace hazelcast {
 
                     IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
                     map.put(5, 20);
-                    boost::shared_ptr<int> val = map.get(5);
+                    std::shared_ptr<int> val = map.get(5);
                     ASSERT_NE((int *) NULL, val.get());
                     ASSERT_EQ(20, *val);
                 }
 
+                // FIPS_mode_set is not available for Mac OS X built-in openssl library
+                #ifndef __APPLE__
                 TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
                     ClientConfig clientConfig;
 
@@ -101,10 +103,11 @@ namespace hazelcast {
                     HazelcastClient hazelcastClient(clientConfig);
                     IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
                     map.put(5, 20);
-                    boost::shared_ptr<int> val = map.get(5);
+                    std::shared_ptr<int> val = map.get(5);
                     ASSERT_NE((int *) NULL, val.get());
                     ASSERT_EQ(20, *val);
                 }
+                #endif // ifndef __APPLE__
 
                 /**
                  * Following test can only run from inside the AWS network

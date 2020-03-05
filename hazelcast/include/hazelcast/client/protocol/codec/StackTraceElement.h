@@ -42,7 +42,7 @@ namespace hazelcast {
                     StackTraceElement();
 
                     StackTraceElement(const std::string &className, const std::string &method,
-                                      std::auto_ptr<std::string> file, int line);
+                                      std::unique_ptr<std::string> &file, int line);
 
                     StackTraceElement(const StackTraceElement &rhs);
 
@@ -60,7 +60,7 @@ namespace hazelcast {
                     static const std::string EMPTY_STRING;
                     std::string declaringClass;
                     std::string methodName;
-                    std::auto_ptr<std::string> fileName;
+                    std::unique_ptr<std::string> fileName;
                     int lineNumber;
                 };
 

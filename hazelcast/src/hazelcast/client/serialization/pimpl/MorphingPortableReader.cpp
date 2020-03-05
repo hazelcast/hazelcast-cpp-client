@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                MorphingPortableReader::MorphingPortableReader(PortableContext&portableContext, ObjectDataInput &input, boost::shared_ptr<ClassDefinition> cd)
+                MorphingPortableReader::MorphingPortableReader(PortableContext&portableContext, ObjectDataInput &input, std::shared_ptr<ClassDefinition> cd)
                 : PortableReaderBase(portableContext, input, cd) {
                 }
 
@@ -155,58 +155,58 @@ namespace hazelcast {
                     }
                 }
 
-                std::auto_ptr<std::string> MorphingPortableReader::readUTF(char const *fieldName) {
+                std::unique_ptr<std::string> MorphingPortableReader::readUTF(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::string>(new std::string(""));
+                        return std::unique_ptr<std::string>(new std::string(""));
                     }
                     return PortableReaderBase::readUTF(fieldName);
                 }
 
-                std::auto_ptr<std::vector<byte> > MorphingPortableReader::readByteArray(char const *fieldName) {
+                std::unique_ptr<std::vector<byte> > MorphingPortableReader::readByteArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<byte> >(new std::vector<byte>(1, 0));
+                        return std::unique_ptr<std::vector<byte> >(new std::vector<byte>(1, 0));
                     }
                     return PortableReaderBase::readByteArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<char> > MorphingPortableReader::readCharArray(char const *fieldName) {
+                std::unique_ptr<std::vector<char> > MorphingPortableReader::readCharArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<char> >(new std::vector<char>(1, 0));
+                        return std::unique_ptr<std::vector<char> >(new std::vector<char>(1, 0));
                     }
                     return PortableReaderBase::readCharArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<int32_t> > MorphingPortableReader::readIntArray(char const *fieldName) {
+                std::unique_ptr<std::vector<int32_t> > MorphingPortableReader::readIntArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<int32_t> >(new std::vector<int32_t>(1, 0));
+                        return std::unique_ptr<std::vector<int32_t> >(new std::vector<int32_t>(1, 0));
                     }
                     return PortableReaderBase::readIntArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<int64_t> > MorphingPortableReader::readLongArray(char const *fieldName) {
+                std::unique_ptr<std::vector<int64_t> > MorphingPortableReader::readLongArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<int64_t> >(new std::vector<int64_t>(1, 0));
+                        return std::unique_ptr<std::vector<int64_t> >(new std::vector<int64_t>(1, 0));
                     }
                     return PortableReaderBase::readLongArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<double> > MorphingPortableReader::readDoubleArray(char const *fieldName) {
+                std::unique_ptr<std::vector<double> > MorphingPortableReader::readDoubleArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<double> >(new std::vector<double>(1, 0));
+                        return std::unique_ptr<std::vector<double> >(new std::vector<double>(1, 0));
                     }
                     return PortableReaderBase::readDoubleArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<float> > MorphingPortableReader::readFloatArray(char const *fieldName) {
+                std::unique_ptr<std::vector<float> > MorphingPortableReader::readFloatArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<float> >(new std::vector<float>(1, 0));
+                        return std::unique_ptr<std::vector<float> >(new std::vector<float>(1, 0));
                     }
                     return PortableReaderBase::readFloatArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<int16_t> > MorphingPortableReader::readShortArray(char const *fieldName) {
+                std::unique_ptr<std::vector<int16_t> > MorphingPortableReader::readShortArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<int16_t> >(new std::vector<int16_t>(1, 0));
+                        return std::unique_ptr<std::vector<int16_t> >(new std::vector<int16_t>(1, 0));
                     }
                     return PortableReaderBase::readShortArray(fieldName);
                 }

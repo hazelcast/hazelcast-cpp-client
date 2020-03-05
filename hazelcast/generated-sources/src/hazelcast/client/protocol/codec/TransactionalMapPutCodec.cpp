@@ -28,7 +28,7 @@ namespace hazelcast {
                 const bool TransactionalMapPutCodec::RETRYABLE = false;
                 const ResponseMessageConst TransactionalMapPutCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> TransactionalMapPutCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> TransactionalMapPutCodec::encodeRequest(
                         const std::string &name,
                         const std::string &txnId,
                         int64_t threadId,
@@ -36,7 +36,7 @@ namespace hazelcast {
                         const serialization::pimpl::Data &value,
                         int64_t ttl) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value, ttl);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapPutCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -80,7 +80,7 @@ namespace hazelcast {
 
                 TransactionalMapPutCodec::ResponseParameters::ResponseParameters(
                         const TransactionalMapPutCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

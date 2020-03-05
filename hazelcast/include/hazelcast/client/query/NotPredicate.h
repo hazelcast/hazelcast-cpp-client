@@ -37,7 +37,8 @@ namespace hazelcast {
                 /**
                  * @tparam predicate The predicate to be negated
                  */
-                NotPredicate(std::auto_ptr<Predicate> predicate);
+                NotPredicate(std::unique_ptr<Predicate> &predicate);
+                NotPredicate(std::unique_ptr<Predicate> &&predicate);
 
                 /**
                  * @return factory id
@@ -62,7 +63,7 @@ namespace hazelcast {
                 void readData(serialization::ObjectDataInput &in);
 
             private:
-                std::auto_ptr<Predicate> internalPredicate;
+                std::unique_ptr<Predicate> internalPredicate;
             };
         }
     }

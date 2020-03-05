@@ -28,12 +28,12 @@ namespace hazelcast {
                 const bool ExecutorServiceCancelOnAddressCodec::RETRYABLE = false;
                 const ResponseMessageConst ExecutorServiceCancelOnAddressCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> ExecutorServiceCancelOnAddressCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ExecutorServiceCancelOnAddressCodec::encodeRequest(
                         const std::string &uuid, 
                         const Address &address, 
                         bool interrupt) {
                     int32_t requiredDataSize = calculateDataSize(uuid, address, interrupt);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ExecutorServiceCancelOnAddressCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(uuid);

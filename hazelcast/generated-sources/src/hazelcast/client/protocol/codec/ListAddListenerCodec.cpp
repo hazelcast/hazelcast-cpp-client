@@ -29,12 +29,12 @@ namespace hazelcast {
                 const bool ListAddListenerCodec::RETRYABLE = false;
                 const ResponseMessageConst ListAddListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                std::auto_ptr<ClientMessage> ListAddListenerCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ListAddListenerCodec::encodeRequest(
                         const std::string &name,
                         bool includeValue,
                         bool localOnly) {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, localOnly);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListAddListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -73,11 +73,11 @@ namespace hazelcast {
                 }
 
                 void ListAddListenerCodec::AbstractEventHandler::handle(
-                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                        std::unique_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
                         case protocol::EVENT_ITEM: {
-                            std::auto_ptr<serialization::pimpl::Data> item = clientMessage->getNullable<serialization::pimpl::Data>();
+                            std::unique_ptr<serialization::pimpl::Data> item = clientMessage->getNullable<serialization::pimpl::Data>();
 
                             std::string uuid = clientMessage->get<std::string>();
 
@@ -88,9 +88,7 @@ namespace hazelcast {
                             break;
                         }
                         default:
-                            getLogger()->warning()
-                                    << "[ListAddListenerCodec::AbstractEventHandler::handle] Unknown message type ("
-                                    << messageType << ") received on event handler.";
+                            getLogger()->warning( "[ListAddListenerCodec::AbstractEventHandler::handle] Unknown message type (",  messageType ,  ") received on event handler.");
                     }
                 }
                 //************************ EVENTS END **************************************************************************//

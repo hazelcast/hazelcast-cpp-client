@@ -24,11 +24,11 @@
 #ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 #define HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
+#include <atomic>
+
 #include "HazelcastServerFactory.h"
+
+using namespace hazelcast::client::test::remote;
 
 namespace hazelcast {
     namespace client {
@@ -52,13 +52,14 @@ namespace hazelcast {
 
                 bool setAttributes(int memberStartOrder);
 
-                const HazelcastServerFactory::MemberInfo &getMember() const;
+                const remote::Member &getMember() const;
 
             private:
                 HazelcastServerFactory & factory;
-                bool isStarted;
-                HazelcastServerFactory::MemberInfo member;
-                boost::shared_ptr<util::ILogger> logger;
+                std::atomic_bool isStarted;
+                std::atomic_bool isShutdown;
+                remote::Member member;
+                std::shared_ptr<util::ILogger> logger;
             };
         }
     }

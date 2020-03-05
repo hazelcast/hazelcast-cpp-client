@@ -20,9 +20,14 @@
 #define HAZELCAST_CLIENT_CONTEXT
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace util {
@@ -45,6 +50,7 @@ namespace hazelcast {
 
         namespace impl {
             class HazelcastClientInstanceImpl;
+
             class ClientLockReferenceIdGenerator;
 
             namespace statistics {
@@ -54,6 +60,7 @@ namespace hazelcast {
 
         namespace connection {
             class ClientConnectionManagerImpl;
+
             class Connection;
         }
 
@@ -92,7 +99,8 @@ namespace hazelcast {
 
             class HAZELCAST_API ClientContext {
             public:
-                ClientContext(client::HazelcastClient &hazelcastClient);
+                // This constructor is used from tests
+                ClientContext(const client::HazelcastClient &hazelcastClient);
 
                 ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
 
@@ -100,7 +108,7 @@ namespace hazelcast {
 
                 ClientClusterService &getClientClusterService();
 
-                ClientInvocationService & getInvocationService();
+                ClientInvocationService &getInvocationService();
 
                 ClientConfig &getClientConfig();
 
@@ -118,7 +126,7 @@ namespace hazelcast {
 
                 Cluster &getCluster();
 
-                boost::shared_ptr<impl::sequence::CallIdSequence> &getCallIdSequence() const;
+                std::shared_ptr<impl::sequence::CallIdSequence> &getCallIdSequence() const;
 
                 const protocol::ClientExceptionFactory &getClientExceptionFactory() const;
 
@@ -126,11 +134,11 @@ namespace hazelcast {
 
                 impl::ClientExecutionServiceImpl &getClientExecutionService() const;
 
-                void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
+                void onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection);
 
-                const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
+                const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
 
-                boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
+                std::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
 
                 spi::ProxyManager &getProxyManager();
 
@@ -143,5 +151,9 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif // HAZELCAST_CLIENT_CONTEXT

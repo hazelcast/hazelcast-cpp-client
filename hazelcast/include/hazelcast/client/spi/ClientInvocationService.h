@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_SPI_CLIENTINVOCATIONSERVICE_H_
 
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/Address.h"
@@ -43,16 +43,16 @@ namespace hazelcast {
                 virtual ~ClientInvocationService() {
                 }
 
-                virtual void invokeOnConnection(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                                boost::shared_ptr<connection::Connection> connection) = 0;
+                virtual void invokeOnConnection(std::shared_ptr<impl::ClientInvocation> invocation,
+                                                std::shared_ptr<connection::Connection> connection) = 0;
 
                 virtual void
-                invokeOnPartitionOwner(boost::shared_ptr<impl::ClientInvocation> invocation, int partitionId)  = 0;
+                invokeOnPartitionOwner(std::shared_ptr<impl::ClientInvocation> invocation, int partitionId)  = 0;
 
-                virtual void invokeOnRandomTarget(boost::shared_ptr<impl::ClientInvocation> invocation)  = 0;
+                virtual void invokeOnRandomTarget(std::shared_ptr<impl::ClientInvocation> invocation)  = 0;
 
-                virtual void invokeOnTarget(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                            const boost::shared_ptr<Address> &target)  = 0;
+                virtual void invokeOnTarget(std::shared_ptr<impl::ClientInvocation> invocation,
+                                            const std::shared_ptr<Address> &target)  = 0;
 
                 virtual bool isRedoOperation() = 0;
 

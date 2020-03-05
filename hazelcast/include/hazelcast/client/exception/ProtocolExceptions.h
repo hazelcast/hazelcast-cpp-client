@@ -49,12 +49,12 @@ namespace hazelcast {
                 ClassName(const std::string& source) : IException(#ClassName, source, "", ERROR_CODE, runtime) {\
                 }\
                 ClassName(const std::string &source, const std::string &message, \
-                            const boost::shared_ptr<IException> &cause) \
+                            const std::shared_ptr<IException> &cause) \
                             : IException(#ClassName, source, message, ERROR_CODE, cause, runtime) {}\
                 ClassName(const std::string &source, const std::string &message, const IException &cause) \
-                            : IException(#ClassName, source, message, ERROR_CODE, boost::shared_ptr<IException>(cause.clone()), runtime) {}\
-                virtual std::auto_ptr<IException> clone() const {\
-                    return std::auto_ptr<IException>(new ClassName(*this));\
+                            : IException(#ClassName, source, message, ERROR_CODE, std::shared_ptr<IException>(cause.clone()), runtime) {}\
+                virtual std::unique_ptr<IException> clone() const {\
+                    return std::unique_ptr<IException>(new ClassName(*this));\
                 } \
                 virtual void raise() const { throw *this; } \
             };\
@@ -160,7 +160,7 @@ namespace hazelcast {
                 RetryableHazelcastException(const std::string &source, const std::string &message);
 
                 RetryableHazelcastException(const std::string &source, const std::string &message,
-                                            const boost::shared_ptr<IException> &cause);
+                                            const std::shared_ptr<IException> &cause);
             };
 
 #define DEFINE_RETRYABLE_EXCEPTION_CLASS(ClassName, errorNo) \
@@ -178,10 +178,10 @@ namespace hazelcast {
                     : IException(#ClassName, source, message, ERROR_CODE, true, true), RetryableHazelcastException(source, message) {\
                 }\
                 ClassName(const std::string &source, const std::string &message, \
-                            const boost::shared_ptr<IException> &cause) \
-                            : IException(#ClassName, source, message, ERROR_CODE, boost::shared_ptr<IException>(cause->clone()), true, true), RetryableHazelcastException(source, message, cause) {}\
-                virtual std::auto_ptr<IException> clone() const {\
-                    return std::auto_ptr<IException>(new ClassName(*this));\
+                            const std::shared_ptr<IException> &cause) \
+                            : IException(#ClassName, source, message, ERROR_CODE, std::shared_ptr<IException>(cause->clone()), true, true), RetryableHazelcastException(source, message, cause) {}\
+                virtual std::unique_ptr<IException> clone() const {\
+                    return std::unique_ptr<IException>(new ClassName(*this));\
                 } \
                 virtual void raise() const { throw *this; } \
             };\
@@ -206,7 +206,7 @@ namespace hazelcast {
 
                 virtual void raise() const;
 
-                virtual std::auto_ptr<IException> clone() const;
+                virtual std::unique_ptr<IException> clone() const;
 
             };
 
@@ -232,7 +232,7 @@ namespace hazelcast {
 
                 const std::string &getDetailedErrorMessage() const;
 
-                virtual std::auto_ptr<IException> clone() const;
+                virtual std::unique_ptr<IException> clone() const;
 
                 virtual void raise() const;
 

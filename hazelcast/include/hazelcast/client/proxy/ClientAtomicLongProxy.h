@@ -62,24 +62,24 @@ namespace hazelcast {
 
                 virtual void set(int64_t newValue);
 
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > addAndGetAsync(int64_t delta);
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > addAndGetAsync(int64_t delta);
 
-                virtual boost::shared_ptr<ICompletableFuture<bool> >
+                virtual std::shared_ptr<ICompletableFuture<bool> >
                 compareAndSetAsync(int64_t expect, int64_t update);
 
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync();
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync();
 
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAsync();
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > getAsync();
 
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta);
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta);
 
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndSetAsync(int64_t newValue);
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > getAndSetAsync(int64_t newValue);
 
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync();
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync();
 
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync();
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync();
 
-                virtual boost::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue);
+                virtual std::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue);
             };
         }
     }

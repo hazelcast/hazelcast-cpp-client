@@ -18,7 +18,7 @@
 #define HAZELCAST_CLIENT_SPI_EVENTHANDLER_H_
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -36,7 +36,7 @@ namespace hazelcast {
             template <typename E>
             class HAZELCAST_API EventHandler {
             public:
-                virtual void handle(const boost::shared_ptr<E> &event) = 0;
+                virtual void handle(const std::shared_ptr<E> &event) = 0;
 
                 /**
                  *  This method is called before registration request is sent to node.

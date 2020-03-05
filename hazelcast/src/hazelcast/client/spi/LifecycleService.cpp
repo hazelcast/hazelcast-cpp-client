@@ -37,20 +37,22 @@ namespace hazelcast {
 
             LifecycleService::LifecycleService(ClientContext &clientContext,
                                                const std::set<LifecycleListener *> &lifecycleListeners,
-                                               util::CountDownLatch &shutdownLatch, LoadBalancer *const loadBalancer,
-                                               Cluster &cluster) : clientContext(clientContext),
-                                                                   shutdownLatch(shutdownLatch),
-                                                                   loadBalancer(loadBalancer),
-                                                                   cluster(cluster) {
+                                               LoadBalancer *const loadBalancer, Cluster &cluster) : clientContext(
+                    clientContext), loadBalancer(loadBalancer), cluster(cluster), shutdownCompletedLatch(1) {
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
             }
 
             bool LifecycleService::start() {
-                if (!active.compareAndSet(false, true)) {
+                bool expected = false;
+                if (!active.compare_exchange_strong(expected, true)) {
                     return false;
                 }
 
                 fireLifecycleEvent(LifecycleEvent::STARTED);
+
+                clientContext.getClientExecutionService().start();
+
+                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).start();
 
                 if (!((impl::AbstractClientInvocationService &) clientContext.getInvocationService()).start()) {
                     return false;
@@ -64,8 +66,6 @@ namespace hazelcast {
 
                 loadBalancer->init(cluster);
 
-                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).start();
-
                 ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).start();
 
                 clientContext.getClientstatistics().start();
@@ -74,21 +74,23 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                if (!active.compareAndSet(true, false)) {
+                bool expected = true;
+                if (!active.compare_exchange_strong(expected, false)) {
+                    shutdownCompletedLatch.await();
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getProxyManager().destroy();
                 clientContext.getConnectionManager().shutdown();
                 ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).shutdown();
-                ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
                 ((spi::impl::AbstractClientInvocationService &) clientContext.getInvocationService()).shutdown();
-                clientContext.getClientExecutionService().shutdown();
                 ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
+                ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
+                clientContext.getClientExecutionService().shutdown();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
                 clientContext.getSerializationService().dispose();
-                shutdownLatch.countDown();
+                shutdownCompletedLatch.countDown();
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
@@ -147,7 +149,6 @@ namespace hazelcast {
             LifecycleService::~LifecycleService() {
                 if (active) {
                     shutdown();
-                    shutdownLatch.await();
                 }
             }
         }

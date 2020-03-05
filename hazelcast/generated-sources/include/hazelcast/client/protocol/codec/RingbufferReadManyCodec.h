@@ -47,7 +47,7 @@ namespace hazelcast {
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    static std::auto_ptr<ClientMessage> encodeRequest(
+                    static std::unique_ptr<ClientMessage> encodeRequest(
                             const std::string &name,
                             int64_t startSequence,
                             int32_t minCount,
@@ -69,14 +69,14 @@ namespace hazelcast {
 
                         std::vector<serialization::pimpl::Data> items;
 
-                        std::auto_ptr<std::vector<int64_t> > itemSeqs;
+                        std::unique_ptr<std::vector<int64_t> > itemSeqs;
                         bool itemSeqsExist;
                         int64_t nextSeq;
                         bool nextSeqExist;
 
                         static ResponseParameters decode(ClientMessage &clientMessage);
 
-                        // define copy constructor (needed for auto_ptr variables)
+                        // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
 
                     private:

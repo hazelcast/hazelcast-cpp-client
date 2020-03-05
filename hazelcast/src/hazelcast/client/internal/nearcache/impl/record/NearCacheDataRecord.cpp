@@ -22,7 +22,7 @@ namespace hazelcast {
                 namespace impl {
                     namespace record {
                         NearCacheDataRecord::NearCacheDataRecord(
-                                const boost::shared_ptr<serialization::pimpl::Data> &dataValue,
+                                const std::shared_ptr<serialization::pimpl::Data> &dataValue,
                                 int64_t createTime, int64_t expiryTime)
                                 : AbstractNearCacheRecord<serialization::pimpl::Data>(dataValue,
                                                                                       createTime,

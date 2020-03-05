@@ -28,14 +28,14 @@ namespace hazelcast {
                 const bool TransactionalMultiMapRemoveEntryCodec::RETRYABLE = false;
                 const ResponseMessageConst TransactionalMultiMapRemoveEntryCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> TransactionalMultiMapRemoveEntryCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> TransactionalMultiMapRemoveEntryCodec::encodeRequest(
                         const std::string &name,
                         const std::string &txnId,
                         int64_t threadId,
                         const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMultiMapRemoveEntryCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

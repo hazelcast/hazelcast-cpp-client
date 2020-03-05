@@ -14,20 +14,11 @@
  * limitations under the License.
  */
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "hazelcast/util/TimeUtil.h"
 #include "hazelcast/util/concurrent/TimeUnit.h"
 
 namespace hazelcast {
     namespace util {
-        boost::posix_time::time_duration TimeUtil::getDurationSinceEpoch() {
-            boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
-            boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
-            boost::posix_time::time_duration diff = now - epoch;
-            return diff;
-        }
-
         int64_t TimeUtil::timeInMsOrOneIfResultIsZero(int64_t time, const concurrent::TimeUnit &timeunit) {
             int64_t timeInMillis = timeunit.toMillis(time);
             if (time > 0 && timeInMillis == 0) {

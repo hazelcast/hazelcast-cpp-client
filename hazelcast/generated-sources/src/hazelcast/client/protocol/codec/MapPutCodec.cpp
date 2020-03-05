@@ -28,14 +28,14 @@ namespace hazelcast {
                 const bool MapPutCodec::RETRYABLE = false;
                 const ResponseMessageConst MapPutCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> MapPutCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapPutCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value,
                         int64_t threadId,
                         int64_t ttl) {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapPutCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -74,7 +74,7 @@ namespace hazelcast {
                 }
 
                 MapPutCodec::ResponseParameters::ResponseParameters(const MapPutCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

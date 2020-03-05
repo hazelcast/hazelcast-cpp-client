@@ -29,9 +29,9 @@ namespace hazelcast {
                 const bool ClientAddPartitionListenerCodec::RETRYABLE = false;
                 const ResponseMessageConst ClientAddPartitionListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> ClientAddPartitionListenerCodec::encodeRequest() {
+                std::unique_ptr<ClientMessage> ClientAddPartitionListenerCodec::encodeRequest() {
                     int32_t requiredDataSize = calculateDataSize();
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientAddPartitionListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();
@@ -49,7 +49,7 @@ namespace hazelcast {
                 }
 
                 void ClientAddPartitionListenerCodec::AbstractEventHandler::handle(
-                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                        std::unique_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
                         case protocol::EVENT_PARTITIONS: {
@@ -62,9 +62,7 @@ namespace hazelcast {
                             break;
                         }
                         default:
-                            getLogger()->warning()
-                                    << "[ClientAddPartitionListenerCodec::AbstractEventHandler::handle] Unknown message type ("
-                                    << messageType << ") received on event handler.";
+                            getLogger()->warning( "[ClientAddPartitionListenerCodec::AbstractEventHandler::handle] Unknown message type (",  messageType ,  ") received on event handler.");
                     }
                 }
                 //************************ EVENTS END **************************************************************************//

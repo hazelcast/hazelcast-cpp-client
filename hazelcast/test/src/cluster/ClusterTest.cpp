@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 26/02/14.
-//
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
-#include "HazelcastServer.h"
-
 #include <gtest/gtest.h>
+
+#include "HazelcastServer.h"
 #include "ClientTestSupportBase.h"
 #include "HazelcastServerFactory.h"
+
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
@@ -39,7 +33,7 @@ namespace hazelcast {
         namespace test {
             class ClusterTest : public ClientTestSupportBase, public ::testing::TestWithParam<ClientConfig *> {
             public:
-                ClusterTest() : sslFactory(getSslFilePath()) {}
+                ClusterTest() : sslFactory(g_srvFactory->getServerAddress(), getSslFilePath()) {}
 
             protected:
                 class ClientAllStatesListener : public LifecycleListener {
@@ -101,11 +95,11 @@ namespace hazelcast {
                     util::CountDownLatch *shutdownLatch;
                 };
 
-                std::auto_ptr<HazelcastServer> startServer(ClientConfig &clientConfig) {
+                std::unique_ptr<HazelcastServer> startServer(ClientConfig &clientConfig) {
                     if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
-                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(sslFactory));
+                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(sslFactory));
                     } else {
-                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
+                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                     }
                 }
 
@@ -138,7 +132,7 @@ namespace hazelcast {
             TEST_P(ClusterTest, testAllClientStates) {
                 ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
 
-                std::auto_ptr<HazelcastServer> instance = startServer(clientConfig);
+                std::unique_ptr<HazelcastServer> instance = startServer(clientConfig);
 
                 clientConfig.setAttemptPeriod(1000);
                 clientConfig.setConnectionAttemptLimit(1);
@@ -182,7 +176,7 @@ namespace hazelcast {
 
             TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {
                 ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
-                std::auto_ptr<HazelcastServer> instance = startServer(clientConfig);
+                std::unique_ptr<HazelcastServer> instance = startServer(clientConfig);
 
                 util::CountDownLatch startingLatch(1);
                 util::CountDownLatch startedLatch(1);
@@ -208,11 +202,11 @@ namespace hazelcast {
 
             #ifdef HZ_BUILD_WITH_SSL
 
-            INSTANTIATE_TEST_CASE_P(All,
+            INSTANTIATE_TEST_SUITE_P(All,
                                     ClusterTest,
                                     ::testing::Values(new SmartTcpClientConfig(), new SmartSSLClientConfig()));
             #else
-            INSTANTIATE_TEST_CASE_P(All,
+            INSTANTIATE_TEST_SUITE_P(All,
                                     ClusterTest,
                                     ::testing::Values(new SmartTcpClientConfig()));
             #endif

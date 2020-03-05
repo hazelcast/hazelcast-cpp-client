@@ -15,7 +15,7 @@
  */
 
 #include <vector>
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
@@ -24,13 +24,13 @@ namespace hazelcast {
     namespace client {
         namespace config {
             namespace matcher {
-                boost::shared_ptr<std::string>
+                std::shared_ptr<std::string>
                 MatchingPointConfigPatternMatcher::matches(const std::vector<std::string> &configPatterns,
                                                            const std::string &itemName) const {
-                    boost::shared_ptr<std::string> candidate;
-                    boost::shared_ptr<std::string> duplicate;
+                    std::shared_ptr<std::string> candidate;
+                    std::shared_ptr<std::string> duplicate;
                     int lastMatchingPoint = -1;
-                    BOOST_FOREACH (const std::string &pattern , configPatterns) {
+                    for (const std::string &pattern  : configPatterns) {
                         int matchingPoint = getMatchingPoint(pattern, itemName);
                         if (matchingPoint > -1 && matchingPoint >= lastMatchingPoint) {
                             if (matchingPoint == lastMatchingPoint) {

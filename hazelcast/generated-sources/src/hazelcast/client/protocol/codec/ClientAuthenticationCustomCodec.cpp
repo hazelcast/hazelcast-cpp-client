@@ -30,7 +30,7 @@ namespace hazelcast {
                 const bool ClientAuthenticationCustomCodec::RETRYABLE = true;
                 const ResponseMessageConst ClientAuthenticationCustomCodec::RESPONSE_TYPE = (ResponseMessageConst) 107;
 
-                std::auto_ptr<ClientMessage> ClientAuthenticationCustomCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ClientAuthenticationCustomCodec::encodeRequest(
                         const serialization::pimpl::Data &credentials,
                         const std::string *uuid,
                         const std::string *ownerUuid,
@@ -41,7 +41,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(credentials, uuid, ownerUuid, isOwnerConnection,
                                                                  clientType, serializationVersion,
                                                                  clientHazelcastVersion);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientAuthenticationCustomCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(credentials);
@@ -111,12 +111,12 @@ namespace hazelcast {
                 ClientAuthenticationCustomCodec::ResponseParameters::ResponseParameters(
                         const ClientAuthenticationCustomCodec::ResponseParameters &rhs) {
                     status = rhs.status;
-                    address = std::auto_ptr<Address>(new Address(*rhs.address));
-                    uuid = std::auto_ptr<std::string>(new std::string(*rhs.uuid));
-                    ownerUuid = std::auto_ptr<std::string>(new std::string(*rhs.ownerUuid));
+                    address = std::unique_ptr<Address>(new Address(*rhs.address));
+                    uuid = std::unique_ptr<std::string>(new std::string(*rhs.uuid));
+                    ownerUuid = std::unique_ptr<std::string>(new std::string(*rhs.ownerUuid));
                     serializationVersion = rhs.serializationVersion;
                     serverHazelcastVersion = rhs.serverHazelcastVersion;
-                    clientUnregisteredMembers = std::auto_ptr<std::vector<Member> >(
+                    clientUnregisteredMembers = std::unique_ptr<std::vector<Member> >(
                             new std::vector<Member>(*rhs.clientUnregisteredMembers));
                 }
 

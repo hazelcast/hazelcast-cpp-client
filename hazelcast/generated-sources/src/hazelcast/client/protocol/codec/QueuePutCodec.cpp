@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool QueuePutCodec::RETRYABLE = false;
                 const ResponseMessageConst QueuePutCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> QueuePutCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> QueuePutCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueuePutCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

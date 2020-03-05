@@ -18,8 +18,8 @@
 
 #include <stdint.h>
 #include <memory>
-#include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include <cassert>
+#include <memory>
 
 #include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -104,12 +104,12 @@ namespace hazelcast {
         template<typename V>
         class Future {
         public:
-            typedef std::auto_ptr<serialization::pimpl::Data> (*Decoder)(protocol::ClientMessage &response);
+            typedef std::unique_ptr<serialization::pimpl::Data> (*Decoder)(protocol::ClientMessage &response);
 
             /**
              * This constructor is only for internal use!!!!
              */
-            Future(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &invocationFuture,
+            Future(const std::shared_ptr<spi::impl::ClientInvocationFuture> &invocationFuture,
                    serialization::pimpl::SerializationService &serializationService,
                    Decoder decoder) : clientInvocationFuture(invocationFuture),
                                       serializationService(serializationService), decoderFunction(decoder) {
@@ -158,21 +158,21 @@ namespace hazelcast {
              * @throws one of the hazelcast exceptions, if an exception was stored in the shared state referenced by
              * the future
              */
-            std::auto_ptr<V> get() {
+            std::unique_ptr<V> get() {
                 if (!clientInvocationFuture.get()) {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized. "
                             "It may have been moved from.");
                 }
 
-                boost::shared_ptr<protocol::ClientMessage> responseMsg = clientInvocationFuture->get();
+                std::shared_ptr<protocol::ClientMessage> responseMsg = clientInvocationFuture->get();
 
                 assert(responseMsg.get());
 
                 clientInvocationFuture.reset();
 
-                std::auto_ptr<serialization::pimpl::Data> response = decoderFunction(*responseMsg);
+                std::unique_ptr<serialization::pimpl::Data> response = decoderFunction(*responseMsg);
 
-                std::auto_ptr<V> result = serializationService.toObject<V>(response.get());
+                std::unique_ptr<V> result = serializationService.toObject<V>(response.get());
 
                 return result;
             }
@@ -223,7 +223,7 @@ namespace hazelcast {
             }
 
         private:
-            boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture;
+            std::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture;
             serialization::pimpl::SerializationService &serializationService;
             Decoder decoderFunction;
         };
@@ -234,12 +234,12 @@ namespace hazelcast {
         template<>
         class Future<TypedData> {
         public:
-            typedef std::auto_ptr<serialization::pimpl::Data> (*Decoder)(protocol::ClientMessage &response);
+            typedef std::unique_ptr<serialization::pimpl::Data> (*Decoder)(protocol::ClientMessage &response);
 
             /**
              * This constructor is only for internal use!!!!
              */
-            Future(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &invocationFuture,
+            Future(const std::shared_ptr<spi::impl::ClientInvocationFuture> &invocationFuture,
                    serialization::pimpl::SerializationService &serializationService,
                    Decoder decoder) : clientInvocationFuture(invocationFuture),
                                       serializationService(serializationService), decoderFunction(decoder) {
@@ -294,13 +294,13 @@ namespace hazelcast {
                             "It may have been moved from.");
                 }
 
-                boost::shared_ptr<protocol::ClientMessage> responseMsg = clientInvocationFuture->get();
+                std::shared_ptr<protocol::ClientMessage> responseMsg = clientInvocationFuture->get();
 
                 assert(responseMsg.get());
 
                 clientInvocationFuture.reset();
 
-                std::auto_ptr<serialization::pimpl::Data> response = decoderFunction(*responseMsg);
+                std::unique_ptr<serialization::pimpl::Data> response = decoderFunction(*responseMsg);
 
                 return TypedData(response, serializationService);
             }
@@ -351,7 +351,7 @@ namespace hazelcast {
             }
 
         private:
-            boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture;
+            std::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture;
             serialization::pimpl::SerializationService &serializationService;
             Decoder decoderFunction;
         };

@@ -35,8 +35,8 @@ namespace hazelcast {
          * @param <K> Type of the key
          * @param <V> Type of the value
          */
-        template<typename K, typename V, typename KS, typename VS, typename Comparator  = std::less<boost::shared_ptr<KS> > >
-        class SampleableConcurrentHashMap : public SynchronizedMap<boost::shared_ptr<KS>, VS, Comparator> {
+        template<typename K, typename V, typename KS, typename VS, typename Comparator  = std::less<std::shared_ptr<KS> > >
+        class SampleableConcurrentHashMap : public SynchronizedMap<std::shared_ptr<KS>, VS, Comparator> {
         public:
             SampleableConcurrentHashMap(int32_t initialCapacity) {
             }
@@ -46,15 +46,15 @@ namespace hazelcast {
              */
             class SamplingEntry {
             public:
-                SamplingEntry(const boost::shared_ptr<KS> entryKey, const boost::shared_ptr<VS> entryValue) : key(
+                SamplingEntry(const std::shared_ptr<KS> entryKey, const std::shared_ptr<VS> entryValue) : key(
                         entryKey), value(entryValue) {
                 }
 
-                const boost::shared_ptr<KS> &getEntryKey() const {
+                const std::shared_ptr<KS> &getEntryKey() const {
                     return key;
                 }
 
-                const boost::shared_ptr<VS> &getEntryValue() const {
+                const std::shared_ptr<VS> &getEntryValue() const {
                     return value;
                 }
 
@@ -85,11 +85,11 @@ namespace hazelcast {
                 }
 
             protected:
-                const boost::shared_ptr<KS> key;
-                const boost::shared_ptr<VS> value;
+                const std::shared_ptr<KS> key;
+                const std::shared_ptr<VS> value;
             private:
                 template<typename T>
-                static bool eq(const boost::shared_ptr<T> &o1, const boost::shared_ptr<T> &o2) {
+                static bool eq(const std::shared_ptr<T> &o1, const std::shared_ptr<T> &o2) {
                     return o1.get() == NULL ? (o2.get() == NULL) : (*o1 == *o2);
                 }
             };
@@ -105,7 +105,7 @@ namespace hazelcast {
              * @return the next index (checkpoint) for later fetches
              */
 /*
-            int fetchKeys(int tableIndex, int size, std::vector<boost::shared_ptr<K> > &keys) {
+            int fetchKeys(int tableIndex, int size, std::vector<std::shared_ptr<K> > &keys) {
                     const long now = Clock.currentTimeMillis();
                     final Segment<K, V> segment = segments[0];
                     final HashEntry<K, V>[] currentTable = segment.table;
@@ -180,20 +180,20 @@ namespace hazelcast {
              */
             typedef typename SampleableConcurrentHashMap<K, V, KS, VS>::SamplingEntry E;
 
-            std::auto_ptr<util::Iterable<E> > getRandomSamples(int sampleCount) const {
+            std::unique_ptr<util::Iterable<E> > getRandomSamples(int sampleCount) const {
                 if (sampleCount < 0) {
                     throw client::exception::IllegalArgumentException("Sample count cannot be a negative value.");
                 }
-                if (sampleCount == 0 || SynchronizedMap<boost::shared_ptr<KS>, VS>::size() == 0) {
-                    return std::auto_ptr<util::Iterable<E> >();
+                if (sampleCount == 0 || SynchronizedMap<std::shared_ptr<KS>, VS>::size() == 0) {
+                    return std::unique_ptr<util::Iterable<E> >();
                 }
 
-                return std::auto_ptr<util::Iterable<E> >(new LazySamplingEntryIterableIterator(sampleCount, *this));
+                return std::unique_ptr<util::Iterable<E> >(new LazySamplingEntryIterableIterator(sampleCount, *this));
             }
 
         protected:
-            virtual bool isValidForFetching(const boost::shared_ptr<VS> &value, int64_t now) const {
-                const boost::shared_ptr<client::internal::eviction::Expirable> &expirable = boost::dynamic_pointer_cast<client::internal::eviction::Expirable>(
+            virtual bool isValidForFetching(const std::shared_ptr<VS> &value, int64_t now) const {
+                const std::shared_ptr<client::internal::eviction::Expirable> &expirable = std::dynamic_pointer_cast<client::internal::eviction::Expirable>(
                         value);
                 if (NULL != expirable.get()) {
                     return !(expirable->isExpiredAt(now));
@@ -201,13 +201,13 @@ namespace hazelcast {
                 return true;
             }
 
-            virtual bool isValidForSampling(const boost::shared_ptr<VS> &value) const {
+            virtual bool isValidForSampling(const std::shared_ptr<VS> &value) const {
                 return value.get() != NULL;
             }
 
-            virtual boost::shared_ptr<E> createSamplingEntry(boost::shared_ptr<KS> &key,
-                                                             boost::shared_ptr<VS> &value) const {
-                return boost::shared_ptr<E>(new SamplingEntry(key, value));
+            virtual std::shared_ptr<E> createSamplingEntry(std::shared_ptr<KS> &key,
+                                                             std::shared_ptr<VS> &value) const {
+                return std::shared_ptr<E>(new SamplingEntry(key, value));
             }
         private:
             /**
@@ -253,8 +253,8 @@ namespace hazelcast {
                             currentIndex = 0;
                         }
                         while (currentEntry.get() != NULL) {
-                            boost::shared_ptr<VS> value = currentEntry->second;
-                            boost::shared_ptr<KS> key = currentEntry->first;
+                            std::shared_ptr<VS> value = currentEntry->second;
+                            std::shared_ptr<KS> key = currentEntry->first;
                             currentEntry = internalMap.getEntry((size_t) currentIndex);
                             if (internalMap.isValidForSampling(value)) {
                                 currentSample = internalMap.createSamplingEntry(key, value);
@@ -275,7 +275,7 @@ namespace hazelcast {
                 }
 
                 //@Override
-                boost::shared_ptr<E> next() {
+                std::shared_ptr<E> next() {
                     if (currentSample.get() != NULL) {
                         return currentSample;
                     } else {
@@ -291,11 +291,11 @@ namespace hazelcast {
             private:
                 const int maxEntryCount;
                 const int randomNumber;
-                boost::shared_ptr<std::pair<boost::shared_ptr<KS>, boost::shared_ptr<VS> > > currentEntry;
+                std::shared_ptr<std::pair<std::shared_ptr<KS>, std::shared_ptr<VS> > > currentEntry;
                 int returnedEntryCount;
                 int currentIndex;
                 bool reachedToEnd;
-                boost::shared_ptr<E> currentSample;
+                std::shared_ptr<E> currentSample;
                 const SampleableConcurrentHashMap &internalMap;
                 int startIndex;
             };

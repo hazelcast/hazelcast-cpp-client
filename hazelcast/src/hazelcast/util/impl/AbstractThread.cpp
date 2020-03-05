@@ -27,7 +27,7 @@ namespace hazelcast {
             /**
              * @param runnable The runnable to run when this thread is started.
              */
-            AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable, util::ILogger &logger)
+            AbstractThread::AbstractThread(const std::shared_ptr<Runnable> &runnable, util::ILogger &logger)
                         : state(UNSTARTED), target(runnable), finishedLatch(new util::CountDownLatch(1)), logger(logger) {
             }
 
@@ -43,7 +43,8 @@ namespace hazelcast {
             }
 
             void AbstractThread::start() {
-                if (!state.compareAndSet(UNSTARTED, STARTED)) {
+                ThreadState expected = UNSTARTED;
+                if (!state.compare_exchange_strong(expected, STARTED)) {
                     return;
                 }
                 if (target.get() == NULL) {
@@ -53,7 +54,7 @@ namespace hazelcast {
                 RunnableInfo *info = new RunnableInfo(target, finishedLatch, logger.shared_from_this());
                 startInternal(info);
 
-                startedThreads.put(getThreadId(), boost::shared_ptr<UnmanagedAbstractThreadPointer>(
+                startedThreads.put(getThreadId(), std::shared_ptr<UnmanagedAbstractThreadPointer>(
                         new UnmanagedAbstractThreadPointer(this)));
             }
 
@@ -72,7 +73,8 @@ namespace hazelcast {
             }
 
             void AbstractThread::cancel() {
-                if (!state.compareAndSet(STARTED, CANCELLED)) {
+                ThreadState expected = STARTED;
+                if (!state.compare_exchange_strong(expected, CANCELLED)) {
                     return;
                 }
 
@@ -100,7 +102,8 @@ namespace hazelcast {
             }
 
             bool AbstractThread::join() {
-                if (!state.compareAndSet(STARTED, JOINED)) {
+                ThreadState expected = STARTED;
+                if (!state.compare_exchange_strong(expected, JOINED)) {
                     return false;
                 }
 
@@ -121,7 +124,7 @@ namespace hazelcast {
 
             void AbstractThread::sleep(int64_t timeInMilliseconds) {
                 int64_t currentThreadId = util::getCurrentThreadId();
-                boost::shared_ptr<UnmanagedAbstractThreadPointer> currentThread = startedThreads.get(currentThreadId);
+                std::shared_ptr<UnmanagedAbstractThreadPointer> currentThread = startedThreads.get(currentThreadId);
                 if (currentThread.get()) {
                     currentThread->getThread()->interruptibleSleepMillis(timeInMilliseconds);
                 } else {
@@ -129,7 +132,7 @@ namespace hazelcast {
                 }
             }
 
-            const boost::shared_ptr<Runnable> &AbstractThread::getTarget() const {
+            const std::shared_ptr<Runnable> &AbstractThread::getTarget() const {
                 return target;
             }
 
@@ -144,9 +147,9 @@ namespace hazelcast {
                 return thread;
             }
 
-            AbstractThread::RunnableInfo::RunnableInfo(const boost::shared_ptr<Runnable> &target,
-                                                       const boost::shared_ptr<CountDownLatch> &finishWaitLatch,
-                                                       const boost::shared_ptr<ILogger> &logger) : target(target),
+            AbstractThread::RunnableInfo::RunnableInfo(const std::shared_ptr<Runnable> &target,
+                                                       const std::shared_ptr<CountDownLatch> &finishWaitLatch,
+                                                       const std::shared_ptr<ILogger> &logger) : target(target),
                                                                                                    finishWaitLatch(
                                                                                                            finishWaitLatch),
                                                                                                    logger(logger) {}

@@ -28,12 +28,12 @@ namespace hazelcast {
                 const bool ClientCreateProxyCodec::RETRYABLE = false;
                 const ResponseMessageConst ClientCreateProxyCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> ClientCreateProxyCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ClientCreateProxyCodec::encodeRequest(
                         const std::string &name, 
                         const std::string &serviceName, 
                         const Address &target) {
                     int32_t requiredDataSize = calculateDataSize(name, serviceName, target);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ClientCreateProxyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

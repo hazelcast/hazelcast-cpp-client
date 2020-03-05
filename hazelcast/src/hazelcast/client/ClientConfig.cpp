@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/client/internal/config/ConfigUtils.h"
@@ -42,7 +42,7 @@ namespace hazelcast {
 
         std::set<Address> ClientConfig::getAddresses() {
             std::set<Address> result;
-            BOOST_FOREACH(const Address &address, networkConfig.getAddresses()) {
+            for (const Address &address : networkConfig.getAddresses()) {
                             result.insert(address);
                         }
             return result;
@@ -128,7 +128,7 @@ namespace hazelcast {
 
             membershipListeners.insert(listener);
             managedMembershipListeners.insert(
-                    boost::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
+                    std::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
             return *this;
         }
 
@@ -140,17 +140,17 @@ namespace hazelcast {
 
             membershipListeners.insert(listener);
             managedMembershipListeners.insert(
-                    boost::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
+                    std::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
             return *this;
         }
 
-        ClientConfig &ClientConfig::addListener(const boost::shared_ptr<MembershipListener> &listener) {
+        ClientConfig &ClientConfig::addListener(const std::shared_ptr<MembershipListener> &listener) {
             membershipListeners.insert(listener.get());
             managedMembershipListeners.insert(listener);
             return *this;
         }
 
-        ClientConfig &ClientConfig::addListener(const boost::shared_ptr<InitialMembershipListener> &listener) {
+        ClientConfig &ClientConfig::addListener(const std::shared_ptr<InitialMembershipListener> &listener) {
             membershipListeners.insert(listener.get());
             managedMembershipListeners.insert(listener);
             return *this;
@@ -232,17 +232,17 @@ namespace hazelcast {
             return *this;
         }
 
-        const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig>
+        const std::shared_ptr<mixedtype::config::MixedNearCacheConfig>
         ClientConfig::getMixedNearCacheConfig(const std::string &name) {
-            return boost::static_pointer_cast<mixedtype::config::MixedNearCacheConfig>(
+            return std::static_pointer_cast<mixedtype::config::MixedNearCacheConfig>(
                     getNearCacheConfig<TypedData, TypedData>(name));
         }
 
-        const boost::shared_ptr<std::string> &ClientConfig::getInstanceName() const {
+        const std::shared_ptr<std::string> &ClientConfig::getInstanceName() const {
             return instanceName;
         }
 
-        void ClientConfig::setInstanceName(const boost::shared_ptr<std::string> &instanceName) {
+        void ClientConfig::setInstanceName(const std::shared_ptr<std::string> &instanceName) {
             ClientConfig::instanceName = instanceName;
         }
 
@@ -264,9 +264,9 @@ namespace hazelcast {
             return *this;
         }
 
-        boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
+        std::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
-            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
                     configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
             if (config.get() != NULL) {
                 return config;
@@ -275,14 +275,14 @@ namespace hazelcast {
         }
 
 
-        boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
+        std::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
-            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
                     configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
             if (config.get() != NULL) {
                 return config;
             }
-            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> defConfig = flakeIdGeneratorConfigMap.get("default");
+            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> defConfig = flakeIdGeneratorConfigMap.get("default");
             if (defConfig.get() == NULL) {
                 defConfig.reset(new config::ClientFlakeIdGeneratorConfig("default"));
                 flakeIdGeneratorConfigMap.put(defConfig->getName(), defConfig);
@@ -293,12 +293,12 @@ namespace hazelcast {
             return config;
         }
 
-        ClientConfig &ClientConfig::addFlakeIdGeneratorConfig(const boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
+        ClientConfig &ClientConfig::addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
             flakeIdGeneratorConfigMap.put(config->getName(), config);
             return *this;
         }
 
-        const std::set<boost::shared_ptr<MembershipListener> > &ClientConfig::getManagedMembershipListeners() const {
+        const std::set<std::shared_ptr<MembershipListener> > &ClientConfig::getManagedMembershipListeners() const {
             return managedMembershipListeners;
         }
 

@@ -28,13 +28,13 @@ namespace hazelcast {
                 const bool TransactionalSetAddCodec::RETRYABLE = false;
                 const ResponseMessageConst TransactionalSetAddCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> TransactionalSetAddCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> TransactionalSetAddCodec::encodeRequest(
                         const std::string &name,
                         const std::string &txnId,
                         int64_t threadId,
                         const serialization::pimpl::Data &item) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, item);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalSetAddCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

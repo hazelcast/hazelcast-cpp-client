@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
-
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 
@@ -52,7 +46,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     ClientConfig clientConfig;
                     clientConfig.getSerializationConfig().setGlobalSerializer(
-                            boost::shared_ptr<serialization::StreamSerializer>(new WriteReadIntGlobalSerializer()));
+                            std::shared_ptr<serialization::StreamSerializer>(new WriteReadIntGlobalSerializer()));
                     client = new HazelcastClient(clientConfig);
                     imap = new mixedtype::IMap(client->toMixedType().getMap("UnknownObject"));
                 }
@@ -85,7 +79,7 @@ namespace hazelcast {
                 std::ostringstream out;
                 out << data.getType();
                 ASSERT_TRUE(out.str().find("123") != std::string::npos);
-                std::auto_ptr<int> value = data.get<int>();
+                std::unique_ptr<int> value = data.get<int>();
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
             }

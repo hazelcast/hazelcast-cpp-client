@@ -30,9 +30,9 @@ namespace hazelcast {
             class MemberAttributeChange {
             public:
 
-                MemberAttributeChange(std::auto_ptr<std::string> uuid,
+                MemberAttributeChange(std::unique_ptr<std::string> &uuid,
                                       MemberAttributeEvent::MemberAttributeOperationType const &operationType,
-                                      std::auto_ptr<std::string> key, std::auto_ptr<std::string> value);
+                                      std::unique_ptr<std::string> &key, std::unique_ptr<std::string> &value);
 
                 MemberAttributeChange();
 
@@ -45,10 +45,10 @@ namespace hazelcast {
                 const std::string &getValue() const;
 
             private:
-                std::auto_ptr<std::string> uuid;
+                std::unique_ptr<std::string> uuid;
                 MemberAttributeEvent::MemberAttributeOperationType operationType;
-                std::auto_ptr<std::string> key;
-                std::auto_ptr<std::string> value;
+                std::unique_ptr<std::string> key;
+                std::unique_ptr<std::string> value;
             };
         }
     }

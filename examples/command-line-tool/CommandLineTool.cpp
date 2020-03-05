@@ -54,7 +54,7 @@ struct printer mout;
 
 struct printerSharedPtr {
     template<typename T>
-    printer &operator <<(const boost::shared_ptr<T> &obj) {
+    printer &operator <<(const std::shared_ptr<T> &obj) {
         if (silent) {
             return mout;
         }
@@ -1209,7 +1209,7 @@ public:
         }
         int c = 1;
         for (int i = 0; i < count; i++) {
-            boost::shared_ptr<std::string> obj = getQueue().poll();
+            std::shared_ptr<std::string> obj = getQueue().poll();
             if (obj == NULL) {
                 break;
             }
@@ -1322,7 +1322,7 @@ private:
 //}
 //
 //
-//void onMessage(Message<std::sttng> msg) {
+//void onMessage(Message<std::sttng> &&msg) {
 //    mout << "Topic received = " << msg.getMessageObject() << "\n";
 //}
 

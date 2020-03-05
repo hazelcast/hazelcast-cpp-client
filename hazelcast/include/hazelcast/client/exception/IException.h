@@ -25,7 +25,7 @@
 #include <ostream>
 #include <memory>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -62,7 +62,7 @@ namespace hazelcast {
                            int32_t errorNo, bool isRuntime, bool retryable = false);
 
                 IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           int32_t errorNo, const boost::shared_ptr<IException> &cause, bool isRuntime, bool retryable = false);
+                           int32_t errorNo, const std::shared_ptr<IException> &cause, bool isRuntime, bool retryable = false);
 
                 virtual ~IException() throw();
 
@@ -84,7 +84,7 @@ namespace hazelcast {
                  * Exception throwing internals works by making a temporary copy of the exception.
                  * @return The copy of this exception
                  */
-                virtual std::auto_ptr<IException> clone() const;
+                virtual std::unique_ptr<IException> clone() const;
 
                 const std::string &getDetails() const;
 
@@ -92,7 +92,7 @@ namespace hazelcast {
 
                 int32_t getCauseErrorCode() const;
 
-                const boost::shared_ptr<IException> &getCause() const;
+                const std::shared_ptr<IException> &getCause() const;
 
                 bool isRuntimeException() const;
 
@@ -107,7 +107,7 @@ namespace hazelcast {
                 std::string report;
                 int32_t errorCode;
                 int32_t causeErrorCode;
-                boost::shared_ptr<IException> cause;
+                std::shared_ptr<IException> cause;
                 bool runtimeException;
                 bool retryable;
             };
@@ -133,8 +133,8 @@ namespace hazelcast {
                     return EXCEPTIONCLASS(source, msg.str());
                 }
 
-                boost::shared_ptr<EXCEPTIONCLASS> buildShared() {
-                    return boost::shared_ptr<EXCEPTIONCLASS>(new EXCEPTIONCLASS(source, msg.str()));
+                std::shared_ptr<EXCEPTIONCLASS> buildShared() {
+                    return std::shared_ptr<EXCEPTIONCLASS>(new EXCEPTIONCLASS(source, msg.str()));
                 }
 
             private:

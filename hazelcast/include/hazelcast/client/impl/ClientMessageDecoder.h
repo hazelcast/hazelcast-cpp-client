@@ -37,72 +37,58 @@ namespace hazelcast {
                 virtual ~ClientMessageDecoder() {
                 }
 
-                virtual boost::shared_ptr<T>
-                decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
+                virtual std::shared_ptr<T>
+                decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
                                     serialization::pimpl::SerializationService &serializationService) = 0;
             };
 
             template<typename CODEC, typename V>
             class DataMessageDecoder : public ClientMessageDecoder<V> {
             public:
-                virtual boost::shared_ptr<V>
-                decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
+                virtual std::shared_ptr<V>
+                decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
                                     serialization::pimpl::SerializationService &serializationService) {
-                    return boost::shared_ptr<V>(serializationService.toObject<V>(
+                    return std::shared_ptr<V>(serializationService.toObject<V>(
                             CODEC::ResponseParameters::decode(*clientMessage).response.get()));
                 }
 
-                static const boost::shared_ptr<ClientMessageDecoder<V> > &instance();
-
-            private:
-                static const boost::shared_ptr<ClientMessageDecoder<V> > singleton;
+                static const std::shared_ptr<ClientMessageDecoder<V> > &instance();
             };
 
             template<typename CODEC, typename V>
-            const boost::shared_ptr<ClientMessageDecoder<V> > DataMessageDecoder<CODEC, V>::singleton(
-                    new DataMessageDecoder<CODEC, V>());
-
-            template<typename CODEC, typename V>
-            const boost::shared_ptr<ClientMessageDecoder<V> > &DataMessageDecoder<CODEC, V>::instance() {
+            const std::shared_ptr<ClientMessageDecoder<V> > &DataMessageDecoder<CODEC, V>::instance() {
+                static std::shared_ptr<ClientMessageDecoder<V> > singleton(new DataMessageDecoder<CODEC, V>());
                 return singleton;
             }
 
             class HAZELCAST_API VoidMessageDecoder : public ClientMessageDecoder<void> {
             public:
-                virtual boost::shared_ptr<void>
-                decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
+                virtual std::shared_ptr<void>
+                decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
                                     serialization::pimpl::SerializationService &serializationService);
 
-                static const boost::shared_ptr<ClientMessageDecoder<void> > &instance();
-
-            private:
-                static const boost::shared_ptr<ClientMessageDecoder<void> > singleton;
+                static const std::shared_ptr<ClientMessageDecoder<void> > &instance();
             };
 
 
             template<typename CODEC, typename PRIMITIVE_TYPE>
             class PrimitiveMessageDecoder : public ClientMessageDecoder<PRIMITIVE_TYPE> {
             public:
-                virtual boost::shared_ptr<PRIMITIVE_TYPE>
-                decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
+                virtual std::shared_ptr<PRIMITIVE_TYPE>
+                decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
                                     serialization::pimpl::SerializationService &serializationService) {
-                    return boost::shared_ptr<PRIMITIVE_TYPE>(new PRIMITIVE_TYPE(
+                    return std::shared_ptr<PRIMITIVE_TYPE>(new PRIMITIVE_TYPE(
                             CODEC::ResponseParameters::decode(*clientMessage).response));
                 }
 
-                static const boost::shared_ptr<ClientMessageDecoder<PRIMITIVE_TYPE> > &instance();
-
-            private:
-                static const boost::shared_ptr<ClientMessageDecoder<PRIMITIVE_TYPE> > singleton;
+                static const std::shared_ptr<ClientMessageDecoder<PRIMITIVE_TYPE> > &instance();
             };
 
             template<typename CODEC, typename PRIMITIVE_TYPE>
-            const boost::shared_ptr<ClientMessageDecoder<PRIMITIVE_TYPE> > PrimitiveMessageDecoder<CODEC, PRIMITIVE_TYPE>::singleton(
-                    new PrimitiveMessageDecoder<CODEC, PRIMITIVE_TYPE>());
-
-            template<typename CODEC, typename PRIMITIVE_TYPE>
-            const boost::shared_ptr<ClientMessageDecoder<PRIMITIVE_TYPE> > &
+            const std::shared_ptr<ClientMessageDecoder<PRIMITIVE_TYPE> > &
             PrimitiveMessageDecoder<CODEC, PRIMITIVE_TYPE>::instance() {
+                static std::shared_ptr<ClientMessageDecoder<PRIMITIVE_TYPE> > singleton(
+                        new PrimitiveMessageDecoder<CODEC, PRIMITIVE_TYPE>());
                 return singleton;
             }
         }

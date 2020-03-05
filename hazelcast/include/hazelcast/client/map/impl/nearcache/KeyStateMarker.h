@@ -63,7 +63,7 @@ namespace hazelcast {
                             REMOVED
                         };
 
-                        static const std::auto_ptr<KeyStateMarker> TRUE_MARKER;
+                        static const std::unique_ptr<KeyStateMarker> TRUE_MARKER;
                     };
 
                     class HAZELCAST_API TrueMarkerImpl : public KeyStateMarker {

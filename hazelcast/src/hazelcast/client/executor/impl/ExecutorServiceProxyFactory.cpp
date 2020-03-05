@@ -25,8 +25,8 @@ namespace hazelcast {
                 ExecutorServiceProxyFactory::ExecutorServiceProxyFactory(spi::ClientContext *clientContext) : clientContext(
                         clientContext) {}
 
-                boost::shared_ptr<spi::ClientProxy> ExecutorServiceProxyFactory::create(const std::string &id) {
-                    return boost::shared_ptr<spi::ClientProxy>(
+                std::shared_ptr<spi::ClientProxy> ExecutorServiceProxyFactory::create(const std::string &id) {
+                    return std::shared_ptr<spi::ClientProxy>(
                             new IExecutorService(id, clientContext));
                 }
             }

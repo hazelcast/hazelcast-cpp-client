@@ -74,7 +74,7 @@ namespace hazelcast {
                 for (int fd = socketRange.min;numSelected > 0 && fd <= socketRange.max; ++fd) {
                     if (FD_ISSET(fd, &write_fds)) {
                         --numSelected;
-                        boost::shared_ptr<Connection> conn = connectionManager.getActiveConnection(fd);
+                        std::shared_ptr<Connection> conn = connectionManager.getActiveConnection(fd);
 
                         if (conn.get() != NULL) {
                             socketSet.removeSocket(&conn->getSocket());

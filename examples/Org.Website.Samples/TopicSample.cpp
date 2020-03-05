@@ -19,7 +19,7 @@ using namespace hazelcast::client;
 
 class TopicSample : public topic::MessageListener<std::string> {
 public:
-    virtual void onMessage(std::auto_ptr<topic::Message<std::string> > message) {
+    virtual void onMessage(std::unique_ptr<topic::Message<std::string> > &&message) {
         std::cout << "Got message " << message->getMessageObject() << std::endl;
     }
 };

@@ -40,7 +40,7 @@ typedef int socklen_t;
 #endif
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/config/SocketOptions.h"
@@ -120,7 +120,7 @@ namespace hazelcast {
 
                     void setBlocking(bool blocking);
 
-                    std::auto_ptr<Address> localSocketAddress() const;
+                    std::unique_ptr<Address> localSocketAddress() const;
 
                 private:
                     TcpSocket(const Socket &rhs);

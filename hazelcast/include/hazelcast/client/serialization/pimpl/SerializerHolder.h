@@ -39,20 +39,20 @@ namespace hazelcast {
                 class HAZELCAST_API SerializerHolder : public util::Disposable {
 
                 public:
-                    SerializerHolder(const boost::shared_ptr<StreamSerializer> &globalSerializer);
+                    SerializerHolder(const std::shared_ptr<StreamSerializer> &globalSerializer);
 
-                    bool registerSerializer(const boost::shared_ptr<StreamSerializer> &serializer);
+                    bool registerSerializer(const std::shared_ptr<StreamSerializer> &serializer);
 
-                    boost::shared_ptr<StreamSerializer> serializerFor(int typeId);
+                    std::shared_ptr<StreamSerializer> serializerFor(int typeId);
 
                     void dispose();
 
                 private:
-                    boost::shared_ptr<StreamSerializer> lookupGlobalSerializer(int typeId);
+                    std::shared_ptr<StreamSerializer> lookupGlobalSerializer(int typeId);
 
                     hazelcast::util::SynchronizedMap<int, StreamSerializer> serializers;
                     util::AtomicBoolean active;
-                    const boost::shared_ptr<StreamSerializer> globalSerializer;
+                    const std::shared_ptr<StreamSerializer> globalSerializer;
 
                 };
             }

@@ -40,8 +40,8 @@ namespace hazelcast {
             public:
                 virtual ~ExceptionFactory();
 
-                virtual std::auto_ptr<exception::IException> createException(const std::string &source,
-                                                                             const std::auto_ptr<std::string> &message,
+                virtual std::unique_ptr<exception::IException> createException(const std::string &source,
+                                                                             const std::unique_ptr<std::string> &message,
                                                                              const std::string &details,
                                                                              int32_t causeErrorCode) = 0;
             };
@@ -49,10 +49,10 @@ namespace hazelcast {
             template<typename EXCEPTION>
             class ExceptionFactoryImpl : public ExceptionFactory {
             public:
-                std::auto_ptr<exception::IException>
-                createException(const std::string &source, const std::auto_ptr<std::string> &message,
+                std::unique_ptr<exception::IException>
+                createException(const std::string &source, const std::unique_ptr<std::string> &message,
                         const std::string &details, int32_t causeErrorCode) {
-                    return std::auto_ptr<exception::IException>(
+                    return std::unique_ptr<exception::IException>(
                             new EXCEPTION(source, (message.get() ? (*message + ". Details:") : ". Details:") + details,
                                     causeErrorCode));
                 }
@@ -64,7 +64,7 @@ namespace hazelcast {
 
                 virtual ~ClientExceptionFactory();
 
-                std::auto_ptr<exception::IException> createException(const std::string &source,
+                std::unique_ptr<exception::IException> createException(const std::string &source,
                                                                      protocol::ClientMessage &clientMessage) const;
             private:
                 void registerException(int32_t errorCode, ExceptionFactory *factory);

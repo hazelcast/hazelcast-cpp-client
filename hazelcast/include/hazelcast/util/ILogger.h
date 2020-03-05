@@ -23,15 +23,13 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <mutex>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 // We need to include this header before easylogging++/easylogging++.h
 #include <winsock2.h>
 #endif
-#include <easylogging++/easylogging++.h>
-
-
-#include <boost/enable_shared_from_this.hpp>
+#include <easylogging++.h>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/LoggerConfig.h"
@@ -45,32 +43,32 @@
 
 namespace hazelcast {
     namespace util {
-        class LeveledLogger;
-
-        class HAZELCAST_API ILogger : public boost::enable_shared_from_this<ILogger> {
-            friend class LeveledLogger;
-
+        class HAZELCAST_API ILogger : public std::enable_shared_from_this<ILogger> {
         public:
             ILogger(const std::string &instanceName, const std::string &groupName, const std::string &version,
                     const client::config::LoggerConfig &loggerConfig);
 
             ~ILogger();
 
-            void severe(const std::string &message);
+            template <typename T, typename... Targs>
+            void severe(const T &value, const Targs&... fargs) {
+                log(el::Level::Fatal, value, fargs...);
+            }
 
-            void warning(const std::string &message);
+            template <typename T, typename... Targs>
+            void warning(const T &value, const Targs&... fargs) {
+                log(el::Level::Warning, value, fargs...);
+            }
 
-            void info(const std::string &message);
+            template <typename T, typename... Targs>
+            void info(const T &value, const Targs&... fargs) {
+                log(el::Level::Info, value, fargs...);
+            }
 
-            void finest(const std::string &message);
-
-            LeveledLogger finest();
-
-            LeveledLogger info();
-
-            LeveledLogger warning();
-
-            LeveledLogger severe();
+            template <typename T, typename... Targs>
+            void finest(const T &value, const Targs&... fargs) {
+                log(el::Level::Debug, value, fargs...);
+            }
 
             bool isEnabled(const client::LoggerLevel::Level &logLevel) const;
 
@@ -83,48 +81,58 @@ namespace hazelcast {
 
             bool isFinestEnabled() const;
 
+            bool start();
+
+            const std::string &getInstanceName() const;
+
         private:
             const std::string instanceName;
             const std::string groupName;
             const std::string version;
             std::string prefix;
-            easyloggingpp::Logger *easyLogger;
+            el::Logger *easyLogger;
             client::config::LoggerConfig loggerConfig;
-
-            void init();
+            std::once_flag elOnceflag;
 
             ILogger(const ILogger &);
 
             ILogger &operator=(const ILogger &);
 
-        };
+            void composeMessage(std::ostringstream &out) {}
 
-        /**
-         * TODO: The lock may not be released on thread cancellations since the destructor may not be called.
-         */
-        class HAZELCAST_API LeveledLogger {
-        public:
-            LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel);
-
-            LeveledLogger(const LeveledLogger &rhs);
-
-            virtual ~LeveledLogger();
-
-            template<typename T>
-            LeveledLogger &operator<<(const T &value) {
-                if (logger.isEnabled(requestedLogLevel)) {
-                    out << value;
-                }
-                return *this;
+            template <typename T, typename... Targs>
+            void composeMessage(std::ostringstream &out, const T &value, const Targs&... fargs) {
+                out << value;
+                composeMessage(out, fargs...);
             }
 
-        private:
-            LeveledLogger();
+            template <typename T, typename... Targs>
+            void log(el::Level level, const T &value, const Targs&... fargs) {
+                if (!easyLogger->enabled(level)) {
+                    return;
+                }
+                std::ostringstream out;
+                composeMessage(out, value, fargs...);
+                switch (level) {
+                    case el::Level::Debug:
+                        easyLogger->debug(out.str());
+                        break;
+                    case el::Level::Info:
+                        easyLogger->info(out.str());
+                        break;
+                    case el::Level::Warning:
+                        easyLogger->warn(out.str());
+                        break;
+                    case el::Level::Fatal:
+                        easyLogger->fatal(out.str());
+                        break;
+                    default:
+                        break;
+                }
+            }
 
-            ILogger &logger;
-            client::LoggerLevel::Level requestedLogLevel;
-            std::ostringstream out;
         };
+
     }
 }
 

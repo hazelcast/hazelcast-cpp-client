@@ -100,7 +100,7 @@ namespace hazelcast {
             * then return NULL in shared_ptr.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            boost::shared_ptr<V> get(const K &key) {
+            std::shared_ptr<V> get(const K &key) {
                 return mapImpl->get(key);
             }
 
@@ -112,7 +112,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified elements are incompatible with the server side.
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> put(const K &key, const V &value) {
+            std::shared_ptr<V> put(const K &key, const V &value) {
                 return mapImpl->put(key, value);
             }
 
@@ -127,7 +127,7 @@ namespace hazelcast {
             * @return the previous value in shared_ptr, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> put(const K &key, const V &value, int64_t ttlInMillis) {
+            std::shared_ptr<V> put(const K &key, const V &value, int64_t ttlInMillis) {
                 return mapImpl->put(key, value, ttlInMillis);
             }
 
@@ -138,7 +138,7 @@ namespace hazelcast {
             * then returns NULL in shared_ptr.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            boost::shared_ptr<V> remove(const K &key) {
+            std::shared_ptr<V> remove(const K &key) {
                 return mapImpl->remove(key);
             }
 
@@ -234,7 +234,7 @@ namespace hazelcast {
             * @return the previous value in shared_ptr, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
+            std::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
                 return mapImpl->putIfAbsent(key, value);
             }
 
@@ -249,7 +249,7 @@ namespace hazelcast {
             * @return the previous value of the entry, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, int64_t ttlInMillis) {
+            std::shared_ptr<V> putIfAbsent(const K &key, const V &value, int64_t ttlInMillis) {
                 return mapImpl->putIfAbsent(key, value, ttlInMillis);
             }
 
@@ -271,7 +271,7 @@ namespace hazelcast {
             * @return the previous value of the entry, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> replace(const K &key, const V &value) {
+            std::shared_ptr<V> replace(const K &key, const V &value) {
                 return mapImpl->replace(key, value);
             }
 
@@ -748,7 +748,7 @@ namespace hazelcast {
             * @return result of entry process.
             */
             template<typename ResultType, typename EntryProcessor>
-            boost::shared_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
+            std::shared_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnKey<ResultType, EntryProcessor>(key, entryProcessor);
             }
 
@@ -765,7 +765,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> >
+            std::map<K, std::shared_ptr<ResultType> >
             executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnKeys<ResultType, EntryProcessor>(keys, entryProcessor);
             }
@@ -798,7 +798,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
+            std::map<K, std::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor);
             }
 
@@ -820,7 +820,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor,
+            std::map<K, std::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor,
                                                                          const serialization::IdentifiedDataSerializable &predicate) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor, predicate);
             }
@@ -840,7 +840,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> >
+            std::map<K, std::shared_ptr<ResultType> >
             executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor, predicate);
             }
@@ -939,29 +939,29 @@ namespace hazelcast {
             /**
              * Asynchronously gets the given key.
              * <pre>
-             *   boost::shared_ptr<ICompletableFuture> future = map.getAsync(key);
+             *   std::shared_ptr<ICompletableFuture> future = map.getAsync(key);
              *   // do some other stuff, when ready get the result.
-             *   boost::shared_ptr<V> value = future->get();
+             *   std::shared_ptr<V> value = future->get();
              * </pre>
              * {@link ICompletableFuture#get()} will block until the actual map.get() completes.
              * If the application requires timely response,
              * then {@link ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)} can be used.
              * <pre>
              *   try {
-             *     boost::shared_ptr<ICompletableFuture> future = map.getAsync(key);
-             *     boost::shared_ptr<V> value = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     std::shared_ptr<ICompletableFuture> future = map.getAsync(key);
+             *     std::shared_ptr<V> value = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
              * </pre>
              * Additionally, the client can schedule an {@link ExecutionCallback<V>} to be invoked upon
              * completion of the {@code ICompletableFuture} via
-             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
-             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &, const std::shared_ptr<Executor> &)}:
              * <pre>{@code
              *   // assuming an IMap<std::string, std::string>
              *   ICompletableFuture<std::string> future = map.getAsync("a");
-             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
              * }</pre>
              * ExecutionException is never thrown.
              * <p>
@@ -975,35 +975,35 @@ namespace hazelcast {
              * @return ICompletableFuture from which the value of the key can be retrieved
              * @see ICompletableFuture
              */
-            boost::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
+            std::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
                 return mapImpl->getAsync(key);
             }
 
             /**
              * Asynchronously puts the given key and value.
              * <pre>
-             *   boost::shared_ptr<V> value = future->putAsync(key, value);
+             *   std::shared_ptr<V> value = future->putAsync(key, value);
              *   // do some other stuff, when ready get the result.
-             *   boost::shared_ptr<V> value = future->get();
+             *   std::shared_ptr<V> value = future->get();
              * </pre>
              * ICompletableFuture::get() will block until the actual map.put() completes.
              * If the application requires a timely response,
              * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
              * <pre>
              *   try {
-             *     boost::shared_ptr<ICompletableFuture> future = imap.putAsync(key, newValue);
-             *     boost::shared_ptr<V> value = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     std::shared_ptr<ICompletableFuture> future = imap.putAsync(key, newValue);
+             *     std::shared_ptr<V> value = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
              * </pre>
              * Additionally, the client can schedule an {@link ExecutionCallback<V>} to be invoked upon
-             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
-             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &, const std::shared_ptr<Executor> &)}:
              * <pre>{@code
              *   // assuming an IMap<std::string, std::string>
-             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b");
-             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             *   std::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b");
+             *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
              * }</pre>
              * ExecutionException is never thrown.
              * <p>
@@ -1034,7 +1034,7 @@ namespace hazelcast {
              * @see ICompletableFuture
              * @see #setAsync(Object, Object)
              */
-            boost::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
+            std::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
                 return mapImpl->putAsync(key, value);
             }
 
@@ -1045,28 +1045,28 @@ namespace hazelcast {
              * then the entry lives forever. If the TTL is negative, then the TTL
              * from the map configuration will be used (default: forever).
              * <pre>
-             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync(key, value, ttl, timeunit);
+             *   std::shared_ptr<ICompletableFuture> future = map.putAsync(key, value, ttl, timeunit);
              *   // do some other stuff, when ready get the result
-             *   boost::shared_ptr<V> value = future->get();
+             *   std::shared_ptr<V> value = future->get();
              * </pre>
              * ICompletableFuture::get() will block until the actual map.put() completes.
              * If your application requires a timely response,
              * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
              * <pre>
              *   try {
-             *     boost::shared_ptr<ICompletableFuture> future = map.putAsync(key, newValue, ttl, timeunit);
-             *     boost::shared_ptr<V> oldValue = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     std::shared_ptr<ICompletableFuture> future = map.putAsync(key, newValue, ttl, timeunit);
+             *     std::shared_ptr<V> oldValue = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
              * </pre>
              * The client can schedule an {@link ExecutionCallback<V>} to be invoked upon
-             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
-             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &, const std::shared_ptr<Executor> &)}:
              * <pre>{@code
              *   // assuming an IMap<std::string, std::string>
-             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
-             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             *   std::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
+             *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
              * }</pre>
              * ExecutionException is never thrown.
              * <p>
@@ -1104,7 +1104,7 @@ namespace hazelcast {
              * @see ICompletableFuture
              * @see #setAsync(const K&, const V&, int64_t, TimeUnit)
              */
-            boost::shared_ptr<ICompletableFuture<V> >
+            std::shared_ptr<ICompletableFuture<V> >
             putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
                 return mapImpl->putAsync(key, value, ttl, ttlUnit);
             }
@@ -1120,28 +1120,28 @@ namespace hazelcast {
              * then the entry lives forever. If the MaxIdle is negative, then the MaxIdle
              * from the map configuration will be used (default: forever).
              * <pre>
-             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync(key, value, ttl, timeunit);
+             *   std::shared_ptr<ICompletableFuture> future = map.putAsync(key, value, ttl, timeunit);
              *   // do some other stuff, when ready get the result
-             *   boost::shared_ptr<V> value = future->get();
+             *   std::shared_ptr<V> value = future->get();
              * </pre>
              * ICompletableFuture::get() will block until the actual map.put() completes.
              * If your application requires a timely response,
              * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
              * <pre>
              *   try {
-             *     boost::shared_ptr<ICompletableFuture> future = map.putAsync(key, newValue, ttl, timeunit);
+             *     std::shared_ptr<ICompletableFuture> future = map.putAsync(key, newValue, ttl, timeunit);
              *     Object oldValue = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
              * </pre>
              * The client can schedule an {@link ExecutionCallback<V>} to be invoked upon
-             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
-             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &, const std::shared_ptr<Executor> &)}:
              * <pre>{@code
              *   // assuming an IMap<std::string, std::string>
-             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
-             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             *   std::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
+             *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
              * }</pre>
              * ExecutionException is never thrown.
              * <p>
@@ -1182,7 +1182,7 @@ namespace hazelcast {
              * @see ICompletableFuture
              * @see #setAsync(const K&, const V&, int64_t, TimeUnit)
              */
-            boost::shared_ptr<ICompletableFuture<V> >
+            std::shared_ptr<ICompletableFuture<V> >
             putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                      int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
                 return mapImpl->putAsync(key, value, ttl, ttlUnit, maxIdle, maxIdleUnit);
@@ -1194,7 +1194,7 @@ namespace hazelcast {
              * Similar to the put operation except that set
              * doesn't return the old value, which is more efficient.
              * <pre>{@code
-             *   boost::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, value);
+             *   std::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, value);
              *   // do some other stuff, when ready wait for completion
              *   future->get();
              * }</pre>
@@ -1203,17 +1203,17 @@ namespace hazelcast {
              * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
              * <pre>{@code
              *   try {
-             *     boost::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue);
+             *     std::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue);
              *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
              * }</pre>
              * You can also schedule an {@link ExecutionCallback<V>} to be invoked upon
-             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
-             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &, const std::shared_ptr<Executor> &)}:
              * <pre>{@code
-             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
              * }</pre>
              * ExecutionException is never thrown.
              * <p><b>Interactions with the map store</b>
@@ -1235,7 +1235,7 @@ namespace hazelcast {
              * register an {@link ExecutionCallback<V>} to be invoked upon completion
              * @see ICompletableFuture
              */
-            boost::shared_ptr<ICompletableFuture<void> > setAsync(const K &key, const V &value) {
+            std::shared_ptr<ICompletableFuture<void> > setAsync(const K &key, const V &value) {
                 return mapImpl->setAsync(key, value);
             }
 
@@ -1260,18 +1260,18 @@ namespace hazelcast {
              * then you can use {@link ICompletableFuture#get(int64_t, TimeUnit)}.
              * <pre>
              *   try {
-             *     boost::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue, ttl, timeunit);
+             *     std::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue, ttl, timeunit);
              *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
              * </pre>
              * You can also schedule an {@link ExecutionCallback<V>} to be invoked upon
-             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
-             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &, const std::shared_ptr<Executor> &)}:
              * <pre>
              *   ICompletableFuture&lt;void&gt; future = map.setAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
-             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
              * </pre>
              * ExecutionException is never thrown.
              * <p>
@@ -1300,7 +1300,7 @@ namespace hazelcast {
              * or provide an {@link ExecutionCallback<V>} to be invoked upon set operation completion
              * @see ICompletableFuture
              */
-            boost::shared_ptr<ICompletableFuture<void> >
+            std::shared_ptr<ICompletableFuture<void> >
             setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
                 return mapImpl->setAsync(key, value, ttl, ttlUnit);
             }
@@ -1326,18 +1326,18 @@ namespace hazelcast {
              * then you can use {@link ICompletableFuture#get(int64_t, TimeUnit)}.
              * <pre>
              *   try {
-             *     boost::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue, ttl, timeunit);
+             *     std::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue, ttl, timeunit);
              *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
              * </pre>
              * You can also schedule an {@link ExecutionCallback<V>} to be invoked upon
-             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
-             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const std::shared_ptr<ExecutionCallback<V> > &, const std::shared_ptr<Executor> &)}:
              * <pre>
              *   ICompletableFuture&lt;void&gt; future = map.setAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
-             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
              * </pre>
              * ExecutionException is never thrown.
              * <p>
@@ -1369,7 +1369,7 @@ namespace hazelcast {
              * or provide an {@link ExecutionCallback<V>} to be invoked upon set operation completion
              * @see ICompletableFuture
              */
-            boost::shared_ptr<ICompletableFuture<void> >
+            std::shared_ptr<ICompletableFuture<void> >
             setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                      int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
                 return mapImpl->setAsync(key, value, ttl, ttlUnit, maxIdle, maxIdleUnit);
@@ -1399,16 +1399,16 @@ namespace hazelcast {
              * @return {@link ICompletableFuture} from which the value removed from the map can be retrieved
              * @see ICompletableFuture
              */
-            boost::shared_ptr<ICompletableFuture<V> > removeAsync(const K &key) {
+            std::shared_ptr<ICompletableFuture<V> > removeAsync(const K &key) {
                 return mapImpl->removeAsync(key);
             }
 
         private:
-            IMap(boost::shared_ptr<spi::ClientProxy> clientProxy) {
-                mapImpl = boost::static_pointer_cast<map::ClientMapProxy<K, V> >(clientProxy);
+            IMap(std::shared_ptr<spi::ClientProxy> clientProxy) {
+                mapImpl = std::static_pointer_cast<map::ClientMapProxy<K, V> >(clientProxy);
             }
 
-            boost::shared_ptr<map::ClientMapProxy<K, V> > mapImpl;
+            std::shared_ptr<map::ClientMapProxy<K, V> > mapImpl;
         };
 
         template<typename K, typename V>

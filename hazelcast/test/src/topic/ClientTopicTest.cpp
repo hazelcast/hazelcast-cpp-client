@@ -13,10 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 
 #include "ClientTestSupport.h"
@@ -51,7 +47,7 @@ namespace hazelcast {
                 :latch(latch) {
                 }
 
-                void onMessage(std::auto_ptr<topic::Message<std::string> > message) {
+                void onMessage(std::unique_ptr<topic::Message<std::string> > &&message) {
                     latch.countDown();
                 }
             private:

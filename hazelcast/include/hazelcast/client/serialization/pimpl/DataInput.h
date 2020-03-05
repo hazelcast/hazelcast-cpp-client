@@ -72,27 +72,27 @@ namespace hazelcast {
 
                     double readDouble();
 
-                    std::auto_ptr<std::string> readUTF();
+                    std::unique_ptr<std::string> readUTF();
 
-                    std::auto_ptr<std::vector<byte> > readByteArray();
+                    std::unique_ptr<std::vector<byte> > readByteArray();
 
-                    std::auto_ptr<std::vector<bool> > readBooleanArray();
+                    std::unique_ptr<std::vector<bool> > readBooleanArray();
 
-                    std::auto_ptr<std::vector<char> > readCharArray();
+                    std::unique_ptr<std::vector<char> > readCharArray();
 
-                    std::auto_ptr<std::vector<int32_t> > readIntArray();
+                    std::unique_ptr<std::vector<int32_t> > readIntArray();
 
-                    std::auto_ptr<std::vector<int64_t> > readLongArray();
+                    std::unique_ptr<std::vector<int64_t> > readLongArray();
 
-                    std::auto_ptr<std::vector<double> > readDoubleArray();
+                    std::unique_ptr<std::vector<double> > readDoubleArray();
 
-                    std::auto_ptr<std::vector<float> > readFloatArray();
+                    std::unique_ptr<std::vector<float> > readFloatArray();
 
-                    std::auto_ptr<std::vector<int16_t> > readShortArray();
+                    std::unique_ptr<std::vector<int16_t> > readShortArray();
 
-                    std::auto_ptr<std::vector<std::string> > readUTFArray();
+                    std::unique_ptr<std::vector<std::string> > readUTFArray();
 
-                    std::auto_ptr<std::vector<std::string *> > readUTFPointerArray();
+                    std::unique_ptr<std::vector<std::string *> > readUTFPointerArray();
 
                     int position();
 
@@ -115,14 +115,14 @@ namespace hazelcast {
                     }
 
                     template <typename T>
-                    inline std::auto_ptr<std::vector<T> > readArray() {
+                    inline std::unique_ptr<std::vector<T> > readArray() {
                         int32_t len = readInt();
                         if (util::Bits::NULL_ARRAY == len) {
-                            return std::auto_ptr<std::vector<T> > (NULL);
+                            return nullptr;
                         }
 
                         if (len == 0) {
-                            return std::auto_ptr<std::vector<T> > (new std::vector<T>(0));
+                            return std::unique_ptr<std::vector<T> > (new std::vector<T>(0));
                         }
 
                         if (len < 0) {
@@ -131,7 +131,7 @@ namespace hazelcast {
                             throw exception::HazelcastSerializationException("DataInput::readArray", out.str());
                         }
 
-                        std::auto_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
+                        std::unique_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
                         for (int32_t i = 0; i < len; i++) {
                             (*values)[i] = read<T>();
                         }

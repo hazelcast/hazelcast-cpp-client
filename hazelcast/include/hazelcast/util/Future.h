@@ -20,7 +20,7 @@
 #include <memory>
 #include <vector>
 #include <cassert>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <ostream>
 
 #include "hazelcast/util/ConditionVariable.h"
@@ -47,8 +47,8 @@ namespace hazelcast {
         public:
             class SuccessCallbackRunner : public Runnable {
             public:
-                SuccessCallbackRunner(const boost::shared_ptr<T> &sharedObj,
-                                      const boost::shared_ptr<client::ExecutionCallback<T> > &callback,
+                SuccessCallbackRunner(const std::shared_ptr<T> &sharedObj,
+                                      const std::shared_ptr<client::ExecutionCallback<T> > &callback,
                                       ILogger &logger, Future &future) : sharedObj(sharedObj), callback(callback),
                                                                          logger(logger), future(future) {}
 
@@ -59,8 +59,8 @@ namespace hazelcast {
                     try {
                         callback->onResponse(sharedObj);
                     } catch (client::exception::IException &cause) {
-                        logger.severe() << "Failed asynchronous execution of execution success callback: " << callback
-                                        << "for call " << future.invocationToString() << ", Cause:" << cause;
+                        logger.severe("Failed asynchronous execution of execution success callback: ", callback
+                                        , "for call ", future.invocationToString(), ", Cause:", cause);
                     }
                 }
 
@@ -69,16 +69,16 @@ namespace hazelcast {
                 }
 
             private:
-                boost::shared_ptr<T> sharedObj;
-                const boost::shared_ptr<client::ExecutionCallback<T> > callback;
+                std::shared_ptr<T> sharedObj;
+                const std::shared_ptr<client::ExecutionCallback<T> > callback;
                 util::ILogger &logger;
                 Future<T> &future;
             };
 
             class ExceptionCallbackRunner : public Runnable {
             public:
-                ExceptionCallbackRunner(const boost::shared_ptr<client::exception::IException> &exception,
-                                        const boost::shared_ptr<client::ExecutionCallback<T> > &callback,
+                ExceptionCallbackRunner(const std::shared_ptr<client::exception::IException> &exception,
+                                        const std::shared_ptr<client::ExecutionCallback<T> > &callback,
                                         ILogger &logger, Future &future)
                         : exception(exception), callback(callback), logger(logger), future(future) {}
 
@@ -87,10 +87,10 @@ namespace hazelcast {
 
                 virtual void run() {
                     try {
-                        callback->onFailure(boost::shared_ptr<client::exception::IException>(exception->clone()));
+                        callback->onFailure(std::shared_ptr<client::exception::IException>(exception->clone()));
                     } catch (client::exception::IException &cause) {
-                        logger.severe() << "Failed asynchronous execution of execution failure callback: " << callback
-                                        << "for call " << future << ", Cause:" << cause;
+                        logger.severe("Failed asynchronous execution of execution failure callback: ", callback
+                                        , "for call ", future, ", Cause:", cause);
                     }
                 }
 
@@ -99,8 +99,8 @@ namespace hazelcast {
                 }
 
             private:
-                boost::shared_ptr<client::exception::IException> exception;
-                const boost::shared_ptr<client::ExecutionCallback<T> > callback;
+                std::shared_ptr<client::exception::IException> exception;
+                const std::shared_ptr<client::ExecutionCallback<T> > callback;
                 util::ILogger &logger;
                 Future<T> &future;
             };
@@ -110,7 +110,7 @@ namespace hazelcast {
             virtual ~Future() {
             }
 
-            void set_value(const boost::shared_ptr<T> &value) {
+            void set_value(const std::shared_ptr<T> &value) {
                 LockGuard guard(mutex);
                 if (cancelled) {
                     return;
@@ -126,13 +126,17 @@ namespace hazelcast {
                 for (typename std::vector<CallbackInfo>::const_iterator it = callbacks.begin();
                      it != callbacks.end(); ++it) {
                     (*it).getExecutor().execute(
-                            boost::shared_ptr<Runnable>(
+                            std::shared_ptr<Runnable>(
                                     new SuccessCallbackRunner(sharedObject, (*it).getCallback(), logger, *this)));
                 }
                 onComplete();
             }
 
-            void set_exception(std::auto_ptr<client::exception::IException> exception) {
+            void set_exception(std::unique_ptr<client::exception::IException> &exception) {
+                set_exception(std::move(exception));
+            }
+
+            void set_exception(std::unique_ptr<client::exception::IException> &&exception) {
                 LockGuard guard(mutex);
                 if (cancelled) {
                     return;
@@ -144,19 +148,19 @@ namespace hazelcast {
                     return;
                 }
 
-                this->exception = exception;
+                this->exception = std::move(exception);
                 exceptionReady = true;
                 conditionVariable.notify_all();
                 for (typename std::vector<CallbackInfo>::const_iterator it = callbacks.begin();
                      it != callbacks.end(); ++it) {
-                    (*it).getExecutor().execute(boost::shared_ptr<Runnable>(
+                    (*it).getExecutor().execute(std::shared_ptr<Runnable>(
                             new ExceptionCallbackRunner(this->exception, (*it).getCallback(), logger, *this)));
                 }
 
                 onComplete();
             }
 
-            void complete(const boost::shared_ptr<T> &value) {
+            void complete(const std::shared_ptr<T> &value) {
                 set_value(value);
             }
 
@@ -175,7 +179,7 @@ namespace hazelcast {
              * @throws InterruptedException if the current thread was interrupted
              * while waiting
              */
-            boost::shared_ptr<T> get() {
+            std::shared_ptr<T> get() {
                 LockGuard guard(mutex);
 
                 if (resultReady) {
@@ -200,7 +204,7 @@ namespace hazelcast {
                 return sharedObject;
             }
 
-            virtual boost::shared_ptr<T> get(int64_t timeout, const TimeUnit &unit) {
+            virtual std::shared_ptr<T> get(int64_t timeout, const TimeUnit &unit) {
                 waitFor(unit.toMillis(timeout));
                 return get();
             }
@@ -223,16 +227,16 @@ namespace hazelcast {
             }
 
             void
-            andThen(const boost::shared_ptr<client::ExecutionCallback<T> > &callback, util::Executor &executor) {
+            andThen(const std::shared_ptr<client::ExecutionCallback<T> > &callback, util::Executor &executor) {
                 LockGuard guard(mutex);
                 if (resultReady) {
-                    executor.execute(boost::shared_ptr<Runnable>(
+                    executor.execute(std::shared_ptr<Runnable>(
                             new SuccessCallbackRunner(sharedObject, callback, logger, *this)));
                     return;
                 }
 
                 if (exceptionReady) {
-                    executor.execute(boost::shared_ptr<Runnable>(
+                    executor.execute(std::shared_ptr<Runnable>(
                             new ExceptionCallbackRunner(exception, callback, logger, *this)));
                     return;
                 }
@@ -271,7 +275,7 @@ namespace hazelcast {
 
                 cancelled = true;
 
-                exception = boost::shared_ptr<client::exception::IException>(
+                exception = std::shared_ptr<client::exception::IException>(
                         new concurrent::CancellationException("Future::cancel", "Future is cancelled."));
 
                 exceptionReady = true;
@@ -306,10 +310,10 @@ namespace hazelcast {
         protected:
             class CallbackInfo {
             public:
-                CallbackInfo(const boost::shared_ptr<client::ExecutionCallback<T> > &callback, Executor *executor)
+                CallbackInfo(const std::shared_ptr<client::ExecutionCallback<T> > &callback, Executor *executor)
                         : callback(callback), executor(executor) {}
 
-                const boost::shared_ptr<client::ExecutionCallback<T> > &getCallback() const {
+                const std::shared_ptr<client::ExecutionCallback<T> > &getCallback() const {
                     return callback;
                 }
 
@@ -318,7 +322,7 @@ namespace hazelcast {
                 }
 
             private:
-                boost::shared_ptr<client::ExecutionCallback<T> > callback;
+                std::shared_ptr<client::ExecutionCallback<T> > callback;
                 Executor *executor;
             };
 
@@ -327,8 +331,8 @@ namespace hazelcast {
             bool cancelled;
             ConditionVariable conditionVariable;
             Mutex mutex;
-            boost::shared_ptr<T> sharedObject;
-            boost::shared_ptr<client::exception::IException> exception;
+            std::shared_ptr<T> sharedObject;
+            std::shared_ptr<client::exception::IException> exception;
             std::vector<CallbackInfo> callbacks;
             ILogger &logger;
 

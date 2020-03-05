@@ -44,7 +44,7 @@ namespace hazelcast {
                  * @param classId portable class ID
                  * @return portable instance or null if class ID is not known by this factory
                  */
-                virtual std::auto_ptr<Portable> create(int32_t classId) const = 0;
+                virtual std::unique_ptr<Portable> create(int32_t classId) const = 0;
             };
         }
     }

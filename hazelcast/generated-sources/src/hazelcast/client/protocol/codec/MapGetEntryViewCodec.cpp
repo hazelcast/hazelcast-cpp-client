@@ -29,12 +29,12 @@ namespace hazelcast {
                 const bool MapGetEntryViewCodec::RETRYABLE = true;
                 const ResponseMessageConst MapGetEntryViewCodec::RESPONSE_TYPE = (ResponseMessageConst) 111;
 
-                std::auto_ptr<ClientMessage> MapGetEntryViewCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapGetEntryViewCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapGetEntryViewCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -69,7 +69,7 @@ namespace hazelcast {
 
                 MapGetEntryViewCodec::ResponseParameters::ResponseParameters(
                         const MapGetEntryViewCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<map::DataEntryView>(new map::DataEntryView(*rhs.response));
+                    response = std::unique_ptr<map::DataEntryView>(new map::DataEntryView(*rhs.response));
                 }
 
             }

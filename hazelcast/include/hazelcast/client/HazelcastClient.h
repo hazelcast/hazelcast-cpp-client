@@ -52,7 +52,6 @@ namespace hazelcast {
  *
  *  The user should make sure that the libraries are in appropriate linkage path for the application.
  *
- * Only dependency is shared_ptr from the boost library.
  *
  *  Downloaded release folder consist of
  *  * Windows_32/
@@ -69,7 +68,7 @@ namespace hazelcast {
  *      +  lib/        => Contains both shared and static library of hazelcast.
  *      +  include/    => Contains headers of client
  *  * external/
- *      + include/     => Contains headers of dependencies.(zlib and boost::shared_ptr)
+ *      + include/     => Contains headers of dependencies.(zlib and std::shared_ptr)
  *
  *
  * \section guides Platform Specific Installation Guides
@@ -145,7 +144,7 @@ namespace hazelcast {
  *
  *              IMap<int,int> myMap = hazelcastClient.getMap<int ,int>("myIntMap");
  *              myMap.put(1,3);
- *              boost::shared_ptr<int> v = myMap.get(1);
+ *              std::shared_ptr<int> v = myMap.get(1);
  *              if(v.get() != NULL){
  *                  //process the item
  *              }
@@ -153,7 +152,7 @@ namespace hazelcast {
  *              // You can work with raw pointer maps if you want to get memory ownership of returned objects
  *              hazelcast::client::adaptor::RawPointerMap<int, int> rawMap(myMap);
  *              myMap.put(2, 6);
- *              std::auto_ptr<int> value = myMap.get(1);
+ *              std::unique_ptr<int> value = myMap.get(1);
  *              if (NULL != value.get()) {
  *                  // do something with the value
  *              }
@@ -163,12 +162,12 @@ namespace hazelcast {
  *              // key == 5
  *              std::vector<int> values = myMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
  *              // Same query with raw Map
- *              std::auto_ptr<DataArray<int> > valuesArray = rawMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+ *              std::unique_ptr<DataArray<int> > valuesArray = rawMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
  *              size_t numberOfValues = valuesArray->size();
  *              if (numberOfValues > 0) {
  *                  const int *firstValue = valuesArray->get(0);
  *                  firstValue = (*valuesArray)[0];
- *                  std::auto_ptr<int> firstValueWithMemoryOwnership = valuesArray->release(0);
+ *                  std::unique_ptr<int> firstValueWithMemoryOwnership = valuesArray->release(0);
  *              }
  *
  *              // add listener with predicate
@@ -206,7 +205,7 @@ namespace hazelcast {
  *
  *              IQueue<std::string> q = hazelcastClient.getQueue<std::string>("q");
  *              q.offer("sample");
- *              boost::shared_ptr<std::string> v = q.poll();
+ *              std::shared_ptr<std::string> v = q.poll();
  *              if(v.get() != NULL){
  *                  //process the item
  *              }
@@ -406,6 +405,8 @@ namespace hazelcast {
             */
             HazelcastClient(const ClientConfig &config);
 
+            virtual ~HazelcastClient();
+
             /**
              * Returns the name of this Hazelcast instance.
              *
@@ -450,7 +451,7 @@ namespace hazelcast {
             }
 
             template<typename K, typename V>
-            boost::shared_ptr<ReplicatedMap<K, V> > getReplicatedMap(const std::string &name) {
+            std::shared_ptr<ReplicatedMap<K, V> > getReplicatedMap(const std::string &name) {
                 return clientImpl->getReplicatedMap<K, V>(name);
             }
 
@@ -508,7 +509,7 @@ namespace hazelcast {
             * @return distributed topic instance with the specified name
             */
             template<typename E>
-            boost::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
+            std::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
                 return clientImpl->getReliableTopic<E>(name);
             }
 
@@ -563,7 +564,7 @@ namespace hazelcast {
              * @param name the name of the PN counter
              * @return a {@link com.hazelcast.crdt.pncounter.PNCounter}
              */
-            boost::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
+            std::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
 
             /**
             * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed
@@ -608,7 +609,7 @@ namespace hazelcast {
              * @return distributed RingBuffer instance with the specified name
              */
             template <typename E>
-            boost::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
+            std::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
                 return clientImpl->getRingbuffer<E>(name);
             }
 
@@ -632,7 +633,7 @@ namespace hazelcast {
              * @param name name of the executor service
              * @return the distributed executor service for the given name
              */
-            boost::shared_ptr<IExecutorService> getExecutorService(const std::string &name);
+            std::shared_ptr<IExecutorService> getExecutorService(const std::string &name);
 
             /**
             *
@@ -713,7 +714,7 @@ namespace hazelcast {
              */
             spi::LifecycleService &getLifecycleService();
         private:
-            boost::shared_ptr<impl::HazelcastClientInstanceImpl> clientImpl;
+            std::shared_ptr<impl::HazelcastClientInstanceImpl> clientImpl;
         };
 
     }

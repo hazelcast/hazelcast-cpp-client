@@ -19,7 +19,7 @@
 #ifndef HAZELCAST_ENTRY_EVENT_HANDLER
 #define HAZELCAST_ENTRY_EVENT_HANDLER
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/MapEvent.h"
@@ -51,10 +51,10 @@ namespace hazelcast {
                 , includeValue(includeValue) {
                 }
 
-                virtual void handleEntryEventV10(std::auto_ptr<serialization::pimpl::Data> key,
-                                         std::auto_ptr<serialization::pimpl::Data> value,
-                                         std::auto_ptr<serialization::pimpl::Data> oldValue,
-                                         std::auto_ptr<serialization::pimpl::Data> mergingValue,
+                virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
+                                         std::unique_ptr<serialization::pimpl::Data> &value,
+                                         std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                         std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                          const int32_t &eventType, const std::string &uuid,
                                          const int32_t &numberOfAffectedEntries) {
                     if (eventType == EntryEventType::EVICT_ALL || eventType == EntryEventType::CLEAR_ALL) {
@@ -66,13 +66,13 @@ namespace hazelcast {
                 }
 
             private:
-                void fireMapWideEvent(std::auto_ptr<serialization::pimpl::Data> key,
-                                      std::auto_ptr<serialization::pimpl::Data> value,
-                                      std::auto_ptr<serialization::pimpl::Data> oldValue,
-                                      std::auto_ptr<serialization::pimpl::Data> mergingValue,
+                void fireMapWideEvent(std::unique_ptr<serialization::pimpl::Data> &key,
+                                      std::unique_ptr<serialization::pimpl::Data> &value,
+                                      std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                      std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                       const int32_t &eventType, const std::string &uuid,
                                       const int32_t &numberOfAffectedEntries) {
-                    boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                    std::shared_ptr<Member> member = clusterService.getMember(uuid);
 
                     MapEvent mapEvent(*member, (EntryEventType::Type)eventType, instanceName, numberOfAffectedEntries);
 
@@ -83,16 +83,16 @@ namespace hazelcast {
                     }
                 }
 
-                void fireEntryEvent(std::auto_ptr<serialization::pimpl::Data> key,
-                                    std::auto_ptr<serialization::pimpl::Data> value,
-                                    std::auto_ptr<serialization::pimpl::Data> oldValue,
-                                    std::auto_ptr<serialization::pimpl::Data> mergingValue,
+                void fireEntryEvent(std::unique_ptr<serialization::pimpl::Data> &key,
+                                    std::unique_ptr<serialization::pimpl::Data> &value,
+                                    std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                    std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                     const int32_t &eventType, const std::string &uuid,
                                     const int32_t &numberOfAffectedEntries) {
                     EntryEventType type((EntryEventType::Type)eventType);
-                    std::auto_ptr<V> val;
-                    std::auto_ptr<V> oldVal;
-                    std::auto_ptr<V> mergingVal;
+                    std::unique_ptr<V> val;
+                    std::unique_ptr<V> oldVal;
+                    std::unique_ptr<V> mergingVal;
                     if (includeValue) {
                         if (NULL != value.get()) {
                             val = serializationService.toObject<V>(*value);
@@ -104,11 +104,11 @@ namespace hazelcast {
                             mergingVal = serializationService.toObject<V>(*mergingValue);
                         }
                     }
-                    std::auto_ptr<K> eventKey;
+                    std::unique_ptr<K> eventKey;
                     if (NULL != key.get()) {
                         eventKey = serializationService.toObject<K>(*key);
                     }
-                    boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                    std::shared_ptr<Member> member = clusterService.getMember(uuid);
                     if (member.get() == NULL) {
                         member.reset(new Member(uuid));
                     }
@@ -152,10 +152,10 @@ namespace hazelcast {
                             , includeValue(includeValue) {
                     }
 
-                    virtual void handleEntryEventV10(std::auto_ptr<serialization::pimpl::Data> key,
-                                             std::auto_ptr<serialization::pimpl::Data> value,
-                                             std::auto_ptr<serialization::pimpl::Data> oldValue,
-                                             std::auto_ptr<serialization::pimpl::Data> mergingValue,
+                    virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
+                                             std::unique_ptr<serialization::pimpl::Data> &value,
+                                             std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                             std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                              const int32_t &eventType, const std::string &uuid,
                                              const int32_t &numberOfAffectedEntries) {
                         if (eventType == EntryEventType::EVICT_ALL || eventType == EntryEventType::CLEAR_ALL) {
@@ -167,13 +167,13 @@ namespace hazelcast {
                     }
 
                 private:
-                    void fireMapWideEvent(std::auto_ptr<serialization::pimpl::Data> key,
-                                          std::auto_ptr<serialization::pimpl::Data> value,
-                                          std::auto_ptr<serialization::pimpl::Data> oldValue,
-                                          std::auto_ptr<serialization::pimpl::Data> mergingValue,
+                    void fireMapWideEvent(std::unique_ptr<serialization::pimpl::Data> &key,
+                                          std::unique_ptr<serialization::pimpl::Data> &value,
+                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                          std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                           const int32_t &eventType, const std::string &uuid,
                                           const int32_t &numberOfAffectedEntries) {
-                        boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                        std::shared_ptr<Member> member = clusterService.getMember(uuid);
 
                         MapEvent mapEvent(*member, (EntryEventType::Type)eventType, instanceName, numberOfAffectedEntries);
 
@@ -184,14 +184,14 @@ namespace hazelcast {
                         }
                     }
 
-                    void fireEntryEvent(std::auto_ptr<serialization::pimpl::Data> key,
-                                        std::auto_ptr<serialization::pimpl::Data> value,
-                                        std::auto_ptr<serialization::pimpl::Data> oldValue,
-                                        std::auto_ptr<serialization::pimpl::Data> mergingValue,
+                    void fireEntryEvent(std::unique_ptr<serialization::pimpl::Data> &key,
+                                        std::unique_ptr<serialization::pimpl::Data> &value,
+                                        std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                        std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                         const int32_t &eventType, const std::string &uuid,
                                         const int32_t &numberOfAffectedEntries) {
                         EntryEventType type((EntryEventType::Type)eventType);
-                        boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                        std::shared_ptr<Member> member = clusterService.getMember(uuid);
                         MixedEntryEvent entryEvent(instanceName, *member, type, TypedData(key, serializationService),
                                                    TypedData(value, serializationService),
                                                    TypedData(oldValue, serializationService),

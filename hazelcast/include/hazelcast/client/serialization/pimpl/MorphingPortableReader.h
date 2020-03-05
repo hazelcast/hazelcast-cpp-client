@@ -51,7 +51,7 @@ namespace hazelcast {
                 public:
 
                     MorphingPortableReader(PortableContext &portableContext, ObjectDataInput &input,
-                                           boost::shared_ptr<ClassDefinition> cd);
+                                           std::shared_ptr<ClassDefinition> cd);
 
                     int32_t readInt(const char *fieldName);
 
@@ -69,24 +69,24 @@ namespace hazelcast {
 
                     int16_t readShort(const char *fieldName);
 
-                    std::auto_ptr<std::string> readUTF(const char *fieldName);
+                    std::unique_ptr<std::string> readUTF(const char *fieldName);
 
-                    std::auto_ptr<std::vector<byte> > readByteArray(const char *fieldName);
+                    std::unique_ptr<std::vector<byte> > readByteArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
+                    std::unique_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
+                    std::unique_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
+                    std::unique_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
+                    std::unique_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<float> > readFloatArray(const char *fieldName);
+                    std::unique_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
+                    std::unique_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
                     template<typename T>
-                    boost::shared_ptr<T> readPortable(const char *fieldName) {
+                    std::shared_ptr<T> readPortable(const char *fieldName) {
                         return getPortableInstance<T>(fieldName);
                     }
 

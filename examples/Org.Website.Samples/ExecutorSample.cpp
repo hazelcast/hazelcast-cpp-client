@@ -86,12 +86,12 @@ private:
 
 class PrinterCallback : public ExecutionCallback<std::string> {
 public:
-    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
+    virtual void onResponse(const std::shared_ptr<std::string> &response) {
         std::cout << "The execution of the task is completed successfully and server returned:" << *response
                   << std::endl;
     }
 
-    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
         std::cout << "The execution of the task failed with exception:" << e << std::endl;
     }
 };
@@ -116,12 +116,12 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get the Distributed Executor Service
-    boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
+    std::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    boost::shared_ptr<ICompletableFuture<std::string> > future = ex->submit<MessagePrinter, std::string>(
+    std::shared_ptr<ICompletableFuture<std::string> > future = ex->submit<MessagePrinter, std::string>(
             MessagePrinter("message to any node"));
     // Wait for the result of the submitted task and print the result
-    boost::shared_ptr<std::string> result = future->get();
+    std::shared_ptr<std::string> result = future->get();
     std::cout << "Server result: " << *result << std::endl;
     // Get the first Hazelcast Cluster Member
     Member firstMember = hz.getCluster().getMembers()[0];
@@ -133,7 +133,7 @@ int main() {
     ex->executeOnKeyOwner<MessagePrinter, std::string>(
             MessagePrinter("message to the member that owns the key"), "key");
     // Instantiate a callback instance
-    boost::shared_ptr<ExecutionCallback<std::string> > callback(new PrinterCallback());
+    std::shared_ptr<ExecutionCallback<std::string> > callback(new PrinterCallback());
     // Use a callback execution when the task is completed
     ex->submit<MessagePrinter, std::string>(MessagePrinter("Message for the callback"), callback);
     // Choose which member to submit the task to using a member selector

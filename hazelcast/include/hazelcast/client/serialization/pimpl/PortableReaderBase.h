@@ -42,7 +42,7 @@ namespace hazelcast {
                 public:
                     PortableReaderBase(PortableContext &portableContext,
                                        ObjectDataInput &input,
-                            boost::shared_ptr<ClassDefinition> cd);
+                            std::shared_ptr<ClassDefinition> cd);
 
                     virtual ~PortableReaderBase();
 
@@ -62,23 +62,23 @@ namespace hazelcast {
 
                     virtual int16_t readShort(const char *fieldName);
 
-                    virtual std::auto_ptr<std::string> readUTF(const char *fieldName);
+                    virtual std::unique_ptr<std::string> readUTF(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<byte> > readByteArray(const char *fieldName);
+                    virtual std::unique_ptr<std::vector<byte> > readByteArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<bool> > readBooleanArray(const char *fieldName);
+                    virtual std::unique_ptr<std::vector<bool> > readBooleanArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
+                    virtual std::unique_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
+                    virtual std::unique_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
+                    virtual std::unique_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
+                    virtual std::unique_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<float> > readFloatArray(const char *fieldName);
+                    virtual std::unique_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
+                    virtual std::unique_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
                     ObjectDataInput &getRawDataInput();
 
@@ -92,7 +92,7 @@ namespace hazelcast {
                     int readPosition(const char *, FieldType const& fieldType);
 
                     template <typename T>
-                    boost::shared_ptr<T> getPortableInstance(char const *fieldName) {
+                    std::shared_ptr<T> getPortableInstance(char const *fieldName) {
                         setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
 
                         bool isNull = dataInput.readBoolean();
@@ -102,21 +102,21 @@ namespace hazelcast {
                         checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
 
                         if (isNull) {
-                            return boost::shared_ptr<T>();
+                            return std::shared_ptr<T>();
                         } else {
                             return read<T>(dataInput, factoryId, classId);
                         }
                     }
 
                     template <typename T>
-                    boost::shared_ptr<T> read(ObjectDataInput &dataInput, int32_t factoryId, int32_t classId) const {
-                        boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
+                    std::shared_ptr<T> read(ObjectDataInput &dataInput, int32_t factoryId, int32_t classId) const {
+                        std::shared_ptr<PortableSerializer> serializer = std::static_pointer_cast<PortableSerializer>(
                                 serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
 
-                        return boost::shared_ptr<T>(serializer->read<T>(dataInput, factoryId, classId));
+                        return std::shared_ptr<T>(serializer->read<T>(dataInput, factoryId, classId));
                     }
 
-                    boost::shared_ptr<ClassDefinition> cd;
+                    std::shared_ptr<ClassDefinition> cd;
                     ObjectDataInput &dataInput;
                 private:
                     SerializerHolder &serializerHolder;

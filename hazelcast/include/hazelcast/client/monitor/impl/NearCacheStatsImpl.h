@@ -18,9 +18,11 @@
 
 #include <stdint.h>
 #include <string>
+#include <atomic>
 
 #include "hazelcast/client/monitor/NearCacheStats.h"
-#include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/Sync.h"
+
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -104,23 +106,23 @@ namespace hazelcast {
                     virtual std::string toString();
 
                 private:
-                    util::Atomic<int64_t> creationTime;
-                    util::Atomic<int64_t> ownedEntryCount;
-                    util::Atomic<int64_t> ownedEntryMemoryCost;
-                    util::Atomic<int64_t> hits;
-                    util::Atomic<int64_t> misses;
-                    util::Atomic<int64_t> evictions;
-                    util::Atomic<int64_t> expirations;
+                    std::atomic<int64_t> creationTime;
+                    std::atomic<int64_t> ownedEntryCount;
+                    std::atomic<int64_t> ownedEntryMemoryCost;
+                    std::atomic<int64_t> hits;
+                    std::atomic<int64_t> misses;
+                    std::atomic<int64_t> evictions;
+                    std::atomic<int64_t> expirations;
 
-                    util::Atomic<int64_t> invalidations;
-                    util::Atomic<int64_t> invalidationRequests;
+                    std::atomic<int64_t> invalidations;
+                    std::atomic<int64_t> invalidationRequests;
 
-                    util::Atomic<int64_t> persistenceCount;
-                    util::Atomic<int64_t> lastPersistenceTime;
-                    util::Atomic<int64_t> lastPersistenceDuration;
-                    util::Atomic<int64_t> lastPersistenceWrittenBytes;
-                    util::Atomic<int64_t> lastPersistenceKeyCount;
-                    util::Atomic<std::string> lastPersistenceFailure;
+                    std::atomic<int64_t> persistenceCount;
+                    std::atomic<int64_t> lastPersistenceTime;
+                    std::atomic<int64_t> lastPersistenceDuration;
+                    std::atomic<int64_t> lastPersistenceWrittenBytes;
+                    std::atomic<int64_t> lastPersistenceKeyCount;
+                    util::Sync<std::string> lastPersistenceFailure;
 
                     static const double PERCENTAGE;
                 };

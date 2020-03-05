@@ -27,9 +27,9 @@ namespace hazelcast {
                 const bool ClientGetPartitionsCodec::RETRYABLE = false;
                 const ResponseMessageConst ClientGetPartitionsCodec::RESPONSE_TYPE = (ResponseMessageConst) 108;
 
-                std::auto_ptr<ClientMessage> ClientGetPartitionsCodec::encodeRequest() {
+                std::unique_ptr<ClientMessage> ClientGetPartitionsCodec::encodeRequest() {
                     int32_t requiredDataSize = calculateDataSize();
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientGetPartitionsCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();

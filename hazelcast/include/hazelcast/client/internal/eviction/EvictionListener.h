@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONLISTENER_H_
 
 #include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -42,7 +42,7 @@ namespace hazelcast {
                     /**
                      * Empty {@link} EvictionListener
                      */
-                    static const boost::shared_ptr<EvictionListener<A, E> > NO_LISTENER;
+                    static const std::shared_ptr<EvictionListener<A, E> > NO_LISTENER;
 
                     /**
                      * Called when an {@link Evictable} entry is evicted.
@@ -51,7 +51,7 @@ namespace hazelcast {
                      * @param evictedEntry         {@link Evictable} entry that is evicted.
                      * @param wasExpired           {@code true} if the entry was evicted due to expiration, {@code false} otherwise
                      */
-                    virtual void onEvict(const boost::shared_ptr<A> &evictedEntryAccessor, const boost::shared_ptr<E> &evictedEntry, bool wasExpired) {
+                    virtual void onEvict(const std::shared_ptr<A> &evictedEntryAccessor, const std::shared_ptr<E> &evictedEntry, bool wasExpired) {
                         assert(0);
                     }
                 };

@@ -18,7 +18,8 @@
 
 #include <ostream>
 #include <set>
-#include <boost/shared_ptr.hpp>
+#include <memory>
+#include <atomic>
 
 #include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
@@ -68,10 +69,10 @@ namespace hazelcast {
                  * sending invocations.
                  */
                 // public for testing purposes
-                boost::shared_ptr<Address> HAZELCAST_API getCurrentTargetReplicaAddress();
+                std::shared_ptr<Address> HAZELCAST_API getCurrentTargetReplicaAddress();
 
             private:
-                static const boost::shared_ptr<std::set<Address> > EMPTY_ADDRESS_LIST;
+                static const std::shared_ptr<std::set<Address> > EMPTY_ADDRESS_LIST;
 
                 /**
                  * Returns the target on which this proxy should invoke a CRDT operation.
@@ -87,7 +88,7 @@ namespace hazelcast {
                  * @return a CRDT replica address or {@code null} if there are no viable
                  * addresses
                  */
-                boost::shared_ptr<Address> getCRDTOperationTarget(const std::set<Address> &excludedAddresses);
+                std::shared_ptr<Address> getCRDTOperationTarget(const std::set<Address> &excludedAddresses);
 
                 /**
                  * Chooses and returns a CRDT replica address. Replicas with addresses
@@ -100,7 +101,7 @@ namespace hazelcast {
                  *                          address
                  * @return a CRDT replica address or {@code null} if there are no viable addresses
                  */
-                boost::shared_ptr<Address> chooseTargetReplica(const std::set<Address> &excludedAddresses);
+                std::shared_ptr<Address> chooseTargetReplica(const std::set<Address> &excludedAddresses);
 
                 /**
                  * Returns the addresses of the CRDT replicas from the current state of the
@@ -140,10 +141,10 @@ namespace hazelcast {
                  * @throws NoDataMemberInClusterException if there are no replicas and the
                  *                                        {@code lastException} is false
                  */
-                boost::shared_ptr<protocol::ClientMessage>
-                invokeGetInternal(boost::shared_ptr<std::set<Address> > excludedAddresses,
-                                  const std::auto_ptr<exception::IException> &lastException,
-                                  const boost::shared_ptr<Address> &target);
+                std::shared_ptr<protocol::ClientMessage>
+                invokeGetInternal(std::shared_ptr<std::set<Address> > excludedAddresses,
+                                  const std::unique_ptr<exception::IException> &lastException,
+                                  const std::shared_ptr<Address> &target);
 
 
                 /**
@@ -170,9 +171,9 @@ namespace hazelcast {
                  * @throws NoDataMemberInClusterException if there are no replicas and the
                  *                                        {@code lastException} is {@code null}
                  */
-                boost::shared_ptr<protocol::ClientMessage>
-                invokeAddInternal(int64_t delta, bool getBeforeUpdate, boost::shared_ptr<std::set<Address> > excludedAddresses,
-                                  const std::auto_ptr<exception::IException> &lastException, const boost::shared_ptr<Address> &target);
+                std::shared_ptr<protocol::ClientMessage>
+                invokeAddInternal(int64_t delta, bool getBeforeUpdate, std::shared_ptr<std::set<Address> > excludedAddresses,
+                                  const std::unique_ptr<exception::IException> &lastException, const std::shared_ptr<Address> &target);
 
                 /**
                  * Updates the locally observed CRDT vector clock atomically. This method
@@ -191,17 +192,17 @@ namespace hazelcast {
                  * @param replicaLogicalTimestamps the logical timestamps
                  * @return a vector clock instance
                  */
-                boost::shared_ptr<cluster::impl::VectorClock>
+                std::shared_ptr<cluster::impl::VectorClock>
                 toVectorClock(const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps);
 
-                util::Atomic<boost::shared_ptr<Address> > currentTargetReplicaAddress;
+                util::Sync<std::shared_ptr<Address> > currentTargetReplicaAddress;
                 util::Mutex targetSelectionMutex;
-                util::Atomic<int32_t> maxConfiguredReplicaCount;
+                std::atomic<int32_t> maxConfiguredReplicaCount;
                 /**
                  * The last vector clock observed by this proxy. It is used for maintaining
                  * session consistency guarantees when reading from different replicas.
                  */
-                util::Atomic<boost::shared_ptr<cluster::impl::VectorClock> > observedClock;
+                util::Sync<std::shared_ptr<cluster::impl::VectorClock> > observedClock;
                 util::ILogger &logger;
             };
         }

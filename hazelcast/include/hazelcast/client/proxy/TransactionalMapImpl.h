@@ -32,23 +32,23 @@ namespace hazelcast {
 
                 bool containsKey(const serialization::pimpl::Data& key);
 
-                std::auto_ptr<serialization::pimpl::Data> getData(const serialization::pimpl::Data& key);
+                std::unique_ptr<serialization::pimpl::Data> getData(const serialization::pimpl::Data& key);
 
                 int size();
 
                 bool isEmpty();
 
-                std::auto_ptr<serialization::pimpl::Data> putData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                std::unique_ptr<serialization::pimpl::Data> putData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
                 void set(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::auto_ptr<serialization::pimpl::Data> putIfAbsentData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                std::unique_ptr<serialization::pimpl::Data> putIfAbsentData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::auto_ptr<serialization::pimpl::Data> replaceData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                std::unique_ptr<serialization::pimpl::Data> replaceData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
                 bool replace(const serialization::pimpl::Data& key, const serialization::pimpl::Data& oldValue, const serialization::pimpl::Data& newValue);
 
-                std::auto_ptr<serialization::pimpl::Data> removeData(const serialization::pimpl::Data& key);
+                std::unique_ptr<serialization::pimpl::Data> removeData(const serialization::pimpl::Data& key);
 
                 void deleteEntry(const serialization::pimpl::Data& key);
 

@@ -15,7 +15,7 @@
  */
 
 #include <cmath>
-#include <boost/foreach.hpp>
+#include <cassert>
 
 #include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/util/HashUtil.h"
@@ -30,18 +30,6 @@ namespace hazelcast {
                                                          int32_t maximumQueueCapacity)
                     : logger(logger), threadNamePrefix(threadNamePrefix), threadCount(threadCount), live(true),
                       threadIdGenerator(0), workers(threadCount), maximumQueueCapacity(maximumQueueCapacity) {
-                startWorkers();
-            }
-
-            SimpleExecutorService::SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix,
-                                                         int threadCount)
-                    : logger(logger), threadNamePrefix(threadNamePrefix), threadCount(threadCount), live(true),
-                      threadIdGenerator(0), workers(threadCount),
-                      maximumQueueCapacity(DEFAULT_EXECUTOR_QUEUE_CAPACITY) {
-                startWorkers();
-            }
-
-            void SimpleExecutorService::startWorkers() {
                 // `maximumQueueCapacity` is the given max capacity for this executor. Each worker in this executor should consume
                 // only a portion of that capacity. Otherwise we will have `threadCount * maximumQueueCapacity` instead of
                 // `maximumQueueCapacity`.
@@ -49,15 +37,30 @@ namespace hazelcast {
                         (double) 1.0 * maximumQueueCapacity / threadCount));
                 for (int i = 0; i < threadCount; i++) {
                     workers[i].reset(new Worker(*this, perThreadMaxQueueCapacity));
+                }
+            }
+
+            SimpleExecutorService::SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix,
+                                                         int threadCount)
+                    : SimpleExecutorService::SimpleExecutorService(logger, threadNamePrefix, threadCount,
+                                                                   DEFAULT_EXECUTOR_QUEUE_CAPACITY) {}
+
+            void SimpleExecutorService::start() {
+                bool expected = false;
+                if (!isStarted.compare_exchange_strong(expected, true)) {
+                    return;
+                }
+
+                for (int i = 0; i < threadCount; i++) {
                     workers[i]->start();
                 }
 
                 if (logger.isFinestEnabled()) {
-                    logger.finest() << "ExecutorService " << threadNamePrefix << " started " << threadCount << " workers.";
+                    logger.finest("ExecutorService " , threadNamePrefix , " started " , threadCount ,  " workers.");
                 }
             }
 
-            void SimpleExecutorService::execute(const boost::shared_ptr<Runnable> &command) {
+            void SimpleExecutorService::execute(const std::shared_ptr<Runnable> &command) {
                 if (command.get() == NULL) {
                     throw client::exception::NullPointerException("SimpleExecutor::execute", "command can't be null");
                 }
@@ -67,15 +70,15 @@ namespace hazelcast {
                                                                         "Executor is terminated!");
                 }
 
-                boost::shared_ptr<Worker> worker = getWorker(command);
+                std::shared_ptr<Worker> worker = getWorker(command);
                 worker->schedule(command);
             }
 
-            boost::shared_ptr<SimpleExecutorService::Worker>
-            SimpleExecutorService::getWorker(const boost::shared_ptr<Runnable> &runnable) {
+            std::shared_ptr<SimpleExecutorService::Worker>
+            SimpleExecutorService::getWorker(const std::shared_ptr<Runnable> &runnable) {
                 int32_t key;
                 if (runnable->isStriped()) {
-                    key = boost::static_pointer_cast<StripedRunnable>(runnable)->getKey();
+                    key = std::static_pointer_cast<StripedRunnable>(runnable)->getKey();
                 } else {
                     key = (int32_t) rand();
                 }
@@ -84,7 +87,10 @@ namespace hazelcast {
             }
 
             void SimpleExecutorService::shutdown() {
-                if (!live.compareAndSet(true, false)) {
+                live.store(false);
+
+                bool expected = true;
+                if (!isStarted.compare_exchange_strong(expected, false)) {
                     return;
                 }
 
@@ -92,18 +98,17 @@ namespace hazelcast {
                 size_t numberOfDelayedRunners = delayedRunners.size();
 
                 if (logger.isFinestEnabled()) {
-                    logger.finest() << "ExecutorService " << threadNamePrefix << " has " << numberOfWorkers << " workers and "
-                                    << numberOfDelayedRunners << " delayed runners " << " to shutdown.";
+                    logger.finest("ExecutorService ", threadNamePrefix, " has ", numberOfWorkers, " workers and ",
+                                  numberOfDelayedRunners, " delayed runners to shutdown.");
                 }
 
-                BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
-                                worker->shutdown();
-                            }
+                for (std::shared_ptr<Worker> &worker : workers) {
+                    worker->shutdown();
+                }
 
-                boost::shared_ptr<util::Thread> runner;
-                while ((runner = delayedRunners.poll()).get()) {
-                    boost::static_pointer_cast<DelayedRunner>(runner->getTarget())->shutdown();
-                    runner->wakeup();
+                for (auto &t : delayedRunners.values()) {
+                    std::static_pointer_cast<DelayedRunner>(t->getTarget())->shutdown();
+                    t->wakeup();
                 }
             }
 
@@ -114,46 +119,52 @@ namespace hazelcast {
             bool SimpleExecutorService::awaitTerminationMilliseconds(int64_t timeoutMilliseconds) {
                 int64_t endTimeMilliseconds = currentTimeMillis() + timeoutMilliseconds;
 
-                BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
+                for (std::shared_ptr<Worker> &worker : workers) {
                                 int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
                                 if (logger.isFinestEnabled()) {
-                                    logger.finest() << "ExecutorService is waiting worker thread " << worker->getName()
-                                                    << " for a maximum of " << waitMilliseconds << " msecs.";
+                                    logger.finest("ExecutorService is waiting worker thread " , worker->getName(), " for a maximum of " , waitMilliseconds ,  " msecs.");
                                 }
 
-                                if (!worker->getThread().waitMilliseconds(waitMilliseconds)) {
-                                    logger.warning() << "ExecutorService could not stop worker thread " << worker->getName()
-                                                    << " in " << timeoutMilliseconds << " msecs.";
+                    auto &t = worker->getThread();
+                    if (!t.waitMilliseconds(waitMilliseconds)) {
+                                    logger.info("ExecutorService could not stop worker thread ", worker->getName()
+                                                    , " in ", timeoutMilliseconds, " msecs. Will retry stopping.");
 
                                     return false;
-                                }
-                            }
+                    }
+                    t.join();
+                }
 
-                BOOST_FOREACH(const boost::shared_ptr<Thread> &t, delayedRunners.values()) {
+                for (const std::shared_ptr<Thread> &t : delayedRunners.values()) {
                                 int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
                                 if (logger.isFinestEnabled()) {
-                                    logger.finest() << "ExecutorService is waiting delayed runner thread " << t->getName()
-                                                    << " for a maximum of " << waitMilliseconds << " msecs.";
+                                    logger.finest("ExecutorService is waiting delayed runner thread " , t->getName(), " for a maximum of " , waitMilliseconds ,  " msecs.");
                                 }
 
                                 if (!t->waitMilliseconds(waitMilliseconds)) {
-                                    logger.warning() << "ExecutorService could not stop delayed runner thread " << t->getName()
-                                                    << " in " << timeoutMilliseconds << " msecs.";
+                                    logger.info("ExecutorService could not stop delayed runner thread ", t->getName()
+                                                    , " in ", timeoutMilliseconds, " msecs. Will retry stopping.");
 
                                     return false;
                                 }
-                            }
+                                t->join();
+                }
 
                 return true;
             }
 
             SimpleExecutorService::~SimpleExecutorService() {
+                bool expected = true;
+                if (!live.compare_exchange_weak(expected, false)) {
+                    return;
+                }
+
                 shutdown();
             }
 
-            void SimpleExecutorService::schedule(const boost::shared_ptr<util::Runnable> &command,
+            void SimpleExecutorService::schedule(const std::shared_ptr<util::Runnable> &command,
                                                  int64_t initialDelayInMillis) {
                 if (command.get() == NULL) {
                     throw client::exception::NullPointerException("SimpleExecutor::schedule", "command can't be null");
@@ -164,15 +175,15 @@ namespace hazelcast {
                                                                         "Executor is terminated!");
                 }
 
-                boost::shared_ptr<DelayedRunner> delayedRunner(
+                std::shared_ptr<DelayedRunner> delayedRunner(
                         new DelayedRunner(threadNamePrefix, command, initialDelayInMillis, logger));
-                boost::shared_ptr<util::Thread> thread(new util::Thread(delayedRunner, logger));
+                std::shared_ptr<util::Thread> thread(new util::Thread(delayedRunner, logger));
                 delayedRunner->setStartTimeMillis(thread.get());
                 thread->start();
                 delayedRunners.offer(thread);
             }
 
-            void SimpleExecutorService::scheduleAtFixedRate(const boost::shared_ptr<util::Runnable> &command,
+            void SimpleExecutorService::scheduleAtFixedRate(const std::shared_ptr<util::Runnable> &command,
                                                             int64_t initialDelayInMillis, int64_t periodInMillis) {
                 if (command.get() == NULL) {
                     throw client::exception::NullPointerException("SimpleExecutor::scheduleAtFixedRate",
@@ -184,17 +195,21 @@ namespace hazelcast {
                                                                         "Executor is terminated!");
                 }
 
-                boost::shared_ptr<DelayedRunner> repeatingRunner(
+                std::shared_ptr<DelayedRunner> repeatingRunner(
                         new DelayedRunner(threadNamePrefix, command, initialDelayInMillis, periodInMillis, logger));
-                boost::shared_ptr<util::Thread> thread(new util::Thread(repeatingRunner, logger));
+                std::shared_ptr<util::Thread> thread(new util::Thread(repeatingRunner, logger));
                 repeatingRunner->setStartTimeMillis(thread.get());
                 thread->start();
                 delayedRunners.offer(thread);
             }
 
+            const std::string &SimpleExecutorService::getThreadNamePrefix() const {
+                return threadNamePrefix;
+            }
+
             void SimpleExecutorService::Worker::run() {
-                boost::shared_ptr<Runnable> task;
-                while (executorService.live || !workQueue.isEmpty()) {
+                std::shared_ptr<Runnable> task;
+                while (executorService.live) {
                     try {
                         task = workQueue.pop();
                         if (task.get()) {
@@ -202,20 +217,22 @@ namespace hazelcast {
                         }
                     } catch (client::exception::InterruptedException &) {
                         if (executorService.logger.isFinestEnabled()) {
-                            executorService.logger.finest() << getName() << " is interrupted.";
+                            executorService.logger.finest(getName() , " is interrupted.");
                         }
                     } catch (client::exception::IException &t) {
-                        executorService.logger.warning() << getName() << " caused an exception" << t;
+                        executorService.logger.warning(getName() , " caused an exception. " , t);
                     }
                 }
-
-                assert(workQueue.isEmpty());
             }
 
             SimpleExecutorService::Worker::~Worker() {
             }
 
-            void SimpleExecutorService::Worker::schedule(const boost::shared_ptr<Runnable> &runnable) {
+            void SimpleExecutorService::Worker::schedule(const std::shared_ptr<Runnable> &runnable) {
+                if (!executorService.live) {
+                    throw exception::IllegalStateException("SimpleExecutorService::Worker::schedule",
+                                                           "Executor is shudown.");
+                }
                 workQueue.push(runnable);
             }
 
@@ -235,12 +252,23 @@ namespace hazelcast {
 
             void SimpleExecutorService::Worker::shutdown() {
                 workQueue.interrupt();
+
+                // process all pending messages instead of dropping silently, the result may be needed by some other
+                // thread which may be blocked.
+                while (!workQueue.isEmpty()) {
+                    try {
+                        auto runnable = workQueue.pop();
+                        runnable->run();
+                    } catch (...) {
+                        // suppress
+                    }
+                }
             }
 
             SimpleExecutorService::Worker::Worker(SimpleExecutorService &executorService, int32_t maximumQueueCapacity)
                     : executorService(executorService), name(generateThreadName(executorService.threadNamePrefix)),
                     workQueue((size_t) maximumQueueCapacity),
-                    thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), executorService.logger) {
+                    thread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), executorService.logger) {
             }
 
             Thread &SimpleExecutorService::Worker::getThread() {
@@ -248,41 +276,39 @@ namespace hazelcast {
             }
 
             SimpleExecutorService::DelayedRunner::DelayedRunner(const std::string &threadNamePrefix,
-                    const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                    const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
                     util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),
                                              periodInMillis(-1), live(true), startTimeMillis(0), runnerThread(NULL),
                                              logger(logger), threadNamePrefix(threadNamePrefix) {
             }
 
             SimpleExecutorService::DelayedRunner::DelayedRunner(const std::string &threadNamePrefix,
-                                                                const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                                                                const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
                     int64_t periodInMillis, util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),
                                               periodInMillis(periodInMillis), live(true), startTimeMillis(0),
                                               runnerThread(NULL), logger(logger), threadNamePrefix(threadNamePrefix) {}
 
             void SimpleExecutorService::DelayedRunner::shutdown() {
-                live = false;
+                live.store(false);
+                runnerThread->wakeup();
             }
 
             void SimpleExecutorService::DelayedRunner::run() {
                 bool isNotRepeating = periodInMillis < 0;
-                while (live || isNotRepeating) {
-                    if (live) {
-                        int64_t waitTimeMillis = startTimeMillis - util::currentTimeMillis();
-                        if (waitTimeMillis > 0) {
-                            assert(runnerThread != NULL);
-                            runnerThread->interruptibleSleepMillis(waitTimeMillis);
-                        }
+                while (live) {
+                    int64_t waitTimeMillis = startTimeMillis - util::currentTimeMillis();
+                    if (waitTimeMillis > 0) {
+                        assert(runnerThread != NULL);
+                        runnerThread->interruptibleSleepMillis(waitTimeMillis);
                     }
-
 
                     try {
                         command->run();
                     } catch (client::exception::IException &e) {
                         if (isNotRepeating) {
-                            logger.warning() << "Runnable " << getName() << " run method caused exception:" << e;
+                            logger.warning("Runnable " , getName() , " run method caused exception:" , e);
                         } else {
-                            logger.warning() << "Repeated runnable " << getName() << " run method caused exception:" << e;
+                            logger.warning("Repeated runnable " , getName(), " run method caused exception:" , e);
                         }
                     }
 
@@ -303,11 +329,6 @@ namespace hazelcast {
                 startTimeMillis = util::currentTimeMillis() + initialDelayInMillis;
             }
 
-        }
-
-        boost::shared_ptr<ExecutorService> Executors::newSingleThreadExecutor(const std::string &name,
-                util::ILogger &logger) {
-            return boost::shared_ptr<ExecutorService>(new impl::SimpleExecutorService(logger, name, 1));
         }
 
         Executor::~Executor() {

@@ -38,7 +38,7 @@ namespace hazelcast {
                  *
                  * @return the result.
                  */
-                virtual boost::shared_ptr<T> join() = 0;
+                virtual std::shared_ptr<T> join() = 0;
 
                 /**
                 * Completes this future.
@@ -46,7 +46,7 @@ namespace hazelcast {
                 * @param value the value to complete this future with.
                 * @return {@code true} if this invocation caused this InternalCompletableFuture to complete, else {@code false}
                 */
-                virtual bool complete(const boost::shared_ptr<T> &value) = 0;
+                virtual bool complete(const std::shared_ptr<T> &value) = 0;
 
                 /**
                 * Completes this future.
@@ -54,7 +54,7 @@ namespace hazelcast {
                 * @param value the exception to complete this future with.
                 * @return {@code true} if this invocation caused this InternalCompletableFuture to complete, else {@code false}
                 */
-                virtual bool complete(const boost::shared_ptr<exception::IException> &value) = 0;
+                virtual bool complete(const std::shared_ptr<exception::IException> &value) = 0;
             };
         }
     }

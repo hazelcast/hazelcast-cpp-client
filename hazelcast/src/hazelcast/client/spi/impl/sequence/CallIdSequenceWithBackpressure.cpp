@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <boost/date_time/posix_time/posix_time_duration.hpp>
+#include <chrono>
 
 #include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
 #include "hazelcast/util/Preconditions.h"
@@ -25,10 +25,12 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 namespace sequence {
-                    const std::auto_ptr<util::concurrent::IdleStrategy> CallIdSequenceWithBackpressure::IDLER(
+                    const std::unique_ptr<util::concurrent::IdleStrategy> CallIdSequenceWithBackpressure::IDLER(
                             new util::concurrent::BackoffIdleStrategy(
-                                    0, 0, boost::posix_time::microseconds(1000).total_nanoseconds(),
-                                    boost::posix_time::microseconds(MAX_DELAY_MS * 1000).total_nanoseconds()));
+                                    0, 0, std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                            std::chrono::microseconds(1000)).count(),
+                                    std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                            std::chrono::microseconds(MAX_DELAY_MS * 1000)).count()));
 
                     CallIdSequenceWithBackpressure::CallIdSequenceWithBackpressure(int32_t maxConcurrentInvocations,
                                                                                    int64_t backoffTimeoutMs)
@@ -37,22 +39,23 @@ namespace hazelcast {
                         out << "backoffTimeoutMs should be a positive number. backoffTimeoutMs=" << backoffTimeoutMs;
                         util::Preconditions::checkPositive(backoffTimeoutMs, out.str());
 
-                        backoffTimeoutNanos = boost::posix_time::milliseconds(backoffTimeoutMs).total_nanoseconds();
+                        backoffTimeoutNanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                std::chrono::milliseconds(backoffTimeoutMs)).count();
                     }
 
                     void CallIdSequenceWithBackpressure::handleNoSpaceLeft() {
-                        boost::posix_time::time_duration start = util::TimeUtil::getDurationSinceEpoch();
+                        auto start = std::chrono::system_clock::now();
                         for (int64_t idleCount = 0;; idleCount++) {
-                            int64_t elapsedNanos = (util::TimeUtil::getDurationSinceEpoch() - start).total_nanoseconds();
+                            int64_t elapsedNanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                    std::chrono::system_clock::now() - start).count();
                             if (elapsedNanos > backoffTimeoutNanos) {
                                 throw (exception::ExceptionBuilder<exception::HazelcastOverloadException>(
                                         "CallIdSequenceWithBackpressure::handleNoSpaceLeft")
                                         << "Timed out trying to acquire another call ID."
                                         << " maxConcurrentInvocations = " << getMaxConcurrentInvocations()
-                                        << ", backoffTimeout = " << boost::posix_time::microseconds(
-                                        backoffTimeoutNanos / 1000).total_milliseconds() << " msecs, elapsed:"
-                                        << boost::posix_time::microseconds(elapsedNanos / 1000).total_milliseconds()
-                                        << " msecs").build();
+                                        << ", backoffTimeout = "
+                                        << std::chrono::microseconds(backoffTimeoutNanos / 1000).count() << " msecs, elapsed:"
+                                        << std::chrono::microseconds(elapsedNanos / 1000).count() << " msecs").build();
                             }
                             IDLER->idle(idleCount);
                             if (hasSpace()) {

@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool SetCompareAndRetainAllCodec::RETRYABLE = false;
                 const ResponseMessageConst SetCompareAndRetainAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> SetCompareAndRetainAllCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> SetCompareAndRetainAllCodec::encodeRequest(
                         const std::string &name,
                         const std::vector<serialization::pimpl::Data> &values) {
                     int32_t requiredDataSize = calculateDataSize(name, values);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetCompareAndRetainAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

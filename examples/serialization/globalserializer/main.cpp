@@ -64,7 +64,7 @@ std::ostream &operator<<(std::ostream &out, const Person &p) {
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::SerializationConfig serializationConfig;
-    serializationConfig.setGlobalSerializer(boost::shared_ptr<hazelcast::client::serialization::StreamSerializer>(
+    serializationConfig.setGlobalSerializer(std::shared_ptr<hazelcast::client::serialization::StreamSerializer>(
             new GlobalSerializer()));
     config.setSerializationConfig(serializationConfig);
     hazelcast::client::HazelcastClient hz(config);

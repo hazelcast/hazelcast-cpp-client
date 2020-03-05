@@ -17,7 +17,7 @@
 // Created by sancar koyunlu on 16/12/13.
 //
 
-#include <assert.h>
+#include <cassert>
 #include <iosfwd>
 #include <string.h>
 
@@ -67,8 +67,7 @@ namespace hazelcast {
             }
 
             if (!found) {
-                logger.finest() << "[SocketSet::removeSocket] Socket with id " << socketId
-                                                    << "  was not found among the sockets.";
+                logger.finest("[SocketSet::removeSocket] Socket with id " , socketId, "  was not found among the sockets.");
             }
         }
 

@@ -29,13 +29,13 @@ namespace hazelcast {
                 const bool ExecutorServiceSubmitToAddressCodec::RETRYABLE = false;
                 const ResponseMessageConst ExecutorServiceSubmitToAddressCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> ExecutorServiceSubmitToAddressCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ExecutorServiceSubmitToAddressCodec::encodeRequest(
                         const std::string &name, 
                         const std::string &uuid, 
                         const serialization::pimpl::Data &callable, 
                         const Address &address) {
                     int32_t requiredDataSize = calculateDataSize(name, uuid, callable, address);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ExecutorServiceSubmitToAddressCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -72,7 +72,7 @@ namespace hazelcast {
                     }
 
                     ExecutorServiceSubmitToAddressCodec::ResponseParameters::ResponseParameters(const ExecutorServiceSubmitToAddressCodec::ResponseParameters &rhs) {
-                            response = std::auto_ptr<serialization::pimpl::Data >(new serialization::pimpl::Data(*rhs.response));
+                            response = std::unique_ptr<serialization::pimpl::Data >(new serialization::pimpl::Data(*rhs.response));
                     }
 
             }

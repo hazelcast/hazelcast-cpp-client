@@ -45,7 +45,7 @@ namespace hazelcast {
             // set elapsed to zero in case it returns before sleep
             elapsed = 0;
 
-            if (count <= 0) {
+            if (count <= 0 || milliseconds <= 0) {
                 return true;
             }
 

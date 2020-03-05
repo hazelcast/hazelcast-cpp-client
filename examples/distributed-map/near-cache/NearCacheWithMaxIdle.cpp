@@ -27,7 +27,7 @@ int main() {
     const char *mapName = "MaxIdleMap";
     Address serverAddr("127.0.0.1", 5701);
     config.addAddress(serverAddr);
-    boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
+    std::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
             new config::NearCacheConfig<int, std::string>(mapName, config::OBJECT));
     nearCacheConfig->setInvalidateOnChange(false);
     nearCacheConfig->getEvictionConfig()->setEvictionPolicy(config::NONE)

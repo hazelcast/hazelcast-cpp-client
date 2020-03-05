@@ -30,7 +30,7 @@ namespace hazelcast {
     namespace util {
         class Thread : public impl::AbstractThread {
         public:
-            Thread(const boost::shared_ptr<Runnable> &runnable, util::ILogger &logger)
+            Thread(const std::shared_ptr<Runnable> &runnable, util::ILogger &logger)
                     : impl::AbstractThread(runnable, logger) {
                 initAttributes();
             }
@@ -64,15 +64,15 @@ namespace hazelcast {
             static void *runnableThread(void *args) {
                 RunnableInfo *info = static_cast<RunnableInfo *>(args);
 
-                boost::shared_ptr<Runnable> target = info->target;
+                std::shared_ptr<Runnable> target = info->target;
                 try {
                     target->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {
-                    info->logger->finest() << "Thread " << target->getName() << " is interrupted. " << e;
+                    info->logger->finest("Thread ", target->getName(), " is interrupted. ", e);
                 } catch (hazelcast::client::exception::IException &e) {
-                    info->logger->warning() << "Thread " << target->getName() << " is cancelled with exception " << e;
+                    info->logger->warning("Thread ", target->getName(), " is cancelled with exception ", e);
                 } catch (...) {
-                    info->logger->warning() << "Thread " << target->getName() << " is cancelled with an unexpected exception";
+                    info->logger->warning("Thread ", target->getName(), " is cancelled with an unexpected exception");
 
                     info->finishWaitLatch->countDown();
 
@@ -81,7 +81,7 @@ namespace hazelcast {
                     throw;
                 }
 
-                info->logger->finest() << "Thread " << target->getName() << " is finished.";
+                info->logger->finest("Thread ", target->getName(), " is finished.");
 
                 info->finishWaitLatch->countDown();
 

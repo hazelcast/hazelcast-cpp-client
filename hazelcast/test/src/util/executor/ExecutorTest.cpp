@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <hazelcast/util/Executor.h>
 #include <hazelcast/util/CountDownLatch.h>
@@ -33,13 +35,13 @@ namespace hazelcast {
                     protected:
                         class StripedIntRunable : public StripedRunnable {
                         public:
-                            StripedIntRunable(int32_t key, CountDownLatch &latch, Atomic<int64_t> &threadId,
+                            StripedIntRunable(int32_t key, CountDownLatch &latch, std::atomic<int64_t> &threadId,
                                               bool controlThread)
                                     : key(key), latch(latch), threadId(threadId), isControlThread(controlThread) {}
 
                             virtual void run() {
                                 if (isControlThread) {
-                                    if (threadId.get() == hazelcast::util::getCurrentThreadId()) {
+                                    if (threadId.load() == hazelcast::util::getCurrentThreadId()) {
                                         latch.countDown();
                                     }
                                 } else {
@@ -59,7 +61,7 @@ namespace hazelcast {
                         private:
                             int32_t key;
                             CountDownLatch &latch;
-                            Atomic<int64_t> &threadId;
+                            std::atomic<int64_t> &threadId;
                             bool isControlThread;
                         };
 
@@ -67,7 +69,7 @@ namespace hazelcast {
                         public:
                             ValueReflector(int returnValue) : returnValue(new int(returnValue)) {}
 
-                            virtual boost::shared_ptr<int> call() {
+                            virtual std::shared_ptr<int> call() {
                                 return returnValue;
                             }
 
@@ -76,7 +78,7 @@ namespace hazelcast {
                             }
 
                         protected:
-                            boost::shared_ptr<int> returnValue;
+                            std::shared_ptr<int> returnValue;
                         };
 
                         class LatchDecrementer : public Runnable {
@@ -120,15 +122,18 @@ namespace hazelcast {
                     };
 
                     TEST_F(ExecutorTest, testSingleThreadSequentialExecution) {
-                        boost::shared_ptr<ExecutorService> singleThreadExecutor = Executors::newSingleThreadExecutor(
-                                "testGetPossibleSocketAddresses", getLogger());
+                        hazelcast::util::impl::SimpleExecutorService singleThreadExecutor(getLogger(),
+                                                                                          "testGetPossibleSocketAddresses",
+                                                                                          1);
+
+                        singleThreadExecutor.start();
 
                         int numThreads = 10;
                         CountDownLatch latch(numThreads);
 
                         for (int i = 0; i < numThreads; ++i) {
-                            singleThreadExecutor->execute(
-                                    boost::shared_ptr<Runnable>(new SequentialLatchDecrementer(latch, i, numThreads)));
+                            singleThreadExecutor.execute(
+                                    std::shared_ptr<Runnable>(new SequentialLatchDecrementer(latch, i, numThreads)));
                         }
 
                         ASSERT_OPEN_EVENTUALLY(latch);
@@ -140,10 +145,12 @@ namespace hazelcast {
                                                                                      "testMultiThreadExecution",
                                                                                      numThreads);
 
+                        executorService.start();
+
                         CountDownLatch latch(numThreads);
 
                         for (int i = 0; i < numThreads; ++i) {
-                            executorService.execute(boost::shared_ptr<Runnable>(new LatchDecrementer(latch)));
+                            executorService.execute(std::shared_ptr<Runnable>(new LatchDecrementer(latch)));
                         }
 
                         ASSERT_OPEN_EVENTUALLY(latch);
@@ -156,12 +163,14 @@ namespace hazelcast {
                         hazelcast::util::impl::SimpleExecutorService executorService(getLogger(),
                                                                                      "testRejectExecuteAfterShutdown",
                                                                                      numThreads);
+                        executorService.start();
+
                         executorService.shutdown();
                         CountDownLatch latch(numThreads);
-                        ASSERT_THROW(executorService.execute(boost::shared_ptr<Runnable>(new LatchDecrementer(latch))),
+                        ASSERT_THROW(executorService.execute(std::shared_ptr<Runnable>(new LatchDecrementer(latch))),
                                      client::exception::RejectedExecutionException);
                         ASSERT_THROW(
-                                executorService.submit<int>(boost::shared_ptr<Callable<int> >(new ValueReflector(1))),
+                                executorService.submit<int>(std::shared_ptr<Callable<int> >(new ValueReflector(1))),
                                 client::exception::RejectedExecutionException);
                     }
 
@@ -172,12 +181,13 @@ namespace hazelcast {
                                                                                      "testExecutorSubmit",
                                                                                      numThreads);
 
+                        executorService.start();
 
-                        std::vector<boost::shared_ptr<Future<int> > > futures;
+                        std::vector<std::shared_ptr<Future<int> > > futures;
                         for (int i = 0; i < numJobs; ++i) {
                             futures.push_back(
                                     executorService.submit<int>(
-                                            boost::shared_ptr<Callable<int> >(new ValueReflector(i))));
+                                            std::shared_ptr<Callable<int> >(new ValueReflector(i))));
                         }
 
                         for (int i = 0; i < numJobs; ++i) {
@@ -191,17 +201,19 @@ namespace hazelcast {
                                                                                       "testMultiThreadExecution",
                                                                                       numThreads);
 
+                        executorService.start();
+
                         CountDownLatch latch(1);
-                        Atomic<int64_t> threadId(0);
+                        std::atomic<int64_t> threadId(0);
                         int32_t key = 5;
                         // the following gets the thread id fr the key
                         executorService.execute(
-                                boost::shared_ptr<StripedRunnable>(new StripedIntRunable(key, latch, threadId, false)));
+                                std::shared_ptr<StripedRunnable>(new StripedIntRunable(key, latch, threadId, false)));
                         ASSERT_OPEN_EVENTUALLY(latch);
 
                         CountDownLatch latch2(1);
                         // this makes sure that the execution occured at the same thread as the previous runnable
-                        executorService.execute(boost::shared_ptr<StripedRunnable>(
+                        executorService.execute(std::shared_ptr<StripedRunnable>(
                                 new StripedIntRunable(key, latch2, threadId, true)));
                         ASSERT_OPEN_EVENTUALLY(latch2);
                     }

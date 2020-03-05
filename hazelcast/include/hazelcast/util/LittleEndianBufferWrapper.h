@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/Bits.h"
 
@@ -257,7 +257,7 @@ namespace hazelcast {
                 return index + requestedBytes <= capacity;
             }
 
-            boost::shared_ptr<std::vector<byte> > buffer;
+            std::shared_ptr<std::vector<byte> > buffer;
             int32_t capacity;
             int32_t index;
             bool readOnly;

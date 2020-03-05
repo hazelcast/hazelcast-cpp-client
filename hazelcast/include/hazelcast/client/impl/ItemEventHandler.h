@@ -41,13 +41,13 @@ namespace hazelcast {
 
                 };
 
-                virtual void handleItemEventV10(std::auto_ptr<serialization::pimpl::Data> item, const std::string &uuid,
+                virtual void handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
                                         const int32_t &eventType) {
-                    boost::shared_ptr<E> obj;
+                    std::shared_ptr<E> obj;
                     if (includeValue) {
                         obj = serializationService.toObject<E>(*item);
                     }
-                    boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                    std::shared_ptr<Member> member = clusterService.getMember(uuid);
                     ItemEventType type((ItemEventType::Type) eventType);
                     ItemEvent<E> itemEvent(instanceName, type, *obj, *member);
                     if (type == ItemEventType::ADDED) {
@@ -78,9 +78,9 @@ namespace hazelcast {
                               serializationService(serializationService), listener(listener) {
                     }
 
-                    virtual void handleItemEventV10(std::auto_ptr<serialization::pimpl::Data> item, const std::string &uuid,
+                    virtual void handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
                                             const int32_t &eventType) {
-                        boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                        std::shared_ptr<Member> member = clusterService.getMember(uuid);
                         ItemEventType type((ItemEventType::Type) eventType);
                         ItemEvent<TypedData> itemEvent(instanceName, type, TypedData(item, serializationService), *member);
                         if (type == ItemEventType::ADDED) {

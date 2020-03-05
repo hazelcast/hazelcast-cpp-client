@@ -17,7 +17,7 @@
 #ifndef HAZELCAST_CLIENT_SPI_CLIENTPARTITIONSERVICE_H_
 #define HAZELCAST_CLIENT_SPI_CLIENTPARTITIONSERVICE_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -47,13 +47,13 @@ namespace hazelcast {
              */
             class HAZELCAST_API ClientPartitionService {
             public:
-                virtual boost::shared_ptr<Address> getPartitionOwner(int partitionId) = 0;
+                virtual std::shared_ptr<Address> getPartitionOwner(int partitionId) = 0;
 
                 virtual int getPartitionId(const serialization::pimpl::Data &key) = 0;
 
                 virtual int getPartitionCount() = 0;
 
-                virtual boost::shared_ptr<client::impl::Partition> getPartition(int partitionId) = 0;
+                virtual std::shared_ptr<client::impl::Partition> getPartition(int partitionId) = 0;
             };
         }
     }

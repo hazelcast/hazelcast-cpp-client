@@ -16,7 +16,9 @@
 //
 // Created by sancar koyunlu on 8/21/13.
 
-#include <boost/foreach.hpp>
+#include <random>
+#include <cassert>
+#include <thread>
 
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/LifecycleEvent.h"
@@ -63,14 +65,16 @@ namespace hazelcast {
             int ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC = 20;
 
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
-                                                                     const boost::shared_ptr<AddressTranslator> &addressTranslator,
-                                                                     const std::vector<boost::shared_ptr<AddressProvider> > &addressProviders)
+                                                                     const std::shared_ptr<AddressTranslator> &addressTranslator,
+                                                                     const std::vector<std::shared_ptr<AddressProvider> > &addressProviders)
                     : logger(client.getLogger()), client(client),
                       socketInterceptor(client.getClientConfig().getSocketInterceptor()),
                       inSelector(*this, client.getClientConfig().getNetworkConfig().getSocketOptions()),
                       outSelector(*this, client.getClientConfig().getNetworkConfig().getSocketOptions()),
-                      inSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(inSelector)), logger),
-                      outSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(outSelector)), logger),
+                      inSelectorThread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(inSelector)),
+                                       logger),
+                      outSelectorThread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(outSelector)),
+                                        logger),
                       executionService(client.getClientExecutionService()),
                       translator(addressTranslator), connectionIdGen(0), socketFactory(client) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
@@ -82,7 +86,8 @@ namespace hazelcast {
 
                 connectionStrategy = initializeStrategy(client);
 
-                clusterConnectionExecutor = createSingleThreadExecutorService(client);
+                clusterConnectionExecutor.reset(
+                        new util::impl::SimpleExecutorService(logger, client.getName() + ".cluster-", 1));
 
                 ClientProperties &clientProperties = client.getClientProperties();
                 shuffleMemberList = clientProperties.getBoolean(clientProperties.getShuffleMemberList());
@@ -108,9 +113,13 @@ namespace hazelcast {
                 if (alive) {
                     return true;
                 }
-                alive = true;
+                alive.store(true);
 
-                bool result = socketFactory.start();
+                clusterConnectionExecutor->start();
+
+                if (!socketFactory.start()) {
+                    return false;
+                }
 
                 socketInterceptor = client.getClientConfig().getSocketInterceptor();
 
@@ -126,7 +135,7 @@ namespace hazelcast {
                 heartbeat->start();
                 connectionStrategy->start();
 
-                return result;
+                return true;
             }
 
             void ClientConnectionManagerImpl::shutdown() {
@@ -134,64 +143,77 @@ namespace hazelcast {
                 if (!alive) {
                     return;
                 }
-                alive = false;
+                alive.store(false);
 
-                // close connections
-                BOOST_FOREACH(boost::shared_ptr<Connection> connection, activeConnections.values()) {
-                                // prevent any exceptions
-                                util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
-                            }
-
-                spi::impl::ClientExecutionServiceImpl::shutdownExecutor("cluster", *clusterConnectionExecutor, logger);
                 stopEventLoopGroup();
-                connectionListeners.clear();
                 heartbeat->shutdown();
 
                 connectionStrategy->shutdown();
 
+                // let the waiting authentication futures not block anymore
+                for (auto &authFuture : connectionsInProgress.values()) {
+                    authFuture->onFailure(
+                            std::make_shared<exception::IllegalStateException>("ClientConnectionManagerImpl::shutdown",
+                                                                               "Client is shutting down"));
+                }
+
+                // close connections
+                for (auto &connection : activeConnections.values()) {
+                    // prevent any exceptions
+                    util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
+                }
+
+                for (auto &connection : pendingSocketIdToConnection.values()) {
+                    // prevent any exceptions
+                    util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
+                }
+
+                spi::impl::ClientExecutionServiceImpl::shutdownExecutor("cluster", *clusterConnectionExecutor, logger);
+
+                connectionListeners.clear();
                 activeConnectionsFileDescriptors.clear();
                 activeConnections.clear();
                 socketConnections.clear();
             }
 
-            boost::shared_ptr<Connection>
+            std::shared_ptr<Connection>
             ClientConnectionManagerImpl::getOrConnect(const Address &address) {
                 return getOrConnect(address, false);
             }
 
-            boost::shared_ptr<Connection> ClientConnectionManagerImpl::getOwnerConnection() {
-                boost::shared_ptr<Address> address = ownerConnectionAddress;
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::getOwnerConnection() {
+                std::shared_ptr<Address> address = ownerConnectionAddress;
                 if (address.get() == NULL) {
-                    return boost::shared_ptr<Connection>();
+                    return std::shared_ptr<Connection>();
                 }
-                boost::shared_ptr<Connection> connection = getActiveConnection(*address);
+                std::shared_ptr<Connection> connection = getActiveConnection(*address);
                 return connection;
 
             }
 
-            boost::shared_ptr<Connection> ClientConnectionManagerImpl::connectAsOwner(const Address &address) {
-                boost::shared_ptr<Connection> connection;
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::connectAsOwner(const Address &address) {
+                std::shared_ptr<Connection> connection;
                 try {
-                    logger.info() << "Trying to connect to " << address << " as owner member";
+                    logger.info("Trying to connect to ", address, " as owner member");
                     connection = getOrConnect(address, true);
                     client.onClusterConnect(connection);
                     fireConnectionEvent(LifecycleEvent::CLIENT_CONNECTED);
                     connectionStrategy->onConnectToCluster();
                 } catch (exception::IException &e) {
-                    logger.warning() << "Exception during initial connection to " << address << ", exception " << e;
+                    logger.warning("Exception during initial connection to ", address, ", exception ", e);
                     if (NULL != connection.get()) {
                         std::ostringstream reason;
                         reason << "Could not connect to " << address << " as owner";
-                        connection->close(reason.str().c_str(), boost::shared_ptr<exception::IException>(e.clone()));
+                        connection->close(reason.str().c_str(), std::shared_ptr<exception::IException>(e.clone()));
                     }
-                    return boost::shared_ptr<Connection>();
+                    return std::shared_ptr<Connection>();
                 }
                 return connection;
             }
 
-            boost::shared_ptr<Connection>
+            std::shared_ptr<Connection>
             ClientConnectionManagerImpl::createSocketConnection(const Address &address) {
-                boost::shared_ptr<Connection> conn(
+                std::shared_ptr<Connection> conn(
                         new Connection(address, client, ++connectionIdGen, inSelector, outSelector, socketFactory));
 
                 conn->connect(client.getClientConfig().getConnectionTimeout());
@@ -203,20 +225,20 @@ namespace hazelcast {
             }
 
 
-            std::vector<boost::shared_ptr<Connection> > ClientConnectionManagerImpl::getActiveConnections() {
+            std::vector<std::shared_ptr<Connection> > ClientConnectionManagerImpl::getActiveConnections() {
                 return activeConnections.values();
             }
 
-            boost::shared_ptr<Connection> ClientConnectionManagerImpl::getOrTriggerConnect(const Address &target) {
-                boost::shared_ptr<Connection> connection = getConnection(target, false);
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::getOrTriggerConnect(const Address &target) {
+                std::shared_ptr<Connection> connection = getConnection(target, false);
                 if (connection.get() != NULL) {
                     return connection;
                 }
                 triggerConnect(target, false);
-                return boost::shared_ptr<Connection>();
+                return std::shared_ptr<Connection>();
             }
 
-            boost::shared_ptr<Connection>
+            std::shared_ptr<Connection>
             ClientConnectionManagerImpl::getConnection(const Address &target, bool asOwner) {
                 if (!asOwner) {
                     connectionStrategy->beforeGetConnection(target);
@@ -226,7 +248,7 @@ namespace hazelcast {
                                                  "Owner connection is not available!");
                 }
 
-                boost::shared_ptr<Connection> connection = activeConnections.get(target);
+                std::shared_ptr<Connection> connection = activeConnections.get(target);
 
                 if (connection.get() != NULL) {
                     if (!asOwner) {
@@ -236,18 +258,18 @@ namespace hazelcast {
                         return connection;
                     }
                 }
-                return boost::shared_ptr<Connection>();
+                return std::shared_ptr<Connection>();
             }
 
-            boost::shared_ptr<Connection> ClientConnectionManagerImpl::getActiveConnection(const Address &target) {
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::getActiveConnection(const Address &target) {
                 return activeConnections.get(target);
             }
 
-            boost::shared_ptr<Address> ClientConnectionManagerImpl::getOwnerConnectionAddress() {
+            std::shared_ptr<Address> ClientConnectionManagerImpl::getOwnerConnectionAddress() {
                 return ownerConnectionAddress;
             }
 
-            boost::shared_ptr<AuthenticationFuture>
+            std::shared_ptr<AuthenticationFuture>
             ClientConnectionManagerImpl::triggerConnect(const Address &target, bool asOwner) {
                 if (!asOwner) {
                     connectionStrategy->beforeOpenConnection(target);
@@ -257,24 +279,24 @@ namespace hazelcast {
                                                         "ConnectionManager is not active!");
                 }
 
-                boost::shared_ptr<AuthenticationFuture> future(new AuthenticationFuture());
-                boost::shared_ptr<AuthenticationFuture> oldFuture = connectionsInProgress.putIfAbsent(target, future);
+                std::shared_ptr<AuthenticationFuture> future(new AuthenticationFuture());
+                std::shared_ptr<AuthenticationFuture> oldFuture = connectionsInProgress.putIfAbsent(target, future);
                 if (oldFuture.get() == NULL) {
                     executionService.execute(
-                            boost::shared_ptr<util::Runnable>(new InitConnectionTask(target, asOwner, future, *this)));
+                            std::shared_ptr<util::Runnable>(new InitConnectionTask(target, asOwner, future, *this)));
                     return future;
                 }
                 return oldFuture;
             }
 
-            boost::shared_ptr<Connection>
+            std::shared_ptr<Connection>
             ClientConnectionManagerImpl::getOrConnect(const Address &address, bool asOwner) {
                 while (true) {
-                    boost::shared_ptr<Connection> connection = getConnection(address, asOwner);
+                    std::shared_ptr<Connection> connection = getConnection(address, asOwner);
                     if (connection.get() != NULL) {
                         return connection;
                     }
-                    boost::shared_ptr<AuthenticationFuture> firstCallback = triggerConnect(address, asOwner);
+                    std::shared_ptr<AuthenticationFuture> firstCallback = triggerConnect(address, asOwner);
                     connection = firstCallback->get();
 
                     if (!asOwner) {
@@ -287,29 +309,26 @@ namespace hazelcast {
             }
 
             void
-            ClientConnectionManagerImpl::authenticate(const Address &target, boost::shared_ptr<Connection> &connection,
-                                                      bool asOwner, boost::shared_ptr<AuthenticationFuture> &future) {
-                boost::shared_ptr<protocol::Principal> principal = getPrincipal();
-                std::auto_ptr<protocol::ClientMessage> clientMessage = encodeAuthenticationRequest(asOwner,
-                                                                                                   client.getSerializationService(),
-                                                                                                   principal.get());
-                boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
+            ClientConnectionManagerImpl::authenticate(const Address &target, std::shared_ptr<Connection> &connection,
+                                                      bool asOwner, std::shared_ptr<AuthenticationFuture> &future) {
+                std::shared_ptr<protocol::Principal> principal = getPrincipal();
+                std::unique_ptr<protocol::ClientMessage> clientMessage = encodeAuthenticationRequest(asOwner,
+                                                                                                     client.getSerializationService(),
+                                                                                                     principal.get());
+                std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         client, clientMessage, "", connection);
-                boost::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture = clientInvocation->invokeUrgent();
-                // TODO: let this return a future and pass it to AuthCallback as in Java
-                executionService.schedule(
-                        boost::shared_ptr<util::Runnable>(new TimeoutAuthenticationTask(invocationFuture, *this)),
-                        connectionTimeoutMillis);
-                invocationFuture->andThen(
-                        boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> >(
-                                new AuthCallback(connection, asOwner, target, future, *this)));
+                std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture = clientInvocation->invokeUrgent();
+
+                auto authCallback = std::make_shared<AuthCallback>(invocationFuture, connection, asOwner, target,
+                                                                   future, *this);
+                invocationFuture->andThen(authCallback);
             }
 
-            const boost::shared_ptr<protocol::Principal> ClientConnectionManagerImpl::getPrincipal() {
+            const std::shared_ptr<protocol::Principal> ClientConnectionManagerImpl::getPrincipal() {
                 return principal;
             }
 
-            std::auto_ptr<protocol::ClientMessage>
+            std::unique_ptr<protocol::ClientMessage>
             ClientConnectionManagerImpl::encodeAuthenticationRequest(bool asOwner,
                                                                      serialization::pimpl::SerializationService &ss,
                                                                      const protocol::Principal *principal) {
@@ -320,7 +339,7 @@ namespace hazelcast {
                     uuid = principal->getUuid();
                     ownerUuid = principal->getOwnerUuid();
                 }
-                std::auto_ptr<protocol::ClientMessage> clientMessage;
+                std::unique_ptr<protocol::ClientMessage> clientMessage;
                 if (credentials == NULL) {
                     // TODO: Change UsernamePasswordCredentials to implement Credentials interface so that we can just 
                     // upcast the credentials as done at Java
@@ -332,37 +351,37 @@ namespace hazelcast {
                 } else {
                     serialization::pimpl::Data data = ss.toData<Credentials>(credentials);
                     clientMessage = protocol::codec::ClientAuthenticationCustomCodec::encodeRequest(data,
-                                                                                                                uuid,
-                                                                                                                ownerUuid,
-                                                                                                                asOwner,
-                                                                                                                protocol::ClientTypes::CPP,
-                                                                                                                serializationVersion,
-                                                                                                                HAZELCAST_VERSION);
+                                                                                                    uuid,
+                                                                                                    ownerUuid,
+                                                                                                    asOwner,
+                                                                                                    protocol::ClientTypes::CPP,
+                                                                                                    serializationVersion,
+                                                                                                    HAZELCAST_VERSION);
                 }
                 return clientMessage;
             }
 
-            void ClientConnectionManagerImpl::setPrincipal(const boost::shared_ptr<protocol::Principal> &principal) {
+            void ClientConnectionManagerImpl::setPrincipal(const std::shared_ptr<protocol::Principal> &principal) {
                 ClientConnectionManagerImpl::principal = principal;
             }
 
             void ClientConnectionManagerImpl::onAuthenticated(const Address &target,
-                                                              const boost::shared_ptr<Connection> &connection) {
-                boost::shared_ptr<Connection> oldConnection = activeConnections.put(*connection->getRemoteEndpoint(),
-                                                                                    connection);
+                                                              const std::shared_ptr<Connection> &connection) {
+                std::shared_ptr<Connection> oldConnection = activeConnections.put(*connection->getRemoteEndpoint(),
+                                                                                  connection);
                 int socketId = connection->getSocket().getSocketId();
                 activeConnectionsFileDescriptors.put(socketId, connection);
                 pendingSocketIdToConnection.remove(socketId);
 
                 if (oldConnection.get() == NULL) {
                     if (logger.isFinestEnabled()) {
-                        logger.finest() << "Authentication succeeded for " << *connection
-                                        << " and there was no old connection to this end-point";
+                        logger.finest("Authentication succeeded for ", *connection,
+                                      " and there was no old connection to this end-point");
                     }
                     fireConnectionAddedEvent(connection);
                 } else {
                     if (logger.isFinestEnabled()) {
-                        logger.finest() << "Re-authentication succeeded for " << *connection;
+                        logger.finest("Re-authentication succeeded for " , *connection);
                     }
                     assert(*connection == *oldConnection);
                 }
@@ -374,10 +393,10 @@ namespace hazelcast {
                 } else {
                     out << "null";
                 }
-                logger.info() << "Authenticated with server " << out.str() << ", server version:"
-                              << connection->getConnectedServerVersionString() << " Local address: "
-                              << (connection->getLocalSocketAddress().get() != NULL
-                                  ? connection->getLocalSocketAddress()->toString() : "null");
+                logger.info("Authenticated with server ", out.str(), ", server version:"
+                              , connection->getConnectedServerVersionString(), " Local address: "
+                              , (connection->getLocalSocketAddress().get() != NULL
+                                  ? connection->getLocalSocketAddress()->toString() : "null"));
 
                 /* check if connection is closed by remote before authentication complete, if that is the case
                 we need to remove it back from active connections.
@@ -395,67 +414,56 @@ namespace hazelcast {
             }
 
             void
-            ClientConnectionManagerImpl::fireConnectionAddedEvent(const boost::shared_ptr<Connection> &connection) {
-                BOOST_FOREACH(const boost::shared_ptr<ConnectionListener> &connectionListener,
-                              connectionListeners.toArray()) {
-                                connectionListener->connectionAdded(connection);
-                            }
+            ClientConnectionManagerImpl::fireConnectionAddedEvent(const std::shared_ptr<Connection> &connection) {
+                for (const std::shared_ptr<ConnectionListener> &connectionListener : connectionListeners.toArray()) {
+                    connectionListener->connectionAdded(connection);
+                }
                 connectionStrategy->onConnect(connection);
             }
 
             void
-            ClientConnectionManagerImpl::removeFromActiveConnections(const boost::shared_ptr<Connection> &connection) {
-                boost::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
+            ClientConnectionManagerImpl::removeFromActiveConnections(const std::shared_ptr<Connection> &connection) {
+                std::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
 
                 if (endpoint.get() == NULL) {
                     if (logger.isFinestEnabled()) {
-                        logger.finest() << "Destroying " << *connection << ", but it has end-point set to null "
-                                        << "-> not removing it from a connection map";
+                        logger.finest("Destroying " , *connection , ", but it has end-point set to null ", "-> not removing it from a connection map");
                     }
                     return;
                 }
 
                 if (activeConnections.remove(*endpoint, connection)) {
-                    logger.info() << "Removed connection to endpoint: " << *endpoint << ", connection: " << *connection;
+                    logger.info("Removed connection to endpoint: ", *endpoint, ", connection: ", *connection);
                     activeConnectionsFileDescriptors.remove(connection->getSocket().getSocketId());
                     fireConnectionRemovedEvent(connection);
                 } else {
                     if (logger.isFinestEnabled()) {
-                        logger.finest() << "Destroying a connection, but there is no mapping " << endpoint << " -> "
-                                        << *connection
-                                        << " in the connection map.";
+                        logger.finest("Destroying a connection, but there is no mapping " , endpoint , " -> ", *connection,  " in the connection map.");
                     }
                 }
             }
 
             void
-            ClientConnectionManagerImpl::fireConnectionRemovedEvent(const boost::shared_ptr<Connection> &connection) {
+            ClientConnectionManagerImpl::fireConnectionRemovedEvent(const std::shared_ptr<Connection> &connection) {
                 if (connection->isAuthenticatedAsOwner()) {
                     disconnectFromCluster(connection);
                 }
 
-                BOOST_FOREACH (const boost::shared_ptr<ConnectionListener> &listener,
-                               connectionListeners.toArray()) {
-                                listener->connectionRemoved(connection);
-                            }
+                for (const std::shared_ptr<ConnectionListener> &listener : connectionListeners.toArray()) {
+                    listener->connectionRemoved(connection);
+                }
                 connectionStrategy->onDisconnect(connection);
             }
 
-            void ClientConnectionManagerImpl::disconnectFromCluster(const boost::shared_ptr<Connection> &connection) {
+            void ClientConnectionManagerImpl::disconnectFromCluster(const std::shared_ptr<Connection> &connection) {
                 clusterConnectionExecutor->execute(
-                        boost::shared_ptr<util::Runnable>(
+                        std::shared_ptr<util::Runnable>(
                                 new DisconnecFromClusterTask(connection, *this, *connectionStrategy)));
-            }
-
-            boost::shared_ptr<util::impl::SimpleExecutorService>
-            ClientConnectionManagerImpl::createSingleThreadExecutorService(spi::ClientContext &client) {
-                return boost::static_pointer_cast<util::impl::SimpleExecutorService>(
-                        util::Executors::newSingleThreadExecutor(client.getName() + ".cluster-", logger));
             }
 
             void
             ClientConnectionManagerImpl::setOwnerConnectionAddress(
-                    const boost::shared_ptr<Address> &ownerConnectionAddress) {
+                    const std::shared_ptr<Address> &ownerConnectionAddress) {
                 previousOwnerConnectionAddress = this->ownerConnectionAddress.get();
                 ClientConnectionManagerImpl::ownerConnectionAddress = ownerConnectionAddress;
             }
@@ -467,8 +475,8 @@ namespace hazelcast {
                 lifecycleService.fireLifecycleEvent(state);
             }
 
-            boost::shared_ptr<util::Future<bool> > ClientConnectionManagerImpl::connectToClusterAsync() {
-                boost::shared_ptr<util::Callable<bool> > task(new ConnectToClusterTask(*this));
+            std::shared_ptr<util::Future<bool> > ClientConnectionManagerImpl::connectToClusterAsync() {
+                std::shared_ptr<util::Callable<bool> > task(new ConnectToClusterTask(client));
                 return clusterConnectionExecutor->submit<bool>(task);
             }
 
@@ -481,17 +489,17 @@ namespace hazelcast {
                     int64_t nextTry = util::currentTimeMillis() + connectionAttemptPeriod;
 
                     std::set<Address> addresses = getPossibleMemberAddresses();
-                    BOOST_FOREACH (const Address &address, addresses) {
-                                    if (!client.getLifecycleService().isRunning()) {
-                                        throw exception::IllegalStateException(
-                                                "ConnectionManager::connectToClusterInternal",
-                                                "Giving up on retrying to connect to cluster since client is shutdown.");
-                                    }
-                                    triedAddresses.insert(address);
-                                    if (connectAsOwner(address).get() != NULL) {
-                                        return;
-                                    }
-                                }
+                    for (const Address &address : addresses) {
+                        if (!client.getLifecycleService().isRunning()) {
+                            throw exception::IllegalStateException(
+                                    "ConnectionManager::connectToClusterInternal",
+                                    "Giving up on retrying to connect to cluster since client is shutdown.");
+                        }
+                        triedAddresses.insert(address);
+                        if (connectAsOwner(address).get() != NULL) {
+                            return;
+                        }
+                    }
 
                     // If the address providers load no addresses (which seems to be possible), then the above loop is not entered
                     // and the lifecycle check is missing, hence we need to repeat the same check at this point.
@@ -501,24 +509,24 @@ namespace hazelcast {
 
                     if (attempt < connectionAttemptLimit) {
                         const int64_t remainingTime = nextTry - util::currentTimeMillis();
-                        logger.warning() << "Unable to get alive cluster connection, try in "
-                                         << (remainingTime > 0 ? remainingTime : 0) << " ms later, attempt " << attempt
-                                         << " of " << connectionAttemptLimit << ".";
+                        logger.warning("Unable to get alive cluster connection, try in ",
+                                       (remainingTime > 0 ? remainingTime : 0), " ms later, attempt ", attempt,
+                                       " of ", connectionAttemptLimit, ".");
 
                         if (remainingTime > 0) {
                             util::Thread::sleep(remainingTime);
                         }
                     } else {
-                        logger.warning() << "Unable to get alive cluster connection, attempt " << attempt << " of "
-                                         << connectionAttemptLimit << ".";
+                        logger.warning("Unable to get alive cluster connection, attempt ", attempt, " of ",
+                                       connectionAttemptLimit, ".");
                     }
                 }
                 std::ostringstream out;
                 out << "Unable to connect to any address! The following addresses were tried: { ";
-                BOOST_FOREACH(const std::set<Address>::value_type &address, triedAddresses) {
-                                out << address << " , ";
-                            }
-                            out << "}";
+                for (const std::set<Address>::value_type &address : triedAddresses) {
+                    out << address << " , ";
+                }
+                out << "}";
                 throw exception::IllegalStateException("ConnectionManager::connectToClusterInternal", out.str());
             }
 
@@ -527,31 +535,31 @@ namespace hazelcast {
 
                 std::vector<Member> memberList = client.getClientClusterService().getMemberList();
                 std::vector<Address> memberAddresses;
-                BOOST_FOREACH (const Member &member, memberList) {
-                                memberAddresses.push_back(member.getAddress());
-                            }
+                for (const Member &member : memberList) {
+                    memberAddresses.push_back(member.getAddress());
+                }
 
                 if (shuffleMemberList) {
-                    std::random_shuffle(memberAddresses.begin(), memberAddresses.end());
+                    shuffle(memberAddresses);
                 }
 
                 addresses.insert(memberAddresses.begin(), memberAddresses.end());
 
                 std::set<Address> providerAddressesSet;
-                BOOST_FOREACH (boost::shared_ptr<AddressProvider> &addressProvider, addressProviders) {
-                                std::vector<Address> addrList = addressProvider->loadAddresses();
-                                providerAddressesSet.insert(addrList.begin(), addrList.end());
-                            }
+                for (std::shared_ptr<AddressProvider> &addressProvider : addressProviders) {
+                    std::vector<Address> addrList = addressProvider->loadAddresses();
+                    providerAddressesSet.insert(addrList.begin(), addrList.end());
+                }
 
                 std::vector<Address> providerAddresses(providerAddressesSet.begin(), providerAddressesSet.end());
 
                 if (shuffleMemberList) {
-                    std::random_shuffle(providerAddresses.begin(), providerAddresses.end());
+                    shuffle(memberAddresses);
                 }
 
                 addresses.insert(providerAddresses.begin(), providerAddresses.end());
 
-                boost::shared_ptr<Address> previousAddress = previousOwnerConnectionAddress.get();
+                std::shared_ptr<Address> previousAddress = previousOwnerConnectionAddress.get();
                 if (previousAddress.get() != NULL) {
                     /*
                      * Previous owner address is moved to last item in set so that client will not try to connect to same one immediately.
@@ -564,11 +572,17 @@ namespace hazelcast {
                 return addresses;
             }
 
-            std::auto_ptr<ClientConnectionStrategy>
+            void ClientConnectionManagerImpl::shuffle(
+                    std::vector<Address> &memberAddresses) const {// obtain a time-based seed:
+                unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+                std::shuffle(memberAddresses.begin(), memberAddresses.end(), std::default_random_engine(seed));
+            }
+
+            std::unique_ptr<ClientConnectionStrategy>
             ClientConnectionManagerImpl::initializeStrategy(spi::ClientContext &client) {
                 // TODO: Add a way so that this strategy can be configurable as in Java
-                return std::auto_ptr<ClientConnectionStrategy>(new DefaultClientConnectionStrategy(client, logger,
-                                                                                                   client.getClientConfig().getConnectionStrategyConfig()));
+                return std::unique_ptr<ClientConnectionStrategy>(new DefaultClientConnectionStrategy(client, logger,
+                                                                                                     client.getClientConfig().getConnectionStrategyConfig()));
             }
 
             void ClientConnectionManagerImpl::connectToCluster() {
@@ -586,15 +600,17 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::stopEventLoopGroup() {
                 inSelector.shutdown();
+                inSelectorThread.join();
                 outSelector.shutdown();
+                outSelectorThread.join();
             }
 
             void ClientConnectionManagerImpl::onClose(Connection &connection) {
                 removeFromActiveConnections(connection.shared_from_this());
             }
 
-            boost::shared_ptr<Connection> ClientConnectionManagerImpl::getActiveConnection(int fileDescriptor) {
-                boost::shared_ptr<Connection> connection = activeConnectionsFileDescriptors.get(fileDescriptor);
+            std::shared_ptr<Connection> ClientConnectionManagerImpl::getActiveConnection(int fileDescriptor) {
+                std::shared_ptr<Connection> connection = activeConnectionsFileDescriptors.get(fileDescriptor);
                 if (connection.get()) {
                     return connection;
                 }
@@ -604,7 +620,7 @@ namespace hazelcast {
 
             void
             ClientConnectionManagerImpl::addConnectionListener(
-                    const boost::shared_ptr<ConnectionListener> &connectionListener) {
+                    const std::shared_ptr<ConnectionListener> &connectionListener) {
                 connectionListeners.add(connectionListener);
             }
 
@@ -618,19 +634,19 @@ namespace hazelcast {
 
             ClientConnectionManagerImpl::InitConnectionTask::InitConnectionTask(const Address &target,
                                                                                 const bool asOwner,
-                                                                                const boost::shared_ptr<AuthenticationFuture> &future,
+                                                                                const std::shared_ptr<AuthenticationFuture> &future,
                                                                                 ClientConnectionManagerImpl &connectionManager)
                     : target(
                     target), asOwner(asOwner), future(future), connectionManager(connectionManager),
-                    logger(connectionManager.getLogger()) {}
+                      logger(connectionManager.getLogger()) {}
 
             void ClientConnectionManagerImpl::InitConnectionTask::run() {
-                boost::shared_ptr<Connection> connection;
+                std::shared_ptr<Connection> connection;
                 try {
                     connection = getConnection(target);
                 } catch (exception::IException &e) {
-                    logger.finest() << e;
-                    future->onFailure(boost::shared_ptr<exception::IException>(e.clone()));
+                    logger.finest(e);
+                    future->onFailure(std::shared_ptr<exception::IException>(e.clone()));
                     connectionManager.connectionsInProgress.remove(target);
                     return;
                 }
@@ -643,7 +659,7 @@ namespace hazelcast {
 
                     connectionManager.authenticate(target, connection, asOwner, future);
                 } catch (exception::IException &e) {
-                    const boost::shared_ptr<exception::IException> throwable(e.clone());
+                    const std::shared_ptr<exception::IException> throwable(e.clone());
                     future->onFailure(throwable);
                     connection->close("Failed to authenticate connection", throwable);
                     connectionManager.connectionsInProgress.remove(target);
@@ -654,9 +670,9 @@ namespace hazelcast {
                 return "ConnectionManager::InitConnectionTask";
             }
 
-            boost::shared_ptr<Connection>
+            std::shared_ptr<Connection>
             ClientConnectionManagerImpl::InitConnectionTask::getConnection(const Address &target) {
-                boost::shared_ptr<Connection> connection = connectionManager.activeConnections.get(target);
+                std::shared_ptr<Connection> connection = connectionManager.activeConnections.get(target);
                 if (connection.get() != NULL) {
                     return connection;
                 }
@@ -664,52 +680,84 @@ namespace hazelcast {
                 return connectionManager.createSocketConnection(address);
             }
 
-            ClientConnectionManagerImpl::AuthCallback::AuthCallback(const boost::shared_ptr<Connection> &connection,
-                                                                    bool asOwner,
-                                                                    const Address &target,
-                                                                    boost::shared_ptr<AuthenticationFuture> &future,
-                                                                    ClientConnectionManagerImpl &connectionManager)
-                    : connection(connection), asOwner(asOwner), target(target), future(future),
-                      connectionManager(connectionManager) {
+            ClientConnectionManagerImpl::AuthCallback::AuthCallback(
+                    std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture,
+                    const std::shared_ptr<Connection> &connection,
+                    bool asOwner,
+                    const Address &target,
+                    std::shared_ptr<AuthenticationFuture> &future,
+                    ClientConnectionManagerImpl &connectionManager) : invocationFuture(invocationFuture),
+                                                                      connection(connection), asOwner(asOwner),
+                                                                      target(target), future(future),
+                                                                      connectionManager(connectionManager),
+                                                                      cancelled(false) {
+                scheduleTimeoutTask();
+            }
+
+            void ClientConnectionManagerImpl::AuthCallback::cancelTimeoutTask() {
+                {
+                    std::lock_guard<std::mutex> g(timeoutMutex);
+                    cancelled = true;
+                }
+                timeoutCondition.notify_one();
+                timeoutTaskFuture.get();
+            }
+
+            void ClientConnectionManagerImpl::AuthCallback::scheduleTimeoutTask() {
+                timeoutTaskFuture = std::async([&] {
+                    std::unique_lock<std::mutex> uniqueLock(timeoutMutex);
+                    if (cancelled) {
+                        return;
+                    }
+
+                    if (timeoutCondition.wait_for(uniqueLock,
+                                              std::chrono::milliseconds(connectionManager.connectionTimeoutMillis),
+                                              [&] { return cancelled; })) {
+                        return;
+                    }
+
+                    invocationFuture->complete((exception::ExceptionBuilder<exception::TimeoutException>(
+                            "ClientConnectionManagerImpl::authenticate")
+                            << "Authentication response did not come back in " << connectionManager.connectionTimeoutMillis
+                            << " millis").buildShared());
+                });
             }
 
             void ClientConnectionManagerImpl::AuthCallback::onResponse(
-                    const boost::shared_ptr<protocol::ClientMessage> &response) {
-/*              TODO
-                timeoutTaskFuture.cancel(true);
-*/
+                    const std::shared_ptr<protocol::ClientMessage> &response) {
+                cancelTimeoutTask();
 
-                std::auto_ptr<protocol::codec::ClientAuthenticationCodec::ResponseParameters> result;
+                std::unique_ptr<protocol::codec::ClientAuthenticationCodec::ResponseParameters> result;
                 try {
                     result.reset(new protocol::codec::ClientAuthenticationCodec::ResponseParameters(
                             protocol::codec::ClientAuthenticationCodec::ResponseParameters::decode(*response)));
                 } catch (exception::IException &e) {
-                    onFailure(boost::shared_ptr<exception::IException>(e.clone()));
+                    handleAuthenticationException(std::shared_ptr<exception::IException>(e.clone()));
                     return;
                 }
                 protocol::AuthenticationStatus authenticationStatus = (protocol::AuthenticationStatus) result->status;
                 switch (authenticationStatus) {
                     case protocol::AUTHENTICATED: {
                         connection->setConnectedServerVersion(result->serverHazelcastVersion);
-                        connection->setRemoteEndpoint(boost::shared_ptr<Address>(result->address));
+                        connection->setRemoteEndpoint(std::shared_ptr<Address>(std::move(result->address)));
                         if (asOwner) {
                             connection->setIsAuthenticatedAsOwner();
-                            boost::shared_ptr<protocol::Principal> principal(
+                            std::shared_ptr<protocol::Principal> principal(
                                     new protocol::Principal(result->uuid, result->ownerUuid));
                             connectionManager.setPrincipal(principal);
                             //setting owner connection is moved to here(before onAuthenticated/before connected event)
                             //so that invocations that requires owner connection on this connection go through
                             connectionManager.setOwnerConnectionAddress(connection->getRemoteEndpoint());
-                            connectionManager.logger.info() << "Setting " << *connection << " as owner with principal "
-                                                            << *principal;
+                            connectionManager.logger.info("Setting ", *connection, " as owner with principal ",
+                                                          *principal);
                         }
                         connectionManager.onAuthenticated(target, connection);
                         future->onSuccess(connection);
                         break;
                     }
                     case protocol::CREDENTIALS_FAILED: {
-                        boost::shared_ptr<protocol::Principal> p = connectionManager.principal;
-                        boost::shared_ptr<exception::AuthenticationException> exception;
+                        std::shared_ptr<protocol::Principal> p = connectionManager.principal;
+                        std::shared_ptr<exception::AuthenticationException> exception;
                         if (p.get()) {
                             exception = (exception::ExceptionBuilder<exception::AuthenticationException>(
                                     "ConnectionManager::AuthCallback::onResponse") << "Invalid credentials! Principal: "
@@ -719,11 +767,11 @@ namespace hazelcast {
                                     "ConnectionManager::AuthCallback::onResponse",
                                     "Invalid credentials! No principal."));
                         }
-                        onFailure(exception);
+                        handleAuthenticationException(exception);
                         break;
                     }
                     default: {
-                        onFailure((exception::ExceptionBuilder<exception::AuthenticationException>(
+                        handleAuthenticationException((exception::ExceptionBuilder<exception::AuthenticationException>(
                                 "ConnectionManager::AuthCallback::onResponse")
                                 << "Authentication status code not supported. status: "
                                 << authenticationStatus).buildShared());
@@ -732,19 +780,23 @@ namespace hazelcast {
             }
 
             void
-            ClientConnectionManagerImpl::AuthCallback::onFailure(const boost::shared_ptr<exception::IException> &e) {
-/*
-                timeoutTaskFuture.cancel(true);
-*/
-                onAuthenticationFailed(target, connection, e);
-                future->onFailure(e);
+            ClientConnectionManagerImpl::AuthCallback::onFailure(const std::shared_ptr<exception::IException> &e) {
+                cancelTimeoutTask();
+
+                handleAuthenticationException(e);
+            }
+
+            void ClientConnectionManagerImpl::AuthCallback::handleAuthenticationException(
+                    const std::shared_ptr<exception::IException> &e) {
+                this->onAuthenticationFailed(this->target, this->connection, e);
+                this->future->onFailure(e);
             }
 
             void ClientConnectionManagerImpl::AuthCallback::onAuthenticationFailed(const Address &target,
-                                                                                   const boost::shared_ptr<Connection> &connection,
-                                                                                   const boost::shared_ptr<exception::IException> &cause) {
+                                                                                   const std::shared_ptr<Connection> &connection,
+                                                                                   const std::shared_ptr<exception::IException> &cause) {
                 if (connectionManager.logger.isFinestEnabled()) {
-                    connectionManager.logger.finest() << "Authentication of " << connection << " failed." << cause;
+                    connectionManager.logger.finest("Authentication of " , connection , " failed." , cause);
                 }
                 connection->close("", cause);
                 connectionManager.pendingSocketIdToConnection.remove(connection->getSocket().getSocketId());
@@ -752,22 +804,22 @@ namespace hazelcast {
             }
 
             ClientConnectionManagerImpl::DisconnecFromClusterTask::DisconnecFromClusterTask(
-                    const boost::shared_ptr<Connection> &connection, ClientConnectionManagerImpl &connectionManager,
+                    const std::shared_ptr<Connection> &connection, ClientConnectionManagerImpl &connectionManager,
                     ClientConnectionStrategy &connectionStrategy)
                     : connection(
                     connection), connectionManager(connectionManager), connectionStrategy(connectionStrategy) {
             }
 
             void ClientConnectionManagerImpl::DisconnecFromClusterTask::run() {
-                boost::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
+                std::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
                 // it may be possible that while waiting on executor queue, the client got connected (another connection),
                 // then we do not need to do anything for cluster disconnect.
-                boost::shared_ptr<Address> ownerAddress = connectionManager.ownerConnectionAddress;
+                std::shared_ptr<Address> ownerAddress = connectionManager.ownerConnectionAddress;
                 if (ownerAddress.get() && (endpoint.get() && *endpoint != *ownerAddress)) {
                     return;
                 }
 
-                connectionManager.setOwnerConnectionAddress(boost::shared_ptr<Address>());
+                connectionManager.setOwnerConnectionAddress(std::shared_ptr<Address>());
                 connectionStrategy.onDisconnectFromCluster();
 
                 if (connectionManager.client.getLifecycleService().isRunning()) {
@@ -780,23 +832,19 @@ namespace hazelcast {
             }
 
             ClientConnectionManagerImpl::ConnectToClusterTask::ConnectToClusterTask(
-                    ClientConnectionManagerImpl &connectionManager)
-                    : connectionManager(connectionManager) {
+                    const spi::ClientContext &clientContext) : clientContext(clientContext) {
             }
 
-            boost::shared_ptr<bool> ClientConnectionManagerImpl::ConnectToClusterTask::call() {
+            std::shared_ptr<bool> ClientConnectionManagerImpl::ConnectToClusterTask::call() {
+                ClientConnectionManagerImpl &connectionManager = clientContext.getConnectionManager();
                 try {
                     connectionManager.connectToClusterInternal();
-                    return boost::shared_ptr<bool>(new bool(true));
+                    return std::shared_ptr<bool>(new bool(true));
                 } catch (exception::IException &e) {
-                    connectionManager.logger.warning() << "Could not connect to cluster, shutting down the client. "
-                                                       << e.getMessage();
+                    connectionManager.getLogger().warning("Could not connect to cluster, shutting down the client. ", e.getMessage());
 
-                    boost::shared_ptr<ShutdownTask> task(new ShutdownTask(connectionManager.client));
-                    boost::shared_ptr<util::Thread> shutdownThread(new util::Thread(task, connectionManager.getLogger()));
-                    shutdownThread->start();
-                    connectionManager.shutdownThreads.offer(shutdownThread);
-
+                    static_cast<DefaultClientConnectionStrategy &>(*connectionManager.connectionStrategy).shutdownWithExternalThread(
+                            clientContext.getHazelcastClientImplementation());
                     throw;
                 } catch (...) {
                     throw;
@@ -806,57 +854,6 @@ namespace hazelcast {
             const std::string ClientConnectionManagerImpl::ConnectToClusterTask::getName() const {
                 return "ClientConnectionManagerImpl::ConnectToClusterTask";
             }
-
-            ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client)
-            : logger(client.getLogger()) {
-                boost::shared_ptr<impl::HazelcastClientInstanceImpl> hazelcastClientImplementation =
-                        client.getHazelcastClientImplementation();
-                if (hazelcastClientImplementation.get()) {
-                    clientImpl = hazelcastClientImplementation;
-                }
-            }
-
-            void ClientConnectionManagerImpl::ShutdownTask::run() {
-                boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
-                if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
-                    return;
-                }
-
-                try {
-                    clientInstance->getLifecycleService().shutdown();
-                } catch (exception::IException &exception) {
-                    logger.severe() << "Exception during client shutdown task "
-                        << clientInstance->getName() + ".clientShutdown-" << ":" << exception;
-                }
-            }
-
-            const std::string ClientConnectionManagerImpl::ShutdownTask::getName() const {
-                boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
-                if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
-                    return "ClientConnectionManagerImpl::ShutdownTask";
-                }
-
-                return clientInstance->getName();
-            }
-
-            void ClientConnectionManagerImpl::TimeoutAuthenticationTask::run() {
-                if (future->isDone()) {
-                    return;
-                }
-                future->complete((exception::ExceptionBuilder<exception::TimeoutException>(
-                        "TimeoutAuthenticationTask::TimeoutAuthenticationTask")
-                        << "Authentication response did not come back in "
-                        << clientConnectionManager.connectionTimeoutMillis << " millis").buildShared());
-            }
-
-            const std::string ClientConnectionManagerImpl::TimeoutAuthenticationTask::getName() const {
-                return "ClientConnectionManagerImpl::TimeoutAuthenticationTask";
-            }
-
-            ClientConnectionManagerImpl::TimeoutAuthenticationTask::TimeoutAuthenticationTask(
-                    const boost::shared_ptr<spi::impl::ClientInvocationFuture> &future,
-                    ClientConnectionManagerImpl &clientConnectionManager) : future(future), clientConnectionManager(
-                    clientConnectionManager) {}
         }
     }
 }

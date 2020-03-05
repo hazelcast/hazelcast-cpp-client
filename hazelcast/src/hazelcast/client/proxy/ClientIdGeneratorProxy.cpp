@@ -24,8 +24,8 @@ namespace hazelcast {
             ClientIdGeneratorProxy::ClientIdGeneratorProxy(const std::string &instanceName, spi::ClientContext *context,
                                                            const IAtomicLong &atomicLong)
                     : proxy::ProxyImpl(ClientIdGeneratorProxy::SERVICE_NAME, instanceName, context),
-                      atomicLong(atomicLong), local(new util::Atomic<int64_t>(-1)),
-                      residue(new util::Atomic<int32_t>(BLOCK_SIZE)), localLock(new util::Mutex) {
+                      atomicLong(atomicLong), local(new std::atomic<int64_t>(-1)),
+                      residue(new std::atomic<int32_t>(BLOCK_SIZE)), localLock(new util::Mutex) {
                 this->atomicLong.get();
             }
 
@@ -38,17 +38,17 @@ namespace hazelcast {
                 util::LockGuard lg(*localLock);
                 bool init = atomicLong.compareAndSet(0, step + 1);
                 if (init) {
-                    local->set(step);
-                    residue->set((int32_t) (id % BLOCK_SIZE) + 1);
+                    local->store(step);
+                    residue->store((int32_t) (id % BLOCK_SIZE) + 1);
                 }
                 return init;
             }
 
             int64_t ClientIdGeneratorProxy::newId() {
-                int64_t block = local->get();
+                int64_t block = local->load();
                 int32_t value = (*residue)++;
 
-                if (local->get() != block) {
+                if (local->load() != block) {
                     return newId();
                 }
 

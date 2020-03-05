@@ -18,7 +18,7 @@
 
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -48,7 +48,7 @@ namespace hazelcast {
                  * @return a key of configPatterns which matches the item name or {@code NULL} if nothing matches
                  * @throws ConfigurationException if ambiguous configurations are found
                  */
-                virtual boost::shared_ptr<std::string>
+                virtual std::shared_ptr<std::string>
                 matches(const std::vector<std::string> &configPatterns, const std::string &itemName) const = 0;
             };
         }

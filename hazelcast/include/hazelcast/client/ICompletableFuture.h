@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_ICOMPLETABLEFUTURE_H_
 #define HAZELCAST_CLIENT_ICOMPLETABLEFUTURE_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/IFuture.h"
 #include "hazelcast/client/ExecutionCallback.h"
@@ -47,7 +47,7 @@ namespace hazelcast {
              *
              * @param callback the callback to execute
              */
-            virtual void andThen(const boost::shared_ptr<ExecutionCallback<V> > &callback) = 0;
+            virtual void andThen(const std::shared_ptr<ExecutionCallback<V> > &callback) = 0;
 
             /**
              * Registers a callback that will run with the provided executor after this
@@ -60,8 +60,8 @@ namespace hazelcast {
              * @param callback the callback to execute
              * @param executor the executor in which the callback will be run
              */
-            virtual void andThen(const boost::shared_ptr<ExecutionCallback<V> > &callback,
-                                 const boost::shared_ptr<Executor> &executor) = 0;
+            virtual void andThen(const std::shared_ptr<ExecutionCallback<V> > &callback,
+                                 const std::shared_ptr<Executor> &executor) = 0;
         };
     }
 }
