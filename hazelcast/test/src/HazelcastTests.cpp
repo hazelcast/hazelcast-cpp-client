@@ -4511,7 +4511,7 @@ namespace hazelcast {
 
                         executorService.start();
 
-                        std::vector<const std::shared_ptr<hazelcast::util::Future<int> > > futures;
+                        std::vector<std::shared_ptr<hazelcast::util::Future<int> > > futures;
                         for (int i = 0; i < numJobs; ++i) {
                             futures.push_back(
                                     executorService.submit<int>(
