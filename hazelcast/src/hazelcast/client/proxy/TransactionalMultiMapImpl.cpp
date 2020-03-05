@@ -21,12 +21,12 @@
 #include "hazelcast/client/proxy/TransactionalMultiMapImpl.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/TransactionalMultiMapPutCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalMultiMapGetCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalMultiMapRemoveCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalMultiMapRemoveEntryCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalMultiMapValueCountCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalMultiMapSizeCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

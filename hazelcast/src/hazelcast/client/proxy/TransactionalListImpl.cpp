@@ -21,9 +21,9 @@
 #include "hazelcast/client/proxy/TransactionalListImpl.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/TransactionalListAddCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalListRemoveCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalListSizeCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

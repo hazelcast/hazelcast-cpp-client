@@ -22,7 +22,7 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/TypedData.h"
-#include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"

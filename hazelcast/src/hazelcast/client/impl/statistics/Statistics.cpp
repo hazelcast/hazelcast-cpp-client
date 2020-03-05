@@ -25,7 +25,7 @@
 #include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/protocol/codec/ClientStatisticsCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 

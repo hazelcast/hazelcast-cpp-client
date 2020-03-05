@@ -22,7 +22,7 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "ClientClusterServiceImpl.h"
-#include "hazelcast/client/protocol/codec/ClientAddMembershipListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/MembershipEvent.h"
 

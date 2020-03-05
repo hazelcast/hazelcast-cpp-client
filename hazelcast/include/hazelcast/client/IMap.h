@@ -22,7 +22,7 @@
 #include <vector>
 #include <stdexcept>
 #include <climits>
-#include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/impl/EntryArrayImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"

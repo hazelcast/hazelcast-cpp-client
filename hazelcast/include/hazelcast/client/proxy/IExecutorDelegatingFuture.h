@@ -18,8 +18,8 @@
 
 #include "hazelcast/client/internal/ClientDelegatingFuture.h"
 #include "hazelcast/util/ExceptionUtil.h"
-#include "hazelcast/client/protocol/codec/ExecutorServiceCancelOnPartitionCodec.h"
-#include "hazelcast/client/protocol/codec/ExecutorServiceCancelOnAddressCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

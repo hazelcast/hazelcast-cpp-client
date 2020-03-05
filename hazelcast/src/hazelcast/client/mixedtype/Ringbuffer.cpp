@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 #include "hazelcast/client/mixedtype/Ringbuffer.h"
-#include "hazelcast/client/protocol/codec/RingbufferReadOneCodec.h"
-#include "hazelcast/client/protocol/codec/RingbufferReadManyCodec.h"
-#include "hazelcast/client/protocol/codec/RingbufferCapacityCodec.h"
-#include "hazelcast/client/protocol/codec/RingbufferSizeCodec.h"
-#include "hazelcast/client/protocol/codec/RingbufferTailSequenceCodec.h"
-#include "hazelcast/client/protocol/codec/RingbufferHeadSequenceCodec.h"
-#include "hazelcast/client/protocol/codec/RingbufferRemainingCapacityCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

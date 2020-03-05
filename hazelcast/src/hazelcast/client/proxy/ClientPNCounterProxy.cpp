@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/protocol/codec/PNCounterAddCodec.h"
-#include "hazelcast/client/protocol/codec/PNCounterGetConfiguredReplicaCountCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
 #include "hazelcast/client/proxy/ClientPNCounterProxy.h"
-#include "hazelcast/client/protocol/codec/PNCounterGetCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/cluster/impl/VectorClock.h"
 #include "hazelcast/util/Util.h"

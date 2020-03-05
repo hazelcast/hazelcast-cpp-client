@@ -18,7 +18,7 @@
 
 #include "hazelcast/client/spi/ProxyManager.h"
 #include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/client/protocol/codec/ClientCreateProxyCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 #include "hazelcast/client/spi/ClientClusterService.h"

@@ -18,7 +18,7 @@
 
 #include "hazelcast/client/proxy/MultiMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
-#include "hazelcast/client/protocol/codec/MultiMapAddEntryListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include <string>
 #include <map>
 #include <set>

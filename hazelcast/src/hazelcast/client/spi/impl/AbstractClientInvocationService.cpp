@@ -19,7 +19,7 @@
 #include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
-#include "hazelcast/client/protocol/codec/ErrorCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 
 namespace hazelcast {

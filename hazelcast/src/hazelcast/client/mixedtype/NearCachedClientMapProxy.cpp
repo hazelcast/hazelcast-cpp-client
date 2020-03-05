@@ -15,7 +15,7 @@
  */
 
 
-#include "hazelcast/client/protocol/codec/MapRemoveEntryListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #include "hazelcast/client/mixedtype/NearCachedClientMapProxy.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
@@ -24,7 +24,7 @@
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/client/protocol/codec/MapAddNearCacheEntryListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"

@@ -21,14 +21,14 @@
 #include "hazelcast/client/ILock.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/LockIsLockedCodec.h"
-#include "hazelcast/client/protocol/codec/LockIsLockedByCurrentThreadCodec.h"
-#include "hazelcast/client/protocol/codec/LockGetLockCountCodec.h"
-#include "hazelcast/client/protocol/codec/LockGetRemainingLeaseTimeCodec.h"
-#include "hazelcast/client/protocol/codec/LockLockCodec.h"
-#include "hazelcast/client/protocol/codec/LockUnlockCodec.h"
-#include "hazelcast/client/protocol/codec/LockForceUnlockCodec.h"
-#include "hazelcast/client/protocol/codec/LockTryLockCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"

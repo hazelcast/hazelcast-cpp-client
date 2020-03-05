@@ -21,7 +21,7 @@
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/proxy/IListImpl.h"
-#include "hazelcast/client/protocol/codec/ListAddListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #include <stdexcept>
 

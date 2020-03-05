@@ -19,8 +19,8 @@
 
 
 #include "hazelcast/client/spi/ClientPartitionService.h"
-#include "hazelcast/client/protocol/codec/ExecutorServiceShutdownCodec.h"
-#include "hazelcast/client/protocol/codec/ExecutorServiceIsShutdownCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

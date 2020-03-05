@@ -23,19 +23,19 @@
 #include "hazelcast/client/spi/ClientListenerService.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/SetSizeCodec.h"
-#include "hazelcast/client/protocol/codec/SetContainsCodec.h"
-#include "hazelcast/client/protocol/codec/SetContainsAllCodec.h"
-#include "hazelcast/client/protocol/codec/SetAddCodec.h"
-#include "hazelcast/client/protocol/codec/SetRemoveCodec.h"
-#include "hazelcast/client/protocol/codec/SetAddAllCodec.h"
-#include "hazelcast/client/protocol/codec/SetCompareAndRemoveAllCodec.h"
-#include "hazelcast/client/protocol/codec/SetCompareAndRetainAllCodec.h"
-#include "hazelcast/client/protocol/codec/SetClearCodec.h"
-#include "hazelcast/client/protocol/codec/SetGetAllCodec.h"
-#include "hazelcast/client/protocol/codec/SetAddListenerCodec.h"
-#include "hazelcast/client/protocol/codec/SetRemoveListenerCodec.h"
-#include "hazelcast/client/protocol/codec/SetIsEmptyCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

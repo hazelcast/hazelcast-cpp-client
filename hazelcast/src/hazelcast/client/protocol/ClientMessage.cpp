@@ -24,17 +24,17 @@
 #include <cassert>
 
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include <hazelcast/client/protocol/codec/UUIDCodec.h>
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/client/protocol/codec/AddressCodec.h"
-#include "hazelcast/client/protocol/codec/MemberCodec.h"
-#include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/map/DataEntryView.h"
-#include "hazelcast/client/protocol/codec/StackTraceElement.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

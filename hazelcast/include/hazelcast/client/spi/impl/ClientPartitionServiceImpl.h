@@ -27,7 +27,7 @@
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/impl/Partition.h"
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/protocol/codec/ClientAddPartitionListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

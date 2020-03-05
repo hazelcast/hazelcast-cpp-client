@@ -23,9 +23,9 @@
 #include "hazelcast/client/spi/ClientListenerService.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/TopicPublishCodec.h"
-#include "hazelcast/client/protocol/codec/TopicAddMessageListenerCodec.h"
-#include "hazelcast/client/protocol/codec/TopicRemoveMessageListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

@@ -17,7 +17,7 @@
 // Created by sancar koyunlu on 12/11/13.
 
 
-#include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/proxy/TransactionalObject.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"

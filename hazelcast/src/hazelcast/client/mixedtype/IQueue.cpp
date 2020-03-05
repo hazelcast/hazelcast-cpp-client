@@ -17,7 +17,7 @@
 #include "hazelcast/client/mixedtype/IQueue.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/protocol/codec/QueueAddListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 
 

@@ -39,11 +39,11 @@
 #include "hazelcast/util/ExceptionUtil.h"
 
 // Codecs
-#include "hazelcast/client/protocol/codec/MapAddEntryListenerToKeyCodec.h"
-#include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
-#include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
-#include "hazelcast/client/protocol/codec/MapSetCodec.h"
-#include "hazelcast/client/protocol/codec/MapRemoveCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

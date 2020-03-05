@@ -16,10 +16,10 @@
 #include "hazelcast/client/ICountDownLatch.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/CountDownLatchAwaitCodec.h"
-#include "hazelcast/client/protocol/codec/CountDownLatchCountDownCodec.h"
-#include "hazelcast/client/protocol/codec/CountDownLatchGetCountCodec.h"
-#include "hazelcast/client/protocol/codec/CountDownLatchTrySetCountCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
 

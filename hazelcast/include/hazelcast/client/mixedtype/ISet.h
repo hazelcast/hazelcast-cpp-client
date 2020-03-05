@@ -18,7 +18,7 @@
 
 #include "hazelcast/client/proxy/ISetImpl.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/protocol/codec/SetAddListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

@@ -24,7 +24,7 @@
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/protocol/codec/ErrorCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {

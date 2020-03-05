@@ -21,9 +21,9 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
-#include "hazelcast/client/protocol/codec/TransactionCreateCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionCommitCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionRollbackCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

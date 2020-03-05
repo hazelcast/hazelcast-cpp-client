@@ -20,7 +20,7 @@
 
 #include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/protocol/codec/RingbufferAddCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

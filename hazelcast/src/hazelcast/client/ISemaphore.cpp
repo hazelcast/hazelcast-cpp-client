@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/protocol/codec/SemaphoreIncreasePermitsCodec.h>
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/ISemaphore.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/SemaphoreInitCodec.h"
-#include "hazelcast/client/protocol/codec/SemaphoreAcquireCodec.h"
-#include "hazelcast/client/protocol/codec/SemaphoreAvailablePermitsCodec.h"
-#include "hazelcast/client/protocol/codec/SemaphoreDrainPermitsCodec.h"
-#include "hazelcast/client/protocol/codec/SemaphoreReducePermitsCodec.h"
-#include "hazelcast/client/protocol/codec/SemaphoreReleaseCodec.h"
-#include "hazelcast/client/protocol/codec/SemaphoreTryAcquireCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
