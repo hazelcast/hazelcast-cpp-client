@@ -14,10 +14,82 @@
  * limitations under the License.
  */
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#include <winsock2.h>
+#endif
+
 #include <regex>
+#include <condition_variable>
+#include <vector>
+#include <memory>
+#include <utility>
+#include <iomanip>
+#include <limits>
+#include <sstream>
+#include <limits.h>
+#include <climits>
+#include <random>
+#include <cassert>
+#include <thread>
+#include <cassert>
+#include <ctime>
+#include <string.h>
+#include <errno.h>
+#include <string.h>
+#include <stdint.h>
+#include <string.h>
+#include <string.h>
+#include <errno.h>
+#include <thread>
+#include <vector>
+#include <algorithm>
+#include <sstream>
+#include <string.h>
+#include <memory>
+#include <ostream>
+#include <cassert>
+#include <cassert>
+#include <string.h>
+#include <cassert>
+#include <iostream>
+#include <cstdlib>
+#include <string.h>
+#include <functional>
+#include <iostream>
+#include <cassert>
+#include <cstdlib>
+#include <string.h>
+#include <cassert>
+#include <iostream>
+#include <sstream>
+#include <cassert>
+#include <cassert>
+#include <string>
+#include <memory>
+#include <cassert>
+#include <cassert>
+#include <chrono>
+#include <ostream>
+#include <clocale>
+#include <limits.h>
+#include <sstream>
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/date_time.hpp>
+#include <asio.hpp>
+#include <sstream>
+#include <iomanip>
+#include <boost/algorithm/string/replace.hpp>
+#include <openssl/ssl.h>
+#include <boost/algorithm/string/replace.hpp>
+#include <string>
+#include <cctype>
+#include <sstream>
+#include <iomanip>
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
-#include <hazelcast/client/impl/statistics/Statistics.h>
-
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
@@ -25,9 +97,753 @@
 #include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/impl/RoundRobinLB.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
+#include "hazelcast/client/impl/MemberAttributeChange.h"
+#include "hazelcast/client/impl/ClientMessageDecoder.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/impl/BuildInfo.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
+#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
+#include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
+#include "hazelcast/client/spi/impl/NonSmartClientInvocationService.h"
+#include "hazelcast/client/spi/impl/listener/NonSmartClientListenerService.h"
+#include "hazelcast/client/spi/impl/listener/SmartClientListenerService.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"
+#include "hazelcast/client/spi/impl/AwsAddressProvider.h"
+#include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
+#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
+#include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
+#include "hazelcast/client/ICountDownLatch.h"
+#include "hazelcast/client/ISemaphore.h"
+#include "hazelcast/client/ILock.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
+#include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
+#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
+#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
+#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
+#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
+#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
+#include "hazelcast/client/impl/AbstractLoadBalancer.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/util/LockGuard.h"
+#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/cluster/impl/VectorClock.h"
+#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/Member.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/MembershipListener.h"
+#include "hazelcast/client/InitialMembershipListener.h"
+#include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
+#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
+#include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/IdGenerator.h"
+#include "hazelcast/client/IAtomicLong.h"
+#include "hazelcast/client/ICountDownLatch.h"
+#include "hazelcast/client/ILock.h"
+#include "hazelcast/client/ISemaphore.h"
+#include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
+#include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/flakeidgen/impl/AutoBatcher.h"
+#include "hazelcast/client/flakeidgen/impl/IdBatch.h"
+#include "hazelcast/client/txn/ClientTransactionUtil.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/client/TransactionOptions.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/proxy/ReliableTopicImpl.h"
+#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
+#include "hazelcast/client/cluster/impl/VectorClock.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/proxy/IListImpl.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/client/impl/ItemEventHandler.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
+#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/proxy/TransactionalMapImpl.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/proxy/TransactionalMultiMapImpl.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/proxy/TransactionalListImpl.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/proxy/TransactionalSetImpl.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/client/proxy/TransactionalObject.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
+#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/proxy/IQueueImpl.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
+#include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/util/ExceptionUtil.h"
+#include "hazelcast/client/proxy/PartitionSpecificClientProxy.h"
+#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
+#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
+#include "hazelcast/client/spi/InternalCompletableFuture.h"
+#include "hazelcast/client/proxy/MultiMapImpl.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
+#include "hazelcast/client/impl/EntryEventHandler.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/proxy/IMapImpl.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
+#include "hazelcast/client/EntryView.h"
+#include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/TimeUtil.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/proxy/TransactionalQueueImpl.h"
+#include "hazelcast/client/proxy/ISetImpl.h"
+#include "hazelcast/client/impl/ItemEventHandler.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/client/proxy/ITopicImpl.h"
+#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
+#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/LifecycleEvent.h"
+#include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
+#include "hazelcast/client/connection/AddressProvider.h"
+#include "hazelcast/util/impl/SimpleExecutorService.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/protocol/AuthenticationStatus.h"
+#include "hazelcast/client/exception/AuthenticationException.h"
+#include "hazelcast/client/exception/AuthenticationException.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/connection/ConnectionListener.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/Executor.h"
+#include "hazelcast/client/SocketInterceptor.h"
+#include "hazelcast/client/connection/AuthenticationFuture.h"
+#include "hazelcast/client/config/ClientNetworkConfig.h"
+#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/connection/HeartbeatManager.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/connection/AuthenticationFuture.h"
+#include "hazelcast/client/connection/ReadHandler.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/InSelector.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/connection/InSelector.h"
+#include "hazelcast/client/connection/ReadHandler.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include "hazelcast/client/connection/IOSelector.h"
+#include "hazelcast/client/connection/ListenerTask.h"
+#include "hazelcast/client/connection/IOHandler.h"
+#include "hazelcast/util/ServerSocket.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/connection/ListenerTask.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/impl/BuildInfo.h"
+#include "hazelcast/client/connection/WriteHandler.h"
+#include "hazelcast/client/connection/OutSelector.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/connection/ClientConnectionStrategy.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/connection/IOHandler.h"
+#include "hazelcast/client/connection/IOSelector.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/connection/OutSelector.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/client/connection/HeartbeatManager.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/Member.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/Executor.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/ICountDownLatch.h"
+#include "hazelcast/client/proxy/ProxyImpl.h"
+#include "hazelcast/client/MapEvent.h"
+#include "hazelcast/client/Endpoint.h"
+#include "hazelcast/util/Preconditions.h"
+#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
+#include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/util/Preconditions.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/config/ClientNetworkConfig.h"
+#include "hazelcast/client/config/LoggerConfig.h"
+#include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
+#include "hazelcast/client/config/ReliableTopicConfig.h"
+#include "hazelcast/client/config/SocketOptions.h"
+#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/util/Preconditions.h"
+#include "hazelcast/client/mixedtype/MultiMap.h"
+#include "hazelcast/client/impl/ItemEventHandler.h"
+#include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
+#include "hazelcast/client/map/impl/MapMixedTypeProxyFactory.h"
+#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/mixedtype/IQueue.h"
+#include "hazelcast/client/ItemListener.h"
+#include "hazelcast/client/impl/ItemEventHandler.h"
+#include "hazelcast/client/mixedtype/IMap.h"
+#include "hazelcast/client/mixedtype/Ringbuffer.h"
+#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
+#include "hazelcast/client/mixedtype/ITopic.h"
+#include "hazelcast/client/mixedtype/ISet.h"
+#include "hazelcast/client/mixedtype/NearCachedClientMapProxy.h"
+#include "hazelcast/client/config/NearCacheConfig.h"
+#include "hazelcast/client/map/impl/nearcache/InvalidationAwareWrapper.h"
+#include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
+#include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
+#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
+#include "hazelcast/client/internal/nearcache/NearCache.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/mixedtype/IList.h"
+#include "hazelcast/client/ItemListener.h"
+#include "hazelcast/client/impl/ItemEventHandler.h"
+#include "hazelcast/client/mixedtype/ClientMapProxy.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/util/AddressUtil.h"
+#include "hazelcast/client/cluster/impl/ClusterDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/MembershipEvent.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/serialization/FieldDefinition.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/DataInput.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/pimpl/DataInput.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
+#include "hazelcast/client/serialization/FieldType.h"
+#include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/util/Bits.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
+#include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/pimpl/DataInput.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/util/MurmurHash3.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/util/Bits.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
+#include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
+#include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/Bits.h"
+#include "hazelcast/client/serialization/pimpl/DataInput.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/util/Bits.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
+#include "hazelcast/client/serialization/pimpl/MorphingPortableReader.h"
+#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
+#include "hazelcast/client/serialization/VersionedPortable.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
+#include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
+#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/UTFUtil.h"
+#include "hazelcast/client/serialization/pimpl/DataSerializer.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
+#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
+#include "hazelcast/client/serialization/pimpl/PortableReaderBase.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
+#include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
+#include "hazelcast/client/serialization/ClassDefinition.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
+#include "hazelcast/client/serialization/pimpl/PortableContext.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
+#include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
+#include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/TypeIDS.h"
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/SocketInterceptor.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/LoadBalancer.h"
+#include "hazelcast/client/internal/nearcache/impl/record/NearCacheDataRecord.h"
+#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
+#include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
+#include "hazelcast/util/HashUtil.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
+#include "hazelcast/client/internal/socket/SocketFactory.h"
+#include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/config/ClientNetworkConfig.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/internal/socket/SSLSocket.h"
+#include "hazelcast/client/internal/socket/SSLSocket.h"
+#include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/internal/eviction/EvictionChecker.h"
+#include "hazelcast/client/Client.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/TransactionOptions.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
+#include "hazelcast/client/topic/impl/TopicDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
+#include "hazelcast/client/proxy/ClientRingbufferProxy.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/client/Member.h"
+#include "hazelcast/client/map/DataEntryView.h"
+#include "hazelcast/client/protocol/ClientExceptionFactory.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/protocol/codec/StackTraceElement.h"
+#include "hazelcast/client/protocol/codec/AddressCodec.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/protocol/codec/ErrorCodec.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/protocol/codec/AddressCodec.h"
+#include "hazelcast/client/protocol/codec/MemberCodec.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/Member.h"
+#include "hazelcast/client/protocol/codec/UUIDCodec.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/protocol/codec/StackTraceElement.h"
+#include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/map/DataEntryView.h"
+#include "hazelcast/client/protocol/Principal.h"
+#include "hazelcast/client/protocol/ClientMessageBuilder.h"
+#include "hazelcast/client/protocol/IMessageHandler.h"
+#include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/ItemEvent.h"
+#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/IdGenerator.h"
+#include "hazelcast/client/MembershipListener.h"
+#include "hazelcast/client/MembershipListener.h"
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/protocol/ClientExceptionFactory.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/util/UuidUtil.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/impl/listener/ClientEventRegistration.h"
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/util/UuidUtil.h"
+#include "hazelcast/client/Member.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
+#include "hazelcast/client/spi/impl/listener/ClientRegistrationKey.h"
+#include "hazelcast/util/UuidUtil.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/util/Callable.h"
+#include "hazelcast/client/spi/impl/listener/NonSmartClientListenerService.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/impl/NonSmartClientInvocationService.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
+#include "hazelcast/client/config/ClientNetworkConfig.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/util/UuidUtil.h"
+#include "hazelcast/client/InitialMembershipEvent.h"
+#include "hazelcast/client/spi/impl/ClientMembershipListener.h"
+#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/protocol/ClientExceptionFactory.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
+#include "hazelcast/client/spi/impl/ClientMembershipListener.h"
+#include "hazelcast/client/MembershipEvent.h"
+#include "hazelcast/client/InitialMembershipEvent.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/impl/SimpleExecutorService.h"
+#include "hazelcast/util/RuntimeAvailableProcessors.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
+#include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"
+#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
+#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h"
+#include "hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h"
+#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h"
+#include "hazelcast/util/Preconditions.h"
+#include "hazelcast/util/Bits.h"
+#include "hazelcast/client/spi/impl/sequence/AbstractCallIdSequence.h"
+#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
+#include "hazelcast/util/Preconditions.h"
+#include "hazelcast/util/TimeUtil.h"
+#include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h"
+#include "hazelcast/util/Runnable.h"
+#include "hazelcast/util/HashUtil.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/impl/BuildInfo.h"
+#include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
+#include "hazelcast/client/LoadBalancer.h"
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
+#include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
+#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/client/spi/impl/AwsAddressProvider.h"
+#include "hazelcast/client/config/ClientNetworkConfig.h"
+#include "hazelcast/util/AddressHelper.h"
+#include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
+#include "hazelcast/client/spi/ProxyManager.h"
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/client/spi/ClientProxy.h"
+#include "hazelcast/client/spi/ClientProxyFactory.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/ProxyManager.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
+#include "hazelcast/client/impl/statistics/Statistics.h"
+#include "hazelcast/client/spi/DefaultObjectNamespace.h"
+#include "hazelcast/client/spi/ClientProxy.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/ProxyManager.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
+#include "hazelcast/client/map/DataEntryView.h"
+#include "hazelcast/client/IAtomicLong.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
+#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
+#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
+#include "hazelcast/client/ILock.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
+#include "hazelcast/client/FlakeIdGenerator.h"
+#include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/client/ISemaphore.h"
+#include "hazelcast/client/InitialMembershipListener.h"
+#include "hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/IExecutorService.h"
+#include "hazelcast/client/aws/impl/Filter.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
+#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/aws/impl/DescribeInstances.h"
+#include "hazelcast/client/aws/impl/Filter.h"
+#include "hazelcast/client/aws/impl/Constants.h"
+#include "hazelcast/client/aws/utility/CloudUtility.h"
+#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/util/SyncHttpsClient.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/SyncHttpClient.h"
+#include "hazelcast/client/aws/impl/Constants.h"
+#include "hazelcast/client/aws/utility/AwsURLEncoder.h"
+#include "hazelcast/client/aws/impl/Constants.h"
+#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/aws/security/EC2RequestSigner.h"
+#include "hazelcast/util/Preconditions.h"
+#include "hazelcast/client/aws/AWSClient.h"
+#include "hazelcast/client/aws/impl/DescribeInstances.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/aws/utility/AwsURLEncoder.h"
+#include "hazelcast/client/aws/utility/CloudUtility.h"
+#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/InitialMembershipEvent.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/query/InstanceOfPredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/ILikePredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/TruePredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/OrPredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/NotPredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/QueryConstants.h"
+#include "hazelcast/client/query/SqlPredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/FalsePredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/RegexPredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/AndPredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/query/LikePredicate.h"
+#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/GroupConfig.h"
+#include "hazelcast/client/LifecycleEvent.h"
+#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
+#include "hazelcast/client/internal/config/ConfigUtils.h"
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/LifecycleListener.h"
+#include <hazelcast/client/impl/statistics/Statistics.h>
+#include <hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h>
+#include <hazelcast/client/flakeidgen/impl/IdBatch.h>
+#include <hazelcast/client/txn/ClientTransactionUtil.h>
+#include <hazelcast/client/MemberAttributeEvent.h>
+#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
+#include <hazelcast/client/spi/impl/ClientInvocation.h>
+#include <hazelcast/client/spi/impl/ClientInvocationFuture.h>
+#include <hazelcast/client/spi/ClientProxy.h>
+#include <hazelcast/client/IExecutorService.h>
+
+INITIALIZE_EASYLOGGINGPP
 
 namespace hazelcast {
     namespace client {
@@ -89,7 +905,9 @@ namespace hazelcast {
                         // do not print too many logs if connected to an old version server
                         if (!isSameWithCachedOwnerAddress(currentOwnerAddress)) {
                             if (logger.isFinestEnabled()) {
-                                logger.finest("Client statistics cannot be sent to server ", *currentOwnerAddress, " since, connected owner server version is less than the minimum supported server version ", FEATURE_SUPPORTED_SINCE_VERSION_STRING);
+                                logger.finest("Client statistics cannot be sent to server ", *currentOwnerAddress,
+                                              " since, connected owner server version is less than the minimum supported server version ",
+                                              FEATURE_SUPPORTED_SINCE_VERSION_STRING);
                             }
                         }
 
@@ -118,7 +936,7 @@ namespace hazelcast {
                     } catch (exception::IException &e) {
                         // suppress exception, do not print too many messages
                         if (logger.isFinestEnabled()) {
-                            logger.finest("Could not send stats " , e);
+                            logger.finest("Could not send stats ", e);
                         }
                     }
                 }
@@ -175,40 +993,40 @@ namespace hazelcast {
 
                 void Statistics::PeriodicStatistics::addNearCacheStats(std::ostringstream &stats) {
                     for (const std::shared_ptr<internal::nearcache::BaseNearCache> &nearCache : statistics.clientContext.getNearCacheManager().listAllNearCaches()) {
-                                    std::string nearCacheName = nearCache->getName();
-                                    std::ostringstream nearCacheNameWithPrefix;
-                                    getNameWithPrefix(nearCacheName, nearCacheNameWithPrefix);
+                        std::string nearCacheName = nearCache->getName();
+                        std::ostringstream nearCacheNameWithPrefix;
+                        getNameWithPrefix(nearCacheName, nearCacheNameWithPrefix);
 
-                                    nearCacheNameWithPrefix << '.';
+                        nearCacheNameWithPrefix << '.';
 
-                                    monitor::impl::NearCacheStatsImpl &nearCacheStats = static_cast<monitor::impl::NearCacheStatsImpl &>(nearCache->getNearCacheStats());
+                        monitor::impl::NearCacheStatsImpl &nearCacheStats = static_cast<monitor::impl::NearCacheStatsImpl &>(nearCache->getNearCacheStats());
 
-                                    std::string prefix = nearCacheNameWithPrefix.str();
+                        std::string prefix = nearCacheNameWithPrefix.str();
 
-                                    addStat(stats, prefix, "creationTime", nearCacheStats.getCreationTime());
-                                    addStat(stats, prefix, "evictions", nearCacheStats.getEvictions());
-                                    addStat(stats, prefix, "hits", nearCacheStats.getHits());
-                                    addStat(stats, prefix, "lastPersistenceDuration",
-                                            nearCacheStats.getLastPersistenceDuration());
-                                    addStat(stats, prefix, "lastPersistenceKeyCount",
-                                            nearCacheStats.getLastPersistenceKeyCount());
-                                    addStat(stats, prefix, "lastPersistenceTime",
-                                            nearCacheStats.getLastPersistenceTime());
-                                    addStat(stats, prefix, "lastPersistenceWrittenBytes",
-                                            nearCacheStats.getLastPersistenceWrittenBytes());
-                                    addStat(stats, prefix, "misses", nearCacheStats.getMisses());
-                                    addStat(stats, prefix, "ownedEntryCount", nearCacheStats.getOwnedEntryCount());
-                                    addStat(stats, prefix, "expirations", nearCacheStats.getExpirations());
-                                    addStat(stats, prefix, "invalidations", nearCacheStats.getInvalidations());
-                                    addStat(stats, prefix, "invalidationRequests",
-                                            nearCacheStats.getInvalidationRequests());
-                                    addStat(stats, prefix, "ownedEntryMemoryCost",
-                                            nearCacheStats.getOwnedEntryMemoryCost());
-                                    std::string persistenceFailure = nearCacheStats.getLastPersistenceFailure();
-                                    if (!persistenceFailure.empty()) {
-                                        addStat(stats, prefix, "lastPersistenceFailure", persistenceFailure);
-                                    }
-                                }
+                        addStat(stats, prefix, "creationTime", nearCacheStats.getCreationTime());
+                        addStat(stats, prefix, "evictions", nearCacheStats.getEvictions());
+                        addStat(stats, prefix, "hits", nearCacheStats.getHits());
+                        addStat(stats, prefix, "lastPersistenceDuration",
+                                nearCacheStats.getLastPersistenceDuration());
+                        addStat(stats, prefix, "lastPersistenceKeyCount",
+                                nearCacheStats.getLastPersistenceKeyCount());
+                        addStat(stats, prefix, "lastPersistenceTime",
+                                nearCacheStats.getLastPersistenceTime());
+                        addStat(stats, prefix, "lastPersistenceWrittenBytes",
+                                nearCacheStats.getLastPersistenceWrittenBytes());
+                        addStat(stats, prefix, "misses", nearCacheStats.getMisses());
+                        addStat(stats, prefix, "ownedEntryCount", nearCacheStats.getOwnedEntryCount());
+                        addStat(stats, prefix, "expirations", nearCacheStats.getExpirations());
+                        addStat(stats, prefix, "invalidations", nearCacheStats.getInvalidations());
+                        addStat(stats, prefix, "invalidationRequests",
+                                nearCacheStats.getInvalidationRequests());
+                        addStat(stats, prefix, "ownedEntryMemoryCost",
+                                nearCacheStats.getOwnedEntryMemoryCost());
+                        std::string persistenceFailure = nearCacheStats.getLastPersistenceFailure();
+                        if (!persistenceFailure.empty()) {
+                            addStat(stats, prefix, "lastPersistenceFailure", persistenceFailure);
+                        }
+                    }
 
                 }
 
@@ -225,7 +1043,8 @@ namespace hazelcast {
                     return name[0] == '/' ? escapedName.substr(1) : escapedName;
                 }
 
-                void Statistics::PeriodicStatistics::getNameWithPrefix(const std::string &name, std::ostringstream &out) {
+                void
+                Statistics::PeriodicStatistics::getNameWithPrefix(const std::string &name, std::ostringstream &out) {
                     out << NEAR_CACHE_CATEGORY_PREFIX << Statistics::escapeSpecialCharacters(name);
                 }
 
@@ -239,30 +1058,11 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/impl/RoundRobinLB.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/Cluster.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            RoundRobinLB::RoundRobinLB():index(0) {
+            RoundRobinLB::RoundRobinLB() : index(0) {
 
             }
 
@@ -273,7 +1073,8 @@ namespace hazelcast {
             const Member RoundRobinLB::next() {
                 std::vector<Member> members = getMembers();
                 if (members.size() == 0) {
-                    throw exception::IllegalStateException("const Member& RoundRobinLB::next()", "No member in member list!!");
+                    throw exception::IllegalStateException("const Member& RoundRobinLB::next()",
+                                                           "No member in member list!!");
                 }
                 return members[++index % members.size()];
             }
@@ -288,27 +1089,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 23/01/14.
-//
 
-#include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/impl/MemberAttributeChange.h"
 
 namespace hazelcast {
     namespace client {
@@ -320,7 +1101,8 @@ namespace hazelcast {
 
             MemberAttributeChange::MemberAttributeChange(std::unique_ptr<std::string> &uuid,
                                                          MemberAttributeEvent::MemberAttributeOperationType const &operationType,
-                                                         std::unique_ptr<std::string> &key, std::unique_ptr<std::string> &value)
+                                                         std::unique_ptr<std::string> &key,
+                                                         std::unique_ptr<std::string> &value)
                     : uuid(std::move(uuid)),
                       operationType(operationType),
                       key(std::move(key)),
@@ -345,25 +1127,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-#include <hazelcast/client/impl/ClientMessageDecoder.h>
-
-#include "hazelcast/client/impl/ClientMessageDecoder.h"
 
 namespace hazelcast {
     namespace client {
@@ -381,23 +1145,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 
 namespace hazelcast {
     namespace client {
@@ -410,33 +1157,11 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 9/9/15.
-// Copyright (c) 2015 hazelcast. All rights reserved.
-
-
-#include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            BaseEventHandler::~BaseEventHandler(){
+            BaseEventHandler::~BaseEventHandler() {
             }
 
             void BaseEventHandler::handle(const std::shared_ptr<protocol::ClientMessage> &event) {
@@ -456,28 +1181,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-#include <vector>
-
-#include "hazelcast/client/impl/BuildInfo.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -507,57 +1211,12 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <memory>
 
-#include <hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h>
-#include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
-#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
-#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
-#include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
-#include "hazelcast/client/spi/impl/NonSmartClientInvocationService.h"
-#include "hazelcast/client/spi/impl/listener/NonSmartClientListenerService.h"
-#include "hazelcast/client/spi/impl/listener/SmartClientListenerService.h"
-#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"
-#include "hazelcast/client/spi/impl/AwsAddressProvider.h"
-#include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
-#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
-#include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
-#include "hazelcast/client/ICountDownLatch.h"
-#include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/ILock.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
-#include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
-#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
-#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
-#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
-#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
-#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4355) //for strerror	
 #endif
-
-INITIALIZE_EASYLOGGINGPP
 
 namespace hazelcast {
     namespace client {
@@ -565,7 +1224,8 @@ namespace hazelcast {
             std::atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
             HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
-                    : clientConfig(config), clientProperties(const_cast<ClientConfig &>(config).getProperties()), clientContext(*this),
+                    : clientConfig(config), clientProperties(const_cast<ClientConfig &>(config).getProperties()),
+                      clientContext(*this),
                       serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
                       transactionManager(clientContext, *clientConfig.getLoadBalancer()), cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(),
@@ -681,7 +1341,7 @@ namespace hazelcast {
 
                 std::shared_ptr<impl::IdGeneratorInterface> impl = std::static_pointer_cast<proxy::ClientIdGeneratorProxy>(
                         proxy);
-                
+
                 return IdGenerator(impl);
             }
 
@@ -779,7 +1439,7 @@ namespace hazelcast {
             std::shared_ptr<spi::impl::ClientExecutionServiceImpl> HazelcastClientInstanceImpl::initExecutionService() {
                 return std::shared_ptr<spi::impl::ClientExecutionServiceImpl>(
                         new spi::impl::ClientExecutionServiceImpl(instanceName, clientProperties,
-                                clientConfig.getExecutorPoolSize(), *logger));
+                                                                  clientConfig.getExecutorPoolSize(), *logger));
             }
 
             std::unique_ptr<connection::ClientConnectionManagerImpl>
@@ -887,28 +1547,6 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 5/31/13.
-
-
-#include "hazelcast/client/impl/AbstractLoadBalancer.h"
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace client {
@@ -946,7 +1584,7 @@ namespace hazelcast {
             void AbstractLoadBalancer::memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
             }
 
-            std::vector<Member>  AbstractLoadBalancer::getMembers() {
+            std::vector<Member> AbstractLoadBalancer::getMembers() {
                 util::LockGuard lg(membersLock);
                 return membersRef;
             }
@@ -963,22 +1601,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/Socket.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -996,25 +1618,7 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <utility>
 
-
-#include "hazelcast/client/cluster/impl/VectorClock.h"
 
 namespace hazelcast {
     namespace client {
@@ -1026,8 +1630,8 @@ namespace hazelcast {
                 VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps)
                         : replicaTimestampEntries(replicaLogicalTimestamps) {
                     for (const VectorClock::TimestampVector::value_type &replicaTimestamp : replicaLogicalTimestamps) {
-                                    replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
-                                }
+                        replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
+                    }
                 }
 
                 VectorClock::TimestampVector VectorClock::entrySet() {
@@ -1038,18 +1642,18 @@ namespace hazelcast {
                     bool anyTimestampGreater = false;
                     for (const VectorClock::TimestampMap::value_type &otherEntry : other.replicaTimestamps) {
                         const std::string &replicaId = otherEntry.first;
-                                    int64_t otherReplicaTimestamp = otherEntry.second;
-                                    std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
+                        int64_t otherReplicaTimestamp = otherEntry.second;
+                        std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
 
-                                    if (!localReplicaTimestamp.first ||
-                                        localReplicaTimestamp.second < otherReplicaTimestamp) {
+                        if (!localReplicaTimestamp.first ||
+                            localReplicaTimestamp.second < otherReplicaTimestamp) {
                             return false;
-                                    } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
+                        } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
                             anyTimestampGreater = true;
                         }
                     }
                     // there is at least one local timestamp greater or local vector clock has additional timestamps
-                    return anyTimestampGreater ||  other.replicaTimestamps.size() < replicaTimestamps.size();
+                    return anyTimestampGreater || other.replicaTimestamps.size() < replicaTimestamps.size();
                 }
 
                 std::pair<bool, int64_t> VectorClock::getTimestampForReplica(const std::string &replicaId) {
@@ -1062,23 +1666,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
-#include "hazelcast/client/Member.h"
 
 namespace hazelcast {
     namespace client {
@@ -1098,30 +1685,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 5/31/13.
 
-
-
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -1161,25 +1725,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
-#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
-#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
@@ -1199,30 +1744,15 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/EntryEvent.h"
 
 namespace hazelcast {
     namespace client {
-        EntryEventType::EntryEventType() : value(UNDEFINED){
+        EntryEventType::EntryEventType() : value(UNDEFINED) {
 
         }
+
         EntryEventType::EntryEventType(Type value)
-        :value(value) {
+                : value(value) {
 
         }
 
@@ -1230,29 +1760,11 @@ namespace hazelcast {
             return value;
         }
 
-        void EntryEventType::operator = (int i) {
-            value = (EntryEventType::Type)i;
+        void EntryEventType::operator=(int i) {
+            value = (EntryEventType::Type) i;
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
-#include "hazelcast/client/monitor/NearCacheStats.h"
 
 namespace hazelcast {
     namespace client {
@@ -1272,27 +1784,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <iomanip>
-#include <limits>
-#include <sstream>
-
-#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -1462,23 +1953,23 @@ namespace hazelcast {
                     std::ostringstream out;
                     std::string failureString = lastPersistenceFailure;
                     out << "NearCacheStatsImpl{"
-                    << "ownedEntryCount=" << ownedEntryCount
-                    << ", ownedEntryMemoryCost=" << ownedEntryMemoryCost
-                    << ", creationTime=" << creationTime
-                    << ", hits=" << hits
-                    << ", misses=" << misses
-                    << ", ratio=" << std::setprecision(1) << getRatio()
-                    << ", evictions=" << evictions
-                    << ", expirations=" << expirations
-                    << ", invalidations=" << invalidations.load()
-                    << ", invalidationRequests=" << invalidationRequests.load()
-                    << ", lastPersistenceTime=" << lastPersistenceTime
-                    << ", persistenceCount=" << persistenceCount
-                    << ", lastPersistenceDuration=" << lastPersistenceDuration
-                    << ", lastPersistenceWrittenBytes=" << lastPersistenceWrittenBytes
-                    << ", lastPersistenceKeyCount=" << lastPersistenceKeyCount
-                    << ", lastPersistenceFailure='" << failureString << "'"
-                    << '}';
+                        << "ownedEntryCount=" << ownedEntryCount
+                        << ", ownedEntryMemoryCost=" << ownedEntryMemoryCost
+                        << ", creationTime=" << creationTime
+                        << ", hits=" << hits
+                        << ", misses=" << misses
+                        << ", ratio=" << std::setprecision(1) << getRatio()
+                        << ", evictions=" << evictions
+                        << ", expirations=" << expirations
+                        << ", invalidations=" << invalidations.load()
+                        << ", invalidationRequests=" << invalidationRequests.load()
+                        << ", lastPersistenceTime=" << lastPersistenceTime
+                        << ", persistenceCount=" << persistenceCount
+                        << ", lastPersistenceDuration=" << lastPersistenceDuration
+                        << ", lastPersistenceWrittenBytes=" << lastPersistenceWrittenBytes
+                        << ", lastPersistenceKeyCount=" << lastPersistenceKeyCount
+                        << ", lastPersistenceFailure='" << failureString << "'"
+                        << '}';
 
                     return out.str();
                 }
@@ -1490,23 +1981,6 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/monitor/NearCacheStats.h"
-
 namespace hazelcast {
     namespace client {
         namespace monitor {
@@ -1514,32 +1988,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/IdGenerator.h"
-#include "hazelcast/client/IAtomicLong.h"
-#include "hazelcast/client/ICountDownLatch.h"
-#include "hazelcast/client/ILock.h"
-#include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/TransactionContext.h"
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/spi/LifecycleService.h"
 
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -1643,31 +2091,13 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
-#include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
-#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
         namespace flakeidgen {
             namespace impl {
-                FlakeIdGeneratorProxyFactory::FlakeIdGeneratorProxyFactory(spi::ClientContext *clientContext) : clientContext(
+                FlakeIdGeneratorProxyFactory::FlakeIdGeneratorProxyFactory(spi::ClientContext *clientContext)
+                        : clientContext(
                         clientContext) {}
 
                 std::shared_ptr<spi::ClientProxy> FlakeIdGeneratorProxyFactory::create(const std::string &id) {
@@ -1678,24 +2108,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/flakeidgen/impl/AutoBatcher.h"
 
 namespace hazelcast {
     namespace client {
@@ -1749,25 +2161,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-#include <hazelcast/client/flakeidgen/impl/IdBatch.h>
-
-#include "hazelcast/client/flakeidgen/impl/IdBatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -1827,24 +2221,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/txn/ClientTransactionUtil.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 namespace hazelcast {
     namespace client {
@@ -1873,40 +2249,16 @@ namespace hazelcast {
                 return exceptionFactory;
             }
 
-            void ClientTransactionUtil::TransactionExceptionFactory::rethrow(const client::exception::IException &throwable,
-                                                                       const std::string &message) {
+            void
+            ClientTransactionUtil::TransactionExceptionFactory::rethrow(const client::exception::IException &throwable,
+                                                                        const std::string &message) {
                 throw TransactionException("TransactionExceptionFactory::create", message,
-                                     std::shared_ptr<IException>(throwable.clone()));
+                                           std::shared_ptr<IException>(throwable.clone()));
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-#include <hazelcast/client/txn/ClientTransactionUtil.h>
-#include "hazelcast/client/txn/TransactionProxy.h"
-#include "hazelcast/client/TransactionOptions.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -2014,7 +2366,8 @@ namespace hazelcast {
 
                         invoke(request);
                     } catch (exception::IException &exception) {
-                        clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:" , exception);
+                        clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:",
+                                                          exception);
                     }
                     state = TxnState::ROLLED_BACK;
                     TRANSACTION_EXISTS.store(false);
@@ -2029,7 +2382,7 @@ namespace hazelcast {
             }
 
             std::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
-                    return connection;
+                return connection;
             }
 
             void TransactionProxy::checkThread() {
@@ -2079,25 +2432,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/proxy/ReliableTopicImpl.h"
-#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
-#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -2105,7 +2439,8 @@ namespace hazelcast {
             ReliableTopicImpl::ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context,
                                                  std::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
                     : proxy::ProxyImpl("hz:impl:topicService", instanceName, context), ringbuffer(rb),
-                      logger(context->getLogger()), config(context->getClientConfig().getReliableTopicConfig(instanceName)) {
+                      logger(context->getLogger()),
+                      config(context->getClientConfig().getReliableTopicConfig(instanceName)) {
             }
 
             void ReliableTopicImpl::publish(const serialization::pimpl::Data &data) {
@@ -2117,30 +2452,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
-#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/cluster/impl/VectorClock.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -2168,8 +2479,8 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeGetInternal(EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
                 protocol::codec::PNCounterGetCodec::ResponseParameters resultParameters = protocol::codec::PNCounterGetCodec::ResponseParameters::decode(
                         *response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
@@ -2183,8 +2494,8 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, true, EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                         *response);
@@ -2199,9 +2510,9 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, false,
-                                                                                        EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                         *response);
@@ -2216,9 +2527,9 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, true,
-                                                                                        EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                         *response);
@@ -2233,9 +2544,9 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, false,
-                                                                                        EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                         *response);
@@ -2250,8 +2561,8 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, false, EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                         *response);
@@ -2266,8 +2577,8 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, false, EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                         *response);
@@ -2282,8 +2593,8 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, true, EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                         *response);
@@ -2298,8 +2609,8 @@ namespace hazelcast {
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
                 std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, true, EMPTY_ADDRESS_LIST,
-                                                                                        std::unique_ptr<exception::HazelcastException>(),
-                                                                                        target);
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                         *response);
@@ -2385,7 +2696,8 @@ namespace hazelcast {
                             getName(), observedClock.get()->entrySet(), *target);
                     return invokeOnAddress(request, *target);
                 } catch (exception::HazelcastException &e) {
-                    logger.finest("Exception occurred while invoking operation on target " , *target , ", choosing different target. Cause: " , e);
+                    logger.finest("Exception occurred while invoking operation on target ", *target,
+                                  ", choosing different target. Cause: ", e);
                     if (excludedAddresses == EMPTY_ADDRESS_LIST) {
                         // TODO: Make sure that this only affects the local variable of the method
                         excludedAddresses = std::shared_ptr<std::set<Address> >(new std::set<Address>());
@@ -2418,7 +2730,8 @@ namespace hazelcast {
                             getName(), delta, getBeforeUpdate, observedClock.get()->entrySet(), *target);
                     return invokeOnAddress(request, *target);
                 } catch (exception::HazelcastException &e) {
-                    logger.finest("Unable to provide session guarantees when sending operations to " , *target , ", choosing different target. Cause: " , e);
+                    logger.finest("Unable to provide session guarantees when sending operations to ", *target,
+                                  ", choosing different target. Cause: ", e);
                     if (excludedAddresses == EMPTY_ADDRESS_LIST) {
                         // TODO: Make sure that this only affects the local variable of the method
                         excludedAddresses = std::shared_ptr<std::set<Address> >(new std::set<Address>());
@@ -2456,56 +2769,13 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 30/09/14.
-//
-
-#include "hazelcast/client/proxy/IListImpl.h"
 
 
-#include "hazelcast/client/spi/ClientListenerService.h"
-#include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
-#include "hazelcast/client/proxy/ProxyImpl.h"
+
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -2539,7 +2809,7 @@ namespace hazelcast {
                         protocol::codec::ListIsEmptyCodec::encodeRequest(getName());
 
                 return invokeAndGetResult<bool, protocol::codec::ListIsEmptyCodec::ResponseParameters>(request,
-                                                                                                   partitionId);
+                                                                                                       partitionId);
             }
 
             bool IListImpl::contains(const serialization::pimpl::Data &element) {
@@ -2593,7 +2863,7 @@ namespace hazelcast {
             bool IListImpl::addAll(int index, const std::vector<serialization::pimpl::Data> &elements) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::ListAddAllWithIndexCodec::encodeRequest(getName(), index,
-                                                                                             elements);
+                                                                                 elements);
 
                 return invokeAndGetResult<bool, protocol::codec::ListAddAllWithIndexCodec::ResponseParameters>(request,
                                                                                                                partitionId);
@@ -2631,7 +2901,7 @@ namespace hazelcast {
             }
 
             std::unique_ptr<serialization::pimpl::Data> IListImpl::setData(int index,
-                                                                         const serialization::pimpl::Data &element) {
+                                                                           const serialization::pimpl::Data &element) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::ListSetCodec::encodeRequest(getName(), index, element);
 
@@ -2685,9 +2955,9 @@ namespace hazelcast {
             }
 
             IListImpl::ListListenerMessageCodec::ListListenerMessageCodec(const std::string &name,
-                                                                                bool includeValue) : name(name),
-                                                                                                     includeValue(
-                                                                                                             includeValue) {}
+                                                                          bool includeValue) : name(name),
+                                                                                               includeValue(
+                                                                                                       includeValue) {}
 
             std::unique_ptr<protocol::ClientMessage>
             IListImpl::ListListenerMessageCodec::encodeAddRequest(bool localOnly) const {
@@ -2712,22 +2982,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
 
 namespace hazelcast {
     namespace client {
@@ -2791,68 +3045,36 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/proxy/TransactionalMapImpl.h"
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            TransactionalMapImpl::TransactionalMapImpl(const std::string& name, txn::TransactionProxy *transactionProxy)
-            : TransactionalObject("hz:impl:mapService", name, transactionProxy) {
+            TransactionalMapImpl::TransactionalMapImpl(const std::string &name, txn::TransactionProxy *transactionProxy)
+                    : TransactionalObject("hz:impl:mapService", name, transactionProxy) {
 
             }
 
-            bool TransactionalMapImpl::containsKey(const serialization::pimpl::Data& key) {
+            bool TransactionalMapImpl::containsKey(const serialization::pimpl::Data &key) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapContainsKeyCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key);
 
-                return invokeAndGetResult<bool, protocol::codec::TransactionalMapContainsKeyCodec::ResponseParameters>(request);
+                return invokeAndGetResult<bool, protocol::codec::TransactionalMapContainsKeyCodec::ResponseParameters>(
+                        request);
             }
 
-            std::unique_ptr<serialization::pimpl::Data> TransactionalMapImpl::getData(const serialization::pimpl::Data& key) {
+            std::unique_ptr<serialization::pimpl::Data>
+            TransactionalMapImpl::getData(const serialization::pimpl::Data &key) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapGetCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key);
 
-                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapGetCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapGetCodec::ResponseParameters>(
+                        request);
             }
 
             int TransactionalMapImpl::size() {
@@ -2868,21 +3090,25 @@ namespace hazelcast {
                         protocol::codec::TransactionalMapIsEmptyCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId());
 
-                return invokeAndGetResult<bool, protocol::codec::TransactionalMapIsEmptyCodec::ResponseParameters>(request);
+                return invokeAndGetResult<bool, protocol::codec::TransactionalMapIsEmptyCodec::ResponseParameters>(
+                        request);
             }
 
             std::unique_ptr<serialization::pimpl::Data> TransactionalMapImpl::putData(
-                    const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
+                    const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
 
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapPutCodec::encodeRequest(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value, getTimeoutInMilliseconds());
+                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value,
+                                getTimeoutInMilliseconds());
 
-                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapPutCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapPutCodec::ResponseParameters>(
+                        request);
 
             }
 
-            void TransactionalMapImpl::set(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
+            void
+            TransactionalMapImpl::set(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapSetCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
@@ -2890,39 +3116,50 @@ namespace hazelcast {
                 invoke(request);
             }
 
-            std::unique_ptr<serialization::pimpl::Data> TransactionalMapImpl::putIfAbsentData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
+            std::unique_ptr<serialization::pimpl::Data>
+            TransactionalMapImpl::putIfAbsentData(const serialization::pimpl::Data &key,
+                                                  const serialization::pimpl::Data &value) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapPutIfAbsentCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
 
-                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapPutIfAbsentCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapPutIfAbsentCodec::ResponseParameters>(
+                        request);
             }
 
-            std::unique_ptr<serialization::pimpl::Data> TransactionalMapImpl::replaceData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
+            std::unique_ptr<serialization::pimpl::Data>
+            TransactionalMapImpl::replaceData(const serialization::pimpl::Data &key,
+                                              const serialization::pimpl::Data &value) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapReplaceCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
 
-                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapReplaceCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapReplaceCodec::ResponseParameters>(
+                        request);
             }
 
-            bool TransactionalMapImpl::replace(const serialization::pimpl::Data& key, const serialization::pimpl::Data& oldValue, const serialization::pimpl::Data& newValue) {
+            bool TransactionalMapImpl::replace(const serialization::pimpl::Data &key,
+                                               const serialization::pimpl::Data &oldValue,
+                                               const serialization::pimpl::Data &newValue) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapReplaceIfSameCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key, oldValue, newValue);
 
-                return invokeAndGetResult<bool, protocol::codec::TransactionalMapReplaceIfSameCodec::ResponseParameters>(request);
+                return invokeAndGetResult<bool, protocol::codec::TransactionalMapReplaceIfSameCodec::ResponseParameters>(
+                        request);
             }
 
-            std::unique_ptr<serialization::pimpl::Data> TransactionalMapImpl::removeData(const serialization::pimpl::Data& key) {
+            std::unique_ptr<serialization::pimpl::Data>
+            TransactionalMapImpl::removeData(const serialization::pimpl::Data &key) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapRemoveCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key);
 
-                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapRemoveCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapRemoveCodec::ResponseParameters>(
+                        request);
             }
 
-            void TransactionalMapImpl::deleteEntry(const serialization::pimpl::Data& key) {
+            void TransactionalMapImpl::deleteEntry(const serialization::pimpl::Data &key) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapDeleteCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key);
@@ -2930,12 +3167,14 @@ namespace hazelcast {
                 invoke(request);
             }
 
-            bool TransactionalMapImpl::remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
+            bool TransactionalMapImpl::remove(const serialization::pimpl::Data &key,
+                                              const serialization::pimpl::Data &value) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapRemoveIfSameCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
 
-                return invokeAndGetResult<bool, protocol::codec::TransactionalMapRemoveIfSameCodec::ResponseParameters>(request);
+                return invokeAndGetResult<bool, protocol::codec::TransactionalMapRemoveIfSameCodec::ResponseParameters>(
+                        request);
             }
 
             std::vector<serialization::pimpl::Data> TransactionalMapImpl::keySetData() {
@@ -2943,15 +3182,19 @@ namespace hazelcast {
                         protocol::codec::TransactionalMapKeySetCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId());
 
-                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapKeySetCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapKeySetCodec::ResponseParameters>(
+                        request);
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMapImpl::keySetData(const serialization::IdentifiedDataSerializable *predicate) {
+            std::vector<serialization::pimpl::Data>
+            TransactionalMapImpl::keySetData(const serialization::IdentifiedDataSerializable *predicate) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapKeySetWithPredicateCodec::encodeRequest(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), toData<serialization::IdentifiedDataSerializable>(predicate));
+                                getName(), getTransactionId(), util::getCurrentThreadId(),
+                                toData<serialization::IdentifiedDataSerializable>(predicate));
 
-                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapKeySetWithPredicateCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapKeySetWithPredicateCodec::ResponseParameters>(
+                        request);
             }
 
             std::vector<serialization::pimpl::Data> TransactionalMapImpl::valuesData() {
@@ -2959,49 +3202,28 @@ namespace hazelcast {
                         protocol::codec::TransactionalMapValuesCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId());
 
-                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapValuesCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapValuesCodec::ResponseParameters>(
+                        request);
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMapImpl::valuesData(const serialization::IdentifiedDataSerializable *predicate) {
+            std::vector<serialization::pimpl::Data>
+            TransactionalMapImpl::valuesData(const serialization::IdentifiedDataSerializable *predicate) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapValuesWithPredicateCodec::encodeRequest(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), toData<serialization::IdentifiedDataSerializable>(predicate));
+                                getName(), getTransactionId(), util::getCurrentThreadId(),
+                                toData<serialization::IdentifiedDataSerializable>(predicate));
 
-                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapValuesWithPredicateCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapValuesWithPredicateCodec::ResponseParameters>(
+                        request);
             }
         }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/proxy/TransactionalMultiMapImpl.h"
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -3077,54 +3299,34 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/proxy/TransactionalListImpl.h"
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            TransactionalListImpl::TransactionalListImpl(const std::string& objectName, txn::TransactionProxy *context)
-            : TransactionalObject("hz:impl:listService", objectName, context) {
+            TransactionalListImpl::TransactionalListImpl(const std::string &objectName, txn::TransactionProxy *context)
+                    : TransactionalObject("hz:impl:listService", objectName, context) {
             }
 
-            bool TransactionalListImpl::add(const serialization::pimpl::Data& e) {
+            bool TransactionalListImpl::add(const serialization::pimpl::Data &e) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalListAddCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), e);
 
-                return invokeAndGetResult<bool, protocol::codec::TransactionalListAddCodec::ResponseParameters>(request);
+                return invokeAndGetResult<bool, protocol::codec::TransactionalListAddCodec::ResponseParameters>(
+                        request);
             }
 
-            bool TransactionalListImpl::remove(const serialization::pimpl::Data& e) {
+            bool TransactionalListImpl::remove(const serialization::pimpl::Data &e) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalListRemoveCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), e);
 
-                return invokeAndGetResult<bool, protocol::codec::TransactionalListRemoveCodec::ResponseParameters>(request);
+                return invokeAndGetResult<bool, protocol::codec::TransactionalListRemoveCodec::ResponseParameters>(
+                        request);
             }
 
             int TransactionalListImpl::size() {
@@ -3132,50 +3334,27 @@ namespace hazelcast {
                         protocol::codec::TransactionalListSizeCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId());
 
-                return invokeAndGetResult<int, protocol::codec::TransactionalListSizeCodec::ResponseParameters>(request);
+                return invokeAndGetResult<int, protocol::codec::TransactionalListSizeCodec::ResponseParameters>(
+                        request);
             }
         }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/proxy/TransactionalSetImpl.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/txn/TransactionProxy.h"
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            TransactionalSetImpl::TransactionalSetImpl(const std::string& name, txn::TransactionProxy *transactionProxy)
-            : TransactionalObject("hz:impl:setService", name, transactionProxy) {
+            TransactionalSetImpl::TransactionalSetImpl(const std::string &name, txn::TransactionProxy *transactionProxy)
+                    : TransactionalObject("hz:impl:setService", name, transactionProxy) {
 
             }
 
-            bool TransactionalSetImpl::add(const serialization::pimpl::Data& e) {
+            bool TransactionalSetImpl::add(const serialization::pimpl::Data &e) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalSetAddCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), e);
@@ -3183,12 +3362,13 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::TransactionalSetAddCodec::ResponseParameters>(request);
             }
 
-            bool TransactionalSetImpl::remove(const serialization::pimpl::Data& e) {
+            bool TransactionalSetImpl::remove(const serialization::pimpl::Data &e) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalSetRemoveCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), e);
 
-                return invokeAndGetResult<bool, protocol::codec::TransactionalSetRemoveCodec::ResponseParameters>(request);
+                return invokeAndGetResult<bool, protocol::codec::TransactionalSetRemoveCodec::ResponseParameters>(
+                        request);
             }
 
             int TransactionalSetImpl::size() {
@@ -3202,29 +3382,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 12/11/13.
-
-
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/proxy/TransactionalObject.h"
-#include "hazelcast/client/spi/ClientInvocationService.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 namespace hazelcast {
     namespace client {
@@ -3284,28 +3441,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
-#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
-#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -3358,56 +3493,19 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 30/09/14.
-//
 
-#include "hazelcast/client/proxy/IQueueImpl.h"
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
-#include "hazelcast/client/spi/ClientListenerService.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
             IQueueImpl::IQueueImpl(const std::string &instanceName, spi::ClientContext *context)
                     : ProxyImpl("hz:impl:queueService", instanceName, context) {
-                serialization::pimpl::Data data = getContext().getSerializationService().toData<std::string>(&instanceName);
+                serialization::pimpl::Data data = getContext().getSerializationService().toData<std::string>(
+                        &instanceName);
                 partitionId = getPartitionId(data);
             }
 
@@ -3422,7 +3520,7 @@ namespace hazelcast {
             bool IQueueImpl::offer(const serialization::pimpl::Data &element, long timeoutInMillis) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueueOfferCodec::encodeRequest(getName(), element,
-                                                                                    timeoutInMillis);
+                                                                        timeoutInMillis);
 
                 return invokeAndGetResult<bool, protocol::codec::QueueOfferCodec::ResponseParameters>(request,
                                                                                                       partitionId);
@@ -3463,7 +3561,8 @@ namespace hazelcast {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueueContainsCodec::encodeRequest(getName(), element);
 
-                return invokeAndGetResult<bool, protocol::codec::QueueContainsCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<bool, protocol::codec::QueueContainsCodec::ResponseParameters>(request,
+                                                                                                         partitionId);
             }
 
             std::vector<serialization::pimpl::Data> IQueueImpl::drainToData(size_t maxElements) {
@@ -3503,7 +3602,7 @@ namespace hazelcast {
                         protocol::codec::QueueIsEmptyCodec::encodeRequest(getName());
 
                 return invokeAndGetResult<bool, protocol::codec::QueueIsEmptyCodec::ResponseParameters>(request,
-                                                                                                    partitionId);
+                                                                                                        partitionId);
             }
 
             std::vector<serialization::pimpl::Data> IQueueImpl::toArrayData() {
@@ -3560,9 +3659,9 @@ namespace hazelcast {
             }
 
             IQueueImpl::QueueListenerMessageCodec::QueueListenerMessageCodec(const std::string &name,
-                                                                          bool includeValue) : name(name),
-                                                                                               includeValue(
-                                                                                                       includeValue) {}
+                                                                             bool includeValue) : name(name),
+                                                                                                  includeValue(
+                                                                                                          includeValue) {}
 
             std::unique_ptr<protocol::ClientMessage>
             IQueueImpl::QueueListenerMessageCodec::encodeAddRequest(bool localOnly) const {
@@ -3588,36 +3687,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
-
-
-
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
-#include "hazelcast/client/TypedData.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
-#include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/util/ExceptionUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -3638,7 +3707,7 @@ namespace hazelcast {
                     std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
                 try {
                     std::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeAndGetFuture(request,
-                                                                                                     partitionId);
+                                                                                                   partitionId);
                     return future->get();
                 } catch (exception::IException &e) {
                     util::ExceptionUtil::rethrow(e);
@@ -3697,11 +3766,11 @@ namespace hazelcast {
                 std::vector<hazelcast::client::TypedData> result;
                 typedef std::vector<serialization::pimpl::Data> VALUES;
                 for (const VALUES::value_type &value : values) {
-                                result.push_back(TypedData(
-                                        std::unique_ptr<serialization::pimpl::Data>(
-                                                new serialization::pimpl::Data(value)),
-                                        getContext().getSerializationService()));
-                            }
+                    result.push_back(TypedData(
+                            std::unique_ptr<serialization::pimpl::Data>(
+                                    new serialization::pimpl::Data(value)),
+                            getContext().getSerializationService()));
+                }
                 return result;
             }
 
@@ -3710,13 +3779,13 @@ namespace hazelcast {
                 typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > ENTRIES_DATA;
                 std::vector<std::pair<TypedData, TypedData> > result;
                 for (const ENTRIES_DATA::value_type &value : dataEntrySet) {
-                                serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
-                                TypedData keyData(std::unique_ptr<serialization::pimpl::Data>(
-                                        new serialization::pimpl::Data(value.first)), serializationService);
-                                TypedData valueData(std::unique_ptr<serialization::pimpl::Data>(
-                                        new serialization::pimpl::Data(value.second)), serializationService);
-                                result.push_back(std::make_pair(keyData, valueData));
-                            }
+                    serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
+                    TypedData keyData(std::unique_ptr<serialization::pimpl::Data>(
+                            new serialization::pimpl::Data(value.first)), serializationService);
+                    TypedData valueData(std::unique_ptr<serialization::pimpl::Data>(
+                            new serialization::pimpl::Data(value.second)), serializationService);
+                    result.push_back(std::make_pair(keyData, valueData));
+                }
                 return result;
             }
 
@@ -3728,24 +3797,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/proxy/PartitionSpecificClientProxy.h"
-#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
 
 namespace hazelcast {
     namespace client {
@@ -3764,23 +3815,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
-#include "hazelcast/client/spi/InternalCompletableFuture.h"
 
 namespace hazelcast {
     namespace client {
@@ -3911,54 +3945,10 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 30/09/14.
-//
 
-#include <limits.h>
-#include "hazelcast/client/proxy/MultiMapImpl.h"
-#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
-#include "hazelcast/client/impl/EntryEventHandler.h"
-#include "hazelcast/client/spi/ClientListenerService.h"
-#include "hazelcast/util/Util.h"
+
 
 // Includes for codec classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -4239,83 +4229,10 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <climits>
 
 
-#include "hazelcast/client/proxy/IMapImpl.h"
-#include "hazelcast/client/spi/ClientListenerService.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
-#include "hazelcast/client/EntryView.h"
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/TimeUtil.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -4408,8 +4325,8 @@ namespace hazelcast {
             }
 
             std::unique_ptr<serialization::pimpl::Data> IMapImpl::putData(const serialization::pimpl::Data &key,
-                                                                        const serialization::pimpl::Data &value,
-                                                                        int64_t ttlInMillis) {
+                                                                          const serialization::pimpl::Data &value,
+                                                                          int64_t ttlInMillis) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapPutCodec::encodeRequest(getName(), key, value,
                                                                     util::getCurrentThreadId(),
@@ -4432,8 +4349,8 @@ namespace hazelcast {
             }
 
             std::unique_ptr<serialization::pimpl::Data> IMapImpl::putIfAbsentData(const serialization::pimpl::Data &key,
-                                                                                const serialization::pimpl::Data &value,
-                                                                                int64_t ttlInMillis) {
+                                                                                  const serialization::pimpl::Data &value,
+                                                                                  int64_t ttlInMillis) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapPutIfAbsentCodec::encodeRequest(getName(), key, value,
                                                                             util::getCurrentThreadId(),
@@ -4455,7 +4372,7 @@ namespace hazelcast {
             }
 
             std::unique_ptr<serialization::pimpl::Data> IMapImpl::replaceData(const serialization::pimpl::Data &key,
-                                                                            const serialization::pimpl::Data &value) {
+                                                                              const serialization::pimpl::Data &value) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapReplaceCodec::encodeRequest(getName(), key, value,
                                                                         util::getCurrentThreadId());
@@ -4483,7 +4400,8 @@ namespace hazelcast {
                 int partitionId = getPartitionId(key);
 
                 std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(), leaseTime,
+                        protocol::codec::MapLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
+                                                                     leaseTime,
                                                                      lockReferenceIdGenerator->getNextReferenceId());
 
                 invokeOnPartition(request, partitionId);
@@ -4592,14 +4510,14 @@ namespace hazelcast {
                 EntryVector result;
                 // wait for all futures
                 for (const std::shared_ptr<spi::impl::ClientInvocationFuture> &future : futures) {
-                                std::shared_ptr<protocol::ClientMessage> responseForPartition = future->get();
-                                protocol::codec::MapGetAllCodec::ResponseParameters resultForPartition =
-                                        protocol::codec::MapGetAllCodec::ResponseParameters::decode(
-                                                *responseForPartition);
-                                result.insert(result.end(), resultForPartition.response.begin(),
-                                              resultForPartition.response.end());
+                    std::shared_ptr<protocol::ClientMessage> responseForPartition = future->get();
+                    protocol::codec::MapGetAllCodec::ResponseParameters resultForPartition =
+                            protocol::codec::MapGetAllCodec::ResponseParameters::decode(
+                                    *responseForPartition);
+                    result.insert(result.end(), resultForPartition.response.begin(),
+                                  resultForPartition.response.end());
 
-                            }
+                }
 
                 return result;
             }
@@ -4726,8 +4644,8 @@ namespace hazelcast {
 
                 // wait for all futures
                 for (const std::shared_ptr<spi::impl::ClientInvocationFuture> &future : futures) {
-                                future->get();
-                            }
+                    future->get();
+                }
             }
 
             void IMapImpl::clear() {
@@ -4737,8 +4655,9 @@ namespace hazelcast {
                 invoke(request);
             }
 
-            std::unique_ptr<serialization::pimpl::Data> IMapImpl::executeOnKeyData(const serialization::pimpl::Data &key,
-                                                                                 const serialization::pimpl::Data &processor) {
+            std::unique_ptr<serialization::pimpl::Data>
+            IMapImpl::executeOnKeyData(const serialization::pimpl::Data &key,
+                                       const serialization::pimpl::Data &processor) {
                 int partitionId = getPartitionId(key);
 
                 std::unique_ptr<protocol::ClientMessage> request =
@@ -4947,47 +4866,27 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/proxy/TransactionalQueueImpl.h"
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            TransactionalQueueImpl::TransactionalQueueImpl(const std::string& name, txn::TransactionProxy *transactionProxy)
-            : TransactionalObject("hz:impl:queueService", name, transactionProxy) {
+            TransactionalQueueImpl::TransactionalQueueImpl(const std::string &name,
+                                                           txn::TransactionProxy *transactionProxy)
+                    : TransactionalObject("hz:impl:queueService", name, transactionProxy) {
 
             }
 
-            bool TransactionalQueueImpl::offer(const serialization::pimpl::Data& e, long timeoutInMillis) {
+            bool TransactionalQueueImpl::offer(const serialization::pimpl::Data &e, long timeoutInMillis) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalQueueOfferCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), e, timeoutInMillis);
 
-                return invokeAndGetResult<bool, protocol::codec::TransactionalQueueOfferCodec::ResponseParameters>(request);
+                return invokeAndGetResult<bool, protocol::codec::TransactionalQueueOfferCodec::ResponseParameters>(
+                        request);
             }
 
             std::unique_ptr<serialization::pimpl::Data> TransactionalQueueImpl::pollData(long timeoutInMillis) {
@@ -4995,7 +4894,8 @@ namespace hazelcast {
                         protocol::codec::TransactionalQueuePollCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), timeoutInMillis);
 
-                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalQueuePollCodec::ResponseParameters>(request);
+                return invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalQueuePollCodec::ResponseParameters>(
+                        request);
             }
 
             int TransactionalQueueImpl::size() {
@@ -5003,57 +4903,26 @@ namespace hazelcast {
                         protocol::codec::TransactionalQueueSizeCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getCurrentThreadId());
 
-                return invokeAndGetResult<int, protocol::codec::TransactionalQueueSizeCodec::ResponseParameters>(request);
+                return invokeAndGetResult<int, protocol::codec::TransactionalQueueSizeCodec::ResponseParameters>(
+                        request);
             }
         }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 30/09/14.
-//
 
-#include "hazelcast/client/proxy/ISetImpl.h"
 
-#include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/spi/ClientListenerService.h"
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            ISetImpl::ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext)
-            : ProxyImpl("hz:impl:setService", instanceName, clientContext) {
-                serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
+            ISetImpl::ISetImpl(const std::string &instanceName, spi::ClientContext *clientContext)
+                    : ProxyImpl("hz:impl:setService", instanceName, clientContext) {
+                serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(
+                        &instanceName);
                 partitionId = getPartitionId(keyData);
             }
 
@@ -5061,76 +4930,86 @@ namespace hazelcast {
                 return registerListener(createItemListenerCodec(includeValue), itemEventHandler);
             }
 
-            bool ISetImpl::removeItemListener(const std::string& registrationId) {
+            bool ISetImpl::removeItemListener(const std::string &registrationId) {
                 return getContext().getClientListenerService().deregisterListener(registrationId);
             }
 
             int ISetImpl::size() {
-                std::unique_ptr<protocol::ClientMessage> request = protocol::codec::SetSizeCodec::encodeRequest(getName());
+                std::unique_ptr<protocol::ClientMessage> request = protocol::codec::SetSizeCodec::encodeRequest(
+                        getName());
 
                 return invokeAndGetResult<int, protocol::codec::SetSizeCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::isEmpty() {
-                std::unique_ptr<protocol::ClientMessage> request = protocol::codec::SetIsEmptyCodec::encodeRequest(getName());
+                std::unique_ptr<protocol::ClientMessage> request = protocol::codec::SetIsEmptyCodec::encodeRequest(
+                        getName());
 
-                return invokeAndGetResult<bool, protocol::codec::SetIsEmptyCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<bool, protocol::codec::SetIsEmptyCodec::ResponseParameters>(request,
+                                                                                                      partitionId);
             }
 
-            bool ISetImpl::contains(const serialization::pimpl::Data& element) {
+            bool ISetImpl::contains(const serialization::pimpl::Data &element) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetContainsCodec::encodeRequest(getName(), element);
 
-                return invokeAndGetResult<bool, protocol::codec::SetContainsCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<bool, protocol::codec::SetContainsCodec::ResponseParameters>(request,
+                                                                                                       partitionId);
             }
 
-            std::vector<serialization::pimpl::Data>  ISetImpl::toArrayData() {
+            std::vector<serialization::pimpl::Data> ISetImpl::toArrayData() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetGetAllCodec::encodeRequest(getName());
 
-                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::SetGetAllCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::SetGetAllCodec::ResponseParameters>(
+                        request, partitionId);
             }
 
-            bool ISetImpl::add(const serialization::pimpl::Data& element) {
+            bool ISetImpl::add(const serialization::pimpl::Data &element) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetAddCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<bool, protocol::codec::SetAddCodec::ResponseParameters>(request, partitionId);
             }
 
-            bool ISetImpl::remove(const serialization::pimpl::Data& element) {
+            bool ISetImpl::remove(const serialization::pimpl::Data &element) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetRemoveCodec::encodeRequest(getName(), element);
 
-                return invokeAndGetResult<bool, protocol::codec::SetRemoveCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<bool, protocol::codec::SetRemoveCodec::ResponseParameters>(request,
+                                                                                                     partitionId);
             }
 
-            bool ISetImpl::containsAll(const std::vector<serialization::pimpl::Data>& elements) {
+            bool ISetImpl::containsAll(const std::vector<serialization::pimpl::Data> &elements) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetContainsAllCodec::encodeRequest(getName(), elements);
 
-                return invokeAndGetResult<bool, protocol::codec::SetContainsAllCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<bool, protocol::codec::SetContainsAllCodec::ResponseParameters>(request,
+                                                                                                          partitionId);
             }
 
-            bool ISetImpl::addAll(const std::vector<serialization::pimpl::Data>& elements) {
+            bool ISetImpl::addAll(const std::vector<serialization::pimpl::Data> &elements) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetAddAllCodec::encodeRequest(getName(), elements);
 
-                return invokeAndGetResult<bool, protocol::codec::SetAddAllCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<bool, protocol::codec::SetAddAllCodec::ResponseParameters>(request,
+                                                                                                     partitionId);
             }
 
-            bool ISetImpl::removeAll(const std::vector<serialization::pimpl::Data>& elements) {
+            bool ISetImpl::removeAll(const std::vector<serialization::pimpl::Data> &elements) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetCompareAndRemoveAllCodec::encodeRequest(getName(), elements);
 
-                return invokeAndGetResult<bool, protocol::codec::SetCompareAndRemoveAllCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<bool, protocol::codec::SetCompareAndRemoveAllCodec::ResponseParameters>(
+                        request, partitionId);
             }
 
-            bool ISetImpl::retainAll(const std::vector<serialization::pimpl::Data>& elements) {
+            bool ISetImpl::retainAll(const std::vector<serialization::pimpl::Data> &elements) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetCompareAndRetainAllCodec::encodeRequest(getName(), elements);
 
-                return invokeAndGetResult<bool, protocol::codec::SetCompareAndRetainAllCodec::ResponseParameters>(request, partitionId);
+                return invokeAndGetResult<bool, protocol::codec::SetCompareAndRetainAllCodec::ResponseParameters>(
+                        request, partitionId);
             }
 
             void ISetImpl::clear() {
@@ -5147,9 +5026,9 @@ namespace hazelcast {
             }
 
             ISetImpl::SetListenerMessageCodec::SetListenerMessageCodec(const std::string &name,
-                                                                             bool includeValue) : name(name),
-                                                                                                  includeValue(
-                                                                                                          includeValue) {}
+                                                                       bool includeValue) : name(name),
+                                                                                            includeValue(
+                                                                                                    includeValue) {}
 
             std::unique_ptr<protocol::ClientMessage>
             ISetImpl::SetListenerMessageCodec::encodeAddRequest(bool localOnly) const {
@@ -5174,34 +5053,11 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
 
-#include "hazelcast/client/proxy/ITopicImpl.h"
 
-#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
-#include "hazelcast/client/spi/ClientListenerService.h"
+
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -5239,7 +5095,8 @@ namespace hazelcast {
 
             std::string ITopicImpl::TopicListenerMessageCodec::decodeAddResponse(
                     protocol::ClientMessage &responseMessage) const {
-                return protocol::codec::TopicAddMessageListenerCodec::ResponseParameters::decode(responseMessage).response;
+                return protocol::codec::TopicAddMessageListenerCodec::ResponseParameters::decode(
+                        responseMessage).response;
             }
 
             std::unique_ptr<protocol::ClientMessage>
@@ -5249,30 +5106,14 @@ namespace hazelcast {
 
             bool ITopicImpl::TopicListenerMessageCodec::decodeRemoveResponse(
                     protocol::ClientMessage &clientMessage) const {
-                return protocol::codec::TopicRemoveMessageListenerCodec::ResponseParameters::decode(clientMessage).response;
+                return protocol::codec::TopicRemoveMessageListenerCodec::ResponseParameters::decode(
+                        clientMessage).response;
             }
 
         }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/TypedData.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -5315,25 +5156,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
-#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -5352,60 +5174,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 8/21/13.
 
-#include <random>
-#include <cassert>
-#include <thread>
-
-#include "hazelcast/client/ExecutionCallback.h"
-#include "hazelcast/client/LifecycleEvent.h"
-#include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
-#include "hazelcast/client/connection/AddressProvider.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/protocol/AuthenticationStatus.h"
-#include "hazelcast/client/exception/AuthenticationException.h"
-#include "hazelcast/client/exception/AuthenticationException.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/connection/ConnectionListener.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/Executor.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/connection/AuthenticationFuture.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/connection/HeartbeatManager.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -5695,7 +5464,7 @@ namespace hazelcast {
                 }
                 std::unique_ptr<protocol::ClientMessage> clientMessage;
                 if (credentials == NULL) {
-                    // TODO: Change UsernamePasswordCredentials to implement Credentials interface so that we can just 
+                    // TODO: Change UsernamePasswordCredentials to implement Credentials interface so that we can just
                     // upcast the credentials as done at Java
                     GroupConfig &groupConfig = client.getClientConfig().getGroupConfig();
                     const protocol::UsernamePasswordCredentials cr(groupConfig.getName(), groupConfig.getPassword());
@@ -5735,7 +5504,7 @@ namespace hazelcast {
                     fireConnectionAddedEvent(connection);
                 } else {
                     if (logger.isFinestEnabled()) {
-                        logger.finest("Re-authentication succeeded for " , *connection);
+                        logger.finest("Re-authentication succeeded for ", *connection);
                     }
                     assert(*connection == *oldConnection);
                 }
@@ -5747,10 +5516,10 @@ namespace hazelcast {
                 } else {
                     out << "null";
                 }
-                logger.info("Authenticated with server ", out.str(), ", server version:"
-                              , connection->getConnectedServerVersionString(), " Local address: "
-                              , (connection->getLocalSocketAddress().get() != NULL
-                                  ? connection->getLocalSocketAddress()->toString() : "null"));
+                logger.info("Authenticated with server ", out.str(), ", server version:",
+                            connection->getConnectedServerVersionString(), " Local address: ",
+                            (connection->getLocalSocketAddress().get() != NULL
+                             ? connection->getLocalSocketAddress()->toString() : "null"));
 
                 /* check if connection is closed by remote before authentication complete, if that is the case
                 we need to remove it back from active connections.
@@ -5781,7 +5550,8 @@ namespace hazelcast {
 
                 if (endpoint.get() == NULL) {
                     if (logger.isFinestEnabled()) {
-                        logger.finest("Destroying " , *connection , ", but it has end-point set to null ", "-> not removing it from a connection map");
+                        logger.finest("Destroying ", *connection, ", but it has end-point set to null ",
+                                      "-> not removing it from a connection map");
                     }
                     return;
                 }
@@ -5792,7 +5562,8 @@ namespace hazelcast {
                     fireConnectionRemovedEvent(connection);
                 } else {
                     if (logger.isFinestEnabled()) {
-                        logger.finest("Destroying a connection, but there is no mapping " , endpoint , " -> ", *connection,  " in the connection map.");
+                        logger.finest("Destroying a connection, but there is no mapping ", endpoint, " -> ",
+                                      *connection, " in the connection map.");
                     }
                 }
             }
@@ -6065,14 +5836,15 @@ namespace hazelcast {
                     }
 
                     if (timeoutCondition.wait_for(uniqueLock,
-                                              std::chrono::milliseconds(connectionManager.connectionTimeoutMillis),
-                                              [&] { return cancelled; })) {
+                                                  std::chrono::milliseconds(connectionManager.connectionTimeoutMillis),
+                                                  [&] { return cancelled; })) {
                         return;
                     }
 
                     invocationFuture->complete((exception::ExceptionBuilder<exception::TimeoutException>(
                             "ClientConnectionManagerImpl::authenticate")
-                            << "Authentication response did not come back in " << connectionManager.connectionTimeoutMillis
+                            << "Authentication response did not come back in "
+                            << connectionManager.connectionTimeoutMillis
                             << " millis").buildShared());
                 });
             }
@@ -6150,7 +5922,7 @@ namespace hazelcast {
                                                                                    const std::shared_ptr<Connection> &connection,
                                                                                    const std::shared_ptr<exception::IException> &cause) {
                 if (connectionManager.logger.isFinestEnabled()) {
-                    connectionManager.logger.finest("Authentication of " , connection , " failed." , cause);
+                    connectionManager.logger.finest("Authentication of ", connection, " failed.", cause);
                 }
                 connection->close("", cause);
                 connectionManager.pendingSocketIdToConnection.remove(connection->getSocket().getSocketId());
@@ -6195,7 +5967,8 @@ namespace hazelcast {
                     connectionManager.connectToClusterInternal();
                     return std::shared_ptr<bool>(new bool(true));
                 } catch (exception::IException &e) {
-                    connectionManager.getLogger().warning("Could not connect to cluster, shutting down the client. ", e.getMessage());
+                    connectionManager.getLogger().warning("Could not connect to cluster, shutting down the client. ",
+                                                          e.getMessage());
 
                     static_cast<DefaultClientConnectionStrategy &>(*connectionManager.connectionStrategy).shutdownWithExternalThread(
                             clientContext.getHazelcastClientImplementation());
@@ -6216,25 +5989,6 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <cassert>
-
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/connection/AuthenticationFuture.h"
 
 namespace hazelcast {
     namespace client {
@@ -6265,51 +6019,24 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 24/12/13.
-//
 
-#include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/InSelector.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/spi/ClientInvocationService.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/util/Util.h"
 
-#include <ctime>
+
 
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ReadHandler::ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize, spi::ClientContext& clientContext)
-            : IOHandler(connection, iListener)
-            , buffer(new char[bufferSize])
-            , byteBuffer(buffer, bufferSize)
-            , builder(connection) {
-		        lastReadTimeMillis = util::currentTimeMillis();
+            ReadHandler::ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize,
+                                     spi::ClientContext &clientContext)
+                    : IOHandler(connection, iListener), buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize),
+                      builder(connection) {
+                lastReadTimeMillis = util::currentTimeMillis();
             }
 
             ReadHandler::~ReadHandler() {
-                delete [] buffer;
+                delete[] buffer;
             }
 
             void ReadHandler::run() {
@@ -6348,43 +6075,18 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 25/12/13.
-//
-
-#include <string.h>
-#include <errno.h>
-
-#include "hazelcast/client/connection/InSelector.h"
-#include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/connection/Connection.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
+#pragma warning(disable: 4996) //for strerror
 #endif
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            InSelector::InSelector(ClientConnectionManagerImpl& connectionManager, const config::SocketOptions &socketOptions)
-            : IOSelector(connectionManager, socketOptions) {
+            InSelector::InSelector(ClientConnectionManagerImpl &connectionManager,
+                                   const config::SocketOptions &socketOptions)
+                    : IOSelector(connectionManager, socketOptions) {
             }
 
             bool InSelector::start() {
@@ -6394,9 +6096,9 @@ namespace hazelcast {
             void InSelector::listenInternal() {
                 fd_set read_fds;
                 util::SocketSet::FdRange socketRange = socketSet.fillFdSet(read_fds);
-                #if  defined(__GNUC__) || defined(__llvm__)
+#if  defined(__GNUC__) || defined(__llvm__)
                 errno = 0;
-                #endif
+#endif
                 t.tv_sec = 5;
                 t.tv_usec = 0;
                 int numSelected = select(socketRange.max + 1, &read_fds, NULL, NULL, &t);
@@ -6408,7 +6110,7 @@ namespace hazelcast {
                     return;
                 }
 
-                for (int fd = socketRange.min;numSelected > 0 && fd <= socketRange.max; ++fd) {
+                for (int fd = socketRange.min; numSelected > 0 && fd <= socketRange.max; ++fd) {
                     if (FD_ISSET(fd, &read_fds)) {
                         --numSelected;
                         if (wakeUpListenerSocketId == fd) {
@@ -6434,36 +6136,7 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 24/12/13.
-//
 
-#include <string.h>
-
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/client/connection/IOSelector.h"
-#include "hazelcast/client/connection/ListenerTask.h"
-#include "hazelcast/client/connection/IOHandler.h"
-#include "hazelcast/util/ServerSocket.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -6474,9 +6147,10 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOSelector::IOSelector(ClientConnectionManagerImpl &connectionManager, const config::SocketOptions &socketOptions)
-            : socketSet(connectionManager.getLogger()), connectionManager(connectionManager),
-            logger(connectionManager.getLogger()), socketOptions(socketOptions) {
+            IOSelector::IOSelector(ClientConnectionManagerImpl &connectionManager,
+                                   const config::SocketOptions &socketOptions)
+                    : socketSet(connectionManager.getLogger()), connectionManager(connectionManager),
+                      logger(connectionManager.getLogger()), socketOptions(socketOptions) {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
             }
@@ -6493,7 +6167,7 @@ namespace hazelcast {
                 int wakeUpSignal = 9;
                 try {
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int), MSG_WAITALL);
-                } catch(exception::IOException &e) {
+                } catch (exception::IOException &e) {
                     logger.warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
                     throw;
                 }
@@ -6501,10 +6175,10 @@ namespace hazelcast {
 
             void IOSelector::run() {
                 while (isAlive) {
-                    try{
+                    try {
                         processListenerQueue();
                         listenInternal();
-                    }catch(exception::IException &e){
+                    } catch (exception::IException &e) {
                         if (isAlive) {
                             logger.warning(std::string("Exception at IOSelector::run() ") + e.what());
                         } else {
@@ -6573,13 +6247,13 @@ namespace hazelcast {
             }
 
             void IOSelector::processListenerQueue() {
-                while (ListenerTask *task = listenerTasks.poll()) {
+                while (ListenerTask * task = listenerTasks.poll()) {
                     task->run();
                 }
             }
 
             bool IOSelector::checkError(const char *messagePrefix, int numSelected) const {
-                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 if (numSelected == SOCKET_ERROR) {
                     int error = WSAGetLastError();
                     if (WSAENOTSOCK == error) {
@@ -6595,23 +6269,24 @@ namespace hazelcast {
                     }
                     return true;
                 }
-                #else
+#else
                 if (numSelected == -1) {
                     int error = errno;
-                    if (EINTR == error || EBADF == error /* This case may happen if socket closed by cluster listener thread */) {
+                    if (EINTR == error ||
+                        EBADF == error /* This case may happen if socket closed by cluster listener thread */) {
                         if (logger.isEnabled(FINEST)) {
                             char errorMsg[200];
                             util::strerror_s(error, errorMsg, 200, messagePrefix);
                             logger.finest(errorMsg);
                         }
-                    } else{
+                    } else {
                         char errorMsg[200];
                         util::strerror_s(error, errorMsg, 200, messagePrefix);
                         logger.severe(errorMsg);
                     }
                     return true;
                 }
-                #endif
+#endif
 
                 return false;
             }
@@ -6624,24 +6299,6 @@ namespace hazelcast {
 #endif
 
 
-
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/connection/ListenerTask.h"
-
 namespace hazelcast {
     namespace client {
         namespace connection {
@@ -6650,48 +6307,16 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 5/21/13.
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <winsock2.h>
 #endif
 
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/ClientInvocationService.h"
-#include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/impl/BuildInfo.h"
-
-#include <stdint.h>
-#include <string.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4996)
-#pragma warning(disable: 4355) 	
+#pragma warning(disable: 4355)
 #endif
 
 namespace hazelcast {
@@ -6754,7 +6379,7 @@ namespace hazelcast {
                 try {
                     innerClose();
                 } catch (exception::IException &e) {
-                    clientContext.getLogger().warning("Exception while closing connection" , e.getMessage());
+                    clientContext.getLogger().warning("Exception while closing connection", e.getMessage());
                 }
 
                 clientContext.getConnectionManager().onClose(*this);
@@ -6766,7 +6391,7 @@ namespace hazelcast {
                 }
 
                 if (logger.isFinestEnabled()) {
-                    logger.finest("Connection is closed, dropping frame -> " , message);
+                    logger.finest("Connection is closed, dropping frame -> ", message);
                 }
                 return false;
             }
@@ -6921,29 +6546,7 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 25/12/13.
-//
-#include "hazelcast/client/connection/WriteHandler.h"
-#include "hazelcast/client/connection/OutSelector.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/exception/IOException.h"
+
 
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
@@ -7001,7 +6604,8 @@ namespace hazelcast {
                 while (NULL != lastMessage.get()) {
                     try {
                         numBytesWrittenToSocketForMessage += lastMessage->writeTo(connection.getSocket(),
-                                                               numBytesWrittenToSocketForMessage, lastMessageFrameLen);
+                                                                                  numBytesWrittenToSocketForMessage,
+                                                                                  lastMessageFrameLen);
 
                         if (numBytesWrittenToSocketForMessage >= lastMessageFrameLen) {
                             // Not deleting message since its memory management is at the future object
@@ -7026,25 +6630,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/connection/ClientConnectionStrategy.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -7062,38 +6647,13 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 30/12/13.
-//
-
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/connection/IOHandler.h"
-#include "hazelcast/client/connection/IOSelector.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOHandler::IOHandler(Connection &connection, IOSelector& ioSelector)
-            : ioSelector(ioSelector)
-            , connection(connection) {
+            IOHandler::IOHandler(Connection &connection, IOSelector &ioSelector)
+                    : ioSelector(ioSelector), connection(connection) {
             }
 
             void IOHandler::registerSocket() {
@@ -7104,7 +6664,7 @@ namespace hazelcast {
             void IOHandler::registerHandler() {
                 if (!connection.isAlive())
                     return;
-                Socket const& socket = connection.getSocket();
+                Socket const &socket = connection.getSocket();
                 ioSelector.addSocket(socket);
             }
 
@@ -7116,7 +6676,7 @@ namespace hazelcast {
             IOHandler::~IOHandler() {
             }
 
-            void IOHandler::handleSocketException(const std::string& message) {
+            void IOHandler::handleSocketException(const std::string &message) {
                 // TODO: This call shall resend pending requests and reregister events, hence it can be off-loaded
                 // to another thread in order not to block the critical IO thread
                 connection.close(message.c_str());
@@ -7125,31 +6685,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 25/12/13.
-//
-
-#include <string.h>
-#include <errno.h>
-
-#include "hazelcast/client/connection/OutSelector.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/connection/Connection.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -7160,8 +6695,9 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            OutSelector::OutSelector(ClientConnectionManagerImpl &connectionManager, const config::SocketOptions &socketOptions)
-            :IOSelector(connectionManager, socketOptions), wakeUpSocketSet(connectionManager.getLogger()) {
+            OutSelector::OutSelector(ClientConnectionManagerImpl &connectionManager,
+                                     const config::SocketOptions &socketOptions)
+                    : IOSelector(connectionManager, socketOptions), wakeUpSocketSet(connectionManager.getLogger()) {
             }
 
             bool OutSelector::start() {
@@ -7177,14 +6713,14 @@ namespace hazelcast {
 
                 int maxFd = (socketRange.max > wakeupSocketRange.max ? socketRange.max : wakeupSocketRange.max);
 
-                #if  defined(__GNUC__) || defined(__llvm__)
+#if  defined(__GNUC__) || defined(__llvm__)
                 errno = 0;
-                #endif
+#endif
                 t.tv_sec = 5;
                 t.tv_usec = 0;
 
                 int numSelected = select(maxFd + 1, &wakeUp_fds, &write_fds, NULL, &t);
-                 if (numSelected == 0) {
+                if (numSelected == 0) {
                     return;
                 }
 
@@ -7198,7 +6734,7 @@ namespace hazelcast {
                     --numSelected;
                 }
 
-                for (int fd = socketRange.min;numSelected > 0 && fd <= socketRange.max; ++fd) {
+                for (int fd = socketRange.min; numSelected > 0 && fd <= socketRange.max; ++fd) {
                     if (FD_ISSET(fd, &write_fds)) {
                         --numSelected;
                         std::shared_ptr<Connection> conn = connectionManager.getActiveConnection(fd);
@@ -7223,29 +6759,6 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/connection/HeartbeatManager.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 namespace hazelcast {
     namespace client {
@@ -7278,8 +6791,8 @@ namespace hazelcast {
 
                 int64_t now = util::currentTimeMillis();
                 for (std::shared_ptr<Connection> connection : clientConnectionManager.getActiveConnections()) {
-                                checkConnection(now, connection);
-                            }
+                    checkConnection(now, connection);
+                }
             }
 
             const std::string HeartbeatManager::getName() const {
@@ -7293,7 +6806,7 @@ namespace hazelcast {
 
                 if (now - connection->lastReadTimeMillis() > heartbeatTimeout) {
                     if (connection->isAlive()) {
-                        logger.warning("Heartbeat failed over the connection: " , *connection);
+                        logger.warning("Heartbeat failed over the connection: ", *connection);
                         onHeartbeatStopped(connection, "Heartbeat timed out");
                     }
                 }
@@ -7319,26 +6832,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 5/29/13.
-
-#include "hazelcast/client/Member.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
 
 namespace hazelcast {
     namespace client {
@@ -7421,32 +6914,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include <thread>
-
-#include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/Executor.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -7567,36 +7034,15 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/ICountDownLatch.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
-#include "hazelcast/client/proxy/ProxyImpl.h"
 
 namespace hazelcast {
     namespace client {
 
-        ICountDownLatch::ICountDownLatch(const std::string& objectName, spi::ClientContext *context)
-        : proxy::ProxyImpl("hz:impl:atomicLongService", objectName, context) {
+        ICountDownLatch::ICountDownLatch(const std::string &objectName, spi::ClientContext *context)
+                : proxy::ProxyImpl("hz:impl:atomicLongService", objectName, context) {
             serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&objectName);
             partitionId = getPartitionId(keyData);
         }
@@ -7605,7 +7051,8 @@ namespace hazelcast {
             std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::CountDownLatchAwaitCodec::encodeRequest(getName(), timeoutInMillis);
 
-            return invokeAndGetResult<bool, protocol::codec::CountDownLatchAwaitCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<bool, protocol::codec::CountDownLatchAwaitCodec::ResponseParameters>(request,
+                                                                                                           partitionId);
         }
 
         void ICountDownLatch::countDown() {
@@ -7619,46 +7066,27 @@ namespace hazelcast {
             std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::CountDownLatchGetCountCodec::encodeRequest(getName());
 
-            return invokeAndGetResult<int, protocol::codec::CountDownLatchGetCountCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<int, protocol::codec::CountDownLatchGetCountCodec::ResponseParameters>(request,
+                                                                                                             partitionId);
         }
 
         bool ICountDownLatch::trySetCount(int count) {
             std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::CountDownLatchTrySetCountCodec::encodeRequest(getName(), count);
 
-            return invokeAndGetResult<bool, protocol::codec::CountDownLatchTrySetCountCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<bool, protocol::codec::CountDownLatchTrySetCountCodec::ResponseParameters>(
+                    request, partitionId);
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 04/09/14.
-//
 
-#include "hazelcast/client/MapEvent.h"
 
 namespace hazelcast {
     namespace client {
 
-        MapEvent::MapEvent(const Member& member, EntryEventType eventType, const std::string& name, int numberOfEntriesAffected)
-        : member(member)
-        , eventType(eventType)
-        , name(name)
-        , numberOfEntriesAffected(numberOfEntriesAffected) {
+        MapEvent::MapEvent(const Member &member, EntryEventType eventType, const std::string &name,
+                           int numberOfEntriesAffected)
+                : member(member), eventType(eventType), name(name), numberOfEntriesAffected(numberOfEntriesAffected) {
 
         }
 
@@ -7670,7 +7098,7 @@ namespace hazelcast {
             return eventType;
         }
 
-        const std::string& MapEvent::getName() const {
+        const std::string &MapEvent::getName() const {
             return name;
         }
 
@@ -7687,29 +7115,11 @@ namespace hazelcast {
 }
 
 
-
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/Endpoint.h"
-
 namespace hazelcast {
     namespace client {
         Endpoint::Endpoint(std::shared_ptr<std::string> uuid, std::shared_ptr<Address> socketAddress) : uuid(uuid),
-                                                                                                            socketAddress(
-                                                                                                                    socketAddress) {}
+                                                                                                        socketAddress(
+                                                                                                                socketAddress) {}
 
         const std::shared_ptr<std::string> &Endpoint::getUuid() const {
             return uuid;
@@ -7720,23 +7130,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/util/Preconditions.h"
-#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -7782,23 +7175,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/config/SSLConfig.h"
-#include "hazelcast/util/Preconditions.h"
 
 namespace hazelcast {
     namespace client {
@@ -7846,25 +7222,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -7963,22 +7320,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/config/LoggerConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -8013,27 +7354,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include <vector>
-
-
-#include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 namespace hazelcast {
     namespace client {
@@ -8090,22 +7410,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -8136,27 +7440,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 9 June 2016.
-
-#include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/config/ReliableTopicConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -8192,22 +7475,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/config/SocketOptions.h"
 
 namespace hazelcast {
     namespace client {
@@ -8263,23 +7530,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/util/Preconditions.h"
 
 namespace hazelcast {
     namespace client {
@@ -8381,36 +7631,18 @@ namespace hazelcast {
 
             std::ostream &operator<<(std::ostream &out, const ClientAwsConfig &config) {
                 return out << "ClientAwsConfig{"
-                       << "enabled=" << config.isEnabled()
-                       << ", region='" << config.getRegion() << '\''
-                       << ", securityGroupName='" << config.getSecurityGroupName() << '\''
-                       << ", tagKey='" << config.getTagKey() << '\''
-                       << ", tagValue='" << config.getTagValue() << '\''
-                       << ", hostHeader='" << config.getHostHeader() << '\''
-                       << ", iamRole='" << config.getIamRole() << "\'}";
+                           << "enabled=" << config.isEnabled()
+                           << ", region='" << config.getRegion() << '\''
+                           << ", securityGroupName='" << config.getSecurityGroupName() << '\''
+                           << ", tagKey='" << config.getTagKey() << '\''
+                           << ", tagValue='" << config.getTagValue() << '\''
+                           << ", hostHeader='" << config.getHostHeader() << '\''
+                           << ", iamRole='" << config.getIamRole() << "\'}";
             }
         }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/mixedtype/MultiMap.h"
-#include "hazelcast/client/impl/ItemEventHandler.h"
 
 namespace hazelcast {
     namespace client {
@@ -8455,31 +7687,13 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
-#include "hazelcast/client/map/impl/MapMixedTypeProxyFactory.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
         namespace mixedtype {
             namespace impl {
-                HazelcastClientImpl::HazelcastClientImpl(client::impl::HazelcastClientInstanceImpl &client) : client(client) {
+                HazelcastClientImpl::HazelcastClientImpl(client::impl::HazelcastClientInstanceImpl &client) : client(
+                        client) {
                 }
 
                 HazelcastClientImpl::~HazelcastClientImpl() {
@@ -8521,27 +7735,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/mixedtype/IQueue.h"
-#include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-
 
 
 namespace hazelcast {
@@ -8577,10 +7770,10 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
                 size_t numElements = 0;
                 for (const DATA_VECTOR::value_type data : proxy::IQueueImpl::drainToData((size_t) maxElements)) {
-                                elements.push_back(TypedData(std::unique_ptr<serialization::pimpl::Data>(
-                                        new serialization::pimpl::Data(data)), serializationService));
-                                ++numElements;
-                            }
+                    elements.push_back(TypedData(std::unique_ptr<serialization::pimpl::Data>(
+                            new serialization::pimpl::Data(data)), serializationService));
+                    ++numElements;
+                }
                 return numElements;
             }
 
@@ -8619,23 +7812,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/mixedtype/IMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -8661,7 +7837,7 @@ namespace hazelcast {
 
             std::string
             IMap::addEntryListener(MixedEntryListener &listener, const query::Predicate &predicate,
-                                       bool includeValue) {
+                                   bool includeValue) {
                 return mapImpl->addEntryListener(listener, predicate, includeValue);
             }
 
@@ -8736,29 +7912,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/mixedtype/Ringbuffer.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -8768,8 +7921,9 @@ namespace hazelcast {
                 partitionId = getPartitionId(toData(objectName));
             }
 
-            Ringbuffer::Ringbuffer(const Ringbuffer &rhs) : proxy::ProxyImpl(rhs), partitionId(rhs.partitionId), bufferCapacity(
-                    const_cast<Ringbuffer &>(rhs).bufferCapacity.load()) {
+            Ringbuffer::Ringbuffer(const Ringbuffer &rhs) : proxy::ProxyImpl(rhs), partitionId(rhs.partitionId),
+                                                            bufferCapacity(
+                                                                    const_cast<Ringbuffer &>(rhs).bufferCapacity.load()) {
             }
 
             Ringbuffer::~Ringbuffer() {
@@ -8836,24 +7990,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
-#include "hazelcast/client/mixedtype/ITopic.h"
 
 namespace hazelcast {
     namespace client {
@@ -8876,23 +8012,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/mixedtype/ISet.h"
 
 namespace hazelcast {
     namespace client {
@@ -8931,37 +8050,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-
-#include "hazelcast/client/mixedtype/NearCachedClientMapProxy.h"
-#include "hazelcast/client/config/NearCacheConfig.h"
-#include "hazelcast/client/map/impl/nearcache/InvalidationAwareWrapper.h"
-#include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
-#include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
-#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/EntryEvent.h"
 
 namespace hazelcast {
     namespace client {
@@ -9020,7 +8109,8 @@ namespace hazelcast {
                 if (cached.get() != NULL) {
                     if (internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT == cached) {
                         return std::shared_ptr<TypedData>(
-                                new TypedData(std::unique_ptr<serialization::pimpl::Data>(), getSerializationService()));
+                                new TypedData(std::unique_ptr<serialization::pimpl::Data>(),
+                                              getSerializationService()));
                     }
                     return cached;
                 }
@@ -9211,24 +8301,24 @@ namespace hazelcast {
 
                     EntryVector responses = ClientMapProxy::getAllInternal(nonCachedPidToKeyMap);
                     for (const EntryVector::value_type &entry : responses) {
-                                    std::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(
-                                            entry.first);
-                                    std::shared_ptr<TypedData> value = std::shared_ptr<TypedData>(new TypedData(
-                                            std::unique_ptr<serialization::pimpl::Data>(
-                                                    new serialization::pimpl::Data(entry.second)),
-                                            getSerializationService()));
-                                    bool marked = false;
-                                    if (markers.count(key)) {
-                                        marked = markers[key];
-                                        markers.erase(key);
-                                    }
+                        std::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(
+                                entry.first);
+                        std::shared_ptr<TypedData> value = std::shared_ptr<TypedData>(new TypedData(
+                                std::unique_ptr<serialization::pimpl::Data>(
+                                        new serialization::pimpl::Data(entry.second)),
+                                getSerializationService()));
+                        bool marked = false;
+                        if (markers.count(key)) {
+                            marked = markers[key];
+                            markers.erase(key);
+                        }
 
-                                    if (marked) {
-                                        tryToPutNearCache(key, value);
-                                    } else {
-                                        nearCache->put(key, value);
-                                    }
-                                }
+                        if (marked) {
+                            tryToPutNearCache(key, value);
+                        } else {
+                            nearCache->put(key, value);
+                        }
+                    }
 
                     unmarkRemainingMarkedKeys(markers);
 
@@ -9354,22 +8444,22 @@ namespace hazelcast {
                 EntryVector result;
 
                 for (const ClientMapProxy::PID_TO_KEY_MAP::value_type &partitionDatas : pIdToKeyData) {
-                                typedef std::vector<std::shared_ptr<serialization::pimpl::Data> > SHARED_DATA_VECTOR;
-                                SHARED_DATA_VECTOR nonCachedData;
-                                for (const SHARED_DATA_VECTOR::value_type &keyData : partitionDatas.second) {
-                                                std::shared_ptr<TypedData> cached = nearCache->get(keyData);
-                                                if (cached.get() != NULL && !cached->getData().get() &&
-                                                    internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT !=
-                                                    cached) {
-                                                    serialization::pimpl::Data valueData(*cached->getData());
-                                                    result.push_back(std::make_pair(*keyData, valueData));
-                                                } else if (invalidateOnChange) {
-                                                    markers[keyData] = keyStateMarker->tryMark(*keyData);
-                                                    nonCachedData.push_back(keyData);
-                                                }
-                                            }
-                                nonCachedPidToKeyMap[partitionDatas.first] = nonCachedData;
-                            }
+                    typedef std::vector<std::shared_ptr<serialization::pimpl::Data> > SHARED_DATA_VECTOR;
+                    SHARED_DATA_VECTOR nonCachedData;
+                    for (const SHARED_DATA_VECTOR::value_type &keyData : partitionDatas.second) {
+                        std::shared_ptr<TypedData> cached = nearCache->get(keyData);
+                        if (cached.get() != NULL && !cached->getData().get() &&
+                            internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT !=
+                            cached) {
+                            serialization::pimpl::Data valueData(*cached->getData());
+                            result.push_back(std::make_pair(*keyData, valueData));
+                        } else if (invalidateOnChange) {
+                            markers[keyData] = keyStateMarker->tryMark(*keyData);
+                            nonCachedData.push_back(keyData);
+                        }
+                    }
+                    nonCachedPidToKeyMap[partitionDatas.first] = nonCachedData;
+                }
                 return result;
             }
 
@@ -9401,26 +8491,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/mixedtype/IList.h"
-#include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -9471,23 +8541,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/mixedtype/ClientMapProxy.h"
 
 namespace hazelcast {
     namespace client {
@@ -9513,7 +8566,8 @@ namespace hazelcast {
             std::string ClientMapProxy::addEntryListener(MixedEntryListener &listener, bool includeValue) {
                 impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
-                                getName(), getContext().getClientClusterService(), getContext().getSerializationService(),
+                                getName(), getContext().getClientClusterService(),
+                                getContext().getSerializationService(),
                                 listener,
                                 includeValue);
                 return proxy::IMapImpl::addEntryListener(entryEventHandler, includeValue);
@@ -9521,10 +8575,11 @@ namespace hazelcast {
 
             std::string
             ClientMapProxy::addEntryListener(MixedEntryListener &listener, const query::Predicate &predicate,
-                                       bool includeValue) {
+                                             bool includeValue) {
                 impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
-                                getName(), getContext().getClientClusterService(), getContext().getSerializationService(),
+                                getName(), getContext().getClientClusterService(),
+                                getContext().getSerializationService(),
                                 listener,
                                 includeValue);
                 return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
@@ -9570,7 +8625,8 @@ namespace hazelcast {
                 size_t size = dataResult.size();
                 std::vector<TypedData> values(size);
                 for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> valueData(new serialization::pimpl::Data(dataResult[i]));
+                    std::unique_ptr<serialization::pimpl::Data> valueData(
+                            new serialization::pimpl::Data(dataResult[i]));
                     values[i] = TypedData(valueData, getContext().getSerializationService());
                 }
                 return values;
@@ -9586,7 +8642,8 @@ namespace hazelcast {
                 size_t size = dataResult.size();
                 std::vector<TypedData> values(size);
                 for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> valueData(new serialization::pimpl::Data(dataResult[i]));
+                    std::unique_ptr<serialization::pimpl::Data> valueData(
+                            new serialization::pimpl::Data(dataResult[i]));
                     values[i] = TypedData(valueData, getContext().getSerializationService());
                 }
                 return values;
@@ -9700,14 +8757,14 @@ namespace hazelcast {
             }
 
             bool ClientMapProxy::tryPutInternal(const serialization::pimpl::Data &keyData,
-                                          const serialization::pimpl::Data &valueData,
-                                          long timeoutInMillis) {
+                                                const serialization::pimpl::Data &valueData,
+                                                long timeoutInMillis) {
                 return proxy::IMapImpl::tryPut(keyData, valueData, timeoutInMillis);
             }
 
             std::unique_ptr<serialization::pimpl::Data>
             ClientMapProxy::putInternal(const serialization::pimpl::Data &keyData,
-                                  const serialization::pimpl::Data &valueData, long timeoutInMillis) {
+                                        const serialization::pimpl::Data &valueData, long timeoutInMillis) {
                 return proxy::IMapImpl::putData(keyData, valueData, timeoutInMillis);
             }
 
@@ -9725,14 +8782,14 @@ namespace hazelcast {
             }
 
             bool ClientMapProxy::replaceIfSameInternal(const serialization::pimpl::Data &keyData,
-                                                 const serialization::pimpl::Data &valueData,
-                                                 const serialization::pimpl::Data &newValueData) {
+                                                       const serialization::pimpl::Data &valueData,
+                                                       const serialization::pimpl::Data &newValueData) {
                 return proxy::IMapImpl::replace(keyData, valueData, newValueData);
             }
 
             std::unique_ptr<serialization::pimpl::Data>
             ClientMapProxy::replaceInternal(const serialization::pimpl::Data &keyData,
-                                      const serialization::pimpl::Data &valueData) {
+                                            const serialization::pimpl::Data &valueData) {
                 return proxy::IMapImpl::replaceData(keyData, valueData);
 
             }
@@ -9762,7 +8819,7 @@ namespace hazelcast {
 
             std::unique_ptr<serialization::pimpl::Data>
             ClientMapProxy::executeOnKeyInternal(const serialization::pimpl::Data &keyData,
-                                           const serialization::pimpl::Data &processor) {
+                                                 const serialization::pimpl::Data &processor) {
                 return proxy::IMapImpl::executeOnKeyData(keyData, processor);
             }
 
@@ -9779,26 +8836,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/Address.h"
-#include "hazelcast/util/AddressUtil.h"
-#include "hazelcast/client/cluster/impl/ClusterDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -9807,22 +8844,22 @@ namespace hazelcast {
         const byte Address::IPV4 = 4;
         const byte Address::IPV6 = 6;
 
-        Address::Address():host("localhost"), type(IPV4) {
+        Address::Address() : host("localhost"), type(IPV4) {
         }
 
         Address::Address(const std::string &url, int port)
-        : host(url), port(port), type(IPV4) {
+                : host(url), port(port), type(IPV4) {
         }
 
-        Address::Address(const std::string &hostname, int port,  unsigned long scopeId) : host(hostname), port(port),
+        Address::Address(const std::string &hostname, int port, unsigned long scopeId) : host(hostname), port(port),
                                                                                          type(IPV6), scopeId(scopeId) {
         }
 
-        bool Address::operator ==(const Address &rhs) const {
+        bool Address::operator==(const Address &rhs) const {
             return rhs.port == port && rhs.type == type && 0 == rhs.host.compare(host);
         }
 
-        bool Address::operator !=(const Address &rhs) const {
+        bool Address::operator!=(const Address &rhs) const {
             return !(*this == rhs);
         }
 
@@ -9830,7 +8867,7 @@ namespace hazelcast {
             return port;
         }
 
-        const std::string& Address::getHost() const {
+        const std::string &Address::getHost() const {
             return host;
         }
 
@@ -9845,9 +8882,9 @@ namespace hazelcast {
         void Address::writeData(serialization::ObjectDataOutput &out) const {
             out.writeInt(port);
             out.writeByte(type);
-            int len = (int)host.size();
+            int len = (int) host.size();
             out.writeInt(len);
-            out.writeBytes((const byte *)host.c_str(), len);
+            out.writeBytes((const byte *) host.c_str(), len);
         }
 
         void Address::readData(serialization::ObjectDataInput &in) {
@@ -9892,33 +8929,13 @@ namespace hazelcast {
             return out.str();
         }
 
-        std::ostream &operator <<(std::ostream &stream, const Address &address) {
+        std::ostream &operator<<(std::ostream &stream, const Address &address) {
             return stream << address.toString();
         }
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 23/01/14.
-//
 
-#include "hazelcast/client/MembershipEvent.h"
-#include "hazelcast/client/Cluster.h"
 
 namespace hazelcast {
     namespace client {
@@ -9947,27 +8964,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 8/5/13.
-#include "hazelcast/client/TransactionContext.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
-#include "hazelcast/client/connection/Connection.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -9997,129 +8994,103 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 22/07/14.
-//
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             ClassDefinitionBuilder::ClassDefinitionBuilder(int factoryId, int classId, int version)
-            : factoryId(factoryId)
-            , classId(classId)
-            , version(version)
-            , index(0)
-            , done(false) {
+                    : factoryId(factoryId), classId(classId), version(version), index(0), done(false) {
 
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addIntField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addIntField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_INT);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addLongField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addLongField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_LONG);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addUTFField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addUTFField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_UTF);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addBooleanField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addBooleanField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_BOOLEAN);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addByteField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addByteField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_BYTE);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addCharField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addCharField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_CHAR);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addDoubleField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addDoubleField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_DOUBLE);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addFloatField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addFloatField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_FLOAT);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addShortField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addShortField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_SHORT);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addByteArrayField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addByteArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addBooleanArrayField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addBooleanArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_BOOLEAN_ARRAY);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addCharArrayField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addCharArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addIntArrayField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addIntArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_INT_ARRAY);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addLongArrayField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addLongArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_LONG_ARRAY);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addDoubleArrayField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addDoubleArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addFloatArrayField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addFloatArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_FLOAT_ARRAY);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addShortArrayField(const std::string& fieldName) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addShortArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_SHORT_ARRAY);
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableField(const std::string& fieldName, std::shared_ptr<ClassDefinition> def) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addPortableField(const std::string &fieldName,
+                                                                             std::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
@@ -10131,7 +9102,8 @@ namespace hazelcast {
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableArrayField(const std::string& fieldName, std::shared_ptr<ClassDefinition> def) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addPortableArrayField(const std::string &fieldName,
+                                                                                  std::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
@@ -10143,7 +9115,7 @@ namespace hazelcast {
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addField(FieldDefinition &fieldDefinition) {
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addField(FieldDefinition &fieldDefinition) {
                 check();
                 int defIndex = fieldDefinition.getIndex();
                 if (index != defIndex) {
@@ -10170,11 +9142,13 @@ namespace hazelcast {
 
             void ClassDefinitionBuilder::check() {
                 if (done) {
-                    throw exception::HazelcastSerializationException("ClassDefinitionBuilder::check", "ClassDefinition is already built for " + util::IOUtil::to_string(classId));
+                    throw exception::HazelcastSerializationException("ClassDefinitionBuilder::check",
+                                                                     "ClassDefinition is already built for " +
+                                                                     util::IOUtil::to_string(classId));
                 }
             }
 
-            void ClassDefinitionBuilder::addField(const std::string& fieldName, FieldType const& fieldType) {
+            void ClassDefinitionBuilder::addField(const std::string &fieldName, FieldType const &fieldType) {
                 check();
                 FieldDefinition fieldDefinition(index++, fieldName, fieldType, version);
                 fieldDefinitions.push_back(fieldDefinition);
@@ -10195,21 +9169,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  FieldDefinition.cpp
 //  Server
@@ -10217,39 +9176,24 @@ namespace hazelcast {
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "hazelcast/client/serialization/FieldDefinition.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             FieldDefinition::FieldDefinition()
-            : index(0)
-            , classId(0)
-            , factoryId(0)
-            , version(-1) {
+                    : index(0), classId(0), factoryId(0), version(-1) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int version)
-            : index(index)
-            , fieldName(fieldName)
-            , type(type)
-            , classId(0)
-            , factoryId(0)
-            , version(version) {
+            FieldDefinition::FieldDefinition(int index, const std::string &fieldName, FieldType const &type,
+                                             int version)
+                    : index(index), fieldName(fieldName), type(type), classId(0), factoryId(0), version(version) {
             }
 
             FieldDefinition::FieldDefinition(int index, const std::string &fieldName, FieldType const &type,
                                              int factoryId, int classId, int version)
-            : index(index)
-            , fieldName(fieldName)
-            , type(type)
-            , classId(classId)
-            , factoryId(factoryId)
-            , version(version) {
+                    : index(index), fieldName(fieldName), type(type), classId(classId), factoryId(factoryId),
+                      version(version) {
             }
 
             const FieldType &FieldDefinition::getType() const {
@@ -10272,7 +9216,7 @@ namespace hazelcast {
                 return classId;
             }
 
-            void FieldDefinition::writeData(pimpl::DataOutput& dataOutput) {
+            void FieldDefinition::writeData(pimpl::DataOutput &dataOutput) {
                 dataOutput.writeInt(index);
                 dataOutput.writeUTF(&fieldName);
                 dataOutput.writeByte(type.getId());
@@ -10280,7 +9224,7 @@ namespace hazelcast {
                 dataOutput.writeInt(classId);
             }
 
-            void FieldDefinition::readData(pimpl::DataInput& dataInput) {
+            void FieldDefinition::readData(pimpl::DataInput &dataInput) {
                 index = dataInput.readInt();
                 fieldName = *dataInput.readUTF();
                 type.id = dataInput.readByte();
@@ -10310,21 +9254,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  ObjectDataInput.cpp
 //  Server
@@ -10333,21 +9262,16 @@ namespace hazelcast {
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ObjectDataInput::ObjectDataInput(pimpl::DataInput& dataInput, pimpl::SerializerHolder &serializerHolder)
-            : dataInput(dataInput)
-            , serializerHolder(serializerHolder) {
+            ObjectDataInput::ObjectDataInput(pimpl::DataInput &dataInput, pimpl::SerializerHolder &serializerHolder)
+                    : dataInput(dataInput), serializerHolder(serializerHolder) {
             }
 
-            void ObjectDataInput::readFully(std::vector<byte>& bytes) {
+            void ObjectDataInput::readFully(std::vector<byte> &bytes) {
                 dataInput.readFully(bytes);
             }
 
@@ -10443,20 +9367,20 @@ namespace hazelcast {
                 return dataInput.readUTFPointerArray();
             }
 
-            template <>
-            std::vector<std::string> *ObjectDataInput::getBackwardCompatiblePointer(void *actualData, 
+            template<>
+            std::vector<std::string> *ObjectDataInput::getBackwardCompatiblePointer(void *actualData,
                                                                                     const std::vector<std::string> *typePointer) const {
                 std::unique_ptr<std::vector<std::string> > result(new std::vector<std::string>());
                 typedef std::vector<std::string *> STRING_PONTER_ARRAY;
                 std::vector<std::string *> *data = reinterpret_cast<std::vector<std::string *> *>(actualData);
                 // it is guaranteed that the data will not be null
                 for (STRING_PONTER_ARRAY::value_type value  : *data) {
-                                if ((std::string *) NULL == value) {
-                                    result->push_back("");
-                                } else {
-                                    result->push_back(*value);
-                                }
-                            }
+                    if ((std::string *) NULL == value) {
+                        result->push_back("");
+                    } else {
+                        result->push_back(*value);
+                    }
+                }
                 return result.release();
             }
 
@@ -10474,27 +9398,11 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
 //
 
-#include "hazelcast/client/serialization/FieldType.h"
 
 namespace hazelcast {
     namespace client {
@@ -10502,27 +9410,27 @@ namespace hazelcast {
             FieldType::FieldType() : id(0) {
             }
 
-            FieldType::FieldType(int type) : id((byte)type) {
+            FieldType::FieldType(int type) : id((byte) type) {
             }
 
-            FieldType::FieldType(FieldType const& rhs) : id(rhs.id) {
+            FieldType::FieldType(FieldType const &rhs) : id(rhs.id) {
             }
 
             const byte FieldType::getId() const {
                 return id;
             }
 
-            FieldType& FieldType::operator=(FieldType const& rhs) {
+            FieldType &FieldType::operator=(FieldType const &rhs) {
                 this->id = rhs.id;
                 return (*this);
             }
 
-            bool FieldType::operator==(FieldType const& rhs) const {
+            bool FieldType::operator==(FieldType const &rhs) const {
                 if (id != rhs.id) return false;
                 return true;
             }
 
-            bool FieldType::operator!=(FieldType const& rhs) const {
+            bool FieldType::operator!=(FieldType const &rhs) const {
                 if (id == rhs.id) return false;
                 return true;
             }
@@ -10535,27 +9443,11 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
 //
 
-#include "hazelcast/client/serialization/Serializer.h"
 
 namespace hazelcast {
     namespace client {
@@ -10569,28 +9461,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 8/12/13.
-
-#include "hazelcast/util/Bits.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 
 namespace hazelcast {
     namespace client {
@@ -10695,7 +9565,7 @@ namespace hazelcast {
                 dataOutput->writeIntArray(data);
             }
 
-            void ObjectDataOutput::writeLongArray(const std::vector<int64_t > *data) {
+            void ObjectDataOutput::writeLongArray(const std::vector<int64_t> *data) {
                 if (isEmpty) return;
                 dataOutput->writeLongArray(data);
             }
@@ -10745,12 +9615,12 @@ namespace hazelcast {
                 return dataOutput;
             }
 
-            template <>
+            template<>
             void ObjectDataOutput::writeInternal(const std::vector<std::string> *object,
                                                  std::shared_ptr<StreamSerializer> &streamSerializer) {
                 std::vector<std::string> *stringVector = const_cast<std::vector<std::string> *>(object);
                 std::unique_ptr<std::vector<std::string *> > result(new std::vector<std::string *>());
-                for (std::vector<std::string>::iterator it = stringVector->begin();it != stringVector->end(); ++it) {
+                for (std::vector<std::string>::iterator it = stringVector->begin(); it != stringVector->end(); ++it) {
                     result->push_back(&(*it));
                 }
 
@@ -10760,22 +9630,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
@@ -10803,32 +9657,15 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 8/10/13.
 
-#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableReader::PortableReader(pimpl::PortableContext& context, ObjectDataInput& input, std::shared_ptr<ClassDefinition> cd, bool isDefaultReader)
-            : isDefaultReader(isDefaultReader) {
+            PortableReader::PortableReader(pimpl::PortableContext &context, ObjectDataInput &input,
+                                           std::shared_ptr<ClassDefinition> cd, bool isDefaultReader)
+                    : isDefaultReader(isDefaultReader) {
                 if (isDefaultReader) {
                     defaultPortableReader.reset(new pimpl::DefaultPortableReader(context, input, cd));
                 } else {
@@ -10836,14 +9673,14 @@ namespace hazelcast {
                 }
             }
 
-            PortableReader::PortableReader(const PortableReader& reader)
-            : isDefaultReader(reader.isDefaultReader)
-            , defaultPortableReader(reader.defaultPortableReader.release())
-            , morphingPortableReader(reader.morphingPortableReader.release()) {
+            PortableReader::PortableReader(const PortableReader &reader)
+                    : isDefaultReader(reader.isDefaultReader),
+                      defaultPortableReader(reader.defaultPortableReader.release()),
+                      morphingPortableReader(reader.morphingPortableReader.release()) {
 
             }
 
-            PortableReader& PortableReader::operator=(const PortableReader& reader) {
+            PortableReader &PortableReader::operator=(const PortableReader &reader) {
                 this->isDefaultReader = reader.isDefaultReader;
                 this->defaultPortableReader.reset(reader.defaultPortableReader.release());
                 this->morphingPortableReader.reset(reader.morphingPortableReader.release());
@@ -10953,7 +9790,7 @@ namespace hazelcast {
                 return morphingPortableReader->readShortArray(fieldName);
             }
 
-            ObjectDataInput& PortableReader::getRawDataInput() {
+            ObjectDataInput &PortableReader::getRawDataInput() {
                 if (isDefaultReader)
                     return defaultPortableReader->getRawDataInput();
                 return morphingPortableReader->getRawDataInput();
@@ -10968,21 +9805,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  ClassDefinition.cpp
 //  Server
@@ -10990,30 +9812,23 @@ namespace hazelcast {
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/client/serialization/ClassDefinition.h"
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             ClassDefinition::ClassDefinition()
-            : factoryId(0), classId(0), version(-1)
-            , binary(new std::vector<byte>) {
+                    : factoryId(0), classId(0), version(-1), binary(new std::vector<byte>) {
             }
 
             ClassDefinition::ClassDefinition(int factoryId, int classId, int version)
-            : factoryId(factoryId), classId(classId), version(version)
-            , binary(new std::vector<byte>) {
+                    : factoryId(factoryId), classId(classId), version(version), binary(new std::vector<byte>) {
             }
 
-            void ClassDefinition::addFieldDef(FieldDefinition& fd) {
+            void ClassDefinition::addFieldDef(FieldDefinition &fd) {
                 fieldDefinitionsMap[fd.getName()] = fd;
             }
 
-            const FieldDefinition& ClassDefinition::getField(const char *name) const {
+            const FieldDefinition &ClassDefinition::getField(const char *name) const {
                 std::map<std::string, FieldDefinition>::const_iterator it;
                 it = fieldDefinitionsMap.find(name);
                 if (it != fieldDefinitionsMap.end()) {
@@ -11029,12 +9844,12 @@ namespace hazelcast {
             }
 
             FieldType ClassDefinition::getFieldType(const char *fieldName) const {
-                FieldDefinition const& fd = getField(fieldName);
+                FieldDefinition const &fd = getField(fieldName);
                 return fd.getType();
             }
 
             int ClassDefinition::getFieldCount() const {
-                return (int)fieldDefinitionsMap.size();
+                return (int) fieldDefinitionsMap.size();
             }
 
 
@@ -11056,7 +9871,7 @@ namespace hazelcast {
                 }
             }
 
-            void ClassDefinition::writeData(pimpl::DataOutput& dataOutput) {
+            void ClassDefinition::writeData(pimpl::DataOutput &dataOutput) {
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
                 dataOutput.writeInt(version);
@@ -11067,7 +9882,7 @@ namespace hazelcast {
                 }
             }
 
-            void ClassDefinition::readData(pimpl::DataInput& dataInput) {
+            void ClassDefinition::readData(pimpl::DataInput &dataInput) {
                 factoryId = dataInput.readInt();
                 classId = dataInput.readInt();
                 version = dataInput.readInt();
@@ -11091,10 +9906,12 @@ namespace hazelcast {
             }
 
             std::ostream &operator<<(std::ostream &os, const ClassDefinition &definition) {
-                os << "ClassDefinition{" << "factoryId: " << definition.factoryId << " classId: " << definition.classId << " version: "
+                os << "ClassDefinition{" << "factoryId: " << definition.factoryId << " classId: " << definition.classId
+                   << " version: "
                    << definition.version << " fieldDefinitions: {";
 
-                for (std::map<std::string, FieldDefinition>::const_iterator it = definition.fieldDefinitionsMap.begin(); it != definition.fieldDefinitionsMap.end(); ++it) {
+                for (std::map<std::string, FieldDefinition>::const_iterator it = definition.fieldDefinitionsMap.begin();
+                     it != definition.fieldDefinitionsMap.end(); ++it) {
                     os << it->second;
                 }
                 os << "} }";
@@ -11104,21 +9921,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  Data.cpp
 //  Server
@@ -11126,14 +9928,7 @@ namespace hazelcast {
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/util/Bits.h"
-#include "hazelcast/util/Util.h"
 
-#include <algorithm>
 
 using namespace hazelcast::util;
 
@@ -11155,7 +9950,8 @@ namespace hazelcast {
 
                 Data::Data(std::unique_ptr<std::vector<byte> > &buffer) : Data::Data(std::move(buffer)) {}
 
-                Data::Data(std::unique_ptr<std::vector<byte> > &&buffer) : data(std::move(buffer)), cachedHashValue(-1) {
+                Data::Data(std::unique_ptr<std::vector<byte> > &&buffer) : data(std::move(buffer)),
+                                                                           cachedHashValue(-1) {
                     if (data.get()) {
                         size_t size = data->size();
                         if (size > 0 && size < Data::DATA_OVERHEAD) {
@@ -11224,7 +10020,7 @@ namespace hazelcast {
     }
 }
 
-bool std::less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator() (
+bool std::less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator()(
         const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
         const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept {
     const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
@@ -11244,34 +10040,6 @@ bool std::less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::
     return lhs->hash() < rhs->hash();
 }
 
-
-
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 7/31/13.
-
-
-#include <sstream>
-
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/exception/HazelcastSerializationException.h"
-#include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
-#include "hazelcast/client/serialization/Serializer.h"
-#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -11312,8 +10080,8 @@ namespace hazelcast {
                     active.store(false);
 
                     for (std::shared_ptr<StreamSerializer> serializer : serializers.values()) {
-                                    serializer->destroy();
-                                }
+                        serializer->destroy();
+                    }
 
                     serializers.clear();
                 }
@@ -11331,32 +10099,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 8/7/13.
 
-#include <string.h>
-#include <memory>
-
-
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/Bits.h"
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -11376,7 +10119,7 @@ namespace hazelcast {
                 void DataInput::readFully(std::vector<byte> &bytes) {
                     size_t length = bytes.size();
                     checkAvailable(length);
-                    memcpy(&(bytes[0]), &(buffer[pos]) , length);
+                    memcpy(&(bytes[0]), &(buffer[pos]), length);
                     pos += length;
                 }
 
@@ -11498,8 +10241,8 @@ namespace hazelcast {
                 }
 
                 void DataInput::position(int position) {
-                    if(position > pos){
-                        checkAvailable((size_t)(position - pos));
+                    if (position > pos) {
+                        checkAvailable((size_t) (position - pos));
                     }
                     pos = position;
                 }
@@ -11548,7 +10291,7 @@ namespace hazelcast {
                     for (int32_t i = 0; i < len; ++i) {
                         std::unique_ptr<std::string> value = readUTF();
                         // handle null pointer possibility
-                        if ((std::string *)NULL == value.get()) {
+                        if ((std::string *) NULL == value.get()) {
                             values->push_back(std::string(""));
                         } else {
                             values->push_back(*value);
@@ -11573,8 +10316,8 @@ namespace hazelcast {
                         // clean resources to avoid any leaks
                         typedef std::vector<std::string *> STRING_ARRAY;
                         for (STRING_ARRAY::value_type value  : *values) {
-                                        delete value;
-                                    }
+                            delete value;
+                        }
                         throw;
                     }
                     return values;
@@ -11592,42 +10335,42 @@ namespace hazelcast {
                     }
                 }
 
-                template <>
+                template<>
                 byte DataInput::read() {
                     return readByteUnchecked();
                 }
 
-                template <>
+                template<>
                 char DataInput::read() {
                     return readCharUnchecked();
                 }
 
-                template <>
+                template<>
                 bool DataInput::read() {
                     return readBooleanUnchecked();
                 }
 
-                template <>
+                template<>
                 int16_t DataInput::read() {
                     return readShortUnchecked();
                 }
 
-                template <>
+                template<>
                 int32_t DataInput::read() {
                     return readIntUnchecked();
                 }
 
-                template <>
+                template<>
                 int64_t DataInput::read() {
                     return readLongUnchecked();
                 }
 
-                template <>
+                template<>
                 float DataInput::read() {
                     return readFloatUnchecked();
                 }
 
-                template <>
+                template<>
                 double DataInput::read() {
                     return readDoubleUnchecked();
                 }
@@ -11635,53 +10378,32 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by İhsan Demir on 25/03/15.
-//
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/util/Bits.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, ObjectDataInput& input, std::shared_ptr<ClassDefinition> cd)
-                : cd(cd)
-                , dataInput(input)
-                , serializerHolder(portableContext.getSerializerHolder())
-                , raw(false) {
+                PortableReaderBase::PortableReaderBase(PortableContext &portableContext, ObjectDataInput &input,
+                                                       std::shared_ptr<ClassDefinition> cd)
+                        : cd(cd), dataInput(input), serializerHolder(portableContext.getSerializerHolder()),
+                          raw(false) {
                     int fieldCount;
                     try {
                         // final position after portable is read
                         finalPosition = input.readInt();
                         // field count
                         fieldCount = input.readInt();
-                    } catch (exception::IException& e) {
-                        throw exception::HazelcastSerializationException("[DefaultPortableReader::DefaultPortableReader]", e.what());
+                    } catch (exception::IException &e) {
+                        throw exception::HazelcastSerializationException(
+                                "[DefaultPortableReader::DefaultPortableReader]", e.what());
                     }
                     if (fieldCount != cd->getFieldCount()) {
                         char msg[50];
                         util::hz_snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount,
                                           cd->getFieldCount());
-                        throw new exception::IllegalStateException("[DefaultPortableReader::DefaultPortableReader]", msg);
+                        throw new exception::IllegalStateException("[DefaultPortableReader::DefaultPortableReader]",
+                                                                   msg);
                     }
                     this->offset = input.position();
                 }
@@ -11775,22 +10497,27 @@ namespace hazelcast {
                     return dataInput.readShortArray();
                 }
 
-                void PortableReaderBase::setPosition(char const *fieldName, FieldType const& fieldType) {
+                void PortableReaderBase::setPosition(char const *fieldName, FieldType const &fieldType) {
                     dataInput.position(readPosition(fieldName, fieldType));
                 }
 
-                int PortableReaderBase::readPosition(const char *fieldName, FieldType const& fieldType) {
+                int PortableReaderBase::readPosition(const char *fieldName, FieldType const &fieldType) {
                     if (raw) {
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Cannot read Portable fields after getRawDataInput() is called!");
+                        throw exception::HazelcastSerializationException("PortableReader::getPosition ",
+                                                                         "Cannot read Portable fields after getRawDataInput() is called!");
                     }
                     if (!cd->hasField(fieldName)) {
                         // TODO: if no field def found, java client reads nested position:
                         // readNestedPosition(fieldName, type);
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Don't have a field named " + std::string(fieldName));
+                        throw exception::HazelcastSerializationException("PortableReader::getPosition ",
+                                                                         "Don't have a field named " +
+                                                                         std::string(fieldName));
                     }
 
                     if (cd->getFieldType(fieldName) != fieldType) {
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ", "Field type did not matched for " + std::string(fieldName));
+                        throw exception::HazelcastSerializationException("PortableReader::getPosition ",
+                                                                         "Field type did not matched for " +
+                                                                         std::string(fieldName));
                     }
 
                     dataInput.position(offset + cd->getField(fieldName).getIndex() * util::Bits::INT_SIZE_IN_BYTES);
@@ -11803,7 +10530,7 @@ namespace hazelcast {
                     return pos + util::Bits::SHORT_SIZE_IN_BYTES + len + 1;
                 }
 
-                hazelcast::client::serialization::ObjectDataInput& PortableReaderBase::getRawDataInput() {
+                hazelcast::client::serialization::ObjectDataInput &PortableReaderBase::getRawDataInput() {
                     if (!raw) {
                         dataInput.position(offset + cd->getFieldCount() * util::Bits::INT_SIZE_IN_BYTES);
                         int32_t pos = dataInput.readInt();
@@ -11817,18 +10544,21 @@ namespace hazelcast {
                     dataInput.position(finalPosition);
                 }
 
-                void PortableReaderBase::checkFactoryAndClass(FieldDefinition fd, int32_t factoryId, int32_t classId) const {
+                void
+                PortableReaderBase::checkFactoryAndClass(FieldDefinition fd, int32_t factoryId, int32_t classId) const {
                     if (factoryId != fd.getFactoryId()) {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(),
                                           factoryId);
-                        throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
+                        throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ",
+                                                                         std::string(msg));
                     }
                     if (classId != fd.getClassId()) {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(),
                                           classId);
-                        throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
+                        throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ",
+                                                                         std::string(msg));
                     }
                 }
 
@@ -11837,28 +10567,6 @@ namespace hazelcast {
     }
 }
 
-
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
@@ -12108,21 +10816,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  MorphingPortableReader.cpp
 //  Server
@@ -12130,23 +10823,21 @@ namespace hazelcast {
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "hazelcast/client/serialization/pimpl/MorphingPortableReader.h"
-#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                MorphingPortableReader::MorphingPortableReader(PortableContext&portableContext, ObjectDataInput &input, std::shared_ptr<ClassDefinition> cd)
-                : PortableReaderBase(portableContext, input, cd) {
+                MorphingPortableReader::MorphingPortableReader(PortableContext &portableContext, ObjectDataInput &input,
+                                                               std::shared_ptr<ClassDefinition> cd)
+                        : PortableReaderBase(portableContext, input, cd) {
                 }
 
                 int32_t MorphingPortableReader::readInt(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return 0;
                     }
-                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
+                    const FieldType &currentFieldType = cd->getFieldType(fieldName);
 
                     if (currentFieldType == FieldTypes::TYPE_INT) {
                         return PortableReaderBase::readInt(fieldName);
@@ -12157,15 +10848,16 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
+                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                         "IncompatibleClassChangeError");
                     }
                 }
 
                 int64_t MorphingPortableReader::readLong(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return 0;
                     }
-                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
+                    const FieldType &currentFieldType = cd->getFieldType(fieldName);
 
                     if (currentFieldType == FieldTypes::TYPE_LONG) {
                         return PortableReaderBase::readLong(fieldName);
@@ -12178,26 +10870,27 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
+                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                         "IncompatibleClassChangeError");
                     }
                 }
 
                 bool MorphingPortableReader::readBoolean(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return false;
                     }
                     return PortableReaderBase::readBoolean(fieldName);
                 }
 
                 byte MorphingPortableReader::readByte(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return 0;
                     }
                     return PortableReaderBase::readByte(fieldName);
                 }
 
                 char MorphingPortableReader::readChar(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return 0;
                     }
 
@@ -12205,10 +10898,10 @@ namespace hazelcast {
                 }
 
                 double MorphingPortableReader::readDouble(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return 0.0;
                     }
-                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
+                    const FieldType &currentFieldType = cd->getFieldType(fieldName);
 
                     if (currentFieldType == FieldTypes::TYPE_FLOAT) {
                         return PortableReaderBase::readFloat(fieldName);
@@ -12225,97 +10918,100 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
+                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                         "IncompatibleClassChangeError");
                     }
                 }
 
                 float MorphingPortableReader::readFloat(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return 0.0;
                     }
-                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
+                    const FieldType &currentFieldType = cd->getFieldType(fieldName);
 
                     if (currentFieldType == FieldTypes::TYPE_FLOAT) {
                         return PortableReaderBase::readFloat(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_INT) {
-                        return (float)PortableReaderBase::readInt(fieldName);
+                        return (float) PortableReaderBase::readInt(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
-						return (float)PortableReaderBase::readByte(fieldName);
+                        return (float) PortableReaderBase::readByte(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
-						return (float)PortableReaderBase::readChar(fieldName);
+                        return (float) PortableReaderBase::readChar(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
-						return (float)PortableReaderBase::readShort(fieldName);
+                        return (float) PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
+                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                         "IncompatibleClassChangeError");
                     }
                 }
 
                 int16_t MorphingPortableReader::readShort(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return 0;
                     }
-                    const FieldType& currentFieldType = cd->getFieldType(fieldName);
+                    const FieldType &currentFieldType = cd->getFieldType(fieldName);
 
                     if (currentFieldType == FieldTypes::TYPE_BYTE) {
                         return PortableReaderBase::readByte(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
+                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                         "IncompatibleClassChangeError");
                     }
                 }
 
                 std::unique_ptr<std::string> MorphingPortableReader::readUTF(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return std::unique_ptr<std::string>(new std::string(""));
                     }
                     return PortableReaderBase::readUTF(fieldName);
                 }
 
                 std::unique_ptr<std::vector<byte> > MorphingPortableReader::readByteArray(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return std::unique_ptr<std::vector<byte> >(new std::vector<byte>(1, 0));
                     }
                     return PortableReaderBase::readByteArray(fieldName);
                 }
 
                 std::unique_ptr<std::vector<char> > MorphingPortableReader::readCharArray(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return std::unique_ptr<std::vector<char> >(new std::vector<char>(1, 0));
                     }
                     return PortableReaderBase::readCharArray(fieldName);
                 }
 
                 std::unique_ptr<std::vector<int32_t> > MorphingPortableReader::readIntArray(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return std::unique_ptr<std::vector<int32_t> >(new std::vector<int32_t>(1, 0));
                     }
                     return PortableReaderBase::readIntArray(fieldName);
                 }
 
                 std::unique_ptr<std::vector<int64_t> > MorphingPortableReader::readLongArray(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return std::unique_ptr<std::vector<int64_t> >(new std::vector<int64_t>(1, 0));
                     }
                     return PortableReaderBase::readLongArray(fieldName);
                 }
 
                 std::unique_ptr<std::vector<double> > MorphingPortableReader::readDoubleArray(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return std::unique_ptr<std::vector<double> >(new std::vector<double>(1, 0));
                     }
                     return PortableReaderBase::readDoubleArray(fieldName);
                 }
 
                 std::unique_ptr<std::vector<float> > MorphingPortableReader::readFloatArray(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return std::unique_ptr<std::vector<float> >(new std::vector<float>(1, 0));
                     }
                     return PortableReaderBase::readFloatArray(fieldName);
                 }
 
                 std::unique_ptr<std::vector<int16_t> > MorphingPortableReader::readShortArray(char const *fieldName) {
-                    if (!cd->hasField(fieldName)){
+                    if (!cd->hasField(fieldName)) {
                         return std::unique_ptr<std::vector<int16_t> >(new std::vector<int16_t>(1, 0));
                     }
                     return PortableReaderBase::readShortArray(fieldName);
@@ -12327,25 +11023,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
-
-#include "hazelcast/client/serialization/VersionedPortable.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 
 namespace hazelcast {
     namespace client {
@@ -12356,7 +11033,8 @@ namespace hazelcast {
                     if (const VersionedPortable *versionedPortable = dynamic_cast<const VersionedPortable *>(portable)) {
                         version = versionedPortable->getClassVersion();
                         if (version < 0) {
-                            throw exception::IllegalArgumentException("PortableVersionHelper:getVersion", "Version cannot be negative!");
+                            throw exception::IllegalArgumentException("PortableVersionHelper:getVersion",
+                                                                      "Version cannot be negative!");
                         }
                     }
                     return version;
@@ -12365,21 +11043,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  PortableContext.cpp
 //  Server
@@ -12387,11 +11050,6 @@ namespace hazelcast {
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/SerializationConfig.h"
 
 using namespace hazelcast::util;
 using namespace hazelcast::client::serialization;
@@ -12419,11 +11077,13 @@ namespace hazelcast {
                     getClassDefinitionContext(factoryId).setClassVersion(classId, version);
                 }
 
-                std::shared_ptr<ClassDefinition> PortableContext::lookupClassDefinition(int factoryId, int classId, int version) {
+                std::shared_ptr<ClassDefinition>
+                PortableContext::lookupClassDefinition(int factoryId, int classId, int version) {
                     return getClassDefinitionContext(factoryId).lookup(classId, version);
                 }
 
-                std::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(ObjectDataInput& in, int factoryId, int classId, int version) {
+                std::shared_ptr<ClassDefinition>
+                PortableContext::readClassDefinition(ObjectDataInput &in, int factoryId, int classId, int version) {
                     bool shouldRegister = true;
                     ClassDefinitionBuilder builder(factoryId, classId, version);
 
@@ -12444,7 +11104,7 @@ namespace hazelcast {
                         chars.push_back('\0');
 
                         FieldType type(in.readByte());
-                        std::string name((char *)&(chars[0]));
+                        std::string name((char *) &(chars[0]));
                         int fieldFactoryId = 0;
                         int fieldClassId = 0;
                         int fieldVersion = version;
@@ -12488,15 +11148,20 @@ namespace hazelcast {
                     return classDefinition;
                 }
 
-                std::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(std::shared_ptr<ClassDefinition> cd) {
+                std::shared_ptr<ClassDefinition>
+                PortableContext::registerClassDefinition(std::shared_ptr<ClassDefinition> cd) {
                     return getClassDefinitionContext(cd->getFactoryId()).registerClassDefinition(cd);
                 }
 
-                std::shared_ptr<ClassDefinition> PortableContext::lookupOrRegisterClassDefinition(const Portable& portable) {
-                    int portableVersion = PortableVersionHelper::getVersion(&portable, serializationConfig.getPortableVersion());
-                    std::shared_ptr<ClassDefinition> cd = lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), portableVersion);
+                std::shared_ptr<ClassDefinition>
+                PortableContext::lookupOrRegisterClassDefinition(const Portable &portable) {
+                    int portableVersion = PortableVersionHelper::getVersion(&portable,
+                                                                            serializationConfig.getPortableVersion());
+                    std::shared_ptr<ClassDefinition> cd = lookupClassDefinition(portable.getFactoryId(),
+                                                                                portable.getClassId(), portableVersion);
                     if (cd.get() == NULL) {
-                        ClassDefinitionBuilder classDefinitionBuilder(portable.getFactoryId(), portable.getClassId(), portableVersion);
+                        ClassDefinitionBuilder classDefinitionBuilder(portable.getFactoryId(), portable.getClassId(),
+                                                                      portableVersion);
                         ClassDefinitionWriter cdw(*this, classDefinitionBuilder);
                         PortableWriter portableWriter(&cdw);
                         portable.writePortable(portableWriter);
@@ -12509,15 +11174,16 @@ namespace hazelcast {
                     return serializationConfig.getPortableVersion();
                 }
 
-                SerializerHolder& PortableContext::getSerializerHolder() {
+                SerializerHolder &PortableContext::getSerializerHolder() {
                     return serializerHolder;
                 }
 
-                ClassDefinitionContext& PortableContext::getClassDefinitionContext(int factoryId) {
+                ClassDefinitionContext &PortableContext::getClassDefinitionContext(int factoryId) {
                     std::shared_ptr<ClassDefinitionContext> value = classDefContextMap.get(factoryId);
                     if (value == NULL) {
                         value = std::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(factoryId, this));
-                        std::shared_ptr<ClassDefinitionContext> current = classDefContextMap.putIfAbsent(factoryId, value);
+                        std::shared_ptr<ClassDefinitionContext> current = classDefContextMap.putIfAbsent(factoryId,
+                                                                                                         value);
                         if (current != NULL) {
                             value = current;
                         }
@@ -12538,21 +11204,6 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  SerializationService.cpp
 //  Server
@@ -12560,14 +11211,7 @@ namespace hazelcast {
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include <ostream>
-#include <cassert>
 
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/TypedData.h"
-#include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
-#include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
-#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -12586,14 +11230,14 @@ namespace hazelcast {
                           serializationConfig(serializationConfig) {
                     registerConstantSerializers();
 
-                    std::vector<std::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
+                    std::vector<std::shared_ptr<SerializerBase> > const &serializers = serializationConfig.getSerializers();
                     for (std::vector<std::shared_ptr<SerializerBase> >::const_iterator it = serializers.begin();
                          it < serializers.end(); ++it) {
                         registerSerializer(std::static_pointer_cast<StreamSerializer>(*it));
                     }
                 }
 
-                SerializerHolder& SerializationService::getSerializerHolder() {
+                SerializerHolder &SerializationService::getSerializerHolder() {
                     return portableContext.getSerializerHolder();
                 }
 
@@ -12605,7 +11249,7 @@ namespace hazelcast {
                     return data.dataSize() == 0 && data.getType() == SerializationConstants::CONSTANT_TYPE_NULL;
                 }
 
-               const byte SerializationService::getVersion() const {
+                const byte SerializationService::getVersion() const {
                     return 1;
                 }
 
@@ -12625,7 +11269,7 @@ namespace hazelcast {
                     ObjectDataInput objectDataInput(dataInput, getSerializerHolder());
 
                     if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId ||
-                            SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
+                        SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
                         int32_t objectTypeId = objectDataInput.readInt();
                         assert(type.typeId == objectTypeId);
 
@@ -12675,14 +11319,14 @@ namespace hazelcast {
                     getSerializerHolder().dispose();
                 }
 
-                template <>
+                template<>
                 Data SerializationService::toData(const TypedData *object) {
                     if (!object) {
                         return Data();
                     }
 
                     const std::shared_ptr<Data> data = object->getData();
-                    if ((Data *)NULL == data.get()) {
+                    if ((Data *) NULL == data.get()) {
                         return Data();
                     }
 
@@ -12693,27 +11337,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 8/7/13.
 
-#include "hazelcast/client/serialization/pimpl/DataOutput.h"
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/UTFUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -12723,7 +11347,7 @@ namespace hazelcast {
                 size_t const DataOutput::DEFAULT_SIZE = 4 * 1024;
 
                 DataOutput::DataOutput()
-                : outputStream(new std::vector<byte>()) {
+                        : outputStream(new std::vector<byte>()) {
                     outputStream->reserve(DEFAULT_SIZE);
                 }
 
@@ -12731,12 +11355,11 @@ namespace hazelcast {
                 DataOutput::~DataOutput() {
                 }
 
-                DataOutput::DataOutput(DataOutput const& rhs)
-                {
+                DataOutput::DataOutput(DataOutput const &rhs) {
                     //private
                 }
 
-                DataOutput& DataOutput::operator=(DataOutput const& rhs) {
+                DataOutput &DataOutput::operator=(DataOutput const &rhs) {
                     //private
                     return *this;
                 }
@@ -12746,12 +11369,12 @@ namespace hazelcast {
                     return byteArrayPtr;
                 }
 
-                void DataOutput::write(const std::vector<byte>& bytes) {
+                void DataOutput::write(const std::vector<byte> &bytes) {
                     outputStream->insert(outputStream->end(), bytes.begin(), bytes.end());
                 }
 
                 void DataOutput::writeBoolean(bool i) {
-                    writeByte((byte)i);
+                    writeByte((byte) i);
                 }
 
                 void DataOutput::writeByte(int index, int32_t i) {
@@ -12771,8 +11394,8 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeChar(int32_t i) {
-                    writeByte((byte)(i >> 8));
-                    writeByte((byte)i);
+                    writeByte((byte) (i >> 8));
+                    writeByte((byte) i);
                 }
 
                 void DataOutput::writeInt(int32_t v) {
@@ -12891,7 +11514,7 @@ namespace hazelcast {
 
                 int DataOutput::getUTF8CharCount(const std::string &str) {
                     int size = 0;
-                    for (std::string::const_iterator it = str.begin();it != str.end();++it) {
+                    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
                         // Any additional byte for an UTF character has a bit mask of 10xxxxxx
                         size += (*it & 0xC0) != 0x80;
                     }
@@ -12948,26 +11571,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <cassert>
-
-#include "hazelcast/client/serialization/pimpl/DataSerializer.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -12983,7 +11586,8 @@ namespace hazelcast {
                 void DataSerializer::checkIfIdentifiedDataSerializable(ObjectDataInput &in) const {
                     bool identified = in.readBoolean();
                     if (!identified) {
-                        throw exception::HazelcastSerializationException("void DataSerializer::read", " DataSerializable is not identified");
+                        throw exception::HazelcastSerializationException("void DataSerializer::read",
+                                                                         " DataSerializable is not identified");
                     }
                 }
 
@@ -13018,21 +11622,6 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  PortableReader.cpp
 //  Server
@@ -13040,43 +11629,21 @@ namespace hazelcast {
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include "hazelcast/client/serialization/pimpl/PortableContext.h"
-#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
-#include "hazelcast/client/serialization/pimpl/PortableReaderBase.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DefaultPortableReader::DefaultPortableReader(PortableContext& portableContext,
-                                                             ObjectDataInput& input, std::shared_ptr<ClassDefinition> cd)
-                : PortableReaderBase(portableContext, input, cd) {
+                DefaultPortableReader::DefaultPortableReader(PortableContext &portableContext,
+                                                             ObjectDataInput &input,
+                                                             std::shared_ptr<ClassDefinition> cd)
+                        : PortableReaderBase(portableContext, input, cd) {
                 }
             }
         }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 5/2/13.
-
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
@@ -13084,7 +11651,7 @@ namespace hazelcast {
             namespace pimpl {
 
                 ClassDefinitionContext::ClassDefinitionContext(int factoryId, PortableContext *portableContext)
-                : factoryId(factoryId), portableContext(portableContext) {
+                        : factoryId(factoryId), portableContext(portableContext) {
                 }
 
                 int ClassDefinitionContext::getClassVersion(int classId) {
@@ -13093,11 +11660,13 @@ namespace hazelcast {
                 }
 
                 void ClassDefinitionContext::setClassVersion(int classId, int version) {
-                    std::shared_ptr<int> current = currentClassVersions.putIfAbsent(classId, std::shared_ptr<int>(new int(version)));
+                    std::shared_ptr<int> current = currentClassVersions.putIfAbsent(classId, std::shared_ptr<int>(
+                            new int(version)));
                     if (current != NULL && *current != version) {
                         std::stringstream error;
                         error << "Class-id: " << classId << " is already registered!";
-                        throw exception::IllegalArgumentException("ClassDefinitionContext::setClassVersion", error.str());
+                        throw exception::IllegalArgumentException("ClassDefinitionContext::setClassVersion",
+                                                                  error.str());
                     }
                 }
 
@@ -13107,7 +11676,8 @@ namespace hazelcast {
 
                 }
 
-                std::shared_ptr<ClassDefinition> ClassDefinitionContext::registerClassDefinition(std::shared_ptr<ClassDefinition> cd) {
+                std::shared_ptr<ClassDefinition>
+                ClassDefinitionContext::registerClassDefinition(std::shared_ptr<ClassDefinition> cd) {
                     if (cd.get() == NULL) {
                         return std::shared_ptr<ClassDefinition>();
                     }
@@ -13137,7 +11707,7 @@ namespace hazelcast {
                 }
 
                 int64_t ClassDefinitionContext::combineToLong(int x, int y) const {
-                    return ((int64_t)x) << 32 | (((int64_t)y) & 0xFFFFFFFL);
+                    return ((int64_t) x) << 32 | (((int64_t) y) & 0xFFFFFFFL);
                 }
 
             }
@@ -13145,21 +11715,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  PortableWriter.cpp
 //  Server
@@ -13168,24 +11723,17 @@ namespace hazelcast {
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include <string.h>
-#include "hazelcast/client/exception/HazelcastSerializationException.h"
-#include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
-#include "hazelcast/client/serialization/ClassDefinition.h"
-#include "hazelcast/client/serialization/pimpl/PortableContext.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DefaultPortableWriter::DefaultPortableWriter(PortableContext& portableContext, std::shared_ptr<ClassDefinition> cd, ObjectDataOutput &output)
-                : raw(false)
-                , serializerHolder(portableContext.getSerializerHolder())
-                , dataOutput(*output.getDataOutput())
-                , objectDataOutput(output)
-                , begin(dataOutput.position())
-                , cd(cd) {
+                DefaultPortableWriter::DefaultPortableWriter(PortableContext &portableContext,
+                                                             std::shared_ptr<ClassDefinition> cd,
+                                                             ObjectDataOutput &output)
+                        : raw(false), serializerHolder(portableContext.getSerializerHolder()),
+                          dataOutput(*output.getDataOutput()), objectDataOutput(output), begin(dataOutput.position()),
+                          cd(cd) {
                     // room for final offset
                     dataOutput.writeZeroBytes(4);
 
@@ -13282,25 +11830,28 @@ namespace hazelcast {
                     dataOutput.writeDoubleArray(data);
                 }
 
-                FieldDefinition const& DefaultPortableWriter::setPosition(const char *fieldName, FieldType fieldType) {
+                FieldDefinition const &DefaultPortableWriter::setPosition(const char *fieldName, FieldType fieldType) {
                     if (raw) {
-                        throw exception::HazelcastSerializationException("PortableWriter::setPosition", "Cannot write Portable fields after getRawDataOutput() is called!");
+                        throw exception::HazelcastSerializationException("PortableWriter::setPosition",
+                                                                         "Cannot write Portable fields after getRawDataOutput() is called!");
                     }
 
                     try {
-                        FieldDefinition const& fd = cd->getField(fieldName);
+                        FieldDefinition const &fd = cd->getField(fieldName);
 
                         if (writtenFields.count(fieldName) != 0) {
-                            throw exception::HazelcastSerializationException("PortableWriter::setPosition", "Field '" + std::string(fieldName) + "' has already been written!");
+                            throw exception::HazelcastSerializationException("PortableWriter::setPosition",
+                                                                             "Field '" + std::string(fieldName) +
+                                                                             "' has already been written!");
                         }
 
                         writtenFields.insert(fieldName);
                         size_t pos = dataOutput.position();
                         int32_t index = fd.getIndex();
-                        dataOutput.writeInt((int32_t)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int32_t)pos);
+                        dataOutput.writeInt((int32_t) (offset + index * util::Bits::INT_SIZE_IN_BYTES), (int32_t) pos);
                         size_t nameLen = strlen(fieldName);
                         dataOutput.writeShort(nameLen);
-                        dataOutput.writeBytes((byte *)fieldName, nameLen);
+                        dataOutput.writeBytes((byte *) fieldName, nameLen);
                         dataOutput.writeByte(fieldType.getId());
 
                         return fd;
@@ -13311,7 +11862,7 @@ namespace hazelcast {
                         error << "' for ClassDefinition {class id: " << util::IOUtil::to_string(cd->getClassId());
                         error << ", factoryId:" + util::IOUtil::to_string(cd->getFactoryId());
                         error << ", version: " << util::IOUtil::to_string(cd->getVersion()) << "}. Error:";
-						error << iae.what();
+                        error << iae.what();
 
                         throw exception::HazelcastSerializationException("PortableWriter::setPosition", error.str());
                     }
@@ -13319,60 +11870,50 @@ namespace hazelcast {
                 }
 
 
-                ObjectDataOutput& DefaultPortableWriter::getRawDataOutput() {
+                ObjectDataOutput &DefaultPortableWriter::getRawDataOutput() {
                     if (!raw) {
                         size_t pos = dataOutput.position();
                         int32_t index = cd->getFieldCount(); // last index
-                        dataOutput.writeInt((int32_t)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int32_t)pos);
+                        dataOutput.writeInt((int32_t) (offset + index * util::Bits::INT_SIZE_IN_BYTES), (int32_t) pos);
                     }
                     raw = true;
                     return objectDataOutput;
                 }
 
                 void DefaultPortableWriter::end() {
-                    dataOutput.writeInt((int32_t)begin, (int32_t)dataOutput.position()); // write final offset
+                    dataOutput.writeInt((int32_t) begin, (int32_t) dataOutput.position()); // write final offset
                 }
 
-                void DefaultPortableWriter::write(const Portable& p) {
+                void DefaultPortableWriter::write(const Portable &p) {
                     std::shared_ptr<PortableSerializer> serializer = std::static_pointer_cast<PortableSerializer>(
                             serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
                     serializer->writeInternal(objectDataOutput, &p);
                 }
 
 
-                void DefaultPortableWriter::checkPortableAttributes(const FieldDefinition& fd, const Portable& portable) {
+                void
+                DefaultPortableWriter::checkPortableAttributes(const FieldDefinition &fd, const Portable &portable) {
                     if (fd.getFactoryId() != portable.getFactoryId()) {
                         std::stringstream errorMessage;
                         errorMessage << "Wrong Portable type! Templated portable types are not supported! "
-                        << " Expected factory-id: " << fd.getFactoryId() << ", Actual factory-id: " << portable.getFactoryId();
-                        throw exception::HazelcastSerializationException("DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
+                                     << " Expected factory-id: " << fd.getFactoryId() << ", Actual factory-id: "
+                                     << portable.getFactoryId();
+                        throw exception::HazelcastSerializationException(
+                                "DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
                     }
                     if (fd.getClassId() != portable.getClassId()) {
                         std::stringstream errorMessage;
                         errorMessage << "Wrong Portable type! Templated portable types are not supported! "
-                        << "Expected class-id: " << fd.getClassId() << ", Actual class-id: " << portable.getClassId();
-                        throw exception::HazelcastSerializationException("DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
+                                     << "Expected class-id: " << fd.getClassId() << ", Actual class-id: "
+                                     << portable.getClassId();
+                        throw exception::HazelcastSerializationException(
+                                "DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
                     }
                 }
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  ClassDefinitionWriter.cpp
 //  Server
@@ -13381,15 +11922,14 @@ namespace hazelcast {
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                ClassDefinitionWriter::ClassDefinitionWriter(PortableContext& portableContext, ClassDefinitionBuilder& builder)
-                : builder(builder)
-                , context(portableContext) {
+                ClassDefinitionWriter::ClassDefinitionWriter(PortableContext &portableContext,
+                                                             ClassDefinitionBuilder &builder)
+                        : builder(builder), context(portableContext) {
                 }
 
                 std::shared_ptr<ClassDefinition> ClassDefinitionWriter::registerAndGet() {
@@ -13468,7 +12008,7 @@ namespace hazelcast {
                     builder.addShortArrayField(fieldName);
                 }
 
-                ObjectDataOutput& ClassDefinitionWriter::getRawDataOutput() {
+                ObjectDataOutput &ClassDefinitionWriter::getRawDataOutput() {
                     return emptyDataOutput;
                 }
 
@@ -13476,7 +12016,7 @@ namespace hazelcast {
 
                 }
 
-                std::shared_ptr<ClassDefinition> ClassDefinitionWriter::createNestedClassDef(const Portable& portable) {
+                std::shared_ptr<ClassDefinition> ClassDefinitionWriter::createNestedClassDef(const Portable &portable) {
                     int version = pimpl::PortableVersionHelper::getVersion(&portable, context.getVersion());
                     ClassDefinitionBuilder definitionBuilder(portable.getFactoryId(), portable.getClassId(), version);
 
@@ -13489,21 +12029,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 //  PortableSerializer.cpp
 //  Server
@@ -13511,23 +12036,14 @@ namespace hazelcast {
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include <cassert>
 
-#include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
-#include "hazelcast/client/serialization/pimpl/PortableContext.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
-#include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableSerializer::PortableSerializer(PortableContext& portableContext)
-                : context(portableContext) {
+                PortableSerializer::PortableSerializer(PortableContext &portableContext)
+                        : context(portableContext) {
                 }
 
                 void
@@ -13541,14 +12057,17 @@ namespace hazelcast {
                     reader.end();
                 }
 
-                PortableReader PortableSerializer::createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const {
+                PortableReader
+                PortableSerializer::createReader(ObjectDataInput &input, int factoryId, int classId, int version,
+                                                 int portableVersion) const {
 
                     int effectiveVersion = version;
                     if (version < 0) {
                         effectiveVersion = context.getVersion();
                     }
 
-                    std::shared_ptr<ClassDefinition> cd = context.lookupClassDefinition(factoryId, classId, effectiveVersion);
+                    std::shared_ptr<ClassDefinition> cd = context.lookupClassDefinition(factoryId, classId,
+                                                                                        effectiveVersion);
                     if (cd == NULL) {
                         int begin = input.position();
                         cd = context.readClassDefinition(input, factoryId, classId, effectiveVersion);
@@ -13564,7 +12083,8 @@ namespace hazelcast {
                     }
                 }
 
-                int PortableSerializer::findPortableVersion(int factoryId, int classId, const Portable& portable) const {
+                int
+                PortableSerializer::findPortableVersion(int factoryId, int classId, const Portable &portable) const {
                     int currentVersion = context.getClassVersion(factoryId, classId);
                     if (currentVersion < 0) {
                         currentVersion = PortableVersionHelper::getVersion(&portable, context.getVersion());
@@ -13581,7 +12101,7 @@ namespace hazelcast {
                             context.getSerializationConfig().getPortableFactories();
                     std::map<int, std::shared_ptr<hazelcast::client::serialization::PortableFactory> >::const_iterator factoryIt =
                             portableFactories.find(factoryId);
-                    
+
                     if (portableFactories.end() == factoryIt) {
                         return std::unique_ptr<Portable>();
                     }
@@ -13631,37 +12151,17 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 //
 
-#include "hazelcast/client/serialization/TypeIDS.h"
-#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/serialization/Portable.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            int32_t getHazelcastTypeId(const Portable* portable) {
+            int32_t getHazelcastTypeId(const Portable *portable) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE;
             }
 
-            int32_t getHazelcastTypeId(const IdentifiedDataSerializable* identifiedDataSerializable) {
+            int32_t getHazelcastTypeId(const IdentifiedDataSerializable *identifiedDataSerializable) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_DATA;
             }
 
@@ -13752,42 +12252,18 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 8/10/13.
-
-
-
-#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             PortableWriter::PortableWriter(pimpl::DefaultPortableWriter *defaultPortableWriter)
-            :defaultPortableWriter(defaultPortableWriter)
-            , classDefinitionWriter(NULL)
-            , isDefaultWriter(true) {
+                    : defaultPortableWriter(defaultPortableWriter), classDefinitionWriter(NULL), isDefaultWriter(true) {
 
             }
 
             PortableWriter::PortableWriter(pimpl::ClassDefinitionWriter *classDefinitionWriter)
-            :defaultPortableWriter(NULL)
-            , classDefinitionWriter(classDefinitionWriter)
-            , isDefaultWriter(false) {
+                    : defaultPortableWriter(NULL), classDefinitionWriter(classDefinitionWriter),
+                      isDefaultWriter(false) {
 
             }
 
@@ -13857,13 +12333,13 @@ namespace hazelcast {
                 return classDefinitionWriter->writeBooleanArray(fieldName, data);
             }
 
-            void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char > *data) {
+            void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char> *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeCharArray(fieldName, data);
                 return classDefinitionWriter->writeCharArray(fieldName, data);
             }
 
-            void PortableWriter::writeShortArray(const char *fieldName, const std::vector<int16_t > *data) {
+            void PortableWriter::writeShortArray(const char *fieldName, const std::vector<int16_t> *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeShortArray(fieldName, data);
                 return classDefinitionWriter->writeShortArray(fieldName, data);
@@ -13899,7 +12375,7 @@ namespace hazelcast {
                 return classDefinitionWriter->end();
             }
 
-            ObjectDataOutput& PortableWriter::getRawDataOutput() {
+            ObjectDataOutput &PortableWriter::getRawDataOutput() {
                 if (isDefaultWriter)
                     return defaultPortableWriter->getRawDataOutput();
                 return classDefinitionWriter->getRawDataOutput();
@@ -13910,50 +12386,13 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/SocketInterceptor.h"
-
 namespace hazelcast {
     namespace client {
         SocketInterceptor::~SocketInterceptor() {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 28/01/14.
-//
 
-#include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/Cluster.h"
 
 namespace hazelcast {
     namespace client {
@@ -13978,22 +12417,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/LoadBalancer.h"
 
 namespace hazelcast {
     namespace client {
@@ -14001,22 +12424,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/internal/nearcache/impl/record/NearCacheDataRecord.h"
 
 namespace hazelcast {
     namespace client {
@@ -14037,22 +12444,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 
 namespace hazelcast {
     namespace client {
@@ -14104,24 +12495,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
-#include "hazelcast/util/HashUtil.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
@@ -14162,7 +12535,8 @@ namespace hazelcast {
                         }
                     }
 
-                    bool KeyStateMarkerImpl::casState(const serialization::pimpl::Data &key, STATE expect, STATE update) {
+                    bool
+                    KeyStateMarkerImpl::casState(const serialization::pimpl::Data &key, STATE expect, STATE update) {
                         int slot = getSlot(key);
                         int expected = expect;
                         return marks[slot].compare_exchange_strong(expected, update);
@@ -14177,22 +12551,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 
 namespace hazelcast {
     namespace client {
@@ -14222,37 +12580,13 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/internal/socket/SocketFactory.h"
-#include "hazelcast/client/config/SSLConfig.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/client/spi/ClientContext.h"
 
 #ifdef HZ_BUILD_WITH_SSL
-#include "hazelcast/client/internal/socket/SSLSocket.h"
 #endif // HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
+#pragma warning(disable: 4996) //for strerror
 #endif
 
 namespace hazelcast {
@@ -14263,7 +12597,7 @@ namespace hazelcast {
                 }
 
                 bool SocketFactory::start() {
-                    #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                     const client::config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
                     if (sslConfig.isEnabled()) {
                         sslContext = std::unique_ptr<asio::ssl::context>(new asio::ssl::context(
@@ -14279,7 +12613,7 @@ namespace hazelcast {
                             if (ec) {
                                 logger.warning(
                                         std::string("SocketFactory::start: Failed to load CA "
-                                                            "verify file at ") + *it + " "
+                                                    "verify file at ") + *it + " "
                                         + ec.message());
                                 success = false;
                             }
@@ -14288,8 +12622,8 @@ namespace hazelcast {
                         if (!success) {
                             sslContext.reset();
                             logger.warning("SocketFactory::start: Failed to load one or more "
-                                                                       "configured CA verify files (PEM files). Please "
-                                                                       "correct the files and retry.");
+                                           "configured CA verify files (PEM files). Please "
+                                           "correct the files and retry.");
                             return false;
                         }
 
@@ -14299,30 +12633,30 @@ namespace hazelcast {
                             if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
                                 logger.warning(
                                         std::string("SocketFactory::start: Could not load any "
-                                                            "of the ciphers in the config provided "
-                                                            "ciphers:") + cipherList);
+                                                    "of the ciphers in the config provided "
+                                                    "ciphers:") + cipherList);
                                 return false;
                             }
                         }
 
                     }
-                    #else
+#else
                     (void) clientContext;
-                    #endif
+#endif
 
                     return true;
                 }
 
                 std::unique_ptr<Socket> SocketFactory::create(const Address &address) {
-                    #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
                         return std::unique_ptr<Socket>(new internal::socket::SSLSocket(ioService, *sslContext, address,
                                                                                        clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                     }
-                    #endif
+#endif
 
                     return std::unique_ptr<Socket>(new internal::socket::TcpSocket(address,
-                            &clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
+                                                                                   &clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                 }
             }
         }
@@ -14332,36 +12666,11 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 #ifdef HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <winsock2.h>
 #endif
 
-#include "hazelcast/client/internal/socket/SSLSocket.h"
-#include "hazelcast/client/config/SSLConfig.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/IOUtil.h"
-
-#include <iostream>
-#include <cstdlib>
-#include <string.h>
-#include <functional>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -14630,34 +12939,11 @@ namespace hazelcast {
 #endif
 
 #endif // HZ_BUILD_WITH_SSL
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/Util.h"
 
-#include <iostream>
-#include <cassert>
-#include <cstdlib>
-#include <string.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
+#pragma warning(disable: 4996) //for strerror
 #endif
 
 namespace hazelcast {
@@ -14666,10 +12952,10 @@ namespace hazelcast {
             namespace socket {
                 TcpSocket::TcpSocket(const client::Address &address, const client::config::SocketOptions *socketOptions)
                         : configAddress(address) {
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     int n = WSAStartup(MAKEWORD(2, 0), &wsa_data);
                     if(n == -1) throw exception::IOException("TcpSocket::TcpSocket ", "WSAStartup error");
-                    #endif
+#endif
                     struct addrinfo hints;
                     memset(&hints, 0, sizeof(hints));
                     hints.ai_family = AF_UNSPEC;
@@ -14700,10 +12986,10 @@ namespace hazelcast {
 
                 TcpSocket::TcpSocket(int socketId)
                         : serverInfo(NULL), socketId(socketId), isOpen(true) {
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
                     if(n == -1) throw exception::IOException("TcpSocket::TcpSocket ", "WSAStartup error");
-                    #endif
+#endif
                 }
 
                 TcpSocket::~TcpSocket() {
@@ -14715,13 +13001,13 @@ namespace hazelcast {
                     setBlocking(false);
 
                     if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen)) {
-                        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                         int error = WSAGetLastError();
                         if (WSAEWOULDBLOCK != error && WSAEINPROGRESS != error && WSAEALREADY != error) {
-                        #else
+#else
                         int error = errno;
                         if (EINPROGRESS != error && EALREADY != error) {
-                            #endif
+#endif
                             throwIOException(error, "connect",
                                              "Failed to connect the socket. Error at ::connect system call.");
                         }
@@ -14739,11 +13025,11 @@ namespace hazelcast {
                     if (select(socketId + 1, NULL, &mySet, &err, &tv) > 0) {
                         return 0;
                     }
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     int error = WSAGetLastError();
-                    #else
+#else
                     int error = errno;
-                    #endif
+#endif
 
                     if (error) {
                         throwIOException(error, "connect",
@@ -14759,7 +13045,7 @@ namespace hazelcast {
                 }
 
                 void TcpSocket::setBlocking(bool blocking) {
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     unsigned long iMode;
                     if(blocking){
                         iMode = 0l;
@@ -14772,7 +13058,7 @@ namespace hazelcast {
                         util::strerror_s(error, errorMsg, 200, "Failed to set the blocking mode.");
                         throw client::exception::IOException("TcpSocket::setBlocking", errorMsg);
                     }
-                    #else
+#else
                     int arg = fcntl(socketId, F_GETFL, NULL);
                     if (-1 == arg) {
                         char errorMsg[200];
@@ -14789,13 +13075,13 @@ namespace hazelcast {
                         util::strerror_s(errno, errorMsg, 200, "Could not set the blocking value of socket flags.");
                         throw client::exception::IOException("TcpSocket::setBlocking", errorMsg);
                     }
-                    #endif
+#endif
                 }
 
                 int TcpSocket::send(const void *buffer, int len, int flag) {
-                    #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
+#if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
-                    #endif
+#endif
 
                     int bytesSend = 0;
                     /**
@@ -14811,13 +13097,13 @@ namespace hazelcast {
                     }
 
                     if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, MSG_NOSIGNAL)) == -1) {
-                        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                         int error = WSAGetLastError();
                         if (WSAEWOULDBLOCK == error) {
-                        #else
+#else
                         int error = errno;
                         if (EAGAIN == error) {
-                        #endif
+#endif
                             if (flag == MSG_WAITALL) {
                                 setBlocking(false);
                             }
@@ -14836,20 +13122,20 @@ namespace hazelcast {
                 }
 
                 int TcpSocket::receive(void *buffer, int len, int flag) {
-                    #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
+#if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
-                    #endif
+#endif
 
                     int size = ::recv(socketId, (char *) buffer, (size_t) len, flag);
 
                     if (size == -1) {
-                        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                         int error = WSAGetLastError();
                         if (WSAEWOULDBLOCK == error) {
-                        #else
+#else
                         int error = errno;
                         if (EAGAIN == error) {
-                        #endif
+#endif
                             return 0;
                         }
 
@@ -14879,27 +13165,27 @@ namespace hazelcast {
                         if (serverInfo != NULL)
                             ::freeaddrinfo(serverInfo);
 
-                        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                         ::shutdown(socketId, SD_RECEIVE);
                         char buffer[1];
                         ::recv(socketId, buffer, 1, MSG_WAITALL);
                         WSACleanup();
                         closesocket(socketId);
-                        #else
+#else
                         ::shutdown(socketId, SHUT_RD);
                         char buffer[1];
                         ::recv(socketId, buffer, 1, MSG_WAITALL);
                         ::close(socketId);
-                        #endif
+#endif
                     }
                 }
 
                 void TcpSocket::throwIOException(const char *methodName, const char *prefix) const {
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     int error = WSAGetLastError();
-                    #else
+#else
                     int error = errno;
-                    #endif
+#endif
 
                     throwIOException(error, methodName, prefix);
                 }
@@ -14959,12 +13245,12 @@ namespace hazelcast {
                         }
                     }
 
-                    #if defined(SO_NOSIGPIPE)
+#if defined(SO_NOSIGPIPE)
                     optionValue = 1;
                     if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, (char *) &optionValue, sizeof(optionValue))) {
                         throwIOException("TcpSocket", "Failed to set socket option SO_NOSIGPIPE.");
                     }
-                    #endif
+#endif
 
                 }
             }
@@ -14975,22 +13261,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/internal/eviction/EvictionChecker.h"
 
 namespace hazelcast {
     namespace client {
@@ -15008,22 +13278,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/Client.h"
 
 namespace hazelcast {
     namespace client {
@@ -15035,39 +13289,15 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 8/2/13.
 
-
-
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/TransactionOptions.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
 
 #define SECONDS_IN_A_MINUTE     60
 
 namespace hazelcast {
     namespace client {
         TransactionOptions::TransactionOptions()
-        : timeoutSeconds(2 * SECONDS_IN_A_MINUTE)//2 minutes
-        , durability(1)
-        , transactionType(TransactionType::TWO_PHASE) {
+                : timeoutSeconds(2 * SECONDS_IN_A_MINUTE)//2 minutes
+                , durability(1), transactionType(TransactionType::TWO_PHASE) {
 
         }
 
@@ -15098,7 +13328,8 @@ namespace hazelcast {
 
         TransactionOptions &TransactionOptions::setDurability(int durability) {
             if (durability < 0) {
-                throw exception::IllegalStateException("TransactionOptions::setDurability", "Durability cannot be negative!");
+                throw exception::IllegalStateException("TransactionOptions::setDurability",
+                                                       "Durability cannot be negative!");
             }
             this->durability = durability;
             return *this;
@@ -15108,14 +13339,14 @@ namespace hazelcast {
             return timeoutSeconds * 1000;
         }
 
-        TransactionType::TransactionType(Type value):value(value) {
+        TransactionType::TransactionType(Type value) : value(value) {
         }
 
         TransactionType::operator int() const {
             return value;
         }
 
-        void TransactionType::operator = (int i) {
+        void TransactionType::operator=(int i) {
             if (i == TWO_PHASE) {
                 value = TWO_PHASE;
             } else {
@@ -15124,26 +13355,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
-#include "hazelcast/client/topic/impl/TopicDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -15154,8 +13365,10 @@ namespace hazelcast {
                     }
 
                     ReliableTopicMessage::ReliableTopicMessage(
-                            hazelcast::client::serialization::pimpl::Data payloadData, std::unique_ptr<Address> &address)
-                            : publishTime(util::currentTimeMillis()), publisherAddress(std::move(address)), payload(payloadData) {
+                            hazelcast::client::serialization::pimpl::Data payloadData,
+                            std::unique_ptr<Address> &address)
+                            : publishTime(util::currentTimeMillis()), publisherAddress(std::move(address)),
+                              payload(payloadData) {
                     }
 
                     int64_t ReliableTopicMessage::getPublishTime() const {
@@ -15195,34 +13408,17 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
-#include "hazelcast/client/proxy/ClientRingbufferProxy.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 
 namespace hazelcast {
     namespace client {
         namespace topic {
             namespace impl {
                 namespace reliable {
-                    ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb, util::ILogger &logger)
-                    : ringbuffer(rb), runnerThread(std::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown)), logger),
-                      q(10), shutdown(false) {
+                    ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb,
+                                                                 util::ILogger &logger)
+                            : ringbuffer(rb),
+                              runnerThread(std::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown)), logger),
+                              q(10), shutdown(false) {
                     }
 
                     ReliableTopicExecutor::~ReliableTopicExecutor() {
@@ -15261,17 +13457,19 @@ namespace hazelcast {
                             try {
                                 proxy::ClientRingbufferProxy<ReliableTopicMessage> &ringbuffer =
                                         static_cast<proxy::ClientRingbufferProxy<ReliableTopicMessage> &>(rb);
-                                std::shared_ptr<spi::impl::ClientInvocationFuture> future = ringbuffer.readManyAsync(m.sequence, 1, m.maxCount);
+                                std::shared_ptr<spi::impl::ClientInvocationFuture> future = ringbuffer.readManyAsync(
+                                        m.sequence, 1, m.maxCount);
                                 std::shared_ptr<protocol::ClientMessage> responseMsg;
                                 do {
                                     if (future->get(1000, TimeUnit::MILLISECONDS())) {
                                         responseMsg = future->get(); // every one second
                                     }
-                                } while (!shutdown && (protocol::ClientMessage *)NULL == responseMsg.get());
+                                } while (!shutdown && (protocol::ClientMessage *) NULL == responseMsg.get());
 
                                 if (!shutdown) {
-                                    std::shared_ptr<DataArray<ReliableTopicMessage> > allMessages(ringbuffer.getReadManyAsyncResponseObject(
-                                            responseMsg));
+                                    std::shared_ptr<DataArray<ReliableTopicMessage> > allMessages(
+                                            ringbuffer.getReadManyAsyncResponseObject(
+                                                    responseMsg));
 
                                     m.callback->onResponse(allMessages);
                                 }
@@ -15297,42 +13495,13 @@ namespace hazelcast {
 }
 
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
  * ClientMessage.cpp
  *
  *  Created on: Mar 17, 2015
  *      Author: ihsan
  */
 
-#include <cassert>
 
-#include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/Member.h"
-#include "hazelcast/client/map/DataEntryView.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -15536,9 +13705,10 @@ namespace hazelcast {
                 assert(checkReadAvailable(len));
 
                 byte *start = ix();
-                std::unique_ptr<std::vector<byte> > bytes = std::unique_ptr<std::vector<byte> >(new std::vector<byte>(start,
-                                                                                                                  start +
-                                                                                                                  len));
+                std::unique_ptr<std::vector<byte> > bytes = std::unique_ptr<std::vector<byte> >(
+                        new std::vector<byte>(start,
+                                              start +
+                                              len));
                 index += len;
 
                 return serialization::pimpl::Data(bytes);
@@ -15696,33 +13866,11 @@ namespace hazelcast {
     }
 }
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
  *
  *  Created on: May 17, 2016
  *      Author: ihsan
  */
 
-#include "hazelcast/client/protocol/ClientExceptionFactory.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -15731,7 +13879,8 @@ namespace hazelcast {
             }
 
             ClientExceptionFactory::ClientExceptionFactory() {
-                registerException(ARRAY_INDEX_OUT_OF_BOUNDS, new ExceptionFactoryImpl<exception::ArrayIndexOutOfBoundsException>());
+                registerException(ARRAY_INDEX_OUT_OF_BOUNDS,
+                                  new ExceptionFactoryImpl<exception::ArrayIndexOutOfBoundsException>());
                 registerException(ARRAY_STORE, new ExceptionFactoryImpl<exception::ArrayStoreException>());
                 registerException(AUTHENTICATIONERROR, new ExceptionFactoryImpl<exception::AuthenticationException>());
                 registerException(CACHE_NOT_EXISTS, new ExceptionFactoryImpl<exception::CacheNotExistsException>());
@@ -15739,72 +13888,99 @@ namespace hazelcast {
                 registerException(CANCELLATION, new ExceptionFactoryImpl<exception::CancellationException>());
                 registerException(CLASS_CAST, new ExceptionFactoryImpl<exception::ClassCastException>());
                 registerException(CLASS_NOT_FOUND, new ExceptionFactoryImpl<exception::ClassNotFoundException>());
-                registerException(CONCURRENT_MODIFICATION, new ExceptionFactoryImpl<exception::ConcurrentModificationException>());
+                registerException(CONCURRENT_MODIFICATION,
+                                  new ExceptionFactoryImpl<exception::ConcurrentModificationException>());
                 registerException(CONFIG_MISMATCH, new ExceptionFactoryImpl<exception::ConfigMismatchException>());
                 registerException(CONFIGURATION, new ExceptionFactoryImpl<exception::ConfigurationException>());
-                registerException(DISTRIBUTED_OBJECT_DESTROYED, new ExceptionFactoryImpl<exception::DistributedObjectDestroyedException>());
-                registerException(DUPLICATE_INSTANCE_NAME, new ExceptionFactoryImpl<exception::DuplicateInstanceNameException>());
+                registerException(DISTRIBUTED_OBJECT_DESTROYED,
+                                  new ExceptionFactoryImpl<exception::DistributedObjectDestroyedException>());
+                registerException(DUPLICATE_INSTANCE_NAME,
+                                  new ExceptionFactoryImpl<exception::DuplicateInstanceNameException>());
                 registerException(ENDOFFILE, new ExceptionFactoryImpl<exception::EOFException>());
                 registerException(EXECUTION, new ExceptionFactoryImpl<exception::ExecutionException>());
                 registerException(HAZELCAST, new ExceptionFactoryImpl<exception::HazelcastException>());
-                registerException(HAZELCAST_INSTANCE_NOT_ACTIVE, new ExceptionFactoryImpl<exception::HazelcastInstanceNotActiveException>());
-                registerException(HAZELCAST_OVERLOAD, new ExceptionFactoryImpl<exception::HazelcastOverloadException>());
-                registerException(HAZELCAST_SERIALIZATION, new ExceptionFactoryImpl<exception::HazelcastSerializationException>());
+                registerException(HAZELCAST_INSTANCE_NOT_ACTIVE,
+                                  new ExceptionFactoryImpl<exception::HazelcastInstanceNotActiveException>());
+                registerException(HAZELCAST_OVERLOAD,
+                                  new ExceptionFactoryImpl<exception::HazelcastOverloadException>());
+                registerException(HAZELCAST_SERIALIZATION,
+                                  new ExceptionFactoryImpl<exception::HazelcastSerializationException>());
                 registerException(IO, new ExceptionFactoryImpl<exception::IOException>());
                 registerException(ILLEGAL_ARGUMENT, new ExceptionFactoryImpl<exception::IllegalArgumentException>());
-                registerException(ILLEGAL_ACCESS_EXCEPTION, new ExceptionFactoryImpl<exception::IllegalAccessException>());
+                registerException(ILLEGAL_ACCESS_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::IllegalAccessException>());
                 registerException(ILLEGAL_ACCESS_ERROR, new ExceptionFactoryImpl<exception::IllegalAccessError>());
-                registerException(ILLEGAL_MONITOR_STATE, new ExceptionFactoryImpl<exception::IllegalMonitorStateException>());
+                registerException(ILLEGAL_MONITOR_STATE,
+                                  new ExceptionFactoryImpl<exception::IllegalMonitorStateException>());
                 registerException(ILLEGAL_STATE, new ExceptionFactoryImpl<exception::IllegalStateException>());
-                registerException(ILLEGAL_THREAD_STATE, new ExceptionFactoryImpl<exception::IllegalThreadStateException>());
-                registerException(INDEX_OUT_OF_BOUNDS, new ExceptionFactoryImpl<exception::IndexOutOfBoundsException>());
+                registerException(ILLEGAL_THREAD_STATE,
+                                  new ExceptionFactoryImpl<exception::IllegalThreadStateException>());
+                registerException(INDEX_OUT_OF_BOUNDS,
+                                  new ExceptionFactoryImpl<exception::IndexOutOfBoundsException>());
                 registerException(INTERRUPTED, new ExceptionFactoryImpl<exception::InterruptedException>());
                 registerException(INVALID_ADDRESS, new ExceptionFactoryImpl<exception::InvalidAddressException>());
-                registerException(INVALID_CONFIGURATION, new ExceptionFactoryImpl<exception::InvalidConfigurationException>());
+                registerException(INVALID_CONFIGURATION,
+                                  new ExceptionFactoryImpl<exception::InvalidConfigurationException>());
                 registerException(MEMBER_LEFT, new ExceptionFactoryImpl<exception::MemberLeftException>());
-                registerException(NEGATIVE_ARRAY_SIZE, new ExceptionFactoryImpl<exception::NegativeArraySizeException>());
+                registerException(NEGATIVE_ARRAY_SIZE,
+                                  new ExceptionFactoryImpl<exception::NegativeArraySizeException>());
                 registerException(NO_SUCH_ELEMENT, new ExceptionFactoryImpl<exception::NoSuchElementException>());
                 registerException(NOT_SERIALIZABLE, new ExceptionFactoryImpl<exception::NotSerializableException>());
                 registerException(NULL_POINTER, new ExceptionFactoryImpl<exception::NullPointerException>());
                 registerException(OPERATION_TIMEOUT, new ExceptionFactoryImpl<exception::OperationTimeoutException>());
-                registerException(PARTITION_MIGRATING, new ExceptionFactoryImpl<exception::PartitionMigratingException>());
+                registerException(PARTITION_MIGRATING,
+                                  new ExceptionFactoryImpl<exception::PartitionMigratingException>());
                 registerException(QUERY, new ExceptionFactoryImpl<exception::QueryException>());
-                registerException(QUERY_RESULT_SIZE_EXCEEDED, new ExceptionFactoryImpl<exception::QueryResultSizeExceededException>());
+                registerException(QUERY_RESULT_SIZE_EXCEEDED,
+                                  new ExceptionFactoryImpl<exception::QueryResultSizeExceededException>());
                 registerException(QUORUM, new ExceptionFactoryImpl<exception::QuorumException>());
                 registerException(REACHED_MAX_SIZE, new ExceptionFactoryImpl<exception::ReachedMaxSizeException>());
-                registerException(REJECTED_EXECUTION, new ExceptionFactoryImpl<exception::RejectedExecutionException>());
+                registerException(REJECTED_EXECUTION,
+                                  new ExceptionFactoryImpl<exception::RejectedExecutionException>());
                 registerException(REMOTE_MAP_REDUCE, new ExceptionFactoryImpl<exception::RemoteMapReduceException>());
-                registerException(RESPONSE_ALREADY_SENT, new ExceptionFactoryImpl<exception::ResponseAlreadySentException>());
-                registerException(RETRYABLE_HAZELCAST, new ExceptionFactoryImpl<exception::RetryableHazelcastException>());
+                registerException(RESPONSE_ALREADY_SENT,
+                                  new ExceptionFactoryImpl<exception::ResponseAlreadySentException>());
+                registerException(RETRYABLE_HAZELCAST,
+                                  new ExceptionFactoryImpl<exception::RetryableHazelcastException>());
                 registerException(RETRYABLE_IO, new ExceptionFactoryImpl<exception::RetryableIOException>());
                 registerException(RUNTIME, new ExceptionFactoryImpl<exception::RuntimeException>());
                 registerException(SECURITY, new ExceptionFactoryImpl<exception::SecurityException>());
                 registerException(SOCKET, new ExceptionFactoryImpl<exception::SocketException>());
                 registerException(STALE_SEQUENCE, new ExceptionFactoryImpl<exception::StaleSequenceException>());
-                registerException(TARGET_DISCONNECTED, new ExceptionFactoryImpl<exception::TargetDisconnectedException>());
+                registerException(TARGET_DISCONNECTED,
+                                  new ExceptionFactoryImpl<exception::TargetDisconnectedException>());
                 registerException(TARGET_NOT_MEMBER, new ExceptionFactoryImpl<exception::TargetNotMemberException>());
                 registerException(TIMEOUT, new ExceptionFactoryImpl<exception::TimeoutException>());
                 registerException(TOPIC_OVERLOAD, new ExceptionFactoryImpl<exception::TopicOverloadException>());
                 registerException(TOPOLOGY_CHANGED, new ExceptionFactoryImpl<exception::TopologyChangedException>());
                 registerException(TRANSACTION, new ExceptionFactoryImpl<exception::TransactionException>());
-                registerException(TRANSACTION_NOT_ACTIVE, new ExceptionFactoryImpl<exception::TransactionNotActiveException>());
-                registerException(TRANSACTION_TIMED_OUT, new ExceptionFactoryImpl<exception::TransactionTimedOutException>());
+                registerException(TRANSACTION_NOT_ACTIVE,
+                                  new ExceptionFactoryImpl<exception::TransactionNotActiveException>());
+                registerException(TRANSACTION_TIMED_OUT,
+                                  new ExceptionFactoryImpl<exception::TransactionTimedOutException>());
                 registerException(URI_SYNTAX, new ExceptionFactoryImpl<exception::URISyntaxException>());
                 registerException(UTF_DATA_FORMAT, new ExceptionFactoryImpl<exception::UTFDataFormatException>());
-                registerException(UNSUPPORTED_OPERATION, new ExceptionFactoryImpl<exception::UnsupportedOperationException>());
+                registerException(UNSUPPORTED_OPERATION,
+                                  new ExceptionFactoryImpl<exception::UnsupportedOperationException>());
                 registerException(WRONG_TARGET, new ExceptionFactoryImpl<exception::WrongTargetException>());
                 registerException(XA, new ExceptionFactoryImpl<exception::XAException>());
                 registerException(ACCESS_CONTROL, new ExceptionFactoryImpl<exception::AccessControlException>());
                 registerException(LOGIN, new ExceptionFactoryImpl<exception::LoginException>());
-                registerException(UNSUPPORTED_CALLBACK, new ExceptionFactoryImpl<exception::UnsupportedCallbackException>());
-                registerException(NO_DATA_MEMBER, new ExceptionFactoryImpl<exception::NoDataMemberInClusterException>());
-                registerException(REPLICATED_MAP_CANT_BE_CREATED, new ExceptionFactoryImpl<exception::ReplicatedMapCantBeCreatedOnLiteMemberException>());
-                registerException(MAX_MESSAGE_SIZE_EXCEEDED, new ExceptionFactoryImpl<exception::MaxMessageSizeExceeded>());
-                registerException(WAN_REPLICATION_QUEUE_FULL, new ExceptionFactoryImpl<exception::WANReplicationQueueFullException>());
+                registerException(UNSUPPORTED_CALLBACK,
+                                  new ExceptionFactoryImpl<exception::UnsupportedCallbackException>());
+                registerException(NO_DATA_MEMBER,
+                                  new ExceptionFactoryImpl<exception::NoDataMemberInClusterException>());
+                registerException(REPLICATED_MAP_CANT_BE_CREATED,
+                                  new ExceptionFactoryImpl<exception::ReplicatedMapCantBeCreatedOnLiteMemberException>());
+                registerException(MAX_MESSAGE_SIZE_EXCEEDED,
+                                  new ExceptionFactoryImpl<exception::MaxMessageSizeExceeded>());
+                registerException(WAN_REPLICATION_QUEUE_FULL,
+                                  new ExceptionFactoryImpl<exception::WANReplicationQueueFullException>());
                 registerException(ASSERTION_ERROR, new ExceptionFactoryImpl<exception::AssertionError>());
                 registerException(OUT_OF_MEMORY_ERROR, new ExceptionFactoryImpl<exception::OutOfMemoryError>());
                 registerException(STACK_OVERFLOW_ERROR, new ExceptionFactoryImpl<exception::StackOverflowError>());
-                registerException(NATIVE_OUT_OF_MEMORY_ERROR, new ExceptionFactoryImpl<exception::NativeOutOfMemoryError>());
+                registerException(NATIVE_OUT_OF_MEMORY_ERROR,
+                                  new ExceptionFactoryImpl<exception::NativeOutOfMemoryError>());
                 registerException(SERVICE_NOT_FOUND, new ExceptionFactoryImpl<exception::ServiceNotFoundException>());
                 registerException(CONSISTENCY_LOST, new ExceptionFactoryImpl<exception::ConsistencyLostException>());
             }
@@ -15813,12 +13989,12 @@ namespace hazelcast {
                 // release memory for the factories
                 for (std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it =
                         errorCodeToFactory.begin(); errorCodeToFactory.end() != it; ++it) {
-                    delete(it->second);
+                    delete (it->second);
                 }
             }
 
             std::unique_ptr<exception::IException> ClientExceptionFactory::createException(const std::string &source,
-                                                                                         protocol::ClientMessage &clientMessage) const {
+                                                                                           protocol::ClientMessage &clientMessage) const {
                 codec::ErrorCodec error = codec::ErrorCodec::decode(clientMessage);
                 std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
                         error.errorCode);
@@ -15848,27 +14024,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 5/11/15.
-//
-
-#include "hazelcast/client/protocol/codec/StackTraceElement.h"
-#include <iostream>
 
 namespace hazelcast {
     namespace client {
@@ -15876,14 +14031,16 @@ namespace hazelcast {
             namespace codec {
                 const std::string StackTraceElement::EMPTY_STRING("");
 
-                StackTraceElement::StackTraceElement() : fileName((std::string *)NULL) {
+                StackTraceElement::StackTraceElement() : fileName((std::string *) NULL) {
                 }
 
                 StackTraceElement::StackTraceElement(const std::string &className, const std::string &method,
-                                  std::unique_ptr<std::string> &file, int line) : declaringClass(className),
-                                                                                 methodName(method),
-                                                                                 fileName(std::move(file)),
-                                                                                 lineNumber(line) { }
+                                                     std::unique_ptr<std::string> &file, int line) : declaringClass(
+                        className),
+                                                                                                     methodName(method),
+                                                                                                     fileName(std::move(
+                                                                                                             file)),
+                                                                                                     lineNumber(line) {}
 
 
                 StackTraceElement::StackTraceElement(const StackTraceElement &rhs) {
@@ -15931,34 +14088,13 @@ namespace hazelcast {
 
                 std::ostream &operator<<(std::ostream &out, const StackTraceElement &trace) {
                     return out << trace.getFileName() << " line " << trace.getLineNumber() << " :" <<
-                           trace.getDeclaringClass() << "." << trace.getMethodName();
+                               trace.getDeclaringClass() << "." << trace.getMethodName();
                 }
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 5/11/15.
-//
 
-#include "hazelcast/client/protocol/codec/AddressCodec.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/Address.h"
 
 namespace hazelcast {
     namespace client {
@@ -15972,7 +14108,7 @@ namespace hazelcast {
 
                 void AddressCodec::encode(const Address &address, ClientMessage &clientMessage) {
                     clientMessage.set(address.getHost());
-                    clientMessage.set((int32_t)address.getPort());
+                    clientMessage.set((int32_t) address.getPort());
                 }
 
                 int AddressCodec::calculateDataSize(const Address &address) {
@@ -15983,33 +14119,13 @@ namespace hazelcast {
     }
 }
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/*
  * ErrorCodec.cpp
  *
  *  Created on: Apr 13, 2015
  *      Author: ihsan
  */
 
-#include <sstream>
-#include <cassert>
 
-#include "hazelcast/client/protocol/codec/ErrorCodec.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
@@ -16033,7 +14149,7 @@ namespace hazelcast {
                 std::string ErrorCodec::toString() const {
                     std::ostringstream out;
                     out << "Error code:" << errorCode << ", Class name that generated the error:" << className <<
-                    ", ";
+                        ", ";
                     if (NULL != message.get()) {
                         out << *message;
                     }
@@ -16067,29 +14183,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 5/11/15.
-//
 
-#include "hazelcast/client/protocol/codec/AddressCodec.h"
-#include "hazelcast/client/protocol/codec/MemberCodec.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/Member.h"
 
 namespace hazelcast {
     namespace client {
@@ -16113,23 +14207,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/protocol/codec/UUIDCodec.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
@@ -16151,28 +14228,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 5/11/15.
-//
 
-#include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/protocol/codec/StackTraceElement.h"
 
 namespace hazelcast {
     namespace client {
@@ -16183,35 +14239,14 @@ namespace hazelcast {
                     std::string methodName = clientMessage.getStringUtf8();
                     std::unique_ptr<std::string> fileName = clientMessage.getNullable<std::string>();
                     int32_t lineNumber = clientMessage.getInt32();
-                    
+
                     return StackTraceElement(className, methodName, fileName, lineNumber);
                 }
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 5/11/15.
-//
 
-#include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/map/DataEntryView.h"
 
 namespace hazelcast {
     namespace client {
@@ -16230,23 +14265,23 @@ namespace hazelcast {
                     int64_t version = clientMessage.get<int64_t>(); // version
                     int64_t evictionCriteria = clientMessage.get<int64_t>(); // evictionCriteriaNumber
                     int64_t ttl = clientMessage.get<int64_t>();  // ttl
-					return map::DataEntryView(key, value, cost, creationTime, expirationTime, hits, lastAccessTime,
-						lastStoredTime, lastUpdateTime, version, evictionCriteria, ttl);
+                    return map::DataEntryView(key, value, cost, creationTime, expirationTime, hits, lastAccessTime,
+                                              lastStoredTime, lastUpdateTime, version, evictionCriteria, ttl);
                 }
 
                 void DataEntryViewCodec::encode(const map::DataEntryView &view, ClientMessage &clientMessage) {
                     clientMessage.set(view.getKey());
                     clientMessage.set(view.getValue());
-                    clientMessage.set((int64_t)view.getCost());
-                    clientMessage.set((int64_t)view.getCreationTime());
-                    clientMessage.set((int64_t)view.getExpirationTime());
-                    clientMessage.set((int64_t)view.getHits());
-                    clientMessage.set((int64_t)view.getLastAccessTime());
-                    clientMessage.set((int64_t)view.getLastStoredTime());
-                    clientMessage.set((int64_t)view.getLastUpdateTime());
-                    clientMessage.set((int64_t)view.getVersion());
-                    clientMessage.set((int64_t)view.getEvictionCriteriaNumber());
-                    clientMessage.set((int64_t)view.getTtl());
+                    clientMessage.set((int64_t) view.getCost());
+                    clientMessage.set((int64_t) view.getCreationTime());
+                    clientMessage.set((int64_t) view.getExpirationTime());
+                    clientMessage.set((int64_t) view.getHits());
+                    clientMessage.set((int64_t) view.getLastAccessTime());
+                    clientMessage.set((int64_t) view.getLastStoredTime());
+                    clientMessage.set((int64_t) view.getLastUpdateTime());
+                    clientMessage.set((int64_t) view.getVersion());
+                    clientMessage.set((int64_t) view.getEvictionCriteriaNumber());
+                    clientMessage.set((int64_t) view.getTtl());
                 }
 
                 int DataEntryViewCodec::calculateDataSize(const map::DataEntryView &view) {
@@ -16260,32 +14295,17 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 5/20/13.
 
-#include "hazelcast/client/protocol/Principal.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
 
-            Principal::Principal(std::unique_ptr<std::string> &id, std::unique_ptr<std::string> &owner) : uuid(std::move(id)),
-                                                                                                    ownerUuid(std::move(owner)) {
+            Principal::Principal(std::unique_ptr<std::string> &id, std::unique_ptr<std::string> &owner) : uuid(
+                    std::move(id)),
+                                                                                                          ownerUuid(
+                                                                                                                  std::move(
+                                                                                                                          owner)) {
             }
 
             const std::string *Principal::getUuid() const {
@@ -16317,27 +14337,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <cassert>
 
-#include "hazelcast/client/protocol/ClientMessageBuilder.h"
-#include "hazelcast/client/protocol/IMessageHandler.h"
-#include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/client/connection/Connection.h"
 
 namespace hazelcast {
     namespace client {
@@ -16417,34 +14417,14 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 5/7/13.
 
-
-
-#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            UsernamePasswordCredentials::UsernamePasswordCredentials(const std::string &principal, const std::string &password)
-            : principal(principal), password(password) {
+            UsernamePasswordCredentials::UsernamePasswordCredentials(const std::string &principal,
+                                                                     const std::string &password)
+                    : principal(principal), password(password) {
             }
 
             const std::string &UsernamePasswordCredentials::getPrincipal() const {
@@ -16458,29 +14438,13 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/ItemEvent.h"
 
 namespace hazelcast {
     namespace client {
         ItemEventType::ItemEventType() {
         }
 
-        ItemEventType::ItemEventType(Type value) :value(value) {
+        ItemEventType::ItemEventType(Type value) : value(value) {
         }
 
         ItemEventType::operator int() const {
@@ -16490,7 +14454,7 @@ namespace hazelcast {
         /**
          * copy function.
          */
-        void ItemEventType::operator = (int i) {
+        void ItemEventType::operator=(int i) {
             switch (i) {
                 case 1:
                     value = ADDED;
@@ -16501,10 +14465,11 @@ namespace hazelcast {
             }
         }
 
-        ItemEventBase::ItemEventBase(const std::string &name, const Member &member, const ItemEventType &eventType) : name(name),
-                                                                                                       member(member),
-                                                                                                       eventType(
-                                                                                                               eventType) {}
+        ItemEventBase::ItemEventBase(const std::string &name, const Member &member, const ItemEventType &eventType)
+                : name(name),
+                  member(member),
+                  eventType(
+                          eventType) {}
 
         Member ItemEventBase::getMember() const {
             return member;
@@ -16523,45 +14488,13 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/LifecycleListener.h"
 
 namespace hazelcast {
     namespace client {
-        LifecycleListener::~LifecycleListener(){
+        LifecycleListener::~LifecycleListener() {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/IdGenerator.h"
 
 namespace hazelcast {
     namespace client {
@@ -16579,24 +14512,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <string>
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/MembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -16646,29 +14561,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <memory>
 
-
-#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/protocol/ClientExceptionFactory.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -16713,9 +14606,10 @@ namespace hazelcast {
                     typedef std::vector<std::pair<int64_t, std::shared_ptr<ClientInvocation> > > InvocationEntriesVector;
                     InvocationEntriesVector allEntries = invocations.clear();
                     std::shared_ptr<exception::HazelcastClientNotActiveException> notActiveException(
-                            new exception::HazelcastClientNotActiveException("AbstractClientInvocationService::shutdown",
+                            new exception::HazelcastClientNotActiveException(
+                                    "AbstractClientInvocationService::shutdown",
                                     "Client is shutting down"));
-                    for (InvocationEntriesVector::value_type & entry : allEntries) {
+                    for (InvocationEntriesVector::value_type &entry : allEntries) {
                         entry.second->notifyException(notActiveException);
                     }
                 }
@@ -16779,7 +14673,8 @@ namespace hazelcast {
                     const std::shared_ptr<protocol::ClientMessage> &clientMessage = clientInvocation->getClientMessage();
                     int64_t correlationId = clientMessage->getCorrelationId();
                     invocations.put(correlationId, clientInvocation);
-                    const std::shared_ptr<EventHandler<protocol::ClientMessage> > handler = clientInvocation->getEventHandler();
+                    const std::shared_ptr<
+                    EventHandler < protocol::ClientMessage > > handler = clientInvocation->getEventHandler();
                     if (handler.get() != NULL) {
                         clientListenerService->addEventHandler(correlationId, handler);
                     }
@@ -16840,7 +14735,8 @@ namespace hazelcast {
                                                                                 ClientContext &clientContext)
                         : responseQueue(100000), invocationLogger(invocationLogger),
                           invocationService(invocationService), client(clientContext),
-                          worker(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), invocationLogger) {
+                          worker(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)),
+                                 invocationLogger) {
                 }
 
                 void AbstractClientInvocationService::ResponseThread::run() {
@@ -16883,8 +14779,10 @@ namespace hazelcast {
                         return;
                     }
                     if (protocol::codec::ErrorCodec::TYPE == clientMessage->getMessageType()) {
-                        std::shared_ptr<exception::IException> exception(client.getClientExceptionFactory().createException(
-                                "AbstractClientInvocationService::ResponseThread::handleClientMessage", *clientMessage));
+                        std::shared_ptr<exception::IException> exception(
+                                client.getClientExceptionFactory().createException(
+                                        "AbstractClientInvocationService::ResponseThread::handleClientMessage",
+                                        *clientMessage));
                         future->notifyException(exception);
                     } else {
                         future->notify(clientMessage);
@@ -16913,29 +14811,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-
-#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/util/UuidUtil.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -17038,7 +14913,7 @@ namespace hazelcast {
                                             new ClientEventProcessor(clientMessage, connection, eventHandlerMap,
                                                                      logger)));
                         } catch (exception::RejectedExecutionException &e) {
-                            logger.warning("Event clientMessage could not be handled. " , e);
+                            logger.warning("Event clientMessage could not be handled. ", e);
                         }
                     }
 
@@ -17057,7 +14932,7 @@ namespace hazelcast {
 
                     void AbstractClientListenerService::ClientEventProcessor::run() {
                         int64_t correlationId = clientMessage->getCorrelationId();
-                        std::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler = eventHandlerMap.get(
+                        std::shared_ptr<EventHandler < protocol::ClientMessage> > eventHandler = eventHandlerMap.get(
                                 correlationId);
                         if (eventHandler.get() == NULL) {
                             logger.warning("No eventHandler for callId: ", correlationId, ", event: ", *clientMessage);
@@ -17092,10 +14967,11 @@ namespace hazelcast {
                             const std::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
                             const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) : taskName(
                             taskName), listenerService(listenerService), listenerMessageCodec(listenerMessageCodec),
-                                                                                                        handler(handler) {}
+                                                                                                      handler(handler) {}
 
                     std::shared_ptr<std::string> AbstractClientListenerService::RegisterListenerTask::call() {
-                        return std::shared_ptr<std::string>(new std::string(listenerService->registerListenerInternal(listenerMessageCodec, handler)));
+                        return std::shared_ptr<std::string>(new std::string(
+                                listenerService->registerListenerInternal(listenerMessageCodec, handler)));
                     }
 
                     const std::string AbstractClientListenerService::RegisterListenerTask::getName() const {
@@ -17109,7 +14985,8 @@ namespace hazelcast {
                                                                  registrationId(registrationId) {}
 
                     std::shared_ptr<bool> AbstractClientListenerService::DeregisterListenerTask::call() {
-                        return std::shared_ptr<bool>(new bool(listenerService->deregisterListenerInternal(registrationId)));
+                        return std::shared_ptr<bool>(
+                                new bool(listenerService->deregisterListenerInternal(registrationId)));
                     }
 
                     const std::string AbstractClientListenerService::DeregisterListenerTask::getName() const {
@@ -17134,9 +15011,9 @@ namespace hazelcast {
                             const std::string &taskName,
                             const std::shared_ptr<AbstractClientListenerService> &listenerService,
                             const std::shared_ptr<connection::Connection> &connection) : taskName(taskName),
-                                                                                           listenerService(
-                                                                                                   listenerService),
-                                                                                           connection(connection) {}
+                                                                                         listenerService(
+                                                                                                 listenerService),
+                                                                                         connection(connection) {}
 
                     const std::string AbstractClientListenerService::ConnectionRemovedTask::getName() const {
                         return taskName;
@@ -17155,17 +15032,17 @@ namespace hazelcast {
                         registrations.put(registrationKey, std::shared_ptr<ConnectionRegistrationsMap>(
                                 new ConnectionRegistrationsMap()));
                         for (const std::shared_ptr<connection::Connection> &connection : clientConnectionManager.getActiveConnections()) {
-                                        try {
-                                            invoke(registrationKey, connection);
-                                        } catch (exception::IException &e) {
-                                            if (connection->isAlive()) {
-                                                deregisterListenerInternal(userRegistrationId);
-                                                throw (exception::ExceptionBuilder<exception::HazelcastException>(
-                                                        "AbstractClientListenerService::RegisterListenerTask::call")
-                                                        << "Listener can not be added " << e).build();
-                                            }
-                                        }
-                                    }
+                            try {
+                                invoke(registrationKey, connection);
+                            } catch (exception::IException &e) {
+                                if (connection->isAlive()) {
+                                    deregisterListenerInternal(userRegistrationId);
+                                    throw (exception::ExceptionBuilder<exception::HazelcastException>(
+                                            "AbstractClientListenerService::RegisterListenerTask::call")
+                                            << "Listener can not be added " << e).build();
+                                }
+                            }
+                        }
                         return userRegistrationId;
                     }
 
@@ -17192,8 +15069,8 @@ namespace hazelcast {
                                 std::unique_ptr<protocol::ClientMessage> request = listenerMessageCodec->encodeRemoveRequest(
                                         serverRegistrationId);
                                 std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(clientContext,
-                                                                                                          request, "",
-                                                                                                          subscriber);
+                                                                                                        request, "",
+                                                                                                        subscriber);
                                 invocation->invoke()->get();
                                 removeEventHandler(registration.getCallId());
 
@@ -17226,24 +15103,24 @@ namespace hazelcast {
                     void AbstractClientListenerService::connectionAddedInternal(
                             const std::shared_ptr<connection::Connection> &connection) {
                         for (const ClientRegistrationKey &registrationKey : registrations.keys()) {
-                                        invokeFromInternalThread(registrationKey, connection);
-                                    }
+                            invokeFromInternalThread(registrationKey, connection);
+                        }
                     }
 
                     void AbstractClientListenerService::connectionRemovedInternal(
                             const std::shared_ptr<connection::Connection> &connection) {
                         typedef std::vector<std::pair<ClientRegistrationKey, std::shared_ptr<ConnectionRegistrationsMap> > > ENTRY_VECTOR;
                         for (const ENTRY_VECTOR::value_type &registrationMapEntry : registrations.entrySet()) {
-                                        std::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrationMapEntry.second;
-                                        ConnectionRegistrationsMap::iterator foundRegistration = registrationMap->find(
-                                                connection);
-                                        if (foundRegistration != registrationMap->end()) {
-                                            removeEventHandler(foundRegistration->second.getCallId());
-                                            registrationMap->erase(foundRegistration);
-                                            registrations.put(registrationMapEntry.first,
-                                                              registrationMap);
-                                        }
-                                    }
+                            std::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrationMapEntry.second;
+                            ConnectionRegistrationsMap::iterator foundRegistration = registrationMap->find(
+                                    connection);
+                            if (foundRegistration != registrationMap->end()) {
+                                removeEventHandler(foundRegistration->second.getCallId());
+                                registrationMap->erase(foundRegistration);
+                                registrations.put(registrationMapEntry.first,
+                                                  registrationMap);
+                            }
+                        }
                     }
 
                     void
@@ -17277,13 +15154,15 @@ namespace hazelcast {
                         }
 
                         const std::shared_ptr<ListenerMessageCodec> &codec = registrationKey.getCodec();
-                        std::unique_ptr<protocol::ClientMessage> request = codec->encodeAddRequest(registersLocalOnly());
-                        std::shared_ptr<EventHandler<protocol::ClientMessage> > handler = registrationKey.getHandler();
+                        std::unique_ptr<protocol::ClientMessage> request = codec->encodeAddRequest(
+                                registersLocalOnly());
+                        std::shared_ptr<EventHandler < protocol::ClientMessage> >
+                        handler = registrationKey.getHandler();
                         handler->beforeListenerRegister();
 
                         std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(clientContext,
-                                                                                                  request, "",
-                                                                                                  connection);
+                                                                                                request, "",
+                                                                                                connection);
                         invocation->setEventHandler(handler);
 
                         std::shared_ptr<protocol::ClientMessage> clientMessage = invocation->invokeUrgent()->get();
@@ -17318,23 +15197,6 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/spi/impl/listener/ClientEventRegistration.h"
 
 namespace hazelcast {
     namespace client {
@@ -17384,32 +15246,6 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-
-#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/util/UuidUtil.h"
-#include "hazelcast/client/Member.h"
-#include "hazelcast/client/spi/impl/listener/SmartClientListenerService.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 
 namespace hazelcast {
     namespace client {
@@ -17454,13 +15290,13 @@ namespace hazelcast {
                             std::shared_ptr<exception::IException> lastException;
 
                             for (const Member &member : clientClusterService.getMemberList()) {
-                                            try {
-                                                clientConnectionManager.getOrConnect(member.getAddress());
-                                            } catch (exception::IException &e) {
-                                                lastFailedMember = member;
-                                                lastException = e.clone();
-                                            }
-                                        }
+                                try {
+                                    clientConnectionManager.getOrConnect(member.getAddress());
+                                } catch (exception::IException &e) {
+                                    lastFailedMember = member;
+                                    lastException = e.clone();
+                                }
+                            }
 
                             if (lastException.get() == NULL) {
                                 // successfully connected to all members, break loop.
@@ -17516,16 +15352,16 @@ namespace hazelcast {
                     void SmartClientListenerService::asyncConnectToAllMembersInternal() {
                         std::vector<Member> memberList = clientContext.getClientClusterService().getMemberList();
                         for (const Member &member : memberList) {
-                                        try {
-                                            if (!clientContext.getLifecycleService().isRunning()) {
-                                                return;
-                                            }
-                                            clientContext.getConnectionManager().getOrTriggerConnect(
-                                                    member.getAddress());
-                                        } catch (exception::IOException &) {
-                                            return;
-                                        }
-                                    }
+                            try {
+                                if (!clientContext.getLifecycleService().isRunning()) {
+                                    return;
+                                }
+                                clientContext.getConnectionManager().getOrTriggerConnect(
+                                        member.getAddress());
+                            } catch (exception::IOException &) {
+                                return;
+                            }
+                        }
 
                     }
 
@@ -17545,23 +15381,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/spi/impl/listener/ClientRegistrationKey.h"
 
 namespace hazelcast {
     namespace client {
@@ -17615,30 +15434,6 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/util/UuidUtil.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/util/Callable.h"
-#include "hazelcast/client/spi/impl/listener/NonSmartClientListenerService.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -17662,26 +15457,7 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <cassert>
 
-#include "hazelcast/client/spi/impl/NonSmartClientInvocationService.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
@@ -17735,24 +15511,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -17778,33 +15536,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-
-
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/util/UuidUtil.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/spi/impl/ClientMembershipListener.h"
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -17835,10 +15566,10 @@ namespace hazelcast {
                 std::shared_ptr<Member> ClientClusterServiceImpl::getMember(const std::string &uuid) {
                     std::vector<Member> memberList = getMemberList();
                     for (const Member &member : memberList) {
-                                    if (uuid == member.getUuid()) {
-                                        return std::shared_ptr<Member>(new Member(member));
-                                    }
-                                }
+                        if (uuid == member.getUuid()) {
+                            return std::shared_ptr<Member>(new Member(member));
+                        }
+                    }
                     return std::shared_ptr<Member>();
                 }
 
@@ -17847,8 +15578,8 @@ namespace hazelcast {
                     MemberMap memberMap = members.get();
                     std::vector<Member> memberList;
                     for (const MemberMap::value_type &entry : memberMap) {
-                                    memberList.push_back(*entry.second);
-                                }
+                        memberList.push_back(*entry.second);
+                    }
                     return memberList;
                 }
 
@@ -17888,18 +15619,18 @@ namespace hazelcast {
 
                 void ClientClusterServiceImpl::fireMembershipEvent(const MembershipEvent &event) {
                     for (const std::shared_ptr<MembershipListener> &listener : listeners.values()) {
-                                    if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
-                                        listener->memberAdded(event);
-                                    } else {
-                                        listener->memberRemoved(event);
-                                    }
-                                }
+                        if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
+                            listener->memberAdded(event);
+                        } else {
+                            listener->memberRemoved(event);
+                        }
+                    }
                 }
 
                 void ClientClusterServiceImpl::fireMemberAttributeEvent(const MemberAttributeEvent &event) {
                     for (const std::shared_ptr<MembershipListener> &listener : listeners.values()) {
-                                    listener->memberAttributeChanged(event);
-                                }
+                        listener->memberAttributeChanged(event);
+                    }
                 }
 
                 void ClientClusterServiceImpl::handleInitialMembershipEvent(const InitialMembershipEvent &event) {
@@ -17907,9 +15638,9 @@ namespace hazelcast {
                     const std::vector<Member> &initialMembers = event.getMembers();
                     std::map<Address, std::shared_ptr<Member> > newMap;
                     for (const Member &initialMember : initialMembers) {
-                                    newMap[initialMember.getAddress()] = std::shared_ptr<Member>(
-                                            new Member(initialMember));
-                                }
+                        newMap[initialMember.getAddress()] = std::shared_ptr<Member>(
+                                new Member(initialMember));
+                    }
                     members.set(newMap);
                     fireInitialMembershipEvent(event);
 
@@ -17917,10 +15648,10 @@ namespace hazelcast {
 
                 void ClientClusterServiceImpl::fireInitialMembershipEvent(const InitialMembershipEvent &event) {
                     for (const std::shared_ptr<MembershipListener> &listener : listeners.values()) {
-                                    if (listener->shouldRequestInitialMembers()) {
-                                        ((InitialMembershipListener *) listener.get())->init(event);
-                                    }
-                                }
+                        if (listener->shouldRequestInitialMembers()) {
+                            ((InitialMembershipListener *) listener.get())->init(event);
+                        }
+                    }
                 }
 
                 void ClientClusterServiceImpl::shutdown() {
@@ -17952,10 +15683,10 @@ namespace hazelcast {
                 ClientClusterServiceImpl::getMembers(const cluster::memberselector::MemberSelector &selector) {
                     std::vector<Member> result;
                     for (const Member &member : getMemberList()) {
-                                    if (selector.select(member)) {
-                                        result.push_back(member);
-                                    }
-                                }
+                        if (selector.select(member)) {
+                            result.push_back(member);
+                        }
+                    }
 
                     return result;
                 }
@@ -17980,29 +15711,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/protocol/ClientExceptionFactory.h"
-#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 
 namespace hazelcast {
     namespace client {
@@ -18094,34 +15802,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include <hazelcast/client/MemberAttributeEvent.h>
-#include "hazelcast/client/spi/impl/ClientMembershipListener.h"
-#include "hazelcast/client/MembershipEvent.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -18144,7 +15824,7 @@ namespace hazelcast {
                             memberRemoved(member);
                             break;
                         default:
-                            logger.warning("Unknown event type: " , eventType);
+                            logger.warning("Unknown event type: ", eventType);
                     }
                     partitionService.refreshPartitions();
                 }
@@ -18153,14 +15833,14 @@ namespace hazelcast {
                     std::map<std::string, Member> prevMembers;
                     if (!members.empty()) {
                         for (const Member &member : members) {
-                                        prevMembers[member.getUuid()] = member;
-                                    }
+                            prevMembers[member.getUuid()] = member;
+                        }
                         members.clear();
                     }
 
                     for (const Member &initialMember : initialMembers) {
-                                    members.insert(initialMember);
-                                }
+                        members.insert(initialMember);
+                    }
 
                     if (prevMembers.empty()) {
                         //this means this is the first time client connected to server
@@ -18178,21 +15858,22 @@ namespace hazelcast {
                 }
 
                 void
-                ClientMembershipListener::handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
-                                                                      const int32_t &operationType,
-                                                                      std::unique_ptr<std::string> &value) {
+                ClientMembershipListener::handleMemberAttributeChangeEventV10(const std::string &uuid,
+                                                                              const std::string &key,
+                                                                              const int32_t &operationType,
+                                                                              std::unique_ptr<std::string> &value) {
                     std::vector<Member> members = clusterService.getMemberList();
                     for (Member &target : members) {
-                                    if (target.getUuid() == uuid) {
-                                        Member::MemberAttributeOperationType type = (Member::MemberAttributeOperationType) operationType;
-                                        target.updateAttribute(type, key, value);
-                                        MemberAttributeEvent memberAttributeEvent(client.getCluster(), target,
-                                                                                  (MemberAttributeEvent::MemberAttributeOperationType) type,
-                                                                                  key, value.get() ? (*value) : "");
-                                        clusterService.fireMemberAttributeEvent(memberAttributeEvent);
-                                        break;
-                                    }
-                                }
+                        if (target.getUuid() == uuid) {
+                            Member::MemberAttributeOperationType type = (Member::MemberAttributeOperationType) operationType;
+                            target.updateAttribute(type, key, value);
+                            MemberAttributeEvent memberAttributeEvent(client.getCluster(), target,
+                                                                      (MemberAttributeEvent::MemberAttributeOperationType) type,
+                                                                      key, value.get() ? (*value) : "");
+                            clusterService.fireMemberAttributeEvent(memberAttributeEvent);
+                            break;
+                        }
+                    }
 
                 }
 
@@ -18209,8 +15890,8 @@ namespace hazelcast {
                     out << std::endl << std::endl << "Members [" << members.size() << "]  {";
 
                     for (const Member &member : members) {
-                                    out << std::endl << "\t" << member;
-                                }
+                        out << std::endl << "\t" << member;
+                    }
                     out << std::endl << "}" << std::endl;
 
                     return out.str();
@@ -18246,47 +15927,47 @@ namespace hazelcast {
 
                     std::vector<Member> newMembers;
                     for (const Member &member : members) {
-                                    std::map<std::string, Member>::iterator formerEntry = prevMembers.find(
-                                            member.getUuid());
-                                    if (formerEntry != prevMembers.end()) {
-                                        prevMembers.erase(formerEntry);
-                                    } else {
-                                        newMembers.push_back(member);
-                                    }
-                                }
+                        std::map<std::string, Member>::iterator formerEntry = prevMembers.find(
+                                member.getUuid());
+                        if (formerEntry != prevMembers.end()) {
+                            prevMembers.erase(formerEntry);
+                        } else {
+                            newMembers.push_back(member);
+                        }
+                    }
 
                     // removal events should be added before added events
                     typedef const std::map<std::string, Member> MemberMap;
                     for (const MemberMap::value_type &member : prevMembers) {
-                                    events.push_back(MembershipEvent(client.getCluster(), member.second,
-                                                                     MembershipEvent::MEMBER_REMOVED,
-                                                                     std::vector<Member>(eventMembers.begin(),
-                                                                                         eventMembers.end())));
-                                    const Address &address = member.second.getAddress();
-                                    if (clusterService.getMember(address).get() == NULL) {
-                                        std::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
-                                                address);
-                                        if (connection.get() != NULL) {
-                                            connection->close("",
-                                                              newTargetDisconnectedExceptionCausedByMemberLeftEvent(
-                                                                      connection));
-                                        }
-                                    }
-                                }
+                        events.push_back(MembershipEvent(client.getCluster(), member.second,
+                                                         MembershipEvent::MEMBER_REMOVED,
+                                                         std::vector<Member>(eventMembers.begin(),
+                                                                             eventMembers.end())));
+                        const Address &address = member.second.getAddress();
+                        if (clusterService.getMember(address).get() == NULL) {
+                            std::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
+                                    address);
+                            if (connection.get() != NULL) {
+                                connection->close("",
+                                                  newTargetDisconnectedExceptionCausedByMemberLeftEvent(
+                                                          connection));
+                            }
+                        }
+                    }
                     for (const Member &member : newMembers) {
-                                    events.push_back(
-                                            MembershipEvent(client.getCluster(), member, MembershipEvent::MEMBER_ADDED,
-                                                            std::vector<Member>(eventMembers.begin(),
-                                                                                eventMembers.end())));
-                                }
+                        events.push_back(
+                                MembershipEvent(client.getCluster(), member, MembershipEvent::MEMBER_ADDED,
+                                                std::vector<Member>(eventMembers.begin(),
+                                                                    eventMembers.end())));
+                    }
 
                     return events;
                 }
 
                 void ClientMembershipListener::fireMembershipEvent(std::vector<MembershipEvent> &events) {
                     for (const MembershipEvent &event : events) {
-                                    clusterService.handleMembershipEvent(event);
-                                }
+                        clusterService.handleMembershipEvent(event);
+                    }
                 }
 
                 void
@@ -18298,8 +15979,8 @@ namespace hazelcast {
                     std::unique_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientAddMembershipListenerCodec::encodeRequest(
                             false);
                     std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(listener->client,
-                                                                                              clientMessage, "",
-                                                                                              ownerConnection);
+                                                                                            clientMessage, "",
+                                                                                            ownerConnection);
                     invocation->setEventHandler(listener);
                     invocation->invokeUrgent()->get();
                     listener->waitInitialMemberListFetched();
@@ -18315,31 +15996,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/RuntimeAvailableProcessors.h"
 
 namespace hazelcast {
     namespace client {
@@ -18412,7 +16068,7 @@ namespace hazelcast {
                             }
                         }
                     } catch (exception::InterruptedException &e) {
-                        logger.warning(name, " executor await termination is interrupted. " , e);
+                        logger.warning(name, " executor await termination is interrupted. ", e);
                     }
                 }
 
@@ -18435,33 +16091,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
-#include <hazelcast/client/spi/impl/ClientInvocation.h>
-
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/spi/ClientInvocationService.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 
 namespace hazelcast {
     namespace client {
@@ -18483,7 +16113,10 @@ namespace hazelcast {
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         invokeCount(0),
-                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(), clientContext.getLogger(), this->clientMessage, clientContext.getCallIdSequence())) {
+                        clientInvocationFuture(
+                                new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
+                                                           clientContext.getLogger(), this->clientMessage,
+                                                           clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
@@ -18503,8 +16136,10 @@ namespace hazelcast {
                         objectName(objectName),
                         connection(connection),
                         invokeCount(0),
-                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
-                                                                          clientContext.getLogger(), std::move(clientMessage), clientContext.getCallIdSequence())) {
+                        clientInvocationFuture(
+                                new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
+                                                           clientContext.getLogger(), std::move(clientMessage),
+                                                           clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
@@ -18522,8 +16157,10 @@ namespace hazelcast {
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         invokeCount(0),
-                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
-                                                                          clientContext.getLogger(), this->clientMessage, clientContext.getCallIdSequence())) {
+                        clientInvocationFuture(
+                                new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
+                                                           clientContext.getLogger(), this->clientMessage,
+                                                           clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
@@ -18542,8 +16179,10 @@ namespace hazelcast {
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         invokeCount(0),
-                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
-                                                                          clientContext.getLogger(), this->clientMessage, clientContext.getCallIdSequence())) {
+                        clientInvocationFuture(
+                                new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
+                                                           clientContext.getLogger(), this->clientMessage,
+                                                           clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::~ClientInvocation() {
@@ -18709,7 +16348,8 @@ namespace hazelcast {
                         target << "random";
                     }
                     ClientInvocation &nonConstInvocation = const_cast<ClientInvocation &>(invocation);
-                    os << "ClientInvocation{" << "clientMessage = " << *nonConstInvocation.clientMessage.get() << ", objectName = "
+                    os << "ClientInvocation{" << "clientMessage = " << *nonConstInvocation.clientMessage.get()
+                       << ", objectName = "
                        << invocation.objectName << ", target = " << target.str() << ", sendConnection = ";
                     std::shared_ptr<connection::Connection> sendConnection = nonConstInvocation.sendConnection.get();
                     if (sendConnection.get()) {
@@ -18723,9 +16363,9 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<ClientInvocation> ClientInvocation::create(spi::ClientContext &clientContext,
-                                                                             std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                                                             const std::string &objectName,
-                                                                             int partitionId) {
+                                                                           std::unique_ptr<protocol::ClientMessage> &clientMessage,
+                                                                           const std::string &objectName,
+                                                                           int partitionId) {
                     std::shared_ptr<ClientInvocation> invocation = std::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, clientMessage, objectName, partitionId));
                     invocation->clientInvocationFuture->setInvocation(invocation);
@@ -18733,9 +16373,9 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<ClientInvocation> ClientInvocation::create(spi::ClientContext &clientContext,
-                                                                             std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                                                             const std::string &objectName,
-                                                                             const std::shared_ptr<connection::Connection> &connection) {
+                                                                           std::unique_ptr<protocol::ClientMessage> &clientMessage,
+                                                                           const std::string &objectName,
+                                                                           const std::shared_ptr<connection::Connection> &connection) {
                     std::shared_ptr<ClientInvocation> invocation = std::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, clientMessage, objectName, connection));
                     invocation->clientInvocationFuture->setInvocation(invocation);
@@ -18744,9 +16384,9 @@ namespace hazelcast {
 
 
                 std::shared_ptr<ClientInvocation> ClientInvocation::create(spi::ClientContext &clientContext,
-                                                                             std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                                                             const std::string &objectName,
-                                                                             const Address &address) {
+                                                                           std::unique_ptr<protocol::ClientMessage> &clientMessage,
+                                                                           const std::string &objectName,
+                                                                           const Address &address) {
                     std::shared_ptr<ClientInvocation> invocation = std::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, clientMessage, objectName, address));
                     invocation->clientInvocationFuture->setInvocation(invocation);
@@ -18754,8 +16394,8 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<ClientInvocation> ClientInvocation::create(spi::ClientContext &clientContext,
-                                                                             std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                                                             const std::string &objectName) {
+                                                                           std::unique_ptr<protocol::ClientMessage> &clientMessage,
+                                                                           const std::string &objectName) {
                     std::shared_ptr<ClientInvocation> invocation = std::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, clientMessage, objectName));
                     invocation->clientInvocationFuture->setInvocation(invocation);
@@ -18828,26 +16468,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h"
-#include "hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h"
 
 namespace hazelcast {
     namespace client {
@@ -18856,8 +16476,8 @@ namespace hazelcast {
                 namespace sequence {
 
                     std::unique_ptr<CallIdSequence> CallIdFactory::newCallIdSequence(bool isBackPressureEnabled,
-                                                                                   int32_t maxAllowedConcurrentInvocations,
-                                                                                   int64_t backoffTimeoutMs) {
+                                                                                     int32_t maxAllowedConcurrentInvocations,
+                                                                                     int64_t backoffTimeoutMs) {
                         if (!isBackPressureEnabled) {
                             return std::unique_ptr<CallIdSequence>(new CallIdSequenceWithoutBackpressure());
                         } else if (backoffTimeoutMs <= 0) {
@@ -18875,22 +16495,6 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h"
 
 namespace hazelcast {
     namespace client {
@@ -18927,26 +16531,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <cassert>
 
-#include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/Bits.h"
-#include "hazelcast/client/spi/impl/sequence/AbstractCallIdSequence.h"
 
 namespace hazelcast {
     namespace client {
@@ -18957,7 +16542,7 @@ namespace hazelcast {
                             3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES) {
                         std::ostringstream out;
                         out << "maxConcurrentInvocations should be a positive number. maxConcurrentInvocations="
-                                << maxConcurrentInvocations;
+                            << maxConcurrentInvocations;
                         util::Preconditions::checkPositive(maxConcurrentInvocations, out.str());
 
                         this->maxConcurrentInvocations = maxConcurrentInvocations;
@@ -19003,27 +16588,7 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <chrono>
 
-#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
-#include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/TimeUtil.h"
-#include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
 
 namespace hazelcast {
     namespace client {
@@ -19059,7 +16624,8 @@ namespace hazelcast {
                                         << "Timed out trying to acquire another call ID."
                                         << " maxConcurrentInvocations = " << getMaxConcurrentInvocations()
                                         << ", backoffTimeout = "
-                                        << std::chrono::microseconds(backoffTimeoutNanos / 1000).count() << " msecs, elapsed:"
+                                        << std::chrono::microseconds(backoffTimeoutNanos / 1000).count()
+                                        << " msecs, elapsed:"
                                         << std::chrono::microseconds(elapsedNanos / 1000).count() << " msecs").build();
                             }
                             IDLER->idle(idleCount);
@@ -19075,24 +16641,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h"
 
 namespace hazelcast {
     namespace client {
@@ -19115,33 +16663,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/HashUtil.h"
-#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/impl/BuildInfo.h"
 
 namespace hazelcast {
     namespace client {
@@ -19184,12 +16705,12 @@ namespace hazelcast {
                         if (!partitionStateVersionExist || partitionStateVersion > lastPartitionStateVersion) {
                             typedef std::vector<std::pair<Address, std::vector<int32_t> > > PARTITION_VECTOR;
                             for (const PARTITION_VECTOR::value_type &entry : partitions) {
-                                            const Address &address = entry.first;
-                                            for (const std::vector<int32_t>::value_type &partition : entry.second) {
-                                                            this->partitions.put(partition, std::shared_ptr<Address>(
-                                                                    new Address(address)));
-                                                        }
-                                        }
+                                const Address &address = entry.first;
+                                for (const std::vector<int32_t>::value_type &partition : entry.second) {
+                                    this->partitions.put(partition, std::shared_ptr<Address>(
+                                            new Address(address)));
+                                }
+                            }
                             partitionCount = this->partitions.size();
                             lastPartitionStateVersion = partitionStateVersion;
                             if (logger.isFinestEnabled()) {
@@ -19219,7 +16740,7 @@ namespace hazelcast {
                         std::unique_ptr<protocol::ClientMessage> clientMessage =
                                 protocol::codec::ClientAddPartitionListenerCodec::encodeRequest();
                         std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client, clientMessage,
-                                                                                                  "", ownerConnection);
+                                                                                                "", ownerConnection);
                         invocation->setEventHandler(shared_from_this());
                         invocation->invokeUrgent()->get();
                     }
@@ -19279,7 +16800,7 @@ namespace hazelcast {
                         }
                         std::unique_ptr<protocol::ClientMessage> requestMessage = protocol::codec::ClientGetPartitionsCodec::encodeRequest();
                         std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
-                                                                                                  requestMessage, "");
+                                                                                                requestMessage, "");
                         std::shared_ptr<ClientInvocationFuture> future = invocation->invokeUrgent();
                         try {
                             std::shared_ptr<protocol::ClientMessage> responseMessage = future->get();
@@ -19291,7 +16812,7 @@ namespace hazelcast {
                                                      response.partitionStateVersionExist);
                         } catch (exception::IException &e) {
                             if (client.getLifecycleService().isRunning()) {
-                                logger.warning("Error while fetching cluster partition table!" , e);
+                                logger.warning("Error while fetching cluster partition table!", e);
                             }
                         }
                     }
@@ -19300,10 +16821,10 @@ namespace hazelcast {
                 bool ClientPartitionServiceImpl::isClusterFormedByOnlyLiteMembers() {
                     ClientClusterService &clusterService = client.getClientClusterService();
                     for (const std::vector<Member>::value_type &member : clusterService.getMemberList()) {
-                                    if (!member.isLiteMember()) {
-                                        return false;
-                                    }
-                                }
+                        if (!member.isLiteMember()) {
+                            return false;
+                        }
+                    }
                     return true;
                 }
 
@@ -19324,7 +16845,7 @@ namespace hazelcast {
                         }
                         std::unique_ptr<protocol::ClientMessage> requestMessage = protocol::codec::ClientGetPartitionsCodec::encodeRequest();
                         std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
-                                                                                                  requestMessage, "");
+                                                                                                requestMessage, "");
                         std::shared_ptr<ClientInvocationFuture> future = invocation->invokeUrgent();
                         future->andThen(partitionService.refreshTaskCallback);
                     } catch (exception::IException &e) {
@@ -19363,32 +16884,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <ostream>
 
-#include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
-#include "hazelcast/client/LoadBalancer.h"
-#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -19513,26 +17009,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-#include <hazelcast/client/spi/impl/ClientInvocationFuture.h>
-
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 
 namespace hazelcast {
     namespace client {
@@ -19607,8 +17084,8 @@ namespace hazelcast {
                 ClientInvocationFuture::InternalDelegatingExecutionCallback::InternalDelegatingExecutionCallback(
                         const std::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> > &callback,
                         const std::shared_ptr<sequence::CallIdSequence> &callIdSequence) : callback(callback),
-                                                                                             callIdSequence(
-                                                                                                     callIdSequence) {
+                                                                                           callIdSequence(
+                                                                                                   callIdSequence) {
                     this->callIdSequence->forceNext();
                 }
 
@@ -19636,29 +17113,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-
-#include "hazelcast/client/exception/IException.h"
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/client/spi/impl/AwsAddressProvider.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/util/AddressHelper.h"
 
 namespace hazelcast {
     namespace client {
@@ -19677,11 +17131,11 @@ namespace hazelcast {
 
                     typedef std::map<std::string, std::string> LookupTable;
                     for (const LookupTable::value_type &privateAddress : lookupTable) {
-                                    std::vector<Address> possibleAddresses = util::AddressHelper::getSocketAddresses(
-                                            privateAddress.first + ":" + awsMemberPort, logger);
-                                    addresses.insert(addresses.begin(), possibleAddresses.begin(),
-                                                     possibleAddresses.end());
-                                }
+                        std::vector<Address> possibleAddresses = util::AddressHelper::getSocketAddresses(
+                                privateAddress.first + ":" + awsMemberPort, logger);
+                        addresses.insert(addresses.begin(), possibleAddresses.begin(),
+                                         possibleAddresses.end());
+                    }
                     return addresses;
                 }
 
@@ -19689,7 +17143,7 @@ namespace hazelcast {
                     try {
                         privateToPublic = awsClient.getAddresses();
                     } catch (exception::IException &e) {
-                        logger.warning("Aws addresses failed to load: " , e.getMessage());
+                        logger.warning("Aws addresses failed to load: ", e.getMessage());
                     }
                 }
 
@@ -19703,24 +17157,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include <clocale>
-#include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
 
 namespace hazelcast {
     namespace client {
@@ -19736,31 +17172,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-
-#include "hazelcast/client/spi/ProxyManager.h"
-#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/ClientProxy.h"
-#include "hazelcast/client/spi/ClientProxyFactory.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -19778,8 +17189,8 @@ namespace hazelcast {
 
             void ProxyManager::destroy() {
                 for (const std::shared_ptr<util::Future<ClientProxy> > &future : proxies.values()) {
-                                future->get()->onShutdown();
-                            }
+                    future->get()->onShutdown();
+                }
                 proxies.clear();
             }
 
@@ -19933,31 +17344,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 5/23/13.
 
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
-#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
-#include "hazelcast/client/spi/ClientInvocationService.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -20040,7 +17427,8 @@ namespace hazelcast {
                 return hazelcastClient.getLockReferenceIdGenerator();
             }
 
-            std::shared_ptr<client::impl::HazelcastClientInstanceImpl> ClientContext::getHazelcastClientImplementation() {
+            std::shared_ptr<client::impl::HazelcastClientInstanceImpl>
+            ClientContext::getHazelcastClientImplementation() {
                 return hazelcastClient.shared_from_this();
             }
 
@@ -20059,38 +17447,7 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 6/17/13.
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/ProxyManager.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/impl/statistics/Statistics.h"
 
 namespace hazelcast {
     namespace client {
@@ -20215,31 +17572,13 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 01 Dec 2016
 
-#include "hazelcast/client/spi/DefaultObjectNamespace.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
             DefaultObjectNamespace::DefaultObjectNamespace(const std::string &service, const std::string &object)
-                : serviceName(service), objectName(object) {
+                    : serviceName(service), objectName(object) {
 
             }
 
@@ -20254,31 +17593,6 @@ namespace hazelcast {
     }
 }
 
-
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include <hazelcast/client/spi/ClientProxy.h>
-
-#include "hazelcast/client/spi/ClientProxy.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/ProxyManager.h"
-#include "hazelcast/client/spi/ClientListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -20342,7 +17656,8 @@ namespace hazelcast {
                 spi::impl::ClientInvocation::create(getContext(), clientMessage, getName())->invoke()->get();
             }
 
-            ClientProxy::EventHandlerDelegator::EventHandlerDelegator(client::impl::BaseEventHandler *handler) : handler(
+            ClientProxy::EventHandlerDelegator::EventHandlerDelegator(client::impl::BaseEventHandler *handler)
+                    : handler(
                     handler) {}
 
             void ClientProxy::EventHandlerDelegator::handle(const std::shared_ptr<protocol::ClientMessage> &event) {
@@ -20358,7 +17673,7 @@ namespace hazelcast {
             }
 
             std::string ClientProxy::registerListener(const std::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
-                                                    client::impl::BaseEventHandler *handler) {
+                                                      client::impl::BaseEventHandler *handler) {
                 handler->setLogger(&getContext().getLogger());
                 return getContext().getClientListenerService().registerListener(codec,
                                                                                 std::shared_ptr<spi::EventHandler<protocol::ClientMessage> >(
@@ -20381,30 +17696,9 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by ihsan demir on 14 Dec 2016.
-//
-
-#include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
-
 namespace hazelcast {
     namespace client {
-        namespace map{
+        namespace map {
             namespace impl {
                 namespace nearcache {
                     bool TrueMarkerImpl::tryMark(const serialization::pimpl::Data &key) {
@@ -20433,37 +17727,22 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 20/02/14.
-//
-
-#include "hazelcast/client/map/DataEntryView.h"
 
 namespace hazelcast {
     namespace client {
-        namespace map{
-            DataEntryView::DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, int64_t cost,
-                          int64_t creationTime, int64_t expirationTime, int64_t hits, int64_t lastAccessTime,
-                          int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version, int64_t evictionCriteriaNumber,
-                          int64_t ttl) : key(key), value(value), cost(cost), creationTime(creationTime),
-                                      expirationTime(expirationTime), hits(hits), lastAccessTime(lastAccessTime),
-                                      lastStoredTime(lastStoredTime), lastUpdateTime(lastUpdateTime),
-                                      version(version), evictionCriteriaNumber(evictionCriteriaNumber), ttl(ttl) { }
+        namespace map {
+            DataEntryView::DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
+                                         int64_t cost,
+                                         int64_t creationTime, int64_t expirationTime, int64_t hits,
+                                         int64_t lastAccessTime,
+                                         int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version,
+                                         int64_t evictionCriteriaNumber,
+                                         int64_t ttl) : key(key), value(value), cost(cost), creationTime(creationTime),
+                                                        expirationTime(expirationTime), hits(hits),
+                                                        lastAccessTime(lastAccessTime),
+                                                        lastStoredTime(lastStoredTime), lastUpdateTime(lastUpdateTime),
+                                                        version(version),
+                                                        evictionCriteriaNumber(evictionCriteriaNumber), ttl(ttl) {}
 
 
             const serialization::pimpl::Data &DataEntryView::getKey() const {
@@ -20518,23 +17797,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/IAtomicLong.h"
 
 namespace hazelcast {
     namespace client {
@@ -20626,29 +17888,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-
-#include <hazelcast/client/IExecutorService.h>
-
-
-#include "hazelcast/client/spi/ClientPartitionService.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -20745,24 +17985,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
-#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
 
 namespace hazelcast {
     namespace client {
@@ -20778,40 +18000,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 6/27/13.
 
-#include <limits.h>
-
-#include "hazelcast/client/ILock.h"
-
-// Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 
 namespace hazelcast {
     namespace client {
@@ -20907,27 +18096,11 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/FlakeIdGenerator.h"
 
 namespace hazelcast {
     namespace client {
-        FlakeIdGenerator::FlakeIdGenerator(const std::shared_ptr<impl::IdGeneratorInterface> &impl) : IdGenerator(impl) {}
+        FlakeIdGenerator::FlakeIdGenerator(const std::shared_ptr<impl::IdGeneratorInterface> &impl) : IdGenerator(
+                impl) {}
 
         int64_t FlakeIdGenerator::newId() {
             return IdGenerator::newId();
@@ -20938,27 +18111,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 25/06/14.
-//
 
-#include "hazelcast/client/serialization/Serializer.h"
-#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -21026,38 +18179,14 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/ISemaphore.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
 
         ISemaphore::ISemaphore(const std::string &name, spi::ClientContext *context)
-        : proxy::ProxyImpl("hz:impl:semaphoreService", name, context) {
+                : proxy::ProxyImpl("hz:impl:semaphoreService", name, context) {
             serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&name);
             partitionId = getPartitionId(keyData);
         }
@@ -21067,7 +18196,8 @@ namespace hazelcast {
             std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreInitCodec::encodeRequest(getName(), permits);
 
-            return invokeAndGetResult<bool, protocol::codec::SemaphoreInitCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<bool, protocol::codec::SemaphoreInitCodec::ResponseParameters>(request,
+                                                                                                     partitionId);
         }
 
         void ISemaphore::acquire() {
@@ -21085,14 +18215,16 @@ namespace hazelcast {
             std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreAvailablePermitsCodec::encodeRequest(getName());
 
-            return invokeAndGetResult<int, protocol::codec::SemaphoreAvailablePermitsCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<int, protocol::codec::SemaphoreAvailablePermitsCodec::ResponseParameters>(request,
+                                                                                                                partitionId);
         }
 
         int ISemaphore::drainPermits() {
             std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreDrainPermitsCodec::encodeRequest(getName());
 
-            return invokeAndGetResult<int, protocol::codec::SemaphoreDrainPermitsCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<int, protocol::codec::SemaphoreDrainPermitsCodec::ResponseParameters>(request,
+                                                                                                            partitionId);
         }
 
         void ISemaphore::reducePermits(int reduction) {
@@ -21121,7 +18253,8 @@ namespace hazelcast {
             std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreTryAcquireCodec::encodeRequest(getName(), permits, 0);
 
-            return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request,
+                                                                                                           partitionId);
         }
 
         bool ISemaphore::tryAcquire(long timeoutInMillis) {
@@ -21132,7 +18265,8 @@ namespace hazelcast {
             std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreTryAcquireCodec::encodeRequest(getName(), permits, timeoutInMillis);
 
-            return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request,
+                                                                                                           partitionId);
         }
 
         void ISemaphore::increasePermits(int32_t increase) {
@@ -21149,22 +18283,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/InitialMembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -21212,31 +18330,13 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/IExecutorService.h"
 
 namespace hazelcast {
     namespace client {
         namespace executor {
             namespace impl {
-                ExecutorServiceProxyFactory::ExecutorServiceProxyFactory(spi::ClientContext *clientContext) : clientContext(
+                ExecutorServiceProxyFactory::ExecutorServiceProxyFactory(spi::ClientContext *clientContext)
+                        : clientContext(
                         clientContext) {}
 
                 std::shared_ptr<spi::ClientProxy> ExecutorServiceProxyFactory::create(const std::string &id) {
@@ -21247,23 +18347,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <sstream>
-#include "hazelcast/client/aws/impl/Filter.h"
 
 namespace hazelcast {
     namespace client {
@@ -21298,33 +18381,13 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
         namespace aws {
             namespace impl {
                 AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &awsConfig, util::ILogger &logger)
-                : logger(logger) {
+                        : logger(logger) {
                     if (awsConfig.isEnabled() && !awsConfig.isInsideAws()) {
                         awsClient = std::unique_ptr<AWSClient>(new AWSClient(awsConfig, logger));
                     }
@@ -21385,35 +18448,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/date_time.hpp>
-
-#include <asio.hpp>
-
-#include "hazelcast/client/aws/impl/DescribeInstances.h"
-#include "hazelcast/client/aws/impl/Filter.h"
-#include "hazelcast/client/aws/impl/Constants.h"
-#include "hazelcast/client/aws/utility/CloudUtility.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/SyncHttpClient.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -21514,7 +18548,7 @@ namespace hazelcast {
                         throw exception::IllegalArgumentException("getKeysFromIamTaskRole",
                                                                   "Could not acquire credentials! Did not find declared AWS access key or IAM Role, and could not discover IAM Task Role or default role.");
                     }
-                    
+
                     util::SyncHttpClient httpClient(IAM_TASK_ROLE_ENDPOINT, uri);
 
                     try {
@@ -21537,7 +18571,8 @@ namespace hazelcast {
                         parseAndStoreRoleCreds(istream);
                     } catch (exception::IException &e) {
                         std::stringstream out;
-                        out << "Unable to retrieve credentials from IAM Task Role. URI: " << query << ". \n " << e.what();
+                        out << "Unable to retrieve credentials from IAM Task Role. URI: " << query << ". \n "
+                            << e.what();
                         throw exception::InvalidConfigurationException("getKeysFromIamRole", out.str());
                     }
                 }
@@ -21557,7 +18592,7 @@ namespace hazelcast {
                         } else {
                             filter.addFilter("tag-key", awsConfig.getTagKey());
                         }
-                    } else if (!awsConfig.getTagValue().empty())  {
+                    } else if (!awsConfig.getTagValue().empty()) {
                         filter.addFilter("tag-value", awsConfig.getTagValue());
                     }
 
@@ -21578,22 +18613,6 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/aws/impl/Constants.h"
 
 namespace hazelcast {
     namespace client {
@@ -21609,36 +18628,10 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include <sstream>
-#include <iomanip>
-
-#include <boost/algorithm/string/replace.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <openssl/ssl.h>
 #endif
 
-#include "hazelcast/client/aws/utility/AwsURLEncoder.h"
-#include "hazelcast/client/aws/impl/Constants.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/client/aws/security/EC2RequestSigner.h"
-#include "hazelcast/util/Preconditions.h"
 
 namespace hazelcast {
     namespace client {
@@ -21668,7 +18661,7 @@ namespace hazelcast {
                 std::string EC2RequestSigner::createFormattedCredential() const {
                     std::stringstream out;
                     out << awsConfig.getAccessKey() << '/' << timestamp.substr(0, DATE_LENGTH) << '/'
-                    << awsConfig.getRegion() << '/' << "ec2/aws4_request";
+                        << awsConfig.getRegion() << '/' << "ec2/aws4_request";
                     return out.str();
                 }
 
@@ -21684,11 +18677,11 @@ namespace hazelcast {
                         const std::map<std::string, std::string> &attributes) const {
                     std::ostringstream out;
                     out << impl::Constants::GET << NEW_LINE
-                    << '/' << NEW_LINE
-                    << getCanonicalizedQueryString(attributes) << NEW_LINE
-                    << getCanonicalHeaders() << NEW_LINE
-                    << "host" << NEW_LINE
-                    << sha256Hashhex("");
+                        << '/' << NEW_LINE
+                        << getCanonicalizedQueryString(attributes) << NEW_LINE
+                        << getCanonicalHeaders() << NEW_LINE
+                        << "host" << NEW_LINE
+                        << sha256Hashhex("");
                     return out.str();
                 }
 
@@ -21732,9 +18725,9 @@ namespace hazelcast {
                 std::string EC2RequestSigner::createStringToSign(const std::string &canonicalRequest) const {
                     std::ostringstream out;
                     out << impl::Constants::SIGNATURE_METHOD_V4 << NEW_LINE
-                    << timestamp << NEW_LINE
-                    << getCredentialScope() << NEW_LINE
-                    << sha256Hashhex(canonicalRequest);
+                        << timestamp << NEW_LINE
+                        << getCredentialScope() << NEW_LINE
+                        << sha256Hashhex(canonicalRequest);
                     return out.str();
                 }
 
@@ -21816,38 +18809,38 @@ namespace hazelcast {
                                                                const unsigned char *data,
                                                                size_t dataLen,
                                                                unsigned char *hash) const {
-                    #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
 
-                    #if OPENSSL_VERSION_NUMBER > 0x10100000L
+#if OPENSSL_VERSION_NUMBER > 0x10100000L
                     HMAC_CTX *hmac = HMAC_CTX_new();
-                    #else
+#else
                     HMAC_CTX *hmac = new HMAC_CTX;
                     HMAC_CTX_init(hmac);
-                    #endif
+#endif
 
                     HMAC_Init_ex(hmac, keyBuffer, keyLen, EVP_sha256(), NULL);
                     HMAC_Update(hmac, data, dataLen);
                     unsigned int len = 32;
                     HMAC_Final(hmac, hash, &len);
 
-                    #if OPENSSL_VERSION_NUMBER > 0x10100000L
+#if OPENSSL_VERSION_NUMBER > 0x10100000L
                     HMAC_CTX_free(hmac);
-                    #else
+#else
                     HMAC_CTX_cleanup(hmac);
                     delete hmac;
-                    #endif
+#endif
 
                     return len;
-                    #else
+#else
                     util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");
                     return 0;
-                    #endif
+#endif
                 }
 
                 std::string EC2RequestSigner::sha256Hashhex(const std::string &in) const {
-                    #ifdef HZ_BUILD_WITH_SSL
-                        #ifdef OPENSSL_FIPS
-                        unsigned int hashLen = 0;
+#ifdef HZ_BUILD_WITH_SSL
+#ifdef OPENSSL_FIPS
+                    unsigned int hashLen = 0;
                         unsigned char hash[EVP_MAX_MD_SIZE];
                         EVP_MD_CTX ctx;
                         EVP_MD_CTX_init(&ctx);
@@ -21856,52 +18849,31 @@ namespace hazelcast {
                         EVP_DigestFinal_ex(&ctx, hash, &hashLen);
                         EVP_MD_CTX_cleanup(&ctx);
                         return convertToHexString(hash, hashLen);
-                        #else
-                        unsigned char hash[SHA256_DIGEST_LENGTH];
-                        SHA256_CTX sha256;
-                        SHA256_Init(&sha256);
-                        SHA256_Update(&sha256, in.c_str(), in.size());
-                        SHA256_Final(hash, &sha256);
+#else
+                    unsigned char hash[SHA256_DIGEST_LENGTH];
+                    SHA256_CTX sha256;
+                    SHA256_Init(&sha256);
+                    SHA256_Update(&sha256, in.c_str(), in.size());
+                    SHA256_Final(hash, &sha256);
 
-                        return convertToHexString(hash, SHA256_DIGEST_LENGTH);
-                        #endif // OPENSSL_FIPS
-                    #else
+                    return convertToHexString(hash, SHA256_DIGEST_LENGTH);
+#endif // OPENSSL_FIPS
+#else
                     util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");
                     return "";
-                    #endif // HZ_BUILD_WITH_SSL
+#endif // HZ_BUILD_WITH_SSL
                 }
             }
         }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <boost/algorithm/string/replace.hpp>
-
-#include "hazelcast/client/aws/AWSClient.h"
-#include "hazelcast/client/aws/impl/DescribeInstances.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
 
 namespace hazelcast {
     namespace client {
         namespace aws {
             AWSClient::AWSClient(config::ClientAwsConfig &awsConfig, util::ILogger &logger) : awsConfig(awsConfig),
-            logger(logger) {
+                                                                                              logger(logger) {
                 this->endpoint = awsConfig.getHostHeader();
                 if (!awsConfig.getRegion().empty() && awsConfig.getRegion().length() > 0) {
                     if (awsConfig.getHostHeader().find("ec2.") != 0) {
@@ -21919,29 +18891,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include <string>
-#include <cctype>
-#include <sstream>
-#include <iomanip>
-
-#include <boost/algorithm/string/replace.hpp>
-
-#include "hazelcast/client/aws/utility/AwsURLEncoder.h"
 
 namespace hazelcast {
     namespace client {
@@ -21980,28 +18929,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/json_parser.hpp>
-
-#include "hazelcast/client/aws/utility/CloudUtility.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
@@ -22059,29 +18986,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 22/01/14.
-//
-
-
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/Cluster.h"
-
 
 namespace hazelcast {
     namespace client {
@@ -22096,32 +19000,12 @@ namespace hazelcast {
         InitialMembershipEvent::InitialMembershipEvent(Cluster &cluster, const std::set<Member> &members) : cluster(
                 cluster) {
             for (const Member &member : members) {
-                            this->members.push_back(Member(member));
-                        }
+                this->members.push_back(Member(member));
+            }
 
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/InstanceOfPredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22144,31 +19028,11 @@ namespace hazelcast {
             void InstanceOfPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
                 throw exception::HazelcastSerializationException("InstanceOfPredicate::readData",
-                                            "Client should not need to use readData method!!!");
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/ILikePredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22193,31 +19057,11 @@ namespace hazelcast {
             void ILikePredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
                 throw exception::HazelcastSerializationException("ILikePredicate::readData",
-                                            "Client should not need to use readData method!!!");
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/TruePredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22236,31 +19080,11 @@ namespace hazelcast {
             void TruePredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
                 throw exception::HazelcastSerializationException("TruePredicate::readData",
-                                            "Client should not need to use readData method!!!");
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/OrPredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22290,7 +19114,7 @@ namespace hazelcast {
             }
 
             void OrPredicate::writeData(serialization::ObjectDataOutput &out) const {
-                out.writeInt((int)predicates.size());
+                out.writeInt((int) predicates.size());
                 for (std::vector<Predicate *>::const_iterator it = predicates.begin();
                      it != predicates.end(); ++it) {
                     out.writeObject<serialization::IdentifiedDataSerializable>(*it);
@@ -22299,31 +19123,12 @@ namespace hazelcast {
 
             void OrPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("OrPredicate::readData", "Client should not need to use readData method!!!");
+                throw exception::HazelcastSerializationException("OrPredicate::readData",
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/NotPredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22351,28 +19156,11 @@ namespace hazelcast {
             void NotPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
                 throw exception::HazelcastSerializationException("NotPredicate::readData",
-                                            "Client should not need to use readData method!!!");
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/QueryConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -22387,26 +19175,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/SqlPredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22429,31 +19197,11 @@ namespace hazelcast {
             void SqlPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
                 throw exception::HazelcastSerializationException("SqlPredicate::readData",
-                                            "Client should not need to use readData method!!!");
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/FalsePredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22470,33 +19218,13 @@ namespace hazelcast {
             }
 
             void FalsePredicate::readData(serialization::ObjectDataInput &in) {
-                    // Not need to read at the client side
-                    throw exception::HazelcastSerializationException("FalsePredicate::readData",
-                                                "Client should not need to use readData method!!!");
+                // Not need to read at the client side
+                throw exception::HazelcastSerializationException("FalsePredicate::readData",
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/RegexPredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22521,31 +19249,11 @@ namespace hazelcast {
             void RegexPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
                 throw exception::HazelcastSerializationException("RegexPredicate::readData",
-                                            "Client should not need to use readData method!!!");
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/AndPredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22590,26 +19298,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/query/LikePredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -22634,32 +19322,12 @@ namespace hazelcast {
             void LikePredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
                 throw exception::HazelcastSerializationException("LikePredicate::readData",
-                                            "Client should not need to use readData method!!!");
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 21/08/14.
-//
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ClientProperties.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -22845,23 +19513,6 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#include "hazelcast/client/GroupConfig.h"
-
 
 namespace hazelcast {
     namespace client {
@@ -22871,8 +19522,7 @@ namespace hazelcast {
         }
 
         GroupConfig::GroupConfig(const std::string &name, const std::string &password)
-        : name(name)
-        , password(password) {
+                : name(name), password(password) {
         }
 
         std::string GroupConfig::getName() const {
@@ -22897,33 +19547,10 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by sancar koyunlu on 6/17/13.
-
-
-
-#include "hazelcast/client/LifecycleEvent.h"
-
-
 namespace hazelcast {
     namespace client {
         LifecycleEvent::LifecycleEvent(LifeCycleState state)
-        : state(state) {
+                : state(state) {
 
         }
 
@@ -22932,33 +19559,24 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//
-// Created by msk on 3/13/13.
 
-#include "hazelcast/client/exception/IException.h"
 
 namespace hazelcast {
     namespace client {
         namespace exception {
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, const std::string &details,
-                                   int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable) : src(source), msg(message), details(details),
-                                                                         errorCode(errorNo), causeErrorCode(causeCode), runtimeException(isRuntime), retryable(retryable) {
+                                   int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable) : src(source),
+                                                                                                         msg(message),
+                                                                                                         details(details),
+                                                                                                         errorCode(
+                                                                                                                 errorNo),
+                                                                                                         causeErrorCode(
+                                                                                                                 causeCode),
+                                                                                                         runtimeException(
+                                                                                                                 isRuntime),
+                                                                                                         retryable(
+                                                                                                                 retryable) {
                 std::ostringstream out;
                 out << exceptionName << " {" << message << ". Details:" << details << " Error code:" << errorNo
                     << ", Cause error code:" << causeCode << "} at " + source;
@@ -22967,8 +19585,11 @@ namespace hazelcast {
 
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, int32_t errorNo,
-                                   int32_t causeCode, bool isRuntime, bool retryable) : src(source), msg(message), errorCode(errorNo),
-                                                        causeErrorCode(causeCode), runtimeException(isRuntime), retryable(retryable) {
+                                   int32_t causeCode, bool isRuntime, bool retryable) : src(source), msg(message),
+                                                                                        errorCode(errorNo),
+                                                                                        causeErrorCode(causeCode),
+                                                                                        runtimeException(isRuntime),
+                                                                                        retryable(retryable) {
                 std::ostringstream out;
                 out << exceptionName << " {" << message << " Error code:" << errorNo << ", Cause error code:"
                     << causeCode << "} at " + source;
@@ -22985,8 +19606,15 @@ namespace hazelcast {
 
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, int32_t errorNo,
-                                   const std::shared_ptr<IException> &cause, bool isRuntime, bool retryable) : src(source), msg(message),
-                                                                                 errorCode(errorNo), cause(cause), runtimeException(isRuntime), retryable(retryable) {
+                                   const std::shared_ptr<IException> &cause, bool isRuntime, bool retryable) : src(
+                    source), msg(message),
+                                                                                                               errorCode(
+                                                                                                                       errorNo),
+                                                                                                               cause(cause),
+                                                                                                               runtimeException(
+                                                                                                                       isRuntime),
+                                                                                                               retryable(
+                                                                                                                       retryable) {
                 std::ostringstream out;
                 out << exceptionName << " {" << message << " Error code:" << errorNo << ", Caused by:" << *cause
                     << "} at " + source;
@@ -23048,23 +19676,6 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 namespace hazelcast {
     namespace client {
@@ -23073,7 +19684,8 @@ namespace hazelcast {
                                                                      const std::string &message,
                                                                      int32_t errorCode, int64_t correlationId,
                                                                      std::string details)
-                    : IException("UndefinedErrorCodeException", source, message, protocol::UNDEFINED,true), error(errorCode),
+                    : IException("UndefinedErrorCodeException", source, message, protocol::UNDEFINED, true),
+                      error(errorCode),
                       messageCallId(correlationId),
                       detailedErrorMessage(details) {
             }
@@ -23110,14 +19722,16 @@ namespace hazelcast {
 
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message)
-                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, true, true),
+                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, true,
+                                 true),
                       HazelcastException(source, message) {
             }
 
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message,
                                                                      int32_t causeCode) : IException(
-                    "RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, causeCode, true, true),
+                    "RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, causeCode, true,
+                    true),
                                                                                           HazelcastException(source,
                                                                                                              message,
                                                                                                              causeCode) {}
@@ -23125,12 +19739,14 @@ namespace hazelcast {
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message,
                                                                      const std::shared_ptr<IException> &cause)
-                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, cause, true, true),
+                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, cause,
+                                 true, true),
                       HazelcastException(source, message, cause) {}
 
             MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
                                                      const std::string &details, int32_t causeCode)
-                    : IException("MemberLeftException", source, message, details, protocol::MEMBER_LEFT, causeCode, true),
+                    : IException("MemberLeftException", source, message, details, protocol::MEMBER_LEFT, causeCode,
+                                 true),
                       ExecutionException(source, message, details, causeCode),
                       RetryableHazelcastException(source, message, details, causeCode) {
             }
@@ -23162,28 +19778,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
-#include "hazelcast/client/internal/config/ConfigUtils.h"
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/LifecycleListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -23207,8 +19801,8 @@ namespace hazelcast {
         std::set<Address> ClientConfig::getAddresses() {
             std::set<Address> result;
             for (const Address &address : networkConfig.getAddresses()) {
-                            result.insert(address);
-                        }
+                result.insert(address);
+            }
             return result;
         }
 
@@ -23428,7 +20022,8 @@ namespace hazelcast {
             return *this;
         }
 
-        std::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
+        std::shared_ptr<config::ClientFlakeIdGeneratorConfig>
+        ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
             std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
                     configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
@@ -23439,7 +20034,8 @@ namespace hazelcast {
         }
 
 
-        std::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
+        std::shared_ptr<config::ClientFlakeIdGeneratorConfig>
+        ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
             std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
                     configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
@@ -23457,7 +20053,8 @@ namespace hazelcast {
             return config;
         }
 
-        ClientConfig &ClientConfig::addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
+        ClientConfig &
+        ClientConfig::addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
             flakeIdGeneratorConfigMap.put(config->getName(), config);
             return *this;
         }

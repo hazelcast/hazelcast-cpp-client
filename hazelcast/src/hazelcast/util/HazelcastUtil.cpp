@@ -61,7 +61,7 @@ namespace hazelcast {
             return getAddressHolder(address, -1);
         }
 
-       asio::ip::address AddressUtil::getByName(const std::string &host) {
+        asio::ip::address AddressUtil::getByName(const std::string &host) {
             return getByName(host, "");
         }
 
@@ -81,21 +81,7 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 #include <cmath>
 #include <cassert>
@@ -139,7 +125,7 @@ namespace hazelcast {
                 }
 
                 if (logger.isFinestEnabled()) {
-                    logger.finest("ExecutorService " , threadNamePrefix , " started " , threadCount ,  " workers.");
+                    logger.finest("ExecutorService ", threadNamePrefix, " started ", threadCount, " workers.");
                 }
             }
 
@@ -203,36 +189,38 @@ namespace hazelcast {
                 int64_t endTimeMilliseconds = currentTimeMillis() + timeoutMilliseconds;
 
                 for (std::shared_ptr<Worker> &worker : workers) {
-                                int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
+                    int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
-                                if (logger.isFinestEnabled()) {
-                                    logger.finest("ExecutorService is waiting worker thread " , worker->getName(), " for a maximum of " , waitMilliseconds ,  " msecs.");
-                                }
+                    if (logger.isFinestEnabled()) {
+                        logger.finest("ExecutorService is waiting worker thread ", worker->getName(),
+                                      " for a maximum of ", waitMilliseconds, " msecs.");
+                    }
 
                     auto &t = worker->getThread();
                     if (!t.waitMilliseconds(waitMilliseconds)) {
-                                    logger.info("ExecutorService could not stop worker thread ", worker->getName()
-                                                    , " in ", timeoutMilliseconds, " msecs. Will retry stopping.");
+                        logger.info("ExecutorService could not stop worker thread ", worker->getName(), " in ",
+                                    timeoutMilliseconds, " msecs. Will retry stopping.");
 
-                                    return false;
+                        return false;
                     }
                     t.join();
                 }
 
                 for (const std::shared_ptr<Thread> &t : delayedRunners.values()) {
-                                int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
+                    int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
-                                if (logger.isFinestEnabled()) {
-                                    logger.finest("ExecutorService is waiting delayed runner thread " , t->getName(), " for a maximum of " , waitMilliseconds ,  " msecs.");
-                                }
+                    if (logger.isFinestEnabled()) {
+                        logger.finest("ExecutorService is waiting delayed runner thread ", t->getName(),
+                                      " for a maximum of ", waitMilliseconds, " msecs.");
+                    }
 
-                                if (!t->waitMilliseconds(waitMilliseconds)) {
-                                    logger.info("ExecutorService could not stop delayed runner thread ", t->getName()
-                                                    , " in ", timeoutMilliseconds, " msecs. Will retry stopping.");
+                    if (!t->waitMilliseconds(waitMilliseconds)) {
+                        logger.info("ExecutorService could not stop delayed runner thread ", t->getName(), " in ",
+                                    timeoutMilliseconds, " msecs. Will retry stopping.");
 
-                                    return false;
-                                }
-                                t->join();
+                        return false;
+                    }
+                    t->join();
                 }
 
                 return true;
@@ -300,10 +288,10 @@ namespace hazelcast {
                         }
                     } catch (client::exception::InterruptedException &) {
                         if (executorService.logger.isFinestEnabled()) {
-                            executorService.logger.finest(getName() , " is interrupted.");
+                            executorService.logger.finest(getName(), " is interrupted.");
                         }
                     } catch (client::exception::IException &t) {
-                        executorService.logger.warning(getName() , " caused an exception. " , t);
+                        executorService.logger.warning(getName(), " caused an exception. ", t);
                     }
                 }
             }
@@ -350,8 +338,9 @@ namespace hazelcast {
 
             SimpleExecutorService::Worker::Worker(SimpleExecutorService &executorService, int32_t maximumQueueCapacity)
                     : executorService(executorService), name(generateThreadName(executorService.threadNamePrefix)),
-                    workQueue((size_t) maximumQueueCapacity),
-                    thread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), executorService.logger) {
+                      workQueue((size_t) maximumQueueCapacity),
+                      thread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)),
+                             executorService.logger) {
             }
 
             Thread &SimpleExecutorService::Worker::getThread() {
@@ -359,17 +348,26 @@ namespace hazelcast {
             }
 
             SimpleExecutorService::DelayedRunner::DelayedRunner(const std::string &threadNamePrefix,
-                    const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                    util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),
-                                             periodInMillis(-1), live(true), startTimeMillis(0), runnerThread(NULL),
-                                             logger(logger), threadNamePrefix(threadNamePrefix) {
+                                                                const std::shared_ptr<util::Runnable> &command,
+                                                                int64_t initialDelayInMillis,
+                                                                util::ILogger &logger) : command(command),
+                                                                                         initialDelayInMillis(
+                                                                                                 initialDelayInMillis),
+                                                                                         periodInMillis(-1), live(true),
+                                                                                         startTimeMillis(0),
+                                                                                         runnerThread(NULL),
+                                                                                         logger(logger),
+                                                                                         threadNamePrefix(
+                                                                                                 threadNamePrefix) {
             }
 
             SimpleExecutorService::DelayedRunner::DelayedRunner(const std::string &threadNamePrefix,
-                                                                const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                    int64_t periodInMillis, util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),
-                                              periodInMillis(periodInMillis), live(true), startTimeMillis(0),
-                                              runnerThread(NULL), logger(logger), threadNamePrefix(threadNamePrefix) {}
+                                                                const std::shared_ptr<util::Runnable> &command,
+                                                                int64_t initialDelayInMillis,
+                                                                int64_t periodInMillis, util::ILogger &logger)
+                    : command(command), initialDelayInMillis(initialDelayInMillis),
+                      periodInMillis(periodInMillis), live(true), startTimeMillis(0),
+                      runnerThread(NULL), logger(logger), threadNamePrefix(threadNamePrefix) {}
 
             void SimpleExecutorService::DelayedRunner::shutdown() {
                 live.store(false);
@@ -389,9 +387,9 @@ namespace hazelcast {
                         command->run();
                     } catch (client::exception::IException &e) {
                         if (isNotRepeating) {
-                            logger.warning("Runnable " , getName() , " run method caused exception:" , e);
+                            logger.warning("Runnable ", getName(), " run method caused exception:", e);
                         } else {
-                            logger.warning("Repeated runnable " , getName(), " run method caused exception:" , e);
+                            logger.warning("Repeated runnable ", getName(), " run method caused exception:", e);
                         }
                     }
 
@@ -419,21 +417,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 #include <cerrno>
 #include <hazelcast/util/ILogger.h>
@@ -449,7 +432,7 @@ namespace hazelcast {
              * @param runnable The runnable to run when this thread is started.
              */
             AbstractThread::AbstractThread(const std::shared_ptr<Runnable> &runnable, util::ILogger &logger)
-                        : state(UNSTARTED), target(runnable), finishedLatch(new util::CountDownLatch(1)), logger(logger) {
+                    : state(UNSTARTED), target(runnable), finishedLatch(new util::CountDownLatch(1)), logger(logger) {
             }
 
             AbstractThread::~AbstractThread() {
@@ -571,27 +554,13 @@ namespace hazelcast {
             AbstractThread::RunnableInfo::RunnableInfo(const std::shared_ptr<Runnable> &target,
                                                        const std::shared_ptr<CountDownLatch> &finishWaitLatch,
                                                        const std::shared_ptr<ILogger> &logger) : target(target),
-                                                                                                   finishWaitLatch(
-                                                                                                           finishWaitLatch),
-                                                                                                   logger(logger) {}
+                                                                                                 finishWaitLatch(
+                                                                                                         finishWaitLatch),
+                                                                                                 logger(logger) {}
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 12 Jan 2017
 //
@@ -601,7 +570,9 @@ namespace hazelcast {
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
+
 #include <asio/ssl/rfc2818_verification.hpp>
+
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/Preconditions.h"
@@ -610,119 +581,108 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-            SyncHttpsClient::SyncHttpsClient(const std::string &serverIp, const std::string &uriPath) : server(serverIp), uriPath(uriPath),
-                                                                        #ifdef HZ_BUILD_WITH_SSL
-                                                                         sslContext(asio::ssl::context::sslv23),
-                                                                        #endif
-                                                                         responseStream(&response) {
-                util::Preconditions::checkSSL("SyncHttpsClient::SyncHttpsClient");
+        SyncHttpsClient::SyncHttpsClient(const std::string &serverIp, const std::string &uriPath) : server(serverIp),
+                                                                                                    uriPath(uriPath),
+#ifdef HZ_BUILD_WITH_SSL
+                                                                                                    sslContext(
+                                                                                                            asio::ssl::context::sslv23),
+#endif
+                                                                                                    responseStream(
+                                                                                                            &response) {
+            util::Preconditions::checkSSL("SyncHttpsClient::SyncHttpsClient");
 
-                #ifdef HZ_BUILD_WITH_SSL
-                sslContext.set_default_verify_paths();
-                sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
-                                               asio::ssl::context::single_dh_use);
+#ifdef HZ_BUILD_WITH_SSL
+            sslContext.set_default_verify_paths();
+            sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
+                                   asio::ssl::context::single_dh_use);
 
-                socket = std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
-                        new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
-                #endif // HZ_BUILD_WITH_SSL
-            }
+            socket = std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
+                    new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
+#endif // HZ_BUILD_WITH_SSL
+        }
 
-            std::istream &SyncHttpsClient::openConnection() {
-                util::Preconditions::checkSSL("SyncHttpsClient::openConnection");
+        std::istream &SyncHttpsClient::openConnection() {
+            util::Preconditions::checkSSL("SyncHttpsClient::openConnection");
 
-                #ifdef HZ_BUILD_WITH_SSL
-                try {
-                    // Get a list of endpoints corresponding to the server name.
-                    asio::ip::tcp::resolver resolver(ioService);
-                    asio::ip::tcp::resolver::query query(server, "https");
-                    asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+#ifdef HZ_BUILD_WITH_SSL
+            try {
+                // Get a list of endpoints corresponding to the server name.
+                asio::ip::tcp::resolver resolver(ioService);
+                asio::ip::tcp::resolver::query query(server, "https");
+                asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-                    asio::connect(socket->lowest_layer(), endpoint_iterator);
+                asio::connect(socket->lowest_layer(), endpoint_iterator);
 
-                    socket->lowest_layer().set_option(asio::ip::tcp::no_delay(true));
+                socket->lowest_layer().set_option(asio::ip::tcp::no_delay(true));
 
-                    socket->set_verify_callback(asio::ssl::rfc2818_verification(server));
-                    socket->handshake(asio::ssl::stream_base::client);
+                socket->set_verify_callback(asio::ssl::rfc2818_verification(server));
+                socket->handshake(asio::ssl::stream_base::client);
 
-                    // Form the request. We specify the "Connection: close" header so that the
-                    // server will close the socket after transmitting the response. This will
-                    // allow us to treat all data up until the EOF as the content.
-                    asio::streambuf request;
-                    std::ostream request_stream(&request);
-                    request_stream << "GET " << uriPath << " HTTP/1.0\r\n";
-                    request_stream << "Host: " << server << "\r\n";
-                    request_stream << "Accept: */*\r\n";
-                    request_stream << "Connection: close\r\n\r\n";
+                // Form the request. We specify the "Connection: close" header so that the
+                // server will close the socket after transmitting the response. This will
+                // allow us to treat all data up until the EOF as the content.
+                asio::streambuf request;
+                std::ostream request_stream(&request);
+                request_stream << "GET " << uriPath << " HTTP/1.0\r\n";
+                request_stream << "Host: " << server << "\r\n";
+                request_stream << "Accept: */*\r\n";
+                request_stream << "Connection: close\r\n\r\n";
 
-                    // Send the request.
-                    asio::write(*socket, request.data());
+                // Send the request.
+                asio::write(*socket, request.data());
 
-                    // Read the response status line. The response streambuf will automatically
-                    // grow to accommodate the entire line. The growth may be limited by passing
-                    // a maximum size to the streambuf constructor.
-                    asio::read_until(*socket, response, "\r\n");
+                // Read the response status line. The response streambuf will automatically
+                // grow to accommodate the entire line. The growth may be limited by passing
+                // a maximum size to the streambuf constructor.
+                asio::read_until(*socket, response, "\r\n");
 
-                    // Check that response is OK.
-                    std::string httpVersion;
-                    responseStream >> httpVersion;
-                    unsigned int statusCode;
-                    responseStream >> statusCode;
-                    std::string statusMessage;
-                    std::getline(responseStream, statusMessage);
-                    if (!responseStream || httpVersion.substr(0, 5) != "HTTP/") {
-                        throw client::exception::IOException("openConnection", "Invalid response");
-                    }
-                    if (statusCode != 200) {
-                        std::stringstream out;
-                        out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
-                        throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());;
-                    }
-
-                    // Read the response headers, which are terminated by a blank line.
-                    asio::read_until(*socket, response, "\r\n\r\n");
-
-                    // Process the response headers.
-                    std::string header;
-                    while (std::getline(responseStream, header) && header != "\r");
-
-                    // Read until EOF
-                    asio::error_code error;
-                    size_t bytesRead;
-                    while ((bytesRead = asio::read(*socket, response.prepare(1024),
-                                      asio::transfer_at_least(1), error))) {
-                        response.commit(bytesRead);
-                    }
-
-                    if (error != asio::error::eof) {
-                        throw asio::system_error(error);
-                    }
-                } catch (asio::system_error &e) {
-                    std::ostringstream out;
-                    out << "Could not retrieve response from https://" << server << uriPath << " Error:" << e.what();
-                    throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());
+                // Check that response is OK.
+                std::string httpVersion;
+                responseStream >> httpVersion;
+                unsigned int statusCode;
+                responseStream >> statusCode;
+                std::string statusMessage;
+                std::getline(responseStream, statusMessage);
+                if (!responseStream || httpVersion.substr(0, 5) != "HTTP/") {
+                    throw client::exception::IOException("openConnection", "Invalid response");
                 }
-                #endif // HZ_BUILD_WITH_SSL
+                if (statusCode != 200) {
+                    std::stringstream out;
+                    out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
+                    throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());;
+                }
 
-                return responseStream;
+                // Read the response headers, which are terminated by a blank line.
+                asio::read_until(*socket, response, "\r\n\r\n");
+
+                // Process the response headers.
+                std::string header;
+                while (std::getline(responseStream, header) && header != "\r");
+
+                // Read until EOF
+                asio::error_code error;
+                size_t bytesRead;
+                while ((bytesRead = asio::read(*socket, response.prepare(1024),
+                                               asio::transfer_at_least(1), error))) {
+                    response.commit(bytesRead);
+                }
+
+                if (error != asio::error::eof) {
+                    throw asio::system_error(error);
+                }
+            } catch (asio::system_error &e) {
+                std::ostringstream out;
+                out << "Could not retrieve response from https://" << server << uriPath << " Error:" << e.what();
+                throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());
             }
+#endif // HZ_BUILD_WITH_SSL
+
+            return responseStream;
+        }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 12 Jan 2017
 //
@@ -736,21 +696,7 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by ihsan demir on 9 Dec 2016.
 
@@ -777,21 +723,7 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by sancar koyunlu on 31/03/14.
 //
@@ -861,7 +793,7 @@ namespace hazelcast {
     namespace util {
         ConditionVariable::ConditionVariable() {
             int error = pthread_cond_init(&condition, NULL);
-            (void)error;
+            (void) error;
             assert(EAGAIN != error);
             assert(ENOMEM != error);
             assert(EBUSY != error);
@@ -870,16 +802,16 @@ namespace hazelcast {
 
         ConditionVariable::~ConditionVariable() {
             int error = pthread_cond_destroy(&condition);
-            (void)error;
+            (void) error;
             assert(EBUSY != error);
             assert(EINVAL != error);
         }
 
-        bool ConditionVariable::waitNanos(Mutex& mutex, int64_t nanos) {
+        bool ConditionVariable::waitNanos(Mutex &mutex, int64_t nanos) {
             struct timespec ts = calculateTimeFromNanos(nanos);
 
             int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
-            (void)error;
+            (void) error;
             assert(EPERM != error);
             assert(EINVAL != error);
 
@@ -890,11 +822,11 @@ namespace hazelcast {
             return true;
         }
 
-        bool ConditionVariable::waitFor(Mutex& mutex, int64_t timeInMilliseconds) {
+        bool ConditionVariable::waitFor(Mutex &mutex, int64_t timeInMilliseconds) {
             struct timespec ts = calculateTimeFromMilliseconds(timeInMilliseconds);
 
             int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
-            (void)error;
+            (void) error;
             assert(EPERM != error);
             assert(EINVAL != error);
 
@@ -949,22 +881,22 @@ namespace hazelcast {
             return ts;
         }
 
-        void ConditionVariable::wait(Mutex& mutex) {
+        void ConditionVariable::wait(Mutex &mutex) {
             int error = pthread_cond_wait(&condition, &(mutex.mutex));
-            (void)error;
+            (void) error;
             assert (EPERM != error);
             assert (EINVAL != error);
         }
 
         void ConditionVariable::notify() {
             int error = pthread_cond_signal(&condition);
-            (void)error;
+            (void) error;
             assert(EINVAL != error);
         }
 
         void ConditionVariable::notify_all() {
             int error = pthread_cond_broadcast(&condition);
-            (void)error;
+            (void) error;
             assert(EINVAL != error);
         }
     }
@@ -973,21 +905,7 @@ namespace hazelcast {
 
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by sancar koyunlu on 16/12/13.
 //
@@ -1042,7 +960,8 @@ namespace hazelcast {
             }
 
             if (!found) {
-                logger.finest("[SocketSet::removeSocket] Socket with id " , socketId, "  was not found among the sockets.");
+                logger.finest("[SocketSet::removeSocket] Socket with id ", socketId,
+                              "  was not found among the sockets.");
             }
         }
 
@@ -1069,21 +988,7 @@ namespace hazelcast {
         SocketSet::SocketSet(ILogger &logger) : logger(logger) {}
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 12 Jan 2017
 //
@@ -1097,21 +1002,6 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 #include "hazelcast/util/TimeUtil.h"
 #include "hazelcast/util/concurrent/TimeUnit.h"
@@ -1128,21 +1018,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
@@ -1157,21 +1033,7 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 //
 // Created by sancar koyunlu on 20/02/14.
@@ -1183,7 +1045,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace util {
         ILogger::ILogger(const std::string &instanceName, const std::string &groupName, const std::string &version,
-                const client::config::LoggerConfig &loggerConfig)
+                         const client::config::LoggerConfig &loggerConfig)
                 : instanceName(instanceName), groupName(groupName), version(version), loggerConfig(loggerConfig) {
             std::stringstream out;
             out << instanceName << "[" << groupName << "] [" << HAZELCAST_VERSION << "]";
@@ -1210,7 +1072,7 @@ namespace hazelcast {
             std::call_once(elOnceflag, el::Loggers::addFlag, el::LoggingFlag::DisableApplicationAbortOnFatalLog);
 
             defaultConf.set(el::Level::Global, el::ConfigurationType::Format,
-                    std::string("%datetime{%d/%M/%Y %h:%m:%s.%g} %level: [%thread] ") + prefix + " %msg");
+                            std::string("%datetime{%d/%M/%Y %h:%m:%s.%g} %level: [%thread] ") + prefix + " %msg");
 
             defaultConf.set(el::Level::Global, el::ConfigurationType::ToStandardOutput, "true");
 
@@ -1252,21 +1114,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
@@ -1277,7 +1125,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace util {
         LockGuard::LockGuard(Mutex &mutex) : mutex(mutex) {
-                mutex.lock();
+            mutex.lock();
         }
 
         LockGuard::~LockGuard() {
@@ -1286,21 +1134,7 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 #include "hazelcast/util/Runnable.h"
 
 namespace hazelcast {
@@ -1329,21 +1163,7 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
@@ -1356,7 +1176,7 @@ namespace hazelcast {
     namespace util {
         UUID::UUID() : mostSigBits(0), leastSigBits(0) {}
 
-        UUID::UUID(int64_t mostBits, int64_t leastBits) :mostSigBits(mostBits), leastSigBits(leastBits) {
+        UUID::UUID(int64_t mostBits, int64_t leastBits) : mostSigBits(mostBits), leastSigBits(leastBits) {
         }
 
         int64_t UUID::getLeastSignificantBits() const {
@@ -1402,21 +1222,7 @@ namespace hazelcast {
 
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/client/exception/UTFDataFormatException.h"
@@ -1489,21 +1295,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by sancar koyunlu on 5/3/13.
 
@@ -1526,6 +1318,7 @@ namespace hazelcast {
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
+
 #include <sys/time.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -1538,37 +1331,37 @@ namespace hazelcast {
     namespace util {
 
         int64_t getCurrentThreadId() {
-        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             return (int64_t) GetCurrentThreadId();
-        #else
+#else
             int64_t threadId = 0;
             pthread_t thread = pthread_self();
             memcpy(&threadId, &thread, std::min(sizeof(threadId), sizeof(thread)));
             return threadId;
-        #endif
+#endif
         }
 
-		void sleep(int seconds){
-            sleepmillis((unsigned long)(1000 * seconds));
-		}
+        void sleep(int seconds) {
+            sleepmillis((unsigned long) (1000 * seconds));
+        }
 
-		void sleepmillis(uint64_t milliseconds){
-        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-			Sleep((DWORD) milliseconds);
-        #else
-			::usleep((useconds_t)(1000 * milliseconds));
-        #endif
-		}
+        void sleepmillis(uint64_t milliseconds) {
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            Sleep((DWORD) milliseconds);
+#else
+            ::usleep((useconds_t) (1000 * milliseconds));
+#endif
+        }
 
         int localtime(const time_t *clock, struct tm *result) {
             int returnCode = -1;
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                returnCode = localtime_s(result, clock);
-            #else
-                 if (NULL != localtime_r(clock, result)) {
-                     returnCode = 0;
-                 }
-            #endif
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            returnCode = localtime_s(result, clock);
+#else
+            if (NULL != localtime_r(clock, result)) {
+                returnCode = 0;
+            }
+#endif
 
             return returnCode;
         }
@@ -1577,18 +1370,18 @@ namespace hazelcast {
             va_list args;
             va_start(args, format);
 
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             int result = vsnprintf_s(str, len, _TRUNCATE, format, args);
             if (result < 0) {
                 return len > 0 ? len - 1 : 0;
             }
             va_end(args);
             return result;
-            #else
+#else
             int result = vsnprintf(str, len, format, args);
             va_end(args);
             return result;
-            #endif
+#endif
         }
 
         void gitDateToHazelcastLogDate(std::string &date) {
@@ -1611,18 +1404,18 @@ namespace hazelcast {
 
         int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
             int numChars = 0;
-            if ((const char *)NULL != msgPrefix) {
+            if ((const char *) NULL != msgPrefix) {
                 numChars = util::hz_snprintf(strerrbuf, buflen, "%s ", msgPrefix);
                 if (numChars < 0) {
                     return numChars;
                 }
 
-                if (numChars >= (int)buflen - 1) {
+                if (numChars >= (int) buflen - 1) {
                     return 0;
                 }
             }
 
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
                   NULL,
                   errnum,
@@ -1633,28 +1426,28 @@ namespace hazelcast {
                 return -1;
             }
             return 0;
-            #elif defined(__llvm__) && ! _GNU_SOURCE
-                /* XSI-compliant */
-                return ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
-            #else
-                /* GNU-specific */
-                char *errStr = ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
-                int result = util::hz_snprintf(strerrbuf + numChars, buflen - numChars, "%s", errStr);
-                if (result < 0) {
-                    return result;
-                }
-                return 0;
-            #endif
+#elif defined(__llvm__) && !_GNU_SOURCE
+            /* XSI-compliant */
+            return ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
+#else
+            /* GNU-specific */
+            char *errStr = ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
+            int result = util::hz_snprintf(strerrbuf + numChars, buflen - numChars, "%s", errStr);
+            if (result < 0) {
+                return result;
+            }
+            return 0;
+#endif
         }
 
         int32_t getAvailableCoreCount() {
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             SYSTEM_INFO sysinfo;
             GetSystemInfo(&sysinfo);
             return sysinfo.dwNumberOfProcessors;
-            #else
+#else
             return (int32_t) sysconf(_SC_NPROCESSORS_ONLN);
-            #endif
+#endif
         }
 
         std::string StringUtil::timeToString(int64_t timeInMillis) {
@@ -1687,12 +1480,27 @@ namespace hazelcast {
             if (i == 0)
                 return 64;
             int n = 1;
-            int64_t x = (int64_t)(i >> 32);
-            if (x == 0) { n += 32; x = (int64_t)i; }
-            if (x >> 16 == 0) { n += 16; x <<= 16; }
-            if (x >> 24 == 0) { n +=  8; x <<=  8; }
-            if (x >> 28 == 0) { n +=  4; x <<=  4; }
-            if (x >> 30 == 0) { n +=  2; x <<=  2; }
+            int64_t x = (int64_t) (i >> 32);
+            if (x == 0) {
+                n += 32;
+                x = (int64_t) i;
+            }
+            if (x >> 16 == 0) {
+                n += 16;
+                x <<= 16;
+            }
+            if (x >> 24 == 0) {
+                n += 8;
+                x <<= 8;
+            }
+            if (x >> 28 == 0) {
+                n += 4;
+                x <<= 4;
+            }
+            if (x >> 30 == 0) {
+                n += 2;
+                x <<= 2;
+            }
             n -= (int) (x >> 31);
             return n;
         }
@@ -1700,21 +1508,7 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 12 Jan 2017
 //
@@ -1727,98 +1521,84 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-            SyncHttpClient::SyncHttpClient(const std::string &serverIp, const std::string &uriPath)
-                    : server(serverIp), uriPath(uriPath), socket(ioService), responseStream(&response) {
-            }
+        SyncHttpClient::SyncHttpClient(const std::string &serverIp, const std::string &uriPath)
+                : server(serverIp), uriPath(uriPath), socket(ioService), responseStream(&response) {
+        }
 
-            std::istream &SyncHttpClient::openConnection() {
-                try {
-                    // Get a list of endpoints corresponding to the server name.
-                    asio::ip::tcp::resolver resolver(ioService);
-                    asio::ip::tcp::resolver::query query(server, "http");
-                    asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+        std::istream &SyncHttpClient::openConnection() {
+            try {
+                // Get a list of endpoints corresponding to the server name.
+                asio::ip::tcp::resolver resolver(ioService);
+                asio::ip::tcp::resolver::query query(server, "http");
+                asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-                    asio::connect(socket, endpoint_iterator);
+                asio::connect(socket, endpoint_iterator);
 
-                    socket.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
+                socket.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
 
-                    // Form the request. We specify the "Connection: close" header so that the
-                    // server will close the socket after transmitting the response. This will
-                    // allow us to treat all data up until the EOF as the content.
-                    asio::streambuf request;
-                    std::ostream request_stream(&request);
-                    request_stream << "GET " << uriPath << " HTTP/1.0\r\n";
-                    request_stream << "Host: " << server << "\r\n";
-                    request_stream << "Accept: */*\r\n";
-                    request_stream << "Connection: close\r\n\r\n";
+                // Form the request. We specify the "Connection: close" header so that the
+                // server will close the socket after transmitting the response. This will
+                // allow us to treat all data up until the EOF as the content.
+                asio::streambuf request;
+                std::ostream request_stream(&request);
+                request_stream << "GET " << uriPath << " HTTP/1.0\r\n";
+                request_stream << "Host: " << server << "\r\n";
+                request_stream << "Accept: */*\r\n";
+                request_stream << "Connection: close\r\n\r\n";
 
-                    // Send the request.
-                    asio::write(socket, request.data());
+                // Send the request.
+                asio::write(socket, request.data());
 
-                    // Read the response status line. The response streambuf will automatically
-                    // grow to accommodate the entire line. The growth may be limited by passing
-                    // a maximum size to the streambuf constructor.
-                    asio::read_until(socket, response, "\r\n");
+                // Read the response status line. The response streambuf will automatically
+                // grow to accommodate the entire line. The growth may be limited by passing
+                // a maximum size to the streambuf constructor.
+                asio::read_until(socket, response, "\r\n");
 
-                    // Check that response is OK.
-                    std::string httpVersion;
-                    responseStream >> httpVersion;
-                    unsigned int statusCode;
-                    responseStream >> statusCode;
-                    std::string statusMessage;
-                    std::getline(responseStream, statusMessage);
-                    if (!responseStream || httpVersion.substr(0, 5) != "HTTP/") {
-                        throw client::exception::IOException("openConnection", "Invalid response");
-                    }
-                    if (statusCode != 200) {
-                        std::stringstream out;
-                        out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
-                        throw client::exception::IOException("SyncHttpClient::openConnection", out.str());;
-                    }
-
-                    // Read the response headers, which are terminated by a blank line.
-                    asio::read_until(socket, response, "\r\n\r\n");
-
-                    // Process the response headers.
-                    std::string header;
-                    while (std::getline(responseStream, header) && header != "\r");
-
-                    // Read until EOF
-                    asio::error_code error;
-                    size_t bytesRead;
-                    while ((bytesRead = asio::read(socket, response.prepare(1024),
-                                      asio::transfer_at_least(1), error))) {
-                        response.commit(bytesRead);
-                    }
-
-                    if (error != asio::error::eof) {
-                        throw asio::system_error(error);
-                    }
-
-                    return responseStream;
-                } catch (asio::system_error &e) {
-                    std::ostringstream out;
-                    out << "Could not retrieve response from http://" << server << uriPath << " Error:" << e.what();
-                    throw client::exception::IOException("SyncHttpClient::openConnection", out.str());
+                // Check that response is OK.
+                std::string httpVersion;
+                responseStream >> httpVersion;
+                unsigned int statusCode;
+                responseStream >> statusCode;
+                std::string statusMessage;
+                std::getline(responseStream, statusMessage);
+                if (!responseStream || httpVersion.substr(0, 5) != "HTTP/") {
+                    throw client::exception::IOException("openConnection", "Invalid response");
                 }
+                if (statusCode != 200) {
+                    std::stringstream out;
+                    out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
+                    throw client::exception::IOException("SyncHttpClient::openConnection", out.str());;
+                }
+
+                // Read the response headers, which are terminated by a blank line.
+                asio::read_until(socket, response, "\r\n\r\n");
+
+                // Process the response headers.
+                std::string header;
+                while (std::getline(responseStream, header) && header != "\r");
+
+                // Read until EOF
+                asio::error_code error;
+                size_t bytesRead;
+                while ((bytesRead = asio::read(socket, response.prepare(1024),
+                                               asio::transfer_at_least(1), error))) {
+                    response.commit(bytesRead);
+                }
+
+                if (error != asio::error::eof) {
+                    throw asio::system_error(error);
+                }
+
+                return responseStream;
+            } catch (asio::system_error &e) {
+                std::ostringstream out;
+                out << "Could not retrieve response from http://" << server << uriPath << " Error:" << e.what();
+                throw client::exception::IOException("SyncHttpClient::openConnection", out.str());
             }
+        }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 #include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
@@ -1835,55 +1615,27 @@ namespace hazelcast {
         }
 
         template<>
-        bool IOUtil::to_value(const std::string& str) {
+        bool IOUtil::to_value(const std::string &str) {
             return str == "true" || str == "1";
         }
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 #include "hazelcast/util/AtomicBoolean.h"
 
 #include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace util {
-        AtomicBoolean::AtomicBoolean() : std::atomic<bool>(false){
+        AtomicBoolean::AtomicBoolean() : std::atomic<bool>(false) {
         }
 
         AtomicBoolean::AtomicBoolean(bool i) : std::atomic<bool>(i) {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 #include <mutex>
 #include <chrono>
@@ -1909,21 +1661,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 #include "hazelcast/util/concurrent/ConcurrencyUtil.h"
 
@@ -1943,21 +1681,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
@@ -2003,26 +1727,13 @@ namespace hazelcast {
                 const int64_t allowedShift = min<int64_t>(maxShift, proposedShift);
                 return proposedShift > maxShift ? maxParkPeriodNs
                                                 : proposedShift < maxShift ? minParkPeriodNs << allowedShift
-                                                                           : min(minParkPeriodNs << allowedShift, maxParkPeriodNs);
+                                                                           : min(minParkPeriodNs << allowedShift,
+                                                                                 maxParkPeriodNs);
             }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 #include "hazelcast/util/concurrent/CancellationException.h"
 
@@ -2039,21 +1750,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 #include <hazelcast/util/concurrent/TimeUnit.h>
 
@@ -2103,91 +1800,126 @@ namespace hazelcast {
              * This has a short name to make above code more readable.
              */
             int64_t TimeUnit::x(int64_t d, int64_t m, int64_t over) {
-                if (d >  over) return INT64_MAX;
+                if (d > over) return INT64_MAX;
                 if (d < -over) return INT64_MIN;
                 return d * m;
             }
-            
-            int64_t NanoSeconds::toNanos(int64_t d) const   { return d; }
-            int64_t NanoSeconds::toMicros(int64_t d) const  { return d/(C1/C0); }
-            int64_t NanoSeconds::toMillis(int64_t d) const  { return d/(C2/C0); }
-            int64_t NanoSeconds::toSeconds(int64_t d) const { return d/(C3/C0); }
-            int64_t NanoSeconds::toMinutes(int64_t d) const { return d/(C4/C0); }
-            int64_t NanoSeconds::toHours(int64_t d) const   { return d/(C5/C0); }
-            int64_t NanoSeconds::toDays(int64_t d) const    { return d/(C6/C0); }
+
+            int64_t NanoSeconds::toNanos(int64_t d) const { return d; }
+
+            int64_t NanoSeconds::toMicros(int64_t d) const { return d / (C1 / C0); }
+
+            int64_t NanoSeconds::toMillis(int64_t d) const { return d / (C2 / C0); }
+
+            int64_t NanoSeconds::toSeconds(int64_t d) const { return d / (C3 / C0); }
+
+            int64_t NanoSeconds::toMinutes(int64_t d) const { return d / (C4 / C0); }
+
+            int64_t NanoSeconds::toHours(int64_t d) const { return d / (C5 / C0); }
+
+            int64_t NanoSeconds::toDays(int64_t d) const { return d / (C6 / C0); }
+
             int64_t NanoSeconds::convert(int64_t d, const TimeUnit &u) const { return u.toNanos(d); }
 
-            int64_t MicroSeconds::toNanos(int64_t d) const   { return x(d, C1/C0, MAX/(C1/C0)); }
-            int64_t MicroSeconds::toMicros(int64_t d) const  { return d; }
-            int64_t MicroSeconds::toMillis(int64_t d) const  { return d/(C2/C1); }
-            int64_t MicroSeconds::toSeconds(int64_t d) const { return d/(C3/C1); }
-            int64_t MicroSeconds::toMinutes(int64_t d) const { return d/(C4/C1); }
-            int64_t MicroSeconds::toHours(int64_t d) const   { return d/(C5/C1); }
-            int64_t MicroSeconds::toDays(int64_t d) const    { return d/(C6/C1); }
+            int64_t MicroSeconds::toNanos(int64_t d) const { return x(d, C1 / C0, MAX / (C1 / C0)); }
+
+            int64_t MicroSeconds::toMicros(int64_t d) const { return d; }
+
+            int64_t MicroSeconds::toMillis(int64_t d) const { return d / (C2 / C1); }
+
+            int64_t MicroSeconds::toSeconds(int64_t d) const { return d / (C3 / C1); }
+
+            int64_t MicroSeconds::toMinutes(int64_t d) const { return d / (C4 / C1); }
+
+            int64_t MicroSeconds::toHours(int64_t d) const { return d / (C5 / C1); }
+
+            int64_t MicroSeconds::toDays(int64_t d) const { return d / (C6 / C1); }
+
             int64_t MicroSeconds::convert(int64_t d, const TimeUnit &u) const { return u.toMicros(d); }
 
-            int64_t MilliSeconds::toNanos(int64_t d) const   { return x(d, C2/C0, MAX/(C2/C0)); }
-            int64_t MilliSeconds::toMicros(int64_t d) const  { return x(d, C2/C1, MAX/(C2/C1)); }
-            int64_t MilliSeconds::toMillis(int64_t d) const  { return d; }
-            int64_t MilliSeconds::toSeconds(int64_t d) const { return d/(C3/C2); }
-            int64_t MilliSeconds::toMinutes(int64_t d) const { return d/(C4/C2); }
-            int64_t MilliSeconds::toHours(int64_t d) const   { return d/(C5/C2); }
-            int64_t MilliSeconds::toDays(int64_t d) const    { return d/(C6/C2); }
-            int64_t MilliSeconds::convert(int64_t d, const TimeUnit &u) const  { return u.toMillis(d); }
+            int64_t MilliSeconds::toNanos(int64_t d) const { return x(d, C2 / C0, MAX / (C2 / C0)); }
 
-            int64_t Seconds::toNanos(int64_t d) const   { return x(d, C3/C0, MAX/(C3/C0)); }
-            int64_t Seconds::toMicros(int64_t d) const  { return x(d, C3/C1, MAX/(C3/C1)); }
-            int64_t Seconds::toMillis(int64_t d) const  { return x(d, C3/C2, MAX/(C3/C2)); }
+            int64_t MilliSeconds::toMicros(int64_t d) const { return x(d, C2 / C1, MAX / (C2 / C1)); }
+
+            int64_t MilliSeconds::toMillis(int64_t d) const { return d; }
+
+            int64_t MilliSeconds::toSeconds(int64_t d) const { return d / (C3 / C2); }
+
+            int64_t MilliSeconds::toMinutes(int64_t d) const { return d / (C4 / C2); }
+
+            int64_t MilliSeconds::toHours(int64_t d) const { return d / (C5 / C2); }
+
+            int64_t MilliSeconds::toDays(int64_t d) const { return d / (C6 / C2); }
+
+            int64_t MilliSeconds::convert(int64_t d, const TimeUnit &u) const { return u.toMillis(d); }
+
+            int64_t Seconds::toNanos(int64_t d) const { return x(d, C3 / C0, MAX / (C3 / C0)); }
+
+            int64_t Seconds::toMicros(int64_t d) const { return x(d, C3 / C1, MAX / (C3 / C1)); }
+
+            int64_t Seconds::toMillis(int64_t d) const { return x(d, C3 / C2, MAX / (C3 / C2)); }
+
             int64_t Seconds::toSeconds(int64_t d) const { return d; }
-            int64_t Seconds::toMinutes(int64_t d) const { return d/(C4/C3); }
-            int64_t Seconds::toHours(int64_t d) const   { return d/(C5/C3); }
-            int64_t Seconds::toDays(int64_t d) const    { return d/(C6/C3); }
+
+            int64_t Seconds::toMinutes(int64_t d) const { return d / (C4 / C3); }
+
+            int64_t Seconds::toHours(int64_t d) const { return d / (C5 / C3); }
+
+            int64_t Seconds::toDays(int64_t d) const { return d / (C6 / C3); }
+
             int64_t Seconds::convert(int64_t d, const TimeUnit &u) const { return u.toSeconds(d); }
 
-            int64_t Minutes::toNanos(int64_t d) const   { return x(d, C4/C0, MAX/(C4/C0)); }
-            int64_t Minutes::toMicros(int64_t d) const  { return x(d, C4/C1, MAX/(C4/C1)); }
-            int64_t Minutes::toMillis(int64_t d) const  { return x(d, C4/C2, MAX/(C4/C2)); }
-            int64_t Minutes::toSeconds(int64_t d) const { return x(d, C4/C3, MAX/(C4/C3)); }
+            int64_t Minutes::toNanos(int64_t d) const { return x(d, C4 / C0, MAX / (C4 / C0)); }
+
+            int64_t Minutes::toMicros(int64_t d) const { return x(d, C4 / C1, MAX / (C4 / C1)); }
+
+            int64_t Minutes::toMillis(int64_t d) const { return x(d, C4 / C2, MAX / (C4 / C2)); }
+
+            int64_t Minutes::toSeconds(int64_t d) const { return x(d, C4 / C3, MAX / (C4 / C3)); }
+
             int64_t Minutes::toMinutes(int64_t d) const { return d; }
-            int64_t Minutes::toHours(int64_t d) const   { return d/(C5/C4); }
-            int64_t Minutes::toDays(int64_t d) const    { return d/(C6/C4); }
+
+            int64_t Minutes::toHours(int64_t d) const { return d / (C5 / C4); }
+
+            int64_t Minutes::toDays(int64_t d) const { return d / (C6 / C4); }
+
             int64_t Minutes::convert(int64_t d, const TimeUnit &u) const { return u.toMinutes(d); }
 
-            int64_t Hours::toNanos(int64_t d) const   { return x(d, C5/C0, MAX/(C5/C0)); }
-            int64_t Hours::toMicros(int64_t d) const  { return x(d, C5/C1, MAX/(C5/C1)); }
-            int64_t Hours::toMillis(int64_t d) const  { return x(d, C5/C2, MAX/(C5/C2)); }
-            int64_t Hours::toSeconds(int64_t d) const { return x(d, C5/C3, MAX/(C5/C3)); }
-            int64_t Hours::toMinutes(int64_t d) const { return x(d, C5/C4, MAX/(C5/C4)); }
-            int64_t Hours::toHours(int64_t d) const   { return d; }
-            int64_t Hours::toDays(int64_t d) const    { return d/(C6/C5); }
+            int64_t Hours::toNanos(int64_t d) const { return x(d, C5 / C0, MAX / (C5 / C0)); }
+
+            int64_t Hours::toMicros(int64_t d) const { return x(d, C5 / C1, MAX / (C5 / C1)); }
+
+            int64_t Hours::toMillis(int64_t d) const { return x(d, C5 / C2, MAX / (C5 / C2)); }
+
+            int64_t Hours::toSeconds(int64_t d) const { return x(d, C5 / C3, MAX / (C5 / C3)); }
+
+            int64_t Hours::toMinutes(int64_t d) const { return x(d, C5 / C4, MAX / (C5 / C4)); }
+
+            int64_t Hours::toHours(int64_t d) const { return d; }
+
+            int64_t Hours::toDays(int64_t d) const { return d / (C6 / C5); }
+
             int64_t Hours::convert(int64_t d, const TimeUnit &u) const { return u.toHours(d); }
 
-            int64_t Days::toNanos(int64_t d) const   { return x(d, C6/C0, MAX/(C6/C0)); }
-            int64_t Days::toMicros(int64_t d) const  { return x(d, C6/C1, MAX/(C6/C1)); }
-            int64_t Days::toMillis(int64_t d) const  { return x(d, C6/C2, MAX/(C6/C2)); }
-            int64_t Days::toSeconds(int64_t d) const { return x(d, C6/C3, MAX/(C6/C3)); }
-            int64_t Days::toMinutes(int64_t d) const { return x(d, C6/C4, MAX/(C6/C4)); }
-            int64_t Days::toHours(int64_t d) const   { return x(d, C6/C5, MAX/(C6/C5)); }
-            int64_t Days::toDays(int64_t d) const    { return d; }
+            int64_t Days::toNanos(int64_t d) const { return x(d, C6 / C0, MAX / (C6 / C0)); }
+
+            int64_t Days::toMicros(int64_t d) const { return x(d, C6 / C1, MAX / (C6 / C1)); }
+
+            int64_t Days::toMillis(int64_t d) const { return x(d, C6 / C2, MAX / (C6 / C2)); }
+
+            int64_t Days::toSeconds(int64_t d) const { return x(d, C6 / C3, MAX / (C6 / C3)); }
+
+            int64_t Days::toMinutes(int64_t d) const { return x(d, C6 / C4, MAX / (C6 / C4)); }
+
+            int64_t Days::toHours(int64_t d) const { return x(d, C6 / C5, MAX / (C6 / C5)); }
+
+            int64_t Days::toDays(int64_t d) const { return d; }
+
             int64_t Days::convert(int64_t d, const TimeUnit &u) const { return u.toDays(d); }
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by ihsan demir on 9 Dec 2016.
 
@@ -2206,14 +1938,14 @@ namespace hazelcast {
         }
 
         void Preconditions::checkSSL(const std::string &sourceMethod) {
-            #ifndef HZ_BUILD_WITH_SSL
+#ifndef HZ_BUILD_WITH_SSL
             throw client::exception::InvalidConfigurationException(sourceMethod, "You should compile with "
                     "HZ_BUILD_WITH_SSL flag. You should also have the openssl installed on your machine and you need "
                     "to link with the openssl library.");
-            #endif
+#endif
         }
 
-         void Preconditions::checkTrue(bool expression, const std::string &errorMessage) {
+        void Preconditions::checkTrue(bool expression, const std::string &errorMessage) {
             if (!expression) {
                 throw client::exception::IllegalArgumentException(errorMessage);
             }
@@ -2221,22 +1953,6 @@ namespace hazelcast {
     }
 }
 
-
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 #include <stdlib.h>
 
@@ -2276,21 +1992,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 #include "hazelcast/util/AtomicInt.h"
 
 namespace hazelcast {
@@ -2302,21 +2004,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 #include "hazelcast/util/AddressUtil.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
@@ -2333,8 +2021,8 @@ namespace hazelcast {
         std::vector<client::Address> AddressHelper::getSocketAddresses(const std::string &address, ILogger &logger) {
             const AddressHolder addressHolder = AddressUtil::getAddressHolder(address, -1);
             const std::string scopedAddress = !addressHolder.getScopeId().empty()
-                                         ? addressHolder.getAddress() + '%' + addressHolder.getScopeId()
-                                         : addressHolder.getAddress();
+                                              ? addressHolder.getAddress() + '%' + addressHolder.getScopeId()
+                                              : addressHolder.getAddress();
 
             int port = addressHolder.getPort();
             int maxPortTryCount = 1;
@@ -2345,12 +2033,13 @@ namespace hazelcast {
         }
 
         std::vector<client::Address>
-        AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount, ILogger &logger) {
+        AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount,
+                                                  ILogger &logger) {
             std::unique_ptr<asio::ip::address> inetAddress;
             try {
                 inetAddress.reset(new asio::ip::address(AddressUtil::getByName(scopedAddress)));
             } catch (client::exception::UnknownHostException &ignored) {
-                logger.finest("Address " , scopedAddress , " ip number is not available", ignored.what());
+                logger.finest("Address ", scopedAddress, " ip number is not available", ignored.what());
             }
 
             int possiblePort = port;
@@ -2405,21 +2094,7 @@ namespace hazelcast {
         }
     }
 }
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
@@ -2430,7 +2105,9 @@ namespace hazelcast {
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #include <windows.h>
 #else
+
 #include <unistd.h>
+
 #endif
 
 namespace hazelcast {
@@ -2462,21 +2139,7 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //-----------------------------------------------------------------------------
 // MurmurHash3 was written by Austin Appleby, and is placed in the public
 // domain. The author hereby disclaims copyright to this source code.
@@ -2508,7 +2171,7 @@ namespace hazelcast {
 
 #else	// defined(_MSC_VER)
 
-#define	FORCE_INLINE inline __attribute__((always_inline))
+#define    FORCE_INLINE inline __attribute__((always_inline))
 
 FORCE_INLINE  uint32_t rotl32(uint32_t x, int8_t r) {
     return (x << r) | (x >> (32 - r));
@@ -2568,13 +2231,13 @@ namespace hazelcast {
         int MurmurHash3_x86_32(const void *key, int len) {
             uint32_t DEFAULT_MURMUR_SEED = 0x01000193;
             uint32_t hash = 0;
-            MurmurHash3_x86_32(key , len , DEFAULT_MURMUR_SEED , (void*)&hash);
+            MurmurHash3_x86_32(key, len, DEFAULT_MURMUR_SEED, (void *) &hash);
             return hash;
         }
 
 
         void MurmurHash3_x86_32(const void *key, int len, uint32_t seed, void *out) {
-            const uint8_t *data = (const uint8_t *)key;
+            const uint8_t *data = (const uint8_t *) key;
             const int nblocks = len / 4;
 
             uint32_t h1 = seed;
@@ -2585,7 +2248,7 @@ namespace hazelcast {
             //----------
             // body
 
-            const uint32_t *blocks = (const uint32_t *)(data + nblocks * 4);
+            const uint32_t *blocks = (const uint32_t *) (data + nblocks * 4);
 
             for (int i = -nblocks; i; i++) {
                 uint32_t k1 = getblock32(blocks, i);
@@ -2602,7 +2265,7 @@ namespace hazelcast {
             //----------
             // tail
 
-            const uint8_t *tail = (const uint8_t *)(data + nblocks * 4);
+            const uint8_t *tail = (const uint8_t *) (data + nblocks * 4);
 
             uint32_t k1 = 0;
 
@@ -2626,7 +2289,7 @@ namespace hazelcast {
 
             h1 = fmix32(h1);
 
-            *(uint32_t *)out = h1;
+            *(uint32_t *) out = h1;
         }
 
 //-----------------------------------------------------------------------------
@@ -2634,21 +2297,7 @@ namespace hazelcast {
 }
 //-----------------------------------------------------------------------------
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 //  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
@@ -2700,21 +2349,7 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by sancar koyunlu on 11/04/14.
 //
@@ -2737,7 +2372,7 @@ namespace hazelcast {
         }
 
         void Mutex::lock() {
-			EnterCriticalSection(&mutex);
+            EnterCriticalSection(&mutex);
         }
 
         Mutex::status Mutex::tryLock() {
@@ -2773,14 +2408,14 @@ namespace hazelcast {
 
         void Mutex::lock() {
             int error = pthread_mutex_lock(&mutex);
-            (void)error;
+            (void) error;
             assert (!(error == EINVAL || error == EAGAIN));
             assert (error != EDEADLK);
         }
 
         void Mutex::unlock() {
             int error = pthread_mutex_unlock(&mutex);
-            (void)error;
+            (void) error;
             assert (!(error == EINVAL || error == EAGAIN));
             assert (error != EPERM);
         }
@@ -2790,21 +2425,7 @@ namespace hazelcast {
 
 #endif
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by sancar koyunlu on 8/15/13.
 
@@ -2813,10 +2434,11 @@ namespace hazelcast {
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include <time.h>
+
 namespace hazelcast {
     namespace util {
         CountDownLatch::CountDownLatch(int count)
-        : count(count) {
+                : count(count) {
 
         }
 
@@ -2878,7 +2500,7 @@ namespace hazelcast {
                 return true;
             }
 
-            for (std::vector<util::CountDownLatch *>::const_iterator it = latches.begin();it != latches.end();++it) {
+            for (std::vector<util::CountDownLatch *>::const_iterator it = latches.begin(); it != latches.end(); ++it) {
                 int64_t elapsed;
                 bool result = (*it)->awaitMillis(milliseconds, elapsed);
                 if (!result) {
@@ -2899,21 +2521,7 @@ namespace hazelcast {
     }
 }
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by sancar koyunlu on 31/12/13.
 //
@@ -2929,25 +2537,25 @@ namespace hazelcast {
     namespace util {
 
         ByteBuffer::ByteBuffer(char *buffer, size_t capacity)
-        : pos(0), lim(capacity), capacity(capacity), buffer(buffer){
+                : pos(0), lim(capacity), capacity(capacity), buffer(buffer) {
 
         }
 
-        ByteBuffer& ByteBuffer::flip() {
+        ByteBuffer &ByteBuffer::flip() {
             lim = pos;
             pos = 0;
             return *this;
         }
 
 
-        ByteBuffer& ByteBuffer::compact() {
-            memcpy(buffer, ix(), (size_t)remaining());
+        ByteBuffer &ByteBuffer::compact() {
+            memcpy(buffer, ix(), (size_t) remaining());
             pos = remaining();
             lim = capacity;
             return *this;
         }
 
-        ByteBuffer& ByteBuffer::clear() {
+        ByteBuffer &ByteBuffer::clear() {
             pos = 0;
             lim = capacity;
             return *this;
@@ -2965,9 +2573,9 @@ namespace hazelcast {
             return pos;
         }
 
-        size_t ByteBuffer::readFrom(client::Socket& socket, int flag) {
+        size_t ByteBuffer::readFrom(client::Socket &socket, int flag) {
             size_t rm = remaining();
-            size_t bytesReceived = (size_t)socket.receive(ix(), (int)rm, flag);
+            size_t bytesReceived = (size_t) socket.receive(ix(), (int) rm, flag);
             safeIncrementPosition(bytesReceived);
             return bytesReceived;
         }
@@ -2978,9 +2586,9 @@ namespace hazelcast {
             char c = readByte();
             char d = readByte();
             return (0xff000000 & (a << 24)) |
-            (0x00ff0000 & (b << 16)) |
-            (0x0000ff00 & (c << 8)) |
-            (0x000000ff & d);
+                   (0x00ff0000 & (b << 16)) |
+                   (0x0000ff00 & (c << 8)) |
+                   (0x000000ff & d);
         }
 
         void ByteBuffer::writeInt(int v) {
@@ -2994,8 +2602,8 @@ namespace hazelcast {
         short ByteBuffer::readShort() {
             byte a = readByte();
             byte b = readByte();
-            return (short)((0xff00 & (a << 8)) |
-            (0x00ff & b));
+            return (short) ((0xff00 & (a << 8)) |
+                            (0x00ff & b));
         }
 
         void ByteBuffer::writeShort(short v) {
@@ -3004,7 +2612,7 @@ namespace hazelcast {
         }
 
         byte ByteBuffer::readByte() {
-            byte b = (byte)buffer[pos];
+            byte b = (byte) buffer[pos];
             safeIncrementPosition(1);
             return b;
         }
@@ -3015,7 +2623,7 @@ namespace hazelcast {
         }
 
         void *ByteBuffer::ix() const {
-            return (void *)(buffer + pos);
+            return (void *) (buffer + pos);
         }
 
         void ByteBuffer::safeIncrementPosition(size_t t) {
@@ -3033,21 +2641,7 @@ namespace hazelcast {
 }
 
 
-/*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 //
 // Created by sancar koyunlu on 30/12/13.
 //
@@ -3068,11 +2662,11 @@ namespace hazelcast {
     namespace util {
 
         ServerSocket::ServerSocket(int port) {
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
             if(n == -1) 
-				throw client::exception::IOException("Socket::Socket ", "WSAStartup error");
-			#endif
+                throw client::exception::IOException("Socket::Socket ", "WSAStartup error");
+#endif
             struct addrinfo hints;
             struct addrinfo *serverInfo;
 
@@ -3083,13 +2677,13 @@ namespace hazelcast {
             ::getaddrinfo(NULL, IOUtil::to_string(port).c_str(), &hints, &serverInfo);
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
             isOpen.store(true);
-			if(serverInfo->ai_family == AF_INET){
-				ipv4 = true;
-			}else if(serverInfo->ai_family == AF_INET6){
-				ipv4 = false;
-			}else{
-				throw client::exception::IOException("ServerSocket(int)","unsupported ip protocol");
-			}
+            if (serverInfo->ai_family == AF_INET) {
+                ipv4 = true;
+            } else if (serverInfo->ai_family == AF_INET6) {
+                ipv4 = false;
+            } else {
+                throw client::exception::IOException("ServerSocket(int)", "unsupported ip protocol");
+            }
             ::bind(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen);
             ::listen(socketId, 10);
             ::freeaddrinfo(serverInfo);
@@ -3101,44 +2695,44 @@ namespace hazelcast {
             close();
         }
 
-		bool ServerSocket::isIpv4() const{
-			return ipv4;
-		}
+        bool ServerSocket::isIpv4() const {
+            return ipv4;
+        }
 
         void ServerSocket::close() {
             bool expected = true;
             if (isOpen.compare_exchange_strong(expected, false)) {
-                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-				::shutdown(socketId, SD_RECEIVE);
-				char buffer[1];
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                ::shutdown(socketId, SD_RECEIVE);
+                char buffer[1];
                 ::recv(socketId, buffer, 1, MSG_WAITALL);
-				WSACleanup();
+                WSACleanup();
                 closesocket(socketId);
-                #else
-				::shutdown(socketId, SHUT_RD);
-				char buffer[1];
+#else
+                ::shutdown(socketId, SHUT_RD);
+                char buffer[1];
                 ::recv(socketId, buffer, 1, MSG_WAITALL);
                 ::close(socketId);
-                #endif
+#endif
             }
 
         }
 
         int ServerSocket::getPort() const {
-			if(ipv4){
-				struct sockaddr_in sin;
-				socklen_t len = sizeof(sin);
-				if (getsockname(socketId, (struct sockaddr *)&sin, &len) == 0 && sin.sin_family == AF_INET){
-					return ntohs(sin.sin_port);	
-				}
-				throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
-			}
-            
-			struct sockaddr_in6 sin6;
-			socklen_t len = sizeof(sin6);
-			if (getsockname(socketId, (struct sockaddr *)&sin6, &len) == 0 && sin6.sin6_family == AF_INET6){
-				return ntohs(sin6.sin6_port);	
-			}
+            if (ipv4) {
+                struct sockaddr_in sin;
+                socklen_t len = sizeof(sin);
+                if (getsockname(socketId, (struct sockaddr *) &sin, &len) == 0 && sin.sin_family == AF_INET) {
+                    return ntohs(sin.sin_port);
+                }
+                throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
+            }
+
+            struct sockaddr_in6 sin6;
+            socklen_t len = sizeof(sin6);
+            if (getsockname(socketId, (struct sockaddr *) &sin6, &len) == 0 && sin6.sin6_family == AF_INET6) {
+                return ntohs(sin6.sin6_port);
+            }
             throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
         }
 
@@ -3148,11 +2742,11 @@ namespace hazelcast {
             int sId = ::accept(socketId, (struct sockaddr *) &their_address, &address_size);
 
             if (sId == -1) {
-                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                 int error =   WSAGetLastError();
-                #else
+#else
                 int error = errno;
-                #endif
+#endif
                 throw client::exception::IOException("Socket::accept", strerror(error));
             }
             return new client::internal::socket::TcpSocket(sId);
