@@ -323,6 +323,12 @@
 #include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/client/IExecutorService.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4355) //for strerror
+#pragma warning(disable: 4996) //for strerror
+#endif
+
 INITIALIZE_EASYLOGGINGPP
 
 namespace hazelcast {
@@ -692,12 +698,6 @@ namespace hazelcast {
     }
 }
 
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4355) //for strerror	
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace impl {
@@ -1023,9 +1023,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 namespace hazelcast {
@@ -1082,10 +1080,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -1095,9 +1090,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 namespace hazelcast {
@@ -1470,10 +1463,7 @@ namespace hazelcast {
 }
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -1568,9 +1558,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -4656,10 +4644,7 @@ namespace hazelcast {
 }
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4355) //for strerror
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -5465,9 +5450,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 namespace hazelcast {
@@ -5556,10 +5539,7 @@ namespace hazelcast {
 }
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -5613,15 +5593,10 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror
-#endif
+
+
 
 namespace hazelcast {
     namespace client {
@@ -5774,9 +5749,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 namespace hazelcast {
@@ -6022,9 +5995,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 
@@ -6166,10 +6137,7 @@ namespace hazelcast {
 }
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -6235,9 +6203,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 namespace hazelcast {
@@ -10535,10 +10501,7 @@ using namespace hazelcast::util;
 using namespace hazelcast::client::serialization;
 using namespace std;
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4355) //for strerror
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -10680,9 +10643,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 //
 //  SerializationService.cpp
@@ -12061,10 +12022,7 @@ namespace hazelcast {
 }
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -12140,19 +12098,14 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 #ifdef HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #endif
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -12411,17 +12364,12 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 #endif // HZ_BUILD_WITH_SSL
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -12735,9 +12683,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 namespace hazelcast {
     namespace client {
@@ -18086,9 +18032,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 namespace hazelcast {
@@ -18805,12 +18749,6 @@ namespace hazelcast {
     }
 }
 
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
-#endif
-
 namespace hazelcast {
     namespace client {
 
@@ -18986,9 +18924,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 namespace hazelcast {
@@ -19542,3 +19478,7 @@ namespace hazelcast {
 
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif

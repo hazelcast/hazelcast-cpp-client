@@ -120,9 +120,7 @@
 #include <cassert>
 
 #ifdef HZ_BUILD_WITH_SSL
-
 #include <openssl/crypto.h>
-
 #endif
 
 #include "hazelcast/client/config/ClientAwsConfig.h"
@@ -221,6 +219,10 @@
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ReliableTopic.h"
 #include "hazelcast/client/IdGenerator.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(disable: 4996) //for unsafe getenv
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -14975,12 +14977,6 @@ namespace hazelcast {
     }
 }
 
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                                                                                                                        #pragma warning(push)
-#pragma warning(disable: 4996) //for strerror
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -15073,9 +15069,7 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+
 
 
 
@@ -25361,10 +25355,7 @@ namespace hazelcast {
 
 #ifdef HZ_BUILD_WITH_SSL
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for unsafe getenv
-#endif
+
 
 
 
@@ -25457,19 +25448,12 @@ namespace hazelcast {
 }
 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
 #endif // HZ_BUILD_WITH_SSL
 
 
 #ifdef HZ_BUILD_WITH_SSL
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for unsafe getenv
-#endif
+
 
 
 
@@ -25584,21 +25568,10 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
 #endif // HZ_BUILD_WITH_SSL
 
 
 #ifdef HZ_BUILD_WITH_SSL
-
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for dll export
-#endif
 
 namespace hazelcast {
     namespace client {
@@ -25688,10 +25661,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif //HZ_BUILD_WITH_SSL
 
@@ -27810,3 +27779,7 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif

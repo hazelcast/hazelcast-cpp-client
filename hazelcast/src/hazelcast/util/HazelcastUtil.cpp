@@ -31,7 +31,6 @@
 #include <thread>
 #include <regex>
 #include <iomanip>
-#include <pthread.h>
 #include <mutex>
 #include <stdlib.h>
 #include <time.h>
@@ -46,6 +45,7 @@
 #include <unistd.h>
 #include <sys/errno.h>
 #include <sys/time.h>
+#include <pthread.h>
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -100,6 +100,11 @@
 #include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/util/ExceptionUtil.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4996) //for strerror
+#endif
 
 namespace hazelcast {
     namespace util {
@@ -2350,13 +2355,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror
-#endif
 
 namespace hazelcast {
     namespace util {
