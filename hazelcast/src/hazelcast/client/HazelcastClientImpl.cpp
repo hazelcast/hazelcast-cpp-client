@@ -31,12 +31,19 @@
 #include <ctime>
 #include <functional>
 #include <limits>
-#include <openssl/ssl.h>
 #include <random>
 #include <regex>
 #include <stdint.h>
 #include <utility>
 
+#ifdef HZ_BUILD_WITH_SSL
+
+#include <openssl/ssl.h>
+
+#endif // HZ_BUILD_WITH_SSL
+
+#include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
@@ -168,7 +175,6 @@
 #include "hazelcast/client/MapEvent.h"
 #include "hazelcast/client/Endpoint.h"
 #include "hazelcast/util/Preconditions.h"
-#include "hazelcast/client/config/SSLConfig.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/config/LoggerConfig.h"
@@ -236,7 +242,6 @@
 #include "hazelcast/client/internal/nearcache/impl/record/NearCacheDataRecord.h"
 #include "hazelcast/util/HashUtil.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
-#include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/internal/eviction/EvictionChecker.h"
 #include "hazelcast/client/Client.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
@@ -307,16 +312,16 @@
 #include "hazelcast/client/query/LikePredicate.h"
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/internal/config/ConfigUtils.h"
-#include <hazelcast/client/impl/statistics/Statistics.h>
-#include <hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h>
-#include <hazelcast/client/flakeidgen/impl/IdBatch.h>
-#include <hazelcast/client/txn/ClientTransactionUtil.h>
-#include <hazelcast/client/MemberAttributeEvent.h>
-#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
-#include <hazelcast/client/spi/impl/ClientInvocation.h>
-#include <hazelcast/client/spi/impl/ClientInvocationFuture.h>
-#include <hazelcast/client/spi/ClientProxy.h>
-#include <hazelcast/client/IExecutorService.h>
+#include "hazelcast/client/impl/statistics/Statistics.h"
+#include "hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h"
+#include "hazelcast/client/flakeidgen/impl/IdBatch.h"
+#include "hazelcast/client/txn/ClientTransactionUtil.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
+#include "hazelcast/client/spi/ClientProxy.h"
+#include "hazelcast/client/IExecutorService.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -12055,9 +12060,6 @@ namespace hazelcast {
     }
 }
 
-
-#ifdef HZ_BUILD_WITH_SSL
-#endif // HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

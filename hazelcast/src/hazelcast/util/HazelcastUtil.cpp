@@ -14,13 +14,92 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/AddressUtil.h"
+#include <cmath>
+#include <cassert>
+#include <cerrno>
+#include <cstdlib>
+#include <climits>
+#include <limits>
+#include <iosfwd>
+#include <string.h>
+#include <sstream>
+#include <chrono>
+#include <algorithm>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdint.h>
+#include <thread>
+#include <regex>
+#include <iomanip>
+#include <pthread.h>
+#include <mutex>
+#include <stdlib.h>
+#include <time.h>
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <winsock2.h>
+#include "hazelcast/util/WindowsUtil.inl"
+#else
+#include "hazelcast/util/LinuxUtil.inl"
+#include <unistd.h>
+#include <sys/errno.h>
+#include <sys/time.h>
+#endif
+
+#ifdef HZ_BUILD_WITH_SSL
 #include <asio/io_service.hpp>
 #include <asio/ip/basic_resolver.hpp>
+#include <asio/ssl/rfc2818_verification.hpp>
 #include <asio/ip/tcp.hpp>
+#endif // HZ_BUILD_WITH_SSL
+
+#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/AddressUtil.h"
+#include "hazelcast/util/impl/SimpleExecutorService.h"
+#include "hazelcast/util/HashUtil.h"
+#include "hazelcast/util/impl/AbstractThread.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/Preconditions.h"
+#include "hazelcast/util/SyncHttpsClient.h"
+#include "hazelcast/util/Clearable.h"
+#include "hazelcast/util/ConditionVariable.h"
+#include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/SocketSet.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/LockGuard.h"
+#include "hazelcast/util/Destroyable.h"
+#include "hazelcast/util/TimeUtil.h"
+#include "hazelcast/util/concurrent/TimeUnit.h"
+#include "hazelcast/util/Closeable.h"
+#include "hazelcast/util/Runnable.h"
+#include "hazelcast/util/UUID.h"
+#include "hazelcast/util/UTFUtil.h"
+#include "hazelcast/client/exception/UTFDataFormatException.h"
+#include "hazelcast/util/SyncHttpClient.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/concurrent/locks/LockSupport.h"
+#include "hazelcast/util/concurrent/ConcurrencyUtil.h"
+#include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/concurrent/CancellationException.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/util/UuidUtil.h"
+#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/AddressHelper.h"
+#include "hazelcast/util/RuntimeAvailableProcessors.h"
+#include "hazelcast/util/MurmurHash3.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/util/CountDownLatch.h"
+#include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include "hazelcast/util/ServerSocket.h"
+#include "hazelcast/util/ExceptionUtil.h"
 
 namespace hazelcast {
     namespace util {
@@ -83,11 +162,7 @@ namespace hazelcast {
 }
 
 
-#include <cmath>
-#include <cassert>
 
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/HashUtil.h"
 
 namespace hazelcast {
     namespace util {
@@ -418,10 +493,6 @@ namespace hazelcast {
 }
 
 
-#include <cerrno>
-#include <hazelcast/util/ILogger.h>
-#include "hazelcast/util/impl/AbstractThread.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace util {
@@ -561,23 +632,6 @@ namespace hazelcast {
     }
 }
 
-//
-//  Created by ihsan demir on 12 Jan 2017
-//
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <winsock2.h>
-#endif
-
-#ifdef HZ_BUILD_WITH_SSL
-
-#include <asio/ssl/rfc2818_verification.hpp>
-
-#endif // HZ_BUILD_WITH_SSL
-
-#include "hazelcast/util/Preconditions.h"
-
-#include "hazelcast/util/SyncHttpsClient.h"
 
 namespace hazelcast {
     namespace util {
@@ -683,12 +737,6 @@ namespace hazelcast {
 }
 
 
-//
-//  Created by ihsan demir on 12 Jan 2017
-//
-
-#include "hazelcast/util/Clearable.h"
-
 namespace hazelcast {
     namespace util {
         Clearable::~Clearable() {
@@ -700,11 +748,7 @@ namespace hazelcast {
 //
 // Created by ihsan demir on 9 Dec 2016.
 
-#include <cstdlib>
-#include <climits>
 
-#include "hazelcast/util/HashUtil.h"
-#include "hazelcast/util/Preconditions.h"
 
 namespace hazelcast {
     namespace util {
@@ -721,203 +765,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-
-//
-// Created by sancar koyunlu on 31/03/14.
-//
-
-#include "hazelcast/util/ConditionVariable.h"
-
-#define MILLIS_IN_A_SECOND 1000
-#define NANOS_IN_A_SECOND (NANOS_IN_A_MILLISECOND * MILLIS_IN_A_SECOND)
-#define NANOS_IN_A_MILLISECOND (NANOS_IN_A_USECOND * 1000)
-#define NANOS_IN_A_USECOND 1000
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-
-#include "hazelcast/util/Mutex.h"
-#include <cassert>
-
-namespace hazelcast {
-    namespace util {
-
-        ConditionVariable::ConditionVariable() {
-            InitializeConditionVariable(&condition);
-        }
-
-        ConditionVariable::~ConditionVariable() {
-        }
-
-        void ConditionVariable::wait(Mutex &mutex) {
-            BOOL success = SleepConditionVariableCS(&condition,  &(mutex.mutex), INFINITE);
-            assert(success && "SleepConditionVariable");
-        }
-
-        bool ConditionVariable::waitFor(Mutex &mutex, int64_t timeInMilliseconds) {
-            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), (DWORD) timeInMilliseconds);
-            if(interrupted){
-                return true;
-            }
-            return false;
-        }
-
-        bool ConditionVariable::waitNanos(Mutex &mutex, int64_t nanos) {
-            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), (DWORD) (nanos / NANOS_IN_A_MILLISECOND));
-            if(interrupted){
-                return true;
-            }
-            return false;
-        }
-
-        void ConditionVariable::notify() {
-            WakeConditionVariable(&condition);
-        }
-
-        void ConditionVariable::notify_all() {
-            WakeAllConditionVariable(&condition);
-        }
-    }
-}
-
-#else
-
-#include "hazelcast/util/Mutex.h"
-#include <sys/errno.h>
-#include <cassert>
-#include <sys/time.h>
-#include <limits>
-
-namespace hazelcast {
-    namespace util {
-        ConditionVariable::ConditionVariable() {
-            int error = pthread_cond_init(&condition, NULL);
-            (void) error;
-            assert(EAGAIN != error);
-            assert(ENOMEM != error);
-            assert(EBUSY != error);
-            assert(EINVAL != error);
-        }
-
-        ConditionVariable::~ConditionVariable() {
-            int error = pthread_cond_destroy(&condition);
-            (void) error;
-            assert(EBUSY != error);
-            assert(EINVAL != error);
-        }
-
-        bool ConditionVariable::waitNanos(Mutex &mutex, int64_t nanos) {
-            struct timespec ts = calculateTimeFromNanos(nanos);
-
-            int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
-            (void) error;
-            assert(EPERM != error);
-            assert(EINVAL != error);
-
-            if (ETIMEDOUT == error) {
-                return false;
-            }
-
-            return true;
-        }
-
-        bool ConditionVariable::waitFor(Mutex &mutex, int64_t timeInMilliseconds) {
-            struct timespec ts = calculateTimeFromMilliseconds(timeInMilliseconds);
-
-            int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
-            (void) error;
-            assert(EPERM != error);
-            assert(EINVAL != error);
-
-            if (ETIMEDOUT == error) {
-                return false;
-            }
-
-            return true;
-        }
-
-        struct timespec ConditionVariable::calculateTimeFromMilliseconds(int64_t timeInMilliseconds) const {
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-
-            struct timespec ts;
-            ts.tv_sec = tv.tv_sec;
-            ts.tv_nsec = tv.tv_usec * NANOS_IN_A_USECOND;
-            int64_t seconds = timeInMilliseconds / MILLIS_IN_A_SECOND;
-            if (seconds > std::numeric_limits<time_t>::max()) {
-                ts.tv_sec = std::numeric_limits<time_t>::max();
-            } else {
-                ts.tv_sec += (time_t) seconds;
-                int64_t nsec = ts.tv_nsec + (timeInMilliseconds % MILLIS_IN_A_SECOND) * NANOS_IN_A_MILLISECOND;
-                if (nsec >= NANOS_IN_A_SECOND) {
-                    nsec -= NANOS_IN_A_SECOND;
-                    ++ts.tv_sec;
-                }
-                ts.tv_nsec = nsec;
-            }
-            return ts;
-        }
-
-        struct timespec ConditionVariable::calculateTimeFromNanos(int64_t nanos) const {
-            struct timeval tv;
-            gettimeofday(&tv, NULL);
-
-            struct timespec ts;
-            ts.tv_sec = tv.tv_sec;
-            ts.tv_nsec = tv.tv_usec * NANOS_IN_A_USECOND;
-            int64_t seconds = nanos / NANOS_IN_A_SECOND;
-            if (seconds > std::numeric_limits<time_t>::max()) {
-                ts.tv_sec = std::numeric_limits<time_t>::max();
-            } else {
-                ts.tv_sec += (time_t) seconds;
-                int64_t nsec = ts.tv_nsec + (nanos % NANOS_IN_A_SECOND);
-                if (nsec >= NANOS_IN_A_SECOND) {
-                    nsec -= NANOS_IN_A_SECOND;
-                    ++ts.tv_sec;
-                }
-                ts.tv_nsec = nsec;
-            }
-            return ts;
-        }
-
-        void ConditionVariable::wait(Mutex &mutex) {
-            int error = pthread_cond_wait(&condition, &(mutex.mutex));
-            (void) error;
-            assert (EPERM != error);
-            assert (EINVAL != error);
-        }
-
-        void ConditionVariable::notify() {
-            int error = pthread_cond_signal(&condition);
-            (void) error;
-            assert(EINVAL != error);
-        }
-
-        void ConditionVariable::notify_all() {
-            int error = pthread_cond_broadcast(&condition);
-            (void) error;
-            assert(EINVAL != error);
-        }
-    }
-}
-
-
-#endif
-
-
-//
-// Created by sancar koyunlu on 16/12/13.
-//
-
-#include <cassert>
-#include <iosfwd>
-#include <string.h>
-
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/SocketSet.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace util {
@@ -989,12 +836,6 @@ namespace hazelcast {
     }
 }
 
-//
-//  Created by ihsan demir on 12 Jan 2017
-//
-
-#include "hazelcast/util/Destroyable.h"
-
 namespace hazelcast {
     namespace util {
         Destroyable::~Destroyable() {
@@ -1003,8 +844,6 @@ namespace hazelcast {
 }
 
 
-#include "hazelcast/util/TimeUtil.h"
-#include "hazelcast/util/concurrent/TimeUnit.h"
 
 namespace hazelcast {
     namespace util {
@@ -1019,12 +858,9 @@ namespace hazelcast {
     }
 }
 
-//
-//  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
 //
 
-#include "hazelcast/util/Closeable.h"
 
 namespace hazelcast {
     namespace util {
@@ -1034,13 +870,6 @@ namespace hazelcast {
 }
 
 
-
-//
-// Created by sancar koyunlu on 20/02/14.
-//
-
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace util {
@@ -1115,12 +944,9 @@ namespace hazelcast {
     }
 }
 
-//
-//  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
 //
 
-#include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace util {
@@ -1135,7 +961,6 @@ namespace hazelcast {
 }
 
 
-#include "hazelcast/util/Runnable.h"
 
 namespace hazelcast {
     namespace util {
@@ -1164,13 +989,9 @@ namespace hazelcast {
     }
 }
 
-//
-//  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
 //
 
-#include <sstream>
-#include "hazelcast/util/UUID.h"
 
 namespace hazelcast {
     namespace util {
@@ -1224,8 +1045,6 @@ namespace hazelcast {
 }
 
 
-#include "hazelcast/util/UTFUtil.h"
-#include "hazelcast/client/exception/UTFDataFormatException.h"
 
 namespace hazelcast {
     namespace util {
@@ -1299,33 +1118,8 @@ namespace hazelcast {
 //
 // Created by sancar koyunlu on 5/3/13.
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/TimeUtil.h"
 
-#include <chrono>
-#include <string.h>
-#include <algorithm>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <thread>
-#include <regex>
-#include <regex>
-#include <sstream>
-#include <iomanip>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#else
-
-#include <sys/time.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <iomanip>
-#include <sstream>
-
-#endif
 
 namespace hazelcast {
     namespace util {
@@ -1508,17 +1302,6 @@ namespace hazelcast {
 }
 
 
-
-//
-//  Created by ihsan demir on 12 Jan 2017
-//
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <winsock2.h>
-#endif
-
-#include "hazelcast/util/SyncHttpClient.h"
-#include "hazelcast/client/exception/IOException.h"
-
 namespace hazelcast {
     namespace util {
         SyncHttpClient::SyncHttpClient(const std::string &serverIp, const std::string &uriPath)
@@ -1599,7 +1382,6 @@ namespace hazelcast {
     }
 }
 
-#include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
     namespace util {
@@ -1622,9 +1404,7 @@ namespace hazelcast {
 }
 
 
-#include "hazelcast/util/AtomicBoolean.h"
 
-#include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace util {
@@ -1637,10 +1417,7 @@ namespace hazelcast {
 }
 
 
-#include <mutex>
-#include <chrono>
 
-#include "hazelcast/util/concurrent/locks/LockSupport.h"
 
 namespace hazelcast {
     namespace util {
@@ -1663,7 +1440,6 @@ namespace hazelcast {
 }
 
 
-#include "hazelcast/util/concurrent/ConcurrencyUtil.h"
 
 namespace hazelcast {
     namespace util {
@@ -1683,12 +1459,6 @@ namespace hazelcast {
 }
 
 
-#include "hazelcast/util/concurrent/locks/LockSupport.h"
-#include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
-#include "hazelcast/util/concurrent/locks/LockSupport.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace util {
@@ -1735,7 +1505,6 @@ namespace hazelcast {
 }
 
 
-#include "hazelcast/util/concurrent/CancellationException.h"
 
 namespace hazelcast {
     namespace util {
@@ -1752,9 +1521,7 @@ namespace hazelcast {
 }
 
 
-#include <hazelcast/util/concurrent/TimeUnit.h>
 
-#include "hazelcast/util/concurrent/TimeUnit.h"
 
 namespace hazelcast {
     namespace util {
@@ -1923,8 +1690,6 @@ namespace hazelcast {
 //
 // Created by ihsan demir on 9 Dec 2016.
 
-#include "hazelcast/util/Preconditions.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 
 namespace hazelcast {
     namespace util {
@@ -1954,9 +1719,7 @@ namespace hazelcast {
 }
 
 
-#include <stdlib.h>
 
-#include "hazelcast/util/UuidUtil.h"
 
 namespace hazelcast {
     namespace util {
@@ -1993,7 +1756,6 @@ namespace hazelcast {
     }
 }
 
-#include "hazelcast/util/AtomicInt.h"
 
 namespace hazelcast {
     namespace util {
@@ -2006,12 +1768,7 @@ namespace hazelcast {
 }
 
 
-#include "hazelcast/util/AddressUtil.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/AddressHelper.h"
 
-#include <asio/ip/tcp.hpp>
 
 namespace hazelcast {
     namespace util {
@@ -2095,20 +1852,6 @@ namespace hazelcast {
     }
 }
 
-//
-//  Created by ihsan demir on 9/9/15.
-//  Copyright (c) 2015 ihsan demir. All rights reserved.
-//
-
-#include "hazelcast/util/RuntimeAvailableProcessors.h"
-
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <windows.h>
-#else
-
-#include <unistd.h>
-
-#endif
 
 namespace hazelcast {
     namespace util {
@@ -2149,7 +1892,6 @@ namespace hazelcast {
 // compile and run any of them on any platform, but your performance with the
 // non-native version will be less than optimal.
 
-#include "hazelcast/util/MurmurHash3.h"
 
 //-----------------------------------------------------------------------------
 // Platform-specific functions and macros
@@ -2160,7 +1902,6 @@ namespace hazelcast {
 
 #define FORCE_INLINE	__forceinline
 
-#include <stdlib.h>
 
 #define ROTL32(x,y)	_rotl(x,y)
 #define ROTL64(x,y)	_rotl64(x,y)
@@ -2298,14 +2039,10 @@ namespace hazelcast {
 //-----------------------------------------------------------------------------
 
 
-//
-//  Created by ihsan demir on 9/9/15.
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
 //
 
-#include <hazelcast/util/ExceptionUtil.h>
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 namespace hazelcast {
     namespace util {
@@ -2348,17 +2085,7 @@ namespace hazelcast {
         }
     }
 }
-
-
-//
-// Created by sancar koyunlu on 11/04/14.
-//
-
-#include "hazelcast/util/Mutex.h"
-
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-
-#include <cassert>
 
 namespace hazelcast {
     namespace util {
@@ -2392,8 +2119,6 @@ namespace hazelcast {
 
 #else
 
-#include <cassert>
-#include <sys/errno.h>
 
 namespace hazelcast {
     namespace util {
@@ -2431,9 +2156,6 @@ namespace hazelcast {
 
 
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/CountDownLatch.h"
-#include <time.h>
 
 namespace hazelcast {
     namespace util {
@@ -2521,17 +2243,6 @@ namespace hazelcast {
     }
 }
 
-
-//
-// Created by sancar koyunlu on 31/12/13.
-//
-
-#include <cassert>
-#include <string.h>
-
-#include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace util {
@@ -2641,17 +2352,6 @@ namespace hazelcast {
 }
 
 
-
-//
-// Created by sancar koyunlu on 30/12/13.
-//
-
-#include <string.h>
-
-#include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/util/ServerSocket.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/IOUtil.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

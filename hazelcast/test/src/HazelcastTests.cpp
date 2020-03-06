@@ -13,18 +13,214 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "HazelcastServerFactory.h"
-
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
-
 #include <regex>
 #include <vector>
+#include "ringbuffer/StartsWithStringFilter.h"
+#include "serialization/Employee.h"
+#include "ClientTestSupportBase.h"
+#include <hazelcast/client/ClientConfig.h>
+#include <hazelcast/client/exception/IllegalStateException.h>
+#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/serialization/pimpl/SerializationService.h>
+#include <hazelcast/util/UuidUtil.h>
+#include <hazelcast/client/impl/Partition.h>
+#include <gtest/gtest.h>
+#include <thread>
+#include <hazelcast/client/spi/ClientContext.h>
+#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
+#include <hazelcast/client/protocol/Principal.h>
+#include <hazelcast/client/connection/Connection.h>
+#include <ClientTestSupport.h>
+#include <memory>
+#include <hazelcast/client/proxy/ClientPNCounterProxy.h>
+#include <hazelcast/client/serialization/pimpl/DataInput.h>
+#include <hazelcast/util/AddressUtil.h>
+#include <hazelcast/util/RuntimeAvailableProcessors.h>
+#include <hazelcast/client/serialization/pimpl/DataOutput.h>
+#include <hazelcast/util/AddressHelper.h>
+#include <hazelcast/client/exception/IOException.h>
+#include <hazelcast/client/protocol/ClientExceptionFactory.h>
+#include <hazelcast/util/IOUtil.h>
+#include <hazelcast/util/CountDownLatch.h>
+#include <ClientTestSupportBase.h>
+#include <hazelcast/util/Executor.h>
+#include <hazelcast/util/Util.h>
+#include <hazelcast/util/impl/SimpleExecutorService.h>
+#include <TestHelperFunctions.h>
+#include <ostream>
+#include <hazelcast/util/ILogger.h>
+#include <ctime>
+#include <errno.h>
+#include <hazelcast/client/LifecycleListener.h>
+#include "serialization/TestRawDataPortable.h"
+#include "serialization/TestSerializationConstants.h"
+#include "serialization/TestMainPortable.h"
+#include "serialization/TestNamedPortable.h"
+#include "serialization/TestInvalidReadPortable.h"
+#include "serialization/TestInvalidWritePortable.h"
+#include "serialization/TestInnerPortable.h"
+#include "serialization/TestNamedPortableV2.h"
+#include "serialization/TestNamedPortableV3.h"
+#include <hazelcast/client/SerializationConfig.h>
+#include <hazelcast/client/HazelcastJsonValue.h>
+#include <stdint.h>
+#include "customSerialization/TestCustomSerializerX.h"
+#include "customSerialization/TestCustomXSerializable.h"
+#include "customSerialization/TestCustomPersonSerializer.h"
+#include "serialization/ChildTemplatedPortable2.h"
+#include "serialization/ParentTemplatedPortable.h"
+#include "serialization/ChildTemplatedPortable1.h"
+#include "serialization/ObjectCarryingPortable.h"
+#include "serialization/TestDataSerializable.h"
+#include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
+#include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
+#include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
+#include <hazelcast/client/query/FalsePredicate.h>
+#include <set>
+#include <hazelcast/client/query/EqualPredicate.h>
+#include <hazelcast/client/query/QueryConstants.h>
+#include <HazelcastServer.h>
+#include "TestHelperFunctions.h"
+#include <cmath>
+#include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
+#include <hazelcast/util/Thread.h>
+#include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
+#include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
+#include <iostream>
+#include <string>
+#include "executor/tasks/SelectAllMembers.h"
+#include "executor/tasks/IdentifiedFactory.h"
+#include <hazelcast/client/serialization/ObjectDataOutput.h>
+#include <hazelcast/client/serialization/ObjectDataInput.h>
+#include "executor/tasks/CancellationAwareTask.h"
+#include "executor/tasks/NullCallable.h"
+#include "executor/tasks/SerializedCounterCallable.h"
+#include "executor/tasks/MapPutPartitionAwareCallable.h"
+#include "executor/tasks/SelectNoMembers.h"
+#include "executor/tasks/GetMemberUuidTask.h"
+#include "executor/tasks/FailingCallable.h"
+#include "executor/tasks/AppendCallable.h"
+#include "executor/tasks/TaskWithUnserializableResponse.h"
+#include <executor/tasks/CancellationAwareTask.h>
+#include <executor/tasks/FailingCallable.h>
+#include <executor/tasks/SelectNoMembers.h>
+#include <executor/tasks/SerializedCounterCallable.h>
+#include <executor/tasks/TaskWithUnserializableResponse.h>
+#include <executor/tasks/GetMemberUuidTask.h>
+#include <executor/tasks/AppendCallable.h>
+#include <executor/tasks/SelectAllMembers.h>
+#include <executor/tasks/MapPutPartitionAwareCallable.h>
+#include <executor/tasks/NullCallable.h>
+#include <stdlib.h>
+#include <fstream>
+#include <asio.hpp>
+#include <cassert>
 
+#ifdef HZ_BUILD_WITH_SSL
+
+#include <openssl/crypto.h>
+
+#endif
+
+#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/aws/impl/DescribeInstances.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/internal/socket/SSLSocket.h"
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/CountDownLatch.h"
+#include "hazelcast/client/MembershipListener.h"
+#include "hazelcast/client/InitialMembershipEvent.h"
+#include "hazelcast/client/InitialMembershipListener.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
+#include "hazelcast/client/EntryAdapter.h"
+#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/SocketInterceptor.h"
+#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/util/Sync.h"
+#include "hazelcast/client/query/SqlPredicate.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/Runnable.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/IMap.h"
+#include "hazelcast/util/Bits.h"
+#include "hazelcast/util/SyncHttpsClient.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/BlockingConcurrentQueue.h"
+#include "hazelcast/util/UTFUtil.h"
+#include "hazelcast/util/ConcurrentQueue.h"
+#include "hazelcast/util/impl/SimpleExecutorService.h"
+#include "hazelcast/util/Future.h"
+#include "hazelcast/util/concurrent/locks/LockSupport.h"
+#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/Pipelining.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/util/MurmurHash3.h"
+#include "hazelcast/client/ILock.h"
+#include "hazelcast/client/ITopic.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
+#include "hazelcast/client/adaptor/RawPointerSet.h"
+#include "hazelcast/client/query/OrPredicate.h"
+#include "hazelcast/client/query/RegexPredicate.h"
+#include "hazelcast/client/query/PagingPredicate.h"
+#include "hazelcast/client/query/QueryConstants.h"
+#include "hazelcast/client/query/NotPredicate.h"
+#include "hazelcast/client/query/InstanceOfPredicate.h"
+#include "hazelcast/client/query/NotEqualPredicate.h"
+#include "hazelcast/client/query/InPredicate.h"
+#include "hazelcast/client/query/ILikePredicate.h"
+#include "hazelcast/client/query/LikePredicate.h"
+#include "hazelcast/client/query/GreaterLessPredicate.h"
+#include "hazelcast/client/query/AndPredicate.h"
+#include "hazelcast/client/query/BetweenPredicate.h"
+#include "hazelcast/client/query/EqualPredicate.h"
+#include "hazelcast/client/query/TruePredicate.h"
+#include "hazelcast/client/query/FalsePredicate.h"
+#include "hazelcast/client/adaptor/RawPointerMap.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/adaptor/RawPointerList.h"
+#include "hazelcast/client/adaptor/RawPointerTransactionalQueue.h"
+#include "hazelcast/client/ItemListener.h"
+#include "hazelcast/client/adaptor/RawPointerQueue.h"
+#include "hazelcast/client/adaptor/RawPointerTransactionalMap.h"
+#include "hazelcast/client/MultiMap.h"
+#include "hazelcast/client/adaptor/RawPointerMultiMap.h"
+#include "hazelcast/client/adaptor/RawPointerTransactionalMultiMap.h"
+#include "hazelcast/util/LittleEndianBufferWrapper.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
+#include "hazelcast/client/ISemaphore.h"
+#include "hazelcast/client/IAtomicLong.h"
+#include "hazelcast/client/mixedtype/MultiMap.h"
+#include "hazelcast/client/mixedtype/IList.h"
+#include "hazelcast/client/IList.h"
+#include "hazelcast/client/IQueue.h"
+#include "hazelcast/client/mixedtype/IQueue.h"
+#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/aws/utility/CloudUtility.h"
+#include "hazelcast/client/ISet.h"
+#include "hazelcast/client/mixedtype/ISet.h"
+#include "hazelcast/client/ICountDownLatch.h"
+#include "hazelcast/client/ReliableTopic.h"
+#include "hazelcast/client/IdGenerator.h"
 
 namespace hazelcast {
     namespace client {
@@ -370,10 +566,7 @@ namespace hazelcast {
 
 
 
-#include "ringbuffer/StartsWithStringFilter.h"
 
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -402,14 +595,8 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
-#include "serialization/Employee.h"
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 using namespace hazelcast::client::mixedtype;
 
@@ -507,14 +694,8 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
-#include "serialization/Employee.h"
-#include "ringbuffer/StartsWithStringFilter.h"
 
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -667,7 +848,7 @@ namespace hazelcast {
                     std::shared_ptr<hazelcast::util::CountDownLatch> latch = std::make_shared<hazelcast::util::CountDownLatch>(
                             1);
                     hazelcast::util::Thread consumer(std::make_shared<ReadOneWithLatchTask>(clientRingbuffer, latch),
-                                          getLogger());
+                                                     getLogger());
                     consumer.start();
                     client2Ringbuffer->addAllAsync(items, Ringbuffer<std::string>::OVERWRITE);
                     ASSERT_OPEN_EVENTUALLY(*latch);
@@ -714,7 +895,7 @@ namespace hazelcast {
 
                 TEST_F(RingbufferTest, addAsync) {
                     std::shared_ptr<ICompletableFuture<int64_t> > f = clientRingbuffer->addAsync("foo",
-                                                                                                   Ringbuffer<std::string>::OVERWRITE);
+                                                                                                 Ringbuffer<std::string>::OVERWRITE);
                     std::shared_ptr<int64_t> result = f->get();
 
                     ASSERT_EQ_PTR(client2Ringbuffer->headSequence(), result.get(), int64_t);
@@ -728,7 +909,7 @@ namespace hazelcast {
                     items.push_back("foo");
                     items.push_back("bar");
                     std::shared_ptr<ICompletableFuture<int64_t> > f = clientRingbuffer->addAllAsync(items,
-                                                                                                      Ringbuffer<std::string>::OVERWRITE);
+                                                                                                    Ringbuffer<std::string>::OVERWRITE);
                     std::shared_ptr<int64_t> result = f->get();
 
                     ASSERT_EQ_PTR(client2Ringbuffer->tailSequence(), result.get(), int64_t);
@@ -758,7 +939,7 @@ namespace hazelcast {
                     ASSERT_EQ_PTR("3", rs->getItems().get(2), std::string);
                 }
 
-                // checks if the max count works. So if more results are available than needed, the surplus results should not be read.
+// checks if the max count works. So if more results are available than needed, the surplus results should not be read.
                 TEST_F(RingbufferTest, readManyAsync_maxCount) {
                     client2Ringbuffer->add("1");
                     client2Ringbuffer->add("2");
@@ -807,12 +988,7 @@ namespace hazelcast {
 //
 // Created by sancar koyunlu on 9/13/13.
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -914,15 +1090,15 @@ namespace hazelcast {
 
                 int64_t sequence = rb->headSequence();
                 std::unique_ptr<BaseDataSerializable> value = rb->readOne(sequence);
-                ASSERT_NE((BaseDataSerializable *)NULL, value.get());
+                ASSERT_NE((BaseDataSerializable *) NULL, value.get());
                 ASSERT_EQ(base.getClassId(), value->getClassId());
 
                 value = rb->readOne(sequence + 1);
-                ASSERT_NE((BaseDataSerializable *)NULL, value.get());
+                ASSERT_NE((BaseDataSerializable *) NULL, value.get());
                 ASSERT_EQ(derived1.getClassId(), value->getClassId());
 
                 value = rb->readOne(sequence + 2);
-                ASSERT_NE((BaseDataSerializable *)NULL, value.get());
+                ASSERT_NE((BaseDataSerializable *) NULL, value.get());
                 ASSERT_EQ(derived2.getClassId(), value->getClassId());
             }
         }
@@ -930,15 +1106,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupportBase.h"
 
-#include <hazelcast/client/ClientConfig.h>
-#include <hazelcast/client/exception/IllegalStateException.h>
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/serialization/pimpl/SerializationService.h>
-#include <hazelcast/util/UuidUtil.h>
-#include <hazelcast/client/impl/Partition.h>
 
 namespace hazelcast {
     namespace client {
@@ -996,7 +1164,7 @@ namespace hazelcast {
         StartedThread::StartedThread(const std::string &name, void (*func)(ThreadArgs &),
                                      void *arg0, void *arg1, void *arg2, void *arg3)
                 : name(name), logger(new hazelcast::util::ILogger("StartedThread", "StartedThread", "testversion",
-                                                       client::config::LoggerConfig())) {
+                                                                  client::config::LoggerConfig())) {
             init(func, arg0, arg1, arg2, arg3);
         }
 
@@ -1005,8 +1173,9 @@ namespace hazelcast {
                                      void *arg1,
                                      void *arg2,
                                      void *arg3)
-                : name("hz.unnamed"), logger(new hazelcast::util::ILogger("StartedThread", "StartedThread", "testversion",
-                                                               client::config::LoggerConfig())) {
+                : name("hz.unnamed"),
+                  logger(new hazelcast::util::ILogger("StartedThread", "StartedThread", "testversion",
+                                                      client::config::LoggerConfig())) {
             init(func, arg0, arg1, arg2, arg3);
         }
 
@@ -1049,23 +1218,16 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
 #ifdef HZ_BUILD_WITH_SSL
-#include "hazelcast/client/internal/socket/SSLSocket.h"
 #endif
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class ClientConnectionTest : public ClientTestSupport {
             protected:
-            #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                 std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> getCiphers(ClientConfig &config) {
                     HazelcastClient client(config);
                     spi::ClientContext context(client);
@@ -1076,7 +1238,7 @@ namespace hazelcast {
                     return socket.getCiphers();
                 }
 
-            #endif
+#endif
             };
 
             TEST_F(ClientConnectionTest, testTcpSocketTimeoutToOutsideNetwork) {
@@ -1087,7 +1249,7 @@ namespace hazelcast {
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
 
-            #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
             TEST_F(ClientConnectionTest, testSslSocketTimeoutToOutsideNetwork) {
                 HazelcastServerFactory sslFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                 HazelcastServer instance(sslFactory);
@@ -1112,7 +1274,8 @@ namespace hazelcast {
                 ClientConfig config = getConfig();
                 config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList(
                         "HIGH");
-                std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> supportedCiphers = getCiphers(config);
+                std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> supportedCiphers = getCiphers(
+                        config);
 
                 std::string unsupportedCipher = supportedCiphers[supportedCiphers.size() - 1].name;
                 config = getConfig();
@@ -1129,27 +1292,16 @@ namespace hazelcast {
 
                 ASSERT_EQ(supportedCiphers.size() - 1, newCiphers.size());
             }
-            #endif
+
+#endif
         }
     }
 }
 
 
 
-#include <gtest/gtest.h>
 
-#include "HazelcastServer.h"
-#include "ClientTestSupportBase.h"
-#include "HazelcastServerFactory.h"
 
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/LifecycleListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -1292,7 +1444,7 @@ namespace hazelcast {
                 try {
                     HazelcastClient client(clientConfig);
                 } catch (exception::IllegalStateException &) {
-                    // this is expected
+// this is expected
                 }
                 ASSERT_GE(hazelcast::util::currentTimeMillis() - startTimeMillis, 2 * 900);
             }
@@ -1323,27 +1475,23 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(shutdownLatch);
             }
 
-            #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
 
             INSTANTIATE_TEST_SUITE_P(All,
-                                    ClusterTest,
-                                    ::testing::Values(new SmartTcpClientConfig(), new SmartSSLClientConfig()));
-            #else
-            INSTANTIATE_TEST_SUITE_P(All,
+                                     ClusterTest,
+                                     ::testing::Values(new SmartTcpClientConfig(), new SmartSSLClientConfig()));
+#else
+                                                                                                                                    INSTANTIATE_TEST_SUITE_P(All,
                                     ClusterTest,
                                     ::testing::Values(new SmartTcpClientConfig()));
-            #endif
+#endif
         }
     }
 }
 
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -1365,14 +1513,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/Socket.h"
 
 namespace hazelcast {
     namespace client {
@@ -1384,7 +1525,7 @@ namespace hazelcast {
             public:
                 MySocketInterceptor(hazelcast::util::CountDownLatch &latch) : interceptorLatch(latch) {
                 }
-                
+
                 void onConnect(const hazelcast::client::Socket &connectedSocket) {
                     ASSERT_EQ("127.0.0.1", connectedSocket.getAddress().getHost());
                     ASSERT_NE(0, connectedSocket.getAddress().getPort());
@@ -1395,7 +1536,7 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch &interceptorLatch;
             };
 
-            #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
             TEST_F(SocketInterceptorTest, interceptSSLBasic) {
                 HazelcastServerFactory sslFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                 HazelcastServer instance(sslFactory);
@@ -1409,7 +1550,8 @@ namespace hazelcast {
                 HazelcastClient client(config);
                 interceptorLatch.await(2);
             }
-            #endif
+
+#endif
 
             TEST_F(SocketInterceptorTest, interceptBasic) {
                 HazelcastServer instance(*g_srvFactory);
@@ -1425,11 +1567,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -1457,13 +1595,8 @@ namespace hazelcast {
     }
 }
 
-#include <thread>
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -1490,15 +1623,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/spi/ClientContext.h>
-#include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/protocol/Principal.h>
-#include <hazelcast/client/connection/Connection.h>
 
 namespace hazelcast {
     namespace client {
@@ -1534,19 +1659,8 @@ namespace hazelcast {
 
 
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include <ClientTestSupport.h>
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
 
-#include <memory>
 
 namespace hazelcast {
     namespace client {
@@ -1563,7 +1677,7 @@ namespace hazelcast {
                 HazelcastClient hazelcastClient(getNewClient());
                 Cluster cluster = hazelcastClient.getCluster();
                 std::vector<Member> members = cluster.getMembers();
-                ASSERT_EQ(1U,members.size());
+                ASSERT_EQ(1U, members.size());
                 Member &member = members[0];
                 ASSERT_TRUE(member.lookupAttribute("intAttr"));
                 ASSERT_EQ("211", *member.getAttribute("intAttr"));
@@ -1592,7 +1706,7 @@ namespace hazelcast {
             class AttributeListener : public MembershipListener {
             public:
                 AttributeListener(hazelcast::util::CountDownLatch &_attributeLatch)
-                  : _attributeLatch(_attributeLatch){
+                        : _attributeLatch(_attributeLatch) {
 
                 }
 
@@ -1603,53 +1717,54 @@ namespace hazelcast {
                 }
 
                 void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
-                    if(memberAttributeEvent.getOperationType() != MemberAttributeEvent::PUT){
+                    if (memberAttributeEvent.getOperationType() != MemberAttributeEvent::PUT) {
                         return;
                     }
                     const std::string &key = memberAttributeEvent.getKey();
 
-                    if(key == "intAttr"){
+                    if (key == "intAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
-                        if("211" == value ){
+                        if ("211" == value) {
                             _attributeLatch.countDown();
                         }
-                    }else if(key == "boolAttr"){
+                    } else if (key == "boolAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
-                        if("true" == value ){
+                        if ("true" == value) {
                             _attributeLatch.countDown();
                         }
-                    }else if(key == "byteAttr"){
+                    } else if (key == "byteAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
-                        if("7" == value ){
+                        if ("7" == value) {
                             _attributeLatch.countDown();
                         }
-                    }else if(key == "doubleAttr"){
+                    } else if (key == "doubleAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
-                        if("2.0" == value ){
+                        if ("2.0" == value) {
                             _attributeLatch.countDown();
                         }
-                    }else if(key == "floatAttr"){
+                    } else if (key == "floatAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
-                        if("1.2" == value ){
+                        if ("1.2" == value) {
                             _attributeLatch.countDown();
                         }
-                    }else if(key == "shortAttr"){
+                    } else if (key == "shortAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
-                        if("3" == value ){
+                        if ("3" == value) {
                             _attributeLatch.countDown();
                         }
-                    }else if(key == "strAttr"){
+                    } else if (key == "strAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
-                        if(std::string("strAttr") == value ){
+                        if (std::string("strAttr") == value) {
                             _attributeLatch.countDown();
                         }
                     }
                 }
+
             private:
                 hazelcast::util::CountDownLatch &_attributeLatch;
             };
 
-            TEST_F(MemberAttributeTest, testChangeWithListeners){
+            TEST_F(MemberAttributeTest, testChangeWithListeners) {
                 hazelcast::util::CountDownLatch attributeLatch(7);
                 AttributeListener sampleListener(attributeLatch);
 
@@ -1674,12 +1789,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include <hazelcast/client/ClientConfig.h>
-#include <hazelcast/client/HazelcastClient.h>
 
 namespace hazelcast {
     namespace client {
@@ -1781,7 +1891,7 @@ namespace hazelcast {
                     TEST_F(BasicPnCounterAPITest, testReset) {
                         std::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client->getPNCounter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
-                                pnCounter->reset();
+                        pnCounter->reset();
                     }
                 }
             }
@@ -1790,13 +1900,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include <hazelcast/client/ClientConfig.h>
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/proxy/ClientPNCounterProxy.h>
 
 namespace hazelcast {
     namespace client {
@@ -1829,7 +1933,8 @@ namespace hazelcast {
                     };
 
                     TEST_F(ClientPNCounterConsistencyLostTest, consistencyLostExceptionIsThrownWhenTargetReplicaDisappears) {
-                        HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-pncounter-consistency-lost-test.xml");
+                        HazelcastServerFactory factory(
+                                "hazelcast/test/resources/hazelcast-pncounter-consistency-lost-test.xml");
                         HazelcastServer instance(factory);
                         HazelcastServer instance2(factory);
 
@@ -1840,7 +1945,7 @@ namespace hazelcast {
 
                         pnCounter->addAndGet(5);
 
-                        assertEquals(5, pnCounter->get());
+                                assertEquals(5, pnCounter->get());
 
                         std::shared_ptr<Address> currentTarget = getCurrentTargetReplicaAddress(pnCounter);
 
@@ -1850,7 +1955,8 @@ namespace hazelcast {
                     }
 
                     TEST_F(ClientPNCounterConsistencyLostTest, driverCanContinueSessionByCallingReset) {
-                        HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-pncounter-consistency-lost-test.xml");
+                        HazelcastServerFactory factory(
+                                "hazelcast/test/resources/hazelcast-pncounter-consistency-lost-test.xml");
                         HazelcastServer instance(factory);
                         HazelcastServer instance2(factory);
 
@@ -1861,7 +1967,7 @@ namespace hazelcast {
 
                         pnCounter->addAndGet(5);
 
-                        assertEquals(5, pnCounter->get());
+                                assertEquals(5, pnCounter->get());
 
                         std::shared_ptr<Address> currentTarget = getCurrentTargetReplicaAddress(pnCounter);
 
@@ -1878,14 +1984,9 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
 
 
-#include <hazelcast/client/ClientConfig.h>
-#include <hazelcast/client/HazelcastClient.h>
 
 namespace hazelcast {
     namespace client {
@@ -1948,7 +2049,7 @@ namespace hazelcast {
                         std::shared_ptr<client::crdt::pncounter::PNCounter> counter1 = client->getPNCounter(name);
                         std::shared_ptr<client::crdt::pncounter::PNCounter> counter2 = client->getPNCounter(name);
 
-                        assertEquals(5, counter1->addAndGet(5));
+                                assertEquals(5, counter1->addAndGet(5));
 
                         ASSERT_EQ_EVENTUALLY(5, counter1->get());
                         ASSERT_EQ_EVENTUALLY(5, counter2->get());
@@ -1965,8 +2066,10 @@ namespace hazelcast {
 
                         std::vector<std::shared_ptr<hazelcast::util::Thread> > futures;
                         for (int i = 0; i < parallelism; i++) {
-                            std::shared_ptr<Thread> thread = std::shared_ptr<hazelcast::util::Thread>(new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(
-                                                                new IncrementerTask(loopsPerThread, finalValue, counter1, counter2)), getLogger()));
+                            std::shared_ptr<Thread> thread = std::shared_ptr<hazelcast::util::Thread>(
+                                    new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(
+                                            new IncrementerTask(loopsPerThread, finalValue, counter1, counter2)),
+                                                                getLogger()));
                             thread->start();
                             futures.push_back(thread);
                         }
@@ -1987,12 +2090,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include <hazelcast/client/ClientConfig.h>
-#include <hazelcast/client/HazelcastClient.h>
 
 namespace hazelcast {
     namespace client {
@@ -2022,22 +2120,8 @@ namespace hazelcast {
 }
 
 
-#include <gtest/gtest.h>
 
-#include "HazelcastServer.h"
-#include <ClientTestSupport.h>
-#include "ClientTestSupportBase.h"
-#include "HazelcastServerFactory.h"
 
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -2086,7 +2170,7 @@ namespace hazelcast {
                 private:
                     hazelcast::util::CountDownLatch &mapClearedLatch;
                 };
-                
+
                 class SampleInitialListener : public InitialMembershipListener {
                 public:
                     SampleInitialListener(hazelcast::util::CountDownLatch &_memberAdded, hazelcast::util::CountDownLatch &_attributeLatch,
@@ -2125,8 +2209,8 @@ namespace hazelcast {
                 class SampleListenerInSimpleListenerTest : public MembershipListener {
                 public:
                     SampleListenerInSimpleListenerTest(hazelcast::util::CountDownLatch &_memberAdded,
-                                                hazelcast::util::CountDownLatch &_attributeLatch,
-                                                hazelcast::util::CountDownLatch &_memberRemoved)
+                                                       hazelcast::util::CountDownLatch &_attributeLatch,
+                                                       hazelcast::util::CountDownLatch &_memberRemoved)
                             : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch),
                               _memberRemoved(_memberRemoved) {
 
@@ -2289,30 +2373,23 @@ namespace hazelcast {
 
                 map.clear();
 
-                assertOpenEventually(mapClearedLatch);
+                        assertOpenEventually(mapClearedLatch);
 
-                assertTrue(map.removeEntryListener(listenerRegistrationId));
+                        assertTrue(map.removeEntryListener(listenerRegistrationId));
             }
 
             INSTANTIATE_TEST_SUITE_P(All,
-                                    SimpleListenerTest,
-                                    ::testing::Values(new SmartTcpClientConfig(), new NonSmartTcpClientConfig()));
+                                     SimpleListenerTest,
+                                     ::testing::Values(new SmartTcpClientConfig(), new NonSmartTcpClientConfig()));
         }
     }
 }
 
 
 
-#include <vector>
 
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/Sync.h"
 
 namespace hazelcast {
     namespace client {
@@ -2345,7 +2422,8 @@ namespace hazelcast {
                 class SmokeRunner : public hazelcast::util::Runnable {
                 public:
                     SmokeRunner(FlakeIdGenerator &flakeIdGenerator,
-                                hazelcast::util::CountDownLatch &startLatch, hazelcast::util::Sync<std::shared_ptr<set<int64_t> > > &ids)
+                                hazelcast::util::CountDownLatch &startLatch,
+                                hazelcast::util::Sync<std::shared_ptr<set<int64_t> > > &ids)
                             : flakeIdGenerator(flakeIdGenerator), startLatch(startLatch), ids(ids) {}
 
                     virtual const string getName() const {
@@ -2394,8 +2472,9 @@ namespace hazelcast {
 
                 for (int i = 0; i < 4; ++i) {
                     ids[i] = std::shared_ptr<std::set<int64_t> >(new std::set<int64_t>());
-                    std::shared_ptr<hazelcast::util::Thread> t(new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(
-                            new SmokeRunner(flakeIdGenerator, startLatch, ids[i])), getLogger()));
+                    std::shared_ptr<hazelcast::util::Thread> t(
+                            new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(
+                                    new SmokeRunner(flakeIdGenerator, startLatch, ids[i])), getLogger()));
                     t->start();
                     threads[i] = t;
                 }
@@ -2410,11 +2489,11 @@ namespace hazelcast {
                 for (int i = 0; i < 4; ++i) {
                     std::shared_ptr<std::set<int64_t> > threadIdSet = ids[i];
                     for (const int64_t &value : *threadIdSet) {
-                                    allIds.insert(value);
-                                }
+                        allIds.insert(value);
+                    }
                 }
 
-                // if there were duplicate IDs generated, there will be less items in the set than expected
+// if there were duplicate IDs generated, there will be less items in the set than expected
                         assertEquals(4 * 100000, (int) allIds.size());
             }
         }
@@ -2423,14 +2502,8 @@ namespace hazelcast {
 
 //
 // Created by sancar koyunlu on 9/18/13.
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/query/SqlPredicate.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "serialization/Employee.h"
 
 namespace hazelcast {
     namespace client {
@@ -2449,7 +2522,7 @@ namespace hazelcast {
 
             ClientTxnMapTest::ClientTxnMapTest() : instance(*g_srvFactory), client(getNewClient()) {
             }
-            
+
             ClientTxnMapTest::~ClientTxnMapTest() {
             }
 
@@ -2461,10 +2534,10 @@ namespace hazelcast {
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
-                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
                 std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
                 context.commitTransaction();
 
@@ -2479,14 +2552,14 @@ namespace hazelcast {
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
-                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
                 std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
-                ASSERT_EQ((std::string *)NULL, map.remove("key2").get());
+                ASSERT_EQ((std::string *) NULL, map.remove("key2").get());
                 val = map.remove("key1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("value1", *val);
 
                 context.commitTransaction();
@@ -2503,12 +2576,12 @@ namespace hazelcast {
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
-                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
                 std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
-                ASSERT_EQ((std::string *)NULL, map.remove("key2").get());
+                ASSERT_EQ((std::string *) NULL, map.remove("key2").get());
                 ASSERT_TRUE(map.remove("key1", "value1"));
 
                 context.commitTransaction();
@@ -2527,14 +2600,14 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(map.deleteEntry("key1"));
 
-                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
                 std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
                 ASSERT_NO_THROW(map.deleteEntry("key1"));
                 val = map.get("key1");
-                ASSERT_EQ((std::string *)NULL, val.get());
+                ASSERT_EQ((std::string *) NULL, val.get());
 
                 context.commitTransaction();
 
@@ -2550,10 +2623,10 @@ namespace hazelcast {
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
-                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
                 std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
                 ASSERT_EQ("value1", *map.replace("key1", "myNewValue"));
 
@@ -2573,22 +2646,22 @@ namespace hazelcast {
                 ASSERT_NO_THROW(map.set("key1", "value1"));
 
                 std::shared_ptr<std::string> val = map.get("key1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("value1", *val);
 
                 val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
                 ASSERT_NO_THROW(map.set("key1", "myNewValue"));
 
                 val = map.get("key1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("myNewValue", *val);
 
                 context.commitTransaction();
 
                 val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("myNewValue", *val);
             }
 
@@ -2605,7 +2678,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(map.set("key1", "value1"));
 
                 std::shared_ptr<std::string> val = map.get("key1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("value1", *val);
 
                 ASSERT_TRUE(map.containsKey("key1"));
@@ -2624,10 +2697,10 @@ namespace hazelcast {
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
-                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
                 std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
                 ASSERT_FALSE(map.replace("key1", "valueNonExistent", "myNewValue"));
                 ASSERT_TRUE(map.replace("key1", "value1", "myNewValue"));
@@ -2646,21 +2719,21 @@ namespace hazelcast {
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
                 std::shared_ptr<std::string> val = map.putIfAbsent("key1", "value1");
-                ASSERT_EQ((std::string *)NULL, val.get());
+                ASSERT_EQ((std::string *) NULL, val.get());
                 val = map.get("key1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("value1", *val);
                 val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
                 val = map.putIfAbsent("key1", "value1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("value1", *val);
 
                 context.commitTransaction();
 
                 val = client.getMap<std::string, std::string>(name).get("key1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("value1", *val);
             }
 
@@ -2710,17 +2783,17 @@ namespace hazelcast {
                 TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalMap<std::string, std::string> txMap = context.getMap<std::string, std::string>(name);
-                ASSERT_EQ(txMap.put("key3", "value3").get(), (std::string *)NULL);
+                ASSERT_EQ(txMap.put("key3", "value3").get(), (std::string *) NULL);
 
 
-                ASSERT_EQ(3, (int)txMap.size());
-                ASSERT_EQ(3, (int)txMap.keySet().size());
-                ASSERT_EQ(3, (int)txMap.values().size());
+                ASSERT_EQ(3, (int) txMap.size());
+                ASSERT_EQ(3, (int) txMap.keySet().size());
+                ASSERT_EQ(3, (int) txMap.values().size());
                 context.commitTransaction();
 
-                ASSERT_EQ(3, (int)map.size());
-                ASSERT_EQ(3, (int)map.keySet().size());
-                ASSERT_EQ(3, (int)map.values().size());
+                ASSERT_EQ(3, (int) map.size());
+                ASSERT_EQ(3, (int) map.keySet().size());
+                ASSERT_EQ(3, (int) map.values().size());
 
             }
 
@@ -2737,21 +2810,21 @@ namespace hazelcast {
                 context.beginTransaction();
 
                 TransactionalMap<Employee, Employee> txMap = context.getMap<Employee, Employee>(name);
-                ASSERT_EQ(txMap.put(emp2, emp2).get(), (Employee *)NULL);
+                ASSERT_EQ(txMap.put(emp2, emp2).get(), (Employee *) NULL);
 
-                ASSERT_EQ(2, (int)txMap.size());
-                ASSERT_EQ(2, (int)txMap.keySet().size());
+                ASSERT_EQ(2, (int) txMap.size());
+                ASSERT_EQ(2, (int) txMap.keySet().size());
                 query::SqlPredicate predicate("a = 10");
-                ASSERT_EQ(0, (int)txMap.keySet(&predicate).size());
-                ASSERT_EQ(0, (int)txMap.values(&predicate).size());
+                ASSERT_EQ(0, (int) txMap.keySet(&predicate).size());
+                ASSERT_EQ(0, (int) txMap.values(&predicate).size());
                 query::SqlPredicate predicate2("a >= 10");
-                ASSERT_EQ(2, (int)txMap.keySet(&predicate2).size());
-                ASSERT_EQ(2, (int)txMap.values(&predicate2).size());
+                ASSERT_EQ(2, (int) txMap.keySet(&predicate2).size());
+                ASSERT_EQ(2, (int) txMap.values(&predicate2).size());
 
                 context.commitTransaction();
 
-                ASSERT_EQ(2, (int)map.size());
-                ASSERT_EQ(2, (int)map.values().size());
+                ASSERT_EQ(2, (int) map.size());
+                ASSERT_EQ(2, (int) map.values().size());
             }
 
             TEST_F(ClientTxnMapTest, testIsEmpty) {
@@ -2783,12 +2856,8 @@ namespace hazelcast {
 //
 // Created by sancar koyunlu on 9/18/13.
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -2806,7 +2875,7 @@ namespace hazelcast {
 
             ClientTxnSetTest::ClientTxnSetTest() : instance(*g_srvFactory), client(getNewClient()) {
             }
-            
+
             ClientTxnSetTest::~ClientTxnSetTest() {
             }
 
@@ -2835,12 +2904,8 @@ namespace hazelcast {
 //
 // Created by sancar koyunlu on 9/18/13.
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -2879,16 +2944,16 @@ namespace hazelcast {
 
             class MyMembershipListener : public MembershipListener {
             public:
-                MyMembershipListener(hazelcast::util::CountDownLatch& countDownLatch)
-                : countDownLatch(countDownLatch) {
+                MyMembershipListener(hazelcast::util::CountDownLatch &countDownLatch)
+                        : countDownLatch(countDownLatch) {
 
                 }
 
-                void memberAdded(const MembershipEvent& membershipEvent) {
+                void memberAdded(const MembershipEvent &membershipEvent) {
 
                 }
 
-                void memberRemoved(const MembershipEvent& membershipEvent) {
+                void memberRemoved(const MembershipEvent &membershipEvent) {
                     countDownLatch.countDown();
                 }
 
@@ -2901,7 +2966,7 @@ namespace hazelcast {
             };
 
             ClientTxnTest::ClientTxnTest()
-            : hazelcastInstanceFactory(*g_srvFactory) {
+                    : hazelcastInstanceFactory(*g_srvFactory) {
                 server.reset(new HazelcastServer(hazelcastInstanceFactory));
                 ClientConfig clientConfig = getConfig();
                 clientConfig.setRedoOperation(true);
@@ -2943,7 +3008,7 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                IQueue <string> q = client->getQueue<std::string>(queueName);
+                IQueue<string> q = client->getQueue<std::string>(queueName);
                 std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
@@ -2964,7 +3029,7 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                IQueue <string> q = uniSocketClient.getQueue<std::string>(queueName);
+                IQueue<string> q = uniSocketClient.getQueue<std::string>(queueName);
                 std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
@@ -2986,7 +3051,7 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                IQueue <string> q = client->getQueue<std::string>(queueName);
+                IQueue<string> q = client->getQueue<std::string>(queueName);
                 std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
@@ -3032,7 +3097,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
                 ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
-                IQueue <string> q = client->getQueue<std::string>(queueName);
+                IQueue<string> q = client->getQueue<std::string>(queueName);
                 ASSERT_NULL("Poll result should be null since it is rolled back", q.poll().get(), std::string);
                 ASSERT_EQ(0, q.size());
             }
@@ -3072,13 +3137,8 @@ namespace hazelcast {
 //
 // Created by sancar koyunlu on 9/18/13.
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -3127,12 +3187,8 @@ namespace hazelcast {
 
 //
 // Created by sancar koyunlu on 9/18/13.
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -3230,7 +3286,8 @@ namespace hazelcast {
                 for (int i = 0; i < n; i++) {
                     std::shared_ptr<hazelcast::util::Thread> t(
                             new hazelcast::util::Thread(
-                                    std::shared_ptr<hazelcast::util::Runnable>(new PutGetRemoveTestTask(client, mm, latch)),
+                                    std::shared_ptr<hazelcast::util::Runnable>(
+                                            new PutGetRemoveTestTask(client, mm, latch)),
                                     getLogger()));
                     t->start();
                     allThreads.push_back(t);
@@ -3245,37 +3302,33 @@ namespace hazelcast {
 //
 // Created by sancar koyunlu on 9/18/13.
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
-            namespace test {
-                class ClientTxnQueueTest : public ClientTestSupport {
-                public:
-                    ClientTxnQueueTest();
+        namespace test {
+            class ClientTxnQueueTest : public ClientTestSupport {
+            public:
+                ClientTxnQueueTest();
 
-                    ~ClientTxnQueueTest();
-                protected:
-                    HazelcastServer instance;
-                    HazelcastClient client;
-                };
+                ~ClientTxnQueueTest();
 
-                ClientTxnQueueTest::ClientTxnQueueTest() : instance(*g_srvFactory), client(getNewClient()) {
+            protected:
+                HazelcastServer instance;
+                HazelcastClient client;
+            };
+
+            ClientTxnQueueTest::ClientTxnQueueTest() : instance(*g_srvFactory), client(getNewClient()) {
             }
-            
+
             ClientTxnQueueTest::~ClientTxnQueueTest() {
             }
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll1) {
                 std::string name = "defQueue";
 
-                    TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> q = context.getQueue<std::string>(name);
                 ASSERT_TRUE(q.offer("ali"));
@@ -3283,13 +3336,13 @@ namespace hazelcast {
                 ASSERT_EQ("ali", *(q.poll()));
                 ASSERT_EQ(0, q.size());
                 context.commitTransaction();
-                    ASSERT_EQ(0, client.getQueue<std::string>(name).size());
+                ASSERT_EQ(0, client.getQueue<std::string>(name).size());
             }
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPollByteVector) {
                 std::string name = "defQueue";
 
-                    TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::vector<byte> > q = context.getQueue<std::vector<byte> >(name);
                 std::vector<byte> value(3);
@@ -3298,20 +3351,20 @@ namespace hazelcast {
                 ASSERT_EQ(value, *(q.poll()));
                 ASSERT_EQ(0, q.size());
                 context.commitTransaction();
-                    ASSERT_EQ(0, client.getQueue<std::vector<byte> >(name).size());
+                ASSERT_EQ(0, client.getQueue<std::vector<byte> >(name).size());
             }
 
-            void testTransactionalOfferPoll2Thread(hazelcast::util::ThreadArgs& args) {
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg0;
-                HazelcastClient *client = (HazelcastClient *)args.arg1;                
+            void testTransactionalOfferPoll2Thread(hazelcast::util::ThreadArgs &args) {
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg0;
+                HazelcastClient *client = (HazelcastClient *) args.arg1;
                 latch->await();
                 client->getQueue<std::string>("defQueue0").offer("item0");
             }
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll2) {
                 hazelcast::util::CountDownLatch latch(1);
-                    hazelcast::util::StartedThread t(testTransactionalOfferPoll2Thread, &latch, &client);
-                    TransactionContext context = client.newTransactionContext();
+                hazelcast::util::StartedThread t(testTransactionalOfferPoll2Thread, &latch, &client);
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");
                 TransactionalQueue<std::string> q1 = context.getQueue<std::string>("defQueue1");
@@ -3323,27 +3376,17 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(context.commitTransaction());
 
-                    ASSERT_EQ(0, client.getQueue<std::string>("defQueue0").size());
-                    ASSERT_EQ("item0", *(client.getQueue<std::string>("defQueue1").poll()));
+                ASSERT_EQ(0, client.getQueue<std::string>("defQueue0").size());
+                ASSERT_EQ("item0", *(client.getQueue<std::string>("defQueue1").poll()));
             }
         }
     }
 }
 
 
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
-
-#include <gtest/gtest.h>
 
 
-#include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/IMap.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
+
 
 namespace hazelcast {
     namespace client {
@@ -3360,10 +3403,11 @@ namespace hazelcast {
 
                     class LoadClientTask : public hazelcast::util::Runnable {
                     public:
-                        LoadClientTask(IMap<int, int> &map, int numberOfOps, hazelcast::util::CountDownLatch &latch) : map(map),
-                                                                                                            numberOfOps(
-                                                                                                                    numberOfOps),
-                                                                                                            latch(latch) {}
+                        LoadClientTask(IMap<int, int> &map, int numberOfOps, hazelcast::util::CountDownLatch &latch)
+                                : map(map),
+                                  numberOfOps(
+                                          numberOfOps),
+                                  latch(latch) {}
 
                         virtual void run() {
                             latch.countDown();
@@ -3409,14 +3453,14 @@ namespace hazelcast {
 
                     void startThreads() {
                         for (std::shared_ptr<hazelcast::util::Thread> &t : threads) {
-                                        t->start();
-                                    }
+                            t->start();
+                        }
                     }
 
                     void waitForThreadsToFinish() {
                         for (std::shared_ptr<hazelcast::util::Thread> &t : threads) {
-                                        t->join();
-                                    }
+                            t->join();
+                        }
                     }
 
                 protected:
@@ -3476,8 +3520,6 @@ namespace hazelcast {
 }
 
 
-#include <gtest/gtest.h>
-#include <hazelcast/client/serialization/pimpl/DataInput.h>
 
 namespace hazelcast {
     namespace client {
@@ -3610,7 +3652,7 @@ namespace hazelcast {
                     ASSERT_EQ(2U, charArray->size());
                     ASSERT_EQ('f', (*charArray)[0]);
                     ASSERT_EQ('h', (*charArray)[1]);
-            }
+                }
 
                 TEST_F(DataInputTest, testReadShortArray) {
                     std::vector<byte> bytes;
@@ -3687,8 +3729,6 @@ namespace hazelcast {
 }
 
 
-#include <gtest/gtest.h>
-#include <hazelcast/util/AddressUtil.h>
 
 namespace hazelcast {
     namespace client {
@@ -3728,9 +3768,7 @@ namespace hazelcast {
 }
 
 
-#include <gtest/gtest.h>
 
-#include <hazelcast/util/RuntimeAvailableProcessors.h>
 
 using namespace hazelcast::util;
 
@@ -3755,7 +3793,7 @@ namespace hazelcast {
                 try {
                     ASSERT_EQ(customAvailableProcessors, RuntimeAvailableProcessors::get());
                 } catch (...) {
-                        RuntimeAvailableProcessors::resetOverride();
+                    RuntimeAvailableProcessors::resetOverride();
                 }
             }
         }
@@ -3766,8 +3804,6 @@ namespace hazelcast {
 // Created by İhsan Demir on 18/05/15.
 //
 
-#include <gtest/gtest.h>
-#include "hazelcast/util/Bits.h"
 
 namespace hazelcast {
     namespace client {
@@ -3789,17 +3825,17 @@ namespace hazelcast {
                     {
                         int16_t expected = 0x7A * 256 + 0xBC;
                         int16_t actual;
-                        byte *resBytes = (byte *)&actual;
+                        byte *resBytes = (byte *) &actual;
                         hazelcast::util::Bits::nativeToLittleEndian2(&expected, &actual);
                         ASSERT_EQ(0xBC, resBytes[0]);
                         ASSERT_EQ(0x7A, resBytes[1]);
                     }
 
                     {
-						int32_t expected = 0x1A * (int32_t)threeBytesFactor +
-							0x9A * (int32_t)twoBytesFactor + 0xAA * (int32_t)oneByteFactor + 0xBA;
+                        int32_t expected = 0x1A * (int32_t) threeBytesFactor +
+                                           0x9A * (int32_t) twoBytesFactor + 0xAA * (int32_t) oneByteFactor + 0xBA;
                         int32_t actual;
-                        byte *resBytes = (byte *)&actual;
+                        byte *resBytes = (byte *) &actual;
                         hazelcast::util::Bits::nativeToLittleEndian4(&expected, &actual);
                         ASSERT_EQ(0xBA, resBytes[0]);
                         ASSERT_EQ(0xAA, resBytes[1]);
@@ -3819,7 +3855,7 @@ namespace hazelcast {
                                 0x8A;
 
                         int64_t actual;
-                        byte *resBytes = (byte *)&actual;
+                        byte *resBytes = (byte *) &actual;
                         hazelcast::util::Bits::nativeToLittleEndian8(&expected, &actual);
                         ASSERT_EQ(0x8A, resBytes[0]);
                         ASSERT_EQ(0x7A, resBytes[1]);
@@ -3844,9 +3880,9 @@ namespace hazelcast {
                         uint32_t actual;
                         hazelcast::util::Bits::littleEndianToNative4(&source, &actual);
                         ASSERT_EQ(0xA1 * threeBytesFactor +
-                                     0xDE * twoBytesFactor +
-                                     0xBC * oneByteFactor +
-                                     0xAB, actual);
+                                  0xDE * twoBytesFactor +
+                                  0xBC * oneByteFactor +
+                                  0xAB, actual);
                     }
 
                     {
@@ -3854,13 +3890,13 @@ namespace hazelcast {
                         uint64_t actual;
                         hazelcast::util::Bits::littleEndianToNative8(&source, &actual);
                         ASSERT_EQ(0xA1 * sevenBytesFactor +
-                                     0x4B * sixBytesFactor +
-                                     0x5B * fiveBytesFactor +
-                                     0x6B * fourBytesFactor +
-                                     0x7B * threeBytesFactor +
-                                     0x8B * twoBytesFactor +
-                                     0x9B * oneByteFactor +
-                                     0xAB, actual);
+                                  0x4B * sixBytesFactor +
+                                  0x5B * fiveBytesFactor +
+                                  0x6B * fourBytesFactor +
+                                  0x7B * threeBytesFactor +
+                                  0x8B * twoBytesFactor +
+                                  0x9B * oneByteFactor +
+                                  0xAB, actual);
                     }
                 }
             }
@@ -3869,8 +3905,6 @@ namespace hazelcast {
 }
 
 
-#include <gtest/gtest.h>
-#include <hazelcast/client/serialization/pimpl/DataOutput.h>
 
 namespace hazelcast {
     namespace client {
@@ -3884,7 +3918,7 @@ namespace hazelcast {
                     bytes.push_back(0x01);
                     bytes.push_back(0x12);
                     serialization::pimpl::DataOutput dataOutput;
-                    dataOutput.writeByte((byte)0x01);
+                    dataOutput.writeByte((byte) 0x01);
                     dataOutput.writeByte(0x12);
                     ASSERT_EQ(bytes, *dataOutput.toByteArray());
                 }
@@ -4084,10 +4118,7 @@ namespace hazelcast {
 
 #ifdef HZ_BUILD_WITH_SSL
 
-#include <gtest/gtest.h>
 
-#include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace client {
@@ -4101,7 +4132,8 @@ namespace hazelcast {
             }
 
             TEST_F(HttpsClientTest, testConnectToGithub) {
-                SyncHttpsClient httpsClient("ec2.us-east-1.amazonaws.com", "/?Action=DescribeInstances&Version=2014-06-15&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIU5IAVNR6X75ARYQ%2F20170413%2Fus-east-1%2Fec2%2Faws4_request&X-Amz-Date=20170413T083821Z&X-Amz-Expires=30&X-Amz-Signature=dff261333170c81ecb21f3a0d5820147233197a32c&X-Amz-SignedHeaders=host");
+                SyncHttpsClient httpsClient("ec2.us-east-1.amazonaws.com",
+                                            "/?Action=DescribeInstances&Version=2014-06-15&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIU5IAVNR6X75ARYQ%2F20170413%2Fus-east-1%2Fec2%2Faws4_request&X-Amz-Date=20170413T083821Z&X-Amz-Expires=30&X-Amz-Signature=dff261333170c81ecb21f3a0d5820147233197a32c&X-Amz-SignedHeaders=host");
                 try {
                     httpsClient.openConnection();
                 } catch (exception::IException &e) {
@@ -4117,8 +4149,6 @@ namespace hazelcast {
 #endif // HZ_BUILD_WITH_SSL
 
 
-#include <ClientTestSupport.h>
-#include <hazelcast/util/AddressHelper.h>
 
 namespace hazelcast {
     namespace client {
@@ -4148,10 +4178,6 @@ namespace hazelcast {
 }
 
 
-#include <gtest/gtest.h>
-#include <hazelcast/client/exception/IOException.h>
-#include <hazelcast/client/protocol/ClientExceptionFactory.h>
-#include <hazelcast/util/IOUtil.h>
 
 namespace hazelcast {
     namespace client {
@@ -4221,9 +4247,9 @@ namespace hazelcast {
 
                     protocol::ExceptionFactoryImpl<exception::IOException> ioExceptionFactory;
                     std::shared_ptr<exception::IException> exception(ioExceptionFactory.createException(source,
-                                                                                                          originalMessage,
-                                                                                                          details,
-                                                                                                          causeCode));
+                                                                                                        originalMessage,
+                                                                                                        details,
+                                                                                                        causeCode));
 
                     try {
                         exception->raise();
@@ -4242,13 +4268,7 @@ namespace hazelcast {
 //
 // Created by İhsan Demir on 6 June 2016.
 //
-#include <gtest/gtest.h>
-#include <hazelcast/util/CountDownLatch.h>
-#include <ClientTestSupportBase.h>
 
-#include "hazelcast/util/AtomicInt.h"
-#include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -4287,7 +4307,7 @@ namespace hazelcast {
                     }
 
                     for (size_t i = 0; i < capacity; ++i) {
-                        ASSERT_EQ((int)i, q.pop());
+                        ASSERT_EQ((int) i, q.pop());
                     }
 
                     int val = 7;
@@ -4311,7 +4331,7 @@ namespace hazelcast {
                     }
 
                     for (size_t i = 0; i < capacity; ++i) {
-                        ASSERT_EQ((int)i, q.pop());
+                        ASSERT_EQ((int) i, q.pop());
                     }
 
                     hazelcast::util::AtomicInt val(-1);
@@ -4322,7 +4342,7 @@ namespace hazelcast {
                     hazelcast::util::sleepmillis(2000);
                     ASSERT_NO_THROW(q.push(testValue));
                     hazelcast::util::sleepmillis(1000);
-                    ASSERT_EQ(testValue, (int)val);
+                    ASSERT_EQ(testValue, (int) val);
                 }
 
                 TEST_F(BlockingConcurrentQueueTest, testInterrupt) {
@@ -4332,8 +4352,8 @@ namespace hazelcast {
 
                     hazelcast::util::CountDownLatch latch(1);
                     hazelcast::util::StartedThread t(Interrupt, &q);
-                    // Note that this test is time sensitive, this thread shoulc be waiting at blocking pop when the
-                    // other thread executes the interrup call.
+// Note that this test is time sensitive, this thread shoulc be waiting at blocking pop when the
+// other thread executes the interrup call.
                     ASSERT_THROW(q.pop(), client::exception::InterruptedException);
                 }
             }
@@ -4342,15 +4362,7 @@ namespace hazelcast {
 }
 
 
-#include <memory>
 
-#include <gtest/gtest.h>
-#include <hazelcast/util/Executor.h>
-#include <hazelcast/util/CountDownLatch.h>
-#include <hazelcast/util/Util.h>
-#include <hazelcast/util/impl/SimpleExecutorService.h>
-#include <TestHelperFunctions.h>
-#include <ClientTestSupport.h>
 
 using namespace hazelcast::util;
 
@@ -4526,21 +4538,21 @@ namespace hazelcast {
                     TEST_F(ExecutorTest, testStripedExecutorAlwaysRunsAtTheSameThread) {
                         int32_t numThreads = 10;
                         hazelcast::util::impl::SimpleExecutorService executorService(getLogger(),
-                                                                                      "testMultiThreadExecution",
-                                                                                      numThreads);
+                                                                                     "testMultiThreadExecution",
+                                                                                     numThreads);
 
                         executorService.start();
 
                         CountDownLatch latch(1);
                         std::atomic<int64_t> threadId(0);
                         int32_t key = 5;
-                        // the following gets the thread id fr the key
+// the following gets the thread id fr the key
                         executorService.execute(
                                 std::shared_ptr<StripedRunnable>(new StripedIntRunable(key, latch, threadId, false)));
                         ASSERT_OPEN_EVENTUALLY(latch);
 
                         CountDownLatch latch2(1);
-                        // this makes sure that the execution occured at the same thread as the previous runnable
+// this makes sure that the execution occured at the same thread as the previous runnable
                         executorService.execute(std::shared_ptr<StripedRunnable>(
                                 new StripedIntRunable(key, latch2, threadId, true)));
                         ASSERT_OPEN_EVENTUALLY(latch2);
@@ -4554,8 +4566,6 @@ namespace hazelcast {
 
 
 
-#include <gtest/gtest.h>
-#include <hazelcast/util/UuidUtil.h>
 
 namespace hazelcast {
     namespace client {
@@ -4601,13 +4611,9 @@ namespace hazelcast {
 }
 
 
-#include <gtest/gtest.h>
 
 
 
-#include <hazelcast/client/exception/IOException.h>
-#include <hazelcast/client/serialization/pimpl/DataInput.h>
-#include "hazelcast/util/UTFUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -4635,8 +4641,8 @@ namespace hazelcast {
                 TEST_F(UTFUtilTest, readValidUTF8) {
                     std::vector<byte> strBytes;
                     for (char b : VALID_UTF_STRING) {
-                                    strBytes.push_back((byte) b);
-                                }
+                        strBytes.push_back((byte) b);
+                    }
                     serialization::pimpl::DataInput in(strBytes);
                     std::vector<char> utfBuffer;
                     utfBuffer.reserve(
@@ -4654,15 +4660,15 @@ namespace hazelcast {
                 TEST_F(UTFUtilTest, readInvalidUTF8) {
                     std::vector<byte> strBytes;
                     for (char b : INVALID_UTF_STRING_INSUFFICIENT_BYTES) {
-                                    strBytes.push_back((byte) b);
-                                }
+                        strBytes.push_back((byte) b);
+                    }
                     serialization::pimpl::DataInput in(strBytes);
                     std::vector<char> utfBuffer;
                     utfBuffer.reserve(
                             client::serialization::pimpl::DataInput::MAX_UTF_CHAR_SIZE * VALID_UTF_STRING.size());
                     for (int i = 0; i < 5; ++i) {
                         byte c = in.readByte();
-                        // The 4th utf character is missing one byte intentionally in the invalid utf string
+// The 4th utf character is missing one byte intentionally in the invalid utf string
                         if (i == 4) {
                             ASSERT_THROW(hazelcast::util::UTFUtil::readUTF8Char(in, c, utfBuffer),
                                          exception::UTFDataFormatException);
@@ -4677,11 +4683,6 @@ namespace hazelcast {
 }
 
 
-#include <ostream>
-#include <vector>
-#include <hazelcast/util/ILogger.h>
-#include <hazelcast/client/HazelcastClient.h>
-#include <ClientTestSupport.h>
 
 namespace hazelcast {
     namespace client {
@@ -4695,8 +4696,9 @@ namespace hazelcast {
                     config::LoggerConfig loggerConfig;
                     loggerConfig.setConfigurationFileName("hazelcast/test/resources/logger-config.txt");
 
-                    testLogger.reset(new hazelcast::util::ILogger("testConfigureFromFile", "testConfigureFromFile", "testversion",
-                                                   loggerConfig));
+                    testLogger.reset(new hazelcast::util::ILogger("testConfigureFromFile", "testConfigureFromFile",
+                                                                  "testversion",
+                                                                  loggerConfig));
 
                 }
 
@@ -4767,7 +4769,7 @@ namespace hazelcast {
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
-                // make sure that nothing is printed to stdout
+// make sure that nothing is printed to stdout
                 ASSERT_TRUE(buffer.str().empty());
             }
 
@@ -4814,7 +4816,7 @@ namespace hazelcast {
                 lines = getLogLines();
                 ASSERT_EQ(3U, lines.size());
 
-                // make sure that nothing is printed to stdout
+// make sure that nothing is printed to stdout
                 ASSERT_TRUE(buffer.str().empty());
 
             }
@@ -4830,10 +4832,6 @@ namespace hazelcast {
 }
 
 
-#include <ostream>
-#include <vector>
-#include <hazelcast/util/ILogger.h>
-#include <ClientTestSupport.h>
 
 namespace hazelcast {
     namespace client {
@@ -4906,7 +4904,8 @@ namespace hazelcast {
                 const char *testName = testing::UnitTest::GetInstance()->current_test_info()->name();
                 config::LoggerConfig loggerConfig;
                 loggerConfig.setLogLevel(client::LoggerLevel::WARNING);
-                std::shared_ptr<hazelcast::util::ILogger> logger(new hazelcast::util::ILogger(testName, testName, "TestVersion", loggerConfig));
+                std::shared_ptr<hazelcast::util::ILogger> logger(
+                        new hazelcast::util::ILogger(testName, testName, "TestVersion", loggerConfig));
                 ASSERT_TRUE(logger->start());
 
                 ASSERT_FALSE(logger->isFinestEnabled());
@@ -4936,15 +4935,7 @@ namespace hazelcast {
 // Created by İhsan Demir on Mar 6 2016.
 //
 
-#include <memory>
 
-#include <ClientTestSupport.h>
-#include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
 
 namespace hazelcast {
     namespace client {
@@ -5006,7 +4997,7 @@ namespace hazelcast {
                 TEST_F(ConcurentQueueTest, testSingleThread) {
                     hazelcast::util::ConcurrentQueue<int> q;
 
-                    ASSERT_EQ((int *)NULL, q.poll());
+                    ASSERT_EQ((int *) NULL, q.poll());
 
                     int val1, val2;
 
@@ -5014,7 +5005,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(&val1, q.poll());
 
-                    ASSERT_EQ((int *)NULL, q.poll());
+                    ASSERT_EQ((int *) NULL, q.poll());
 
                     q.offer(&val1);
                     q.offer(&val2);
@@ -5027,7 +5018,7 @@ namespace hazelcast {
                     ASSERT_EQ(&val1, q.poll());
                     ASSERT_EQ(&val1, q.poll());
 
-                    ASSERT_EQ((int *)NULL, q.poll());
+                    ASSERT_EQ((int *) NULL, q.poll());
                 }
 
                 TEST_F(ConcurentQueueTest, testMultiThread) {
@@ -5046,7 +5037,7 @@ namespace hazelcast {
                         std::shared_ptr<hazelcast::util::Thread> t(
                                 new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(
                                         new ConcurrentQueueTask(q, startLatch, startRemoveLatch, removalValue)),
-                                                getLogger()));
+                                                            getLogger()));
                         t->start();
                         allThreads.push_back(t);
                     }
@@ -5059,7 +5050,7 @@ namespace hazelcast {
                     int numRemaining = numThreads - numRemoved;
 
                     for (int j = 0; j < numRemaining; ++j) {
-                        ASSERT_NE((int *)NULL, q.poll());
+                        ASSERT_NE((int *) NULL, q.poll());
                     }
                     ASSERT_EQ(0, q.removeAll(&removalValue));
 
@@ -5073,19 +5064,8 @@ namespace hazelcast {
 // Created by sancar koyunlu on 22/08/14.
 //
 
-#include <ClientTestSupport.h>
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/Future.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/concurrent/locks/LockSupport.h"
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/ExecutionCallback.h"
 
-#include <ctime>
-#include <errno.h>
 
 namespace hazelcast {
     namespace client {
@@ -5189,7 +5169,7 @@ namespace hazelcast {
                 hazelcast::util::StartedThread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
                 {
                     hazelcast::util::LockGuard lockGuard(mutex);
-                    // the following call should not fail with assertion for EINVAL
+// the following call should not fail with assertion for EINVAL
                     conditionVariable.waitFor(mutex, 19999);
                 }
             }
@@ -5244,7 +5224,7 @@ namespace hazelcast {
                 try {
                     future.get();
                 } catch (client::exception::IOException &) {
-                    // success
+// success
                 } catch (client::exception::IException &) {
                     FAIL();
                 }
@@ -5255,7 +5235,8 @@ namespace hazelcast {
                 int waitSeconds = 30;
                 int wakeUpTime = 3;
                 std::shared_ptr<int> expectedValue(new int(2));
-                hazelcast::util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
+                hazelcast::util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue,
+                                                      &wakeUpTime);
                 ASSERT_TRUE(future.waitFor(waitSeconds * 1000));
                 std::shared_ptr<int> value = future.get();
                 ASSERT_EQ(*expectedValue, *value);
@@ -5273,7 +5254,7 @@ namespace hazelcast {
                     future.get();
                     FAIL();
                 } catch (exception::IException &) {
-                    // expect exception here
+// expect exception here
                 }
             }
 
@@ -5288,7 +5269,8 @@ namespace hazelcast {
 
                 int wakeUpTime = 0;
                 std::shared_ptr<int> expectedValue(new int(2));
-                hazelcast::util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
+                hazelcast::util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue,
+                                                      &wakeUpTime);
 
                 ASSERT_OPEN_EVENTUALLY(successLatch);
             }
@@ -5340,8 +5322,8 @@ namespace hazelcast {
 
             TEST_F (ClientUtilTest, testThreadName) {
                 std::string threadName = "myThreadName";
-                // We use latch so that we guarantee that the object instance thread is not destructed at the time when
-                // StartedThread::run is being executed.
+// We use latch so that we guarantee that the object instance thread is not destructed at the time when
+// StartedThread::run is being executed.
                 hazelcast::util::CountDownLatch latch(1);
                 hazelcast::util::StartedThread thread(threadName, notifyExitingThread, &latch);
                 ASSERT_EQ(threadName, thread.getName());
@@ -5353,10 +5335,10 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latch(1);
                 hazelcast::util::StartedThread thread(threadName, notifyExitingThread, &latch);
                 ASSERT_TRUE(latch.await(2));
-                // guarantee that the thread exited
+// guarantee that the thread exited
                 hazelcast::util::sleep(1);
 
-                // call join after thread exit
+// call join after thread exit
                 thread.join();
             }
 
@@ -5394,13 +5376,13 @@ namespace hazelcast {
             }
 
             TEST_F (ClientUtilTest, testStrError) {
-                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                int error = WSAEINPROGRESS;
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                                                                                                                                        int error = WSAEINPROGRESS;
                 std::string expectedErrorString("A blocking operation is currently executing.\r\n");
-                #else
+#else
                 int error = EINPROGRESS;
                 std::string expectedErrorString("Operation now in progress");
-                #endif
+#endif
 
                 char msg[100];
                 const std::string prefix = "testStrError prefix message";
@@ -5419,8 +5401,9 @@ namespace hazelcast {
             }
 
             TEST_F (ClientUtilTest, testStringUtilTimeToString) {
-                std::string timeString = hazelcast::util::StringUtil::timeToString(hazelcast::util::currentTimeMillis());
-                //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
+                std::string timeString = hazelcast::util::StringUtil::timeToString(
+                        hazelcast::util::currentTimeMillis());
+//expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
                 ASSERT_EQ((size_t) 23, timeString.length());
                 ASSERT_EQ(timeString[0], '2');
                 ASSERT_EQ(timeString[1], '0');
@@ -5446,8 +5429,6 @@ namespace hazelcast {
 
 
 
-#include <ClientTestSupport.h>
-#include <hazelcast/client/ClientConfig.h>
 
 namespace hazelcast {
     namespace client {
@@ -5496,13 +5477,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include <hazelcast/client/ClientConfig.h>
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/LifecycleListener.h>
 
 namespace hazelcast {
     namespace client {
@@ -5533,7 +5508,7 @@ namespace hazelcast {
                         hazelcast::util::CountDownLatch &connectedLatch;
                         const LifecycleEvent::LifeCycleState expectedState;
                     };
-                    
+
                     ClientConfig clientConfig;
                 };
 
@@ -5541,7 +5516,8 @@ namespace hazelcast {
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
                     HazelcastClient client(clientConfig);
 
-                    ASSERT_THROW((client.getMap<int, int>(randomMapName())), exception::HazelcastClientOfflineException);
+                    ASSERT_THROW((client.getMap<int, int>(randomMapName())),
+                                 exception::HazelcastClientOfflineException);
 
                     client.shutdown();
                 }
@@ -5550,7 +5526,8 @@ namespace hazelcast {
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
                     HazelcastClient client(clientConfig);
                     client.shutdown();
-                    ASSERT_THROW((client.getMap<int, int>(randomMapName())), exception::HazelcastClientOfflineException);
+                    ASSERT_THROW((client.getMap<int, int>(randomMapName())),
+                                 exception::HazelcastClientOfflineException);
 
                     client.shutdown();
                 }
@@ -5613,7 +5590,7 @@ namespace hazelcast {
                     LifecycleStateListener lifecycleListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
                     client.addLifecycleListener(&lifecycleListener);
 
-                    // no exception at this point
+// no exception at this point
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     map.put(1, 5);
 
@@ -5635,7 +5612,7 @@ namespace hazelcast {
                     LifecycleStateListener lifecycleListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
                     client.addLifecycleListener(&lifecycleListener);
 
-                    // no exception at this point
+// no exception at this point
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     map.put(1, 5);
 
@@ -5658,9 +5635,9 @@ namespace hazelcast {
                             config::ClientConnectionStrategyConfig::ASYNC);
                     HazelcastClient client(clientConfig);
 
-                    assertTrue(client.getLifecycleService().isRunning());
+                            assertTrue(client.getLifecycleService().isRunning());
 
-                    assertOpenEventually(connectedLatch);
+                            assertOpenEventually(connectedLatch);
 
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     map.size();
@@ -5686,8 +5663,8 @@ namespace hazelcast {
 
                     HazelcastServer hazelcastInstance2(*g_srvFactory);
 
-                    assertTrue(client.getLifecycleService().isRunning());
-                    assertOpenEventually(reconnectedLatch);
+                            assertTrue(client.getLifecycleService().isRunning());
+                            assertOpenEventually(reconnectedLatch);
 
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     map.size();
@@ -5709,9 +5686,9 @@ namespace hazelcast {
                             config::ClientConnectionStrategyConfig::ASYNC);
                     HazelcastClient client(clientConfig);
 
-                    assertTrue(client.getLifecycleService().isRunning());
+                            assertTrue(client.getLifecycleService().isRunning());
 
-                    assertOpenEventually(connectedLatch);
+                            assertOpenEventually(connectedLatch);
 
                     HazelcastServer hazelcastInstance2(*g_srvFactory);
 
@@ -5726,8 +5703,8 @@ namespace hazelcast {
 
                     ownerServer.shutdown();
 
-                    assertOpenEventually(disconnectedLatch);
-                    assertOpenEventually(reconnectedLatch);
+                            assertOpenEventually(disconnectedLatch);
+                            assertOpenEventually(reconnectedLatch);
 
                     map.get(1);
 
@@ -5739,15 +5716,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IMap.h"
-#include "hazelcast/client/Pipelining.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 
 using namespace std;
 
@@ -5829,9 +5798,6 @@ namespace hazelcast {
     }
 }
 
-#include "serialization/TestRawDataPortable.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -5882,7 +5848,7 @@ namespace hazelcast {
                 this->ds = ds;
             }
 
-            bool TestRawDataPortable::operator ==(const TestRawDataPortable &m) const {
+            bool TestRawDataPortable::operator==(const TestRawDataPortable &m) const {
                 if (this == &m)
                     return true;
                 if (l != m.l) return false;
@@ -5894,7 +5860,7 @@ namespace hazelcast {
                 return true;
             }
 
-            bool TestRawDataPortable::operator !=(const TestRawDataPortable &m) const {
+            bool TestRawDataPortable::operator!=(const TestRawDataPortable &m) const {
                 return !(*this == m);
             }
 
@@ -5913,10 +5879,6 @@ namespace hazelcast {
 //
 // Created by sancar koyunlu on 11/11/13.
 
-#include "serialization/Employee.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -6069,7 +6031,7 @@ namespace hazelcast {
             }
 
             int EmployeeEntryComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
-                        const std::pair<const int32_t *, const Employee *> *rhs) const {
+                                                 const std::pair<const int32_t *, const Employee *> *rhs) const {
                 const Employee *lv = lhs->second;
                 const Employee *rv = rhs->second;
 
@@ -6113,7 +6075,7 @@ namespace hazelcast {
 
 
             int32_t EmployeeEntryKeyComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
-                                                    const std::pair<const int32_t *, const Employee *> *rhs) const {
+                                                        const std::pair<const int32_t *, const Employee *> *rhs) const {
                 const int32_t *key1 = lhs->first;
                 const int32_t *key2 = rhs->first;
 
@@ -6149,16 +6111,12 @@ namespace hazelcast {
 }
 
 
-#include "serialization/TestMainPortable.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
             TestMainPortable::TestMainPortable()
-            :null(true) {
+                    : null(true) {
             }
 
             TestMainPortable::TestMainPortable(byte b, bool boolean, char c, short s, int i, int64_t l, float f, double d, std::string str, TestInnerPortable p) {
@@ -6175,7 +6133,7 @@ namespace hazelcast {
                 this->p = p;
             }
 
-            bool TestMainPortable::operator ==(const TestMainPortable &m) const {
+            bool TestMainPortable::operator==(const TestMainPortable &m) const {
                 if (this == &m) return true;
                 if (null == true && m.null == true)
                     return true;
@@ -6192,7 +6150,7 @@ namespace hazelcast {
                 return true;
             }
 
-            bool TestMainPortable::operator !=(const TestMainPortable &m) const {
+            bool TestMainPortable::operator!=(const TestMainPortable &m) const {
                 return !(*this == m);
             }
 
@@ -6239,10 +6197,6 @@ namespace hazelcast {
 }
 
 
-#include "serialization/TestNamedPortable.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -6292,13 +6246,7 @@ namespace hazelcast {
 }
 
 
-#include <gtest/gtest.h>
-#include <TestHelperFunctions.h>
-#include <ClientTestSupport.h>
 
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -6389,11 +6337,14 @@ namespace hazelcast {
             // Test for issue https://github.com/hazelcast/hazelcast/issues/12733
             TEST_F(PortableVersionTest, test_nestedPortable_versionedSerializer) {
                 SerializationConfig serializationConfig;
-                serializationConfig.addPortableFactory(1, std::shared_ptr<serialization::PortableFactory>(new MyPortableFactory));
+                serializationConfig.addPortableFactory(1, std::shared_ptr<serialization::PortableFactory>(
+                        new MyPortableFactory));
                 serialization::pimpl::SerializationService ss1(serializationConfig);
 
                 SerializationConfig serializationConfig2;
-                serializationConfig2.setPortableVersion(6).addPortableFactory(1, std::shared_ptr<serialization::PortableFactory>(new MyPortableFactory));
+                serializationConfig2.setPortableVersion(6).addPortableFactory(1,
+                                                                              std::shared_ptr<serialization::PortableFactory>(
+                                                                                      new MyPortableFactory));
                 serialization::pimpl::SerializationService ss2(serializationConfig2);
 
                 //make sure ss2 cached class definition of Child
@@ -6404,17 +6355,13 @@ namespace hazelcast {
                 serialization::pimpl::Data data = ss1.toData<Parent>(&parent);
 
                 // cached class definition of Child and the class definition from data coming from ss1 should be compatible
-                assertEquals(parent, *ss2.toObject<Parent>(data));
+                        assertEquals(parent, *ss2.toObject<Parent>(data));
 
             }
         }
     }
 }
 
-#include "serialization/TestInvalidReadPortable.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -6454,11 +6401,6 @@ namespace hazelcast {
     }
 }
 
-#include "serialization/TestInvalidWritePortable.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -6497,10 +6439,6 @@ namespace hazelcast {
     }
 }
 
-#include "serialization/TestInnerPortable.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -6597,10 +6535,6 @@ namespace hazelcast {
 }
 
 
-#include "serialization/TestNamedPortableV2.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -6642,10 +6576,6 @@ namespace hazelcast {
 // Created by sancar koyunlu on 05/04/15.
 //
 
-#include "serialization/TestNamedPortableV3.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -6695,9 +6625,6 @@ namespace hazelcast {
 }
 
 
-#include <ClientTestSupport.h>
-#include <hazelcast/client/SerializationConfig.h>
-#include <hazelcast/client/serialization/pimpl/SerializationService.h>
 
 namespace hazelcast {
     namespace client {
@@ -6765,10 +6692,7 @@ namespace hazelcast {
 
 
 
-#include "ClientTestSupport.h"
 
-#include <hazelcast/client/HazelcastJsonValue.h>
-#include <hazelcast/client/serialization/pimpl/SerializationService.h>
 
 namespace hazelcast {
     namespace client {
@@ -6795,28 +6719,8 @@ namespace hazelcast {
 //
 // Created by sancar koyunlu on 8/27/13.
 
-#include <stdint.h>
-#include <gtest/gtest.h>
-#include <TestHelperFunctions.h>
 
-#include "customSerialization/TestCustomSerializerX.h"
-#include "customSerialization/TestCustomXSerializable.h"
-#include "customSerialization/TestCustomPersonSerializer.h"
-#include "serialization/TestNamedPortableV2.h"
-#include "serialization/TestRawDataPortable.h"
-#include "serialization/TestInvalidReadPortable.h"
-#include "serialization/TestInvalidWritePortable.h"
-#include "serialization/ChildTemplatedPortable2.h"
-#include "serialization/ParentTemplatedPortable.h"
-#include "serialization/ChildTemplatedPortable1.h"
-#include "serialization/ObjectCarryingPortable.h"
-#include "serialization/TestInnerPortable.h"
-#include "serialization/TestMainPortable.h"
-#include "serialization/TestNamedPortableV3.h"
 
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/SerializationConfig.h"
-#include "hazelcast/util/MurmurHash3.h"
 
 namespace hazelcast {
     namespace client {
@@ -6842,7 +6746,7 @@ namespace hazelcast {
                 };
 
                 template<typename T>
-                T toDataAndBackToObject(serialization::pimpl::SerializationService& ss, T& value) {
+                T toDataAndBackToObject(serialization::pimpl::SerializationService &ss, T &value) {
                     serialization::pimpl::Data data = ss.toData<T>(&value);
                     return *(ss.toObject<T>(data));
                 }
@@ -6852,8 +6756,8 @@ namespace hazelcast {
 
             const unsigned int ClientSerializationTest::LARGE_ARRAY_SIZE =
                     1 * 1024 * 1024;   // 1 MB. Previously it was 10 MB but then the
-                                        // test fails when using Windows 32-bit DLL
-                                        // library with std::bad_alloc with 10 MB
+            // test fails when using Windows 32-bit DLL
+            // library with std::bad_alloc with 10 MB
 
             TEST_F(ClientSerializationTest, testCustomSerialization) {
                 SerializationConfig serializationConfig;
@@ -6936,8 +6840,8 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serializationConfig.setPortableVersion(1);
                 serializationConfig.addPortableFactory(TestSerializationConstants::TEST_PORTABLE_FACTORY,
-                                                               std::shared_ptr<serialization::PortableFactory>(
-                                                                       new TestDataPortableFactory()));
+                                                       std::shared_ptr<serialization::PortableFactory>(
+                                                               new TestDataPortableFactory()));
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
                 std::vector<char> chars(charA, charA + 10);
@@ -7225,11 +7129,11 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
-                ParentTemplatedPortable<ChildTemplatedPortable1> portable(new ChildTemplatedPortable1("aaa", "bbb"));
-                ss.toData<ParentTemplatedPortable<ChildTemplatedPortable1> >(&portable);
-                ParentTemplatedPortable<ChildTemplatedPortable2> portable2(new ChildTemplatedPortable2("ccc"));
+                ParentTemplatedPortable <ChildTemplatedPortable1> portable(new ChildTemplatedPortable1("aaa", "bbb"));
+                ss.toData < ParentTemplatedPortable < ChildTemplatedPortable1 > > (&portable);
+                ParentTemplatedPortable <ChildTemplatedPortable2> portable2(new ChildTemplatedPortable2("ccc"));
 
-                ASSERT_THROW(ss.toData<ParentTemplatedPortable<ChildTemplatedPortable2> >(&portable2),
+                ASSERT_THROW(ss.toData < ParentTemplatedPortable < ChildTemplatedPortable2 > > (&portable2),
                              exception::HazelcastSerializationException);
             }
 
@@ -7312,11 +7216,12 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
                 TestNamedPortable *namedPortable = new TestNamedPortable("name", 2);
-                ObjectCarryingPortable<TestNamedPortable> objectCarryingPortable(namedPortable);
-                serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestNamedPortable> >(
+                ObjectCarryingPortable <TestNamedPortable> objectCarryingPortable(namedPortable);
+                serialization::pimpl::Data data = ss.toData < ObjectCarryingPortable < TestNamedPortable > > (
                         &objectCarryingPortable);
-                std::unique_ptr<ObjectCarryingPortable<TestNamedPortable> > ptr = ss.toObject<ObjectCarryingPortable<TestNamedPortable> >(
-                        data);
+                std::unique_ptr<ObjectCarryingPortable < TestNamedPortable> > ptr =
+                        ss.toObject < ObjectCarryingPortable < TestNamedPortable > > (
+                                data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
             }
 
@@ -7325,11 +7230,12 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
                 TestDataSerializable *testDataSerializable = new TestDataSerializable(2, 'c');
-                ObjectCarryingPortable<TestDataSerializable> objectCarryingPortable(testDataSerializable);
-                serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestDataSerializable> >(
+                ObjectCarryingPortable <TestDataSerializable> objectCarryingPortable(testDataSerializable);
+                serialization::pimpl::Data data = ss.toData < ObjectCarryingPortable < TestDataSerializable > > (
                         &objectCarryingPortable);
-                std::unique_ptr<ObjectCarryingPortable<TestDataSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestDataSerializable> >(
-                        data);
+                std::unique_ptr<ObjectCarryingPortable < TestDataSerializable> > ptr =
+                        ss.toObject < ObjectCarryingPortable < TestDataSerializable > > (
+                                data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
             }
 
@@ -7342,11 +7248,12 @@ namespace hazelcast {
                 ss.registerSerializer(serializer);
 
                 TestCustomXSerializable *customXSerializable = new TestCustomXSerializable(131321);
-                ObjectCarryingPortable<TestCustomXSerializable> objectCarryingPortable(customXSerializable);
-                serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestCustomXSerializable> >(
+                ObjectCarryingPortable <TestCustomXSerializable> objectCarryingPortable(customXSerializable);
+                serialization::pimpl::Data data = ss.toData < ObjectCarryingPortable < TestCustomXSerializable > > (
                         &objectCarryingPortable);
-                std::unique_ptr<ObjectCarryingPortable<TestCustomXSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomXSerializable> >(
-                        data);
+                std::unique_ptr<ObjectCarryingPortable < TestCustomXSerializable> > ptr =
+                        ss.toObject < ObjectCarryingPortable < TestCustomXSerializable > > (
+                                data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
             }
 
@@ -7359,11 +7266,12 @@ namespace hazelcast {
 
                 TestCustomPerson *testCustomPerson = new TestCustomPerson("TestCustomPerson");
 
-                ObjectCarryingPortable<TestCustomPerson> objectCarryingPortable(testCustomPerson);
-                serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestCustomPerson> >(
+                ObjectCarryingPortable <TestCustomPerson> objectCarryingPortable(testCustomPerson);
+                serialization::pimpl::Data data = ss.toData < ObjectCarryingPortable < TestCustomPerson > > (
                         &objectCarryingPortable);
-                std::unique_ptr<ObjectCarryingPortable<TestCustomPerson> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomPerson> >(
-                        data);
+                std::unique_ptr<ObjectCarryingPortable < TestCustomPerson> > ptr =
+                        ss.toObject < ObjectCarryingPortable < TestCustomPerson > > (
+                                data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
             }
 
@@ -7373,7 +7281,7 @@ namespace hazelcast {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
                 std::unique_ptr<int32_t> ptr = ss.toObject<int32_t>(data);
-                ASSERT_EQ(ptr.get(), (int32_t *)NULL);
+                ASSERT_EQ(ptr.get(), (int32_t *) NULL);
             }
 
             TEST_F(ClientSerializationTest, testMorphingWithDifferentTypes_differentVersions) {
@@ -7490,7 +7398,7 @@ namespace hazelcast {
                 ASSERT_EQ(ff, *in.readFloatArray());
                 ASSERT_EQ(dd, *in.readDoubleArray());
                 std::unique_ptr<std::vector<std::string> > strArrRead = in.readUTFArray();
-                ASSERT_NE((std::vector<std::string> *)NULL, strArrRead.get());
+                ASSERT_NE((std::vector<std::string> *) NULL, strArrRead.get());
                 ASSERT_EQ(stringVector.size(), strArrRead->size());
                 for (size_t j = 0; j < stringVector.size(); ++j) {
                     ASSERT_EQ((*strArrRead)[j], *(stringVector[j]));
@@ -7552,7 +7460,7 @@ namespace hazelcast {
                 serializationConfig.setGlobalSerializer(
                         std::shared_ptr<serialization::StreamSerializer>(new DummyGlobalSerializer()));
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
-                
+
                 NonSerializableObject obj;
 
                 serialization::pimpl::Data data = serializationService.toData<NonSerializableObject>(&obj);
@@ -7566,10 +7474,6 @@ namespace hazelcast {
 }
 
 
-#include "serialization/TestDataSerializable.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "serialization/TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -7607,14 +7511,14 @@ namespace hazelcast {
                 writer.writeInt(i);
             }
 
-            void TestDataSerializable::readData(serialization::ObjectDataInput& reader) {
+            void TestDataSerializable::readData(serialization::ObjectDataInput &reader) {
                 c = reader.readChar();
                 i = reader.readInt();
             }
 
             std::unique_ptr<serialization::IdentifiedDataSerializable>
             TestDataSerializableFactory::create(int32_t classId) {
-                switch(classId) {
+                switch (classId) {
                     case TestSerializationConstants::TEST_DATA_SERIALIZABLE:
                         return std::unique_ptr<serialization::IdentifiedDataSerializable>(new TestDataSerializable());
                     default:
@@ -7632,13 +7536,7 @@ namespace hazelcast {
 // Created by İhsan Demir on Jan 10 2017.
 //
 
-#include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
-#include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include "hazelcast/client/ClientConfig.h"
 
-#include <TestHelperFunctions.h>
-#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
@@ -8044,7 +7942,7 @@ namespace hazelcast {
                     }
 
                     INSTANTIATE_TEST_SUITE_P(BasicStoreTest, NearCacheRecordStoreTest,
-                                            ::testing::Values(config::BINARY, config::OBJECT));
+                                             ::testing::Values(config::BINARY, config::OBJECT));
 
                 }
             }
@@ -8052,14 +7950,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ILock.h"
 
 namespace hazelcast {
     namespace client {
@@ -8216,16 +8107,10 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
 
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -8271,11 +8156,11 @@ namespace hazelcast {
 
                 bool findValueForKey(int key, TEST_VALUES_TYPE &testValues, int &value) {
                     for (const TEST_VALUES_TYPE::value_type &entry : testValues) {
-                                    if (key == entry.first) {
-                                        value = entry.second;
-                                        return true;
-                                    }
-                                }
+                        if (key == entry.first) {
+                            value = entry.second;
+                            return true;
+                        }
+                    }
                     return false;
                 }
 
@@ -8384,7 +8269,7 @@ namespace hazelcast {
                     ASSERT_EQ("bar", *value);
                 }
 
-                // TODO add server side data check using remote controller scripting
+// TODO add server side data check using remote controller scripting
             }
 
             TEST_F(ClientReplicatedMapTest, testGet) {
@@ -8661,13 +8546,13 @@ namespace hazelcast {
                     map->put(entry.first, entry.second);
                 }
 
-                for (TEST_VALUES_TYPE::value_type & entry : testValues) {
-                                ASSERT_TRUE(map2->containsValue(entry.second));
-                            }
+                for (TEST_VALUES_TYPE::value_type &entry : testValues) {
+                    ASSERT_TRUE(map2->containsValue(entry.second));
+                }
 
-                for (TEST_VALUES_TYPE::value_type & entry : testValues) {
-                                ASSERT_TRUE(map1->containsValue(entry.second));
-                            }
+                for (TEST_VALUES_TYPE::value_type &entry : testValues) {
+                    ASSERT_TRUE(map1->containsValue(entry.second));
+                }
             }
 
             TEST_F(ClientReplicatedMapTest, testValues) {
@@ -8685,10 +8570,10 @@ namespace hazelcast {
                 std::shared_ptr<DataArray<int> > values1 = map1->values();
                 std::shared_ptr<DataArray<int> > values2 = map2->values();
 
-                for (TEST_VALUES_TYPE::value_type & entry : testValues) {
-                                ASSERT_TRUE(contains(values1, entry.second));
-                                ASSERT_TRUE(contains(values2, entry.second));
-                            }
+                for (TEST_VALUES_TYPE::value_type &entry : testValues) {
+                    ASSERT_TRUE(contains(values1, entry.second));
+                    ASSERT_TRUE(contains(values2, entry.second));
+                }
             }
 
             TEST_F(ClientReplicatedMapTest, testKeySet) {
@@ -8706,10 +8591,10 @@ namespace hazelcast {
                 std::shared_ptr<DataArray<int> > keys1 = map1->keySet();
                 std::shared_ptr<DataArray<int> > keys2 = map2->keySet();
 
-                for (TEST_VALUES_TYPE::value_type & entry : testValues) {
-                                ASSERT_TRUE(contains(keys1, entry.first));
-                                ASSERT_TRUE(contains(keys2, entry.first));
-                            }
+                for (TEST_VALUES_TYPE::value_type &entry : testValues) {
+                    ASSERT_TRUE(contains(keys1, entry.first));
+                    ASSERT_TRUE(contains(keys2, entry.first));
+                }
             }
 
             TEST_F(ClientReplicatedMapTest, testEntrySet) {
@@ -8759,12 +8644,12 @@ namespace hazelcast {
                         mapName);
 
                 replicatedMap1->put(1, 1);
-                // puts key 1 to Near Cache
+// puts key 1 to Near Cache
                 replicatedMap1->get(1);
 
                 std::shared_ptr<ReplicatedMap<int, int> > replicatedMap2 = client2.getReplicatedMap<int, int>(
                         mapName);
-                // this should invalidate Near Cache of replicatedMap1
+// this should invalidate Near Cache of replicatedMap1
                 replicatedMap2->clear();
 
                 ASSERT_NULL_EVENTUALLY(replicatedMap1->get(1).get(), int);
@@ -8789,14 +8674,8 @@ namespace hazelcast {
     }
 }
 
-#include <hazelcast/client/query/FalsePredicate.h>
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/BlockingConcurrentQueue.h"
 
 namespace hazelcast {
     namespace client {
@@ -8884,7 +8763,8 @@ namespace hazelcast {
             HazelcastClient *ClientReplicatedMapListenerTest::client2 = NULL;
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryAdded) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
+                        getTestName());
                 std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener);
                 replicatedMap->put(1, 1);
@@ -8892,7 +8772,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryUpdated) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
+                        getTestName());
                 std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener);
                 replicatedMap->put(1, 1);
@@ -8901,7 +8782,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryRemoved) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
+                        getTestName());
                 std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener);
                 replicatedMap->put(1, 1);
@@ -8910,7 +8792,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testMapClear) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
+                        getTestName());
                 std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener);
                 replicatedMap->put(1, 1);
@@ -8919,20 +8802,23 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenToKeyForEntryAdded) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
+                        getTestName());
                 std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener, 1);
                 replicatedMap->put(1, 1);
                 replicatedMap->put(2, 2);
-                ASSERT_TRUE_EVENTUALLY(listener->keys.size() == 1U && listener->keys.pop() == 1 && listener->addCount.load() == 1);
+                ASSERT_TRUE_EVENTUALLY(
+                        listener->keys.size() == 1U && listener->keys.pop() == 1 && listener->addCount.load() == 1);
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
+                        getTestName());
                 std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener, query::FalsePredicate());
                 replicatedMap->put(2, 2);
-                // Check for 3 seconds
+// Check for 3 seconds
                 ASSERT_TRUE_ALL_THE_TIME((listener->addCount.load() == 0), 3);
             }
 
@@ -8940,14 +8826,8 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
 
-#include <TestHelperFunctions.h>
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -9131,8 +9011,8 @@ namespace hazelcast {
 
                     // remove a key which is in the Near Cache
                     std::shared_ptr<ReplicatedMap<int, std::string> > &adapter = useNearCachedMapForRemoval
-                                                                                   ? nearCachedMap
-                                                                                   : noNearCacheMap;
+                                                                                 ? nearCachedMap
+                                                                                 : noNearCacheMap;
                     adapter->remove(1);
 
                     WAIT_TRUE_EVENTUALLY(checkContainKeys());
@@ -9234,7 +9114,7 @@ namespace hazelcast {
 
                     // this should invalidate the Near Cache
                     std::shared_ptr<ReplicatedMap<int, std::string> > &adapter = useNearCacheAdapter ? nearCachedMap
-                                                                                                       : noNearCacheMap;
+                                                                                                     : noNearCacheMap;
                     adapter->putAll(invalidationMap);
 
                     WAIT_EQ_EVENTUALLY(0, nearCache->size());
@@ -9304,7 +9184,7 @@ namespace hazelcast {
                 }
             }
 
-            /**
+/**
              * Checks that the Near Cache updates value for keys which are already in the Near Cache,
              * even if the Near Cache is full and the eviction is disabled (via {@link com.hazelcast.config.EvictionPolicy#NONE}.
              *
@@ -9347,7 +9227,7 @@ namespace hazelcast {
                 NearCacheTestUtils::assertNearCacheStats(*stats, size, expectedHits, expectedMisses);
             }
 
-            /**
+/**
              * Checks that the Near Cache updates value for keys which are already in the Near Cache,
              * even if the Near Cache is full an the eviction is disabled (via {@link com.hazelcast.config.EvictionPolicy#NONE}.
              *
@@ -9376,7 +9256,7 @@ namespace hazelcast {
 
                 noNearCacheMap->put(1, "newValue");
 
-                // we have to use assertTrueEventually since the invalidation is done asynchronously
+// we have to use assertTrueEventually since the invalidation is done asynchronously
                 int64_t expectedMisses = 0;
                 int64_t expectedHits = 0;
                 WAIT_TRUE_EVENTUALLY(checkMissesAndHits(expectedMisses, expectedHits, value));
@@ -9384,7 +9264,7 @@ namespace hazelcast {
                 NearCacheTestUtils::assertNearCacheStats(*stats, size, expectedHits, expectedMisses);
             }
 
-            /**
+/**
              * Checks that the Near Cache values are eventually invalidated when {@link DataStructureAdapter#putAll(Map)} is used.
              *
              * This variant uses the nearCacheMap, so there is no Near Cache invalidation necessary.
@@ -9394,7 +9274,7 @@ namespace hazelcast {
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(true);
             }
 
-            /**
+/**
              * Checks that the Near Cache values are eventually invalidated when {@link DataStructureAdapter#putAll(Map)} is used.
              *
              * This variant uses the noNearCacheMap, so we need to configure Near Cache invalidation.
@@ -9405,7 +9285,7 @@ namespace hazelcast {
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(false);
             }
 
-            /**
+/**
              * Checks that the {@link com.hazelcast.monitor.NearCacheStats} are calculated correctly.
              */
             TEST_P(BasicClientReplicatedMapNearCacheTest, testNearCacheStats) {
@@ -9413,7 +9293,7 @@ namespace hazelcast {
 
                 createNearCacheContext();
 
-                // populate map
+// populate map
                 populateMap();
 
                 {
@@ -9421,14 +9301,14 @@ namespace hazelcast {
                     NearCacheTestUtils::assertNearCacheStats(*stats, 0, 0, 0);
                 }
 
-                // populate Near Cache. Will cause misses and will increment the owned entry count
+// populate Near Cache. Will cause misses and will increment the owned entry count
                 populateNearCache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is initially populated");
                     NearCacheTestUtils::assertNearCacheStats(*stats, DEFAULT_RECORD_COUNT, 0, DEFAULT_RECORD_COUNT);
                 }
 
-                // make some hits
+// make some hits
                 populateNearCache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is hit after being populated.");
@@ -9443,26 +9323,26 @@ namespace hazelcast {
                                                                         DEFAULT_RECORD_COUNT);
                 createNoNearCacheContext();
 
-                // all Near Cache implementations use the same eviction algorithm, which evicts a single entry
+// all Near Cache implementations use the same eviction algorithm, which evicts a single entry
                 int64_t expectedEvictions = 1;
 
                 createNearCacheContext();
 
-                // populate map with an extra entry
+// populate map with an extra entry
                 populateMap();
                 char buf[20];
                 hazelcast::util::hz_snprintf(buf, 20, "value-%d", DEFAULT_RECORD_COUNT);
                 noNearCacheMap->put(DEFAULT_RECORD_COUNT, buf);
 
-                // populate Near Caches
+// populate Near Caches
                 populateNearCache();
 
-                // we expect (size + the extra entry - the expectedEvictions) entries in the Near Cache
+// we expect (size + the extra entry - the expectedEvictions) entries in the Near Cache
                 int64_t expectedOwnedEntryCount = DEFAULT_RECORD_COUNT + 1 - expectedEvictions;
                 int64_t expectedHits = stats->getHits();
                 int64_t expectedMisses = stats->getMisses() + 1;
 
-                // trigger eviction via fetching the extra entry
+// trigger eviction via fetching the extra entry
                 nearCachedMap->get(DEFAULT_RECORD_COUNT);
 
                 int64_t evictions = stats->getEvictions();
@@ -9478,22 +9358,13 @@ namespace hazelcast {
             }
 
             INSTANTIATE_TEST_SUITE_P(ReplicatedMapNearCacheTest, BasicClientReplicatedMapNearCacheTest,
-                                    ::testing::Values(config::BINARY, config::OBJECT));
+                                     ::testing::Values(config::BINARY, config::OBJECT));
         }
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include <set>
-#include <memory>
-#include <hazelcast/client/query/EqualPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -9575,7 +9446,8 @@ namespace hazelcast {
             HazelcastServer *ClientReplicatedMapNearCacheTest::instance2 = NULL;
 
             TEST_F(ClientReplicatedMapNearCacheTest, testGetAllChecksNearCacheFirst) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
+                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(
+                        newNoInvalidationNearCacheConfig());
 
                 int size = 1003;
                 for (int i = 0; i < size; i++) {
@@ -9596,17 +9468,18 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapNearCacheTest, testGetAllPopulatesNearCache) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
+                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(
+                        newNoInvalidationNearCacheConfig());
 
                 int size = 1214;
                 for (int i = 0; i < size; i++) {
                     map->put(i, i);
                 }
-                // populate Near Cache
+// populate Near Cache
                 for (int i = 0; i < size; i++) {
                     map->get(i);
                 }
-                // getAll() generates the Near Cache hits
+// getAll() generates the Near Cache hits
                 for (int i = 0; i < size; i++) {
                     map->get(i);
                 }
@@ -9622,7 +9495,7 @@ namespace hazelcast {
                 for (int i = 0; i < size; i++) {
                     map->put(i, i);
                 }
-                // populate Near Cache
+// populate Near Cache
                 for (int i = 0; i < size; i++) {
                     map->get(i);
                 }
@@ -9637,14 +9510,8 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ITopic.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -9668,12 +9535,13 @@ namespace hazelcast {
             class MyMessageListener : public topic::MessageListener<std::string> {
             public:
                 MyMessageListener(hazelcast::util::CountDownLatch &latch)
-                :latch(latch) {
+                        : latch(latch) {
                 }
 
                 void onMessage(std::unique_ptr<topic::Message<std::string> > &&message) {
                     latch.countDown();
                 }
+
             private:
                 hazelcast::util::CountDownLatch &latch;
             };
@@ -9686,7 +9554,7 @@ namespace hazelcast {
                 for (int i = 0; i < 10; i++) {
                     topic.publish(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
                 }
-                ASSERT_TRUE(latch.await(20 ));
+                ASSERT_TRUE(latch.await(20));
                 topic.removeMessageListener(id);
             }
         }
@@ -9694,12 +9562,8 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
-#include <HazelcastServer.h>
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -9718,15 +9582,16 @@ namespace hazelcast {
                 mixedtype::ITopic topic;
             };
 
-        class MixedMessageListener : public hazelcast::client::mixedtype::topic::MessageListener {
+            class MixedMessageListener : public hazelcast::client::mixedtype::topic::MessageListener {
             public:
-            MixedMessageListener(hazelcast::util::CountDownLatch &latch)
-                        :latch(latch) {
+                MixedMessageListener(hazelcast::util::CountDownLatch &latch)
+                        : latch(latch) {
                 }
 
                 void onMessage(std::unique_ptr<client::topic::Message<TypedData> > &&message) {
                     latch.countDown();
                 }
+
             private:
                 hazelcast::util::CountDownLatch &latch;
             };
@@ -9757,10 +9622,7 @@ namespace hazelcast {
 // Created by İhsan Demir on 19/05/15.
 //
 
-#include <gtest/gtest.h>
 
-#include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
@@ -9768,12 +9630,12 @@ namespace hazelcast {
             namespace protocol {
                 class ClientMessageTest : public ::testing::Test {
                 protected:
-                class SocketStub : public hazelcast::client::internal::socket::TcpSocket {
+                    class SocketStub : public hazelcast::client::internal::socket::TcpSocket {
                     public:
                         virtual int send(const void *buf, int size, int flag = MSG_WAITALL) {
                             if (size <= 100) {
                                 numBytes = size;
-                                memcpy(buffer, buf, (size_t)numBytes);
+                                memcpy(buffer, buf, (size_t) numBytes);
                             } else {
                                 numBytes = 0;
                             }
@@ -9823,7 +9685,7 @@ namespace hazelcast {
                     ASSERT_TRUE(msg->isFlagSet(4));
                     ASSERT_TRUE(msg->isFlagSet(0x05));
                     ASSERT_EQ(0xABCD, msg->getMessageType());
-                    ASSERT_EQ((int32_t)0x8ABCDEF1, msg->getPartitionId());
+                    ASSERT_EQ((int32_t) 0x8ABCDEF1, msg->getPartitionId());
                     ASSERT_EQ(4, msg->getVersion());
                     ASSERT_EQ(22, msg->getFrameLength());
                     ASSERT_EQ(0, msg->getDataSize());
@@ -9858,11 +9720,7 @@ namespace hazelcast {
 #ifndef HAZELCAST_CLIENT_TEST_PROTOCOL_PROTOCOLEXCEPTIONTEST_H
 #define HAZELCAST_CLIENT_TEST_PROTOCOL_PROTOCOLEXCEPTIONTEST_H
 
-#include <stdint.h>
-#include <gtest/gtest.h>
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 
 namespace hazelcast {
     namespace client {
@@ -9886,12 +9744,7 @@ namespace hazelcast {
 
 #endif //HAZELCAST_CLIENT_TEST_PROTOCOL_PROTOCOLEXCEPTIONTEST_H
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/adaptor/RawPointerSet.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -9916,7 +9769,7 @@ namespace hazelcast {
                     private:
                         hazelcast::util::CountDownLatch &latch;
                     };
-                    
+
                     bool itemExists(const std::vector<std::string> &items, const std::string &item) const {
                         bool found = false;
                         for (std::vector<std::string>::const_iterator it = items.begin();it != items.end();++it) {
@@ -10016,15 +9869,15 @@ namespace hazelcast {
 
                     std::unique_ptr<client::DataArray<std::string> > array = set->toArray();
 
-                    ASSERT_EQ((size_t)4, array->size());
+                    ASSERT_EQ((size_t) 4, array->size());
                     std::vector<std::string> items;
 
                     for (size_t i = 0; i < array->size(); ++i) {
                         std::unique_ptr<std::string> item = array->release(i);
-                        ASSERT_NE((std::string *)NULL, item.get());
+                        ASSERT_NE((std::string *) NULL, item.get());
                         items.push_back(*item);
                     }
-                    
+
                     ASSERT_TRUE(itemExists(items, "item1"));
                     ASSERT_TRUE(itemExists(items, "item2"));
                     ASSERT_TRUE(itemExists(items, "item3"));
@@ -10068,7 +9921,7 @@ namespace hazelcast {
                     }
                     set->add("done");
 
-                    ASSERT_TRUE(latch.await(20 ));
+                    ASSERT_TRUE(latch.await(20));
 
                     ASSERT_TRUE(set->removeItemListener(registrationId));
                 }
@@ -10078,36 +9931,8 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
-#include "hazelcast/client/query/OrPredicate.h"
-#include "hazelcast/client/query/RegexPredicate.h"
-#include "hazelcast/client/query/PagingPredicate.h"
-#include "hazelcast/client/query/QueryConstants.h"
-#include "hazelcast/client/query/NotPredicate.h"
-#include "hazelcast/client/query/InstanceOfPredicate.h"
-#include "hazelcast/client/query/NotEqualPredicate.h"
-#include "hazelcast/client/query/InPredicate.h"
-#include "hazelcast/client/query/ILikePredicate.h"
-#include "hazelcast/client/query/LikePredicate.h"
-#include "hazelcast/client/query/GreaterLessPredicate.h"
-#include "hazelcast/client/query/AndPredicate.h"
-#include "hazelcast/client/query/BetweenPredicate.h"
-#include "hazelcast/client/query/EqualPredicate.h"
-#include "hazelcast/client/query/TruePredicate.h"
-#include "hazelcast/client/query/FalsePredicate.h"
-#include "hazelcast/client/query/SqlPredicate.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/adaptor/RawPointerMap.h"
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/ClientConfig.h"
 
-#include "serialization/Employee.h"
-#include "TestHelperFunctions.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
 
 namespace hazelcast {
@@ -10182,21 +10007,21 @@ namespace hazelcast {
                     }
 
                     static void SetUpTestCase() {
-                        #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                         sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                         instance = new HazelcastServer(*sslFactory);
                         instance2 = new HazelcastServer(*sslFactory);
-                        #else
+#else
                         instance = new HazelcastServer(*g_srvFactory);
                         instance2 = new HazelcastServer(*g_srvFactory);
-                        #endif
+#endif
 
                         ClientConfig clientConfig = getConfig();
-                        #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                         config::SSLConfig sslConfig;
                         sslConfig.setEnabled(true).setProtocol(config::tlsv12).addVerifyFile(getCAFilePath());
                         clientConfig.getNetworkConfig().setSSLConfig(sslConfig);
-                        #endif // HZ_BUILD_WITH_SSL
+#endif // HZ_BUILD_WITH_SSL
                         client = new HazelcastClient(clientConfig);
                     }
 
@@ -10609,7 +10434,7 @@ namespace hazelcast {
                 }
 
 
-                /**
+/**
                  * This failure with this test is reported at https://github.com/hazelcast/hazelcast-cpp-client/issues/379
                  * Do not forget to enable this test once the issue is resolved!!!
                  */
@@ -10632,7 +10457,8 @@ namespace hazelcast {
                     tempSet.insert(hazelcast::util::IOUtil::to_string(1));
                     tempSet.insert(hazelcast::util::IOUtil::to_string(3));
 
-                    std::unique_ptr<hazelcast::client::EntryArray<std::string, std::string> > m2 = imap->getAll(tempSet);
+                    std::unique_ptr<hazelcast::client::EntryArray<std::string, std::string> > m2 = imap->getAll(
+                            tempSet);
 
                     ASSERT_EQ(2U, m2->size());
                     std::unique_ptr<std::string> key1 = m2->releaseKey(0);
@@ -10673,11 +10499,11 @@ namespace hazelcast {
 
                     ASSERT_EQ((MapEntryView<std::string, std::string> *) NULL, view.get());
 
-                    // put an entry that will expire in 1 milliseconds
+// put an entry that will expire in 1 milliseconds
                     imap->put("short_entry", "short living value", 1);
 
                     ASSERT_EQ_EVENTUALLY((MapEntryView<std::string, std::string> *) NULL,
-                            (imap->getEntryView("short_entry").get()));
+                                         (imap->getEntryView("short_entry").get()));
                 }
 
                 TEST_F(RawPointerMapTest, testPutTtl) {
@@ -10688,11 +10514,11 @@ namespace hazelcast {
 
                     imap->put("key1", "value1", 1000);
                     std::unique_ptr<std::string> temp = imap->get("key1");
-                    // If the server response comes later than 1 second, the entry may have expired already.
+// If the server response comes later than 1 second, the entry may have expired already.
                     if (temp.get()) {
                         ASSERT_EQ(*temp, "value1");
                     }
-                    // trigger eviction
+// trigger eviction
                     ASSERT_NULL_EVENTUALLY(imap->get("key1").get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
@@ -10710,11 +10536,11 @@ namespace hazelcast {
 
                     map.put("key1", "value1");
                     std::unique_ptr<std::string> temp = map.get("key1");
-                    // If the server response comes later than 1 second after put, the entry may have expired already.
+// If the server response comes later than 1 second after put, the entry may have expired already.
                     if (temp.get()) {
                         ASSERT_EQ(*temp, "value1");
                     }
-                    // trigger eviction
+// trigger eviction
                     ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
@@ -10759,11 +10585,11 @@ namespace hazelcast {
 
                     map.set("key1", "value1", 1000);
                     std::unique_ptr<std::string> temp = map.get("key1");
-                    // If the server response comes later than 1 second, the entry may have expired already.
+// If the server response comes later than 1 second, the entry may have expired already.
                     if (temp.get()) {
                         ASSERT_EQ(*temp, "value1");
                     }
-                    // trigger eviction
+// trigger eviction
                     ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
@@ -10781,11 +10607,11 @@ namespace hazelcast {
 
                     map.set("key1", "value1");
                     std::unique_ptr<std::string> temp = map.get("key1");
-                    // If the server response comes later than 1 second, the entry may have expired already.
+// If the server response comes later than 1 second, the entry may have expired already.
                     if (temp.get()) {
                         ASSERT_EQ(*temp, "value1");
                     }
-                    // trigger eviction
+// trigger eviction
                     ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
@@ -10885,28 +10711,28 @@ namespace hazelcast {
                         ASSERT_EQ(2 * i, actualValues[i]);
                     }
 
-                    // EqualPredicate
-                    // key == 5
+// EqualPredicate
+// key == 5
                     values = intMap->values(
                             query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                     ASSERT_EQ(1, (int) values->size());
                     ASSERT_NE((const int *) NULL, (*values)[0]);
                     ASSERT_EQ(2 * 5, *((*values)[0]));
 
-                    // value == 8
+// value == 8
                     values = intMap->values(
                             query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                     ASSERT_EQ(1, (int) values->size());
                     ASSERT_NE((const int *) NULL, (*values)[0]);
                     ASSERT_EQ(8, *((*values)[0]));
 
-                    // key == numItems
+// key == numItems
                     values = intMap->values(
                             query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
                     ASSERT_EQ(0, (int) values->size());
 
-                    // NotEqual Predicate
-                    // key != 5
+// NotEqual Predicate
+// key != 5
                     values = intMap->values(
                             query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                     ASSERT_EQ(numItems - 1, (int) values->size());
@@ -10924,7 +10750,7 @@ namespace hazelcast {
                         }
                     }
 
-                    // this(value) != 8
+// this(value) != 8
                     values = intMap->values(
                             query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                     ASSERT_EQ(numItems - 1, (int) values->size());
@@ -10942,7 +10768,7 @@ namespace hazelcast {
                         }
                     }
 
-                    // TruePredicate
+// TruePredicate
                     values = intMap->values(query::TruePredicate());
                     ASSERT_EQ(numItems, (int) values->size());
                     actualValues.clear();
@@ -10955,12 +10781,12 @@ namespace hazelcast {
                         ASSERT_EQ(2 * i, actualValues[i]);
                     }
 
-                    // FalsePredicate
+// FalsePredicate
                     values = intMap->values(query::FalsePredicate());
                     ASSERT_EQ(0, (int) values->size());
 
-                    // BetweenPredicate
-                    // 5 <= key <= 10
+// BetweenPredicate
+// 5 <= key <= 10
                     values = intMap->values(
                             query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     ASSERT_EQ(6, (int) values->size());
@@ -10974,13 +10800,13 @@ namespace hazelcast {
                         ASSERT_EQ(2 * (i + 5), actualValues[i]);
                     }
 
-                    // 20 <= key <=30
+// 20 <= key <=30
                     values = intMap->values(
                             query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
                     ASSERT_EQ(0, (int) values->size());
 
-                    // GreaterLessPredicate
-                    // value <= 10
+// GreaterLessPredicate
+// value <= 10
                     values = intMap->values(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
                                                              true));
@@ -10995,7 +10821,7 @@ namespace hazelcast {
                         ASSERT_EQ(2 * i, actualValues[i]);
                     }
 
-                    // key < 7
+// key < 7
                     values = intMap->values(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false,
                                                              true));
@@ -11010,7 +10836,7 @@ namespace hazelcast {
                         ASSERT_EQ(2 * i, actualValues[i]);
                     }
 
-                    // value >= 15
+// value >= 15
                     values = intMap->values(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
                                                              false));
@@ -11025,7 +10851,7 @@ namespace hazelcast {
                         ASSERT_EQ(2 * (i + 8), actualValues[i]);
                     }
 
-                    // key > 5
+// key > 5
                     values = intMap->values(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
                                                              false));
@@ -11040,8 +10866,8 @@ namespace hazelcast {
                         ASSERT_EQ(2 * (i + 6), actualValues[i]);
                     }
 
-                    // InPredicate
-                    // key in {4, 10, 19}
+// InPredicate
+// key in {4, 10, 19}
                     std::vector<int> inVals(3);
                     inVals[0] = 4;
                     inVals[1] = 10;
@@ -11059,7 +10885,7 @@ namespace hazelcast {
                     ASSERT_EQ(2 * 10, actualValues[1]);
                     ASSERT_EQ(2 * 19, actualValues[2]);
 
-                    // value in {4, 10, 19}
+// value in {4, 10, 19}
                     values = intMap->values(
                             query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     ASSERT_EQ(2, (int) values->size());
@@ -11072,8 +10898,8 @@ namespace hazelcast {
                     ASSERT_EQ(4, actualValues[0]);
                     ASSERT_EQ(10, actualValues[1]);
 
-                    // InstanceOfPredicate
-                    // value instanceof Integer
+// InstanceOfPredicate
+// value instanceof Integer
                     values = intMap->values(query::InstanceOfPredicate("java.lang.Integer"));
                     ASSERT_EQ(20, (int) values->size());
                     actualValues.clear();
@@ -11089,8 +10915,8 @@ namespace hazelcast {
                     values = intMap->values(query::InstanceOfPredicate("java.lang.String"));
                     ASSERT_EQ(0, (int) values->size());
 
-                    // NotPredicate
-                    // !(5 <= key <= 10)
+// NotPredicate
+// !(5 <= key <= 10)
                     std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(
                                     query::QueryConstants::getKeyAttributeName(), 5, 10));
@@ -11111,8 +10937,8 @@ namespace hazelcast {
                         }
                     }
 
-                    // AndPredicate
-                    // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
+// AndPredicate
+// 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
                     bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
@@ -11121,8 +10947,8 @@ namespace hazelcast {
                     ASSERT_EQ(1, (int) values->size());
                     ASSERT_EQ(10, *(values->release(0)));
 
-                    // OrPredicate
-                    // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
+// OrPredicate
+// 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
                     bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     inPred = std::unique_ptr<query::Predicate>(
@@ -11153,16 +10979,16 @@ namespace hazelcast {
                     imap->put("key_111_test", "myvalue_111_test");
                     imap->put("key_22_test", "myvalue_22_test");
 
-                    // LikePredicate
-                    // value LIKE "value1" : {"value1"}
+// LikePredicate
+// value LIKE "value1" : {"value1"}
                     std::unique_ptr<DataArray<std::string> > strValues = imap->keySet(
                             query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                     ASSERT_EQ(1, (int) strValues->size());
                     ASSERT_NE((const std::string *) NULL, strValues->get(0));
                     ASSERT_EQ("key1", *strValues->get(0));
 
-                    // ILikePredicate
-                    // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
+// ILikePredicate
+// value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
                     strValues = imap->keySet(
                             query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
                     ASSERT_EQ(4, (int) strValues->size());
@@ -11177,7 +11003,7 @@ namespace hazelcast {
                     ASSERT_EQ("key11", actualStrs[2]);
                     ASSERT_EQ("key_111_test", actualStrs[3]);
 
-                    // value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
+// value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
                     strValues = imap->keySet(
                             query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
                     ASSERT_EQ(2, (int) strValues->size());
@@ -11190,10 +11016,11 @@ namespace hazelcast {
                     ASSERT_EQ("key2", actualStrs[0]);
                     ASSERT_EQ("key_22_test", actualStrs[1]);
 
-                    // SqlPredicate
-                    // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+// SqlPredicate
+// __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                     char sql[100];
-                    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7",
+                                                 query::QueryConstants::getKeyAttributeName());
                     values = intMap->values(query::SqlPredicate(sql));
                     ASSERT_EQ(4, (int) values->size());
                     actualValues.clear();
@@ -11206,8 +11033,8 @@ namespace hazelcast {
                         ASSERT_EQ(2 * (i + 4), actualValues[i]);
                     }
 
-                    // RegexPredicate
-                    // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
+// RegexPredicate
+// value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
                     strValues = imap->keySet(
                             query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
                     ASSERT_EQ(2, (int) strValues->size());
@@ -11323,7 +11150,7 @@ namespace hazelcast {
                         ASSERT_EQ(2 * predSize + i, *values->get(i));
                     }
 
-                    // test PagingPredicate with inner predicate (value < 10)
+// test PagingPredicate with inner predicate (value < 10)
                     std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9,
                                                                  false,
@@ -11337,7 +11164,7 @@ namespace hazelcast {
                     }
 
                     predicate2.nextPage();
-                    // match values 5,6, 7, 8
+// match values 5,6, 7, 8
                     values = intMap->values(predicate2);
                     ASSERT_EQ(predSize - 1, (int) values->size());
                     for (int i = 0; i < predSize - 1; ++i) {
@@ -11349,7 +11176,7 @@ namespace hazelcast {
                     values = intMap->values(predicate2);
                     ASSERT_EQ(0, (int) values->size());
 
-                    // test paging predicate with comparator
+// test paging predicate with comparator
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -11402,28 +11229,28 @@ namespace hazelcast {
                         ASSERT_EQ(i, actualValues[i]);
                     }
 
-                    // EqualPredicate
-                    // key == 5
+// EqualPredicate
+// key == 5
                     values = intMap->keySet(
                             query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                     ASSERT_EQ(1, (int) values->size());
                     ASSERT_NE((const int *) NULL, (*values)[0]);
                     ASSERT_EQ(5, *((*values)[0]));
 
-                    // value == 8
+// value == 8
                     values = intMap->keySet(
                             query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                     ASSERT_EQ(1, (int) values->size());
                     ASSERT_NE((const int *) NULL, (*values)[0]);
                     ASSERT_EQ(4, *((*values)[0]));
 
-                    // key == numItems
+// key == numItems
                     values = intMap->keySet(
                             query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
                     ASSERT_EQ(0, (int) values->size());
 
-                    // NotEqual Predicate
-                    // key != 5
+// NotEqual Predicate
+// key != 5
                     values = intMap->keySet(
                             query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                     ASSERT_EQ(numItems - 1, (int) values->size());
@@ -11441,7 +11268,7 @@ namespace hazelcast {
                         }
                     }
 
-                    // this(value) != 8
+// this(value) != 8
                     values = intMap->keySet(
                             query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                     ASSERT_EQ(numItems - 1, (int) values->size());
@@ -11459,7 +11286,7 @@ namespace hazelcast {
                         }
                     }
 
-                    // TruePredicate
+// TruePredicate
                     values = intMap->keySet(query::TruePredicate());
                     ASSERT_EQ(numItems, (int) values->size());
                     actualValues.clear();
@@ -11472,12 +11299,12 @@ namespace hazelcast {
                         ASSERT_EQ(i, actualValues[i]);
                     }
 
-                    // FalsePredicate
+// FalsePredicate
                     values = intMap->keySet(query::FalsePredicate());
                     ASSERT_EQ(0, (int) values->size());
 
-                    // BetweenPredicate
-                    // 5 <= key <= 10
+// BetweenPredicate
+// 5 <= key <= 10
                     values = intMap->keySet(
                             query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     ASSERT_EQ(6, (int) values->size());
@@ -11491,13 +11318,13 @@ namespace hazelcast {
                         ASSERT_EQ((i + 5), actualValues[i]);
                     }
 
-                    // 20 <= key <=30
+// 20 <= key <=30
                     values = intMap->keySet(
                             query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
                     ASSERT_EQ(0, (int) values->size());
 
-                    // GreaterLessPredicate
-                    // value <= 10
+// GreaterLessPredicate
+// value <= 10
                     values = intMap->keySet(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
                                                              true));
@@ -11512,7 +11339,7 @@ namespace hazelcast {
                         ASSERT_EQ(i, actualValues[i]);
                     }
 
-                    // key < 7
+// key < 7
                     values = intMap->keySet(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false,
                                                              true));
@@ -11527,7 +11354,7 @@ namespace hazelcast {
                         ASSERT_EQ(i, actualValues[i]);
                     }
 
-                    // value >= 15
+// value >= 15
                     values = intMap->keySet(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
                                                              false));
@@ -11542,7 +11369,7 @@ namespace hazelcast {
                         ASSERT_EQ((i + 8), actualValues[i]);
                     }
 
-                    // key > 5
+// key > 5
                     values = intMap->keySet(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
                                                              false));
@@ -11557,8 +11384,8 @@ namespace hazelcast {
                         ASSERT_EQ((i + 6), actualValues[i]);
                     }
 
-                    // InPredicate
-                    // key in {4, 10, 19}
+// InPredicate
+// key in {4, 10, 19}
                     std::vector<int> inVals(3);
                     inVals[0] = 4;
                     inVals[1] = 10;
@@ -11576,7 +11403,7 @@ namespace hazelcast {
                     ASSERT_EQ(10, actualValues[1]);
                     ASSERT_EQ(19, actualValues[2]);
 
-                    // value in {4, 10, 19}
+// value in {4, 10, 19}
                     values = intMap->keySet(
                             query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     ASSERT_EQ(2, (int) values->size());
@@ -11589,8 +11416,8 @@ namespace hazelcast {
                     ASSERT_EQ(2, actualValues[0]);
                     ASSERT_EQ(5, actualValues[1]);
 
-                    // InstanceOfPredicate
-                    // value instanceof Integer
+// InstanceOfPredicate
+// value instanceof Integer
                     values = intMap->keySet(query::InstanceOfPredicate("java.lang.Integer"));
                     ASSERT_EQ(20, (int) values->size());
                     actualValues.clear();
@@ -11606,8 +11433,8 @@ namespace hazelcast {
                     values = intMap->keySet(query::InstanceOfPredicate("java.lang.String"));
                     ASSERT_EQ(0, (int) values->size());
 
-                    // NotPredicate
-                    // !(5 <= key <= 10)
+// NotPredicate
+// !(5 <= key <= 10)
                     std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(
                                     query::QueryConstants::getKeyAttributeName(), 5, 10));
@@ -11628,8 +11455,8 @@ namespace hazelcast {
                         }
                     }
 
-                    // AndPredicate
-                    // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
+// AndPredicate
+// 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
                     bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
@@ -11638,8 +11465,8 @@ namespace hazelcast {
                     ASSERT_EQ(1, (int) values->size());
                     ASSERT_EQ(5, *(values->release(0)));
 
-                    // OrPredicate
-                    // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
+// OrPredicate
+// 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
                     bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     inPred = std::unique_ptr<query::Predicate>(
@@ -11670,16 +11497,16 @@ namespace hazelcast {
                     imap->put("key_111_test", "myvalue_111_test");
                     imap->put("key_22_test", "myvalue_22_test");
 
-                    // LikePredicate
-                    // value LIKE "value1" : {"value1"}
+// LikePredicate
+// value LIKE "value1" : {"value1"}
                     std::unique_ptr<DataArray<std::string> > strValues = imap->keySet(
                             query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                     ASSERT_EQ(1, (int) strValues->size());
                     ASSERT_NE((const std::string *) NULL, strValues->get(0));
                     ASSERT_EQ("key1", *strValues->get(0));
 
-                    // ILikePredicate
-                    // value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
+// ILikePredicate
+// value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
                     strValues = imap->keySet(
                             query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
                     ASSERT_EQ(4, (int) strValues->size());
@@ -11694,7 +11521,7 @@ namespace hazelcast {
                     ASSERT_EQ("key11", actualStrs[2]);
                     ASSERT_EQ("key_111_test", actualStrs[3]);
 
-                    // value ILIKE "%VAL%2%" : {"key_22_test", "key2"}
+// value ILIKE "%VAL%2%" : {"key_22_test", "key2"}
                     strValues = imap->keySet(
                             query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
                     ASSERT_EQ(2, (int) strValues->size());
@@ -11707,10 +11534,11 @@ namespace hazelcast {
                     ASSERT_EQ("key2", actualStrs[0]);
                     ASSERT_EQ("key_22_test", actualStrs[1]);
 
-                    // SqlPredicate
-                    // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+// SqlPredicate
+// __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                     char sql[100];
-                    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7",
+                                                 query::QueryConstants::getKeyAttributeName());
                     values = intMap->keySet(query::SqlPredicate(sql));
                     ASSERT_EQ(4, (int) values->size());
                     actualValues.clear();
@@ -11723,8 +11551,8 @@ namespace hazelcast {
                         ASSERT_EQ(i + 4, actualValues[i]);
                     }
 
-                    // RegexPredicate
-                    // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
+// RegexPredicate
+// value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
                     strValues = imap->keySet(
                             query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
                     ASSERT_EQ(2, (int) strValues->size());
@@ -11833,7 +11661,7 @@ namespace hazelcast {
                         ASSERT_EQ(2 * predSize + i, *value);
                     }
 
-                    // test PagingPredicate with inner predicate (value < 10)
+// test PagingPredicate with inner predicate (value < 10)
                     std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9,
                                                                  false,
@@ -11847,7 +11675,7 @@ namespace hazelcast {
                     }
 
                     predicate2.nextPage();
-                    // match values 5,6, 7, 8
+// match values 5,6, 7, 8
                     values = intMap->keySet(predicate2);
                     ASSERT_EQ(predSize - 1, (int) values->size());
                     for (int i = 0; i < predSize - 1; ++i) {
@@ -11859,7 +11687,7 @@ namespace hazelcast {
                     values = intMap->keySet(predicate2);
                     ASSERT_EQ(0, (int) values->size());
 
-                    // test paging predicate with comparator
+// test paging predicate with comparator
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -11879,7 +11707,7 @@ namespace hazelcast {
                             std::unique_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryKeyComparator()),
                             (size_t) predSize);
                     std::unique_ptr<DataArray<int> > result = employees->keySet(predicate3);
-                    // since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
+// since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
                     ASSERT_EQ(2, (int) result->size());
                     ASSERT_NE((const int *) NULL, (*result)[0]);
                     ASSERT_NE((const int *) NULL, (*result)[1]);
@@ -11912,28 +11740,28 @@ namespace hazelcast {
                         ASSERT_EQ(expected[i], entry);
                     }
 
-                    // EqualPredicate
-                    // key == 5
+// EqualPredicate
+// key == 5
                     entries = intMap->entrySet(
                             query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                     ASSERT_EQ(1, (int) entries->size());
                     std::pair<int, int> entry1(*entries->getKey(0), *entries->getValue(0));
                     ASSERT_EQ(expected[5], entry1);
 
-                    // value == 8
+// value == 8
                     entries = intMap->entrySet(
                             query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                     ASSERT_EQ(1, (int) entries->size());
                     std::pair<int, int> entry2(*entries->getKey(0), *entries->getValue(0));
                     ASSERT_EQ(expected[4], entry2);
 
-                    // key == numItems
+// key == numItems
                     entries = intMap->entrySet(
                             query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
                     ASSERT_EQ(0, (int) entries->size());
 
-                    // NotEqual Predicate
-                    // key != 5
+// NotEqual Predicate
+// key != 5
                     entries = intMap->entrySet(
                             query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                     ASSERT_EQ(numItems - 1, (int) entries->size());
@@ -11947,7 +11775,7 @@ namespace hazelcast {
                         }
                     }
 
-                    // value != 8
+// value != 8
                     entries = intMap->entrySet(
                             query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                     ASSERT_EQ(numItems - 1, (int) entries->size());
@@ -11961,7 +11789,7 @@ namespace hazelcast {
                         }
                     }
 
-                    // TruePredicate
+// TruePredicate
                     entries = intMap->entrySet(query::TruePredicate());
                     ASSERT_EQ(numItems, (int) entries->size());
                     entries->sort(query::ENTRY);
@@ -11970,12 +11798,12 @@ namespace hazelcast {
                         ASSERT_EQ(expected[i], entry);
                     }
 
-                    // FalsePredicate
+// FalsePredicate
                     entries = intMap->entrySet(query::FalsePredicate());
                     ASSERT_EQ(0, (int) entries->size());
 
-                    // BetweenPredicate
-                    // 5 <= key <= 10
+// BetweenPredicate
+// 5 <= key <= 10
                     entries = intMap->entrySet(
                             query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     entries->sort(query::ENTRY);
@@ -11985,13 +11813,13 @@ namespace hazelcast {
                         ASSERT_EQ(expected[i + 5], entry);
                     }
 
-                    // 20 <= key <=30
+// 20 <= key <=30
                     entries = intMap->entrySet(
                             query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
                     ASSERT_EQ(0, (int) entries->size());
 
-                    // GreaterLessPredicate
-                    // value <= 10
+// GreaterLessPredicate
+// value <= 10
                     entries = intMap->entrySet(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
                                                              true));
@@ -12002,7 +11830,7 @@ namespace hazelcast {
                         ASSERT_EQ(expected[i], entry);
                     }
 
-                    // key < 7
+// key < 7
                     entries = intMap->entrySet(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false,
                                                              true));
@@ -12013,7 +11841,7 @@ namespace hazelcast {
                         ASSERT_EQ(expected[i], entry);
                     }
 
-                    // value >= 15
+// value >= 15
                     entries = intMap->entrySet(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
                                                              false));
@@ -12024,7 +11852,7 @@ namespace hazelcast {
                         ASSERT_EQ(expected[i + 8], entry);
                     }
 
-                    // key > 5
+// key > 5
                     entries = intMap->entrySet(
                             query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
                                                              false));
@@ -12035,8 +11863,8 @@ namespace hazelcast {
                         ASSERT_EQ(expected[i + 6], entry);
                     }
 
-                    // InPredicate
-                    // key in {4, 10, 19}
+// InPredicate
+// key in {4, 10, 19}
                     std::vector<int> inVals(3);
                     inVals[0] = 4;
                     inVals[1] = 10;
@@ -12058,7 +11886,7 @@ namespace hazelcast {
                         ASSERT_EQ(expected[19], entry);
                     }
 
-                    // value in {4, 10, 19}
+// value in {4, 10, 19}
                     entries = intMap->entrySet(
                             query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     ASSERT_EQ(2, (int) entries->size());
@@ -12068,8 +11896,8 @@ namespace hazelcast {
                     entry = std::pair<int, int>(*entries->getKey(1), *entries->getValue(1));
                     ASSERT_EQ(expected[5], entry);
 
-                    // InstanceOfPredicate
-                    // value instanceof Integer
+// InstanceOfPredicate
+// value instanceof Integer
                     entries = intMap->entrySet(query::InstanceOfPredicate("java.lang.Integer"));
                     ASSERT_EQ(20, (int) entries->size());
                     entries->sort(query::ENTRY);
@@ -12081,8 +11909,8 @@ namespace hazelcast {
                     entries = intMap->entrySet(query::InstanceOfPredicate("java.lang.String"));
                     ASSERT_EQ(0, (int) entries->size());
 
-                    // NotPredicate
-                    // !(5 <= key <= 10)
+// NotPredicate
+// !(5 <= key <= 10)
                     std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(
                                     query::QueryConstants::getKeyAttributeName(), 5, 10));
@@ -12099,8 +11927,8 @@ namespace hazelcast {
                         }
                     }
 
-                    // AndPredicate
-                    // 5 <= key <= 10 AND Values in {4, 10, 19} = entries {4, 10}
+// AndPredicate
+// 5 <= key <= 10 AND Values in {4, 10, 19} = entries {4, 10}
                     bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
@@ -12111,8 +11939,8 @@ namespace hazelcast {
                     entry = std::pair<int, int>(*entries->getKey(0), *entries->getValue(0));
                     ASSERT_EQ(expected[5], entry);
 
-                    // OrPredicate
-                    // 5 <= key <= 10 OR Values in {4, 10, 19} = entries keys {2, 5, 6, 7, 8, 9, 10}
+// OrPredicate
+// 5 <= key <= 10 OR Values in {4, 10, 19} = entries keys {2, 5, 6, 7, 8, 9, 10}
                     bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                     inPred = std::unique_ptr<query::Predicate>(
@@ -12143,16 +11971,16 @@ namespace hazelcast {
                     imap->put("key_22_test", "myvalue_22_test");
                     expectedStrEntries[13] = std::pair<std::string, std::string>("key_22_test", "myvalue_22_test");
 
-                    // LikePredicate
-                    // value LIKE "value1" : {"value1"}
+// LikePredicate
+// value LIKE "value1" : {"value1"}
                     std::unique_ptr<EntryArray<std::string, std::string> > strEntries = imap->entrySet(
                             query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                     ASSERT_EQ(1, (int) strEntries->size());
                     std::pair<std::string, std::string> strEntry(*strEntries->getKey(0), *strEntries->getValue(0));
                     ASSERT_EQ(expectedStrEntries[1], strEntry);
 
-                    // ILikePredicate
-                    // value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
+// ILikePredicate
+// value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
                     strEntries = imap->entrySet(
                             query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
                     ASSERT_EQ(4, (int) strEntries->size());
@@ -12167,7 +11995,7 @@ namespace hazelcast {
                         }
                     }
 
-                    // key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
+// key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
                     strEntries = imap->entrySet(
                             query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
                     ASSERT_EQ(2, (int) strEntries->size());
@@ -12177,10 +12005,11 @@ namespace hazelcast {
                     strEntry = std::pair<std::string, std::string>(*strEntries->getKey(1), *strEntries->getValue(1));
                     ASSERT_EQ(expectedStrEntries[13], strEntry);
 
-                    // SqlPredicate
-                    // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+// SqlPredicate
+// __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                     char sql[100];
-                    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7",
+                                                 query::QueryConstants::getKeyAttributeName());
                     entries = intMap->entrySet(query::SqlPredicate(sql));
                     ASSERT_EQ(4, (int) entries->size());
                     entries->sort(query::ENTRY);
@@ -12189,8 +12018,8 @@ namespace hazelcast {
                         ASSERT_EQ(expected[i + 4], entry);
                     }
 
-                    // RegexPredicate
-                    // value matches the regex ".*value.*2.*" : {key_22_test, value2}
+// RegexPredicate
+// value matches the regex ".*value.*2.*" : {key_22_test, value2}
                     strEntries = imap->entrySet(
                             query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
                     ASSERT_EQ(2, (int) strEntries->size());
@@ -12309,7 +12138,7 @@ namespace hazelcast {
                         ASSERT_EQ(expected, actual);
                     }
 
-                    // test PagingPredicate with inner predicate (value < 10)
+// test PagingPredicate with inner predicate (value < 10)
                     std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9,
                                                                  false,
@@ -12324,7 +12153,7 @@ namespace hazelcast {
                     }
 
                     predicate2.nextPage();
-                    // match values 5,6, 7, 8
+// match values 5,6, 7, 8
                     values = intMap->entrySet(predicate2);
                     ASSERT_EQ(predSize - 1, (int) values->size());
                     for (int i = 0; i < predSize - 1; ++i) {
@@ -12337,7 +12166,7 @@ namespace hazelcast {
                     values = intMap->entrySet(predicate2);
                     ASSERT_EQ(0, (int) values->size());
 
-                    // test paging predicate with comparator
+// test paging predicate with comparator
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -12454,7 +12283,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12486,7 +12315,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12519,7 +12348,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12556,7 +12385,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12581,7 +12410,7 @@ namespace hazelcast {
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // key <= 2
+// key <= 2
                     std::string listenerId = intMap->addEntryListener(listener, query::GreaterLessPredicate<int>(
                             query::QueryConstants::getKeyAttributeName(), 2, true, true), false);
 
@@ -12594,7 +12423,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12617,7 +12446,7 @@ namespace hazelcast {
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // 1 <=key <= 2
+// 1 <=key <= 2
                     std::string listenerId = intMap->addEntryListener(listener, query::BetweenPredicate<int>(
                             query::QueryConstants::getKeyAttributeName(), 1, 2), true);
 
@@ -12630,7 +12459,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12653,7 +12482,7 @@ namespace hazelcast {
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // 1 <=key <= 2
+// 1 <=key <= 2
                     std::string listenerId = intMap->addEntryListener(listener, query::SqlPredicate("__key < 2"), true);
 
                     intMap->put(1, 1);
@@ -12665,7 +12494,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12691,7 +12520,7 @@ namespace hazelcast {
                     CountdownListener<std::string, std::string> listener(latchAdd, latchRemove, latchUpdate,
                                                                          latchEvict);
 
-                    // key matches any word containing ".*met.*"
+// key matches any word containing ".*met.*"
                     std::string listenerId = imap->addEntryListener(listener, query::RegexPredicate(
                             query::QueryConstants::getKeyAttributeName(), ".*met.*"), true);
 
@@ -12705,7 +12534,7 @@ namespace hazelcast {
 
                     ASSERT_EQ((std::string *) NULL, imap->get("metin").get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->set("hasan", "suphi");
                     std::unique_ptr<std::string> value = imap->get("hasan");
                     ASSERT_NE((std::string *) NULL, value.get());
@@ -12728,7 +12557,7 @@ namespace hazelcast {
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // 1 <=key <= 2
+// 1 <=key <= 2
                     std::string listenerId = intMap->addEntryListener(listener,
                                                                       query::InstanceOfPredicate("java.lang.Integer"),
                                                                       false);
@@ -12742,7 +12571,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12763,7 +12592,7 @@ namespace hazelcast {
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // key >= 3
+// key >= 3
                     std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
                                                                  false));
@@ -12779,7 +12608,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12804,15 +12633,15 @@ namespace hazelcast {
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // key < 3
+// key < 3
                     std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, false,
                                                                  true));
-                    // value == 1
+// value == 1
                     std::unique_ptr<query::Predicate> equalPred = std::unique_ptr<query::Predicate>(
                             new query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 1));
                     query::AndPredicate predicate;
-                    // key < 3 AND key == 1 --> (1, 1)
+// key < 3 AND key == 1 --> (1, 1)
                     predicate.add(greaterLessPred).add(equalPred);
                     std::string listenerId = intMap->addEntryListener(listener, predicate, false);
 
@@ -12825,7 +12654,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -12850,15 +12679,15 @@ namespace hazelcast {
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // key >= 3
+// key >= 3
                     std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
                                                                  false));
-                    // value == 1
+// value == 1
                     std::unique_ptr<query::Predicate> equalPred = std::unique_ptr<query::Predicate>(
                             new query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 2));
                     query::OrPredicate predicate;
-                    // key >= 3 OR value == 2 --> (1, 1), (2, 2)
+// key >= 3 OR value == 2 --> (1, 1), (2, 2)
                     predicate.add(greaterLessPred).add(equalPred);
                     std::string listenerId = intMap->addEntryListener(listener, predicate, true);
 
@@ -12871,7 +12700,7 @@ namespace hazelcast {
 
                     ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     intMap->set(1, 5);
                     std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
@@ -13013,14 +12842,14 @@ namespace hazelcast {
                     employees->put(3, empl1);
                     employees->put(4, empl2);
 
-                    // Waits at the server side before running the operation
+// Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(3000, 4);
 
                     hazelcast::client::Future<int> initialFuture =
                             employees->submitToKey<int, WaitMultiplierProcessor>(
                                     4, processor);
 
-                    // Should invalidate the initialFuture
+// Should invalidate the initialFuture
                     hazelcast::client::Future<int> future = initialFuture;
 
                     ASSERT_FALSE(initialFuture.valid());
@@ -13048,22 +12877,22 @@ namespace hazelcast {
 
                     int waitTimeInMillis = 500;
 
-                    // Waits at the server side before running the operation
+// Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(waitTimeInMillis, 4);
 
                     std::vector<hazelcast::client::Future<int> > allFutures;
 
-                    // test putting into a vector of futures
+// test putting into a vector of futures
                     hazelcast::client::Future<int> future = employees->submitToKey<int, WaitMultiplierProcessor>(
                             3, processor);
                     allFutures.push_back(future);
 
-                    // test re-assigning a future and putting into the vector
+// test re-assigning a future and putting into the vector
                     future = employees->submitToKey<int, WaitMultiplierProcessor>(
                             3, processor);
                     allFutures.push_back(future);
 
-                    // test submitting a non-existent key
+// test submitting a non-existent key
                     allFutures.push_back(employees->submitToKey<int, WaitMultiplierProcessor>(
                             99, processor));
 
@@ -13073,7 +12902,8 @@ namespace hazelcast {
                         ASSERT_EQ(future_status::ready, status);
                     }
 
-                    for (std::vector<hazelcast::client::Future<int> >::iterator it = allFutures.begin(); it != allFutures.end(); ++it) {
+                    for (std::vector<hazelcast::client::Future<int> >::iterator it = allFutures.begin();
+                         it != allFutures.end(); ++it) {
                         std::unique_ptr<int> result = (*it).get();
                         ASSERT_NE((int *) NULL, result.get());
                         ASSERT_FALSE((*it).valid());
@@ -13094,7 +12924,7 @@ namespace hazelcast {
                     std::set<int> keys;
                     keys.insert(3);
                     keys.insert(5);
-                    // put non existent key
+// put non existent key
                     keys.insert(999);
 
                     std::unique_ptr<hazelcast::client::EntryArray<int, int> > result =
@@ -13185,12 +13015,13 @@ namespace hazelcast {
                     employees->put(5, empl3);
 
                     query::AndPredicate andPredicate;
-                    /* 25 <= age <= 35 AND age = 35 */
+/* 25 <= age <= 35 AND age = 35 */
                     andPredicate.add(
                             std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))).add(
                             std::unique_ptr<query::Predicate>(
                                     new query::NotPredicate(
-                                            std::unique_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 35)))));
+                                            std::unique_ptr<query::Predicate>(
+                                                    new query::EqualPredicate<int>("a", 35)))));
 
                     EntryMultiplier processor(4);
 
@@ -13212,7 +13043,7 @@ namespace hazelcast {
                     employees->put(5, empl3);
 
                     query::OrPredicate orPredicate;
-                    /* age == 21 OR age > 25 */
+/* age == 21 OR age > 25 */
                     orPredicate.add(
                             std::unique_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 21))).add(
                             std::unique_ptr<query::Predicate>(
@@ -13477,7 +13308,8 @@ namespace hazelcast {
                         ASSERT_EQ(3 * processor.getMultiplier(), *result->getValue(1));
                     }
 
-                    query::NotPredicate notFalsePredicate(std::unique_ptr<query::Predicate>(new query::FalsePredicate()));
+                    query::NotPredicate notFalsePredicate(
+                            std::unique_ptr<query::Predicate>(new query::FalsePredicate()));
                     result = employees->executeOnEntries<int, EntryMultiplier>(processor, notFalsePredicate);
 
                     ASSERT_EQ(3, (int) result->size());
@@ -13552,13 +13384,8 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/adaptor/RawPointerList.h"
 
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
@@ -13683,11 +13510,11 @@ namespace hazelcast {
 
                     std::unique_ptr<client::DataArray<std::string> > ar = list->toArray();
 
-                    ASSERT_EQ((size_t)4, ar->size());
-                    ASSERT_NE((std::string *)NULL, ar->get(0));
-                    ASSERT_NE((std::string *)NULL, ar->get(1));
-                    ASSERT_NE((std::string *)NULL, ar->get(2));
-                    ASSERT_NE((std::string *)NULL, ar->get(3));
+                    ASSERT_EQ((size_t) 4, ar->size());
+                    ASSERT_NE((std::string *) NULL, ar->get(0));
+                    ASSERT_NE((std::string *) NULL, ar->get(1));
+                    ASSERT_NE((std::string *) NULL, ar->get(2));
+                    ASSERT_NE((std::string *) NULL, ar->get(3));
                     ASSERT_EQ("item1", *((*ar)[0]));
                     ASSERT_EQ("item2", *ar->get(1));
                     ASSERT_EQ("item1", *((*ar)[2]));
@@ -13695,9 +13522,9 @@ namespace hazelcast {
 
                     ar = list->subList(1, 3);
 
-                    ASSERT_EQ((size_t)2, ar->size());
-                    ASSERT_NE((std::string *)NULL, ar->get(0));
-                    ASSERT_NE((std::string *)NULL, ar->get(1));
+                    ASSERT_EQ((size_t) 2, ar->size());
+                    ASSERT_NE((std::string *) NULL, ar->get(0));
+                    ASSERT_NE((std::string *) NULL, ar->get(1));
                     ASSERT_EQ("item2", *ar->get(0));
                     ASSERT_EQ("item1", *ar->get(1));
                 }
@@ -13731,19 +13558,19 @@ namespace hazelcast {
                     l.push_back("item3");
 
                     ASSERT_TRUE(list->removeAll(l));
-                    ASSERT_EQ(3, (int)list->size());
+                    ASSERT_EQ(3, (int) list->size());
                     ASSERT_FALSE(list->removeAll(l));
-                    ASSERT_EQ(3, (int)list->size());
+                    ASSERT_EQ(3, (int) list->size());
 
                     l.clear();
                     l.push_back("item1");
                     l.push_back("item2");
                     ASSERT_FALSE(list->retainAll(l));
-                    ASSERT_EQ(3, (int)list->size());
+                    ASSERT_EQ(3, (int) list->size());
 
                     l.clear();
                     ASSERT_TRUE(list->retainAll(l));
-                    ASSERT_EQ(0, (int)list->size());
+                    ASSERT_EQ(0, (int) list->size());
 
                 }
 
@@ -13768,13 +13595,7 @@ namespace hazelcast {
 
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalQueue.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -13811,15 +13632,15 @@ namespace hazelcast {
                     client::adaptor::RawPointerTransactionalQueue<std::string> q(queue);
                     ASSERT_TRUE(q.offer("ali"));
                     std::unique_ptr<std::string> item = q.poll();
-                    ASSERT_NE((std::string *)NULL, item.get());
+                    ASSERT_NE((std::string *) NULL, item.get());
                     ASSERT_EQ("ali", *item);
                     context.commitTransaction();
                     ASSERT_EQ(0, client->getQueue<std::string>(name).size());
                 }
 
-                void testTransactionalOfferPoll2Thread(hazelcast::util::ThreadArgs& args) {
-                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg0;
-                    HazelcastClient *client = (HazelcastClient *)args.arg1;
+                void testTransactionalOfferPoll2Thread(hazelcast::util::ThreadArgs &args) {
+                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg0;
+                    HazelcastClient *client = (HazelcastClient *) args.arg1;
                     latch->await();
                     client->getQueue<std::string>("defQueue0").offer("item0");
                 }
@@ -13835,7 +13656,7 @@ namespace hazelcast {
                     client::adaptor::RawPointerTransactionalQueue<std::string> q1(queue1);
                     latch.countDown();
                     std::unique_ptr<std::string> item = q0.poll(10 * 1000);
-                    ASSERT_NE((std::string *)NULL, item.get());
+                    ASSERT_NE((std::string *) NULL, item.get());
                     ASSERT_EQ("item0", *item);
                     ASSERT_TRUE(q1.offer(*item));
 
@@ -13850,14 +13671,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/adaptor/RawPointerQueue.h"
 
 namespace hazelcast {
     namespace client {
@@ -13977,7 +13791,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer("peek 3"));
 
                     std::unique_ptr<std::string> item = q->peek();
-                    ASSERT_NE((std::string *)NULL, item.get());
+                    ASSERT_NE((std::string *) NULL, item.get());
                     ASSERT_EQ("peek 1", *item);
                 }
 
@@ -13987,24 +13801,24 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer("peek 3"));
 
                     std::unique_ptr<std::string> item = q->take();
-                    ASSERT_NE((std::string *)NULL, item.get());
+                    ASSERT_NE((std::string *) NULL, item.get());
                     ASSERT_EQ("peek 1", *item);
 
                     item = q->take();
-                    ASSERT_NE((std::string *)NULL, item.get());
+                    ASSERT_NE((std::string *) NULL, item.get());
                     ASSERT_EQ("peek 2", *item);
 
                     item = q->take();
-                    ASSERT_NE((std::string *)NULL, item.get());
+                    ASSERT_NE((std::string *) NULL, item.get());
                     ASSERT_EQ("peek 3", *item);
 
                     ASSERT_TRUE(q->isEmpty());
 
-                    // start a thread to insert an item
+// start a thread to insert an item
                     hazelcast::util::StartedThread t2(testOfferPollThread2, q);
 
                     item = q->take();  //  should block till it gets an item
-                    ASSERT_NE((std::string *)NULL, item.get());
+                    ASSERT_NE((std::string *) NULL, item.get());
                     ASSERT_EQ("item1", *item);
 
                     t2.join();
@@ -14056,17 +13870,17 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer("item5"));
 
                     std::unique_ptr<client::DataArray<std::string> > list = q->drainTo(2);
-                    ASSERT_EQ((size_t)2U, list->size());
-                    ASSERT_NE((std::string *)NULL, list->get(0));
-                    ASSERT_NE((std::string *)NULL, list->get(1));
+                    ASSERT_EQ((size_t) 2U, list->size());
+                    ASSERT_NE((std::string *) NULL, list->get(0));
+                    ASSERT_NE((std::string *) NULL, list->get(1));
                     ASSERT_EQ("item1", *list->get(0));
                     ASSERT_EQ("item2", *list->get(1));
 
                     list = q->drainTo();
-                    ASSERT_EQ((size_t)3U, list->size());
-                    ASSERT_NE((std::string *)NULL, list->get(0));
-                    ASSERT_NE((std::string *)NULL, list->get(1));
-                    ASSERT_NE((std::string *)NULL, list->get(2));
+                    ASSERT_EQ((size_t) 3U, list->size());
+                    ASSERT_NE((std::string *) NULL, list->get(0));
+                    ASSERT_NE((std::string *) NULL, list->get(1));
+                    ASSERT_NE((std::string *) NULL, list->get(2));
                     ASSERT_EQ("item3", *list->get(0));
                     ASSERT_EQ("item4", *list->get(1));
                     ASSERT_EQ("item5", *list->get(2));
@@ -14075,10 +13889,10 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer("item2"));
                     ASSERT_TRUE(q->offer("item3"));
                     list = q->drainTo(5);
-                    ASSERT_EQ((size_t)3U, list->size());
-                    ASSERT_NE((std::string *)NULL, list->get(0));
-                    ASSERT_NE((std::string *)NULL, list->get(1));
-                    ASSERT_NE((std::string *)NULL, list->get(2));
+                    ASSERT_EQ((size_t) 3U, list->size());
+                    ASSERT_NE((std::string *) NULL, list->get(0));
+                    ASSERT_NE((std::string *) NULL, list->get(1));
+                    ASSERT_NE((std::string *) NULL, list->get(2));
                     ASSERT_EQ("item1", *list->get(0));
                     ASSERT_EQ("item2", *list->get(1));
                     ASSERT_EQ("item3", *list->get(2));
@@ -14096,7 +13910,7 @@ namespace hazelcast {
                     ASSERT_EQ(5U, size);
                     for (size_t i = 0; i < size; i++) {
                         const std::string *item = (*array)[i];
-                        ASSERT_NE((std::string *)NULL, item);
+                        ASSERT_NE((std::string *) NULL, item);
                         ASSERT_EQ(std::string("item") + hazelcast::util::IOUtil::to_string(i + 1), *item);
                     }
                 }
@@ -14161,14 +13975,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
-#include "serialization/Employee.h"
 
-#include "hazelcast/client/query/SqlPredicate.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -14204,10 +14011,10 @@ namespace hazelcast {
                 TransactionalMap<std::string, std::string> originalMap = context.getMap<std::string, std::string>(name);
                 client::adaptor::RawPointerTransactionalMap<std::string, std::string> map(originalMap);
 
-                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
                 std::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
-                ASSERT_EQ(val.get(), (std::string *)NULL);
+                ASSERT_EQ(val.get(), (std::string *) NULL);
 
                 context.commitTransaction();
 
@@ -14262,17 +14069,17 @@ namespace hazelcast {
                 context.beginTransaction();
                 TransactionalMap<std::string, std::string> originalMap = context.getMap<std::string, std::string>(name);
                 client::adaptor::RawPointerTransactionalMap<std::string, std::string> txMap(originalMap);
-                ASSERT_EQ(txMap.put("key3", "value3").get(), (std::string *)NULL);
+                ASSERT_EQ(txMap.put("key3", "value3").get(), (std::string *) NULL);
 
 
-                ASSERT_EQ(3, (int)txMap.size());
-                ASSERT_EQ(3, (int)txMap.keySet()->size());
-                ASSERT_EQ(3, (int)txMap.values()->size());
+                ASSERT_EQ(3, (int) txMap.size());
+                ASSERT_EQ(3, (int) txMap.keySet()->size());
+                ASSERT_EQ(3, (int) txMap.values()->size());
                 context.commitTransaction();
 
-                ASSERT_EQ(3, (int)map.size());
-                ASSERT_EQ(3, (int)map.keySet().size());
-                ASSERT_EQ(3, (int)map.values().size());
+                ASSERT_EQ(3, (int) map.size());
+                ASSERT_EQ(3, (int) map.keySet().size());
+                ASSERT_EQ(3, (int) map.values().size());
 
             }
 
@@ -14291,36 +14098,28 @@ namespace hazelcast {
                 TransactionalMap<Employee, Employee> originalMap = context.getMap<Employee, Employee>(name);
                 client::adaptor::RawPointerTransactionalMap<Employee, Employee> txMap(originalMap);
 
-                ASSERT_EQ(txMap.put(emp2, emp2).get(), (Employee *)NULL);
+                ASSERT_EQ(txMap.put(emp2, emp2).get(), (Employee *) NULL);
 
-                ASSERT_EQ(2, (int)txMap.size());
-                ASSERT_EQ(2, (int)txMap.keySet()->size());
+                ASSERT_EQ(2, (int) txMap.size());
+                ASSERT_EQ(2, (int) txMap.keySet()->size());
                 query::SqlPredicate predicate("a = 10");
-                ASSERT_EQ(0, (int)txMap.keySet(&predicate)->size());
-                ASSERT_EQ(0, (int)txMap.values(&predicate)->size());
+                ASSERT_EQ(0, (int) txMap.keySet(&predicate)->size());
+                ASSERT_EQ(0, (int) txMap.values(&predicate)->size());
                 query::SqlPredicate predicate2("a >= 10");
-                ASSERT_EQ(2, (int)txMap.keySet(&predicate2)->size());
-                ASSERT_EQ(2, (int)txMap.values(&predicate2)->size());
+                ASSERT_EQ(2, (int) txMap.keySet(&predicate2)->size());
+                ASSERT_EQ(2, (int) txMap.values(&predicate2)->size());
 
                 context.commitTransaction();
 
-                ASSERT_EQ(2, (int)map.size());
-                ASSERT_EQ(2, (int)map.values().size());
+                ASSERT_EQ(2, (int) map.size());
+                ASSERT_EQ(2, (int) map.values().size());
             }
         }
     }
 }
 
 
-#include "HazelcastServerFactory.h"
-#include <HazelcastServer.h>
-#include "ClientTestSupport.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/adaptor/RawPointerMultiMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -14398,7 +14197,7 @@ namespace hazelcast {
                 HazelcastClient *RawPointerMultiMapTest::client = NULL;
                 MultiMap<std::string, std::string> *RawPointerMultiMapTest::legacy = NULL;
                 client::adaptor::RawPointerMultiMap<std::string, std::string> *RawPointerMultiMapTest::mm = NULL;
-                
+
                 TEST_F(RawPointerMultiMapTest, testPutGetRemove) {
                     ASSERT_TRUE(mm->put("key1", "value1"));
                     ASSERT_TRUE(mm->put("key1", "value2"));
@@ -14412,12 +14211,12 @@ namespace hazelcast {
                     ASSERT_EQ(5, mm->size());
 
                     std::unique_ptr<hazelcast::client::DataArray<std::string> > coll = mm->get("key1");
-                    ASSERT_EQ(3, (int)coll->size());
+                    ASSERT_EQ(3, (int) coll->size());
 
                     coll = mm->remove("key2");
-                    ASSERT_EQ(2, (int)coll->size());
+                    ASSERT_EQ(2, (int) coll->size());
                     ASSERT_EQ(0, mm->valueCount("key2"));
-                    ASSERT_EQ(0, (int)mm->get("key2")->size());
+                    ASSERT_EQ(0, (int) mm->get("key2")->size());
 
                     ASSERT_FALSE(mm->remove("key1", "value4"));
                     ASSERT_EQ(3, mm->size());
@@ -14429,7 +14228,7 @@ namespace hazelcast {
                     ASSERT_EQ(1, mm->size());
                     coll = mm->get("key1");
                     std::unique_ptr<std::string> val = coll->release(0);
-                    ASSERT_NE((std::string *)NULL, val.get());
+                    ASSERT_NE((std::string *) NULL, val.get());
                     ASSERT_EQ("value3", *val);
                 }
 
@@ -14442,9 +14241,9 @@ namespace hazelcast {
                     ASSERT_TRUE(mm->put("key2", "value5"));
 
 
-                    ASSERT_EQ(2, (int)mm->keySet()->size());
-                    ASSERT_EQ(5, (int)mm->values()->size());
-                    ASSERT_EQ(5, (int)mm->entrySet()->size());
+                    ASSERT_EQ(2, (int) mm->keySet()->size());
+                    ASSERT_EQ(5, (int) mm->values()->size());
+                    ASSERT_EQ(5, (int) mm->entrySet()->size());
                 }
 
                 TEST_F(RawPointerMultiMapTest, testContains) {
@@ -14505,9 +14304,9 @@ namespace hazelcast {
 
                 }
 
-                void lockThread(hazelcast::util::ThreadArgs& args) {
-                    client::adaptor::RawPointerMultiMap<std::string, std::string> *mm = (client::adaptor::RawPointerMultiMap<std::string, std::string> *)args.arg0;
-                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+                void lockThread(hazelcast::util::ThreadArgs &args) {
+                    client::adaptor::RawPointerMultiMap<std::string, std::string> *mm = (client::adaptor::RawPointerMultiMap<std::string, std::string> *) args.arg0;
+                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                     if (!mm->tryLock("key1")) {
                         latch->countDown();
                     }
@@ -14532,9 +14331,9 @@ namespace hazelcast {
                 }
 
 
-                void tryLockThread(hazelcast::util::ThreadArgs& args) {
-                    client::adaptor::RawPointerMultiMap<std::string, std::string> *mm = (client::adaptor::RawPointerMultiMap<std::string, std::string> *)args.arg0;
-                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+                void tryLockThread(hazelcast::util::ThreadArgs &args) {
+                    client::adaptor::RawPointerMultiMap<std::string, std::string> *mm = (client::adaptor::RawPointerMultiMap<std::string, std::string> *) args.arg0;
+                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                     try {
                         if (!mm->tryLock("key1", 2)) {
                             latch->countDown();
@@ -14544,9 +14343,9 @@ namespace hazelcast {
                     }
                 }
 
-                void tryLockThread2(hazelcast::util::ThreadArgs& args) {
-                    client::adaptor::RawPointerMultiMap<std::string, std::string> *mm = (client::adaptor::RawPointerMultiMap<std::string, std::string> *)args.arg0;
-                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+                void tryLockThread2(hazelcast::util::ThreadArgs &args) {
+                    client::adaptor::RawPointerMultiMap<std::string, std::string> *mm = (client::adaptor::RawPointerMultiMap<std::string, std::string> *) args.arg0;
+                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                     try {
                         if (mm->tryLock("key1", 20 * 1000)) {
                             latch->countDown();
@@ -14573,9 +14372,9 @@ namespace hazelcast {
                     mm->forceUnlock("key1");
                 }
 
-                void forceUnlockThread(hazelcast::util::ThreadArgs& args) {
-                    client::adaptor::RawPointerMultiMap<std::string, std::string> *mm = (client::adaptor::RawPointerMultiMap<std::string, std::string> *)args.arg0;
-                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+                void forceUnlockThread(hazelcast::util::ThreadArgs &args) {
+                    client::adaptor::RawPointerMultiMap<std::string, std::string> *mm = (client::adaptor::RawPointerMultiMap<std::string, std::string> *) args.arg0;
+                    hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                     mm->forceUnlock("key1");
                     latch->countDown();
                 }
@@ -14593,14 +14392,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalMultiMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -14625,8 +14417,9 @@ namespace hazelcast {
 
                     class GetRemoveTestTask : public hazelcast::util::Runnable {
                     public:
-                        GetRemoveTestTask(MultiMap<string, string> &mm, hazelcast::util::CountDownLatch &latch) : mm(mm),
-                                                                                                       latch(latch) {}
+                        GetRemoveTestTask(MultiMap<string, string> &mm, hazelcast::util::CountDownLatch &latch) : mm(
+                                mm),
+                                                                                                                  latch(latch) {}
 
                         virtual void run() {
                             std::string key = hazelcast::util::IOUtil::to_string(hazelcast::util::getCurrentThreadId());
@@ -14675,7 +14468,8 @@ namespace hazelcast {
                     std::vector<std::shared_ptr<hazelcast::util::Thread> > allThreads;
                     for (int i = 0; i < n; i++) {
                         std::shared_ptr<hazelcast::util::Thread> t(
-                                new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(new GetRemoveTestTask(mm, latch)),
+                                new hazelcast::util::Thread(
+                                        std::shared_ptr<hazelcast::util::Runnable>(new GetRemoveTestTask(mm, latch)),
                                         getLogger()));
                         t->start();
                         allThreads.push_back(t);
@@ -14692,10 +14486,7 @@ namespace hazelcast {
 // Created by İhsan Demir on 17/05/15.
 //
 
-#include <cmath>
-#include <gtest/gtest.h>
 
-#include "hazelcast/util/LittleEndianBufferWrapper.h"
 
 namespace hazelcast {
     namespace client {
@@ -14710,9 +14501,9 @@ namespace hazelcast {
                     };
 
                     TEST_F (LittleEndianBufferTest, testBinaryFormat) {
-                        #define TEST_DATA_SIZE 8
-                        #define LARGE_BUFFER_SIZE 20
-                        #define START_BYTE_NUMBER  5
+#define TEST_DATA_SIZE 8
+#define LARGE_BUFFER_SIZE 20
+#define START_BYTE_NUMBER  5
 
                         uint64_t ONE = 1;
                         uint64_t oneByteFactor = ONE << 8;
@@ -14746,22 +14537,22 @@ namespace hazelcast {
                             wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             uint32_t result = getUint32();
                             ASSERT_EQ(0x8A +
-                                         0x9A * oneByteFactor +
-                                         0xAA * twoBytesFactor +
-                                         0xBA * threeBytesFactor , result);
+                                      0x9A * oneByteFactor +
+                                      0xAA * twoBytesFactor +
+                                      0xBA * threeBytesFactor, result);
                         }
 
                         {
                             wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             uint64_t result = getUint64();
                             ASSERT_EQ(0x8A +
-                                         0x9A * oneByteFactor +
-                                         0xAA * twoBytesFactor +
-                                         0xBA * threeBytesFactor +
-                                         0xCA * fourBytesFactor +
-                                         0xDA * fiveBytesFactor +
-                                         0xEA * sixBytesFactor +
-                                         0x8B * sevenBytesFactor, result);
+                                      0x9A * oneByteFactor +
+                                      0xAA * twoBytesFactor +
+                                      0xBA * threeBytesFactor +
+                                      0xCA * fourBytesFactor +
+                                      0xDA * fiveBytesFactor +
+                                      0xEA * sixBytesFactor +
+                                      0x8B * sevenBytesFactor, result);
                         }
                         // ----- Test unsigned get ends ---------------------------------
 
@@ -14770,14 +14561,14 @@ namespace hazelcast {
                         {
                             wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             int16_t result = getInt16();
-                            ASSERT_EQ(-1 * (~((int16_t)(0x8A +
-                                         0x9A * oneByteFactor)) + 1), result);
+                            ASSERT_EQ(-1 * (~((int16_t) (0x8A +
+                                                         0x9A * oneByteFactor)) + 1), result);
                         }
 
                         {
                             wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             int32_t result = getInt32();
-                            ASSERT_EQ(-1 * (~((int32_t)(
+                            ASSERT_EQ(-1 * (~((int32_t) (
                                     0x8A +
                                     0x9A * oneByteFactor +
                                     0xAA * twoBytesFactor +
@@ -14787,7 +14578,7 @@ namespace hazelcast {
                         {
                             wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             int64_t result = getInt64();
-                            ASSERT_EQ(-1 * (~((int64_t)(
+                            ASSERT_EQ(-1 * (~((int64_t) (
                                     0x8A +
                                     0x9A * oneByteFactor +
                                     0xAA * twoBytesFactor +
@@ -14797,11 +14588,12 @@ namespace hazelcast {
                                     0xEA * sixBytesFactor +
                                     0x8B * sevenBytesFactor)) + 1), result);
                         }
-                        // ----- Test signed get ends ---------------------------------
+// ----- Test signed get ends ---------------------------------
 
                         const byte firstChar = 'B';
                         byte strBytes[8] = {4, 0, 0, 0, /* This part is the len field which is 4 bytes */
-                                            firstChar, firstChar + 1, firstChar + 2, firstChar + 3}; // This is string BCDE
+                                            firstChar, firstChar + 1, firstChar + 2,
+                                            firstChar + 3}; // This is string BCDE
 
                         buffer->clear();
                         buffer->insert(buffer->begin(), strBytes, strBytes + 8);
@@ -14809,16 +14601,16 @@ namespace hazelcast {
                             wrapForRead(8, 0);
                             ASSERT_EQ("BCDE", getStringUtf8());
                         }
-                        
-                        // ---- Test consecutive gets starts ---------------------------
+
+// ---- Test consecutive gets starts ---------------------------
                         {
                             byte continousBuffer[45] = {0x8A, 0x9A, 0xAA, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B,
-                                                                       0x8A, 0x9A, 0xAA, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B,
-                                                                       0x8A, 0x9A, 0xAA, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B,
-                                                                       0x8A, 0x9A, 0xAA, 0xBA, 0xCA,
-                                                                       4, 0, 0, 0, /* This part is the len field which is 4 bytes */
-                                                                       firstChar, firstChar + 1, firstChar + 2, firstChar + 3,
-                                                                       0x8A, 0x01, 0x00, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B};
+                                                        0x8A, 0x9A, 0xAA, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B,
+                                                        0x8A, 0x9A, 0xAA, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B,
+                                                        0x8A, 0x9A, 0xAA, 0xBA, 0xCA,
+                                                        4, 0, 0, 0, /* This part is the len field which is 4 bytes */
+                                                        firstChar, firstChar + 1, firstChar + 2, firstChar + 3,
+                                                        0x8A, 0x01, 0x00, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B};
 
                             buffer->clear();
                             buffer->insert(buffer->begin(), continousBuffer, continousBuffer + 45);
@@ -14833,41 +14625,41 @@ namespace hazelcast {
                             {
                                 uint16_t result = getUint16();
                                 ASSERT_EQ(0x9A +
-                                             0xAA * oneByteFactor, result);
+                                          0xAA * oneByteFactor, result);
                             }
 
                             {
                                 uint32_t result = getUint32();
                                 ASSERT_EQ(0xBA +
-                                             0xCA * oneByteFactor +
-                                             0xDA * twoBytesFactor +
-                                             0xEA * threeBytesFactor , result);
+                                          0xCA * oneByteFactor +
+                                          0xDA * twoBytesFactor +
+                                          0xEA * threeBytesFactor, result);
                             }
 
                             {
                                 uint64_t result = getUint64();
                                 ASSERT_EQ(0x8B +
-                                             0x8A * oneByteFactor +
-                                             0x9A * twoBytesFactor +
-                                             0xAA * threeBytesFactor +
-                                             0xBA * fourBytesFactor +
-                                             0xCA * fiveBytesFactor +
-                                             0xDA * sixBytesFactor +
-                                             0xEA * sevenBytesFactor, result);
+                                          0x8A * oneByteFactor +
+                                          0x9A * twoBytesFactor +
+                                          0xAA * threeBytesFactor +
+                                          0xBA * fourBytesFactor +
+                                          0xCA * fiveBytesFactor +
+                                          0xDA * sixBytesFactor +
+                                          0xEA * sevenBytesFactor, result);
                             }
-                            // ----- Test unsigned get ends ---------------------------------
+// ----- Test unsigned get ends ---------------------------------
 
-                            // ----- Test signed get starts ---------------------------------
+// ----- Test signed get starts ---------------------------------
 
                             {
                                 int16_t result = getInt16();
-                                ASSERT_EQ(-1 * (~((int16_t)(0x8B +
-                                                               0x8A * oneByteFactor)) + 1), result);
+                                ASSERT_EQ(-1 * (~((int16_t) (0x8B +
+                                                             0x8A * oneByteFactor)) + 1), result);
                             }
 
                             {
                                 int32_t result = getInt32();
-                                ASSERT_EQ(-1 * (~((int32_t)(
+                                ASSERT_EQ(-1 * (~((int32_t) (
                                         0x9A +
                                         0xAA * oneByteFactor +
                                         0xBA * twoBytesFactor +
@@ -14876,7 +14668,7 @@ namespace hazelcast {
 
                             {
                                 int64_t result = getInt64();
-                                ASSERT_EQ(-1 * (~((int64_t)(
+                                ASSERT_EQ(-1 * (~((int64_t) (
                                         0xDA +
                                         0xEA * oneByteFactor +
                                         0x8B * twoBytesFactor +
@@ -14886,7 +14678,7 @@ namespace hazelcast {
                                         0xBA * sixBytesFactor +
                                         0xCA * sevenBytesFactor)) + 1), result);
                             }
-                            // ----- Test signed get ends ---------------------------------
+// ----- Test signed get ends ---------------------------------
 
                             {
                                 ASSERT_EQ("BCDE", getStringUtf8());
@@ -14904,16 +14696,16 @@ namespace hazelcast {
                             }
 
                         }
-                        // ---- Test consecutive gets ends ---------------------------
+// ---- Test consecutive gets ends ---------------------------
 
-                        // ---- Write related tests starts --------------------------
+// ---- Write related tests starts --------------------------
                         buffer->clear();
                         buffer->resize(30, 0);
                         wrapForWrite(30, 0);
 
                         set((uint8_t) 0x8A);
                         ASSERT_EQ(0x8A, (*buffer)[0]);
-                        
+
                         set(true);
                         ASSERT_EQ(0x01, (*buffer)[1]);
 
@@ -14942,7 +14734,7 @@ namespace hazelcast {
 
 
                         set(std::string("Test Data"));
-                        ASSERT_EQ(0x09, (int)(*buffer)[12]);
+                        ASSERT_EQ(0x09, (int) (*buffer)[12]);
                         ASSERT_EQ(0x0, (*buffer)[13]);
                         ASSERT_EQ(0x0, (*buffer)[14]);
                         ASSERT_EQ(0x0, (*buffer)[15]);
@@ -14957,11 +14749,7 @@ namespace hazelcast {
 }
 
 
-#include "ClientTestSupport.h"
 
-#include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/util/CountDownLatch.h>
-#include <hazelcast/util/Thread.h>
 
 namespace hazelcast {
     namespace client {
@@ -14977,15 +14765,15 @@ namespace hazelcast {
                     assertEquals(oldSequence + 1, result);
                     assertEquals(oldSequence + 1, sequence.getLastCallId());
                 }
-                
+
                 int64_t nextCallId(spi::impl::sequence::CallIdSequence &seq, bool isUrgent) {
                     return isUrgent ? seq.forceNext() : seq.next();
                 }
             };
 
             TEST_F(CallIdSequenceWithoutBackpressureTest, testInit) {
-                assertEquals(0, sequence.getLastCallId());
-                assertEquals(INT32_MAX, sequence.getMaxConcurrentInvocations());
+                        assertEquals(0, sequence.getLastCallId());
+                        assertEquals(INT32_MAX, sequence.getMaxConcurrentInvocations());
             }
 
             TEST_F(CallIdSequenceWithoutBackpressureTest, testNext) {
@@ -14996,7 +14784,7 @@ namespace hazelcast {
 
             TEST_F(CallIdSequenceWithoutBackpressureTest, whenNextRepeated_thenKeepSucceeding) {
                 for (int64_t k = 1; k < 10000; k++) {
-                    assertEquals(k, nextCallId(sequence, false));
+                            assertEquals(k, nextCallId(sequence, false));
                 }
             }
 
@@ -15004,17 +14792,13 @@ namespace hazelcast {
                 nextCallId(sequence, false);
                 int64_t oldSequence = sequence.getLastCallId();
                 sequence.complete();
-                assertEquals(oldSequence, sequence.getLastCallId());
+                        assertEquals(oldSequence, sequence.getLastCallId());
             }
         }
     }
 }
 
 
-#include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
-#include <hazelcast/util/CountDownLatch.h>
-#include <hazelcast/util/Thread.h>
-#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
@@ -15028,9 +14812,10 @@ namespace hazelcast {
                 class ThreeSecondDelayCompleteOperation : public hazelcast::util::Runnable {
                 public:
                     ThreeSecondDelayCompleteOperation(spi::impl::sequence::CallIdSequenceWithBackpressure &sequence,
-                                                      hazelcast::util::CountDownLatch &nextCalledLatch) : sequence(sequence),
-                                                                                               nextCalledLatch(
-                                                                                                       nextCalledLatch) {}
+                                                      hazelcast::util::CountDownLatch &nextCalledLatch) : sequence(
+                            sequence),
+                                                                                                          nextCalledLatch(
+                                                                                                                  nextCalledLatch) {}
 
                 private:
                     virtual const std::string getName() const {
@@ -15056,21 +14841,21 @@ namespace hazelcast {
 
             TEST_F(CallIdSequenceWithBackpressureTest, testInit) {
                 spi::impl::sequence::CallIdSequenceWithBackpressure sequence(100, 60000);
-                assertEquals(0, sequence.getLastCallId());
-                assertEquals(100, sequence.getMaxConcurrentInvocations());
+                        assertEquals(0, sequence.getLastCallId());
+                        assertEquals(100, sequence.getMaxConcurrentInvocations());
             }
 
             TEST_F(CallIdSequenceWithBackpressureTest, whenNext_thenSequenceIncrements) {
                 spi::impl::sequence::CallIdSequenceWithBackpressure sequence(100, 60000);
                 int64_t oldSequence = sequence.getLastCallId();
                 int64_t result = sequence.next();
-                assertEquals(oldSequence + 1, result);
-                assertEquals(oldSequence + 1, sequence.getLastCallId());
+                        assertEquals(oldSequence + 1, result);
+                        assertEquals(oldSequence + 1, sequence.getLastCallId());
 
                 oldSequence = sequence.getLastCallId();
                 result = sequence.forceNext();
-                assertEquals(oldSequence + 1, result);
-                assertEquals(oldSequence + 1, sequence.getLastCallId());
+                        assertEquals(oldSequence + 1, result);
+                        assertEquals(oldSequence + 1, sequence.getLastCallId());
             }
 
             TEST_F(CallIdSequenceWithBackpressureTest, next_whenNoCapacity_thenBlockTillCapacity) {
@@ -15086,32 +14871,32 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(nextCalledLatch);
 
                 int64_t result = sequence.next();
-                assertEquals(oldLastCallId + 2, result);
-                assertEquals(oldLastCallId + 2, sequence.getLastCallId());
+                        assertEquals(oldLastCallId + 2, result);
+                        assertEquals(oldLastCallId + 2, sequence.getLastCallId());
             }
 
             TEST_F(CallIdSequenceWithBackpressureTest, next_whenNoCapacity_thenBlockTillTimeout) {
                 spi::impl::sequence::CallIdSequenceWithBackpressure sequence(1, 2000);
-                // first invocation consumes the available call ID
+// first invocation consumes the available call ID
                 nextCallId(sequence, false);
 
                 int64_t oldLastCallId = sequence.getLastCallId();
                 ASSERT_THROW(sequence.next(), exception::HazelcastOverloadException);
 
-                assertEquals(oldLastCallId, sequence.getLastCallId());
+                        assertEquals(oldLastCallId, sequence.getLastCallId());
             }
 
             TEST_F(CallIdSequenceWithBackpressureTest, when_overCapacityButPriorityItem_then_noBackpressure) {
                 spi::impl::sequence::CallIdSequenceWithBackpressure sequence(1, 60000);
 
-                // occupy the single call ID slot
+// occupy the single call ID slot
                 nextCallId(sequence, true);
 
                 int64_t oldLastCallId = sequence.getLastCallId();
 
                 int64_t result = nextCallId(sequence, true);
-                assertEquals(oldLastCallId + 1, result);
-                assertEquals(oldLastCallId + 1, sequence.getLastCallId());
+                        assertEquals(oldLastCallId + 1, result);
+                        assertEquals(oldLastCallId + 1, sequence.getLastCallId());
             }
 
             TEST_F(CallIdSequenceWithBackpressureTest, whenComplete_thenTailIncrements) {
@@ -15123,8 +14908,8 @@ namespace hazelcast {
                 int64_t oldTail = sequence.getTail();
                 sequence.complete();
 
-                assertEquals(oldSequence, sequence.getLastCallId());
-                assertEquals(oldTail + 1, sequence.getTail());
+                        assertEquals(oldSequence, sequence.getLastCallId());
+                        assertEquals(oldTail + 1, sequence.getTail());
             }
 
         }
@@ -15132,12 +14917,10 @@ namespace hazelcast {
 }
 
 
-#include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
-#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
-        
+
         namespace test {
             class FailFastCallIdSequenceTest : public ClientTestSupport {
             public:
@@ -15160,17 +14943,17 @@ namespace hazelcast {
             TEST_F(FailFastCallIdSequenceTest, next_whenNoCapacity_thenThrowException) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(1);
 
-                    // take the only slot available
-                    sequence.next();
+                // take the only slot available
+                sequence.next();
 
-                    // this next is going to fail with an exception
-                    ASSERT_THROW(sequence.next(), exception::HazelcastOverloadException);
+                // this next is going to fail with an exception
+                ASSERT_THROW(sequence.next(), exception::HazelcastOverloadException);
             }
 
             TEST_F(FailFastCallIdSequenceTest, when_overCapacityButPriorityItem_then_noException) {
                 spi::impl::sequence::FailFastCallIdSequence sequence(1);
 
-                // take the only slot available
+// take the only slot available
                 ASSERT_EQ(1, sequence.next());
 
                 ASSERT_EQ(2, sequence.forceNext());
@@ -15192,16 +14975,10 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-
-#include <iostream>
-
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
+                                                                                                                        #pragma warning(push)
+#pragma warning(disable: 4996) //for strerror
 #endif
 
 namespace hazelcast {
@@ -15301,16 +15078,9 @@ namespace hazelcast {
 #endif
 
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include <memory>
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/adaptor/RawPointerMap.h"
 
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 using namespace hazelcast::client::mixedtype;
 
@@ -15499,7 +15269,7 @@ namespace hazelcast {
                         }
                     }
                 };
-                
+
                 class PolymorphicPortableFactory : public serialization::PortableFactory {
                 public:
                     virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
@@ -15530,7 +15300,7 @@ namespace hazelcast {
                     SerializationConfig &serializationConfig = config.getSerializationConfig();
                     serializationConfig.addDataSerializableFactory(666,
                                                                    std::shared_ptr<serialization::DataSerializableFactory>(
-                                                                                       new PolymorphicDataSerializableFactory()));
+                                                                           new PolymorphicDataSerializableFactory()));
                     serializationConfig.addPortableFactory(666, std::shared_ptr<serialization::PortableFactory>(
                             new PolymorphicPortableFactory));
 
@@ -15577,7 +15347,7 @@ namespace hazelcast {
                     instance2 = NULL;
                     instance = NULL;
                 }
-                
+
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
                 static HazelcastClient *client;
@@ -15612,13 +15382,13 @@ namespace hazelcast {
                 TypedData result = mixedMap->get<int>(3);
                 ASSERT_EQ(-7, result.getType().typeId);
                 std::unique_ptr<int> value = result.get<int>();
-                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 result = mixedMap->get<int>(10);
                 ASSERT_EQ(-11, result.getType().typeId);
                 std::unique_ptr<std::string> strValue = result.get<std::string>();
-                ASSERT_NE((std::string *)NULL, strValue.get());
+                ASSERT_NE((std::string *) NULL, strValue.get());
                 ASSERT_EQ("MyStringValue", *strValue);
             }
 
@@ -15636,11 +15406,12 @@ namespace hazelcast {
                 keys.insert(3);
 
                 std::vector<std::pair<TypedData, TypedData> > values = mixedMap->getAll<int>(keys);
-                for (std::vector<std::pair<TypedData, TypedData> >::iterator it = values.begin();it != values.end(); ++it) {
+                for (std::vector<std::pair<TypedData, TypedData> >::iterator it = values.begin();
+                     it != values.end(); ++it) {
                     TypedData &keyData = (*it).first;
                     TypedData &valueData = (*it).second;
                     std::unique_ptr<int> key = keyData.get<int>();
-                    ASSERT_NE((int *)NULL, key.get());
+                    ASSERT_NE((int *) NULL, key.get());
                     serialization::pimpl::ObjectType objectType = valueData.getType();
                     switch (*key) {
                         case 1: {
@@ -15650,7 +15421,7 @@ namespace hazelcast {
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(10, objectType.classId);
                             std::unique_ptr<BaseDataSerializable> value = valueData.get<BaseDataSerializable>();
-                            ASSERT_NE((BaseDataSerializable *)NULL, value.get());
+                            ASSERT_NE((BaseDataSerializable *) NULL, value.get());
                             break;
                         }
                         case 2: {
@@ -15658,7 +15429,7 @@ namespace hazelcast {
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(11, objectType.classId);
                             std::unique_ptr<BaseDataSerializable> value(valueData.get<Derived1DataSerializable>());
-                            ASSERT_NE((BaseDataSerializable *)NULL, value.get());
+                            ASSERT_NE((BaseDataSerializable *) NULL, value.get());
                             break;
                         }
                         case 3: {
@@ -15666,7 +15437,7 @@ namespace hazelcast {
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(12, objectType.classId);
                             std::unique_ptr<BaseDataSerializable> value(valueData.get<Derived2DataSerializable>());
-                            ASSERT_NE((BaseDataSerializable *)NULL, value.get());
+                            ASSERT_NE((BaseDataSerializable *) NULL, value.get());
                             break;
                         }
                         default:
@@ -15674,7 +15445,7 @@ namespace hazelcast {
                     }
                 }
             }
-            
+
             TEST_F(MixedMapTest, testPolymorphismUsingBaseClassWithIdentifiedDataSerializable) {
                 BaseDataSerializable base;
                 Derived1DataSerializable derived1;
@@ -15689,14 +15460,14 @@ namespace hazelcast {
                 keys.insert(3);
 
                 std::unique_ptr<EntryArray<int, BaseDataSerializable> > entries = rawPointerMap->getAll(keys);
-                ASSERT_NE((EntryArray<int, BaseDataSerializable> *)NULL, entries.get());
-                ASSERT_EQ((size_t)3, entries->size());
+                ASSERT_NE((EntryArray<int, BaseDataSerializable> *) NULL, entries.get());
+                ASSERT_EQ((size_t) 3, entries->size());
                 for (size_t i = 0; i < entries->size(); ++i) {
                     std::pair<const int *, const BaseDataSerializable *> entry = (*entries)[i];
                     const int *key = entry.first;
-                    ASSERT_NE((const int *)NULL, key);
+                    ASSERT_NE((const int *) NULL, key);
                     const BaseDataSerializable *value = entry.second;
-                    ASSERT_NE((const BaseDataSerializable *)NULL, value);
+                    ASSERT_NE((const BaseDataSerializable *) NULL, value);
                     switch (*key) {
                         case 1:
                             ASSERT_EQ(base.getClassId(), value->getClassId());
@@ -15725,28 +15496,29 @@ namespace hazelcast {
                 serialization::pimpl::ObjectType secondType = secondData.getType();
                 ASSERT_EQ(-1, secondType.typeId);
                 secondData.get<Derived1Portable>();
-                
+
                 std::set<int> keys;
                 keys.insert(1);
                 keys.insert(2);
                 keys.insert(3);
 
                 std::vector<std::pair<TypedData, TypedData> > values = mixedMap->getAll<int>(keys);
-                for (std::vector<std::pair<TypedData, TypedData> >::iterator it = values.begin();it != values.end(); ++it) {
+                for (std::vector<std::pair<TypedData, TypedData> >::iterator it = values.begin();
+                     it != values.end(); ++it) {
                     TypedData &keyData = (*it).first;
                     TypedData &valueData = (*it).second;
                     std::unique_ptr<int> key = keyData.get<int>();
-                    ASSERT_NE((int *)NULL, key.get());
+                    ASSERT_NE((int *) NULL, key.get());
                     serialization::pimpl::ObjectType objectType = valueData.getType();
                     switch (*key) {
                         case 1: {
-                            // serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE, using -1 since static
-                            // variable is not exported into the library
+// serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE, using -1 since static
+// variable is not exported into the library
                             ASSERT_EQ(-1, objectType.typeId);
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(3, objectType.classId);
                             std::unique_ptr<BasePortable> value = valueData.get<BasePortable>();
-                            ASSERT_NE((BasePortable *)NULL, value.get());
+                            ASSERT_NE((BasePortable *) NULL, value.get());
                             break;
                         }
                         case 2: {
@@ -15754,7 +15526,7 @@ namespace hazelcast {
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(4, objectType.classId);
                             std::unique_ptr<BasePortable> value(valueData.get<Derived1Portable>());
-                            ASSERT_NE((BasePortable *)NULL, value.get());
+                            ASSERT_NE((BasePortable *) NULL, value.get());
                             break;
                         }
                         case 3: {
@@ -15762,7 +15534,7 @@ namespace hazelcast {
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(5, objectType.classId);
                             std::unique_ptr<BasePortable> value(valueData.get<Derived2Portable>());
-                            ASSERT_NE((BasePortable *)NULL, value.get());
+                            ASSERT_NE((BasePortable *) NULL, value.get());
                             break;
                         }
                         default:
@@ -15776,8 +15548,8 @@ namespace hazelcast {
                 Derived1Portable derived1Portable;
                 Derived2Portable derived2Portable;
                 rawPointerMapPortable->put(1, basePortable);
-                rawPointerMapPortable->put(2, derived1Portable );
-                rawPointerMapPortable->put(3, derived2Portable );
+                rawPointerMapPortable->put(2, derived1Portable);
+                rawPointerMapPortable->put(3, derived2Portable);
 
                 std::set<int> keys;
                 keys.insert(1);
@@ -15785,14 +15557,14 @@ namespace hazelcast {
                 keys.insert(3);
 
                 std::unique_ptr<EntryArray<int, BasePortable> > entries = rawPointerMapPortable->getAll(keys);
-                ASSERT_NE((EntryArray<int, BasePortable> *)NULL, entries.get());
-                ASSERT_EQ((size_t)3, entries->size());
+                ASSERT_NE((EntryArray<int, BasePortable> *) NULL, entries.get());
+                ASSERT_EQ((size_t) 3, entries->size());
                 for (size_t i = 0; i < entries->size(); ++i) {
                     std::pair<const int *, const BasePortable *> entry = (*entries)[i];
                     const int *key = entry.first;
-                    ASSERT_NE((const int *)NULL, key);
+                    ASSERT_NE((const int *) NULL, key);
                     const BasePortable *value = entry.second;
-                    ASSERT_NE((const BasePortable *)NULL, value);
+                    ASSERT_NE((const BasePortable *) NULL, value);
                     switch (*key) {
                         case 1:
                             ASSERT_EQ(basePortable.getClassId(), value->getClassId());
@@ -15814,8 +15586,8 @@ namespace hazelcast {
                 Derived1Custom derived1Custom;
                 Derived2Custom derived2Custom;
                 rawPointerMapCustom->put(1, baseCustom);
-                rawPointerMapCustom->put(2, derived1Custom );
-                rawPointerMapCustom->put(3, derived2Custom );
+                rawPointerMapCustom->put(2, derived1Custom);
+                rawPointerMapCustom->put(3, derived2Custom);
 
                 std::set<int> keys;
                 keys.insert(1);
@@ -15823,14 +15595,14 @@ namespace hazelcast {
                 keys.insert(3);
 
                 std::unique_ptr<EntryArray<int, BaseCustom> > entries = rawPointerMapCustom->getAll(keys);
-                ASSERT_NE((EntryArray<int, BaseCustom> *)NULL, entries.get());
-                ASSERT_EQ((size_t)3, entries->size());
+                ASSERT_NE((EntryArray<int, BaseCustom> *) NULL, entries.get());
+                ASSERT_EQ((size_t) 3, entries->size());
                 for (size_t i = 0; i < entries->size(); ++i) {
                     std::pair<const int *, const BaseCustom *> entry = (*entries)[i];
                     const int *key = entry.first;
-                    ASSERT_NE((const int *)NULL, key);
+                    ASSERT_NE((const int *) NULL, key);
                     const BaseCustom *value = entry.second;
-                    ASSERT_NE((const BaseCustom *)NULL, value);
+                    ASSERT_NE((const BaseCustom *) NULL, value);
                     switch (*key) {
                         case 1:
                             ASSERT_EQ(baseCustom.getValue(), value->getValue());
@@ -15850,12 +15622,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -15897,7 +15664,7 @@ namespace hazelcast {
                     client = NULL;
                     instance = NULL;
                 }
-                
+
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
                 static mixedtype::IMap *imap;
@@ -15906,7 +15673,7 @@ namespace hazelcast {
             HazelcastServer *MapGlobalSerializerTest::instance = NULL;
             HazelcastClient *MapGlobalSerializerTest::client = NULL;
             mixedtype::IMap *MapGlobalSerializerTest::imap = NULL;
-            
+
             TEST_F(MapGlobalSerializerTest, testPutUnknownObjectButGetIntegerValue) {
                 MapGlobalSerializerTest::UnknownObject myObject;
                 imap->put<int, MapGlobalSerializerTest::UnknownObject>(2, myObject);
@@ -15925,15 +15692,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -15965,7 +15724,7 @@ namespace hazelcast {
                     instance2 = NULL;
                     instance = NULL;
                 }
-                
+
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
                 static HazelcastClient *client;
@@ -15979,17 +15738,17 @@ namespace hazelcast {
 
             class ExpirationListener : public EntryAdapter<int, int> {
             public:
-                ExpirationListener(hazelcast::util::CountDownLatch& latch)
-                : latch(latch) {
+                ExpirationListener(hazelcast::util::CountDownLatch &latch)
+                        : latch(latch) {
 
                 }
 
-                void entryExpired(const EntryEvent<int, int>& event) {
+                void entryExpired(const EntryEvent<int, int> &event) {
                     latch.countDown();
                 }
 
             private:
-                hazelcast::util::CountDownLatch& latch;
+                hazelcast::util::CountDownLatch &latch;
             };
 
             TEST_F(ClientExpirationListenerTest, notified_afterExpirationOfEntries) {
@@ -16018,23 +15777,23 @@ namespace hazelcast {
 
             class ExpirationAndEvictionListener : public EntryAdapter<int, int> {
             public:
-                ExpirationAndEvictionListener(hazelcast::util::CountDownLatch& evictedLatch, hazelcast::util::CountDownLatch& expiredLatch)
-                : evictedLatch(evictedLatch)
-                , expiredLatch(expiredLatch){
+                ExpirationAndEvictionListener(hazelcast::util::CountDownLatch &evictedLatch,
+                                              hazelcast::util::CountDownLatch &expiredLatch)
+                        : evictedLatch(evictedLatch), expiredLatch(expiredLatch) {
 
                 }
 
-                void entryEvicted(const EntryEvent<int, int>& event) {
+                void entryEvicted(const EntryEvent<int, int> &event) {
                     evictedLatch.countDown();
                 }
 
-                void entryExpired(const EntryEvent<int, int>& event) {
+                void entryExpired(const EntryEvent<int, int> &event) {
                     expiredLatch.countDown();
                 }
 
             private:
-                hazelcast::util::CountDownLatch& evictedLatch;
-                hazelcast::util::CountDownLatch& expiredLatch;
+                hazelcast::util::CountDownLatch &evictedLatch;
+                hazelcast::util::CountDownLatch &expiredLatch;
             };
 
             TEST_F(ClientExpirationListenerTest, bothNotified_afterExpirationOfEntries) {
@@ -16049,10 +15808,10 @@ namespace hazelcast {
                     imap->put(i, i, 100);
                 }
 
-                // wait expiration of entries.
+// wait expiration of entries.
                 hazelcast::util::sleep(1);
 
-                // trigger immediate fire of expiration events by touching them.
+// trigger immediate fire of expiration events by touching them.
                 for (int i = 0; i < numberOfPutOperations; i++) {
                     imap->get(i);
                 }
@@ -16065,35 +15824,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServer.h"
-#include "serialization/Employee.h"
-#include "TestHelperFunctions.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IMap.h"
-#include "hazelcast/client/query/OrPredicate.h"
-#include "hazelcast/client/query/RegexPredicate.h"
-#include "hazelcast/client/query/PagingPredicate.h"
-#include "hazelcast/client/query/QueryConstants.h"
-#include "hazelcast/client/query/NotPredicate.h"
-#include "hazelcast/client/query/InstanceOfPredicate.h"
-#include "hazelcast/client/query/NotEqualPredicate.h"
-#include "hazelcast/client/query/InPredicate.h"
-#include "hazelcast/client/query/ILikePredicate.h"
-#include "hazelcast/client/query/LikePredicate.h"
-#include "hazelcast/client/query/GreaterLessPredicate.h"
-#include "hazelcast/client/query/AndPredicate.h"
-#include "hazelcast/client/query/BetweenPredicate.h"
-#include "hazelcast/client/query/EqualPredicate.h"
-#include "hazelcast/client/query/TruePredicate.h"
-#include "hazelcast/client/query/FalsePredicate.h"
-#include "hazelcast/client/query/SqlPredicate.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
@@ -16252,7 +15983,7 @@ namespace hazelcast {
                     client.getMap<std::string, std::string>(MapClientConfig::ONE_SECOND_MAP_NAME).destroy();
                     client.getMap<Employee, int>("tradeMap").destroy();
                 }
-                
+
                 void fillMap() {
                     for (int i = 0; i < 10; i++) {
                         std::string key = "key";
@@ -16580,8 +16311,8 @@ namespace hazelcast {
                 monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl =
                         (monitor::impl::NearCacheStatsImpl *) imap.getLocalMapStats().getNearCacheStats();
 
-                // When ttl expires at server, the server does not send near cache invalidation, hence below is for
-                // non-near cache test case.
+// When ttl expires at server, the server does not send near cache invalidation, hence below is for
+// non-near cache test case.
                 if (!nearCacheStatsImpl) {
                     value = imap.get("key");
                     ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
@@ -16611,8 +16342,8 @@ namespace hazelcast {
                 monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl =
                         (monitor::impl::NearCacheStatsImpl *) imap.getLocalMapStats().getNearCacheStats();
 
-                // When ttl expires at server, the server does not send near cache invalidation, hence below is for
-                // non-near cache test case.
+// When ttl expires at server, the server does not send near cache invalidation, hence below is for
+// non-near cache test case.
                 if (!nearCacheStatsImpl) {
                     value = imap.get("key");
                     ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
@@ -16624,7 +16355,7 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testAsyncSet) {
                 fillMap();
                 std::shared_ptr<ICompletableFuture<void> > future = imap.setAsync("key3",
-                                                                                   "value");
+                                                                                  "value");
                 future->get();
                 std::shared_ptr<std::string> value = imap.get("key3");
                 ASSERT_NOTNULL(value.get(), std::string);
@@ -16639,9 +16370,9 @@ namespace hazelcast {
                 std::string listenerId = imap.addEntryListener(listener, true);
 
                 std::shared_ptr<ICompletableFuture<void> > future = imap.setAsync("key",
-                                                                                   "value1",
-                                                                                   3,
-                                                                                   hazelcast::util::concurrent::TimeUnit::SECONDS());
+                                                                                  "value1",
+                                                                                  3,
+                                                                                  hazelcast::util::concurrent::TimeUnit::SECONDS());
                 future->get();
                 std::shared_ptr<std::string> value = imap.get("key");
                 ASSERT_NOTNULL(value.get(), std::string);
@@ -16652,8 +16383,8 @@ namespace hazelcast {
                 monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl =
                         (monitor::impl::NearCacheStatsImpl *) imap.getLocalMapStats().getNearCacheStats();
 
-                // When ttl expires at server, the server does not send near cache invalidation, hence below is for 
-                // non-near cache test case.
+// When ttl expires at server, the server does not send near cache invalidation, hence below is for
+// non-near cache test case.
                 if (!nearCacheStatsImpl) {
                     value = imap.get("key");
                     ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
@@ -16670,11 +16401,11 @@ namespace hazelcast {
                 std::string listenerId = imap.addEntryListener(listener, true);
 
                 std::shared_ptr<ICompletableFuture<void> > future = imap.setAsync("key",
-                                                                                   "value1",
-                                                                                   0,
-                                                                                   hazelcast::util::concurrent::TimeUnit::SECONDS(),
-                                                                                   3,
-                                                                                   hazelcast::util::concurrent::TimeUnit::SECONDS());
+                                                                                  "value1",
+                                                                                  0,
+                                                                                  hazelcast::util::concurrent::TimeUnit::SECONDS(),
+                                                                                  3,
+                                                                                  hazelcast::util::concurrent::TimeUnit::SECONDS());
                 future->get();
                 std::shared_ptr<std::string> value = imap.get("key");
                 ASSERT_NOTNULL(value.get(), std::string);
@@ -16685,8 +16416,8 @@ namespace hazelcast {
                 monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl =
                         (monitor::impl::NearCacheStatsImpl *) imap.getLocalMapStats().getNearCacheStats();
 
-                // When ttl expires at server, the server does not send near cache invalidation, hence below is for 
-                // non-near cache test case.
+// When ttl expires at server, the server does not send near cache invalidation, hence below is for
+// non-near cache test case.
                 if (!nearCacheStatsImpl) {
                     value = imap.get("key");
                     ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
@@ -16812,7 +16543,7 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testPutTtl) {
                 hazelcast::util::CountDownLatch dummy(10);
                 hazelcast::util::CountDownLatch evict(1);
-                CountdownListener <std::string, std::string> sampleEntryListener(
+                CountdownListener<std::string, std::string> sampleEntryListener(
                         dummy, dummy, dummy, evict);
                 std::string id = imap.addEntryListener(sampleEntryListener, false);
 
@@ -16824,22 +16555,22 @@ namespace hazelcast {
                     initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                 }
 
-                // put will cause an invalidation event sent from the server to the client
+// put will cause an invalidation event sent from the server to the client
                 imap.put("key1", "value1", 1000);
 
-                // if near cache is enabled
+// if near cache is enabled
                 if (nearCacheStatsImpl) {
                     ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
                                          nearCacheStatsImpl->getInvalidationRequests());
 
-                    // populate near cache
+// populate near cache
                     imap.get("key1").get();
 
-                    // When ttl expires at server, the server does not send near cache invalidation.
+// When ttl expires at server, the server does not send near cache invalidation.
                     ASSERT_TRUE_ALL_THE_TIME((imap.get("key1").get() && nearCacheStatsImpl->getInvalidationRequests() ==
-                                                                       initialInvalidationRequests + 1), 2);
+                                                                        initialInvalidationRequests + 1), 2);
                 } else {
-                    // trigger eviction
+// trigger eviction
                     ASSERT_NULL_EVENTUALLY(imap.get("key1").get(), std::string);
                 }
 
@@ -16853,7 +16584,7 @@ namespace hazelcast {
                         MapClientConfig::ONE_SECOND_MAP_NAME);
                 hazelcast::util::CountDownLatch dummy(10);
                 hazelcast::util::CountDownLatch evict(1);
-                CountdownListener <std::string, std::string> sampleEntryListener(
+                CountdownListener<std::string, std::string> sampleEntryListener(
                         dummy, dummy, dummy, evict);
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
@@ -16864,22 +16595,22 @@ namespace hazelcast {
                     initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                 }
 
-                // put will cause an invalidation event sent from the server to the client
+// put will cause an invalidation event sent from the server to the client
                 map.put("key1", "value1");
 
-                // if near cache is enabled
+// if near cache is enabled
                 if (nearCacheStatsImpl) {
                     ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
                                          nearCacheStatsImpl->getInvalidationRequests());
 
-                    // populate near cache
+// populate near cache
                     imap.get("key1").get();
 
-                    // When ttl expires at server, the server does not send near cache invalidation.
+// When ttl expires at server, the server does not send near cache invalidation.
                     ASSERT_TRUE_ALL_THE_TIME((map.get("key1").get() && nearCacheStatsImpl->getInvalidationRequests() ==
                                                                        initialInvalidationRequests + 1), 2);
                 } else {
-                    // trigger eviction
+// trigger eviction
                     ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                 }
 
@@ -16914,7 +16645,7 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testSetTtl) {
                 hazelcast::util::CountDownLatch dummy(10);
                 hazelcast::util::CountDownLatch evict(1);
-                CountdownListener <std::string, std::string> sampleEntryListener(
+                CountdownListener<std::string, std::string> sampleEntryListener(
                         dummy, dummy, dummy, evict);
                 std::string id = imap.addEntryListener(sampleEntryListener, false);
 
@@ -16925,22 +16656,22 @@ namespace hazelcast {
                     initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                 }
 
-                // set will cause an invalidation event sent from the server to the client
+// set will cause an invalidation event sent from the server to the client
                 imap.set("key1", "value1", 1000);
 
-                // if near cache is enabled
+// if near cache is enabled
                 if (nearCacheStatsImpl) {
                     ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
                                          nearCacheStatsImpl->getInvalidationRequests());
 
-                    // populate near cache
+// populate near cache
                     imap.get("key1").get();
 
-                    // When ttl expires at server, the server does not send near cache invalidation.
+// When ttl expires at server, the server does not send near cache invalidation.
                     ASSERT_TRUE_ALL_THE_TIME((imap.get("key1").get() && nearCacheStatsImpl->getInvalidationRequests() ==
-                                                                       initialInvalidationRequests + 1), 2);
+                                                                        initialInvalidationRequests + 1), 2);
                 } else {
-                    // trigger eviction
+// trigger eviction
                     ASSERT_NULL_EVENTUALLY(imap.get("key1").get(), std::string);
                 }
 
@@ -16954,7 +16685,7 @@ namespace hazelcast {
                         MapClientConfig::ONE_SECOND_MAP_NAME);
                 hazelcast::util::CountDownLatch dummy(10);
                 hazelcast::util::CountDownLatch evict(1);
-                CountdownListener <std::string, std::string> sampleEntryListener(
+                CountdownListener<std::string, std::string> sampleEntryListener(
                         dummy, dummy, dummy, evict);
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
@@ -16965,22 +16696,22 @@ namespace hazelcast {
                     initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                 }
 
-                // put will cause an invalidation event sent from the server to the client
+// put will cause an invalidation event sent from the server to the client
                 map.set("key1", "value1");
 
-                // if near cache is enabled
+// if near cache is enabled
                 if (nearCacheStatsImpl) {
                     ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
                                          nearCacheStatsImpl->getInvalidationRequests());
 
-                    // populate near cache
+// populate near cache
                     imap.get("key1").get();
 
-                    // When ttl expires at server, the server does not send near cache invalidation.
+// When ttl expires at server, the server does not send near cache invalidation.
                     ASSERT_TRUE_ALL_THE_TIME((map.get("key1").get() && nearCacheStatsImpl->getInvalidationRequests() ==
                                                                        initialInvalidationRequests + 1), 2);
                 } else {
-                    // trigger eviction
+// trigger eviction
                     ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                 }
 
@@ -17073,26 +16804,26 @@ namespace hazelcast {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
-                // EqualPredicate
-                // key == 5
+// EqualPredicate
+// key == 5
                 values = intMap.values(
                         query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                 ASSERT_EQ(1, (int) values.size());
                 ASSERT_EQ(2 * 5, values[0]);
 
-                // value == 8
+// value == 8
                 values = intMap.values(
                         query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                 ASSERT_EQ(1, (int) values.size());
                 ASSERT_EQ(8, values[0]);
 
-                // key == numItems
+// key == numItems
                 values = intMap.values(
                         query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
                 ASSERT_EQ(0, (int) values.size());
 
-                // NotEqual Predicate
-                // key != 5
+// NotEqual Predicate
+// key != 5
                 values = intMap.values(
                         query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                 ASSERT_EQ(numItems - 1, (int) values.size());
@@ -17105,7 +16836,7 @@ namespace hazelcast {
                     }
                 }
 
-                // this(value) != 8
+// this(value) != 8
                 values = intMap.values(
                         query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                 ASSERT_EQ(numItems - 1, (int) values.size());
@@ -17118,7 +16849,7 @@ namespace hazelcast {
                     }
                 }
 
-                // TruePredicate
+// TruePredicate
                 values = intMap.values(query::TruePredicate());
                 ASSERT_EQ(numItems, (int) values.size());
                 std::sort(values.begin(), values.end());
@@ -17126,12 +16857,12 @@ namespace hazelcast {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
-                // FalsePredicate
+// FalsePredicate
                 values = intMap.values(query::FalsePredicate());
                 ASSERT_EQ(0, (int) values.size());
 
-                // BetweenPredicate
-                // 5 <= key <= 10
+// BetweenPredicate
+// 5 <= key <= 10
                 values = intMap.values(
                         query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::sort(values.begin(), values.end());
@@ -17140,13 +16871,13 @@ namespace hazelcast {
                     ASSERT_EQ(2 * (i + 5), values[i]);
                 }
 
-                // 20 <= key <=30
+// 20 <= key <=30
                 values = intMap.values(
                         query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
                 ASSERT_EQ(0, (int) values.size());
 
-                // GreaterLessPredicate
-                // value <= 10
+// GreaterLessPredicate
+// value <= 10
                 values = intMap.values(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
                                                          true));
@@ -17156,7 +16887,7 @@ namespace hazelcast {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
-                // key < 7
+// key < 7
                 values = intMap.values(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
                 ASSERT_EQ(7, (int) values.size());
@@ -17165,7 +16896,7 @@ namespace hazelcast {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
-                // value >= 15
+// value >= 15
                 values = intMap.values(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
                                                          false));
@@ -17175,7 +16906,7 @@ namespace hazelcast {
                     ASSERT_EQ(2 * (i + 8), values[i]);
                 }
 
-                // key > 5
+// key > 5
                 values = intMap.values(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
                                                          false));
@@ -17185,8 +16916,8 @@ namespace hazelcast {
                     ASSERT_EQ(2 * (i + 6), values[i]);
                 }
 
-                // InPredicate
-                // key in {4, 10, 19}
+// InPredicate
+// key in {4, 10, 19}
                 std::vector<int> inVals(3);
                 inVals[0] = 4;
                 inVals[1] = 10;
@@ -17199,7 +16930,7 @@ namespace hazelcast {
                 ASSERT_EQ(2 * 10, values[1]);
                 ASSERT_EQ(2 * 19, values[2]);
 
-                // value in {4, 10, 19}
+// value in {4, 10, 19}
                 values = intMap.values(
                         query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                 ASSERT_EQ(2, (int) values.size());
@@ -17207,8 +16938,8 @@ namespace hazelcast {
                 ASSERT_EQ(4, values[0]);
                 ASSERT_EQ(10, values[1]);
 
-                // InstanceOfPredicate
-                // value instanceof Integer
+// InstanceOfPredicate
+// value instanceof Integer
                 values = intMap.values(query::InstanceOfPredicate("java.lang.Integer"));
                 ASSERT_EQ(20, (int) values.size());
                 std::sort(values.begin(), values.end());
@@ -17219,8 +16950,8 @@ namespace hazelcast {
                 values = intMap.values(query::InstanceOfPredicate("java.lang.String"));
                 ASSERT_EQ(0, (int) values.size());
 
-                // NotPredicate
-                // !(5 <= key <= 10)
+// NotPredicate
+// !(5 <= key <= 10)
                 std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(
                                 query::QueryConstants::getKeyAttributeName(), 5, 10));
@@ -17236,8 +16967,8 @@ namespace hazelcast {
                     }
                 }
 
-                // AndPredicate
-                // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
+// AndPredicate
+// 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
                 bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
@@ -17247,8 +16978,8 @@ namespace hazelcast {
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(10, values[0]);
 
-                // OrPredicate
-                // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
+// OrPredicate
+// 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
                 bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 inPred = std::unique_ptr<query::Predicate>(
@@ -17274,15 +17005,15 @@ namespace hazelcast {
                 imap.put("key_111_test", "myvalue_111_test");
                 imap.put("key_22_test", "myvalue_22_test");
 
-                // LikePredicate
-                // value LIKE "value1" : {"value1"}
+// LikePredicate
+// value LIKE "value1" : {"value1"}
                 std::vector<std::string> strValues = imap.values(
                         query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                 ASSERT_EQ(1, (int) strValues.size());
                 ASSERT_EQ("value1", strValues[0]);
 
-                // ILikePredicate
-                // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
+// ILikePredicate
+// value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
                 strValues = imap.values(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
                 ASSERT_EQ(4, (int) strValues.size());
@@ -17292,7 +17023,7 @@ namespace hazelcast {
                 ASSERT_EQ("value10", strValues[2]);
                 ASSERT_EQ("value11", strValues[3]);
 
-                // value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
+// value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
                 strValues = imap.values(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
                 ASSERT_EQ(2, (int) strValues.size());
@@ -17300,10 +17031,11 @@ namespace hazelcast {
                 ASSERT_EQ("myvalue_22_test", strValues[0]);
                 ASSERT_EQ("value2", strValues[1]);
 
-                // SqlPredicate
-                // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+// SqlPredicate
+// __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7",
+                                             query::QueryConstants::getKeyAttributeName());
                 values = intMap.values(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) values.size());
                 std::sort(values.begin(), values.end());
@@ -17311,8 +17043,8 @@ namespace hazelcast {
                     ASSERT_EQ(2 * (i + 4), values[i]);
                 }
 
-                // RegexPredicate
-                // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
+// RegexPredicate
+// value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
                 strValues = imap.values(
                         query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
                 ASSERT_EQ(2, (int) strValues.size());
@@ -17416,7 +17148,7 @@ namespace hazelcast {
                     ASSERT_EQ(2 * predSize + i, values[i]);
                 }
 
-                // test PagingPredicate with inner predicate (value < 10)
+// test PagingPredicate with inner predicate (value < 10)
                 std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false,
                                                              true)));
@@ -17428,7 +17160,7 @@ namespace hazelcast {
                 }
 
                 predicate2.nextPage();
-                // match values 5,6, 7, 8
+// match values 5,6, 7, 8
                 values = intMap.values(predicate2);
                 ASSERT_EQ(predSize - 1, (int) values.size());
                 for (int i = 0; i < predSize - 1; ++i) {
@@ -17439,7 +17171,7 @@ namespace hazelcast {
                 values = intMap.values(predicate2);
                 ASSERT_EQ(0, (int) values.size());
 
-                // test paging predicate with comparator
+// test paging predicate with comparator
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
@@ -17483,26 +17215,26 @@ namespace hazelcast {
                     ASSERT_EQ(i, keys[i]);
                 }
 
-                // EqualPredicate
-                // key == 5
+// EqualPredicate
+// key == 5
                 keys = intMap.keySet(
                         query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                 ASSERT_EQ(1, (int) keys.size());
                 ASSERT_EQ(5, keys[0]);
 
-                // value == 8
+// value == 8
                 keys = intMap.keySet(
                         query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                 ASSERT_EQ(1, (int) keys.size());
                 ASSERT_EQ(4, keys[0]);
 
-                // key == numItems
+// key == numItems
                 keys = intMap.keySet(
                         query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
                 ASSERT_EQ(0, (int) keys.size());
 
-                // NotEqual Predicate
-                // key != 5
+// NotEqual Predicate
+// key != 5
                 keys = intMap.keySet(
                         query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                 ASSERT_EQ(numItems - 1, (int) keys.size());
@@ -17515,7 +17247,7 @@ namespace hazelcast {
                     }
                 }
 
-                // value != 8
+// value != 8
                 keys = intMap.keySet(
                         query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                 ASSERT_EQ(numItems - 1, (int) keys.size());
@@ -17528,7 +17260,7 @@ namespace hazelcast {
                     }
                 }
 
-                // TruePredicate
+// TruePredicate
                 keys = intMap.keySet(query::TruePredicate());
                 ASSERT_EQ(numItems, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
@@ -17536,12 +17268,12 @@ namespace hazelcast {
                     ASSERT_EQ(i, keys[i]);
                 }
 
-                // FalsePredicate
+// FalsePredicate
                 keys = intMap.keySet(query::FalsePredicate());
                 ASSERT_EQ(0, (int) keys.size());
 
-                // BetweenPredicate
-                // 5 <= key <= 10
+// BetweenPredicate
+// 5 <= key <= 10
                 keys = intMap.keySet(
                         query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::sort(keys.begin(), keys.end());
@@ -17550,13 +17282,13 @@ namespace hazelcast {
                     ASSERT_EQ((i + 5), keys[i]);
                 }
 
-                // 20 <= key <=30
+// 20 <= key <=30
                 keys = intMap.keySet(
                         query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
                 ASSERT_EQ(0, (int) keys.size());
 
-                // GreaterLessPredicate
-                // value <= 10
+// GreaterLessPredicate
+// value <= 10
                 keys = intMap.keySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
                                                          true));
@@ -17566,7 +17298,7 @@ namespace hazelcast {
                     ASSERT_EQ(i, keys[i]);
                 }
 
-                // key < 7
+// key < 7
                 keys = intMap.keySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
                 ASSERT_EQ(7, (int) keys.size());
@@ -17575,7 +17307,7 @@ namespace hazelcast {
                     ASSERT_EQ(i, keys[i]);
                 }
 
-                // value >= 15
+// value >= 15
                 keys = intMap.keySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
                                                          false));
@@ -17585,7 +17317,7 @@ namespace hazelcast {
                     ASSERT_EQ(i + 8, keys[i]);
                 }
 
-                // key > 5
+// key > 5
                 keys = intMap.keySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
                                                          false));
@@ -17595,8 +17327,8 @@ namespace hazelcast {
                     ASSERT_EQ(i + 6, keys[i]);
                 }
 
-                // InPredicate
-                // key in {4, 10, 19}
+// InPredicate
+// key in {4, 10, 19}
                 std::vector<int> inVals(3);
                 inVals[0] = 4;
                 inVals[1] = 10;
@@ -17609,7 +17341,7 @@ namespace hazelcast {
                 ASSERT_EQ(10, keys[1]);
                 ASSERT_EQ(19, keys[2]);
 
-                // value in {4, 10, 19}
+// value in {4, 10, 19}
                 keys = intMap.keySet(
                         query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                 ASSERT_EQ(2, (int) keys.size());
@@ -17617,8 +17349,8 @@ namespace hazelcast {
                 ASSERT_EQ(2, keys[0]);
                 ASSERT_EQ(5, keys[1]);
 
-                // InstanceOfPredicate
-                // value instanceof Integer
+// InstanceOfPredicate
+// value instanceof Integer
                 keys = intMap.keySet(query::InstanceOfPredicate("java.lang.Integer"));
                 ASSERT_EQ(20, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
@@ -17629,8 +17361,8 @@ namespace hazelcast {
                 keys = intMap.keySet(query::InstanceOfPredicate("java.lang.String"));
                 ASSERT_EQ(0, (int) keys.size());
 
-                // NotPredicate
-                // !(5 <= key <= 10)
+// NotPredicate
+// !(5 <= key <= 10)
                 std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(
                                 query::QueryConstants::getKeyAttributeName(), 5, 10));
@@ -17646,8 +17378,8 @@ namespace hazelcast {
                     }
                 }
 
-                // AndPredicate
-                // 5 <= key <= 10 AND Values in {4, 10, 19} = keys {4, 10}
+// AndPredicate
+// 5 <= key <= 10 AND Values in {4, 10, 19} = keys {4, 10}
                 bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
@@ -17657,8 +17389,8 @@ namespace hazelcast {
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(5, keys[0]);
 
-                // OrPredicate
-                // 5 <= key <= 10 OR Values in {4, 10, 19} = keys {2, 5, 6, 7, 8, 9, 10}
+// OrPredicate
+// 5 <= key <= 10 OR Values in {4, 10, 19} = keys {2, 5, 6, 7, 8, 9, 10}
                 bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 inPred = std::unique_ptr<query::Predicate>(
@@ -17684,15 +17416,15 @@ namespace hazelcast {
                 imap.put("key_111_test", "myvalue_111_test");
                 imap.put("key_22_test", "myvalue_22_test");
 
-                // LikePredicate
-                // value LIKE "value1" : {"value1"}
+// LikePredicate
+// value LIKE "value1" : {"value1"}
                 std::vector<std::string> strKeys = imap.keySet(
                         query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                 ASSERT_EQ(1, (int) strKeys.size());
                 ASSERT_EQ("key1", strKeys[0]);
 
-                // ILikePredicate
-                // value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
+// ILikePredicate
+// value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
                 strKeys = imap.keySet(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
                 ASSERT_EQ(4, (int) strKeys.size());
@@ -17702,7 +17434,7 @@ namespace hazelcast {
                 ASSERT_EQ("key11", strKeys[2]);
                 ASSERT_EQ("key_111_test", strKeys[3]);
 
-                // key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
+// key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
                 strKeys = imap.keySet(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
                 ASSERT_EQ(2, (int) strKeys.size());
@@ -17710,10 +17442,11 @@ namespace hazelcast {
                 ASSERT_EQ("key2", strKeys[0]);
                 ASSERT_EQ("key_22_test", strKeys[1]);
 
-                // SqlPredicate
-                // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+// SqlPredicate
+// __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7",
+                                             query::QueryConstants::getKeyAttributeName());
                 keys = intMap.keySet(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
@@ -17721,8 +17454,8 @@ namespace hazelcast {
                     ASSERT_EQ(i + 4, keys[i]);
                 }
 
-                // RegexPredicate
-                // value matches the regex ".*value.*2.*" : {key_22_test, value2}
+// RegexPredicate
+// value matches the regex ".*value.*2.*" : {key_22_test, value2}
                 strKeys = imap.keySet(
                         query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
                 ASSERT_EQ(2, (int) strKeys.size());
@@ -17820,7 +17553,7 @@ namespace hazelcast {
                     ASSERT_EQ(2 * predSize + i, values[i]);
                 }
 
-                // test PagingPredicate with inner predicate (value < 10)
+// test PagingPredicate with inner predicate (value < 10)
                 std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false,
                                                              true)));
@@ -17832,7 +17565,7 @@ namespace hazelcast {
                 }
 
                 predicate2.nextPage();
-                // match values 5,6, 7, 8
+// match values 5,6, 7, 8
                 values = intMap.keySet(predicate2);
                 ASSERT_EQ(predSize - 1, (int) values.size());
                 for (int i = 0; i < predSize - 1; ++i) {
@@ -17843,7 +17576,7 @@ namespace hazelcast {
                 values = intMap.keySet(predicate2);
                 ASSERT_EQ(0, (int) values.size());
 
-                // test paging predicate with comparator
+// test paging predicate with comparator
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
@@ -17863,7 +17596,7 @@ namespace hazelcast {
                         std::unique_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryKeyComparator()),
                         (size_t) predSize);
                 std::vector<int> result = employees.keySet(predicate3);
-                // since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
+// since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(3, result[0]);
                 ASSERT_EQ(4, result[1]);
@@ -17890,26 +17623,26 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
-                // EqualPredicate
-                // key == 5
+// EqualPredicate
+// key == 5
                 entries = intMap.entrySet(
                         query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                 ASSERT_EQ(1, (int) entries.size());
                 ASSERT_EQ(expected[5], entries[0]);
 
-                // value == 8
+// value == 8
                 entries = intMap.entrySet(
                         query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                 ASSERT_EQ(1, (int) entries.size());
                 ASSERT_EQ(expected[4], entries[0]);
 
-                // key == numItems
+// key == numItems
                 entries = intMap.entrySet(
                         query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
                 ASSERT_EQ(0, (int) entries.size());
 
-                // NotEqual Predicate
-                // key != 5
+// NotEqual Predicate
+// key != 5
                 entries = intMap.entrySet(
                         query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
                 ASSERT_EQ(numItems - 1, (int) entries.size());
@@ -17922,7 +17655,7 @@ namespace hazelcast {
                     }
                 }
 
-                // value != 8
+// value != 8
                 entries = intMap.entrySet(
                         query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
                 ASSERT_EQ(numItems - 1, (int) entries.size());
@@ -17935,7 +17668,7 @@ namespace hazelcast {
                     }
                 }
 
-                // TruePredicate
+// TruePredicate
                 entries = intMap.entrySet(query::TruePredicate());
                 ASSERT_EQ(numItems, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
@@ -17943,12 +17676,12 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
-                // FalsePredicate
+// FalsePredicate
                 entries = intMap.entrySet(query::FalsePredicate());
                 ASSERT_EQ(0, (int) entries.size());
 
-                // BetweenPredicate
-                // 5 <= key <= 10
+// BetweenPredicate
+// 5 <= key <= 10
                 entries = intMap.entrySet(
                         query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::sort(entries.begin(), entries.end());
@@ -17957,13 +17690,13 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i + 5], entries[i]);
                 }
 
-                // 20 <= key <=30
+// 20 <= key <=30
                 entries = intMap.entrySet(
                         query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
                 ASSERT_EQ(0, (int) entries.size());
 
-                // GreaterLessPredicate
-                // value <= 10
+// GreaterLessPredicate
+// value <= 10
                 entries = intMap.entrySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
                                                          true));
@@ -17973,7 +17706,7 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
-                // key < 7
+// key < 7
                 entries = intMap.entrySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
                 ASSERT_EQ(7, (int) entries.size());
@@ -17982,7 +17715,7 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
-                // value >= 15
+// value >= 15
                 entries = intMap.entrySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
                                                          false));
@@ -17992,7 +17725,7 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i + 8], entries[i]);
                 }
 
-                // key > 5
+// key > 5
                 entries = intMap.entrySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
                                                          false));
@@ -18002,8 +17735,8 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i + 6], entries[i]);
                 }
 
-                // InPredicate
-                // key in {4, 10, 19}
+// InPredicate
+// key in {4, 10, 19}
                 std::vector<int> inVals(3);
                 inVals[0] = 4;
                 inVals[1] = 10;
@@ -18016,7 +17749,7 @@ namespace hazelcast {
                 ASSERT_EQ(expected[10], entries[1]);
                 ASSERT_EQ(expected[19], entries[2]);
 
-                // value in {4, 10, 19}
+// value in {4, 10, 19}
                 entries = intMap.entrySet(
                         query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                 ASSERT_EQ(2, (int) entries.size());
@@ -18024,8 +17757,8 @@ namespace hazelcast {
                 ASSERT_EQ(expected[2], entries[0]);
                 ASSERT_EQ(expected[5], entries[1]);
 
-                // InstanceOfPredicate
-                // value instanceof Integer
+// InstanceOfPredicate
+// value instanceof Integer
                 entries = intMap.entrySet(query::InstanceOfPredicate("java.lang.Integer"));
                 ASSERT_EQ(20, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
@@ -18036,8 +17769,8 @@ namespace hazelcast {
                 entries = intMap.entrySet(query::InstanceOfPredicate("java.lang.String"));
                 ASSERT_EQ(0, (int) entries.size());
 
-                // NotPredicate
-                // !(5 <= key <= 10)
+// NotPredicate
+// !(5 <= key <= 10)
                 std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(
                                 query::QueryConstants::getKeyAttributeName(), 5, 10));
@@ -18053,8 +17786,8 @@ namespace hazelcast {
                     }
                 }
 
-                // AndPredicate
-                // 5 <= key <= 10 AND Values in {4, 10, 19} = entries {4, 10}
+// AndPredicate
+// 5 <= key <= 10 AND Values in {4, 10, 19} = entries {4, 10}
                 bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
@@ -18064,8 +17797,8 @@ namespace hazelcast {
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[5], entries[0]);
 
-                // OrPredicate
-                // 5 <= key <= 10 OR Values in {4, 10, 19} = entries {2, 5, 6, 7, 8, 9, 10}
+// OrPredicate
+// 5 <= key <= 10 OR Values in {4, 10, 19} = entries {2, 5, 6, 7, 8, 9, 10}
                 bp = std::unique_ptr<query::Predicate>(
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 inPred = std::unique_ptr<query::Predicate>(
@@ -18095,15 +17828,15 @@ namespace hazelcast {
                 imap.put("key_22_test", "myvalue_22_test");
                 expectedStrEntries[13] = std::pair<std::string, std::string>("key_22_test", "myvalue_22_test");
 
-                // LikePredicate
-                // value LIKE "value1" : {"value1"}
+// LikePredicate
+// value LIKE "value1" : {"value1"}
                 std::vector<std::pair<std::string, std::string> > strEntries = imap.entrySet(
                         query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                 ASSERT_EQ(1, (int) strEntries.size());
                 ASSERT_EQ(expectedStrEntries[1], strEntries[0]);
 
-                // ILikePredicate
-                // value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
+// ILikePredicate
+// value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
                 strEntries = imap.entrySet(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
                 ASSERT_EQ(4, (int) strEntries.size());
@@ -18113,7 +17846,7 @@ namespace hazelcast {
                 ASSERT_EQ(expectedStrEntries[11], strEntries[2]);
                 ASSERT_EQ(expectedStrEntries[12], strEntries[3]);
 
-                // key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
+// key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
                 strEntries = imap.entrySet(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
                 ASSERT_EQ(2, (int) strEntries.size());
@@ -18121,10 +17854,11 @@ namespace hazelcast {
                 ASSERT_EQ(expectedStrEntries[2], strEntries[0]);
                 ASSERT_EQ(expectedStrEntries[13], strEntries[1]);
 
-                // SqlPredicate
-                // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+// SqlPredicate
+// __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7",
+                                             query::QueryConstants::getKeyAttributeName());
                 entries = intMap.entrySet(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
@@ -18132,8 +17866,8 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i + 4], entries[i]);
                 }
 
-                // RegexPredicate
-                // value matches the regex ".*value.*2.*" : {key_22_test, value2}
+// RegexPredicate
+// value matches the regex ".*value.*2.*" : {key_22_test, value2}
                 strEntries = imap.entrySet(
                         query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
                 ASSERT_EQ(2, (int) strEntries.size());
@@ -18243,7 +17977,7 @@ namespace hazelcast {
                     ASSERT_EQ(value, values[i]);
                 }
 
-                // test PagingPredicate with inner predicate (value < 10)
+// test PagingPredicate with inner predicate (value < 10)
                 std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false,
                                                              true)));
@@ -18256,7 +17990,7 @@ namespace hazelcast {
                 }
 
                 predicate2.nextPage();
-                // match values 5,6, 7, 8
+// match values 5,6, 7, 8
                 values = intMap.entrySet(predicate2);
                 ASSERT_EQ(predSize - 1, (int) values.size());
                 for (int i = 0; i < predSize - 1; ++i) {
@@ -18268,7 +18002,7 @@ namespace hazelcast {
                 values = intMap.entrySet(predicate2);
                 ASSERT_EQ(0, (int) values.size());
 
-                // test paging predicate with comparator
+// test paging predicate with comparator
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
@@ -18346,9 +18080,9 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latch2Add(1);
                 hazelcast::util::CountDownLatch latch2Remove(1);
 
-                CountdownListener <std::string, std::string> listener1(
+                CountdownListener<std::string, std::string> listener1(
                         latch1Add, latch1Remove, dummy, dummy);
-                CountdownListener <std::string, std::string> listener2(
+                CountdownListener<std::string, std::string> listener2(
                         latch2Add, latch2Remove, dummy, dummy);
 
                 std::string listener1ID = imap.addEntryListener(listener1, false);
@@ -18382,12 +18116,12 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
                 std::string listenerId = intMap.addEntryListener(listener,
-                                                                  query::TruePredicate(),
-                                                                  false);
+                                                                 query::TruePredicate(),
+                                                                 false);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18398,7 +18132,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18418,12 +18152,12 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
                 std::string listenerId = intMap.addEntryListener(listener,
-                                                                  query::FalsePredicate(),
-                                                                  false);
+                                                                 query::FalsePredicate(),
+                                                                 false);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18434,7 +18168,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18454,13 +18188,13 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
                 std::string listenerId = intMap.addEntryListener(listener,
-                                                                  query::EqualPredicate<int>(
-                                                                          query::QueryConstants::getKeyAttributeName(),
-                                                                          3), true);
+                                                                 query::EqualPredicate<int>(
+                                                                         query::QueryConstants::getKeyAttributeName(),
+                                                                         3), true);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18471,7 +18205,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18495,13 +18229,13 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
                 std::string listenerId = intMap.addEntryListener(listener,
-                                                                  query::NotEqualPredicate<int>(
-                                                                          query::QueryConstants::getKeyAttributeName(),
-                                                                          3), true);
+                                                                 query::NotEqualPredicate<int>(
+                                                                         query::QueryConstants::getKeyAttributeName(),
+                                                                         3), true);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18512,7 +18246,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18536,15 +18270,15 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
-                // key <= 2
+// key <= 2
                 std::string listenerId = intMap.addEntryListener(listener,
-                                                                  query::GreaterLessPredicate<int>(
-                                                                          query::QueryConstants::getKeyAttributeName(),
-                                                                          2, true, true),
-                                                                  false);
+                                                                 query::GreaterLessPredicate<int>(
+                                                                         query::QueryConstants::getKeyAttributeName(),
+                                                                         2, true, true),
+                                                                 false);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18555,7 +18289,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18577,14 +18311,14 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
-                // 1 <=key <= 2
+// 1 <=key <= 2
                 std::string listenerId = intMap.addEntryListener(listener,
-                                                                  query::BetweenPredicate<int>(
-                                                                          query::QueryConstants::getKeyAttributeName(),
-                                                                          1, 2), true);
+                                                                 query::BetweenPredicate<int>(
+                                                                         query::QueryConstants::getKeyAttributeName(),
+                                                                         1, 2), true);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18595,7 +18329,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18617,13 +18351,13 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
-                // 1 <=key <= 2
+// 1 <=key <= 2
                 std::string listenerId = intMap.addEntryListener(listener,
-                                                                  query::SqlPredicate(
-                                                                          "__key < 2"), true);
+                                                                 query::SqlPredicate(
+                                                                         "__key < 2"), true);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18634,7 +18368,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18657,14 +18391,14 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchEvict(1);
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
-                CountdownListener <std::string, std::string> listener(
+                CountdownListener<std::string, std::string> listener(
                         latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                // key matches any word containing ".*met.*"
+// key matches any word containing ".*met.*"
                 std::string listenerId = imap.addEntryListener(listener,
-                                                                query::RegexPredicate(
-                                                                        query::QueryConstants::getKeyAttributeName(),
-                                                                        ".*met.*"), true);
+                                                               query::RegexPredicate(
+                                                                       query::QueryConstants::getKeyAttributeName(),
+                                                                       ".*met.*"), true);
 
                 imap.put("ilkay", "yasar");
                 imap.put("mehmet", "demir");
@@ -18676,7 +18410,7 @@ namespace hazelcast {
 
                 ASSERT_EQ((std::string *) NULL, imap.get("metin").get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 imap.set("hasan", "suphi");
                 std::shared_ptr<std::string> value = imap.get("hasan");
                 ASSERT_NE((std::string *) NULL, value.get());
@@ -18698,14 +18432,14 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
-                // 1 <=key <= 2
+// 1 <=key <= 2
                 std::string listenerId = intMap.addEntryListener(listener,
-                                                                  query::InstanceOfPredicate(
-                                                                          "java.lang.Integer"),
-                                                                  false);
+                                                                 query::InstanceOfPredicate(
+                                                                         "java.lang.Integer"),
+                                                                 false);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18716,7 +18450,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18736,16 +18470,16 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
-                // key >= 3
+// key >= 3
                 std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
                                                              false));
                 query::NotPredicate notPredicate(greaterLessPred);
                 std::string listenerId = intMap.addEntryListener(listener, notPredicate,
-                                                                  false);
+                                                                 false);
 
                 intMap.put(1, 1);
                 intMap.put(2, 2);
@@ -18756,7 +18490,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18780,18 +18514,18 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
-                // key < 3
+// key < 3
                 std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, false,
                                                              true));
-                // value == 1
+// value == 1
                 std::unique_ptr<query::Predicate> equalPred = std::unique_ptr<query::Predicate>(
                         new query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 1));
                 query::AndPredicate predicate;
-                // key < 3 AND key == 1 --> (1, 1)
+// key < 3 AND key == 1 --> (1, 1)
                 predicate.add(greaterLessPred).add(equalPred);
                 std::string listenerId = intMap.addEntryListener(listener, predicate, false);
 
@@ -18804,7 +18538,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18828,18 +18562,18 @@ namespace hazelcast {
                 hazelcast::util::CountDownLatch latchUpdate(1);
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove,
-                                                              latchUpdate,
-                                                              latchEvict);
+                                                     latchUpdate,
+                                                     latchEvict);
 
-                // key >= 3
+// key >= 3
                 std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
                                                              false));
-                // value == 1
+// value == 1
                 std::unique_ptr<query::Predicate> equalPred = std::unique_ptr<query::Predicate>(
                         new query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 2));
                 query::OrPredicate predicate;
-                // key >= 3 OR value == 2 --> (1, 1), (2, 2)
+// key >= 3 OR value == 2 --> (1, 1), (2, 2)
                 predicate.add(greaterLessPred).add(equalPred);
                 std::string listenerId = intMap.addEntryListener(listener, predicate, true);
 
@@ -18852,7 +18586,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(NULL, intMap.get(3).get()); // trigger eviction
 
-                // update an entry
+// update an entry
                 intMap.set(1, 5);
                 std::shared_ptr<int> value = intMap.get(1);
                 ASSERT_NE((int *) NULL, value.get());
@@ -18971,7 +18705,7 @@ namespace hazelcast {
                 std::set<int> keys;
                 keys.insert(3);
                 keys.insert(5);
-                // put non existent key
+// put non existent key
                 keys.insert(999);
 
                 std::map<int, std::shared_ptr<int> > result = employees.executeOnKeys<int, EntryMultiplier>(
@@ -19059,7 +18793,7 @@ namespace hazelcast {
                 employees.put(5, empl3);
 
                 query::AndPredicate andPredicate;
-                /* 25 <= age <= 35 AND age = 35 */
+/* 25 <= age <= 35 AND age = 35 */
                 andPredicate.add(
                         std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))).add(
                         std::unique_ptr<query::Predicate>(
@@ -19086,7 +18820,7 @@ namespace hazelcast {
                 employees.put(5, empl3);
 
                 query::OrPredicate orPredicate;
-                /* age == 21 OR age > 25 */
+/* age == 21 OR age > 25 */
                 orPredicate.add(
                         std::unique_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 21))).add(
                         std::unique_ptr<query::Predicate>(new query::GreaterLessPredicate<int>("a", 25, false, false)));
@@ -19378,7 +19112,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(2, map.size());
 
-                // Get the objects whose age is less than 6
+// Get the objects whose age is less than 6
                 std::vector<HazelcastJsonValue> result = map.values(
                         query::GreaterLessPredicate<int>("age", 6, false, true));
                 ASSERT_EQ(1U, result.size());
@@ -19398,34 +19132,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "serialization/Employee.h"
-#include "TestHelperFunctions.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/query/OrPredicate.h"
-#include "hazelcast/client/query/RegexPredicate.h"
-#include "hazelcast/client/query/PagingPredicate.h"
-#include "hazelcast/client/query/QueryConstants.h"
-#include "hazelcast/client/query/NotPredicate.h"
-#include "hazelcast/client/query/InstanceOfPredicate.h"
-#include "hazelcast/client/query/NotEqualPredicate.h"
-#include "hazelcast/client/query/InPredicate.h"
-#include "hazelcast/client/query/ILikePredicate.h"
-#include "hazelcast/client/query/LikePredicate.h"
-#include "hazelcast/client/query/GreaterLessPredicate.h"
-#include "hazelcast/client/query/AndPredicate.h"
-#include "hazelcast/client/query/BetweenPredicate.h"
-#include "hazelcast/client/query/EqualPredicate.h"
-#include "hazelcast/client/query/TruePredicate.h"
-#include "hazelcast/client/query/FalsePredicate.h"
-#include "hazelcast/client/query/SqlPredicate.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/ClientConfig.h"
 
 using namespace hazelcast::client::mixedtype;
 
@@ -19457,11 +19164,11 @@ namespace hazelcast {
                 class MixedMapAPITest : public ClientTestSupport, public ::testing::WithParamInterface<MapClientConfig *> {
                 public:
                     MixedMapAPITest() : clientConfig(GetParam()) {
-                        #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                         config::SSLConfig sslConfig;
                         sslConfig.setEnabled(true).setProtocol(config::tlsv12).addVerifyFile(getCAFilePath());
                         clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
-                        #endif // HZ_BUILD_WITH_SSL
+#endif // HZ_BUILD_WITH_SSL
 
                         client.reset(new HazelcastClient(*clientConfig));
 
@@ -19469,14 +19176,14 @@ namespace hazelcast {
                     }
 
                     static void SetUpTestSuite() {
-                        #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                         sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                         instance = new HazelcastServer(*sslFactory);
                         instance2 = new HazelcastServer(*sslFactory);
-                        #else
+#else
                         instance = new HazelcastServer(*g_srvFactory);
                         instance2 = new HazelcastServer(*g_srvFactory);
-                        #endif
+#endif
                     }
 
                     static void TearDownTestSuite() {
@@ -19559,8 +19266,8 @@ namespace hazelcast {
                 };
 
                 INSTANTIATE_TEST_SUITE_P(MixedMapAPITestInstance,
-                                        MixedMapAPITest,
-                                        ::testing::Values(new MapClientConfig(), new NearCachedDataMapClientConfig()));
+                                         MixedMapAPITest,
+                                         ::testing::Values(new MapClientConfig(), new NearCachedDataMapClientConfig()));
 
                 HazelcastServer *MixedMapAPITest::instance = NULL;
                 HazelcastServer *MixedMapAPITest::instance2 = NULL;
@@ -19668,7 +19375,7 @@ namespace hazelcast {
 
                     virtual void mapCleared(const MapEvent &event) {
                     }
-                    
+
                 private:
                     hazelcast::util::CountDownLatch &addLatch;
                     hazelcast::util::CountDownLatch &removeLatch;
@@ -20015,7 +19722,7 @@ namespace hazelcast {
                 }
 
 
-                /**
+/**
                  * This failure with this test is reported at https://github.com/hazelcast/hazelcast-cpp-client/issues/379
                  * Do not forget to enable this test once the issue is resolved!!!
                  */
@@ -20030,7 +19737,8 @@ namespace hazelcast {
 
                     for (int i = 0; i < 100; i++) {
                         std::string expected = hazelcast::util::IOUtil::to_string(i);
-                        std::unique_ptr<std::string> actual = imap->get<std::string>(hazelcast::util::IOUtil::to_string(i)).get<std::string>();
+                        std::unique_ptr<std::string> actual = imap->get<std::string>(
+                                hazelcast::util::IOUtil::to_string(i)).get<std::string>();
                         ASSERT_EQ(expected, *actual);
                     }
 
@@ -20075,15 +19783,16 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testGetEntryViewForNonExistentData) {
-                    std::unique_ptr<EntryView<TypedData, TypedData> > view = imap->getEntryView<std::string>("non-existent");
+                    std::unique_ptr<EntryView<TypedData, TypedData> > view = imap->getEntryView<std::string>(
+                            "non-existent");
 
-                    ASSERT_EQ((EntryView<TypedData, TypedData> *)NULL, view.get());
+                    ASSERT_EQ((EntryView<TypedData, TypedData> *) NULL, view.get());
 
-                    // put an entry that will expire in 1 milliseconds
+// put an entry that will expire in 1 milliseconds
                     imap->put<std::string, std::string>("short_entry", "short living value", 1);
 
-                    ASSERT_EQ_EVENTUALLY((EntryView<TypedData, TypedData> *)NULL,
-                            (imap->getEntryView<std::string>("short_entry").get()));
+                    ASSERT_EQ_EVENTUALLY((EntryView<TypedData, TypedData> *) NULL,
+                                         (imap->getEntryView<std::string>("short_entry").get()));
                 }
 
                 TEST_P(MixedMapAPITest, testPutTtl) {
@@ -20101,25 +19810,28 @@ namespace hazelcast {
                         initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                     }
 
-                    // put will cause an invalidation event sent from the server to the client
+// put will cause an invalidation event sent from the server to the client
                     map.put<std::string, std::string>("key1", "value1", 1000);
 
-                    // if near cache is enabled
+// if near cache is enabled
                     if (nearCacheStatsImpl) {
-                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
+                                             nearCacheStatsImpl->getInvalidationRequests());
 
-                        // populate near cache
+// populate near cache
                         map.get<std::string>("key1");
 
-                        // When ttl expires at server, the server does not send near cache invalidation.
-                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+// When ttl expires at server, the server does not send near cache invalidation.
+                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() &&
+                                                  nearCacheStatsImpl->getInvalidationRequests() ==
+                                                  initialInvalidationRequests + 1), 2);
                     } else {
-                        // trigger eviction
+// trigger eviction
                         ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
                     }
 
                     ASSERT_TRUE(evict.await(5));
-                    
+
                     ASSERT_TRUE(imap->removeEntryListener(id));
                 }
 
@@ -20137,20 +19849,23 @@ namespace hazelcast {
                         initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                     }
 
-                    // put will cause an invalidation event sent from the server to the client
+// put will cause an invalidation event sent from the server to the client
                     map.put<std::string, std::string>("key1", "value1");
 
-                    // if near cache is enabled
+// if near cache is enabled
                     if (nearCacheStatsImpl) {
-                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
+                                             nearCacheStatsImpl->getInvalidationRequests());
 
-                        // populate near cache
+// populate near cache
                         map.get<std::string>("key1");
 
-                        // When ttl expires at server, the server does not send near cache invalidation.
-                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+// When ttl expires at server, the server does not send near cache invalidation.
+                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() &&
+                                                  nearCacheStatsImpl->getInvalidationRequests() ==
+                                                  initialInvalidationRequests + 1), 2);
                     } else {
-                        // trigger eviction
+// trigger eviction
                         ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
                     }
 
@@ -20160,17 +19875,24 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testPutIfAbsent) {
-                    std::unique_ptr<std::string> o = imap->putIfAbsent<std::string, std::string>("key1", "value1").get<std::string>();
+                    std::unique_ptr<std::string> o = imap->putIfAbsent<std::string, std::string>("key1",
+                                                                                                 "value1").get<std::string>();
                     ASSERT_EQ(o.get(), (std::string *) NULL);
-                    ASSERT_EQ("value1", *(imap->putIfAbsent<std::string, std::string>("key1", "value3").get<std::string>()));
+                    ASSERT_EQ("value1",
+                              *(imap->putIfAbsent<std::string, std::string>("key1", "value3").get<std::string>()));
                 }
 
                 TEST_P(MixedMapAPITest, testPutIfAbsentTtl) {
-                    ASSERT_EQ((std::string *) NULL, (imap->putIfAbsent<std::string, std::string>("key1", "value1", 1000).get<std::string>().get()));
-                    ASSERT_EQ("value1", *(imap->putIfAbsent<std::string, std::string>("key1", "value3", 1000).get<std::string>()));
+                    ASSERT_EQ((std::string *) NULL, (imap->putIfAbsent<std::string, std::string>("key1", "value1",
+                                                                                                 1000).get<std::string>().get()));
+                    ASSERT_EQ("value1", *(imap->putIfAbsent<std::string, std::string>("key1", "value3",
+                                                                                      1000).get<std::string>()));
 
-                    ASSERT_NULL_EVENTUALLY((imap->putIfAbsent<std::string, std::string>("key1", "value3", 1000).get<std::string>().get()), std::string);
-                    ASSERT_EQ("value3", *(imap->putIfAbsent<std::string, std::string>("key1", "value4", 1000).get<std::string>()));
+                    ASSERT_NULL_EVENTUALLY((imap->putIfAbsent<std::string, std::string>("key1", "value3",
+                                                                                        1000).get<std::string>().get()),
+                                           std::string);
+                    ASSERT_EQ("value3", *(imap->putIfAbsent<std::string, std::string>("key1", "value4",
+                                                                                      1000).get<std::string>()));
                 }
 
                 TEST_P(MixedMapAPITest, testSet) {
@@ -20183,7 +19905,7 @@ namespace hazelcast {
 
                 TEST_P(MixedMapAPITest, testSetTtl) {
                     mixedtype::IMap &map = *imap;
-                    
+
                     hazelcast::util::CountDownLatch dummy(10);
                     hazelcast::util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -20196,20 +19918,23 @@ namespace hazelcast {
                         initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                     }
 
-                    // set will cause an invalidation event sent from the server to the client
+// set will cause an invalidation event sent from the server to the client
                     map.IMap::set<std::string, std::string>("key1", "value1", 1000);
 
-                    // if near cache is enabled
+// if near cache is enabled
                     if (nearCacheStatsImpl) {
-                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
+                                             nearCacheStatsImpl->getInvalidationRequests());
 
-                        // populate near cache
+// populate near cache
                         map.get<std::string>("key1");
 
-                        // When ttl expires at server, the server does not send near cache invalidation.
-                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+// When ttl expires at server, the server does not send near cache invalidation.
+                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() &&
+                                                  nearCacheStatsImpl->getInvalidationRequests() ==
+                                                  initialInvalidationRequests + 1), 2);
                     } else {
-                        // trigger eviction
+// trigger eviction
                         ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
                     }
 
@@ -20232,20 +19957,23 @@ namespace hazelcast {
                         initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                     }
 
-                    // set will cause an invalidation event sent from the server to the client
+// set will cause an invalidation event sent from the server to the client
                     map.IMap::set<std::string, std::string>("key1", "value1");
 
-                    // if near cache is enabled
+// if near cache is enabled
                     if (nearCacheStatsImpl) {
-                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
+                                             nearCacheStatsImpl->getInvalidationRequests());
 
-                        // populate near cache
+// populate near cache
                         map.get<std::string>("key1");
 
-                        // When ttl expires at server, the server does not send near cache invalidation.
-                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+// When ttl expires at server, the server does not send near cache invalidation.
+                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() &&
+                                                  nearCacheStatsImpl->getInvalidationRequests() ==
+                                                  initialInvalidationRequests + 1), 2);
                     } else {
-                        // trigger eviction
+// trigger eviction
                         ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
                     }
 
@@ -21840,14 +21568,16 @@ namespace hazelcast {
 
 */
                 TEST_P(MixedMapAPITest, testReplace) {
-                    std::unique_ptr<std::string> temp = imap->replace<std::string, std::string>("key1", "value").get<std::string>();
+                    std::unique_ptr<std::string> temp = imap->replace<std::string, std::string>("key1",
+                                                                                                "value").get<std::string>();
                     ASSERT_EQ((std::string *) NULL, temp.get());
 
                     std::string tempKey = "key1";
                     std::string tempValue = "value1";
                     imap->put<std::string, std::string>(tempKey, tempValue);
 
-                    ASSERT_EQ("value1", (*(imap->replace<std::string, std::string>("key1", "value2").get<std::string>())));
+                    ASSERT_EQ("value1",
+                              (*(imap->replace<std::string, std::string>("key1", "value2").get<std::string>())));
                     ASSERT_EQ("value2", *(imap->get<std::string>("key1").get<std::string>()));
 
                     ASSERT_FALSE((imap->replace<std::string, std::string, std::string>("key1", "value1", "value3")));
@@ -21915,7 +21645,7 @@ namespace hazelcast {
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
                     std::string listenerId = imap->addEntryListener(listener, query::TruePredicate(), false);
-                    
+
                     imap->put<int, int>(1, 1);
                     imap->put<int, int>(2, 2);
                     imap->put<int, int>(3, 3, 1000); // evict after 1 second
@@ -21923,9 +21653,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -21955,9 +21685,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -21988,9 +21718,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22025,9 +21755,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22052,7 +21782,7 @@ namespace hazelcast {
 
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // key <= 2
+// key <= 2
                     std::string listenerId = imap->addEntryListener(listener, query::GreaterLessPredicate<int>(
                             query::QueryConstants::getKeyAttributeName(), 2, true, true), false);
 
@@ -22063,9 +21793,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22088,7 +21818,7 @@ namespace hazelcast {
 
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // 1 <=key <= 2
+// 1 <=key <= 2
                     std::string listenerId = imap->addEntryListener(listener, query::BetweenPredicate<int>(
                             query::QueryConstants::getKeyAttributeName(), 1, 2), true);
 
@@ -22099,9 +21829,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22124,7 +21854,7 @@ namespace hazelcast {
 
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // 1 <=key <= 2
+// 1 <=key <= 2
                     std::string listenerId = imap->addEntryListener(listener, query::SqlPredicate("__key < 2"), true);
 
                     imap->put<int, int>(1, 1);
@@ -22134,9 +21864,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22160,9 +21890,9 @@ namespace hazelcast {
                     hazelcast::util::CountDownLatch latchUpdate(1);
 
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate,
-                                                                         latchEvict);
+                                               latchEvict);
 
-                    // key matches any word containing ".*met.*"
+// key matches any word containing ".*met.*"
                     std::string listenerId = imap->addEntryListener(listener, query::RegexPredicate(
                             query::QueryConstants::getKeyAttributeName(), ".*met.*"), true);
 
@@ -22174,9 +21904,10 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((std::string *) NULL, imap->get<std::string>("metin").get<std::string>().get()); // trigger eviction
+                    ASSERT_EQ((std::string *) NULL,
+                              imap->get<std::string>("metin").get<std::string>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<std::string, std::string>("hasan", "suphi");
                     std::unique_ptr<std::string> value = imap->get<std::string>("hasan").get<std::string>();
                     ASSERT_NE((std::string *) NULL, value.get());
@@ -22199,10 +21930,10 @@ namespace hazelcast {
 
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // 1 <=key <= 2
+// 1 <=key <= 2
                     std::string listenerId = imap->addEntryListener(listener,
-                                                                      query::InstanceOfPredicate("java.lang.Integer"),
-                                                                      false);
+                                                                    query::InstanceOfPredicate("java.lang.Integer"),
+                                                                    false);
 
                     imap->put<int, int>(1, 1);
                     imap->put<int, int>(2, 2);
@@ -22211,9 +21942,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22234,7 +21965,7 @@ namespace hazelcast {
 
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // key >= 3
+// key >= 3
                     std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
                                                                  false));
@@ -22248,9 +21979,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22275,15 +22006,15 @@ namespace hazelcast {
 
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // key < 3
+// key < 3
                     std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, false,
                                                                  true));
-                    // value == 1
+// value == 1
                     std::unique_ptr<query::Predicate> equalPred = std::unique_ptr<query::Predicate>(
                             new query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 1));
                     query::AndPredicate predicate;
-                    // key < 3 AND key == 1 --> (1, 1)
+// key < 3 AND key == 1 --> (1, 1)
                     predicate.add(greaterLessPred).add(equalPred);
                     std::string listenerId = imap->addEntryListener(listener, predicate, false);
 
@@ -22294,9 +22025,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22321,15 +22052,15 @@ namespace hazelcast {
 
                     CountdownListener listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                    // key >= 3
+// key >= 3
                     std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
                                                                  false));
-                    // value == 1
+// value == 1
                     std::unique_ptr<query::Predicate> equalPred = std::unique_ptr<query::Predicate>(
                             new query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 2));
                     query::OrPredicate predicate;
-                    // key >= 3 OR value == 2 --> (1, 1), (2, 2)
+// key >= 3 OR value == 2 --> (1, 1), (2, 2)
                     predicate.add(greaterLessPred).add(equalPred);
                     std::string listenerId = imap->addEntryListener(listener, predicate, true);
 
@@ -22340,9 +22071,9 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(2);
 
-                    ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
+                    ASSERT_EQ((int *) NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
-                    // update an entry
+// update an entry
                     imap->IMap::set<int, int>(1, 5);
                     std::unique_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
@@ -22430,8 +22161,8 @@ namespace hazelcast {
                     std::unique_ptr<Employee> ptr = imap->put<int, Employee>(1, employee).get<Employee>();
                     ASSERT_EQ(ptr.get(), (Employee *) NULL);
                     ASSERT_FALSE(imap->isEmpty());
-                    std::unique_ptr<EntryView <TypedData, TypedData> > view = imap->getEntryView(1);
-                    ASSERT_NE((EntryView <TypedData, TypedData> *)NULL, view.get());
+                    std::unique_ptr<EntryView<TypedData, TypedData> > view = imap->getEntryView(1);
+                    ASSERT_NE((EntryView<TypedData, TypedData> *) NULL, view.get());
                     ASSERT_EQ(employee, *(view->value.get<Employee>()));
                     ASSERT_EQ(1, *(view->key.get<int>()));
 
@@ -22479,12 +22210,13 @@ namespace hazelcast {
                     imap->put<int, Employee>(3, empl1);
                     imap->put<int, Employee>(4, empl2);
 
-                    // Waits at the server side before running the operation
+// Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(3000, 4);
 
-                    hazelcast::client::Future<TypedData> initialFuture = imap->submitToKey<int, WaitMultiplierProcessor>(4, processor);
+                    hazelcast::client::Future<TypedData> initialFuture = imap->submitToKey<int, WaitMultiplierProcessor>(
+                            4, processor);
 
-                    // Should invalidate the initialFuture
+// Should invalidate the initialFuture
                     hazelcast::client::Future<TypedData> future = initialFuture;
 
                     ASSERT_FALSE(initialFuture.valid());
@@ -22511,21 +22243,22 @@ namespace hazelcast {
 
                     int waitTimeInMillis = 500;
 
-                    // Waits at the server side before running the operation
+// Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(waitTimeInMillis, 4);
 
                     std::vector<hazelcast::client::Future<TypedData> > allFutures;
 
-                    // test putting into a vector of futures
-                    hazelcast::client::Future<TypedData> future = imap->submitToKey<int, WaitMultiplierProcessor>(3, processor);
+// test putting into a vector of futures
+                    hazelcast::client::Future<TypedData> future = imap->submitToKey<int, WaitMultiplierProcessor>(3,
+                                                                                                                  processor);
                     allFutures.push_back(future);
 
-                    // test re-assigning a future and putting into the vector
+// test re-assigning a future and putting into the vector
                     future = imap->submitToKey<int, WaitMultiplierProcessor>(
                             3, processor);
                     allFutures.push_back(future);
 
-                    // test submitting a non-existent key
+// test submitting a non-existent key
                     allFutures.push_back(imap->submitToKey<int, WaitMultiplierProcessor>(
                             99, processor));
 
@@ -22535,7 +22268,8 @@ namespace hazelcast {
                         ASSERT_EQ(future_status::ready, status);
                     }
 
-                    for (std::vector<hazelcast::client::Future<TypedData> >::iterator it = allFutures.begin(); it != allFutures.end(); ++it) {
+                    for (std::vector<hazelcast::client::Future<TypedData> >::iterator it = allFutures.begin();
+                         it != allFutures.end(); ++it) {
                         TypedData result = (*it).get();
                         ASSERT_NE((int *) NULL, result.get<int>().get());
                         ASSERT_FALSE((*it).valid());
@@ -22556,7 +22290,7 @@ namespace hazelcast {
                     std::set<int> keys;
                     keys.insert(3);
                     keys.insert(5);
-                    // put non existent key
+// put non existent key
                     keys.insert(999);
 
                     std::map<int, TypedData> result = imap->executeOnKeys<int, EntryMultiplier>(keys, processor);
@@ -22583,7 +22317,7 @@ namespace hazelcast {
                     std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor);
 
                     ASSERT_EQ(3, (int) result.size());
-                    for (std::map<TypedData, TypedData>::const_iterator it = result.begin();it != result.end();++it) {
+                    for (std::map<TypedData, TypedData>::const_iterator it = result.begin(); it != result.end(); ++it) {
                         std::unique_ptr<int> key = (*it).first.get<int>();
                         std::unique_ptr<int> value = (*it).second.get<int>();
                         ASSERT_TRUE(*key == 3 || *key == 4 || *key == 5);
@@ -22602,11 +22336,11 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor, 
+                    std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor,
                                                                                                     query::TruePredicate());
 
                     ASSERT_EQ(3, (int) result.size());
-                    for (std::map<TypedData, TypedData>::const_iterator it = result.begin();it != result.end();++it) {
+                    for (std::map<TypedData, TypedData>::const_iterator it = result.begin(); it != result.end(); ++it) {
                         std::unique_ptr<int> key = (*it).first.get<int>();
                         std::unique_ptr<int> value = (*it).second.get<int>();
                         ASSERT_TRUE(*key == 3 || *key == 4 || *key == 5);
@@ -22625,7 +22359,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor, 
+                    std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor,
                                                                                                     query::FalsePredicate());
 
                     ASSERT_EQ(0, (int) result.size());
@@ -22641,16 +22375,17 @@ namespace hazelcast {
                     imap->put<int, Employee>(5, empl3);
 
                     query::AndPredicate andPredicate;
-                    /* 25 <= age <= 35 AND age = 35 */
+/* 25 <= age <= 35 AND age = 35 */
                     andPredicate.add(
                             std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))).add(
                             std::unique_ptr<query::Predicate>(
                                     new query::NotPredicate(
-                                            std::unique_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 35)))));
+                                            std::unique_ptr<query::Predicate>(
+                                                    new query::EqualPredicate<int>("a", 35)))));
 
                     EntryMultiplier processor(4);
 
-                    std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor, 
+                    std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor,
                                                                                                     andPredicate);
 
                     ASSERT_EQ(1, (int) result.size());
@@ -22668,7 +22403,7 @@ namespace hazelcast {
                     imap->put<int, Employee>(5, empl3);
 
                     query::OrPredicate orPredicate;
-                    /* age == 21 OR age > 25 */
+/* age == 21 OR age > 25 */
                     orPredicate.add(
                             std::unique_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 21))).add(
                             std::unique_ptr<query::Predicate>(
@@ -22676,7 +22411,8 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor, orPredicate);
+                    std::map<TypedData, TypedData> result = imap->executeOnEntries<EntryMultiplier>(processor,
+                                                                                                    orPredicate);
 
                     ASSERT_EQ(2, (int) result.size());
                     std::map<hazelcast::client::TypedData, hazelcast::client::TypedData>::iterator iterator = result.begin();
@@ -22728,14 +22464,7 @@ namespace hazelcast {
 
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ISemaphore.h"
 
 namespace hazelcast {
     namespace client {
@@ -22769,8 +22498,8 @@ namespace hazelcast {
             HazelcastClient *ClientSemaphoreTest::client = NULL;
 
             void testAcquireThread(hazelcast::util::ThreadArgs& args) {
-                ISemaphore *s = (ISemaphore *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+                ISemaphore *s = (ISemaphore *) args.arg0;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 s->acquire();
                 latch->countDown();
             }
@@ -22863,14 +22592,14 @@ namespace hazelcast {
                 hazelcast::util::sleep(1);
 
                 semaphore.release(2);
-                ASSERT_TRUE(latch.await(10 ));
+                ASSERT_TRUE(latch.await(10));
                 ASSERT_EQ(1, semaphore.availablePermits());
 
             }
 
-            void testTryAcquireThread(hazelcast::util::ThreadArgs& args) {
-                ISemaphore *s = (ISemaphore *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+            void testTryAcquireThread(hazelcast::util::ThreadArgs &args) {
+                ISemaphore *s = (ISemaphore *) args.arg0;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 if (s->tryAcquire(2, 5 * 1000)) {
                     latch->countDown();
                 }
@@ -22905,12 +22634,7 @@ namespace hazelcast {
 //  Created by Sancar on 02.08.2013.
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/IAtomicLong.h"
 
 namespace hazelcast {
     namespace client {
@@ -23000,17 +22724,9 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
 
-#include <string>
-#include <HazelcastServer.h>
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/EntryAdapter.h"
 
-#include "hazelcast/client/mixedtype/MultiMap.h"
 
 using namespace hazelcast::client::mixedtype;
 
@@ -23152,12 +22868,12 @@ namespace hazelcast {
                 ASSERT_EQ(5, mm->size());
 
                 std::vector<TypedData> coll = mm->get<std::string>("key1");
-                ASSERT_EQ(3, (int)coll.size());
+                ASSERT_EQ(3, (int) coll.size());
 
                 coll = mm->remove<std::string>("key2");
-                ASSERT_EQ(2, (int)coll.size());
+                ASSERT_EQ(2, (int) coll.size());
                 ASSERT_EQ(0, mm->valueCount<std::string>("key2"));
-                ASSERT_EQ(0, (int)mm->get<std::string>("key2").size());
+                ASSERT_EQ(0, (int) mm->get<std::string>("key2").size());
 
                 ASSERT_FALSE((mm->remove<std::string, std::string>("key1", "value4")));
                 ASSERT_EQ(3, mm->size());
@@ -23169,7 +22885,7 @@ namespace hazelcast {
                 ASSERT_EQ(1, mm->size());
                 coll = mm->get<std::string>("key1");
                 std::unique_ptr<std::string> val = coll[0].get<std::string>();
-                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ("value3", *val);
             }
 
@@ -23182,9 +22898,9 @@ namespace hazelcast {
                 ASSERT_TRUE((mm->put<std::string, std::string>("key2", "value5")));
 
 
-                ASSERT_EQ(2, (int)mm->keySet().size());
-                ASSERT_EQ(5, (int)mm->values().size());
-                ASSERT_EQ(5, (int)mm->entrySet().size());
+                ASSERT_EQ(2, (int) mm->keySet().size());
+                ASSERT_EQ(5, (int) mm->values().size());
+                ASSERT_EQ(5, (int) mm->entrySet().size());
             }
 
             TEST_F(MixedMultiMapTest, testContains) {
@@ -23293,16 +23009,8 @@ namespace hazelcast {
 
 //
 // Created by sancar koyunlu on 8/27/13.
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/MultiMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -23352,12 +23060,12 @@ namespace hazelcast {
                 ASSERT_EQ(5, mm->size());
 
                 std::vector<std::string> coll = mm->get("key1");
-                ASSERT_EQ(3, (int)coll.size());
+                ASSERT_EQ(3, (int) coll.size());
 
                 coll = mm->remove("key2");
-                ASSERT_EQ(2, (int)coll.size());
+                ASSERT_EQ(2, (int) coll.size());
                 ASSERT_EQ(0, mm->valueCount("key2"));
-                ASSERT_EQ(0, (int)mm->get("key2").size());
+                ASSERT_EQ(0, (int) mm->get("key2").size());
 
                 ASSERT_FALSE(mm->remove("key1", "value4"));
                 ASSERT_EQ(3, mm->size());
@@ -23380,9 +23088,9 @@ namespace hazelcast {
                 ASSERT_TRUE(mm->put("key2", "value5"));
 
 
-                ASSERT_EQ(2, (int)mm->keySet().size());
-                ASSERT_EQ(5, (int)mm->values().size());
-                ASSERT_EQ(5, (int)mm->entrySet().size());
+                ASSERT_EQ(2, (int) mm->keySet().size());
+                ASSERT_EQ(5, (int) mm->values().size());
+                ASSERT_EQ(5, (int) mm->entrySet().size());
             }
 
 
@@ -23406,23 +23114,24 @@ namespace hazelcast {
                 ASSERT_TRUE(mm->containsEntry("key2", "value5"));
             }
 
-            class MyMultiMapListener : public EntryAdapter<std::string, std::string>{
+            class MyMultiMapListener : public EntryAdapter<std::string, std::string> {
             public:
-                MyMultiMapListener(hazelcast::util::CountDownLatch& addedLatch, hazelcast::util::CountDownLatch& removedLatch)
+                MyMultiMapListener(hazelcast::util::CountDownLatch &addedLatch,
+                                   hazelcast::util::CountDownLatch &removedLatch)
                         : addedLatch(addedLatch), removedLatch(removedLatch) {
                 }
 
-                void entryAdded(const EntryEvent<std::string, std::string>& event) {
+                void entryAdded(const EntryEvent<std::string, std::string> &event) {
                     addedLatch.countDown();
                 }
 
-                void entryRemoved(const EntryEvent<std::string, std::string>& event) {
+                void entryRemoved(const EntryEvent<std::string, std::string> &event) {
                     removedLatch.countDown();
                 }
 
             private:
-                hazelcast::util::CountDownLatch& addedLatch;
-                hazelcast::util::CountDownLatch& removedLatch;
+                hazelcast::util::CountDownLatch &addedLatch;
+                hazelcast::util::CountDownLatch &removedLatch;
             };
 
             TEST_F(ClientMultiMapTest, testListener) {
@@ -23463,9 +23172,9 @@ namespace hazelcast {
 
             }
 
-            void lockThread(hazelcast::util::ThreadArgs& args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+            void lockThread(hazelcast::util::ThreadArgs &args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 if (!mm->tryLock("key1")) {
                     latch->countDown();
                 }
@@ -23479,9 +23188,9 @@ namespace hazelcast {
                 mm->forceUnlock("key1");
             }
 
-            void lockTtlThread(hazelcast::util::ThreadArgs& args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+            void lockTtlThread(hazelcast::util::ThreadArgs &args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
 
                 if (!mm->tryLock("key1")) {
                     latch->countDown();
@@ -23501,9 +23210,9 @@ namespace hazelcast {
             }
 
 
-            void tryLockThread(hazelcast::util::ThreadArgs& args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+            void tryLockThread(hazelcast::util::ThreadArgs &args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 try {
                     if (!mm->tryLock("key1", 2)) {
                         latch->countDown();
@@ -23513,9 +23222,9 @@ namespace hazelcast {
                 }
             }
 
-            void tryLockThread2(hazelcast::util::ThreadArgs& args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+            void tryLockThread2(hazelcast::util::ThreadArgs &args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 try {
                     if (mm->tryLock("key1", 20 * 1000)) {
                         latch->countDown();
@@ -23542,9 +23251,9 @@ namespace hazelcast {
                 mm->forceUnlock("key1");
             }
 
-            void forceUnlockThread(hazelcast::util::ThreadArgs& args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *)args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *)args.arg1;
+            void forceUnlockThread(hazelcast::util::ThreadArgs &args) {
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
+                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
                 mm->forceUnlock("key1");
                 latch->countDown();
             }
@@ -23561,13 +23270,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/mixedtype/IList.h"
 
 using namespace hazelcast::client::mixedtype;
 
@@ -23599,22 +23302,22 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                     sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                     instance = new HazelcastServer(*sslFactory);
-                    #else
+#else
                     instance = new HazelcastServer(*g_srvFactory);
-                    #endif
+#endif
 
                     ClientConfig clientConfig = getConfig();
 
-                    #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                     config::ClientNetworkConfig networkConfig;
                     config::SSLConfig sslConfig;
                     sslConfig.setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList("HIGH");
                     networkConfig.setSSLConfig(sslConfig);
                     clientConfig.setNetworkConfig(networkConfig);
-                    #endif // HZ_BUILD_WITH_SSL
+#endif // HZ_BUILD_WITH_SSL
 
                     client = new HazelcastClient(clientConfig);
                     list = new mixedtype::IList(client->toMixedType().getList("MyMixedList"));
@@ -23708,7 +23411,7 @@ namespace hazelcast {
 
                 std::vector<TypedData> arr2 = list->subList(1, 3);
 
-                ASSERT_EQ(2, (int)arr2.size());
+                ASSERT_EQ(2, (int) arr2.size());
                 ASSERT_EQ("item2", *arr2[0].get<std::string>());
                 ASSERT_EQ("item1", *arr2[1].get<std::string>());
             }
@@ -23742,19 +23445,19 @@ namespace hazelcast {
                 l.push_back("item3");
 
                 ASSERT_TRUE(list->removeAll<std::string>(l));
-                ASSERT_EQ(3, (int)list->size());
+                ASSERT_EQ(3, (int) list->size());
                 ASSERT_FALSE(list->removeAll<std::string>(l));
-                ASSERT_EQ(3, (int)list->size());
+                ASSERT_EQ(3, (int) list->size());
 
                 l.clear();
                 l.push_back("item1");
                 l.push_back("item2");
                 ASSERT_FALSE(list->retainAll<std::string>(l));
-                ASSERT_EQ(3, (int)list->size());
+                ASSERT_EQ(3, (int) list->size());
 
                 l.clear();
                 ASSERT_TRUE(list->retainAll<std::string>(l));
-                ASSERT_EQ(0, (int)list->size());
+                ASSERT_EQ(0, (int) list->size());
 
             }
 
@@ -23777,13 +23480,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IList.h"
 
 namespace hazelcast {
     namespace client {
@@ -23821,22 +23518,22 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                     sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                     instance = new HazelcastServer(*sslFactory);
-                    #else
+#else
                     instance = new HazelcastServer(*g_srvFactory);
-                    #endif
+#endif
 
                     ClientConfig clientConfig = getConfig();
 
-                    #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
                     config::ClientNetworkConfig networkConfig;
                     config::SSLConfig sslConfig;
                     sslConfig.setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList("HIGH");
                     networkConfig.setSSLConfig(sslConfig);
                     clientConfig.setNetworkConfig(networkConfig);
-                    #endif // HZ_BUILD_WITH_SSL
+#endif // HZ_BUILD_WITH_SSL
 
                     client = new HazelcastClient(clientConfig);
                     list = new IList<std::string>(client->getList<std::string>("MyList"));
@@ -23930,7 +23627,7 @@ namespace hazelcast {
 
                 std::vector<std::string> arr2 = list->subList(1, 3);
 
-                ASSERT_EQ(2, (int)arr2.size());
+                ASSERT_EQ(2, (int) arr2.size());
                 ASSERT_EQ("item2", arr2[0]);
                 ASSERT_EQ("item1", arr2[1]);
             }
@@ -23964,19 +23661,19 @@ namespace hazelcast {
                 l.push_back("item3");
 
                 ASSERT_TRUE(list->removeAll(l));
-                ASSERT_EQ(3, (int)list->size());
+                ASSERT_EQ(3, (int) list->size());
                 ASSERT_FALSE(list->removeAll(l));
-                ASSERT_EQ(3, (int)list->size());
+                ASSERT_EQ(3, (int) list->size());
 
                 l.clear();
                 l.push_back("item1");
                 l.push_back("item2");
                 ASSERT_FALSE(list->retainAll(l));
-                ASSERT_EQ(3, (int)list->size());
+                ASSERT_EQ(3, (int) list->size());
 
                 l.clear();
                 ASSERT_TRUE(list->retainAll(l));
-                ASSERT_EQ(0, (int)list->size());
+                ASSERT_EQ(0, (int) list->size());
 
             }
 
@@ -24004,16 +23701,8 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IQueue.h"
 
 namespace hazelcast {
     namespace client {
@@ -24044,7 +23733,7 @@ namespace hazelcast {
                 static HazelcastClient *client;
                 static IQueue<std::string> *q;
             };
-            
+
             HazelcastServer *ClientQueueTest::instance = NULL;
             HazelcastClient *ClientQueueTest::client = NULL;
             IQueue<std::string> *ClientQueueTest::q = NULL;
@@ -24123,34 +23812,34 @@ namespace hazelcast {
                 ASSERT_TRUE(q->offer("peek 3"));
 
                 std::shared_ptr<std::string> item = q->peek();
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("peek 1", *item);
             }
-            
+
             TEST_F(ClientQueueTest, testTake) {
                 q->put("peek 1");
                 ASSERT_TRUE(q->offer("peek 2"));
                 ASSERT_TRUE(q->offer("peek 3"));
 
                 std::shared_ptr<std::string> item = q->take();
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("peek 1", *item);
 
                 item = q->take();
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("peek 2", *item);
 
                 item = q->take();
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("peek 3", *item);
 
                 ASSERT_TRUE(q->isEmpty());
 
-                // start a thread to insert an item
+// start a thread to insert an item
                 hazelcast::util::StartedThread t2(testOfferPollThread2, q);
 
                 item = q->take();  //  should block till it gets an item
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("item1", *item);
 
                 t2.join();
@@ -24317,16 +24006,8 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/client/mixedtype/IQueue.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/ClientConfig.h"
 
 using namespace hazelcast::client::mixedtype;
 
@@ -24365,7 +24046,7 @@ namespace hazelcast {
                 static HazelcastClient *client;
                 static mixedtype::IQueue *q;
             };
-            
+
             HazelcastServer *MixedQueueTest::instance = NULL;
             HazelcastClient *MixedQueueTest::client = NULL;
             mixedtype::IQueue *MixedQueueTest::q = NULL;
@@ -24398,7 +24079,8 @@ namespace hazelcast {
                 hazelcast::util::sleep(1);
 
                 for (int i = 0; i < 5; i++) {
-                    ASSERT_TRUE(q->offer<std::string>(std::string("event_item") + hazelcast::util::IOUtil::to_string(i)));
+                    ASSERT_TRUE(
+                            q->offer<std::string>(std::string("event_item") + hazelcast::util::IOUtil::to_string(i)));
                 }
 
                 ASSERT_TRUE(latch.await(5));
@@ -24437,34 +24119,34 @@ namespace hazelcast {
                 ASSERT_TRUE(q->offer<std::string>("peek 3"));
 
                 std::unique_ptr<std::string> item = q->peek().get<std::string>();
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("peek 1", *item);
             }
-            
+
             TEST_F(MixedQueueTest, testTake) {
                 ASSERT_TRUE(q->offer<std::string>("peek 1"));
                 ASSERT_TRUE(q->offer<std::string>("peek 2"));
                 ASSERT_TRUE(q->offer<std::string>("peek 3"));
 
                 std::unique_ptr<std::string> item = q->take().get<std::string>();
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("peek 1", *item);
 
                 item = q->take().get<std::string>();
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("peek 2", *item);
 
                 item = q->take().get<std::string>();
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("peek 3", *item);
 
                 ASSERT_TRUE(q->isEmpty());
 
-                // start a thread to insert an item
+// start a thread to insert an item
                 hazelcast::util::StartedThread t2(testOfferPollThread2, q);
 
                 item = q->take().get<std::string>();  //  should block till it gets an item
-                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_NE((std::string *) NULL, item.get());
                 ASSERT_EQ("item1", *item);
 
                 t2.join();
@@ -24557,7 +24239,8 @@ namespace hazelcast {
                 std::vector<TypedData> array = q->toArray();
                 size_t size = array.size();
                 for (size_t i = 0; i < size; i++) {
-                    ASSERT_EQ(std::string("item") + hazelcast::util::IOUtil::to_string(i + 1), *array[i].get<std::string>());
+                    ASSERT_EQ(std::string("item") + hazelcast::util::IOUtil::to_string(i + 1),
+                              *array[i].get<std::string>());
                 }
             }
 
@@ -24621,10 +24304,6 @@ namespace hazelcast {
 
 
 
-#include "executor/tasks/SelectAllMembers.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::SelectAllMembers::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24653,11 +24332,7 @@ void hazelcast::client::test::executor::tasks::SelectAllMembers::toString(std::o
 }
 
 
-#include "executor/tasks/CancellationAwareTask.h"
-#include "executor/tasks/IdentifiedFactory.h"
 
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::CancellationAwareTask::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24683,10 +24358,6 @@ hazelcast::client::test::executor::tasks::CancellationAwareTask::CancellationAwa
 hazelcast::client::test::executor::tasks::CancellationAwareTask::CancellationAwareTask() {}
 
 
-#include "executor/tasks/NullCallable.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::NullCallable::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24707,10 +24378,6 @@ void hazelcast::client::test::executor::tasks::NullCallable::readData(
 hazelcast::client::test::executor::tasks::NullCallable::NullCallable() {}
 
 
-#include "executor/tasks/SerializedCounterCallable.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::SerializedCounterCallable::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24733,10 +24400,6 @@ void hazelcast::client::test::executor::tasks::SerializedCounterCallable::readDa
 hazelcast::client::test::executor::tasks::SerializedCounterCallable::SerializedCounterCallable() : counter(0) {}
 
 
-#include "executor/tasks/MapPutPartitionAwareCallable.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24767,10 +24430,6 @@ const std::string *hazelcast::client::test::executor::tasks::MapPutPartitionAwar
 }
 
 
-#include "executor/tasks/SelectNoMembers.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::SelectNoMembers::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24799,10 +24458,6 @@ void hazelcast::client::test::executor::tasks::SelectNoMembers::toString(std::os
 }
 
 
-#include "executor/tasks/GetMemberUuidTask.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::GetMemberUuidTask::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24823,10 +24478,6 @@ void hazelcast::client::test::executor::tasks::GetMemberUuidTask::readData(
 hazelcast::client::test::executor::tasks::GetMemberUuidTask::GetMemberUuidTask() {}
 
 
-#include "executor/tasks/FailingCallable.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::FailingCallable::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24847,10 +24498,6 @@ void hazelcast::client::test::executor::tasks::FailingCallable::readData(
 hazelcast::client::test::executor::tasks::FailingCallable::FailingCallable() {}
 
 
-#include "executor/tasks/AppendCallable.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 std::string hazelcast::client::test::executor::tasks::AppendCallable::APPENDAGE = ":CallableResult";
 
@@ -24877,10 +24524,6 @@ hazelcast::client::test::executor::tasks::AppendCallable::AppendCallable() {}
 hazelcast::client::test::executor::tasks::AppendCallable::AppendCallable(const std::string &msg) : msg(msg) {}
 
 
-#include "executor/tasks/TaskWithUnserializableResponse.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
 
 int hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::getFactoryId() const {
     return IdentifiedFactory::FACTORY_ID;
@@ -24902,23 +24545,7 @@ hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::TaskWi
 
 
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
-#include <executor/tasks/CancellationAwareTask.h>
-#include <executor/tasks/FailingCallable.h>
-#include <executor/tasks/SelectNoMembers.h>
-#include <executor/tasks/SerializedCounterCallable.h>
-#include <executor/tasks/TaskWithUnserializableResponse.h>
-#include <executor/tasks/GetMemberUuidTask.h>
-#include <executor/tasks/AppendCallable.h>
-#include <executor/tasks/SelectAllMembers.h>
-#include <executor/tasks/MapPutPartitionAwareCallable.h>
-#include <executor/tasks/NullCallable.h>
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/util/Sync.h"
 
 namespace hazelcast {
     namespace client {
@@ -25010,12 +24637,13 @@ namespace hazelcast {
                 public:
                     MultiExecutionCompletionCallback(const string &msg,
                                                      const std::shared_ptr<hazelcast::util::CountDownLatch> &responseLatch,
-                                                     const std::shared_ptr<hazelcast::util::CountDownLatch> &completeLatch) : msg(
+                                                     const std::shared_ptr<hazelcast::util::CountDownLatch> &completeLatch)
+                            : msg(
                             msg),
-                                                                                                                   responseLatch(
-                                                                                                                           responseLatch),
-                                                                                                                   completeLatch(
-                                                                                                                           completeLatch) {}
+                              responseLatch(
+                                      responseLatch),
+                              completeLatch(
+                                      completeLatch) {}
 
                     virtual void onResponse(const Member &member, const std::shared_ptr<std::string> &response) {
                         if (response.get() && *response == msg + executor::tasks::AppendCallable::APPENDAGE) {
@@ -25122,7 +24750,8 @@ namespace hazelcast {
                 std::shared_ptr<ICompletableFuture<bool> > future = service->submit<executor::tasks::CancellationAwareTask, bool>(
                         task);
 
-                ASSERT_THROW(future->get(1, hazelcast::util::concurrent::TimeUnit::SECONDS()), exception::TimeoutException);
+                ASSERT_THROW(future->get(1, hazelcast::util::concurrent::TimeUnit::SECONDS()),
+                             exception::TimeoutException);
             }
 
             TEST_F(ClientExecutorServiceTest, testFutureAfterCancellationAwareTaskTimeOut) {
@@ -25394,8 +25023,10 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, submitCallableToMember_withMultiExecutionCallback) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                std::shared_ptr<hazelcast::util::CountDownLatch> responseLatch(new hazelcast::util::CountDownLatch(numberOfMembers));
-                std::shared_ptr<hazelcast::util::CountDownLatch> completeLatch(new hazelcast::util::CountDownLatch(numberOfMembers));
+                std::shared_ptr<hazelcast::util::CountDownLatch> responseLatch(
+                        new hazelcast::util::CountDownLatch(numberOfMembers));
+                std::shared_ptr<hazelcast::util::CountDownLatch> completeLatch(
+                        new hazelcast::util::CountDownLatch(numberOfMembers));
 
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
@@ -25434,8 +25065,10 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, submitCallableToMembers_withExecutionCallback) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                std::shared_ptr<hazelcast::util::CountDownLatch> responseLatch(new hazelcast::util::CountDownLatch(numberOfMembers));
-                std::shared_ptr<hazelcast::util::CountDownLatch> completeLatch(new hazelcast::util::CountDownLatch(numberOfMembers));
+                std::shared_ptr<hazelcast::util::CountDownLatch> responseLatch(
+                        new hazelcast::util::CountDownLatch(numberOfMembers));
+                std::shared_ptr<hazelcast::util::CountDownLatch> completeLatch(
+                        new hazelcast::util::CountDownLatch(numberOfMembers));
 
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
@@ -25453,8 +25086,10 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, submitCallableToAllMembers_withMultiExecutionCallback) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                std::shared_ptr<hazelcast::util::CountDownLatch> responseLatch(new hazelcast::util::CountDownLatch(numberOfMembers));
-                std::shared_ptr<hazelcast::util::CountDownLatch> completeLatch(new hazelcast::util::CountDownLatch(numberOfMembers));
+                std::shared_ptr<hazelcast::util::CountDownLatch> responseLatch(
+                        new hazelcast::util::CountDownLatch(numberOfMembers));
+                std::shared_ptr<hazelcast::util::CountDownLatch> completeLatch(
+                        new hazelcast::util::CountDownLatch(numberOfMembers));
 
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
@@ -25471,8 +25106,10 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, submitCallableWithNullResultToAllMembers_withMultiExecutionCallback) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                std::shared_ptr<hazelcast::util::CountDownLatch> responseLatch(new hazelcast::util::CountDownLatch(numberOfMembers));
-                std::shared_ptr<hazelcast::util::CountDownLatch> completeLatch(new hazelcast::util::CountDownLatch(numberOfMembers));
+                std::shared_ptr<hazelcast::util::CountDownLatch> responseLatch(
+                        new hazelcast::util::CountDownLatch(numberOfMembers));
+                std::shared_ptr<hazelcast::util::CountDownLatch> completeLatch(
+                        new hazelcast::util::CountDownLatch(numberOfMembers));
 
                 executor::tasks::NullCallable callable;
 
@@ -25729,12 +25366,7 @@ namespace hazelcast {
 #pragma warning(disable: 4996) //for unsafe getenv
 #endif
 
-#include <cmath>
-#include <gtest/gtest.h>
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -25816,7 +25448,8 @@ namespace hazelcast {
 
                     clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "-1";
 
-                    ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig), exception::InvalidConfigurationException);
+                    ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig),
+                                 exception::InvalidConfigurationException);
                 }
             }
         }
@@ -25838,11 +25471,7 @@ namespace hazelcast {
 #pragma warning(disable: 4996) //for unsafe getenv
 #endif
 
-#include <cmath>
-#include <gtest/gtest.h>
-#include <openssl/crypto.h>
 
-#include <hazelcast/client/HazelcastClient.h>
 
 namespace hazelcast {
     namespace client {
@@ -25859,11 +25488,11 @@ namespace hazelcast {
                             setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
                             setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
 
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
-                    #else
+#else
                     clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(false);
-                    #endif
+#endif
 
                     HazelcastClient hazelcastClient(clientConfig);
 
@@ -25881,13 +25510,13 @@ namespace hazelcast {
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
                             setSecurityGroupName("launch-wizard-147");
 
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    // The access key and secret will be retrieved from default IAM role at windows machine
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                                                                                                                                            // The access key and secret will be retrieved from default IAM role at windows machine
                     clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
-                    #else
+#else
                     clientConfig.getNetworkConfig().getAwsConfig().setAccessKey(getenv("AWS_ACCESS_KEY_ID")).
                             setSecretKey(getenv("AWS_SECRET_ACCESS_KEY"));
-                    #endif
+#endif
 
                     HazelcastClient hazelcastClient(clientConfig);
 
@@ -25899,8 +25528,8 @@ namespace hazelcast {
                 }
 
                 // FIPS_mode_set is not available for Mac OS X built-in openssl library
-                #ifndef __APPLE__
-                TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
+#ifndef __APPLE__
+                                                                                                                                        TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
                     ClientConfig clientConfig;
 
                     clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
@@ -25924,13 +25553,13 @@ namespace hazelcast {
                     ASSERT_NE((int *) NULL, val.get());
                     ASSERT_EQ(20, *val);
                 }
-                #endif // ifndef __APPLE__
+#endif // ifndef __APPLE__
 
                 /**
                  * Following test can only run from inside the AWS network
                  */
-                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                                                                                                                                        TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
                     ClientConfig clientConfig;
 
                     clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
@@ -25949,7 +25578,7 @@ namespace hazelcast {
 
                     HazelcastClient hazelcastClient(clientConfig);
                 }
-                #endif
+#endif
             }
         }
     }
@@ -25964,11 +25593,7 @@ namespace hazelcast {
 
 #ifdef HZ_BUILD_WITH_SSL
 
-#include <stdlib.h>
 
-#include "ClientTestSupport.h"
-#include <hazelcast/client/config/ClientAwsConfig.h>
-#include <hazelcast/client/aws/impl/DescribeInstances.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -25995,7 +25620,8 @@ namespace hazelcast {
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet) {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue("non-existent-value");
+                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue(
+                            "non-existent-value");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
@@ -26072,12 +25698,7 @@ namespace hazelcast {
 
 #ifdef HZ_BUILD_WITH_SSL
 
-#include <fstream>
-#include <asio.hpp>
 
-#include "ClientTestSupport.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/client/aws/utility/CloudUtility.h"
 
 namespace awsutil = hazelcast::client::aws::utility;
 
@@ -26113,7 +25734,6 @@ namespace hazelcast {
 
 #endif //HZ_BUILD_WITH_SSL
 
-#include "customSerialization/TestCustomXSerializable.h"
 
 namespace hazelcast {
     namespace client {
@@ -26180,12 +25800,7 @@ namespace hazelcast {
 }
 
 
-#include <cassert>
 
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "customSerialization/TestCustomXSerializable.h"
-#include "customSerialization/TestCustomPersonSerializer.h"
 
 namespace hazelcast {
     namespace client {
@@ -26214,14 +25829,8 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
 
-#include <TestHelperFunctions.h>
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -26580,7 +26189,7 @@ namespace hazelcast {
                 }
             }
 
-            /**
+/**
              * Checks that the Near Cache updates value for keys which are already in the Near Cache,
              * even if the Near Cache is full an the eviction is disabled (via {@link com.hazelcast.config.EvictionPolicy#NONE}.
              *
@@ -26620,7 +26229,7 @@ namespace hazelcast {
                 NearCacheTestUtils::assertNearCacheStats(*stats, size, expectedHits, expectedMisses);
             }
 
-            /**
+/**
              * Checks that the Near Cache updates value for keys which are already in the Near Cache,
              * even if the Near Cache is full an the eviction is disabled (via {@link com.hazelcast.config.EvictionPolicy#NONE}.
              *
@@ -26649,7 +26258,7 @@ namespace hazelcast {
 
                 noNearCacheMap->put(1, "newValue");
 
-                // we have to use assertTrueEventually since the invalidation is done asynchronously
+// we have to use assertTrueEventually since the invalidation is done asynchronously
                 int64_t expectedMisses = 0;
                 int64_t expectedHits = 0;
                 WAIT_TRUE_EVENTUALLY(checkMissesAndHits(expectedMisses, expectedHits, value));
@@ -26657,7 +26266,7 @@ namespace hazelcast {
                 NearCacheTestUtils::assertNearCacheStats(*stats, size, expectedHits, expectedMisses);
             }
 
-            /**
+/**
              * Checks that the Near Cache values are eventually invalidated when {@link DataStructureAdapter#putAll(Map)} is used.
              *
              * This variant uses the nearCacheMap, so there is no Near Cache invalidation necessary.
@@ -26667,7 +26276,7 @@ namespace hazelcast {
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(true);
             }
 
-            /**
+/**
              * Checks that the Near Cache values are eventually invalidated when {@link DataStructureAdapter#putAll(Map)} is used.
              *
              * This variant uses the noNearCacheMap, so we need to configure Near Cache invalidation.
@@ -26678,7 +26287,7 @@ namespace hazelcast {
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(false);
             }
 
-            /**
+/**
              * Checks that the {@link com.hazelcast.monitor.NearCacheStats} are calculated correctly.
              */
             TEST_P(BasicClientNearCacheTest, testNearCacheStats) {
@@ -26686,7 +26295,7 @@ namespace hazelcast {
 
                 createNearCacheContext();
 
-                // populate map
+// populate map
                 populateMap();
 
                 {
@@ -26694,14 +26303,14 @@ namespace hazelcast {
                     NearCacheTestUtils::assertNearCacheStats(*stats, 0, 0, 0);
                 }
 
-                // populate Near Cache. Will cause misses and will increment the owned entry count
+// populate Near Cache. Will cause misses and will increment the owned entry count
                 populateNearCache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is initially populated");
                     NearCacheTestUtils::assertNearCacheStats(*stats, DEFAULT_RECORD_COUNT, 0, DEFAULT_RECORD_COUNT);
                 }
 
-                // make some hits
+// make some hits
                 populateNearCache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is hit after being populated.");
@@ -26718,24 +26327,24 @@ namespace hazelcast {
 
                 createNearCacheContext();
 
-                // all Near Cache implementations use the same eviction algorithm, which evicts a single entry
+// all Near Cache implementations use the same eviction algorithm, which evicts a single entry
                 int64_t expectedEvictions = 1;
 
-                // populate map with an extra entry
+// populate map with an extra entry
                 populateMap();
                 char buf[20];
                 hazelcast::util::hz_snprintf(buf, 20, "value-%d", DEFAULT_RECORD_COUNT);
                 noNearCacheMap->put(DEFAULT_RECORD_COUNT, buf);
 
-                // populate Near Caches
+// populate Near Caches
                 populateNearCache();
 
-                // we expect (size + the extra entry - the expectedEvictions) entries in the Near Cache
+// we expect (size + the extra entry - the expectedEvictions) entries in the Near Cache
                 int64_t expectedOwnedEntryCount = DEFAULT_RECORD_COUNT + 1 - expectedEvictions;
                 int64_t expectedHits = stats->getHits();
                 int64_t expectedMisses = stats->getMisses() + 1;
 
-                // trigger eviction via fetching the extra entry
+// trigger eviction via fetching the extra entry
                 nearCachedMap->get(DEFAULT_RECORD_COUNT);
 
                 int64_t evictions = stats->getEvictions();
@@ -26751,22 +26360,13 @@ namespace hazelcast {
             }
 
             INSTANTIATE_TEST_SUITE_P(ClientNearCacheTest, BasicClientNearCacheTest,
-                                    ::testing::Values(config::BINARY, config::OBJECT));
+                                     ::testing::Values(config::BINARY, config::OBJECT));
         }
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
-#include <set>
-#include <memory>
-#include <hazelcast/client/query/EqualPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
 
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -26879,11 +26479,11 @@ namespace hazelcast {
                     map.put(i, i);
                     keys.insert(i);
                 }
-                // populate Near Cache
+// populate Near Cache
                 for (int i = 0; i < size; i++) {
                     map.get(i);
                 }
-                // getAll() generates the Near Cache hits
+// getAll() generates the Near Cache hits
                 map.getAll(keys);
 
                 assertThatOwnedEntryCountEquals(map, size);
@@ -26899,7 +26499,7 @@ namespace hazelcast {
                     map.put(i, i);
                     keys.insert(i);
                 }
-                // populate Near Cache
+// populate Near Cache
                 for (int i = 0; i < size; i++) {
                     map.get(i);
                 }
@@ -26912,14 +26512,8 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
 
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ISet.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -27037,13 +26631,13 @@ namespace hazelcast {
 
                 std::vector<std::string> items = set->toArray();
 
-                ASSERT_EQ((size_t)4, items.size());
+                ASSERT_EQ((size_t) 4, items.size());
                 ASSERT_TRUE(itemExists(items, "item1"));
                 ASSERT_TRUE(itemExists(items, "item2"));
                 ASSERT_TRUE(itemExists(items, "item3"));
                 ASSERT_TRUE(itemExists(items, "item4"));
             }
-            
+
             TEST_F(ClientSetTest, testRemoveRetainAll) {
                 ASSERT_TRUE(set->add("item1"));
                 ASSERT_TRUE(set->add("item2"));
@@ -27070,7 +26664,7 @@ namespace hazelcast {
                 ASSERT_EQ(0, set->size());
 
             }
-            
+
             TEST_F(ClientSetTest, testListener) {
                 hazelcast::util::CountDownLatch latch(6);
 
@@ -27082,7 +26676,7 @@ namespace hazelcast {
                 }
                 set->add("done");
 
-                ASSERT_TRUE(latch.await(20 ));
+                ASSERT_TRUE(latch.await(20));
 
                 ASSERT_TRUE(set->removeItemListener(registrationId));
             }
@@ -27097,14 +26691,8 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/mixedtype/ISet.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 using namespace hazelcast::client::mixedtype;
 
@@ -27168,7 +26756,7 @@ namespace hazelcast {
 
             HazelcastServer *MixedSetTest::instance = NULL;
             HazelcastClient *MixedSetTest::client = NULL;
-             mixedtype::ISet *MixedSetTest::set = NULL;
+            mixedtype::ISet *MixedSetTest::set = NULL;
 
             TEST_F(MixedSetTest, testAddAll) {
                 std::vector<std::string> l;
@@ -27223,13 +26811,13 @@ namespace hazelcast {
 
                 std::vector<TypedData> items = set->toArray();
 
-                ASSERT_EQ((size_t)4, items.size());
+                ASSERT_EQ((size_t) 4, items.size());
                 ASSERT_TRUE(itemExists(items, "item1"));
                 ASSERT_TRUE(itemExists(items, "item2"));
                 ASSERT_TRUE(itemExists(items, "item3"));
                 ASSERT_TRUE(itemExists(items, "item4"));
             }
-            
+
             TEST_F(MixedSetTest, testRemoveRetainAll) {
                 ASSERT_TRUE(set->add<std::string>("item1"));
                 ASSERT_TRUE(set->add<std::string>("item2"));
@@ -27256,7 +26844,7 @@ namespace hazelcast {
                 ASSERT_EQ(0, set->size());
 
             }
-            
+
             TEST_F(MixedSetTest, testListener) {
                 hazelcast::util::CountDownLatch latch(6);
 
@@ -27268,7 +26856,7 @@ namespace hazelcast {
                 }
                 set->add<std::string>("done");
 
-                ASSERT_TRUE(latch.await(20 ));
+                ASSERT_TRUE(latch.await(20));
 
                 ASSERT_TRUE(set->removeItemListener(registrationId));
             }
@@ -27277,11 +26865,7 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ICountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -27299,8 +26883,8 @@ namespace hazelcast {
             };
 
             ICountDownLatchTest::ICountDownLatchTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient()), l(new ICountDownLatch(client.getICountDownLatch("ICountDownLatchTest"))) {
+                    : instance(*g_srvFactory), client(getNewClient()),
+                      l(new ICountDownLatch(client.getICountDownLatch("ICountDownLatchTest"))) {
             }
 
             ICountDownLatchTest::~ICountDownLatchTest() {
@@ -27331,15 +26915,8 @@ namespace hazelcast {
 
 
 
-#include "HazelcastServerFactory.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
-#include "serialization/Employee.h"
 
-#include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/ConcurrentQueue.h"
 
 namespace hazelcast {
     namespace client {
@@ -27360,19 +26937,23 @@ namespace hazelcast {
                 template <typename T>
                 class GenericListener : public topic::ReliableMessageListener<T> {
                 public:
-                    GenericListener(hazelcast::util::CountDownLatch &countDownLatch) : latch(countDownLatch), startSequence(-1),
-                                                                               numberOfMessagesReceived(0) {
+                    GenericListener(hazelcast::util::CountDownLatch &countDownLatch) : latch(countDownLatch),
+                                                                                       startSequence(-1),
+                                                                                       numberOfMessagesReceived(0) {
                     }
 
-                    GenericListener(hazelcast::util::CountDownLatch &countDownLatch, int64_t sequence) : latch(countDownLatch),
-                                                                                                 startSequence(sequence),
-                                                                                                 numberOfMessagesReceived(0) {
+                    GenericListener(hazelcast::util::CountDownLatch &countDownLatch, int64_t sequence) : latch(
+                            countDownLatch),
+                                                                                                         startSequence(
+                                                                                                                 sequence),
+                                                                                                         numberOfMessagesReceived(
+                                                                                                                 0) {
                     }
 
                     virtual ~GenericListener() {
                         topic::Message<T> *m = NULL;
                         while ((m = messages.poll()) != NULL) {
-                            delete(m);
+                            delete (m);
                         }
                     }
 
@@ -27473,7 +27054,7 @@ namespace hazelcast {
                 ASSERT_TRUE(latch.await(2));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
                 const Employee *employee = listener.getMessages().poll()->getMessageObject();
-                ASSERT_NE((Employee *)NULL, employee);
+                ASSERT_NE((Employee *) NULL, employee);
                 ASSERT_EQ(empl1, *employee);
 
                 // remove listener
@@ -27500,7 +27081,7 @@ namespace hazelcast {
                 ASSERT_TRUE(latch.await(1));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
                 const Employee *employee = listener.getMessages().poll()->getMessageObject();
-                ASSERT_NE((Employee *)NULL, employee);
+                ASSERT_NE((Employee *) NULL, employee);
                 ASSERT_EQ(empl2, *employee);
 
                 // remove listener
@@ -27532,7 +27113,7 @@ namespace hazelcast {
                 std::shared_ptr<ReliableTopic<Employee> > rt;
                 ASSERT_NO_THROW(rt = client->getReliableTopic<Employee>("removeMessageListener_whenNonExisting"));
 
-                // remove listener
+// remove listener
                 ASSERT_FALSE(rt->removeMessageListener("abc"));
             }
 
@@ -27546,12 +27127,12 @@ namespace hazelcast {
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(listener));
 
-                intTopic->publish((int *)NULL);
+                intTopic->publish((int *) NULL);
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
                 const int *val = listener.getMessages().poll()->getMessageObject();
-                ASSERT_EQ((const int *)NULL, val);
+                ASSERT_EQ((const int *) NULL, val);
             }
 
             TEST_F(ReliableTopicTest, publishMultiple) {
@@ -27559,7 +27140,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic = client->getReliableTopic<std::string>("publishMultiple"));
 
                 hazelcast::util::CountDownLatch latch(5);
-                GenericListener<std::string> listener(latch);
+                GenericListener <std::string> listener(latch);
 
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = topic->addMessageListener(listener));
@@ -27576,7 +27157,7 @@ namespace hazelcast {
                 hazelcast::util::ConcurrentQueue<topic::Message<std::string> > &queue = listener.getMessages();
                 for (int k = 0; k < 5; k++) {
                     const std::string *val = queue.poll()->getMessageObject();
-                    ASSERT_NE((const std::string *)NULL, val);
+                    ASSERT_NE((const std::string *) NULL, val);
                     ASSERT_EQ(items[k], *val);
                 }
             }
@@ -27593,7 +27174,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic = configClient.getReliableTopic<std::string>("testConfig"));
 
                 hazelcast::util::CountDownLatch latch(5);
-                GenericListener<std::string> listener(latch);
+                GenericListener <std::string> listener(latch);
 
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = topic->addMessageListener(listener));
@@ -27610,7 +27191,7 @@ namespace hazelcast {
                 hazelcast::util::ConcurrentQueue<topic::Message<std::string> > &queue = listener.getMessages();
                 for (int k = 0; k < 5; k++) {
                     const std::string *val = queue.poll()->getMessageObject();
-                    ASSERT_NE((const std::string *)NULL, val);
+                    ASSERT_NE((const std::string *) NULL, val);
                     ASSERT_EQ(items[k], *val);
                 }
             }
@@ -27639,11 +27220,11 @@ namespace hazelcast {
                 ASSERT_LE(timeBeforePublish, message->getPublishTime());
                 ASSERT_GE(timeAfterPublish, message->getPublishTime());
                 ASSERT_EQ(intTopic->getName(), message->getSource());
-                ASSERT_EQ((Member *)NULL, message->getPublishingMember());
+                ASSERT_EQ((Member *) NULL, message->getPublishingMember());
             }
 
-            // makes sure that when a listener is register, we don't see any messages being published before
-            // it got registered. We'll only see the messages after it got registered.
+// makes sure that when a listener is register, we don't see any messages being published before
+// it got registered. We'll only see the messages after it got registered.
             TEST_F(ReliableTopicTest, testAlwaysStartAfterTail) {
                 std::shared_ptr<ReliableTopic<int> > intTopic;
                 ASSERT_NO_THROW(intTopic = client->getReliableTopic<int>("testAlwaysStartAfterTail"));
@@ -27660,7 +27241,7 @@ namespace hazelcast {
                 expectedValues.push_back(5);
                 expectedValues.push_back(6);
 
-                // spawn a thread for publishing new data
+// spawn a thread for publishing new data
                 hazelcast::util::StartedThread t(publishTopics, intTopic.get(), &expectedValues);
 
                 hazelcast::util::CountDownLatch latch(3);
@@ -27670,12 +27251,12 @@ namespace hazelcast {
                 ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(listener));
 
                 ASSERT_TRUE(latch.await(10));
-                ASSERT_EQ((int)expectedValues.size(), listener.getNumberOfMessagesReceived());
+                ASSERT_EQ((int) expectedValues.size(), listener.getNumberOfMessagesReceived());
                 hazelcast::util::ConcurrentQueue<topic::Message<int> > &objects = listener.getMessages();
 
-                for (std::vector<int>::const_iterator it = expectedValues.begin();it != expectedValues.end(); ++it) {
+                for (std::vector<int>::const_iterator it = expectedValues.begin(); it != expectedValues.end(); ++it) {
                     std::unique_ptr<int> val = objects.poll()->releaseMessageObject();
-                    ASSERT_NE((int *)NULL, val.get());
+                    ASSERT_NE((int *) NULL, val.get());
                     ASSERT_EQ(*it, *val);
                 }
             }
@@ -27684,13 +27265,8 @@ namespace hazelcast {
 }
 
 
-#include "HazelcastServerFactory.h"
 
-#include "hazelcast/client/HazelcastClient.h"
 
-#include "hazelcast/client/ClientConfig.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
 using namespace hazelcast::client;
 
@@ -27902,13 +27478,7 @@ namespace hazelcast {
     }
 }
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IdGenerator.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -27926,15 +27496,15 @@ namespace hazelcast {
             };
 
             IdGeneratorTest::IdGeneratorTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient()), generator(new IdGenerator(client.getIdGenerator("clientIdGenerator"))) {
+                    : instance(*g_srvFactory), client(getNewClient()),
+                      generator(new IdGenerator(client.getIdGenerator("clientIdGenerator"))) {
             }
 
             TEST_F (IdGeneratorTest, testGenerator) {
                 int initValue = 3569;
                 ASSERT_TRUE(generator->init(initValue));
                 ASSERT_FALSE(generator->init(4569));
-                for(int i = 0 ; i < 2000 ; i++){
+                for (int i = 0; i < 2000; i++) {
                     ASSERT_EQ(++initValue, generator->newId());
                 }
             }
@@ -27945,14 +27515,7 @@ namespace hazelcast {
 
 
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
 
-#include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -28037,48 +27600,48 @@ namespace hazelcast {
             TEST_F(IssueTest, testListenerSubscriptionOnSingleServerRestart) {
                 HazelcastServer server(*g_srvFactory);
 
-                // 2. Start a client
+// 2. Start a client
                 ClientConfig clientConfig(getConfig());
                 clientConfig.setConnectionAttemptLimit(10);
 
                 HazelcastClient client(clientConfig);
 
-                // 3. Get a map
+// 3. Get a map
                 IMap<int, int> map = client.getMap<int, int>("IssueTest_map");
 
-                // 4. Subscribe client to entry added event
+// 4. Subscribe client to entry added event
                 map.addEntryListener(listener, true);
 
-                // Put a key, value to the map
+// Put a key, value to the map
                 ASSERT_EQ((int *) NULL, map.put(1, 10).get());
 
                 ASSERT_TRUE(latch.await(20, 1)); // timeout of 20 seconds
 
-                // 5. Verify that the listener got the entry added event
+// 5. Verify that the listener got the entry added event
                 ASSERT_EQ(1, latch.get());
 
-                // 6. Restart the server
+// 6. Restart the server
                 ASSERT_TRUE(server.shutdown());
                 HazelcastServer server2(*g_srvFactory);
 
                 std::string putThreadName("Map Put Thread");
                 hazelcast::util::StartedThread t(putThreadName, putMapMessage, &map, &latch);
 
-                // 8. Verify that the 2nd entry is received by the listener
+// 8. Verify that the 2nd entry is received by the listener
                 ASSERT_TRUE(latch.await(20, 0)); // timeout of 20 seconds
 
                 t.cancel();
                 t.join();
 
-                // 9. Shut down the server
+// 9. Shut down the server
                 ASSERT_TRUE(server2.shutdown());
             }
 
             TEST_F(IssueTest, testIssue221) {
-                // start a server
+// start a server
                 HazelcastServer server(*g_srvFactory);
 
-                // start a client
+// start a client
                 HazelcastClient client(getConfig());
 
                 IMap<int, int> map = client.getMap<int, int>("Issue221_test_map");
@@ -28124,9 +27687,7 @@ namespace hazelcast {
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
-#include "HazelcastServer.h"
 
-#include <hazelcast/client/exception/IllegalStateException.h>
 
 namespace hazelcast {
     namespace client {
@@ -28222,8 +27783,6 @@ namespace hazelcast {
 
 
 
-#include <hazelcast/client/exception/IllegalStateException.h>
-#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
