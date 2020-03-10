@@ -23,7 +23,7 @@
 #  -DHZ_BUILD_EXAMPLES=ON
 #  -DHZ_COMPILE_WITH_SSL=ON
 
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.12.4)
 project (HazelcastClient
 		VERSION 4.0
 		DESCRIPTION "Hazelcast C++ Client"

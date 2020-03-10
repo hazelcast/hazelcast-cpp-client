@@ -28,7 +28,7 @@
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
-#include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/impl/EntryArrayImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
@@ -36,7 +36,7 @@
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/Future.h"
-#include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

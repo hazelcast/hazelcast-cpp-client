@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_NEARCACHEDMIXEDMAP_H_
 
 #include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/client/protocol/codec/MapAddNearCacheEntryListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/mixedtype/ClientMapProxy.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 

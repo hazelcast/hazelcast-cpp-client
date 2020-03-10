@@ -20,15 +20,15 @@
 #include "hazelcast/client/impl/AtomicLongInterface.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/AtomicLongAddAndGetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongCompareAndSetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongDecrementAndGetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongGetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongGetAndAddCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongGetAndSetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongIncrementAndGetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongGetAndIncrementCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongSetCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
 

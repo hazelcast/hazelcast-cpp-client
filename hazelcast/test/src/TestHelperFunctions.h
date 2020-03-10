@@ -26,7 +26,7 @@
                 if ((expected) == (actual)) {                       \
                     __result__ = true;                              \
                 } else {                                        \
-                    util::sleepmillis(200);                     \
+                    hazelcast::util::sleepmillis(200);                     \
                 }                                               \
             }                                                   \
             ASSERT_TRUE(__result__) << message;                     \
@@ -34,7 +34,7 @@
 
 #define WAIT_TRUE_EVENTUALLY(expression) do{                    \
             for(int i = 0 ; i < 5 * 120 && !(expression) ; i++ ) { \
-                util::sleepmillis(200);                         \
+                hazelcast::util::sleepmillis(200);                         \
             }                                                   \
       }while(0)                                                 \
 
@@ -44,7 +44,7 @@
 #define ASSERT_TRUE_ALL_THE_TIME(expression, seconds) do{       \
             for(int i = 0; i < seconds ; i++ ) {                \
                 ASSERT_TRUE(expression);                        \
-                util::sleepmillis(1000);                        \
+                hazelcast::util::sleepmillis(1000);                        \
             }                                                   \
       } while(0)                                                \
 

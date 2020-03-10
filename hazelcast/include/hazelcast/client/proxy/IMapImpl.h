@@ -19,16 +19,16 @@
 #include "hazelcast/client/EntryArray.h"
 #include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/query/Predicate.h"
-#include "hazelcast/client/protocol/codec/MapExecuteWithPredicateCodec.h"
-#include "hazelcast/client/protocol/codec/MapExecuteOnKeyCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/protocol/codec/MapExecuteOnAllKeysCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/map/DataEntryView.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/MapPutCodec.h"
-#include "hazelcast/client/protocol/codec/MapGetCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

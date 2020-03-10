@@ -18,7 +18,7 @@
 
 #include "hazelcast/client/proxy/ISetImpl.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/protocol/codec/SetAddListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {

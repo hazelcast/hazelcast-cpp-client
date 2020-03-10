@@ -22,7 +22,7 @@
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/topic/impl/MessageImpl.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/protocol/codec/TopicAddMessageListenerCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/topic/MessageListener.h"
 
 #include <assert.h>

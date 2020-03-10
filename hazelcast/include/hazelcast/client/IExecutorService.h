@@ -36,8 +36,8 @@
 #include "hazelcast/client/proxy/IExecutorDelegatingFuture.h"
 
 // CODECs
-#include "hazelcast/client/protocol/codec/ExecutorServiceSubmitToPartitionCodec.h"
-#include "hazelcast/client/protocol/codec/ExecutorServiceSubmitToAddressCodec.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
