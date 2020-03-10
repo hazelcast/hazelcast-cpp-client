@@ -17,7 +17,7 @@
 #define HAZELCAST_UTIL_SYNCHTTPCLIENT_H_
 
 #include <string>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -26,6 +26,8 @@
 #pragma warning(disable: 4251) //for dll export
 #pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
+
+using namespace boost;
 
 namespace hazelcast {
     namespace util {
@@ -37,9 +39,9 @@ namespace hazelcast {
         private:
             std::string server;
             std::string uriPath;
-            asio::io_service ioService;
-            asio::ip::tcp::socket socket;
-            asio::streambuf response;
+            boost::asio::io_service ioService;
+            boost::asio::ip::tcp::socket socket;
+            boost::asio::streambuf response;
             std::istream responseStream;
         };
     }

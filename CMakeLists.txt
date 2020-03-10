@@ -33,8 +33,9 @@ project (HazelcastClient
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
-INCLUDE(TestBigEndian)
-INCLUDE(FindOpenSSL)
+include(TestBigEndian)
+include(FindOpenSSL)
+include(FindBoost)
 
 SET(HZ_VERSION 4.0-SNAPSHOT)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
@@ -75,7 +76,7 @@ message(STATUS "HAZELCAST_GIT_COMMIT_ID = ${HAZELCAST_GIT_COMMIT_ID}" )
 add_definitions(-DHAZELCAST_GIT_COMMIT_ID=${HAZELCAST_GIT_COMMIT_ID})
 
 # Disable any boost lib linking
-add_definitions("-DBOOST_ALL_NO_LIB")
+add_definitions("-DBOOST_ALL_NO_LIB -DBOOST_ERROR_CODE_HEADER_ONLY")
 
 message(STATUS "Preparing hazelcast client ..... ")
 
@@ -98,22 +99,18 @@ FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h
 
 include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include ${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src)
 
-if (HZ_FIND_EXTERNAL_BOOST)
-	find_package(Boost REQUIRED)
-	set(HZ_BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
-else ()
-	set(HZ_BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/boost_latest)
-endif(HZ_FIND_EXTERNAL_BOOST)
+# Try finding by boost components first
+find_package(Boost
+		1.69
+		QUIET
+		COMPONENTS asio property_tree)
+if (NOT Boost_FOUND)
+	# try finding the boost installation
+	find_package(Boost 1.69 REQUIRED)
+endif()
 
-include_directories(SYSTEM ${HZ_BOOST_INCLUDE_DIR})
-message(STATUS "Using HZ_BOOST_INCLUDE_DIR: ${HZ_BOOST_INCLUDE_DIR}")
-
-if ("${HZ_ASIO_INCLUDE_DIR}" STREQUAL "")
-	set(HZ_ASIO_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/asio/asio/include/)
-endif ("${HZ_ASIO_INCLUDE_DIR}" STREQUAL "")
-
-include_directories(SYSTEM ${HZ_ASIO_INCLUDE_DIR})
-message(STATUS "Using HZ_ASIO_INCLUDE_DIR: ${HZ_ASIO_INCLUDE_DIR}")
+include_directories(${Boost_INCLUDE_DIRS})
+message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
   message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)" )
@@ -209,7 +206,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-add_definitions(-DBOOST_NO_AUTO_PTR -DASIO_STANDALONE -DELPP_DISABLE_ASSERT)
+add_definitions(-DBOOST_NO_AUTO_PTR -DELPP_DISABLE_ASSERT)
 
 IF(HZ_BUILD_TESTS)
 	option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)

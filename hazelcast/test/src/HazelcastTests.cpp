@@ -116,7 +116,7 @@
 #include <executor/tasks/NullCallable.h>
 #include <stdlib.h>
 #include <fstream>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <cassert>
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -3760,7 +3760,7 @@ namespace hazelcast {
 
             TEST_F(AddressUtilTest, testGetByNameIpV4) {
                 std::string addrString("127.0.0.1");
-                asio::ip::address address = AddressUtil::getByName(addrString);
+                boost::asio::ip::address address = AddressUtil::getByName(addrString);
                 ASSERT_TRUE(address.is_v4());
                 ASSERT_FALSE(address.is_v6());
                 ASSERT_EQ(addrString, address.to_string());
