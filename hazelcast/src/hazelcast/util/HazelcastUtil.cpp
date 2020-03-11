@@ -49,10 +49,11 @@
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <asio/io_service.hpp>
-#include <asio/ip/basic_resolver.hpp>
-#include <asio/ssl/rfc2818_verification.hpp>
-#include <asio/ip/tcp.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/basic_resolver.hpp>
+#include <boost/asio/ssl/rfc2818_verification.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/system/system_error.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/client/exception/IllegalStateException.h"
@@ -145,18 +146,18 @@ namespace hazelcast {
             return getAddressHolder(address, -1);
         }
 
-        asio::ip::address AddressUtil::getByName(const std::string &host) {
+        boost::asio::ip::address AddressUtil::getByName(const std::string &host) {
             return getByName(host, "");
         }
 
-        asio::ip::address AddressUtil::getByName(const std::string &host, const std::string &service) {
+        boost::asio::ip::address AddressUtil::getByName(const std::string &host, const std::string &service) {
             try {
-                asio::io_service ioService;
-                asio::ip::tcp::resolver res(ioService);
-                asio::ip::tcp::resolver::query query(host, service);
-                asio::ip::basic_resolver<asio::ip::tcp>::iterator iterator = res.resolve(query);
+                boost::asio::io_service ioService;
+                boost::asio::ip::tcp::resolver res(ioService);
+                boost::asio::ip::tcp::resolver::query query(host, service);
+                boost::asio::ip::basic_resolver<boost::asio::ip::tcp>::iterator iterator = res.resolve(query);
                 return iterator->endpoint().address();
-            } catch (asio::system_error &e) {
+            } catch (boost::system::system_error &e) {
                 std::ostringstream out;
                 out << "Address " << host << " ip number is not available. " << e.what();
                 throw client::exception::UnknownHostException("AddressUtil::getByName", out.str());
@@ -381,7 +382,7 @@ namespace hazelcast {
 
             void SimpleExecutorService::Worker::schedule(const std::shared_ptr<Runnable> &runnable) {
                 if (!executorService.live) {
-                    throw exception::IllegalStateException("SimpleExecutorService::Worker::schedule",
+                    throw client::exception::IllegalStateException("SimpleExecutorService::Worker::schedule",
                                                            "Executor is shudown.");
                 }
                 workQueue.push(runnable);
@@ -644,7 +645,7 @@ namespace hazelcast {
                                                                                                     uriPath(uriPath),
 #ifdef HZ_BUILD_WITH_SSL
                                                                                                     sslContext(
-                                                                                                            asio::ssl::context::sslv23),
+                                                                                                            boost::asio::ssl::context::sslv23),
 #endif
                                                                                                     responseStream(
                                                                                                             &response) {
@@ -652,11 +653,11 @@ namespace hazelcast {
 
 #ifdef HZ_BUILD_WITH_SSL
             sslContext.set_default_verify_paths();
-            sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
-                                   asio::ssl::context::single_dh_use);
+            sslContext.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
+                                   boost::asio::ssl::context::single_dh_use);
 
-            socket = std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
-                    new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
+            socket = std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> >(
+                    new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(ioService, sslContext));
 #endif // HZ_BUILD_WITH_SSL
         }
 
@@ -666,21 +667,21 @@ namespace hazelcast {
 #ifdef HZ_BUILD_WITH_SSL
             try {
                 // Get a list of endpoints corresponding to the server name.
-                asio::ip::tcp::resolver resolver(ioService);
-                asio::ip::tcp::resolver::query query(server, "https");
-                asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+                boost::asio::ip::tcp::resolver resolver(ioService);
+                boost::asio::ip::tcp::resolver::query query(server, "https");
+                boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-                asio::connect(socket->lowest_layer(), endpoint_iterator);
+                boost::asio::connect(socket->lowest_layer(), endpoint_iterator);
 
-                socket->lowest_layer().set_option(asio::ip::tcp::no_delay(true));
+                socket->lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
 
-                socket->set_verify_callback(asio::ssl::rfc2818_verification(server));
-                socket->handshake(asio::ssl::stream_base::client);
+                socket->set_verify_callback(boost::asio::ssl::rfc2818_verification(server));
+                socket->handshake(boost::asio::ssl::stream_base::client);
 
                 // Form the request. We specify the "Connection: close" header so that the
                 // server will close the socket after transmitting the response. This will
                 // allow us to treat all data up until the EOF as the content.
-                asio::streambuf request;
+                boost::asio::streambuf request;
                 std::ostream request_stream(&request);
                 request_stream << "GET " << uriPath << " HTTP/1.0\r\n";
                 request_stream << "Host: " << server << "\r\n";
@@ -688,12 +689,12 @@ namespace hazelcast {
                 request_stream << "Connection: close\r\n\r\n";
 
                 // Send the request.
-                asio::write(*socket, request.data());
+                boost::asio::write(*socket, request.data());
 
                 // Read the response status line. The response streambuf will automatically
                 // grow to accommodate the entire line. The growth may be limited by passing
                 // a maximum size to the streambuf constructor.
-                asio::read_until(*socket, response, "\r\n");
+                boost::asio::read_until(*socket, response, "\r\n");
 
                 // Check that response is OK.
                 std::string httpVersion;
@@ -712,24 +713,24 @@ namespace hazelcast {
                 }
 
                 // Read the response headers, which are terminated by a blank line.
-                asio::read_until(*socket, response, "\r\n\r\n");
+                boost::asio::read_until(*socket, response, "\r\n\r\n");
 
                 // Process the response headers.
                 std::string header;
                 while (std::getline(responseStream, header) && header != "\r");
 
                 // Read until EOF
-                asio::error_code error;
+                boost::system::error_code error;
                 size_t bytesRead;
-                while ((bytesRead = asio::read(*socket, response.prepare(1024),
-                                               asio::transfer_at_least(1), error))) {
+                while ((bytesRead = boost::asio::read(*socket, response.prepare(1024),
+                                               boost::asio::transfer_at_least(1), error))) {
                     response.commit(bytesRead);
                 }
 
-                if (error != asio::error::eof) {
-                    throw asio::system_error(error);
+                if (error != boost::asio::error::eof) {
+                    throw boost::system::system_error(error);
                 }
-            } catch (asio::system_error &e) {
+            } catch (boost::system::system_error &e) {
                 std::ostringstream out;
                 out << "Could not retrieve response from https://" << server << uriPath << " Error:" << e.what();
                 throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());
@@ -1316,18 +1317,18 @@ namespace hazelcast {
         std::istream &SyncHttpClient::openConnection() {
             try {
                 // Get a list of endpoints corresponding to the server name.
-                asio::ip::tcp::resolver resolver(ioService);
-                asio::ip::tcp::resolver::query query(server, "http");
-                asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+                boost::asio::ip::tcp::resolver resolver(ioService);
+                boost::asio::ip::tcp::resolver::query query(server, "http");
+                boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-                asio::connect(socket, endpoint_iterator);
+                boost::asio::connect(socket, endpoint_iterator);
 
-                socket.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
+                socket.lowest_layer().set_option(boost::asio::ip::tcp::no_delay(true));
 
                 // Form the request. We specify the "Connection: close" header so that the
                 // server will close the socket after transmitting the response. This will
                 // allow us to treat all data up until the EOF as the content.
-                asio::streambuf request;
+                boost::asio::streambuf request;
                 std::ostream request_stream(&request);
                 request_stream << "GET " << uriPath << " HTTP/1.0\r\n";
                 request_stream << "Host: " << server << "\r\n";
@@ -1335,12 +1336,12 @@ namespace hazelcast {
                 request_stream << "Connection: close\r\n\r\n";
 
                 // Send the request.
-                asio::write(socket, request.data());
+                boost::asio::write(socket, request.data());
 
                 // Read the response status line. The response streambuf will automatically
                 // grow to accommodate the entire line. The growth may be limited by passing
                 // a maximum size to the streambuf constructor.
-                asio::read_until(socket, response, "\r\n");
+                boost::asio::read_until(socket, response, "\r\n");
 
                 // Check that response is OK.
                 std::string httpVersion;
@@ -1359,26 +1360,26 @@ namespace hazelcast {
                 }
 
                 // Read the response headers, which are terminated by a blank line.
-                asio::read_until(socket, response, "\r\n\r\n");
+                boost::asio::read_until(socket, response, "\r\n\r\n");
 
                 // Process the response headers.
                 std::string header;
                 while (std::getline(responseStream, header) && header != "\r");
 
                 // Read until EOF
-                asio::error_code error;
+                boost::system::error_code error;
                 size_t bytesRead;
-                while ((bytesRead = asio::read(socket, response.prepare(1024),
-                                               asio::transfer_at_least(1), error))) {
+                while ((bytesRead = boost::asio::read(socket, response.prepare(1024),
+                                               boost::asio::transfer_at_least(1), error))) {
                     response.commit(bytesRead);
                 }
 
-                if (error != asio::error::eof) {
-                    throw asio::system_error(error);
+                if (error != boost::asio::error::eof) {
+                    throw boost::system::system_error(error);
                 }
 
                 return responseStream;
-            } catch (asio::system_error &e) {
+            } catch (boost::system::system_error &e) {
                 std::ostringstream out;
                 out << "Could not retrieve response from http://" << server << uriPath << " Error:" << e.what();
                 throw client::exception::IOException("SyncHttpClient::openConnection", out.str());
@@ -1797,9 +1798,9 @@ namespace hazelcast {
         std::vector<client::Address>
         AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount,
                                                   ILogger &logger) {
-            std::unique_ptr<asio::ip::address> inetAddress;
+            std::unique_ptr<boost::asio::ip::address> inetAddress;
             try {
-                inetAddress.reset(new asio::ip::address(AddressUtil::getByName(scopedAddress)));
+                inetAddress.reset(new boost::asio::ip::address(AddressUtil::getByName(scopedAddress)));
             } catch (client::exception::UnknownHostException &ignored) {
                 logger.finest("Address ", scopedAddress, " ip number is not available", ignored.what());
             }

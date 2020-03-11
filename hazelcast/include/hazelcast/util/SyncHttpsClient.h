@@ -18,11 +18,11 @@
 
 
 #include <string>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <asio/ssl/context.hpp>
-#include <asio/ssl/stream.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include <boost/asio/ssl/stream.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -32,6 +32,8 @@
 #pragma warning(disable: 4251) //for dll export
 #pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
+
+using namespace boost;
 
 namespace hazelcast {
     namespace util {
@@ -44,14 +46,14 @@ namespace hazelcast {
             std::string server;
             std::string uriPath;
 
-            asio::io_service ioService;
+            boost::asio::io_service ioService;
 
             #ifdef HZ_BUILD_WITH_SSL
-            asio::ssl::context sslContext;
-            std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
+            boost::asio::ssl::context sslContext;
+            std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > socket;
             #endif // HZ_BUILD_WITH_SSL
 
-            asio::streambuf response;
+            boost::asio::streambuf response;
             std::istream responseStream;
         };
     }

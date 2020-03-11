@@ -19,7 +19,7 @@
 #endif
 
 #include <algorithm>
-#include <asio.hpp>
+#include <boost/asio.hpp>
 #include <boost/date_time.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -12035,15 +12035,15 @@ namespace hazelcast {
 #ifdef HZ_BUILD_WITH_SSL
                     const client::config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
                     if (sslConfig.isEnabled()) {
-                        sslContext = std::unique_ptr<asio::ssl::context>(new asio::ssl::context(
-                                (asio::ssl::context_base::method) sslConfig.getProtocol()));
+                        sslContext = std::unique_ptr<boost::asio::ssl::context>(new boost::asio::ssl::context(
+                                (boost::asio::ssl::context_base::method) sslConfig.getProtocol()));
 
                         const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
                         bool success = true;
                         util::ILogger &logger = clientContext.getLogger();
                         for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
                              ++it) {
-                            asio::error_code ec;
+                            boost::system::error_code ec;
                             sslContext->load_verify_file(*it, ec);
                             if (ec) {
                                 logger.warning(
@@ -12111,7 +12111,7 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                SSLSocket::SSLSocket(asio::io_service &ioService, asio::ssl::context &context,
+                SSLSocket::SSLSocket(boost::asio::io_service &ioService, boost::asio::ssl::context &context,
                                      const client::Address &address, client::config::SocketOptions &socketOptions)
                         : remoteEndpoint(address), socket(ioService, context), ioService(ioService),
                           deadline(ioService), socketId(-1), socketOptions(socketOptions), isOpen(true) {
@@ -12121,14 +12121,14 @@ namespace hazelcast {
                     close();
                 }
 
-                void SSLSocket::handleConnect(const asio::error_code &error) {
+                void SSLSocket::handleConnect(const boost::system::error_code &error) {
                     errorCode = error;
                 }
 
-                void SSLSocket::checkDeadline(const asio::error_code &ec) {
+                void SSLSocket::checkDeadline(const boost::system::error_code &ec) {
                     // The timer may return an error, e.g. operation_aborted when we cancel it. would_block is OK,
                     // since we set it at the start of the connection.
-                    if (ec && ec != asio::error::would_block) {
+                    if (ec && ec != boost::asio::error::would_block) {
                         return;
                     }
 
@@ -12139,7 +12139,7 @@ namespace hazelcast {
                         // The deadline has passed. The socket is closed so that any outstanding
                         // asynchronous operations are cancelled. This allows the blocked
                         // connect(), read_line() or write_line() functions to return.
-                        asio::error_code ignored_ec;
+                        boost::system::error_code ignored_ec;
                         socket.lowest_layer().close(ignored_ec);
 
                         return;
@@ -12151,11 +12151,11 @@ namespace hazelcast {
 
                 int SSLSocket::connect(int timeoutInMillis) {
                     try {
-                        asio::ip::tcp::resolver resolver(ioService);
+                        boost::asio::ip::tcp::resolver resolver(ioService);
                         std::ostringstream out;
                         out << remoteEndpoint.getPort();
-                        asio::ip::tcp::resolver::query query(remoteEndpoint.getHost(), out.str());
-                        asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
+                        boost::asio::ip::tcp::resolver::query query(remoteEndpoint.getHost(), out.str());
+                        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
                         deadline.expires_from_now(std::chrono::milliseconds(timeoutInMillis));
 
@@ -12164,24 +12164,24 @@ namespace hazelcast {
                         // operation is incomplete. Asio guarantees that its asynchronous
                         // operations will never fail with would_block, so any other value in
                         // errorCode indicates completion.
-                        errorCode = asio::error::would_block;
+                        errorCode = boost::asio::error::would_block;
 
                         checkDeadline(errorCode);
 
                         // Start the asynchronous operation itself. a callback will update the ec variable when the
                         // operation completes.
-                        asio::async_connect(socket.lowest_layer(), iterator,
+                        boost::asio::async_connect(socket.lowest_layer(), iterator,
                                             std::bind(&SSLSocket::handleConnect, this, std::placeholders::_1));
 
                         // Block until the asynchronous operation has completed.
-                        asio::error_code ioRunErrorCode;
+                        boost::system::error_code ioRunErrorCode;
 
                         // the restart is needed for the other connection attempts to work since the ioservice goes
                         // into the stopped state following the loop
                         ioService.restart();
                         do {
                             ioService.run_one(ioRunErrorCode);
-                        } while (!ioRunErrorCode && (errorCode == asio::error::would_block));
+                        } while (!ioRunErrorCode && (errorCode == boost::asio::error::would_block));
 
                         // cancel the deadline timer
                         deadline.cancel();
@@ -12203,16 +12203,16 @@ namespace hazelcast {
                         // check whether the socket is still open before deciding if we succeeded
                         // or failed.
                         if (!socket.lowest_layer().is_open()) {
-                            return asio::error::operation_aborted;
+                            return boost::asio::error::operation_aborted;
                         }
 
-                        socket.handshake(asio::ssl::stream<asio::ip::tcp::socket>::client);
+                        socket.handshake(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>::client);
 
                         setSocketOptions();
 
                         setBlocking(false);
                         socketId = socket.lowest_layer().native_handle();
-                    } catch (asio::system_error &e) {
+                    } catch (boost::system::system_error &e) {
                         return e.code().value();
                     }
 
@@ -12241,28 +12241,28 @@ namespace hazelcast {
 
                 int SSLSocket::send(const void *buffer, int len, int flag) {
                     size_t size = 0;
-                    asio::error_code ec;
+                    boost::system::error_code ec;
 
                     if (flag == MSG_WAITALL) {
-                        size = asio::write(socket, asio::buffer(buffer, (size_t) len),
-                                           asio::transfer_exactly((size_t) len), ec);
+                        size = boost::asio::write(socket, boost::asio::buffer(buffer, (size_t) len),
+                                           boost::asio::transfer_exactly((size_t) len), ec);
                     } else {
-                        size = socket.write_some(asio::buffer(buffer, (size_t) len), ec);
+                        size = socket.write_some(boost::asio::buffer(buffer, (size_t) len), ec);
                     }
 
                     return handleError("SSLSocket::send", size, ec);
                 }
 
                 int SSLSocket::receive(void *buffer, int len, int flag) {
-                    asio::error_code ec;
+                    boost::system::error_code ec;
                     size_t size = 0;
 
                     ReadHandler readHandler(size, ec);
-                    asio::error_code ioRunErrorCode;
+                    boost::system::error_code ioRunErrorCode;
                     ioService.restart();
                     if (flag == MSG_WAITALL) {
-                        asio::async_read(socket, asio::buffer(buffer, (size_t) len),
-                                         asio::transfer_exactly((size_t) len), readHandler);
+                        boost::asio::async_read(socket, boost::asio::buffer(buffer, (size_t) len),
+                                         boost::asio::transfer_exactly((size_t) len), readHandler);
                         do {
                             ioService.run_one(ioRunErrorCode);
                             handleError("SSLSocket::receive", size, ec);
@@ -12270,8 +12270,8 @@ namespace hazelcast {
 
                         return (int) readHandler.getNumRead();
                     } else {
-                        size = asio::read(socket, asio::buffer(buffer, (size_t) len),
-                                          asio::transfer_exactly((size_t) len), ec);
+                        size = boost::asio::read(socket, boost::asio::buffer(buffer, (size_t) len),
+                                          boost::asio::transfer_exactly((size_t) len), ec);
                     }
 
                     return handleError("SSLSocket::receive", size, ec);
@@ -12287,8 +12287,8 @@ namespace hazelcast {
                 }
 
                 std::unique_ptr<Address> SSLSocket::localSocketAddress() const {
-                    asio::error_code ec;
-                    asio::ip::basic_endpoint<asio::ip::tcp> localEndpoint = socket.lowest_layer().local_endpoint(ec);
+                    boost::system::error_code ec;
+                    boost::asio::ip::basic_endpoint<boost::asio::ip::tcp> localEndpoint = socket.lowest_layer().local_endpoint(ec);
                     if (ec) {
                         return std::unique_ptr<Address>();
                     }
@@ -12297,14 +12297,14 @@ namespace hazelcast {
                 }
 
                 void SSLSocket::close() {
-                    asio::error_code ec;
+                    boost::system::error_code ec;
                     // Call the non-exception throwing versions of the following method
                     socket.lowest_layer().close(ec);
                 }
 
                 int SSLSocket::handleError(const std::string &source, size_t numBytes,
-                                           const asio::error_code &error) const {
-                    if (error && error != asio::error::try_again && error != asio::error::would_block) {
+                                           const boost::system::error_code &error) const {
+                    if (error && error != boost::asio::error::try_again && error != boost::asio::error::would_block) {
                         throw exception::IOException(source, error.message());
                     }
                     return (int) numBytes;
@@ -12313,31 +12313,31 @@ namespace hazelcast {
                 void SSLSocket::setSocketOptions() {
                     auto &lowestLayer = socket.lowest_layer();
 
-                    lowestLayer.set_option(asio::ip::tcp::no_delay(socketOptions.isTcpNoDelay()));
+                    lowestLayer.set_option(boost::asio::ip::tcp::no_delay(socketOptions.isTcpNoDelay()));
 
-                    lowestLayer.set_option(asio::socket_base::keep_alive(socketOptions.isKeepAlive()));
+                    lowestLayer.set_option(boost::asio::socket_base::keep_alive(socketOptions.isKeepAlive()));
 
-                    lowestLayer.set_option(asio::socket_base::reuse_address(socketOptions.isReuseAddress()));
+                    lowestLayer.set_option(boost::asio::socket_base::reuse_address(socketOptions.isReuseAddress()));
 
                     int lingerSeconds = socketOptions.getLingerSeconds();
                     if (lingerSeconds > 0) {
-                        lowestLayer.set_option(asio::socket_base::linger(true, lingerSeconds));
+                        lowestLayer.set_option(boost::asio::socket_base::linger(true, lingerSeconds));
                     }
 
                     int bufferSize = socketOptions.getBufferSizeInBytes();
                     if (bufferSize > 0) {
-                        lowestLayer.set_option(asio::socket_base::receive_buffer_size(bufferSize));
-                        lowestLayer.set_option(asio::socket_base::send_buffer_size(bufferSize));
+                        lowestLayer.set_option(boost::asio::socket_base::receive_buffer_size(bufferSize));
+                        lowestLayer.set_option(boost::asio::socket_base::send_buffer_size(bufferSize));
                     }
 
                     // SO_NOSIGPIPE seems to be internally handled by asio on connect and accept. no such option
                     // is defined at the api, hence not setting this option
                 }
 
-                SSLSocket::ReadHandler::ReadHandler(size_t &numRead, asio::error_code &ec) : numRead(numRead),
+                SSLSocket::ReadHandler::ReadHandler(size_t &numRead, boost::system::error_code &ec) : numRead(numRead),
                                                                                              errorCode(ec) {}
 
-                void SSLSocket::ReadHandler::operator()(const asio::error_code &err, std::size_t bytes_transferred) {
+                void SSLSocket::ReadHandler::operator()(const boost::system::error_code &err, std::size_t bytes_transferred) {
                     errorCode = err;
                     numRead += bytes_transferred;
                 }
@@ -12346,7 +12346,7 @@ namespace hazelcast {
                     return numRead;
                 }
 
-                asio::error_code &SSLSocket::ReadHandler::getErrorCode() const {
+                boost::system::error_code &SSLSocket::ReadHandler::getErrorCode() const {
                     return errorCode;
                 }
 

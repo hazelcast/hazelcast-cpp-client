@@ -17,10 +17,12 @@
 #ifndef HAZELCAST_UTIL_ADDRESSUTIL_H_
 #define HAZELCAST_UTIL_ADDRESSUTIL_H_
 
-#include <asio/ip/address.hpp>
+#include <boost/asio/ip/address.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/AddressHelper.h"
+
+using namespace boost;
 
 namespace hazelcast {
     namespace util {
@@ -30,10 +32,10 @@ namespace hazelcast {
 
             static AddressHolder getAddressHolder(const std::string &address, int defaultPort);
 
-            static asio::ip::address getByName(const std::string &host);
+            static boost::asio::ip::address getByName(const std::string &host);
 
         private:
-            static asio::ip::address getByName(const std::string &host, const std::string &service);
+            static boost::asio::ip::address getByName(const std::string &host, const std::string &service);
         };
 
     }

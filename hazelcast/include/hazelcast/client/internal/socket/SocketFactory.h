@@ -21,14 +21,16 @@
 #include "hazelcast/util/HazelcastDll.h"
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <asio.hpp>
-#include <asio/ssl.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
 #endif
+
+using namespace boost;
 
 namespace hazelcast {
     namespace client {
@@ -51,8 +53,8 @@ namespace hazelcast {
                     spi::ClientContext &clientContext;
 
                     #ifdef HZ_BUILD_WITH_SSL
-                    std::unique_ptr<asio::ssl::context> sslContext;
-                    asio::io_service ioService;
+                    std::unique_ptr<boost::asio::ssl::context> sslContext;
+                    boost::asio::io_service ioService;
                     #endif
                 };
             }

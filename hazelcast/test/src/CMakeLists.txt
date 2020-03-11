@@ -1,3 +1,5 @@
+cmake_minimum_required (VERSION 3.12.4)
+
 FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
 FILE(GLOB_RECURSE HZ_TEST_HEADERS "./*h")
 

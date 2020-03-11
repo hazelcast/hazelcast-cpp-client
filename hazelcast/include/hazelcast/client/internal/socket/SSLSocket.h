@@ -20,9 +20,9 @@
 
 #include <atomic>
 
-#include <asio.hpp>
-#include <asio/ssl.hpp>
-#include <asio/deadline_timer.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <boost/asio/deadline_timer.hpp>
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/Address.h"
@@ -38,6 +38,8 @@
 #pragma warning(disable: 4251) //for dll export
 #pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
+
+using namespace boost;
 
 namespace hazelcast {
     namespace client {
@@ -58,7 +60,7 @@ namespace hazelcast {
                     /**
                      * Constructor
                      */
-                    SSLSocket(asio::io_service &ioService, asio::ssl::context &context, const client::Address &address,
+                    SSLSocket(boost::asio::io_service &ioService, boost::asio::ssl::context &context, const client::Address &address,
                               client::config::SocketOptions &socketOptions);
 
                     /**
@@ -120,37 +122,37 @@ namespace hazelcast {
 
                     class ReadHandler {
                     public:
-                        ReadHandler(size_t &numRead, asio::error_code &ec);
+                        ReadHandler(size_t &numRead, boost::system::error_code &ec);
 
-                        void operator()(const asio::error_code &err, std::size_t bytes_transferred);
+                        void operator()(const boost::system::error_code &err, std::size_t bytes_transferred);
 
                         size_t &getNumRead() const;
 
-                        asio::error_code &getErrorCode() const;
+                        boost::system::error_code &getErrorCode() const;
 
                     private:
                         size_t &numRead;
-                        asio::error_code &errorCode;
+                        boost::system::error_code &errorCode;
                     };
 
                     /**
                      * @return numBytes if the no error or error is try_again or would_block
                      * @throws IOException if the error exists and different from try_again and would_block
                      */
-                    int handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const;
+                    int handleError(const std::string &source, size_t numBytes, const boost::system::error_code &error) const;
 
-                    void handleConnect(const asio::error_code &error);
+                    void handleConnect(const boost::system::error_code &error);
 
-                    void checkDeadline(const asio::error_code &ec);
+                    void checkDeadline(const boost::system::error_code &ec);
 
                     void setSocketOptions();
 
                     client::Address remoteEndpoint;
 
-                    asio::ssl::stream<asio::ip::tcp::socket> socket;
-                    asio::io_service &ioService;
-                    asio::system_timer deadline;
-                    asio::error_code errorCode;
+                    boost::asio::ssl::stream<boost::asio::ip::tcp::socket> socket;
+                    boost::asio::io_service &ioService;
+                    boost::asio::system_timer deadline;
+                    boost::system::error_code errorCode;
                     int socketId;
                     const client::config::SocketOptions &socketOptions;
                     std::atomic_bool isOpen;

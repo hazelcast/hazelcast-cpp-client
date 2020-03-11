@@ -24,6 +24,44 @@
 #  -DHZ_COMPILE_WITH_SSL=ON
 
 cmake_minimum_required (VERSION 3.12.4)
+
+function(downloadboost BINARY-DIR)
+	set(ZIPFN ${CMAKE_CURRENT_BINARY_DIR}/boost_1_72_0.zip)
+	set(OUTFN ${CMAKE_CURRENT_BINARY_DIR}/boost_1_72_0)
+
+	if(NOT EXISTS ${OUTFN})
+		if(NOT EXISTS ${ZIPFN})
+			if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+				set(BOOST_DOWNLOAD_URL https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.7z)
+				set(BOOST_CHECKSUM 247a91dd7e4d9dd3c4b954b532fbc167ba62dc15ab834e5ad893d7c3f9eb5f0f)
+			else()
+				set(BOOST_DOWNLOAD_URL https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.bz2)
+				set(BOOST_CHECKSUM 59c9b274bc451cf91a9ba1dd2c7fdcaf5d60b1b3aa83f2c9fa143417cc660722)
+			endif()
+			file(DOWNLOAD ${BOOST_DOWNLOAD_URL} ${ZIPFN}
+					SHOW_PROGRESS
+					EXPECTED_HASH SHA256=${BOOST_CHECKSUM})
+		endif()
+
+		execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${ZIPFN}
+				WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+	endif()
+endfunction()
+
+function (find_boost BINARY_DIR)
+	# try finding the boost installation
+	find_package(Boost 1.69 QUIET)
+	if (NOT Boost_FOUND)
+		message(STATUS "Could not find an existing Boost installation (If you have a boost installation and you want to use it, please make sure that cmake find_package[https://cmake.org/cmake/help/latest/command/find_package.html] can find it. Also see [https://cmake.org/cmake/help/latest/module/FindBoost.html]). I will download the needed boost components now into ${BINARY_DIR}.")
+		downloadboost(${BINARY_DIR})
+		set(Boost_INCLUDE_DIRS "${BINARY_DIR}/boost_1_72_0" PARENT_SCOPE)
+	endif()
+
+	if (Boost_FOUND)
+		message(STATUS "Found an existing Boost installation.")
+	endif()
+endfunction()
+
 project (HazelcastClient
 		VERSION 4.0
 		DESCRIPTION "Hazelcast C++ Client"
@@ -33,8 +71,9 @@ project (HazelcastClient
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 
-INCLUDE(TestBigEndian)
-INCLUDE(FindOpenSSL)
+include(TestBigEndian)
+include(FindOpenSSL)
+include(FindBoost)
 
 SET(HZ_VERSION 4.0-SNAPSHOT)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
@@ -75,7 +114,7 @@ message(STATUS "HAZELCAST_GIT_COMMIT_ID = ${HAZELCAST_GIT_COMMIT_ID}" )
 add_definitions(-DHAZELCAST_GIT_COMMIT_ID=${HAZELCAST_GIT_COMMIT_ID})
 
 # Disable any boost lib linking
-add_definitions("-DBOOST_ALL_NO_LIB")
+add_definitions("-DBOOST_ALL_NO_LIB -DBOOST_ERROR_CODE_HEADER_ONLY")
 
 message(STATUS "Preparing hazelcast client ..... ")
 
@@ -91,29 +130,16 @@ ENDIF (${IS_BIG_ENDIAN})
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
-set(EXTERNAL_SOURCES "${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src/easylogging++.cc")
+set(EXTERNAL_SOURCES "${PROJECT_SOURCE_DIR}/external/src/easylogging++.cc")
 FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h")
 
-include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include ${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src)
+include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include ${PROJECT_SOURCE_DIR}/external/release_include)
 
-if (HZ_FIND_EXTERNAL_BOOST)
-	find_package(Boost REQUIRED)
-	set(HZ_BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
-else ()
-	set(HZ_BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/boost_latest)
-endif(HZ_FIND_EXTERNAL_BOOST)
-
-include_directories(SYSTEM ${HZ_BOOST_INCLUDE_DIR})
-message(STATUS "Using HZ_BOOST_INCLUDE_DIR: ${HZ_BOOST_INCLUDE_DIR}")
-
-if ("${HZ_ASIO_INCLUDE_DIR}" STREQUAL "")
-	set(HZ_ASIO_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/asio/asio/include/)
-endif ("${HZ_ASIO_INCLUDE_DIR}" STREQUAL "")
-
-include_directories(SYSTEM ${HZ_ASIO_INCLUDE_DIR})
-message(STATUS "Using HZ_ASIO_INCLUDE_DIR: ${HZ_ASIO_INCLUDE_DIR}")
+find_boost(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${Boost_INCLUDE_DIRS})
+message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
   message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)" )
@@ -209,7 +235,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-add_definitions(-DBOOST_NO_AUTO_PTR -DASIO_STANDALONE -DELPP_DISABLE_ASSERT)
+add_definitions(-DBOOST_NO_AUTO_PTR -DELPP_DISABLE_ASSERT)
 
 IF(HZ_BUILD_TESTS)
 	option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
