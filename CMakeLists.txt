@@ -24,6 +24,44 @@
 #  -DHZ_COMPILE_WITH_SSL=ON
 
 cmake_minimum_required (VERSION 3.12.4)
+
+function(downloadboost BINARY-DIR)
+	set(ZIPFN ${CMAKE_CURRENT_BINARY_DIR}/boost_1_72_0.zip)
+	set(OUTFN ${CMAKE_CURRENT_BINARY_DIR}/boost_1_72_0)
+
+	if(NOT EXISTS ${OUTFN})
+		if(NOT EXISTS ${ZIPFN})
+			if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+				set(BOOST_DOWNLOAD_URL https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.7z)
+				set(BOOST_CHECKSUM 247a91dd7e4d9dd3c4b954b532fbc167ba62dc15ab834e5ad893d7c3f9eb5f0f)
+			else()
+				set(BOOST_DOWNLOAD_URL https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.bz2)
+				set(BOOST_CHECKSUM 59c9b274bc451cf91a9ba1dd2c7fdcaf5d60b1b3aa83f2c9fa143417cc660722)
+			endif()
+			file(DOWNLOAD ${BOOST_DOWNLOAD_URL} ${ZIPFN}
+					SHOW_PROGRESS
+					EXPECTED_HASH SHA256=${BOOST_CHECKSUM})
+		endif()
+
+		execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${ZIPFN}
+				WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+	endif()
+endfunction()
+
+function (find_boost BINARY_DIR)
+	# try finding the boost installation
+	find_package(Boost 1.69 QUIET)
+	if (NOT Boost_FOUND)
+		message(STATUS "Could not find an existing Boost installation (If you have a boost installation and you want to use it, please make sure that cmake find_package[https://cmake.org/cmake/help/latest/command/find_package.html] can find it. Also see [https://cmake.org/cmake/help/latest/module/FindBoost.html]). I will download the needed boost components now into ${BINARY_DIR}.")
+		downloadboost(${BINARY_DIR})
+		set(Boost_INCLUDE_DIRS "${BINARY_DIR}/boost_1_72_0" PARENT_SCOPE)
+	endif()
+
+	if (Boost_FOUND)
+		message(STATUS "Found an existing Boost installation.")
+	endif()
+endfunction()
+
 project (HazelcastClient
 		VERSION 4.0
 		DESCRIPTION "Hazelcast C++ Client"
@@ -92,23 +130,14 @@ ENDIF (${IS_BIG_ENDIAN})
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
-set(EXTERNAL_SOURCES "${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src/easylogging++.cc")
+set(EXTERNAL_SOURCES "${PROJECT_SOURCE_DIR}/external/src/easylogging++.cc")
 FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h")
 
-include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include ${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src)
+include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include ${PROJECT_SOURCE_DIR}/external/release_include)
 
-# Try finding by boost components first
-find_package(Boost
-		1.69
-		QUIET
-		COMPONENTS asio property_tree)
-if (NOT Boost_FOUND)
-	# try finding the boost installation
-	find_package(Boost 1.69 REQUIRED)
-endif()
-
+find_boost(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 

@@ -1,8 +1,0 @@
-[submodule "googletest"]
-	path = hazelcast/test/googletest
-	url = https://github.com/google/googletest.git
-	branch = release-1.10.0
-[submodule "external/include/easyloggingpp"]
-	path = external/include/easyloggingpp
-	url = https://github.com/amrayn/easyloggingpp.git
-	branch = v9.96.7

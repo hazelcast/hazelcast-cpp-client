@@ -50,8 +50,8 @@ public:
 
 int main(int argc, char **argv) {
     const char *serverAddress = "127.0.0.1";
-
     int port = 9701;
+
     auto transport = make_shared<TBufferedTransport>(make_shared<TSocket>(serverAddress, port));
     try {
         transport->open();
