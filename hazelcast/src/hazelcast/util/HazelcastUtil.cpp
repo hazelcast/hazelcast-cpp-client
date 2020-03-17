@@ -69,7 +69,6 @@
 #include "hazelcast/util/Clearable.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/SocketSet.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/Destroyable.h"
@@ -97,12 +96,14 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/util/ExceptionUtil.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if  defined(WIN32) || defined(_WIN32) || d
+
+
+
+
+efined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4996) //for strerror
 #endif
@@ -769,76 +770,6 @@ namespace hazelcast {
 
             return hash % length;
         }
-    }
-}
-
-namespace hazelcast {
-    namespace util {
-        void SocketSet::insertSocket(client::Socket const *socket) {
-            assert(NULL != socket);
-
-            int socketId = socket->getSocketId();
-            assert(socketId >= 0);
-
-            if (socketId >= 0) {
-                LockGuard lockGuard(accessLock);
-                sockets.insert(socketId);
-            } else {
-                char msg[200];
-                util::hz_snprintf(msg, 200, "[SocketSet::insertSocket] Socket id:%d, Should be 0 or greater than 0.",
-                                  socketId);
-                logger.warning(msg);
-            }
-        }
-
-        void SocketSet::removeSocket(client::Socket const *socket) {
-            assert(NULL != socket);
-
-            int socketId = socket->getSocketId();
-            // Can not uncomment the below assert since when working with SSLSocket it may return to -1 for socket id
-            //assert(socketId >= 0);
-
-            bool found = false;
-
-            if (socketId >= 0) {
-                LockGuard lockGuard(accessLock);
-
-                for (std::set<int>::iterator it = sockets.begin(); it != sockets.end(); it++) {
-                    if (socketId == *it) { // found
-                        sockets.erase(it);
-                        found = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!found) {
-                logger.finest("[SocketSet::removeSocket] Socket with id ", socketId,
-                              "  was not found among the sockets.");
-            }
-        }
-
-        SocketSet::FdRange SocketSet::fillFdSet(fd_set &resultSet) {
-            FdRange result;
-            memset(&result, 0, sizeof(FdRange));
-
-            FD_ZERO(&resultSet);
-
-            LockGuard lockGuard(accessLock);
-
-            if (!sockets.empty()) {
-                for (std::set<int>::const_iterator it = sockets.begin(); it != sockets.end(); it++) {
-                    FD_SET(*it, &resultSet);
-                }
-
-                result.max = *sockets.rbegin();
-                result.min = *sockets.begin();
-            }
-
-            return result;
-        }
-
-        SocketSet::SocketSet(ILogger &logger) : logger(logger) {}
     }
 }
 
@@ -2290,13 +2221,6 @@ namespace hazelcast {
             return pos;
         }
 
-        size_t ByteBuffer::readFrom(client::Socket &socket, int flag) {
-            size_t rm = remaining();
-            size_t bytesReceived = (size_t) socket.receive(ix(), (int) rm, flag);
-            safeIncrementPosition(bytesReceived);
-            return bytesReceived;
-        }
-
         int ByteBuffer::readInt() {
             char a = readByte();
             char b = readByte();
@@ -2353,102 +2277,6 @@ namespace hazelcast {
             memcpy(target, ix(), numBytesToCopy);
             pos += numBytesToCopy;
             return numBytesToCopy;
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace util {
-
-        ServerSocket::ServerSocket(int port) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
-            if(n == -1) 
-                throw client::exception::IOException("Socket::Socket ", "WSAStartup error");
-#endif
-            struct addrinfo hints;
-            struct addrinfo *serverInfo;
-
-            memset(&hints, 0, sizeof hints);
-            hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
-            hints.ai_socktype = SOCK_STREAM;
-            hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
-            ::getaddrinfo(NULL, IOUtil::to_string(port).c_str(), &hints, &serverInfo);
-            socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
-            isOpen.store(true);
-            if (serverInfo->ai_family == AF_INET) {
-                ipv4 = true;
-            } else if (serverInfo->ai_family == AF_INET6) {
-                ipv4 = false;
-            } else {
-                throw client::exception::IOException("ServerSocket(int)", "unsupported ip protocol");
-            }
-            ::bind(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen);
-            ::listen(socketId, 10);
-            ::freeaddrinfo(serverInfo);
-
-        }
-
-
-        ServerSocket::~ServerSocket() {
-            close();
-        }
-
-        bool ServerSocket::isIpv4() const {
-            return ipv4;
-        }
-
-        void ServerSocket::close() {
-            bool expected = true;
-            if (isOpen.compare_exchange_strong(expected, false)) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                ::shutdown(socketId, SD_RECEIVE);
-                char buffer[1];
-                ::recv(socketId, buffer, 1, MSG_WAITALL);
-                WSACleanup();
-                closesocket(socketId);
-#else
-                ::shutdown(socketId, SHUT_RD);
-                char buffer[1];
-                ::recv(socketId, buffer, 1, MSG_WAITALL);
-                ::close(socketId);
-#endif
-            }
-
-        }
-
-        int ServerSocket::getPort() const {
-            if (ipv4) {
-                struct sockaddr_in sin;
-                socklen_t len = sizeof(sin);
-                if (getsockname(socketId, (struct sockaddr *) &sin, &len) == 0 && sin.sin_family == AF_INET) {
-                    return ntohs(sin.sin_port);
-                }
-                throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
-            }
-
-            struct sockaddr_in6 sin6;
-            socklen_t len = sizeof(sin6);
-            if (getsockname(socketId, (struct sockaddr *) &sin6, &len) == 0 && sin6.sin6_family == AF_INET6) {
-                return ntohs(sin6.sin6_port);
-            }
-            throw client::exception::IOException("ServerSocket::getPort()", "getsockname");
-        }
-
-        client::Socket *ServerSocket::accept() {
-            struct sockaddr_storage their_address;
-            socklen_t address_size = sizeof their_address;
-            int sId = ::accept(socketId, (struct sockaddr *) &their_address, &address_size);
-
-            if (sId == -1) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                int error =   WSAGetLastError();
-#else
-                int error = errno;
-#endif
-                throw client::exception::IOException("Socket::accept", strerror(error));
-            }
-            return new client::internal::socket::TcpSocket(sId);
         }
     }
 }

@@ -23,7 +23,9 @@
 #include <stdint.h>
 #include <memory>
 #include <random>
+#include <thread>
 #include <future>
+#include <boost/asio.hpp>
 
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
@@ -32,8 +34,6 @@
 #include "hazelcast/util/Future.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/connection/InSelector.h"
-#include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/protocol/Principal.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
@@ -56,6 +56,7 @@ namespace hazelcast {
         namespace protocol {
             class ClientMessage;
         }
+
         class SocketInterceptor;
 
         namespace spi {
@@ -156,6 +157,10 @@ namespace hazelcast {
                 virtual void addConnectionListener(const std::shared_ptr<ConnectionListener> &connectionListener);
 
                 util::ILogger &getLogger();
+
+                void authenticate(const Address &target, std::shared_ptr<Connection> &connection, bool asOwner,
+                                  std::shared_ptr<AuthenticationFuture> &future);
+
             private:
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC;
@@ -164,12 +169,7 @@ namespace hazelcast {
 
                 std::shared_ptr<AuthenticationFuture> triggerConnect(const Address &target, bool asOwner);
 
-                std::shared_ptr<Connection> createSocketConnection(const Address &address);
-
                 std::shared_ptr<Connection> getOrConnect(const Address &address, bool asOwner);
-
-                void authenticate(const Address &target, std::shared_ptr<Connection> &connection, bool asOwner,
-                                  std::shared_ptr<AuthenticationFuture> &future);
 
                 std::unique_ptr<protocol::ClientMessage>
                 encodeAuthenticationRequest(bool asOwner, serialization::pimpl::SerializationService &ss,
@@ -193,31 +193,7 @@ namespace hazelcast {
 
                 std::unique_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &client);
 
-                void startEventLoopGroup();
-
-                void stopEventLoopGroup();
-
                 void shuffle(std::vector<Address> &memberAddresses) const;
-
-                class InitConnectionTask : public util::Runnable {
-                public:
-                    InitConnectionTask(const Address &target, const bool asOwner,
-                                       const std::shared_ptr<AuthenticationFuture> &future,
-                                       ClientConnectionManagerImpl &connectionManager);
-
-                    void run();
-
-                    const std::string getName() const;
-
-                private:
-                    std::shared_ptr<Connection> getConnection(const Address &target);
-
-                    const Address target;
-                    const bool asOwner;
-                    std::shared_ptr<AuthenticationFuture> future;
-                    ClientConnectionManagerImpl &connectionManager;
-                    util::ILogger &logger;
-                };
 
                 class AuthCallback : public ExecutionCallback<protocol::ClientMessage> {
                 public:
@@ -288,10 +264,6 @@ namespace hazelcast {
                 spi::ClientContext &client;
                 SocketInterceptor *socketInterceptor;
                 util::SynchronizedMap<int, Connection> socketConnections;
-                InSelector inSelector;
-                OutSelector outSelector;
-                util::Thread inSelectorThread;
-                util::Thread outSelectorThread;
 
                 spi::impl::ClientExecutionServiceImpl &executionService;
 
@@ -320,6 +292,9 @@ namespace hazelcast {
 
                 util::Mutex lock;
                 std::unique_ptr<HeartbeatManager> heartbeat;
+
+                boost::asio::io_context ioContext;
+                std::thread ioThread;
             };
         }
     }

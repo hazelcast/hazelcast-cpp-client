@@ -63,11 +63,15 @@ namespace hazelcast {
                 readOnly = true;
             }
 
+            const std::shared_ptr<std::vector<byte> > &getBuffer() const {
+                return buffer;
+            }
+
             //---------------------- Getters -------------------------------
             inline std::string getStringUtf8() {
                 int32_t len = getInt32();
                 assert(checkReadAvailable(len));
-                const char *start = (const char *)ix();
+                const char *start = (const char *) ix();
                 index += len;
                 return std::string(start, len);
             }

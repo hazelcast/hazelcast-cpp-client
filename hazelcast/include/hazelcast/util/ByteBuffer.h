@@ -27,9 +27,6 @@
 #include <memory>
 
 namespace hazelcast {
-    namespace client {
-        class Socket;
-    }
     namespace util {
         class HAZELCAST_API ByteBuffer {
         public:
@@ -46,8 +43,6 @@ namespace hazelcast {
             bool hasRemaining() const;
 
             size_t position() const;
-
-            size_t readFrom(client::Socket &socket, int flag = 0);
 
             int readInt();
 
@@ -68,10 +63,10 @@ namespace hazelcast {
             void writeByte(char c);
 
             void *ix() const;
+
+            void safeIncrementPosition(size_t);
+
         private:
-
-            void safeIncrementPosition(size_t );
-
             size_t pos;
             size_t lim;
             size_t capacity;
