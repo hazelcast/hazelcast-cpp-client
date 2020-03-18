@@ -81,8 +81,6 @@ namespace hazelcast {
                     throw;
                 }
 
-                info->logger->finest("Thread ", target->getName(), " is finished.");
-
                 info->finishWaitLatch->countDown();
 
                 delete info;

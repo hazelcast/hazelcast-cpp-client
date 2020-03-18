@@ -758,7 +758,8 @@ namespace hazelcast {
                     if (!lifecycleService.start()) {
                         try {
                             lifecycleService.shutdown();
-                        } catch (exception::IException &) {
+                        } catch (exception::IException &e) {
+                            logger->info("Lifecycle service start failed. Exception during shutdown: ", e.what());
                             // ignore
                         }
                         throw exception::IllegalStateException("HazelcastClient",
@@ -767,7 +768,8 @@ namespace hazelcast {
                 } catch (exception::IException &) {
                     try {
                         lifecycleService.shutdown();
-                    } catch (exception::IException &) {
+                    } catch (exception::IException &e) {
+                        logger->info("Exception during shutdown: ", e.what());
                         // ignore
                     }
                     throw;
@@ -1688,7 +1690,7 @@ namespace hazelcast {
                     std::shared_ptr<spi::impl::ClientInvocationFuture> future = clientInvocation->invoke();
                     return future->get();
                 } catch (exception::IException &e) {
-                    util::ExceptionUtil::rethrow(e, TRANSACTION_EXCEPTION_FACTORY());
+                    TRANSACTION_EXCEPTION_FACTORY()->rethrow(e, "ClientTransactionUtil::invoke failed");
                 }
                 return std::shared_ptr<protocol::ClientMessage>();
             }
@@ -4712,10 +4714,12 @@ namespace hazelcast {
                 connectionStrategy->shutdown();
 
                 // let the waiting authentication futures not block anymore
-                for (auto &authFuture : connectionsInProgress.values()) {
+                for (auto &authFutureTuple : connectionsInProgress.values()) {
+                    auto &authFuture = std::get<0>(*authFutureTuple);
                     authFuture->onFailure(
                             std::make_shared<exception::IllegalStateException>("ClientConnectionManagerImpl::shutdown",
                                                                                "Client is shutting down"));
+                    std::get<1>(*authFutureTuple)->close();
                 }
 
                 // close connections
@@ -4724,19 +4728,14 @@ namespace hazelcast {
                     util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
                 }
 
-                for (auto &connection : pendingSocketIdToConnection.values()) {
-                    // prevent any exceptions
-                    util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
-                }
-
                 spi::impl::ClientExecutionServiceImpl::shutdownExecutor("cluster", *clusterConnectionExecutor, logger);
 
                 connectionListeners.clear();
-                activeConnectionsFileDescriptors.clear();
                 activeConnections.clear();
-                socketConnections.clear();
 
-                ioThread.join();
+                if (ioThread.joinable()) {
+                    ioThread.join();
+                }
             }
 
             std::shared_ptr<Connection>
@@ -4759,6 +4758,9 @@ namespace hazelcast {
                 try {
                     logger.info("Trying to connect to ", address, " as owner member");
                     connection = getOrConnect(address, true);
+                    if (connection == nullptr) {
+                        return nullptr;
+                    }
                     client.onClusterConnect(connection);
                     fireConnectionEvent(LifecycleEvent::CLIENT_CONNECTED);
                     connectionStrategy->onConnectToCluster();
@@ -4807,6 +4809,9 @@ namespace hazelcast {
                     if (connection->isAuthenticatedAsOwner()) {
                         return connection;
                     }
+
+                    connection->reAuthenticateAsOwner();
+                    return connection;
                 }
                 return std::shared_ptr<Connection>();
             }
@@ -4819,7 +4824,7 @@ namespace hazelcast {
                 return ownerConnectionAddress;
             }
 
-            std::shared_ptr<AuthenticationFuture>
+            std::shared_ptr<ClientConnectionManagerImpl::FutureTuple>
             ClientConnectionManagerImpl::triggerConnect(const Address &target, bool asOwner) {
                 if (!asOwner) {
                     connectionStrategy->beforeOpenConnection(target);
@@ -4829,20 +4834,21 @@ namespace hazelcast {
                                                         "ConnectionManager is not active!");
                 }
 
-                std::shared_ptr<AuthenticationFuture> future(new AuthenticationFuture());
-                std::shared_ptr<AuthenticationFuture> oldFuture = connectionsInProgress.putIfAbsent(target, future);
-                if (oldFuture.get() == NULL) {
-                    Address address = translator->translate(target);
+                Address address = translator->translate(target);
+                std::shared_ptr<AuthenticationFuture> future(new AuthenticationFuture(address, connectionsInProgress));
 
-                    auto connection = std::make_shared<Connection>(target, client, ++connectionIdGen, future,
-                                                                   socketFactory, ioContext, asOwner, *this,
-                                                                   connectionTimeoutMillis);
+                auto connection = std::make_shared<Connection>(address, client, ++connectionIdGen, future,
+                                                               socketFactory, ioContext, asOwner, *this,
+                                                               connectionTimeoutMillis);
 
+                auto authTuple = std::make_shared<FutureTuple>(future, connection);
+                auto oldFutureTuple = connectionsInProgress.putIfAbsent(address, authTuple);
+                if (oldFutureTuple.get() == NULL) {
                     connection->asyncStart();
 
-                    return future;
+                    return authTuple;
                 }
-                return oldFuture;
+                return oldFutureTuple;
             }
 
             std::shared_ptr<Connection>
@@ -4852,7 +4858,16 @@ namespace hazelcast {
                     if (connection.get() != NULL) {
                         return connection;
                     }
-                    std::shared_ptr<AuthenticationFuture> firstCallback = triggerConnect(address, asOwner);
+                    auto firstCallbackTuple = triggerConnect(address, asOwner);
+                    auto firstCallback = std::get<0>(*firstCallbackTuple);
+                    if (!alive) {
+                        std::get<1>(*firstCallbackTuple)->close("Client is being shutdown.");
+                        firstCallback->onFailure(
+                                std::make_shared<exception::IllegalStateException>(
+                                        "ClientConnectionManagerImpl::getOrConnect",
+                                        "Client is being shutdown."));
+                        return nullptr;
+                    }
                     connection = firstCallback->get();
 
                     // call the interceptor from user thread
@@ -4883,6 +4898,13 @@ namespace hazelcast {
                 auto authCallback = std::make_shared<AuthCallback>(invocationFuture, connection, asOwner, target,
                                                                    future, *this);
                 invocationFuture->andThen(authCallback);
+            }
+
+            void
+            ClientConnectionManagerImpl::reAuthenticate(const Address &target, std::shared_ptr<Connection> &connection,
+                                                        bool asOwner, std::shared_ptr<AuthenticationFuture> &future) {
+                future.reset(new AuthenticationFuture(target, connectionsInProgress));
+                authenticate(target, connection, asOwner, future);
             }
 
             const std::shared_ptr<protocol::Principal> ClientConnectionManagerImpl::getPrincipal() {
@@ -5156,15 +5178,6 @@ namespace hazelcast {
                 removeFromActiveConnections(connection.shared_from_this());
             }
 
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::getActiveConnection(int fileDescriptor) {
-                std::shared_ptr<Connection> connection = activeConnectionsFileDescriptors.get(fileDescriptor);
-                if (connection.get()) {
-                    return connection;
-                }
-
-                return pendingSocketIdToConnection.get(fileDescriptor);
-            }
-
             void
             ClientConnectionManagerImpl::addConnectionListener(
                     const std::shared_ptr<ConnectionListener> &connectionListener) {
@@ -5364,15 +5377,20 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace connection {
-            AuthenticationFuture::AuthenticationFuture() : countDownLatch(new util::CountDownLatch(1)) {
+            AuthenticationFuture::AuthenticationFuture(const Address &address,
+                                                       util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress)
+                    : countDownLatch(
+                    new util::CountDownLatch(1)), address(address), connectionsInProgress(connectionsInProgress) {
             }
 
             void AuthenticationFuture::onSuccess(const std::shared_ptr<Connection> &connection) {
+                connectionsInProgress.remove(address);
                 this->connection = connection;
                 countDownLatch->countDown();
             }
 
             void AuthenticationFuture::onFailure(const std::shared_ptr<exception::IException> &throwable) {
+                connectionsInProgress.remove(address);
                 this->throwable = throwable;
                 countDownLatch->countDown();
             }
@@ -5461,6 +5479,13 @@ namespace hazelcast {
             void Connection::authenticate() {
                 auto thisConnection = shared_from_this();
                 connectionManager.authenticate(socket->getRemoteEndpoint(), thisConnection, asOwner, authFuture);
+            }
+
+            void Connection::reAuthenticateAsOwner() {
+                asOwner = true;
+                auto thisConnection = shared_from_this();
+                connectionManager.reAuthenticate(socket->getRemoteEndpoint(), thisConnection, asOwner, authFuture);
+                authFuture->get();
             }
 
             void Connection::asyncStart() {

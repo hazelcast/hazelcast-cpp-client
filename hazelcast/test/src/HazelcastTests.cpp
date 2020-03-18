@@ -2970,7 +2970,6 @@ namespace hazelcast {
                     : hazelcastInstanceFactory(*g_srvFactory) {
                 server.reset(new HazelcastServer(hazelcastInstanceFactory));
                 ClientConfig clientConfig = getConfig();
-                clientConfig.setRedoOperation(true);
                 //always start the txn on first member
                 loadBalancer.reset(new MyLoadBalancer());
                 clientConfig.setLoadBalancer(loadBalancer.get());
@@ -2980,7 +2979,8 @@ namespace hazelcast {
 
             ClientTxnTest::~ClientTxnTest() {
                 client->shutdown();
-                client.reset();
+                server->shutdown();
+                second->shutdown();
             }
 
             TEST_F(ClientTxnTest, testTxnConnectAfterClientShutdown) {
@@ -3068,7 +3068,7 @@ namespace hazelcast {
 
                 client->shutdown();
 
-                ASSERT_THROW(context.commitTransaction(), exception::HazelcastClientNotActiveException);
+                ASSERT_THROW(context.commitTransaction(), exception::TransactionException);
             }
 
 

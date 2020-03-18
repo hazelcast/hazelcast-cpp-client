@@ -89,6 +89,8 @@ namespace hazelcast {
             */
             class HAZELCAST_API ClientConnectionManagerImpl : public ConnectionListenable {
             public:
+                typedef std::tuple<std::shared_ptr<AuthenticationFuture>, std::shared_ptr<Connection>> FutureTuple;
+
                 ClientConnectionManagerImpl(spi::ClientContext &client,
                                             const std::shared_ptr<AddressTranslator> &addressTranslator,
                                             const std::vector<std::shared_ptr<AddressProvider> > &addressProviders);
@@ -138,8 +140,6 @@ namespace hazelcast {
 
                 std::shared_ptr<Connection> getActiveConnection(const Address &target);
 
-                std::shared_ptr<Connection> getActiveConnection(int fileDescriptor);
-
                 std::shared_ptr<Connection> getOwnerConnection();
 
                 const std::shared_ptr<protocol::Principal> getPrincipal();
@@ -161,13 +161,16 @@ namespace hazelcast {
                 void authenticate(const Address &target, std::shared_ptr<Connection> &connection, bool asOwner,
                                   std::shared_ptr<AuthenticationFuture> &future);
 
+                void reAuthenticate(const Address &target, std::shared_ptr<Connection> &connection, bool asOwner,
+                                    std::shared_ptr<AuthenticationFuture> &future);
+
             private:
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC;
 
                 std::shared_ptr<Connection> getConnection(const Address &target, bool asOwner);
 
-                std::shared_ptr<AuthenticationFuture> triggerConnect(const Address &target, bool asOwner);
+                std::shared_ptr<FutureTuple> triggerConnect(const Address &target, bool asOwner);
 
                 std::shared_ptr<Connection> getOrConnect(const Address &address, bool asOwner);
 
@@ -263,15 +266,12 @@ namespace hazelcast {
 
                 spi::ClientContext &client;
                 SocketInterceptor *socketInterceptor;
-                util::SynchronizedMap<int, Connection> socketConnections;
 
                 spi::impl::ClientExecutionServiceImpl &executionService;
 
                 std::shared_ptr<AddressTranslator> translator;
                 util::SynchronizedMap<Address, Connection> activeConnections;
-                util::SynchronizedMap<int, Connection> activeConnectionsFileDescriptors;
-                util::SynchronizedMap<int, Connection> pendingSocketIdToConnection;
-                util::SynchronizedMap<Address, AuthenticationFuture> connectionsInProgress;
+                util::SynchronizedMap<Address, FutureTuple> connectionsInProgress;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
                 const Credentials *credentials;

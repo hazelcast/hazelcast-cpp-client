@@ -36,17 +36,23 @@ namespace hazelcast {
 
             class HAZELCAST_API AuthenticationFuture {
             public:
-                AuthenticationFuture();
+                typedef std::tuple<std::shared_ptr<AuthenticationFuture>, std::shared_ptr<Connection>> FutureTuple;
+
+                AuthenticationFuture(const Address &address,
+                                     util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress);
 
                 void onSuccess(const std::shared_ptr<Connection> &connection);
 
                 void onFailure(const std::shared_ptr<exception::IException> &throwable);
 
                 std::shared_ptr<Connection> get();
+
             private:
                 std::shared_ptr<util::CountDownLatch> countDownLatch;
                 std::shared_ptr<Connection> connection;
                 std::shared_ptr<exception::IException> throwable;
+                const Address address;
+                util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress;
             };
         }
     }

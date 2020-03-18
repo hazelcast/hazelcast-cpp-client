@@ -53,6 +53,9 @@ namespace hazelcast {
 
                         connectTimer.expires_from_now(connectTimeoutMillis);
                         connectTimer.async_wait([=](const boost::system::error_code &ec) {
+                            if (ec == boost::asio::error::operation_aborted) {
+                                return;
+                            }
                             authFuture->onFailure(std::make_shared<exception::IOException>(
                                     "Connection::asyncStart", (boost::format(
                                             "Connection establishment to server %1% timed out in %2% msecs. %3%") %
@@ -106,9 +109,9 @@ namespace hazelcast {
                     }
 
                     void close() override {
-                        boost::system::error_code ec;
-                        // Call the non-exception throwing versions of the following method
-                        socket_->lowest_layer().close(ec);
+                        boost::system::error_code ignored;
+                        connectTimer.cancel(ignored);
+                        socket_->lowest_layer().close(ignored);
                     }
 
                     virtual Address getAddress() const override {
@@ -194,7 +197,7 @@ namespace hazelcast {
                                     [=](const boost::system::error_code &ec, size_t bytesWritten) {
                                         if (ec) {
                                             authFuture->onFailure(
-                                                    std::__1::make_shared<exception::IOException>(
+                                                    std::make_shared<exception::IOException>(
                                                             "Connection::do_connect",
                                                             (boost::format(
                                                                     "Write error for initial protocol bytes %1%. %2% for %3%") %

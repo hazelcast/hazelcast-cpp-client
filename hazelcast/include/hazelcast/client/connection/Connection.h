@@ -125,6 +125,8 @@ namespace hazelcast {
 
                 void authenticate();
 
+                void reAuthenticateAsOwner();
+
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
                 ReadHandler readHandler;
