@@ -4844,6 +4844,13 @@ namespace hazelcast {
                 auto authTuple = std::make_shared<FutureTuple>(future, connection);
                 auto oldFutureTuple = connectionsInProgress.putIfAbsent(address, authTuple);
                 if (oldFutureTuple.get() == NULL) {
+                    // double check here
+                    auto activeConnection = activeConnections.get(target);
+                    if (activeConnection.get()) {
+                        connectionsInProgress.remove(address);
+                        return std::make_shared<FutureTuple>(nullptr, activeConnection);
+                    }
+
                     connection->asyncStart();
 
                     return authTuple;
@@ -4860,6 +4867,15 @@ namespace hazelcast {
                     }
                     auto firstCallbackTuple = triggerConnect(address, asOwner);
                     auto firstCallback = std::get<0>(*firstCallbackTuple);
+                    if (firstCallback == nullptr) {
+                        auto activeConnection = std::get<1>(*firstCallbackTuple);
+                        if (asOwner && !activeConnection->isAuthenticatedAsOwner()) {
+                            activeConnection->reAuthenticateAsOwner();
+                        }
+
+                        return activeConnection;
+                    }
+
                     if (!alive) {
                         std::get<1>(*firstCallbackTuple)->close("Client is being shutdown.");
                         firstCallback->onFailure(
