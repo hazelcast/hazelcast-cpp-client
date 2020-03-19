@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Sync.h"
 #include "hazelcast/util/CountDownLatch.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -49,8 +50,8 @@ namespace hazelcast {
 
             private:
                 std::shared_ptr<util::CountDownLatch> countDownLatch;
-                std::shared_ptr<Connection> connection;
-                std::shared_ptr<exception::IException> throwable;
+                util::Sync<std::shared_ptr<Connection>> connection;
+                util::Sync<std::shared_ptr<exception::IException>> throwable;
                 const Address address;
                 util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress;
             };

@@ -5384,7 +5384,6 @@ namespace hazelcast {
             }
 
             void AuthenticationFuture::onSuccess(const std::shared_ptr<Connection> &connection) {
-                connectionsInProgress.remove(address);
                 this->connection = connection;
                 countDownLatch->countDown();
             }
@@ -5397,12 +5396,15 @@ namespace hazelcast {
 
             std::shared_ptr<Connection> AuthenticationFuture::get() {
                 countDownLatch->await();
-                if (connection.get() != NULL) {
-                    return connection;
+                auto connPtr = connection.get();
+                if (connPtr.get() != NULL) {
+                    return connPtr;
                 }
-                assert(throwable.get() != NULL);
+
+                auto exceptionPtr = throwable.get();
+                assert(exceptionPtr.get() != NULL);
                 throw exception::ExecutionException("AuthenticationFuture::get", "Could not be authenticated.",
-                                                    throwable);
+                                                    exceptionPtr);
             }
 
         }
@@ -7769,11 +7771,11 @@ namespace hazelcast {
         const byte Address::IPV4 = 4;
         const byte Address::IPV6 = 6;
 
-        Address::Address() : host("localhost"), type(IPV4) {
+        Address::Address() : host("localhost"), type(IPV4), scopeId(0) {
         }
 
         Address::Address(const std::string &url, int port)
-                : host(url), port(port), type(IPV4) {
+                : host(url), port(port), type(IPV4), scopeId(0) {
         }
 
         Address::Address(const std::string &hostname, int port, unsigned long scopeId) : host(hostname), port(port),
