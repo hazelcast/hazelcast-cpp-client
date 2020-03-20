@@ -25,6 +25,7 @@
 #include <random>
 #include <thread>
 #include <future>
+#include <vector>
 #include <boost/asio.hpp>
 
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -284,6 +285,7 @@ namespace hazelcast {
                 std::shared_ptr<util::impl::SimpleExecutorService> clusterConnectionExecutor;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
+                int32_t ioThreadCount;
                 bool shuffleMemberList;
                 std::vector<std::shared_ptr<AddressProvider> > addressProviders;
 
@@ -294,7 +296,7 @@ namespace hazelcast {
                 std::unique_ptr<HeartbeatManager> heartbeat;
 
                 boost::asio::io_context ioContext;
-                std::thread ioThread;
+                std::vector<std::thread> ioThreads;
             };
         }
     }

@@ -54,6 +54,7 @@ namespace hazelcast {
                 util::Sync<std::shared_ptr<exception::IException>> throwable;
                 const Address address;
                 util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress;
+                std::atomic_bool isSet;
             };
         }
     }

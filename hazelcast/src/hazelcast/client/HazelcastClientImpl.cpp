@@ -4671,6 +4671,7 @@ namespace hazelcast {
                     this->connectionAttemptLimit = connAttemptLimit == 0 ? INT32_MAX : connAttemptLimit;
                 }
 
+                ioThreadCount = clientProperties.getInteger(clientProperties.getIOThreadCount());
             }
 
             bool ClientConnectionManagerImpl::start() {
@@ -4688,10 +4689,10 @@ namespace hazelcast {
 
                 socketInterceptor = client.getClientConfig().getSocketInterceptor();
 
-                ioThread = std::thread([&]() {
-                    boost::asio::executor_work_guard<decltype(ioContext.get_executor())> work{ioContext.get_executor()};
-                    ioContext.run();
-                });
+                boost::asio::executor_work_guard<decltype(ioContext.get_executor())> work{ioContext.get_executor()};
+                for (int j = 0; j < ioThreadCount; ++j) {
+                    ioThreads.emplace_back([&]() { ioContext.run(); });
+                }
 
                 heartbeat.reset(new HeartbeatManager(client));
                 heartbeat->start();
@@ -4733,9 +4734,7 @@ namespace hazelcast {
                 connectionListeners.clear();
                 activeConnections.clear();
 
-                if (ioThread.joinable()) {
-                    ioThread.join();
-                }
+                std::for_each(ioThreads.begin(), ioThreads.end(), [](std::thread &t) { t.join(); });
             }
 
             std::shared_ptr<Connection>
@@ -5395,16 +5394,24 @@ namespace hazelcast {
         namespace connection {
             AuthenticationFuture::AuthenticationFuture(const Address &address,
                                                        util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress)
-                    : countDownLatch(
-                    new util::CountDownLatch(1)), address(address), connectionsInProgress(connectionsInProgress) {
+                    : countDownLatch(new util::CountDownLatch(1)), address(address),
+                      connectionsInProgress(connectionsInProgress), isSet(false) {
             }
 
             void AuthenticationFuture::onSuccess(const std::shared_ptr<Connection> &connection) {
+                bool expected = false;
+                if (!isSet.compare_exchange_strong(expected, true)) {
+                    return;
+                }
                 this->connection = connection;
                 countDownLatch->countDown();
             }
 
             void AuthenticationFuture::onFailure(const std::shared_ptr<exception::IException> &throwable) {
+                bool expected = false;
+                if (!isSet.compare_exchange_strong(expected, true)) {
+                    return;
+                }
                 connectionsInProgress.remove(address);
                 this->throwable = throwable;
                 countDownLatch->countDown();
@@ -17781,6 +17788,9 @@ namespace hazelcast {
         const std::string ClientProperties::STATISTICS_PERIOD_SECONDS = "hazelcast.client.statistics.period.seconds";
         const std::string ClientProperties::STATISTICS_PERIOD_SECONDS_DEFAULT = "3";
 
+        const std::string ClientProperties::IO_THREAD_COUNT = "hazelcast.client.io.thread.count";
+        const std::string ClientProperties::IO_THREAD_COUNT_DEFAULT = "1";
+
         ClientProperty::ClientProperty(const std::string &name, const std::string &defaultValue)
                 : name(name), defaultValue(defaultValue) {
         }
@@ -17820,6 +17830,7 @@ namespace hazelcast {
                                                    BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT),
                   statisticsEnabled(STATISTICS_ENABLED, STATISTICS_ENABLED_DEFAULT),
                   statisticsPeriodSeconds(STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT),
+                  ioThreadCount(IO_THREAD_COUNT, IO_THREAD_COUNT_DEFAULT),
                   propertiesMap(properties) {
         }
 
@@ -17877,6 +17888,10 @@ namespace hazelcast {
 
         const ClientProperty &ClientProperties::getStatisticsPeriodSeconds() const {
             return statisticsPeriodSeconds;
+        }
+
+        const ClientProperty &ClientProperties::getIOThreadCount() const {
+            return ioThreadCount;
         }
 
         std::string ClientProperties::getString(const ClientProperty &property) const {
