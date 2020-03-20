@@ -4689,9 +4689,12 @@ namespace hazelcast {
 
                 socketInterceptor = client.getClientConfig().getSocketInterceptor();
 
-                boost::asio::executor_work_guard<decltype(ioContext.get_executor())> work{ioContext.get_executor()};
                 for (int j = 0; j < ioThreadCount; ++j) {
-                    ioThreads.emplace_back([&]() { ioContext.run(); });
+                    ioThreads.emplace_back([&]() {
+                        boost::asio::executor_work_guard<decltype(ioContext.get_executor())> work{
+                                ioContext.get_executor()};
+                        ioContext.run();
+                    });
                 }
 
                 heartbeat.reset(new HeartbeatManager(client));
