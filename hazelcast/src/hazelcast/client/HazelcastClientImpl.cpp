@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <boost/asio.hpp>
 #include <boost/date_time.hpp>
+#include <boost/format.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <cctype>
@@ -160,15 +161,8 @@
 #include "hazelcast/client/config/ClientNetworkConfig.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
 #include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/client/connection/IOSelector.h"
-#include "hazelcast/client/connection/ListenerTask.h"
-#include "hazelcast/client/connection/IOHandler.h"
-#include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
-#include "hazelcast/client/connection/WriteHandler.h"
-#include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/connection/ClientConnectionStrategy.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
@@ -764,7 +758,8 @@ namespace hazelcast {
                     if (!lifecycleService.start()) {
                         try {
                             lifecycleService.shutdown();
-                        } catch (exception::IException &) {
+                        } catch (exception::IException &e) {
+                            logger->info("Lifecycle service start failed. Exception during shutdown: ", e.what());
                             // ignore
                         }
                         throw exception::IllegalStateException("HazelcastClient",
@@ -773,7 +768,8 @@ namespace hazelcast {
                 } catch (exception::IException &) {
                     try {
                         lifecycleService.shutdown();
-                    } catch (exception::IException &) {
+                    } catch (exception::IException &e) {
+                        logger->info("Exception during shutdown: ", e.what());
                         // ignore
                     }
                     throw;
@@ -1079,19 +1075,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-
-namespace hazelcast {
-    namespace client {
-        Socket::~Socket() {
-        }
-
-    }
-}
-
-
-
 
 namespace hazelcast {
     namespace client {
@@ -1707,7 +1690,7 @@ namespace hazelcast {
                     std::shared_ptr<spi::impl::ClientInvocationFuture> future = clientInvocation->invoke();
                     return future->get();
                 } catch (exception::IException &e) {
-                    util::ExceptionUtil::rethrow(e, TRANSACTION_EXCEPTION_FACTORY());
+                    TRANSACTION_EXCEPTION_FACTORY()->rethrow(e, "ClientTransactionUtil::invoke failed");
                 }
                 return std::shared_ptr<protocol::ClientMessage>();
             }
@@ -4657,14 +4640,8 @@ namespace hazelcast {
                                                                      const std::vector<std::shared_ptr<AddressProvider> > &addressProviders)
                     : logger(client.getLogger()), client(client),
                       socketInterceptor(client.getClientConfig().getSocketInterceptor()),
-                      inSelector(*this, client.getClientConfig().getNetworkConfig().getSocketOptions()),
-                      outSelector(*this, client.getClientConfig().getNetworkConfig().getSocketOptions()),
-                      inSelectorThread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(inSelector)),
-                                       logger),
-                      outSelectorThread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(outSelector)),
-                                        logger),
                       executionService(client.getClientExecutionService()),
-                      translator(addressTranslator), connectionIdGen(0), socketFactory(client) {
+                      translator(addressTranslator), connectionIdGen(0), socketFactory(client, ioContext) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
 
                 int64_t connTimeout = networkConfig.getConnectionTimeout();
@@ -4694,6 +4671,7 @@ namespace hazelcast {
                     this->connectionAttemptLimit = connAttemptLimit == 0 ? INT32_MAX : connAttemptLimit;
                 }
 
+                ioThreadCount = clientProperties.getInteger(clientProperties.getIOThreadCount());
             }
 
             bool ClientConnectionManagerImpl::start() {
@@ -4711,14 +4689,14 @@ namespace hazelcast {
 
                 socketInterceptor = client.getClientConfig().getSocketInterceptor();
 
-                if (!inSelector.start()) {
-                    return false;
-                }
-                if (!outSelector.start()) {
-                    return false;
+                for (int j = 0; j < ioThreadCount; ++j) {
+                    ioThreads.emplace_back([&]() {
+                        boost::asio::executor_work_guard<decltype(ioContext.get_executor())> work{
+                                ioContext.get_executor()};
+                        ioContext.run();
+                    });
                 }
 
-                startEventLoopGroup();
                 heartbeat.reset(new HeartbeatManager(client));
                 heartbeat->start();
                 connectionStrategy->start();
@@ -4733,16 +4711,19 @@ namespace hazelcast {
                 }
                 alive.store(false);
 
-                stopEventLoopGroup();
+                ioContext.stop();
+
                 heartbeat->shutdown();
 
                 connectionStrategy->shutdown();
 
                 // let the waiting authentication futures not block anymore
-                for (auto &authFuture : connectionsInProgress.values()) {
+                for (auto &authFutureTuple : connectionsInProgress.values()) {
+                    auto &authFuture = std::get<0>(*authFutureTuple);
                     authFuture->onFailure(
                             std::make_shared<exception::IllegalStateException>("ClientConnectionManagerImpl::shutdown",
                                                                                "Client is shutting down"));
+                    std::get<1>(*authFutureTuple)->close();
                 }
 
                 // close connections
@@ -4751,17 +4732,12 @@ namespace hazelcast {
                     util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
                 }
 
-                for (auto &connection : pendingSocketIdToConnection.values()) {
-                    // prevent any exceptions
-                    util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
-                }
-
                 spi::impl::ClientExecutionServiceImpl::shutdownExecutor("cluster", *clusterConnectionExecutor, logger);
 
                 connectionListeners.clear();
-                activeConnectionsFileDescriptors.clear();
                 activeConnections.clear();
-                socketConnections.clear();
+
+                std::for_each(ioThreads.begin(), ioThreads.end(), [](std::thread &t) { t.join(); });
             }
 
             std::shared_ptr<Connection>
@@ -4784,6 +4760,9 @@ namespace hazelcast {
                 try {
                     logger.info("Trying to connect to ", address, " as owner member");
                     connection = getOrConnect(address, true);
+                    if (connection == nullptr) {
+                        return nullptr;
+                    }
                     client.onClusterConnect(connection);
                     fireConnectionEvent(LifecycleEvent::CLIENT_CONNECTED);
                     connectionStrategy->onConnectToCluster();
@@ -4797,19 +4776,6 @@ namespace hazelcast {
                     return std::shared_ptr<Connection>();
                 }
                 return connection;
-            }
-
-            std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::createSocketConnection(const Address &address) {
-                std::shared_ptr<Connection> conn(
-                        new Connection(address, client, ++connectionIdGen, inSelector, outSelector, socketFactory));
-
-                conn->connect(client.getClientConfig().getConnectionTimeout());
-                if (socketInterceptor != NULL) {
-                    socketInterceptor->onConnect(conn->getSocket());
-                }
-
-                return conn;
             }
 
 
@@ -4845,6 +4811,9 @@ namespace hazelcast {
                     if (connection->isAuthenticatedAsOwner()) {
                         return connection;
                     }
+
+                    connection->reAuthenticateAsOwner();
+                    return connection;
                 }
                 return std::shared_ptr<Connection>();
             }
@@ -4857,7 +4826,7 @@ namespace hazelcast {
                 return ownerConnectionAddress;
             }
 
-            std::shared_ptr<AuthenticationFuture>
+            std::shared_ptr<ClientConnectionManagerImpl::FutureTuple>
             ClientConnectionManagerImpl::triggerConnect(const Address &target, bool asOwner) {
                 if (!asOwner) {
                     connectionStrategy->beforeOpenConnection(target);
@@ -4867,14 +4836,28 @@ namespace hazelcast {
                                                         "ConnectionManager is not active!");
                 }
 
-                std::shared_ptr<AuthenticationFuture> future(new AuthenticationFuture());
-                std::shared_ptr<AuthenticationFuture> oldFuture = connectionsInProgress.putIfAbsent(target, future);
-                if (oldFuture.get() == NULL) {
-                    executionService.execute(
-                            std::shared_ptr<util::Runnable>(new InitConnectionTask(target, asOwner, future, *this)));
-                    return future;
+                Address address = translator->translate(target);
+                std::shared_ptr<AuthenticationFuture> future(new AuthenticationFuture(address, connectionsInProgress));
+
+                auto connection = std::make_shared<Connection>(address, client, ++connectionIdGen, future,
+                                                               socketFactory, ioContext, asOwner, *this,
+                                                               connectionTimeoutMillis);
+
+                auto authTuple = std::make_shared<FutureTuple>(future, connection);
+                auto oldFutureTuple = connectionsInProgress.putIfAbsent(address, authTuple);
+                if (oldFutureTuple.get() == NULL) {
+                    // double check here
+                    auto activeConnection = activeConnections.get(target);
+                    if (activeConnection.get()) {
+                        connectionsInProgress.remove(address);
+                        return std::make_shared<FutureTuple>(nullptr, activeConnection);
+                    }
+
+                    connection->asyncStart();
+
+                    return authTuple;
                 }
-                return oldFuture;
+                return oldFutureTuple;
             }
 
             std::shared_ptr<Connection>
@@ -4884,8 +4867,31 @@ namespace hazelcast {
                     if (connection.get() != NULL) {
                         return connection;
                     }
-                    std::shared_ptr<AuthenticationFuture> firstCallback = triggerConnect(address, asOwner);
+                    auto firstCallbackTuple = triggerConnect(address, asOwner);
+                    auto firstCallback = std::get<0>(*firstCallbackTuple);
+                    if (firstCallback == nullptr) {
+                        auto activeConnection = std::get<1>(*firstCallbackTuple);
+                        if (asOwner && !activeConnection->isAuthenticatedAsOwner()) {
+                            activeConnection->reAuthenticateAsOwner();
+                        }
+
+                        return activeConnection;
+                    }
+
+                    if (!alive) {
+                        std::get<1>(*firstCallbackTuple)->close("Client is being shutdown.");
+                        firstCallback->onFailure(
+                                std::make_shared<exception::IllegalStateException>(
+                                        "ClientConnectionManagerImpl::getOrConnect",
+                                        "Client is being shutdown."));
+                        return nullptr;
+                    }
                     connection = firstCallback->get();
+
+                    // call the interceptor from user thread
+                    if (socketInterceptor != NULL) {
+                        socketInterceptor->onConnect(connection->getSocket());
+                    }
 
                     if (!asOwner) {
                         return connection;
@@ -4910,6 +4916,13 @@ namespace hazelcast {
                 auto authCallback = std::make_shared<AuthCallback>(invocationFuture, connection, asOwner, target,
                                                                    future, *this);
                 invocationFuture->andThen(authCallback);
+            }
+
+            void
+            ClientConnectionManagerImpl::reAuthenticate(const Address &target, std::shared_ptr<Connection> &connection,
+                                                        bool asOwner, std::shared_ptr<AuthenticationFuture> &future) {
+                future.reset(new AuthenticationFuture(target, connectionsInProgress));
+                authenticate(target, connection, asOwner, future);
             }
 
             const std::shared_ptr<protocol::Principal> ClientConnectionManagerImpl::getPrincipal() {
@@ -4957,9 +4970,6 @@ namespace hazelcast {
                                                               const std::shared_ptr<Connection> &connection) {
                 std::shared_ptr<Connection> oldConnection = activeConnections.put(*connection->getRemoteEndpoint(),
                                                                                   connection);
-                int socketId = connection->getSocket().getSocketId();
-                activeConnectionsFileDescriptors.put(socketId, connection);
-                pendingSocketIdToConnection.remove(socketId);
 
                 if (oldConnection.get() == NULL) {
                     if (logger.isFinestEnabled()) {
@@ -5023,7 +5033,6 @@ namespace hazelcast {
 
                 if (activeConnections.remove(*endpoint, connection)) {
                     logger.info("Removed connection to endpoint: ", *endpoint, ", connection: ", *connection);
-                    activeConnectionsFileDescriptors.remove(connection->getSocket().getSocketId());
                     fireConnectionRemovedEvent(connection);
                 } else {
                     if (logger.isFinestEnabled()) {
@@ -5179,33 +5188,12 @@ namespace hazelcast {
                 connectToClusterAsync()->get();
             }
 
-            void ClientConnectionManagerImpl::startEventLoopGroup() {
-                inSelectorThread.start();
-                outSelectorThread.start();
-            }
-
             bool ClientConnectionManagerImpl::isAlive() {
                 return alive;
             }
 
-            void ClientConnectionManagerImpl::stopEventLoopGroup() {
-                inSelector.shutdown();
-                inSelectorThread.join();
-                outSelector.shutdown();
-                outSelectorThread.join();
-            }
-
             void ClientConnectionManagerImpl::onClose(Connection &connection) {
                 removeFromActiveConnections(connection.shared_from_this());
-            }
-
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::getActiveConnection(int fileDescriptor) {
-                std::shared_ptr<Connection> connection = activeConnectionsFileDescriptors.get(fileDescriptor);
-                if (connection.get()) {
-                    return connection;
-                }
-
-                return pendingSocketIdToConnection.get(fileDescriptor);
             }
 
             void
@@ -5220,54 +5208,6 @@ namespace hazelcast {
 
             util::ILogger &ClientConnectionManagerImpl::getLogger() {
                 return client.getLogger();
-            }
-
-            ClientConnectionManagerImpl::InitConnectionTask::InitConnectionTask(const Address &target,
-                                                                                const bool asOwner,
-                                                                                const std::shared_ptr<AuthenticationFuture> &future,
-                                                                                ClientConnectionManagerImpl &connectionManager)
-                    : target(
-                    target), asOwner(asOwner), future(future), connectionManager(connectionManager),
-                      logger(connectionManager.getLogger()) {}
-
-            void ClientConnectionManagerImpl::InitConnectionTask::run() {
-                std::shared_ptr<Connection> connection;
-                try {
-                    connection = getConnection(target);
-                } catch (exception::IException &e) {
-                    logger.finest(e);
-                    future->onFailure(std::shared_ptr<exception::IException>(e.clone()));
-                    connectionManager.connectionsInProgress.remove(target);
-                    return;
-                }
-
-                try {
-                    connectionManager.pendingSocketIdToConnection.put(connection->getSocket().getSocketId(),
-                                                                      connection);
-
-                    connection->getReadHandler().registerSocket();
-
-                    connectionManager.authenticate(target, connection, asOwner, future);
-                } catch (exception::IException &e) {
-                    const std::shared_ptr<exception::IException> throwable(e.clone());
-                    future->onFailure(throwable);
-                    connection->close("Failed to authenticate connection", throwable);
-                    connectionManager.connectionsInProgress.remove(target);
-                }
-            }
-
-            const std::string ClientConnectionManagerImpl::InitConnectionTask::getName() const {
-                return "ConnectionManager::InitConnectionTask";
-            }
-
-            std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::InitConnectionTask::getConnection(const Address &target) {
-                std::shared_ptr<Connection> connection = connectionManager.activeConnections.get(target);
-                if (connection.get() != NULL) {
-                    return connection;
-                }
-                Address address = connectionManager.translator->translate(target);
-                return connectionManager.createSocketConnection(address);
             }
 
             ClientConnectionManagerImpl::AuthCallback::AuthCallback(
@@ -5390,7 +5330,6 @@ namespace hazelcast {
                     connectionManager.logger.finest("Authentication of ", connection, " failed.", cause);
                 }
                 connection->close("", cause);
-                connectionManager.pendingSocketIdToConnection.remove(connection->getSocket().getSocketId());
                 connectionManager.connectionsInProgress.remove(target);
             }
 
@@ -5456,27 +5395,42 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace connection {
-            AuthenticationFuture::AuthenticationFuture() : countDownLatch(new util::CountDownLatch(1)) {
+            AuthenticationFuture::AuthenticationFuture(const Address &address,
+                                                       util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress)
+                    : countDownLatch(new util::CountDownLatch(1)), address(address),
+                      connectionsInProgress(connectionsInProgress), isSet(false) {
             }
 
             void AuthenticationFuture::onSuccess(const std::shared_ptr<Connection> &connection) {
+                bool expected = false;
+                if (!isSet.compare_exchange_strong(expected, true)) {
+                    return;
+                }
                 this->connection = connection;
                 countDownLatch->countDown();
             }
 
             void AuthenticationFuture::onFailure(const std::shared_ptr<exception::IException> &throwable) {
+                bool expected = false;
+                if (!isSet.compare_exchange_strong(expected, true)) {
+                    return;
+                }
+                connectionsInProgress.remove(address);
                 this->throwable = throwable;
                 countDownLatch->countDown();
             }
 
             std::shared_ptr<Connection> AuthenticationFuture::get() {
                 countDownLatch->await();
-                if (connection.get() != NULL) {
-                    return connection;
+                auto connPtr = connection.get();
+                if (connPtr.get() != NULL) {
+                    return connPtr;
                 }
-                assert(throwable.get() != NULL);
+
+                auto exceptionPtr = throwable.get();
+                assert(exceptionPtr.get() != NULL);
                 throw exception::ExecutionException("AuthenticationFuture::get", "Could not be authenticated.",
-                                                    throwable);
+                                                    exceptionPtr);
             }
 
         }
@@ -5491,10 +5445,8 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ReadHandler::ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize,
-                                     spi::ClientContext &clientContext)
-                    : IOHandler(connection, iListener), buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize),
-                      builder(connection) {
+            ReadHandler::ReadHandler(Connection &connection, size_t bufferSize)
+                    : buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize), builder(connection) {
                 lastReadTimeMillis = util::currentTimeMillis();
             }
 
@@ -5502,21 +5454,12 @@ namespace hazelcast {
                 delete[] buffer;
             }
 
-            void ReadHandler::run() {
-                registerHandler();
-            }
-
             void ReadHandler::handle() {
                 lastReadTimeMillis = util::currentTimeMillis();
-                try {
-                    byteBuffer.readFrom(connection.getSocket());
-                } catch (exception::IOException &e) {
-                    handleSocketException(e.what());
-                    return;
-                }
 
                 if (byteBuffer.position() == 0)
                     return;
+
                 byteBuffer.flip();
 
                 // it is important to check the onData return value since there may be left data less than a message
@@ -5538,296 +5481,63 @@ namespace hazelcast {
     }
 }
 
-
-
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-            InSelector::InSelector(ClientConnectionManagerImpl &connectionManager,
-                                   const config::SocketOptions &socketOptions)
-                    : IOSelector(connectionManager, socketOptions) {
-            }
-
-            bool InSelector::start() {
-                return initListenSocket(socketSet);
-            }
-
-            void InSelector::listenInternal() {
-                fd_set read_fds;
-                util::SocketSet::FdRange socketRange = socketSet.fillFdSet(read_fds);
-#if  defined(__GNUC__) || defined(__llvm__)
-                errno = 0;
-#endif
-                t.tv_sec = 5;
-                t.tv_usec = 0;
-                int numSelected = select(socketRange.max + 1, &read_fds, NULL, NULL, &t);
-                if (numSelected == 0) {
-                    return;
-                }
-
-                if (checkError("Exception InSelector::listen => ", numSelected)) {
-                    return;
-                }
-
-                for (int fd = socketRange.min; numSelected > 0 && fd <= socketRange.max; ++fd) {
-                    if (FD_ISSET(fd, &read_fds)) {
-                        --numSelected;
-                        if (wakeUpListenerSocketId == fd) {
-                            int wakeUpSignal;
-                            sleepingSocket->receive(&wakeUpSignal, sizeof(int));
-                        } else {
-                            std::shared_ptr<Connection> conn = connectionManager.getActiveConnection(fd);
-                            if (conn.get() != NULL) {
-                                conn->getReadHandler().handle();
-                            }
-                        }
-                    }
-                }
-            }
-
-            const std::string InSelector::getName() const {
-                return "InSelector";
-            }
-        }
-    }
-}
-
-
-
-
-
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-
-            IOSelector::IOSelector(ClientConnectionManagerImpl &connectionManager,
-                                   const config::SocketOptions &socketOptions)
-                    : socketSet(connectionManager.getLogger()), connectionManager(connectionManager),
-                      logger(connectionManager.getLogger()), socketOptions(socketOptions) {
-                t.tv_sec = 5;
-                t.tv_usec = 0;
-            }
-
-            IOSelector::~IOSelector() {
-                shutdown();
-            }
-
-            void IOSelector::wakeUp() {
-                if (!wakeUpSocket.get()) {
-                    return;
-                }
-
-                int wakeUpSignal = 9;
-                try {
-                    wakeUpSocket->send(&wakeUpSignal, sizeof(int), MSG_WAITALL);
-                } catch (exception::IOException &e) {
-                    logger.warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
-                    throw;
-                }
-            }
-
-            void IOSelector::run() {
-                while (isAlive) {
-                    try {
-                        processListenerQueue();
-                        listenInternal();
-                    } catch (exception::IException &e) {
-                        if (isAlive) {
-                            logger.warning(std::string("Exception at IOSelector::run() ") + e.what());
-                        } else {
-                            if (logger.isFinestEnabled()) {
-                                logger.finest(std::string("Exception at IOSelector::run() ") + e.what());
-                            }
-                        }
-                    }
-                }
-            }
-
-            bool IOSelector::initListenSocket(util::SocketSet &wakeUpSocketSet) {
-                serverSocket = std::make_unique<util::ServerSocket>(0);
-                int p = serverSocket->getPort();
-                std::string localAddress;
-                if (serverSocket->isIpv4())
-                    localAddress = "127.0.0.1";
-                else
-                    localAddress = "::1";
-
-                wakeUpSocket.reset(new internal::socket::TcpSocket(Address(localAddress, p), &socketOptions));
-                int error = wakeUpSocket->connect(5000);
-                if (error == 0) {
-                    sleepingSocket.reset(serverSocket->accept());
-                    sleepingSocket->setBlocking(false);
-                    wakeUpSocketSet.insertSocket(sleepingSocket.get());
-                    wakeUpListenerSocketId = sleepingSocket->getSocketId();
-                    isAlive.store(true);
-                    return true;
-                } else {
-                    logger.severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
-                    return false;
-                }
-            }
-
-            void IOSelector::shutdown() {
-                bool expected = true;
-                if (!isAlive.compare_exchange_strong(expected, false)) {
-                    return;
-                }
-                try {
-                    wakeUp();
-                } catch (exception::IOException &) {
-                    // suppress io exception
-                }
-
-                sleepingSocket->close();
-                wakeUpSocket->close();
-                serverSocket->close();
-            }
-
-            void IOSelector::addTask(ListenerTask *listenerTask) {
-                listenerTasks.offer(listenerTask);
-            }
-
-            void IOSelector::cancelTask(ListenerTask *listenerTask) {
-                listenerTasks.removeAll(listenerTask);
-            }
-
-            void IOSelector::addSocket(const Socket &socket) {
-                socketSet.insertSocket(&socket);
-            }
-
-            void IOSelector::removeSocket(const Socket &socket) {
-                socketSet.removeSocket(&socket);
-            }
-
-            void IOSelector::processListenerQueue() {
-                while (ListenerTask * task = listenerTasks.poll()) {
-                    task->run();
-                }
-            }
-
-            bool IOSelector::checkError(const char *messagePrefix, int numSelected) const {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                if (numSelected == SOCKET_ERROR) {
-                    int error = WSAGetLastError();
-                    if (WSAENOTSOCK == error) {
-                        if (logger.isEnabled(FINEST)) {
-                            char errorMsg[200];
-                            util::strerror_s(error, errorMsg, 200, messagePrefix);
-                            logger.finest(errorMsg);
-                        }
-                    } else {
-                        char errorMsg[200];
-                        util::strerror_s(error, errorMsg, 200, messagePrefix);
-                        logger.severe(errorMsg);
-                    }
-                    return true;
-                }
-#else
-                if (numSelected == -1) {
-                    int error = errno;
-                    if (EINTR == error ||
-                        EBADF == error /* This case may happen if socket closed by cluster listener thread */) {
-                        if (logger.isEnabled(FINEST)) {
-                            char errorMsg[200];
-                            util::strerror_s(error, errorMsg, 200, messagePrefix);
-                            logger.finest(errorMsg);
-                        }
-                    } else {
-                        char errorMsg[200];
-                        util::strerror_s(error, errorMsg, 200, messagePrefix);
-                        logger.severe(errorMsg);
-                    }
-                    return true;
-                }
-#endif
-
-                return false;
-            }
-        }
-    }
-}
-
-
-
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-            ListenerTask::~ListenerTask() {
-            }
-        }
-    }
-}
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4996)
-#pragma warning(disable: 4355)
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace connection {
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
-                                   InSelector &iListener, OutSelector &oListener,
-                                   internal::socket::SocketFactory &socketFactory)
-                    : startTimeInMillis(util::currentTimeMillis()), closedTimeMillis(0),
+                                   const std::shared_ptr<AuthenticationFuture> &authFuture,
+                                   internal::socket::SocketFactory &socketFactory, boost::asio::io_context &ioContext,
+                                   bool asOwner,
+                                   ClientConnectionManagerImpl &clientConnectionManager, int64_t connectTimeoutInMillis)
+                    : readHandler(*this, 16 << 10),
+                      startTimeInMillis(util::currentTimeMillis()), closedTimeMillis(0),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
-                      readHandler(*this, iListener, 16 << 10, clientContext),
-                      writeHandler(*this, oListener, 16 << 10),
+                      authFuture(authFuture),
                       connectionId(connectionId),
                       connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION),
-                      logger(clientContext.getLogger()) {
-                socket = socketFactory.create(address);
+                      logger(clientContext.getLogger()), asOwner(asOwner),
+                      connectionManager(clientConnectionManager) {
+                socket = socketFactory.create(address, connectTimeoutInMillis);
             }
 
             Connection::~Connection() {
             }
 
-            void Connection::connect(int timeoutInMillis) {
-                if (!isAlive()) {
-                    std::ostringstream out;
-                    out << "Connection " << (*this) << " is already closed!";
-                    throw exception::IOException("Connection::connect", out.str());
-                }
-
-                int error = socket->connect(timeoutInMillis);
-                if (error) {
-                    char errorMsg[200];
-                    util::strerror_s(error, errorMsg, 200);
-                    throw exception::IOException("Connection::connect", errorMsg);
-                }
-
-                socket->send("CB2", 3, MSG_WAITALL);
+            void Connection::authenticate() {
+                auto thisConnection = shared_from_this();
+                connectionManager.authenticate(socket->getRemoteEndpoint(), thisConnection, asOwner, authFuture);
             }
 
-            void Connection::close(const char *reason) {
+            void Connection::reAuthenticateAsOwner() {
+                asOwner = true;
+                auto thisConnection = shared_from_this();
+                connectionManager.reAuthenticate(socket->getRemoteEndpoint(), thisConnection, asOwner, authFuture);
+                authFuture->get();
+            }
+
+            void Connection::asyncStart() {
+                socket->asyncStart(shared_from_this(), authFuture);
+            }
+
+            void Connection::close() {
+                close("");
+            }
+
+            void Connection::close(const std::string &reason) {
                 close(reason, std::shared_ptr<exception::IException>());
             }
 
-            void Connection::close(const char *reason, const std::shared_ptr<exception::IException> &cause) {
+            void Connection::close(const std::string &reason, const std::shared_ptr<exception::IException> &cause) {
                 int64_t expected = 0;
                 if (!closedTimeMillis.compare_exchange_strong(expected, util::currentTimeMillis())) {
                     return;
                 }
 
                 closeCause = cause;
-                if (reason) {
-                    closeReason = reason;
-                }
+                closeReason = reason;
 
                 logClose();
-
-                writeHandler.deRegisterSocket();
-                readHandler.deRegisterSocket();
 
                 try {
                     innerClose();
@@ -5839,18 +5549,8 @@ namespace hazelcast {
             }
 
             bool Connection::write(const std::shared_ptr<protocol::ClientMessage> &message) {
-                if (writeHandler.enqueueData(message)) {
-                    return true;
-                }
-
-                if (logger.isFinestEnabled()) {
-                    logger.finest("Connection is closed, dropping frame -> ", message);
-                }
-                return false;
-            }
-
-            Socket &Connection::getSocket() {
-                return *socket;
+                socket->asyncWrite(shared_from_this(), message);
+                return true;
             }
 
             const std::shared_ptr<Address> &Connection::getRemoteEndpoint() const {
@@ -5859,14 +5559,6 @@ namespace hazelcast {
 
             void Connection::setRemoteEndpoint(const std::shared_ptr<Address> &remoteEndpoint) {
                 this->remoteEndpoint = remoteEndpoint;
-            }
-
-            ReadHandler &Connection::getReadHandler() {
-                return readHandler;
-            }
-
-            WriteHandler &Connection::getWriteHandler() {
-                return writeHandler;
             }
 
             void Connection::handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message) {
@@ -5991,6 +5683,10 @@ namespace hazelcast {
             int64_t Connection::getStartTimeInMillis() const {
                 return startTimeInMillis;
             }
+
+            const Socket &Connection::getSocket() const {
+                return *socket;
+            }
         }
     }
 }
@@ -6000,87 +5696,6 @@ namespace hazelcast {
 
 
 //#define BOOST_THREAD_PROVIDES_FUTURE
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-            WriteHandler::WriteHandler(Connection &connection, OutSelector &oListener, size_t bufferSize)
-                    : IOHandler(connection, oListener), ready(false), informSelector(true) {
-            }
-
-
-            WriteHandler::~WriteHandler() {
-                // no need to delete the messages since they are owned by their associated future objects
-            }
-
-            void WriteHandler::run() {
-                if (this->connection.isAlive()) {
-                    informSelector.store(true);
-                    if (ready) {
-                        handle();
-                    } else {
-                        registerHandler();
-                    }
-                    ready = false;
-                }
-            }
-
-            // TODO: Add a fragmentation layer here before putting the message into the write queue
-            bool WriteHandler::enqueueData(const std::shared_ptr<protocol::ClientMessage> &message) {
-                if (!this->connection.isAlive()) {
-                    return false;
-                }
-                writeQueue.offer(message);
-                bool expected = true;
-                if (informSelector.compare_exchange_strong(expected, false)) {
-                    ioSelector.addTask(this);
-                    ioSelector.wakeUp();
-                }
-                return true;
-            }
-
-            void WriteHandler::handle() {
-                if (lastMessage.get() == NULL) {
-                    if (!(lastMessage = writeQueue.poll()).get()) {
-                        ready = true;
-                        return;
-                    }
-
-                    if (NULL != lastMessage.get()) {
-                        numBytesWrittenToSocketForMessage = 0;
-                        lastMessageFrameLen = lastMessage->getFrameLength();
-                    }
-                }
-
-                while (NULL != lastMessage.get()) {
-                    try {
-                        numBytesWrittenToSocketForMessage += lastMessage->writeTo(connection.getSocket(),
-                                                                                  numBytesWrittenToSocketForMessage,
-                                                                                  lastMessageFrameLen);
-
-                        if (numBytesWrittenToSocketForMessage >= lastMessageFrameLen) {
-                            // Not deleting message since its memory management is at the future object
-                            if ((lastMessage = writeQueue.poll()).get()) {
-                                numBytesWrittenToSocketForMessage = 0;
-                                lastMessageFrameLen = lastMessage->getFrameLength();
-                            }
-                        } else {
-                            // Message could not be sent completely, just continue with another connection
-                            break;
-                        }
-                    } catch (exception::IOException &e) {
-                        handleSocketException(e.what());
-                        return;
-                    }
-                }
-
-                ready = false;
-                registerHandler();
-            }
-        }
-    }
-}
-
 
 namespace hazelcast {
     namespace client {
@@ -6097,114 +5712,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-
-            IOHandler::IOHandler(Connection &connection, IOSelector &ioSelector)
-                    : ioSelector(ioSelector), connection(connection) {
-            }
-
-            void IOHandler::registerSocket() {
-                ioSelector.addTask(this);
-                ioSelector.wakeUp();
-            }
-
-            void IOHandler::registerHandler() {
-                if (!connection.isAlive())
-                    return;
-                Socket const &socket = connection.getSocket();
-                ioSelector.addSocket(socket);
-            }
-
-            void IOHandler::deRegisterSocket() {
-                ioSelector.cancelTask(this);
-                ioSelector.removeSocket(connection.getSocket());
-            }
-
-            IOHandler::~IOHandler() {
-            }
-
-            void IOHandler::handleSocketException(const std::string &message) {
-                // TODO: This call shall resend pending requests and reregister events, hence it can be off-loaded
-                // to another thread in order not to block the critical IO thread
-                connection.close(message.c_str());
-            }
-        }
-    }
-}
-
-
-
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-
-            OutSelector::OutSelector(ClientConnectionManagerImpl &connectionManager,
-                                     const config::SocketOptions &socketOptions)
-                    : IOSelector(connectionManager, socketOptions), wakeUpSocketSet(connectionManager.getLogger()) {
-            }
-
-            bool OutSelector::start() {
-                return initListenSocket(wakeUpSocketSet);
-            }
-
-            void OutSelector::listenInternal() {
-                fd_set write_fds;
-                util::SocketSet::FdRange socketRange = socketSet.fillFdSet(write_fds);
-
-                fd_set wakeUp_fds;
-                util::SocketSet::FdRange wakeupSocketRange = wakeUpSocketSet.fillFdSet(wakeUp_fds);
-
-                int maxFd = (socketRange.max > wakeupSocketRange.max ? socketRange.max : wakeupSocketRange.max);
-
-#if  defined(__GNUC__) || defined(__llvm__)
-                errno = 0;
-#endif
-                t.tv_sec = 5;
-                t.tv_usec = 0;
-
-                int numSelected = select(maxFd + 1, &wakeUp_fds, &write_fds, NULL, &t);
-                if (numSelected == 0) {
-                    return;
-                }
-
-                if (checkError("Exception OutSelector::listen => ", numSelected)) {
-                    return;
-                }
-
-                if (FD_ISSET(wakeUpListenerSocketId, &wakeUp_fds)) {
-                    int wakeUpSignal;
-                    sleepingSocket->receive(&wakeUpSignal, sizeof(int));
-                    --numSelected;
-                }
-
-                for (int fd = socketRange.min; numSelected > 0 && fd <= socketRange.max; ++fd) {
-                    if (FD_ISSET(fd, &write_fds)) {
-                        --numSelected;
-                        std::shared_ptr<Connection> conn = connectionManager.getActiveConnection(fd);
-
-                        if (conn.get() != NULL) {
-                            socketSet.removeSocket(&conn->getSocket());
-                            conn->getWriteHandler().handle();
-                        }
-                    }
-                }
-            }
-
-            const std::string OutSelector::getName() const {
-                return "OutSelector";
-            }
-
-        }
-    }
-}
-
-
-
 
 namespace hazelcast {
     namespace client {
@@ -8290,11 +7797,11 @@ namespace hazelcast {
         const byte Address::IPV4 = 4;
         const byte Address::IPV6 = 6;
 
-        Address::Address() : host("localhost"), type(IPV4) {
+        Address::Address() : host("localhost"), type(IPV4), scopeId(0) {
         }
 
         Address::Address(const std::string &url, int port)
-                : host(url), port(port), type(IPV4) {
+                : host(url), port(port), type(IPV4), scopeId(0) {
         }
 
         Address::Address(const std::string &hostname, int port, unsigned long scopeId) : host(hostname), port(port),
@@ -12028,7 +11535,8 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                SocketFactory::SocketFactory(spi::ClientContext &clientContext) : clientContext(clientContext) {
+                SocketFactory::SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io)
+                        : clientContext(clientContext), io(io) {
                 }
 
                 bool SocketFactory::start() {
@@ -12082,16 +11590,18 @@ namespace hazelcast {
                     return true;
                 }
 
-                std::unique_ptr<Socket> SocketFactory::create(const Address &address) {
+                std::unique_ptr<Socket> SocketFactory::create(const Address &address, int64_t connectTimeoutInMillis) {
 #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
-                        return std::unique_ptr<Socket>(new internal::socket::SSLSocket(ioService, *sslContext, address,
-                                                                                       clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
+                        return std::unique_ptr<Socket>(new internal::socket::SSLSocket(io, *sslContext, address,
+                                                                                       clientContext.getClientConfig().getNetworkConfig().getSocketOptions(),
+                                                                                       connectTimeoutInMillis));
                     }
 #endif
 
-                    return std::unique_ptr<Socket>(new internal::socket::TcpSocket(address,
-                                                                                   &clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
+                    return std::unique_ptr<Socket>(new internal::socket::TcpSocket(io, address,
+                                                                                   clientContext.getClientConfig().getNetworkConfig().getSocketOptions(),
+                                                                                   connectTimeoutInMillis));
                 }
             }
         }
@@ -12104,127 +11614,20 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #endif
 
-
-
-
 namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                SSLSocket::SSLSocket(boost::asio::io_service &ioService, boost::asio::ssl::context &context,
-                                     const client::Address &address, client::config::SocketOptions &socketOptions)
-                        : remoteEndpoint(address), socket(ioService, context), ioService(ioService),
-                          deadline(ioService), socketId(-1), socketOptions(socketOptions), isOpen(true) {
+                SSLSocket::SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &sslContext,
+                                     const client::Address &address, client::config::SocketOptions &socketOptions,
+                                     int64_t connectTimeoutInMillis)
+                        : BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(
+                        std::make_unique<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(ioService, sslContext),
+                        address, socketOptions, ioService, connectTimeoutInMillis) {
                 }
 
-                SSLSocket::~SSLSocket() {
-                    close();
-                }
-
-                void SSLSocket::handleConnect(const boost::system::error_code &error) {
-                    errorCode = error;
-                }
-
-                void SSLSocket::checkDeadline(const boost::system::error_code &ec) {
-                    // The timer may return an error, e.g. operation_aborted when we cancel it. would_block is OK,
-                    // since we set it at the start of the connection.
-                    if (ec && ec != boost::asio::error::would_block) {
-                        return;
-                    }
-
-                    // Check whether the deadline has passed. We compare the deadline against
-                    // the current time since a new asynchronous operation may have moved the
-                    // deadline before this actor had a chance to run.
-                    if (deadline.expires_at() <= std::chrono::system_clock::now()) {
-                        // The deadline has passed. The socket is closed so that any outstanding
-                        // asynchronous operations are cancelled. This allows the blocked
-                        // connect(), read_line() or write_line() functions to return.
-                        boost::system::error_code ignored_ec;
-                        socket.lowest_layer().close(ignored_ec);
-
-                        return;
-                    }
-
-                    // Put the actor back to sleep. _1 is for passing the error_code to the method.
-                    deadline.async_wait(std::bind(&SSLSocket::checkDeadline, this, std::placeholders::_1));
-                }
-
-                int SSLSocket::connect(int timeoutInMillis) {
-                    try {
-                        boost::asio::ip::tcp::resolver resolver(ioService);
-                        std::ostringstream out;
-                        out << remoteEndpoint.getPort();
-                        boost::asio::ip::tcp::resolver::query query(remoteEndpoint.getHost(), out.str());
-                        boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-
-                        deadline.expires_from_now(std::chrono::milliseconds(timeoutInMillis));
-
-                        // Set up the variable that receives the result of the asynchronous
-                        // operation. The error code is set to would_block to signal that the
-                        // operation is incomplete. Asio guarantees that its asynchronous
-                        // operations will never fail with would_block, so any other value in
-                        // errorCode indicates completion.
-                        errorCode = boost::asio::error::would_block;
-
-                        checkDeadline(errorCode);
-
-                        // Start the asynchronous operation itself. a callback will update the ec variable when the
-                        // operation completes.
-                        boost::asio::async_connect(socket.lowest_layer(), iterator,
-                                            std::bind(&SSLSocket::handleConnect, this, std::placeholders::_1));
-
-                        // Block until the asynchronous operation has completed.
-                        boost::system::error_code ioRunErrorCode;
-
-                        // the restart is needed for the other connection attempts to work since the ioservice goes
-                        // into the stopped state following the loop
-                        ioService.restart();
-                        do {
-                            ioService.run_one(ioRunErrorCode);
-                        } while (!ioRunErrorCode && (errorCode == boost::asio::error::would_block));
-
-                        // cancel the deadline timer
-                        deadline.cancel();
-
-                        // Cancel async connect operation if it is still in operation
-                        socket.lowest_layer().cancel();
-
-                        if (ioRunErrorCode) {
-                            return ioRunErrorCode.value();
-                        }
-
-                        if (errorCode) {
-                            return errorCode.value();
-                        }
-
-                        // Determine whether a connection was successfully established. The
-                        // deadline actor may have had a chance to run and close our socket, even
-                        // though the connect operation notionally succeeded. Therefore we must
-                        // check whether the socket is still open before deciding if we succeeded
-                        // or failed.
-                        if (!socket.lowest_layer().is_open()) {
-                            return boost::asio::error::operation_aborted;
-                        }
-
-                        socket.handshake(boost::asio::ssl::stream<boost::asio::ip::tcp::socket>::client);
-
-                        setSocketOptions();
-
-                        setBlocking(false);
-                        socketId = socket.lowest_layer().native_handle();
-                    } catch (boost::system::system_error &e) {
-                        return e.code().value();
-                    }
-
-                    return 0;
-                }
-
-                void SSLSocket::setBlocking(bool blocking) {
-                    socket.lowest_layer().non_blocking(!blocking);
-                }
-
-                std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() {
-                    STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(socket.native_handle());
+                std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() const {
+                    STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(socket_->native_handle());
                     std::vector<CipherInfo> supportedCiphers;
                     for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
                         struct SSLSocket::CipherInfo info;
@@ -12239,115 +11642,21 @@ namespace hazelcast {
                     return supportedCiphers;
                 }
 
-                int SSLSocket::send(const void *buffer, int len, int flag) {
-                    size_t size = 0;
-                    boost::system::error_code ec;
+                void SSLSocket::async_handle_connect(const std::shared_ptr<connection::Connection> &connection,
+                                                     const std::shared_ptr<connection::AuthenticationFuture> &authFuture) {
+                    socket_->async_handshake(boost::asio::ssl::stream_base::client,
+                                             [=](const boost::system::error_code &ec) {
+                                                 if (ec) {
+                                                     authFuture->onFailure(std::make_shared<exception::IOException>(
+                                                             "Connection::do_connect", (boost::format(
+                                                                     "Handshake with server %1% failed. %2%") %
+                                                                                        remoteEndpoint % ec).str()));
+                                                     return;
+                                                 }
 
-                    if (flag == MSG_WAITALL) {
-                        size = boost::asio::write(socket, boost::asio::buffer(buffer, (size_t) len),
-                                           boost::asio::transfer_exactly((size_t) len), ec);
-                    } else {
-                        size = socket.write_some(boost::asio::buffer(buffer, (size_t) len), ec);
-                    }
-
-                    return handleError("SSLSocket::send", size, ec);
-                }
-
-                int SSLSocket::receive(void *buffer, int len, int flag) {
-                    boost::system::error_code ec;
-                    size_t size = 0;
-
-                    ReadHandler readHandler(size, ec);
-                    boost::system::error_code ioRunErrorCode;
-                    ioService.restart();
-                    if (flag == MSG_WAITALL) {
-                        boost::asio::async_read(socket, boost::asio::buffer(buffer, (size_t) len),
-                                         boost::asio::transfer_exactly((size_t) len), readHandler);
-                        do {
-                            ioService.run_one(ioRunErrorCode);
-                            handleError("SSLSocket::receive", size, ec);
-                        } while (!ioRunErrorCode && readHandler.getNumRead() < (size_t) len);
-
-                        return (int) readHandler.getNumRead();
-                    } else {
-                        size = boost::asio::read(socket, boost::asio::buffer(buffer, (size_t) len),
-                                          boost::asio::transfer_exactly((size_t) len), ec);
-                    }
-
-                    return handleError("SSLSocket::receive", size, ec);
-                }
-
-                int SSLSocket::getSocketId() const {
-                    return socketId;
-                }
-
-                client::Address SSLSocket::getAddress() const {
-                    return client::Address(socket.lowest_layer().remote_endpoint().address().to_string(),
-                                           remoteEndpoint.getPort());
-                }
-
-                std::unique_ptr<Address> SSLSocket::localSocketAddress() const {
-                    boost::system::error_code ec;
-                    boost::asio::ip::basic_endpoint<boost::asio::ip::tcp> localEndpoint = socket.lowest_layer().local_endpoint(ec);
-                    if (ec) {
-                        return std::unique_ptr<Address>();
-                    }
-                    return std::unique_ptr<Address>(
-                            new Address(localEndpoint.address().to_string(), localEndpoint.port()));
-                }
-
-                void SSLSocket::close() {
-                    boost::system::error_code ec;
-                    // Call the non-exception throwing versions of the following method
-                    socket.lowest_layer().close(ec);
-                }
-
-                int SSLSocket::handleError(const std::string &source, size_t numBytes,
-                                           const boost::system::error_code &error) const {
-                    if (error && error != boost::asio::error::try_again && error != boost::asio::error::would_block) {
-                        throw exception::IOException(source, error.message());
-                    }
-                    return (int) numBytes;
-                }
-
-                void SSLSocket::setSocketOptions() {
-                    auto &lowestLayer = socket.lowest_layer();
-
-                    lowestLayer.set_option(boost::asio::ip::tcp::no_delay(socketOptions.isTcpNoDelay()));
-
-                    lowestLayer.set_option(boost::asio::socket_base::keep_alive(socketOptions.isKeepAlive()));
-
-                    lowestLayer.set_option(boost::asio::socket_base::reuse_address(socketOptions.isReuseAddress()));
-
-                    int lingerSeconds = socketOptions.getLingerSeconds();
-                    if (lingerSeconds > 0) {
-                        lowestLayer.set_option(boost::asio::socket_base::linger(true, lingerSeconds));
-                    }
-
-                    int bufferSize = socketOptions.getBufferSizeInBytes();
-                    if (bufferSize > 0) {
-                        lowestLayer.set_option(boost::asio::socket_base::receive_buffer_size(bufferSize));
-                        lowestLayer.set_option(boost::asio::socket_base::send_buffer_size(bufferSize));
-                    }
-
-                    // SO_NOSIGPIPE seems to be internally handled by asio on connect and accept. no such option
-                    // is defined at the api, hence not setting this option
-                }
-
-                SSLSocket::ReadHandler::ReadHandler(size_t &numRead, boost::system::error_code &ec) : numRead(numRead),
-                                                                                             errorCode(ec) {}
-
-                void SSLSocket::ReadHandler::operator()(const boost::system::error_code &err, std::size_t bytes_transferred) {
-                    errorCode = err;
-                    numRead += bytes_transferred;
-                }
-
-                size_t &SSLSocket::ReadHandler::getNumRead() const {
-                    return numRead;
-                }
-
-                boost::system::error_code &SSLSocket::ReadHandler::getErrorCode() const {
-                    return errorCode;
+                                                 BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::async_handle_connect(
+                                                         connection, authFuture);
+                                             });
                 }
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info) {
@@ -12364,326 +11673,21 @@ namespace hazelcast {
     }
 }
 
-
-
 #endif // HZ_BUILD_WITH_SSL
-
-
-
 
 namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                TcpSocket::TcpSocket(const client::Address &address, const client::config::SocketOptions *socketOptions)
-                        : configAddress(address) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    int n = WSAStartup(MAKEWORD(2, 0), &wsa_data);
-                    if(n == -1) throw exception::IOException("TcpSocket::TcpSocket ", "WSAStartup error");
-#endif
-                    struct addrinfo hints;
-                    memset(&hints, 0, sizeof(hints));
-                    hints.ai_family = AF_UNSPEC;
-                    hints.ai_socktype = SOCK_STREAM;
-                    hints.ai_flags = AI_PASSIVE;
-
-                    int status;
-                    serverInfo = NULL;
-                    if ((status = getaddrinfo(address.getHost().c_str(),
-                                              hazelcast::util::IOUtil::to_string(address.getPort()).c_str(), &hints,
-                                              &serverInfo)) != 0) {
-                        std::string message = util::IOUtil::to_string(address) + " getaddrinfo error: " +
-                                              std::string(gai_strerror(status));
-                        throw client::exception::IOException("TcpSocket::TcpSocket", message);
-                    }
-
-                    socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
-                    if (-1 == socketId) {
-                        throwIOException("TcpSocket", "[TcpSocket::TcpSocket] Failed to obtain socket.");
-                    }
-
-                    if (socketOptions) {
-                        setSocketOptions(*socketOptions);
-                    }
-
-                    isOpen.store(true);
-                }
-
-                TcpSocket::TcpSocket(int socketId)
-                        : serverInfo(NULL), socketId(socketId), isOpen(true) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
-                    if(n == -1) throw exception::IOException("TcpSocket::TcpSocket ", "WSAStartup error");
-#endif
-                }
-
-                TcpSocket::~TcpSocket() {
-                    close();
-                }
-
-                int TcpSocket::connect(int timeoutInMillis) {
-                    assert(serverInfo != NULL && "Socket is already connected");
-                    setBlocking(false);
-
-                    if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen)) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                        int error = WSAGetLastError();
-                        if (WSAEWOULDBLOCK != error && WSAEINPROGRESS != error && WSAEALREADY != error) {
-#else
-                        int error = errno;
-                        if (EINPROGRESS != error && EALREADY != error) {
-#endif
-                            throwIOException(error, "connect",
-                                             "Failed to connect the socket. Error at ::connect system call.");
-                        }
-                    }
-
-                    struct timeval tv;
-                    tv.tv_sec = timeoutInMillis / 1000;
-                    tv.tv_usec = (timeoutInMillis - (int) tv.tv_sec * 1000) * 1000;
-                    fd_set mySet, err;
-                    FD_ZERO(&mySet);
-                    FD_ZERO(&err);
-                    FD_SET(socketId, &mySet);
-                    FD_SET(socketId, &err);
-                    errno = 0;
-                    if (select(socketId + 1, NULL, &mySet, &err, &tv) > 0) {
-                        return 0;
-                    }
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    int error = WSAGetLastError();
-#else
-                    int error = errno;
-#endif
-
-                    if (error) {
-                        throwIOException(error, "connect",
-                                         "Failed to connect the socket. Error at ::select system call");
-                    } else {
-                        char msg[200];
-                        util::hz_snprintf(msg, 200, "Failed to connect to %s:%d in %d milliseconds",
-                                          configAddress.getHost().c_str(), configAddress.getPort(), timeoutInMillis);
-                        throw exception::IOException("TcpSocket::connect ", msg);
-                    }
-
-                    return -1;
-                }
-
-                void TcpSocket::setBlocking(bool blocking) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    unsigned long iMode;
-                    if(blocking){
-                        iMode = 0l;
-                    } else {
-                        iMode = 1l;
-                    }
-                    if (ioctlsocket(socketId, FIONBIO, &iMode)) {
-                        char errorMsg[200];
-                        int error = WSAGetLastError();
-                        util::strerror_s(error, errorMsg, 200, "Failed to set the blocking mode.");
-                        throw client::exception::IOException("TcpSocket::setBlocking", errorMsg);
-                    }
-#else
-                    int arg = fcntl(socketId, F_GETFL, NULL);
-                    if (-1 == arg) {
-                        char errorMsg[200];
-                        util::strerror_s(errno, errorMsg, 200, "Could not get the value of socket flags.");
-                        throw client::exception::IOException("TcpSocket::setBlocking", errorMsg);
-                    }
-                    if (blocking) {
-                        arg &= (~O_NONBLOCK);
-                    } else {
-                        arg |= O_NONBLOCK;
-                    }
-                    if (-1 == fcntl(socketId, F_SETFL, arg)) {
-                        char errorMsg[200];
-                        util::strerror_s(errno, errorMsg, 200, "Could not set the blocking value of socket flags.");
-                        throw client::exception::IOException("TcpSocket::setBlocking", errorMsg);
-                    }
-#endif
-                }
-
-                int TcpSocket::send(const void *buffer, int len, int flag) {
-#if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
-                    errno = 0;
-#endif
-
-                    int bytesSend = 0;
-                    /**
-                     * In linux, sometimes SIGBUS may be received during this call when the server closes the connection.
-                     * The returned error code is still error when this flag is set. Hence, it is safe to use.
-                     * MSG_NOSIGNAL (since Linux 2.2)
-                     * Requests not to send SIGPIPE on errors on stream oriented sockets when the other end breaks the connection.
-                     * The EPIPE error is still returned.
-                     */
-
-                    if (flag == MSG_WAITALL) {
-                        setBlocking(true);
-                    }
-
-                    if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, MSG_NOSIGNAL)) == -1) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                        int error = WSAGetLastError();
-                        if (WSAEWOULDBLOCK == error) {
-#else
-                        int error = errno;
-                        if (EAGAIN == error) {
-#endif
-                            if (flag == MSG_WAITALL) {
-                                setBlocking(false);
-                            }
-                            return 0;
-                        }
-
-                        if (flag == MSG_WAITALL) {
-                            setBlocking(false);
-                        }
-                        throwIOException(error, "send", "Send failed.");
-                    }
-                    if (flag == MSG_WAITALL) {
-                        setBlocking(false);
-                    }
-                    return bytesSend;
-                }
-
-                int TcpSocket::receive(void *buffer, int len, int flag) {
-#if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
-                    errno = 0;
-#endif
-
-                    int size = ::recv(socketId, (char *) buffer, (size_t) len, flag);
-
-                    if (size == -1) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                        int error = WSAGetLastError();
-                        if (WSAEWOULDBLOCK == error) {
-#else
-                        int error = errno;
-                        if (EAGAIN == error) {
-#endif
-                            return 0;
-                        }
-
-                        throwIOException(error, "receive", "Receive failed.");
-                    } else if (size == 0) {
-                        throw client::exception::IOException("TcpSocket::receive", "Connection closed by remote");
-                    }
-                    return size;
-                }
-
-                int TcpSocket::getSocketId() const {
-                    return socketId;
-                }
-
-                client::Address TcpSocket::getAddress() const {
-                    char host[1024];
-                    char service[20];
-                    getnameinfo(serverInfo->ai_addr, serverInfo->ai_addrlen, host, sizeof host, service, sizeof service,
-                                NI_NUMERICHOST | NI_NUMERICSERV);
-                    Address address(host, atoi(service));
-                    return address;
-                }
-
-                void TcpSocket::close() {
-                    bool expected = true;
-                    if (isOpen.compare_exchange_strong(expected, false)) {
-                        if (serverInfo != NULL)
-                            ::freeaddrinfo(serverInfo);
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                        ::shutdown(socketId, SD_RECEIVE);
-                        char buffer[1];
-                        ::recv(socketId, buffer, 1, MSG_WAITALL);
-                        WSACleanup();
-                        closesocket(socketId);
-#else
-                        ::shutdown(socketId, SHUT_RD);
-                        char buffer[1];
-                        ::recv(socketId, buffer, 1, MSG_WAITALL);
-                        ::close(socketId);
-#endif
-                    }
-                }
-
-                void TcpSocket::throwIOException(const char *methodName, const char *prefix) const {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    int error = WSAGetLastError();
-#else
-                    int error = errno;
-#endif
-
-                    throwIOException(error, methodName, prefix);
-                }
-
-                void TcpSocket::throwIOException(int error, const char *methodName, const char *prefix) const {
-                    char errorMsg[200];
-                    util::strerror_s(error, errorMsg, 200, prefix);
-                    throw client::exception::IOException(std::string("TcpSocket::") + methodName, errorMsg);
-                }
-
-                std::unique_ptr<Address> TcpSocket::localSocketAddress() const {
-                    struct sockaddr_in sin;
-                    socklen_t addrlen = sizeof(sin);
-                    if (getsockname(socketId, (struct sockaddr *) &sin, &addrlen) == 0 &&
-                        sin.sin_family == AF_INET &&
-                        addrlen == sizeof(sin)) {
-                        int localPort = ntohs(sin.sin_port);
-                        char *localIp = inet_ntoa(sin.sin_addr);
-                        return std::unique_ptr<Address>(new Address(localIp ? localIp : "", localPort));
-                    } else {
-                        return std::unique_ptr<Address>();
-                    }
-                }
-
-                void TcpSocket::setSocketOptions(const client::config::SocketOptions &socketOptions) {
-                    int optionValue = socketOptions.getBufferSizeInBytes();
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &optionValue, sizeof(optionValue))) {
-                        throwIOException("setSocketOptions", "Failed to set socket receive buffer size.");
-                    }
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &optionValue, sizeof(optionValue))) {
-                        throwIOException("setSocketOptions", "Failed to set socket send buffer size.");
-                    }
-
-                    optionValue = socketOptions.isTcpNoDelay();
-                    if (::setsockopt(socketId, IPPROTO_TCP, TCP_NODELAY, (char *) &optionValue, sizeof(optionValue))) {
-                        throwIOException("setSocketOptions", "Failed to set TCP_NODELAY option on the socket.");
-                    }
-
-                    optionValue = socketOptions.isKeepAlive();
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_KEEPALIVE, (char *) &optionValue, sizeof(optionValue))) {
-                        throwIOException("setSocketOptions", "Failed to set SO_KEEPALIVE option on the socket.");
-                    }
-
-                    optionValue = socketOptions.isReuseAddress();
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, (char *) &optionValue, sizeof(optionValue))) {
-                        throwIOException("setSocketOptions", "Failed to set SO_REUSEADDR option on the socket.");
-                    }
-
-                    optionValue = socketOptions.getLingerSeconds();
-                    if (optionValue > 0) {
-                        struct linger so_linger;
-                        so_linger.l_onoff = 1;
-                        so_linger.l_linger = optionValue;
-
-                        if (::setsockopt(socketId, SOL_SOCKET, SO_LINGER, (char *) &so_linger, sizeof(so_linger))) {
-                            throwIOException("setSocketOptions", "Failed to set SO_LINGER option on the socket.");
-                        }
-                    }
-
-#if defined(SO_NOSIGPIPE)
-                    optionValue = 1;
-                    if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, (char *) &optionValue, sizeof(optionValue))) {
-                        throwIOException("TcpSocket", "Failed to set socket option SO_NOSIGPIPE.");
-                    }
-#endif
-
+                TcpSocket::TcpSocket(boost::asio::io_context &io, const Address &address,
+                                     client::config::SocketOptions &socketOptions, int64_t connectTimeoutInMillis)
+                        : BaseSocket<boost::asio::ip::tcp::socket>(std::make_unique<boost::asio::ip::tcp::socket>(io),
+                                                                   address, socketOptions, io, connectTimeoutInMillis) {
                 }
             }
         }
     }
 }
-
-
 
 namespace hazelcast {
     namespace client {
@@ -13252,17 +12256,6 @@ namespace hazelcast {
 
             void ClientMessage::setRetryable(bool shouldRetry) {
                 retryable = shouldRetry;
-            }
-
-            int32_t ClientMessage::writeTo(Socket &socket, int32_t offset, int32_t frameLen) {
-                int32_t numBytesSent = 0;
-
-                int32_t numBytesLeft = frameLen - offset;
-                if (numBytesLeft > 0) {
-                    numBytesSent = socket.send(&(*buffer)[offset], numBytesLeft);
-                }
-
-                return numBytesSent;
             }
 
             bool ClientMessage::isComplete() const {
@@ -18798,6 +17791,9 @@ namespace hazelcast {
         const std::string ClientProperties::STATISTICS_PERIOD_SECONDS = "hazelcast.client.statistics.period.seconds";
         const std::string ClientProperties::STATISTICS_PERIOD_SECONDS_DEFAULT = "3";
 
+        const std::string ClientProperties::IO_THREAD_COUNT = "hazelcast.client.io.thread.count";
+        const std::string ClientProperties::IO_THREAD_COUNT_DEFAULT = "1";
+
         ClientProperty::ClientProperty(const std::string &name, const std::string &defaultValue)
                 : name(name), defaultValue(defaultValue) {
         }
@@ -18837,6 +17833,7 @@ namespace hazelcast {
                                                    BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT),
                   statisticsEnabled(STATISTICS_ENABLED, STATISTICS_ENABLED_DEFAULT),
                   statisticsPeriodSeconds(STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT),
+                  ioThreadCount(IO_THREAD_COUNT, IO_THREAD_COUNT_DEFAULT),
                   propertiesMap(properties) {
         }
 
@@ -18894,6 +17891,10 @@ namespace hazelcast {
 
         const ClientProperty &ClientProperties::getStatisticsPeriodSeconds() const {
             return statisticsPeriodSeconds;
+        }
+
+        const ClientProperty &ClientProperties::getIOThreadCount() const {
+            return ioThreadCount;
         }
 
         std::string ClientProperties::getString(const ClientProperty &property) const {

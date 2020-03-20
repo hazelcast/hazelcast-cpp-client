@@ -97,6 +97,8 @@ namespace hazelcast {
 
             const ClientProperty &getStatisticsPeriodSeconds() const;
 
+            const ClientProperty &getIOThreadCount() const;
+
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
             * passing between client and member within the given time via this property in seconds the connection
@@ -238,6 +240,12 @@ namespace hazelcast {
             static const std::string STATISTICS_PERIOD_SECONDS_DEFAULT;
 
             /**
+             * The number of threads for the io operations.
+             */
+            static const std::string IO_THREAD_COUNT;
+            static const std::string IO_THREAD_COUNT_DEFAULT;
+
+            /**
              * Returns the configured boolean value of a {@link ClientProperty}.
              *
              * @param property the {@link ClientProperty} to get the value from
@@ -286,6 +294,7 @@ namespace hazelcast {
             ClientProperty backpressureBackoffTimeoutMillis;
             ClientProperty statisticsEnabled;
             ClientProperty statisticsPeriodSeconds;
+            ClientProperty ioThreadCount;
 
             std::map<std::string, std::string> propertiesMap;
         };

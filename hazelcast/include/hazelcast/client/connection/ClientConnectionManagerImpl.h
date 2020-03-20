@@ -23,7 +23,10 @@
 #include <stdint.h>
 #include <memory>
 #include <random>
+#include <thread>
 #include <future>
+#include <vector>
+#include <boost/asio.hpp>
 
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
@@ -32,8 +35,6 @@
 #include "hazelcast/util/Future.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/connection/InSelector.h"
-#include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/protocol/Principal.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
@@ -56,6 +57,7 @@ namespace hazelcast {
         namespace protocol {
             class ClientMessage;
         }
+
         class SocketInterceptor;
 
         namespace spi {
@@ -88,6 +90,8 @@ namespace hazelcast {
             */
             class HAZELCAST_API ClientConnectionManagerImpl : public ConnectionListenable {
             public:
+                typedef std::tuple<std::shared_ptr<AuthenticationFuture>, std::shared_ptr<Connection>> FutureTuple;
+
                 ClientConnectionManagerImpl(spi::ClientContext &client,
                                             const std::shared_ptr<AddressTranslator> &addressTranslator,
                                             const std::vector<std::shared_ptr<AddressProvider> > &addressProviders);
@@ -137,8 +141,6 @@ namespace hazelcast {
 
                 std::shared_ptr<Connection> getActiveConnection(const Address &target);
 
-                std::shared_ptr<Connection> getActiveConnection(int fileDescriptor);
-
                 std::shared_ptr<Connection> getOwnerConnection();
 
                 const std::shared_ptr<protocol::Principal> getPrincipal();
@@ -156,20 +158,22 @@ namespace hazelcast {
                 virtual void addConnectionListener(const std::shared_ptr<ConnectionListener> &connectionListener);
 
                 util::ILogger &getLogger();
+
+                void authenticate(const Address &target, std::shared_ptr<Connection> &connection, bool asOwner,
+                                  std::shared_ptr<AuthenticationFuture> &future);
+
+                void reAuthenticate(const Address &target, std::shared_ptr<Connection> &connection, bool asOwner,
+                                    std::shared_ptr<AuthenticationFuture> &future);
+
             private:
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC;
 
                 std::shared_ptr<Connection> getConnection(const Address &target, bool asOwner);
 
-                std::shared_ptr<AuthenticationFuture> triggerConnect(const Address &target, bool asOwner);
-
-                std::shared_ptr<Connection> createSocketConnection(const Address &address);
+                std::shared_ptr<FutureTuple> triggerConnect(const Address &target, bool asOwner);
 
                 std::shared_ptr<Connection> getOrConnect(const Address &address, bool asOwner);
-
-                void authenticate(const Address &target, std::shared_ptr<Connection> &connection, bool asOwner,
-                                  std::shared_ptr<AuthenticationFuture> &future);
 
                 std::unique_ptr<protocol::ClientMessage>
                 encodeAuthenticationRequest(bool asOwner, serialization::pimpl::SerializationService &ss,
@@ -193,31 +197,7 @@ namespace hazelcast {
 
                 std::unique_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &client);
 
-                void startEventLoopGroup();
-
-                void stopEventLoopGroup();
-
                 void shuffle(std::vector<Address> &memberAddresses) const;
-
-                class InitConnectionTask : public util::Runnable {
-                public:
-                    InitConnectionTask(const Address &target, const bool asOwner,
-                                       const std::shared_ptr<AuthenticationFuture> &future,
-                                       ClientConnectionManagerImpl &connectionManager);
-
-                    void run();
-
-                    const std::string getName() const;
-
-                private:
-                    std::shared_ptr<Connection> getConnection(const Address &target);
-
-                    const Address target;
-                    const bool asOwner;
-                    std::shared_ptr<AuthenticationFuture> future;
-                    ClientConnectionManagerImpl &connectionManager;
-                    util::ILogger &logger;
-                };
 
                 class AuthCallback : public ExecutionCallback<protocol::ClientMessage> {
                 public:
@@ -287,19 +267,12 @@ namespace hazelcast {
 
                 spi::ClientContext &client;
                 SocketInterceptor *socketInterceptor;
-                util::SynchronizedMap<int, Connection> socketConnections;
-                InSelector inSelector;
-                OutSelector outSelector;
-                util::Thread inSelectorThread;
-                util::Thread outSelectorThread;
 
                 spi::impl::ClientExecutionServiceImpl &executionService;
 
                 std::shared_ptr<AddressTranslator> translator;
                 util::SynchronizedMap<Address, Connection> activeConnections;
-                util::SynchronizedMap<int, Connection> activeConnectionsFileDescriptors;
-                util::SynchronizedMap<int, Connection> pendingSocketIdToConnection;
-                util::SynchronizedMap<Address, AuthenticationFuture> connectionsInProgress;
+                util::SynchronizedMap<Address, FutureTuple> connectionsInProgress;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
                 const Credentials *credentials;
@@ -312,6 +285,7 @@ namespace hazelcast {
                 std::shared_ptr<util::impl::SimpleExecutorService> clusterConnectionExecutor;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
+                int32_t ioThreadCount;
                 bool shuffleMemberList;
                 std::vector<std::shared_ptr<AddressProvider> > addressProviders;
 
@@ -320,6 +294,9 @@ namespace hazelcast {
 
                 util::Mutex lock;
                 std::unique_ptr<HeartbeatManager> heartbeat;
+
+                boost::asio::io_context ioContext;
+                std::vector<std::thread> ioThreads;
             };
         }
     }

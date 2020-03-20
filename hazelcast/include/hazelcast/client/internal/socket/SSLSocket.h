@@ -18,20 +18,10 @@
 
 #ifdef HZ_BUILD_WITH_SSL
 
-#include <atomic>
-
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/asio/deadline_timer.hpp>
 
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/config/SocketOptions.h"
-#include "hazelcast/util/AtomicBoolean.h"
-
-#if !defined(MSG_NOSIGNAL)
-#  define MSG_NOSIGNAL 0
-#endif
+#include "hazelcast/client/internal/socket/BaseSocket.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -45,10 +35,8 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                /**
-                 * SSL Socket using asio library
-                 */
-                class HAZELCAST_API SSLSocket : public Socket {
+                class HAZELCAST_API SSLSocket
+                        : public BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>> {
                 public:
                     struct CipherInfo {
                         std::string name;
@@ -57,105 +45,17 @@ namespace hazelcast {
                         std::string description;
                     };
 
-                    /**
-                     * Constructor
-                     */
-                    SSLSocket(boost::asio::io_service &ioService, boost::asio::ssl::context &context, const client::Address &address,
-                              client::config::SocketOptions &socketOptions);
-
-                    /**
-                     * Destructor
-                     */
-                    virtual ~SSLSocket();
-
-                    /**
-                     * connects to given address in constructor.
-                     * @param timeoutInMillis if not connected within timeout, it will return errorCode
-                     * @return zero if error. -1 otherwise.
-                     */
-                    int connect(int timeoutInMillis);
-
-                    /**
-                     * @param buffer
-                     * @param len length of the buffer
-                     * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
-                     * @return number of bytes send
-                     * @throw IOException in failure.
-                     */
-                    int send(const void *buffer, int len, int flag = 0);
-
-                    /**
-                     * @param buffer
-                     * @param len  length of the buffer to be received.
-                     * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
-                     * @return number of bytes received.
-                     * @throw IOException in failure.
-                     */
-                    int receive(void *buffer, int len, int flag = 0);
-
-                    /**
-                     * return socketId
-                     */
-                    int getSocketId() const;
-
-                    /**
-                     * closes the socket. Automatically called in destructor.
-                     * Second call to this function is no op.
-                     */
-                    void close();
-
-                    client::Address getAddress() const;
-
-                    void setBlocking(bool blocking);
+                    SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &context,
+                              const client::Address &address, client::config::SocketOptions &socketOptions,
+                              int64_t connectTimeoutInMillis);
 
                     /**
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.
                      */
-                    std::vector<SSLSocket::CipherInfo> getCiphers();
+                    std::vector<SSLSocket::CipherInfo> getCiphers() const;
 
-                    std::unique_ptr<Address> localSocketAddress() const;
-
-                private:
-                    SSLSocket(const Socket &rhs);
-
-                    SSLSocket &operator=(const Socket &rhs);
-
-                    class ReadHandler {
-                    public:
-                        ReadHandler(size_t &numRead, boost::system::error_code &ec);
-
-                        void operator()(const boost::system::error_code &err, std::size_t bytes_transferred);
-
-                        size_t &getNumRead() const;
-
-                        boost::system::error_code &getErrorCode() const;
-
-                    private:
-                        size_t &numRead;
-                        boost::system::error_code &errorCode;
-                    };
-
-                    /**
-                     * @return numBytes if the no error or error is try_again or would_block
-                     * @throws IOException if the error exists and different from try_again and would_block
-                     */
-                    int handleError(const std::string &source, size_t numBytes, const boost::system::error_code &error) const;
-
-                    void handleConnect(const boost::system::error_code &error);
-
-                    void checkDeadline(const boost::system::error_code &ec);
-
-                    void setSocketOptions();
-
-                    client::Address remoteEndpoint;
-
-                    boost::asio::ssl::stream<boost::asio::ip::tcp::socket> socket;
-                    boost::asio::io_service &ioService;
-                    boost::asio::system_timer deadline;
-                    boost::system::error_code errorCode;
-                    int socketId;
-                    const client::config::SocketOptions &socketOptions;
-                    std::atomic_bool isOpen;
+                    void async_handle_connect(const std::shared_ptr<connection::Connection> &connection,
+                                              const std::shared_ptr<connection::AuthenticationFuture> &authFuture) override;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);

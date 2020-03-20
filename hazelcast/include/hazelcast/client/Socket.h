@@ -16,67 +16,44 @@
 #ifndef HAZELCAST_CLIENT_SOCKET_H_
 #define HAZELCAST_CLIENT_SOCKET_H_
 
-#include <memory>
-#include <memory>
+#include <boost/asio.hpp>
 
+#include "hazelcast/client/config/SocketOptions.h"
 #include "hazelcast/client/Address.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
-        /**
-         * Sockets wrapper interface class.
-         */
+        namespace connection {
+            class Connection;
+
+            class AuthenticationFuture;
+        }
+
+        namespace protocol {
+            class ClientMessage;
+        }
+
         class HAZELCAST_API Socket {
         public:
-            /**
-             * Destructor
-             */
-            virtual ~Socket();
-            /**
-             * connects to given address in constructor.
-             * @param timeoutInMillis if not connected within timeout, it will return errorCode
-             * @return 0 on success.
-             * @throw IOException on failure.
-             */
-            virtual int connect(int timeoutInMillis) = 0;
+            virtual ~Socket() {
+            }
 
-            /**
-             * @param buffer
-             * @param len length of the buffer
-             * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
-             * @return number of bytes send
-             * @throw IOException in failure.
-             */
-            virtual int send(const void *buffer, int len, int flag = 0) = 0;
+            virtual void
+            asyncStart(const std::shared_ptr<connection::Connection> &connection,
+                       const std::shared_ptr<connection::AuthenticationFuture> &authFuture) = 0;
 
-            /**
-             * @param buffer
-             * @param len  length of the buffer to be received.
-             * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
-             * @return number of bytes received.
-             * @throw IOException in failure.
-             */
-            virtual int receive(void *buffer, int len, int flag = 0) = 0;
+            virtual void
+            asyncWrite(const std::shared_ptr<connection::Connection> &connection,
+                       const std::shared_ptr<protocol::ClientMessage> &message) = 0;
 
-            /**
-             * return socketId
-             */
-            virtual int getSocketId() const = 0;
-
-            /**
-             * closes the socket. Automatically called in destructor.
-             * Second call to this function is no op.
-             */
             virtual void close() = 0;
 
-            virtual client::Address getAddress() const = 0;
-
-            virtual void setBlocking(bool blocking) = 0;
+            virtual Address getAddress() const = 0;
 
             /**
              *
@@ -85,13 +62,14 @@ namespace hazelcast {
              * @returns An address that represents the local endpoint of the socket.
              */
             virtual std::unique_ptr<Address> localSocketAddress() const = 0;
-        };
 
+            virtual const Address &getRemoteEndpoint() const = 0;
+        };
     }
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 #endif /* HAZELCAST_CLIENT_SOCKET_H_ */

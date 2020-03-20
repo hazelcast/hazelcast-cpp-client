@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Sync.h"
 #include "hazelcast/util/CountDownLatch.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -36,17 +37,24 @@ namespace hazelcast {
 
             class HAZELCAST_API AuthenticationFuture {
             public:
-                AuthenticationFuture();
+                typedef std::tuple<std::shared_ptr<AuthenticationFuture>, std::shared_ptr<Connection>> FutureTuple;
+
+                AuthenticationFuture(const Address &address,
+                                     util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress);
 
                 void onSuccess(const std::shared_ptr<Connection> &connection);
 
                 void onFailure(const std::shared_ptr<exception::IException> &throwable);
 
                 std::shared_ptr<Connection> get();
+
             private:
                 std::shared_ptr<util::CountDownLatch> countDownLatch;
-                std::shared_ptr<Connection> connection;
-                std::shared_ptr<exception::IException> throwable;
+                util::Sync<std::shared_ptr<Connection>> connection;
+                util::Sync<std::shared_ptr<exception::IException>> throwable;
+                const Address address;
+                util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress;
+                std::atomic_bool isSet;
             };
         }
     }

@@ -22,14 +22,15 @@
 #include <ostream>
 #include <stdint.h>
 #include <atomic>
+#include <boost/asio.hpp>
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
@@ -59,35 +60,36 @@ namespace hazelcast {
 
         class Address;
 
-        namespace connection {
-            class OutSelector;
+        class SocketInterceptor;
 
-            class InSelector;
+        namespace connection {
+            class AuthenticationFuture;
+
+            class ClientConnectionManagerImpl;
 
             class HAZELCAST_API Connection : public util::Closeable, public std::enable_shared_from_this<Connection> {
             public:
-                Connection(const Address& address, spi::ClientContext& clientContext, int connectionId, InSelector& iListener,
-                           OutSelector& listener, internal::socket::SocketFactory &socketFactory);
+                Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
+                           const std::shared_ptr<AuthenticationFuture> &authFuture,
+                           internal::socket::SocketFactory &socketFactory,
+                           boost::asio::io_context &ioContext, bool asOwner,
+                           ClientConnectionManagerImpl &clientConnectionManager, int64_t connectTimeoutInMillis);
 
                 virtual ~Connection();
 
-                void connect(int timeoutInMillis);
+                void asyncStart();
 
-                void close(const char *reason = NULL);
+                void close();
 
-                void close(const char *reason, const std::shared_ptr<exception::IException> &cause);
+                void close(const std::string &reason);
+
+                void close(const std::string &reason, const std::shared_ptr<exception::IException> &cause);
 
                 bool write(const std::shared_ptr<protocol::ClientMessage> &message);
 
                 const std::shared_ptr<Address> &getRemoteEndpoint() const;
 
                 void setRemoteEndpoint(const std::shared_ptr<Address> &remoteEndpoint);
-
-                Socket& getSocket();
-
-                ReadHandler& getReadHandler();
-
-                WriteHandler& getWriteHandler();
 
                 bool isAuthenticatedAsOwner();
 
@@ -119,8 +121,15 @@ namespace hazelcast {
 
                 int64_t getStartTimeInMillis() const;
 
+                const Socket &getSocket() const;
+
+                void authenticate();
+
+                void reAuthenticateAsOwner();
+
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
+                ReadHandler readHandler;
             private:
                 void logClose();
 
@@ -128,11 +137,10 @@ namespace hazelcast {
 
                 int64_t startTimeInMillis;
                 std::atomic<int64_t> closedTimeMillis;
-                spi::ClientContext& clientContext;
+                spi::ClientContext &clientContext;
                 protocol::IMessageHandler &invocationService;
                 std::unique_ptr<Socket> socket;
-                ReadHandler readHandler;
-                WriteHandler writeHandler;
+                std::shared_ptr<AuthenticationFuture> authFuture;
                 util::AtomicBoolean authenticatedAsOwner;
 
                 int connectionId;
@@ -145,6 +153,8 @@ namespace hazelcast {
                 std::shared_ptr<Address> remoteEndpoint;
 
                 util::ILogger &logger;
+                bool asOwner;
+                ClientConnectionManagerImpl &connectionManager;
             };
         }
     }

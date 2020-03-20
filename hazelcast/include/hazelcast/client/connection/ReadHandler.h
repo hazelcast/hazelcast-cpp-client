@@ -25,7 +25,6 @@
 
 
 #include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -46,22 +45,19 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API ReadHandler : public IOHandler {
+            class HAZELCAST_API ReadHandler {
             public:
-                ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize,
-                            spi::ClientContext &clientContext);
+                ReadHandler(Connection &connection, size_t bufferSize);
 
                 ~ReadHandler();
 
                 void handle();
 
-                void run();
-
                 int64_t getLastReadTimeMillis();
 
-            private:
                 char *buffer;
                 util::ByteBuffer byteBuffer;
+            private:
 
                 protocol::ClientMessageBuilder builder;
                 std::atomic<int64_t> lastReadTimeMillis;

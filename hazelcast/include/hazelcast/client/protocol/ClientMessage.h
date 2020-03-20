@@ -78,8 +78,6 @@ namespace hazelcast {
 
         class Member;
 
-        class Socket;
-
         namespace map {
             class DataEntryView;
         }
@@ -386,10 +384,6 @@ namespace hazelcast {
 
                 void setRetryable(bool shouldRetry);
 
-                /**
-                 * Returns the number of bytes sent on the socket
-                 **/
-                int32_t writeTo(Socket &socket, int32_t offset, int32_t frameLen);
 
                 /**
                  * Checks the frame size and total data size to validate the message size.
