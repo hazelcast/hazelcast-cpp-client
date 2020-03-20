@@ -317,6 +317,7 @@
 #include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/client/IExecutorService.h"
 
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4355) //for strerror
@@ -325,3323 +326,1202 @@
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            int ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC = 2;
-            int ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC = 20;
-
-            ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
-                                                                     const std::shared_ptr<AddressTranslator> &addressTranslator,
-                                                                     const std::vector<std::shared_ptr<AddressProvider> > &addressProviders)
-                    : logger(client.getLogger()), client(client),
-                      socketInterceptor(client.getClientConfig().getSocketInterceptor()),
-                      executionService(client.getClientExecutionService()),
-                      translator(addressTranslator), connectionIdGen(0), socketFactory(client, ioContext) {
-                config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
-
-                int64_t connTimeout = networkConfig.getConnectionTimeout();
-                connectionTimeoutMillis = connTimeout == 0 ? INT64_MAX : connTimeout;
-
-                credentials = client.getClientConfig().getCredentials();
-
-                connectionStrategy = initializeStrategy(client);
-
-                clusterConnectionExecutor.reset(
-                        new util::impl::SimpleExecutorService(logger, client.getName() + ".cluster-", 1));
-
-                ClientProperties &clientProperties = client.getClientProperties();
-                shuffleMemberList = clientProperties.getBoolean(clientProperties.getShuffleMemberList());
-
-                ClientConnectionManagerImpl::addressProviders = addressProviders;
-
-                connectionAttemptPeriod = networkConfig.getConnectionAttemptPeriod();
-
-                int connAttemptLimit = networkConfig.getConnectionAttemptLimit();
-                bool isAsync = client.getClientConfig().getConnectionStrategyConfig().isAsyncStart();
-
-                if (connAttemptLimit < 0) {
-                    this->connectionAttemptLimit = isAsync ? DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC
-                                                           : DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
-                } else {
-                    this->connectionAttemptLimit = connAttemptLimit == 0 ? INT32_MAX : connAttemptLimit;
-                }
-
-                ioThreadCount = clientProperties.getInteger(clientProperties.getIOThreadCount());
+        namespace impl {
+            AbstractLoadBalancer::AbstractLoadBalancer(const AbstractLoadBalancer &rhs) {
+                *this = rhs;
             }
 
-            bool ClientConnectionManagerImpl::start() {
-                util::LockGuard guard(lock);
-                if (alive) {
-                    return true;
-                }
-                alive.store(true);
-
-                clusterConnectionExecutor->start();
-
-                if (!socketFactory.start()) {
-                    return false;
-                }
-
-                socketInterceptor = client.getClientConfig().getSocketInterceptor();
-
-                for (int j = 0; j < ioThreadCount; ++j) {
-                    ioThreads.emplace_back([&]() {
-                        boost::asio::executor_work_guard<decltype(ioContext.get_executor())> work{
-                                ioContext.get_executor()};
-                        ioContext.run();
-                    });
-                }
-
-                heartbeat.reset(new HeartbeatManager(client));
-                heartbeat->start();
-                connectionStrategy->start();
-
-                return true;
+            void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
+                util::LockGuard lg(const_cast<util::Mutex &>(rhs.membersLock));
+                util::LockGuard lg2(membersLock);
+                membersRef = rhs.membersRef;
+                cluster = rhs.cluster;
             }
 
-            void ClientConnectionManagerImpl::shutdown() {
-                util::LockGuard guard(lock);
-                if (!alive) {
-                    return;
-                }
-                alive.store(false);
-
-                ioContext.stop();
-
-                heartbeat->shutdown();
-
-                connectionStrategy->shutdown();
-
-                // let the waiting authentication futures not block anymore
-                for (auto &authFutureTuple : connectionsInProgress.values()) {
-                    auto &authFuture = std::get<0>(*authFutureTuple);
-                    authFuture->onFailure(
-                            std::make_shared<exception::IllegalStateException>("ClientConnectionManagerImpl::shutdown",
-                                                                               "Client is shutting down"));
-                    std::get<1>(*authFutureTuple)->close();
-                }
-
-                // close connections
-                for (auto &connection : activeConnections.values()) {
-                    // prevent any exceptions
-                    util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
-                }
-
-                spi::impl::ClientExecutionServiceImpl::shutdownExecutor("cluster", *clusterConnectionExecutor, logger);
-
-                connectionListeners.clear();
-                activeConnections.clear();
-
-                std::for_each(ioThreads.begin(), ioThreads.end(), [](std::thread &t) { t.join(); });
+            void AbstractLoadBalancer::init(Cluster &cluster) {
+                this->cluster = &cluster;
+                setMembersRef();
+                cluster.addMembershipListener(this);
             }
 
-            std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::getOrConnect(const Address &address) {
-                return getOrConnect(address, false);
+            void AbstractLoadBalancer::setMembersRef() {
+                util::LockGuard lg(membersLock);
+                membersRef = cluster->getMembers();
             }
 
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::getOwnerConnection() {
-                std::shared_ptr<Address> address = ownerConnectionAddress;
-                if (address.get() == NULL) {
-                    return std::shared_ptr<Connection>();
-                }
-                std::shared_ptr<Connection> connection = getActiveConnection(*address);
-                return connection;
-
+            void AbstractLoadBalancer::memberAdded(const MembershipEvent &membershipEvent) {
+                setMembersRef();
             }
 
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::connectAsOwner(const Address &address) {
-                std::shared_ptr<Connection> connection;
-                try {
-                    logger.info("Trying to connect to ", address, " as owner member");
-                    connection = getOrConnect(address, true);
-                    if (connection == nullptr) {
-                        return nullptr;
-                    }
-                    client.onClusterConnect(connection);
-                    fireConnectionEvent(LifecycleEvent::CLIENT_CONNECTED);
-                    connectionStrategy->onConnectToCluster();
-                } catch (exception::IException &e) {
-                    logger.warning("Exception during initial connection to ", address, ", exception ", e);
-                    if (NULL != connection.get()) {
-                        std::ostringstream reason;
-                        reason << "Could not connect to " << address << " as owner";
-                        connection->close(reason.str().c_str(), std::shared_ptr<exception::IException>(e.clone()));
-                    }
-                    return std::shared_ptr<Connection>();
-                }
-                return connection;
+            void AbstractLoadBalancer::memberRemoved(const MembershipEvent &membershipEvent) {
+                setMembersRef();
             }
 
-
-            std::vector<std::shared_ptr<Connection> > ClientConnectionManagerImpl::getActiveConnections() {
-                return activeConnections.values();
+            void AbstractLoadBalancer::memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
             }
 
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::getOrTriggerConnect(const Address &target) {
-                std::shared_ptr<Connection> connection = getConnection(target, false);
-                if (connection.get() != NULL) {
-                    return connection;
-                }
-                triggerConnect(target, false);
-                return std::shared_ptr<Connection>();
+            std::vector<Member> AbstractLoadBalancer::getMembers() {
+                util::LockGuard lg(membersLock);
+                return membersRef;
             }
 
-            std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::getConnection(const Address &target, bool asOwner) {
-                if (!asOwner) {
-                    connectionStrategy->beforeGetConnection(target);
-                }
-                if (!asOwner && getOwnerConnection().get() == NULL) {
-                    throw exception::IOException("ConnectionManager::getConnection",
-                                                 "Owner connection is not available!");
-                }
-
-                std::shared_ptr<Connection> connection = activeConnections.get(target);
-
-                if (connection.get() != NULL) {
-                    if (!asOwner) {
-                        return connection;
-                    }
-                    if (connection->isAuthenticatedAsOwner()) {
-                        return connection;
-                    }
-
-                    connection->reAuthenticateAsOwner();
-                    return connection;
-                }
-                return std::shared_ptr<Connection>();
+            AbstractLoadBalancer::~AbstractLoadBalancer() {
             }
 
-            std::shared_ptr<Connection> ClientConnectionManagerImpl::getActiveConnection(const Address &target) {
-                return activeConnections.get(target);
+            AbstractLoadBalancer::AbstractLoadBalancer() : cluster(NULL) {
             }
 
-            std::shared_ptr<Address> ClientConnectionManagerImpl::getOwnerConnectionAddress() {
-                return ownerConnectionAddress;
+            void AbstractLoadBalancer::init(const InitialMembershipEvent &event) {
+                setMembersRef();
             }
+        }
+    }
+}
 
-            std::shared_ptr<ClientConnectionManagerImpl::FutureTuple>
-            ClientConnectionManagerImpl::triggerConnect(const Address &target, bool asOwner) {
-                if (!asOwner) {
-                    connectionStrategy->beforeOpenConnection(target);
-                }
-                if (!alive) {
-                    throw exception::HazelcastException("ConnectionManager::triggerConnect",
-                                                        "ConnectionManager is not active!");
-                }
+namespace hazelcast {
+    namespace client {
+        namespace cluster {
+            namespace impl {
 
-                Address address = translator->translate(target);
-                std::shared_ptr<AuthenticationFuture> future(new AuthenticationFuture(address, connectionsInProgress));
+                VectorClock::VectorClock() {}
 
-                auto connection = std::make_shared<Connection>(address, client, ++connectionIdGen, future,
-                                                               socketFactory, ioContext, asOwner, *this,
-                                                               connectionTimeoutMillis);
-
-                auto authTuple = std::make_shared<FutureTuple>(future, connection);
-                auto oldFutureTuple = connectionsInProgress.putIfAbsent(address, authTuple);
-                if (oldFutureTuple.get() == NULL) {
-                    // double check here
-                    auto activeConnection = activeConnections.get(target);
-                    if (activeConnection.get()) {
-                        connectionsInProgress.remove(address);
-                        return std::make_shared<FutureTuple>(nullptr, activeConnection);
-                    }
-
-                    connection->asyncStart();
-
-                    return authTuple;
-                }
-                return oldFutureTuple;
-            }
-
-            std::shared_ptr<Connection>
-            ClientConnectionManagerImpl::getOrConnect(const Address &address, bool asOwner) {
-                while (true) {
-                    std::shared_ptr<Connection> connection = getConnection(address, asOwner);
-                    if (connection.get() != NULL) {
-                        return connection;
-                    }
-                    auto firstCallbackTuple = triggerConnect(address, asOwner);
-                    auto firstCallback = std::get<0>(*firstCallbackTuple);
-                    if (firstCallback == nullptr) {
-                        auto activeConnection = std::get<1>(*firstCallbackTuple);
-                        if (asOwner && !activeConnection->isAuthenticatedAsOwner()) {
-                            activeConnection->reAuthenticateAsOwner();
-                        }
-
-                        return activeConnection;
-                    }
-
-                    if (!alive) {
-                        std::get<1>(*firstCallbackTuple)->close("Client is being shutdown.");
-                        firstCallback->onFailure(
-                                std::make_shared<exception::IllegalStateException>(
-                                        "ClientConnectionManagerImpl::getOrConnect",
-                                        "Client is being shutdown."));
-                        return nullptr;
-                    }
-                    connection = firstCallback->get();
-
-                    // call the interceptor from user thread
-                    if (socketInterceptor != NULL) {
-                        socketInterceptor->onConnect(connection->getSocket());
-                    }
-
-                    if (!asOwner) {
-                        return connection;
-                    }
-                    if (connection->isAuthenticatedAsOwner()) {
-                        return connection;
+                VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps)
+                        : replicaTimestampEntries(replicaLogicalTimestamps) {
+                    for (const VectorClock::TimestampVector::value_type &replicaTimestamp : replicaLogicalTimestamps) {
+                        replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
                     }
                 }
-            }
 
-            void
-            ClientConnectionManagerImpl::authenticate(const Address &target, std::shared_ptr<Connection> &connection,
-                                                      bool asOwner, std::shared_ptr<AuthenticationFuture> &future) {
-                std::shared_ptr<protocol::Principal> principal = getPrincipal();
-                std::unique_ptr<protocol::ClientMessage> clientMessage = encodeAuthenticationRequest(asOwner,
-                                                                                                     client.getSerializationService(),
-                                                                                                     principal.get());
-                std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
-                        client, clientMessage, "", connection);
-                std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture = clientInvocation->invokeUrgent();
-
-                auto authCallback = std::make_shared<AuthCallback>(invocationFuture, connection, asOwner, target,
-                                                                   future, *this);
-                invocationFuture->andThen(authCallback);
-            }
-
-            void
-            ClientConnectionManagerImpl::reAuthenticate(const Address &target, std::shared_ptr<Connection> &connection,
-                                                        bool asOwner, std::shared_ptr<AuthenticationFuture> &future) {
-                future.reset(new AuthenticationFuture(target, connectionsInProgress));
-                authenticate(target, connection, asOwner, future);
-            }
-
-            const std::shared_ptr<protocol::Principal> ClientConnectionManagerImpl::getPrincipal() {
-                return principal;
-            }
-
-            std::unique_ptr<protocol::ClientMessage>
-            ClientConnectionManagerImpl::encodeAuthenticationRequest(bool asOwner,
-                                                                     serialization::pimpl::SerializationService &ss,
-                                                                     const protocol::Principal *principal) {
-                byte serializationVersion = ss.getVersion();
-                const std::string *uuid = NULL;
-                const std::string *ownerUuid = NULL;
-                if (principal != NULL) {
-                    uuid = principal->getUuid();
-                    ownerUuid = principal->getOwnerUuid();
-                }
-                std::unique_ptr<protocol::ClientMessage> clientMessage;
-                if (credentials == NULL) {
-                    // TODO: Change UsernamePasswordCredentials to implement Credentials interface so that we can just
-                    // upcast the credentials as done at Java
-                    GroupConfig &groupConfig = client.getClientConfig().getGroupConfig();
-                    const protocol::UsernamePasswordCredentials cr(groupConfig.getName(), groupConfig.getPassword());
-                    clientMessage = protocol::codec::ClientAuthenticationCodec::encodeRequest(
-                            cr.getPrincipal(), cr.getPassword(), uuid, ownerUuid, asOwner, protocol::ClientTypes::CPP,
-                            serializationVersion, HAZELCAST_VERSION);
-                } else {
-                    serialization::pimpl::Data data = ss.toData<Credentials>(credentials);
-                    clientMessage = protocol::codec::ClientAuthenticationCustomCodec::encodeRequest(data,
-                                                                                                    uuid,
-                                                                                                    ownerUuid,
-                                                                                                    asOwner,
-                                                                                                    protocol::ClientTypes::CPP,
-                                                                                                    serializationVersion,
-                                                                                                    HAZELCAST_VERSION);
-                }
-                return clientMessage;
-            }
-
-            void ClientConnectionManagerImpl::setPrincipal(const std::shared_ptr<protocol::Principal> &principal) {
-                ClientConnectionManagerImpl::principal = principal;
-            }
-
-            void ClientConnectionManagerImpl::onAuthenticated(const Address &target,
-                                                              const std::shared_ptr<Connection> &connection) {
-                std::shared_ptr<Connection> oldConnection = activeConnections.put(*connection->getRemoteEndpoint(),
-                                                                                  connection);
-
-                if (oldConnection.get() == NULL) {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Authentication succeeded for ", *connection,
-                                      " and there was no old connection to this end-point");
-                    }
-                    fireConnectionAddedEvent(connection);
-                } else {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Re-authentication succeeded for ", *connection);
-                    }
-                    assert(*connection == *oldConnection);
+                VectorClock::TimestampVector VectorClock::entrySet() {
+                    return replicaTimestampEntries;
                 }
 
-                connectionsInProgress.remove(target);
-                std::ostringstream out;
-                if (connection->getRemoteEndpoint().get()) {
-                    out << *connection->getRemoteEndpoint();
-                } else {
-                    out << "null";
-                }
-                logger.info("Authenticated with server ", out.str(), ", server version:",
-                            connection->getConnectedServerVersionString(), " Local address: ",
-                            (connection->getLocalSocketAddress().get() != NULL
-                             ? connection->getLocalSocketAddress()->toString() : "null"));
+                bool VectorClock::isAfter(VectorClock &other) {
+                    bool anyTimestampGreater = false;
+                    for (const VectorClock::TimestampMap::value_type &otherEntry : other.replicaTimestamps) {
+                        const std::string &replicaId = otherEntry.first;
+                        int64_t otherReplicaTimestamp = otherEntry.second;
+                        std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
 
-                /* check if connection is closed by remote before authentication complete, if that is the case
-                we need to remove it back from active connections.
-                Race description from https://github.com/hazelcast/hazelcast/pull/8832.(A little bit changed)
-                - open a connection client -> member
-                - send auth message
-                - receive auth reply -> reply processing is offloaded to an executor. Did not start to run yet.
-                - member closes the connection -> the connection is trying to removed from map
-                                                                     but it was not there to begin with
-                - the executor start processing the auth reply -> it put the connection to the connection map.
-                - we end up with a closed connection in activeConnections map */
-                if (!connection->isAlive()) {
-                    removeFromActiveConnections(connection);
-                }
-            }
-
-            void
-            ClientConnectionManagerImpl::fireConnectionAddedEvent(const std::shared_ptr<Connection> &connection) {
-                for (const std::shared_ptr<ConnectionListener> &connectionListener : connectionListeners.toArray()) {
-                    connectionListener->connectionAdded(connection);
-                }
-                connectionStrategy->onConnect(connection);
-            }
-
-            void
-            ClientConnectionManagerImpl::removeFromActiveConnections(const std::shared_ptr<Connection> &connection) {
-                std::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
-
-                if (endpoint.get() == NULL) {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Destroying ", *connection, ", but it has end-point set to null ",
-                                      "-> not removing it from a connection map");
-                    }
-                    return;
-                }
-
-                if (activeConnections.remove(*endpoint, connection)) {
-                    logger.info("Removed connection to endpoint: ", *endpoint, ", connection: ", *connection);
-                    fireConnectionRemovedEvent(connection);
-                } else {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Destroying a connection, but there is no mapping ", endpoint, " -> ",
-                                      *connection, " in the connection map.");
-                    }
-                }
-            }
-
-            void
-            ClientConnectionManagerImpl::fireConnectionRemovedEvent(const std::shared_ptr<Connection> &connection) {
-                if (connection->isAuthenticatedAsOwner()) {
-                    disconnectFromCluster(connection);
-                }
-
-                for (const std::shared_ptr<ConnectionListener> &listener : connectionListeners.toArray()) {
-                    listener->connectionRemoved(connection);
-                }
-                connectionStrategy->onDisconnect(connection);
-            }
-
-            void ClientConnectionManagerImpl::disconnectFromCluster(const std::shared_ptr<Connection> &connection) {
-                clusterConnectionExecutor->execute(
-                        std::shared_ptr<util::Runnable>(
-                                new DisconnecFromClusterTask(connection, *this, *connectionStrategy)));
-            }
-
-            void
-            ClientConnectionManagerImpl::setOwnerConnectionAddress(
-                    const std::shared_ptr<Address> &ownerConnectionAddress) {
-                previousOwnerConnectionAddress = this->ownerConnectionAddress.get();
-                ClientConnectionManagerImpl::ownerConnectionAddress = ownerConnectionAddress;
-            }
-
-            void
-            ClientConnectionManagerImpl::fireConnectionEvent(
-                    const hazelcast::client::LifecycleEvent::LifeCycleState &state) {
-                spi::LifecycleService &lifecycleService = client.getLifecycleService();
-                lifecycleService.fireLifecycleEvent(state);
-            }
-
-            std::shared_ptr<util::Future<bool> > ClientConnectionManagerImpl::connectToClusterAsync() {
-                std::shared_ptr<util::Callable<bool> > task(new ConnectToClusterTask(client));
-                return clusterConnectionExecutor->submit<bool>(task);
-            }
-
-            void ClientConnectionManagerImpl::connectToClusterInternal() {
-                int attempt = 0;
-                std::set<Address> triedAddresses;
-
-                while (attempt < connectionAttemptLimit) {
-                    attempt++;
-                    int64_t nextTry = util::currentTimeMillis() + connectionAttemptPeriod;
-
-                    std::set<Address> addresses = getPossibleMemberAddresses();
-                    for (const Address &address : addresses) {
-                        if (!client.getLifecycleService().isRunning()) {
-                            throw exception::IllegalStateException(
-                                    "ConnectionManager::connectToClusterInternal",
-                                    "Giving up on retrying to connect to cluster since client is shutdown.");
-                        }
-                        triedAddresses.insert(address);
-                        if (connectAsOwner(address).get() != NULL) {
-                            return;
+                        if (!localReplicaTimestamp.first ||
+                            localReplicaTimestamp.second < otherReplicaTimestamp) {
+                            return false;
+                        } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
+                            anyTimestampGreater = true;
                         }
                     }
+                    // there is at least one local timestamp greater or local vector clock has additional timestamps
+                    return anyTimestampGreater || other.replicaTimestamps.size() < replicaTimestamps.size();
+                }
 
-                    // If the address providers load no addresses (which seems to be possible), then the above loop is not entered
-                    // and the lifecycle check is missing, hence we need to repeat the same check at this point.
-                    if (!client.getLifecycleService().isRunning()) {
-                        throw exception::IllegalStateException("Client is being shutdown.");
+                std::pair<bool, int64_t> VectorClock::getTimestampForReplica(const std::string &replicaId) {
+                    if (replicaTimestamps.count(replicaId) == 0) {
+                        return std::make_pair(false, -1);
                     }
+                    return std::make_pair(true, replicaTimestamps[replicaId]);
+                }
+            }
+        }
+    }
+}
 
-                    if (attempt < connectionAttemptLimit) {
-                        const int64_t remainingTime = nextTry - util::currentTimeMillis();
-                        logger.warning("Unable to get alive cluster connection, try in ",
-                                       (remainingTime > 0 ? remainingTime : 0), " ms later, attempt ", attempt,
-                                       " of ", connectionAttemptLimit, ".");
+namespace hazelcast {
+    namespace client {
+        namespace cluster {
+            namespace memberselector {
+                bool MemberSelectors::DataMemberSelector::select(const Member &member) const {
+                    return !member.isLiteMember();
+                }
 
-                        if (remainingTime > 0) {
-                            util::Thread::sleep(remainingTime);
-                        }
-                    } else {
-                        logger.warning("Unable to get alive cluster connection, attempt ", attempt, " of ",
-                                       connectionAttemptLimit, ".");
+                void MemberSelectors::DataMemberSelector::toString(std::ostream &os) const {
+                    os << "Default DataMemberSelector";
+                }
+
+                const std::unique_ptr<MemberSelector> MemberSelectors::DATA_MEMBER_SELECTOR(
+                        new MemberSelectors::DataMemberSelector());
+            }
+        }
+    }
+}
+
+
+namespace hazelcast {
+    namespace client {
+        Cluster::Cluster(spi::ClientClusterService &clusterService)
+                : clusterService(clusterService) {
+        }
+
+        void Cluster::addMembershipListener(MembershipListener *listener) {
+            clusterService.addMembershipListener(
+                    std::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
+        }
+
+        bool Cluster::removeMembershipListener(MembershipListener *listener) {
+            return clusterService.removeMembershipListener(listener->getRegistrationId());
+        }
+
+        std::vector<Member> Cluster::getMembers() {
+            return clusterService.getMemberList();
+        }
+
+        std::string Cluster::addMembershipListener(const std::shared_ptr<MembershipListener> &listener) {
+            return clusterService.addMembershipListener(listener);
+        }
+
+        bool Cluster::removeMembershipListener(const std::string &registrationId) {
+            return clusterService.removeMembershipListener(registrationId);
+        }
+
+        std::string Cluster::addMembershipListener(const std::shared_ptr<InitialMembershipListener> &listener) {
+            return clusterService.addMembershipListener(listener);
+        }
+
+        std::string Cluster::addMembershipListener(InitialMembershipListener *listener) {
+            return clusterService.addMembershipListener(
+                    std::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
+
+        }
+    }
+}
+
+namespace hazelcast {
+    namespace client {
+        namespace crdt {
+            namespace pncounter {
+                namespace impl {
+                    PNCounterProxyFactory::PNCounterProxyFactory(spi::ClientContext *clientContext) : clientContext(
+                            clientContext) {}
+
+                    std::shared_ptr<spi::ClientProxy> PNCounterProxyFactory::create(const std::string &id) {
+                        return std::shared_ptr<spi::ClientProxy>(
+                                new proxy::ClientPNCounterProxy(proxy::ClientPNCounterProxy::SERVICE_NAME, id,
+                                                                clientContext));
                     }
                 }
-                std::ostringstream out;
-                out << "Unable to connect to any address! The following addresses were tried: { ";
-                for (const std::set<Address>::value_type &address : triedAddresses) {
-                    out << address << " , ";
+            }
+        }
+    }
+}
+
+namespace hazelcast {
+    namespace client {
+        EntryEventType::EntryEventType() : value(UNDEFINED) {
+
+        }
+
+        EntryEventType::EntryEventType(Type value)
+                : value(value) {
+
+        }
+
+        EntryEventType::operator int() const {
+            return value;
+        }
+
+        void EntryEventType::operator=(int i) {
+            value = (EntryEventType::Type) i;
+        }
+    }
+}
+
+namespace hazelcast {
+    namespace client {
+        namespace monitor {
+            namespace impl {
+                LocalMapStatsImpl::LocalMapStatsImpl() : nearCacheStats(NULL) {}
+
+                NearCacheStats *LocalMapStatsImpl::getNearCacheStats() {
+                    return nearCacheStats;
                 }
-                out << "}";
-                throw exception::IllegalStateException("ConnectionManager::connectToClusterInternal", out.str());
+
+                void LocalMapStatsImpl::setNearCacheStats(NearCacheStats &stats) {
+                    this->nearCacheStats = &stats;
+                }
             }
+        }
+    }
+}
 
-            std::set<Address> ClientConnectionManagerImpl::getPossibleMemberAddresses() {
-                std::set<Address> addresses;
 
-                std::vector<Member> memberList = client.getClientClusterService().getMemberList();
-                std::vector<Address> memberAddresses;
-                for (const Member &member : memberList) {
-                    memberAddresses.push_back(member.getAddress());
+namespace hazelcast {
+    namespace client {
+        namespace monitor {
+            namespace impl {
+                NearCacheStatsImpl::NearCacheStatsImpl() : creationTime(util::currentTimeMillis()),
+                                                           ownedEntryCount(0),
+                                                           ownedEntryMemoryCost(0),
+                                                           hits(0),
+                                                           misses(0),
+                                                           evictions(0),
+                                                           expirations(0),
+                                                           invalidations(0),
+                                                           invalidationRequests(0),
+                                                           persistenceCount(0),
+                                                           lastPersistenceTime(0),
+                                                           lastPersistenceDuration(0),
+                                                           lastPersistenceWrittenBytes(0),
+                                                           lastPersistenceKeyCount(0),
+                                                           lastPersistenceFailure("") {
                 }
 
-                if (shuffleMemberList) {
-                    shuffle(memberAddresses);
+                int64_t NearCacheStatsImpl::getCreationTime() {
+                    return creationTime;
                 }
 
-                addresses.insert(memberAddresses.begin(), memberAddresses.end());
-
-                std::set<Address> providerAddressesSet;
-                for (std::shared_ptr<AddressProvider> &addressProvider : addressProviders) {
-                    std::vector<Address> addrList = addressProvider->loadAddresses();
-                    providerAddressesSet.insert(addrList.begin(), addrList.end());
+                int64_t NearCacheStatsImpl::getOwnedEntryCount() {
+                    return ownedEntryCount;
                 }
 
-                std::vector<Address> providerAddresses(providerAddressesSet.begin(), providerAddressesSet.end());
-
-                if (shuffleMemberList) {
-                    shuffle(memberAddresses);
+                void NearCacheStatsImpl::setOwnedEntryCount(int64_t ownedEntryCount) {
+                    this->ownedEntryCount = ownedEntryCount;
                 }
 
-                addresses.insert(providerAddresses.begin(), providerAddresses.end());
-
-                std::shared_ptr<Address> previousAddress = previousOwnerConnectionAddress.get();
-                if (previousAddress.get() != NULL) {
-                    /*
-                     * Previous owner address is moved to last item in set so that client will not try to connect to same one immediately.
-                     * It could be the case that address is removed because it is healthy(it not responding to heartbeat/pings)
-                     * In that case, trying other addresses first to upgrade make more sense.
-                     */
-                    addresses.erase(*previousAddress);
-                    addresses.insert(*previousAddress);
+                void NearCacheStatsImpl::incrementOwnedEntryCount() {
+                    ++ownedEntryCount;
                 }
-                return addresses;
-            }
 
-            void ClientConnectionManagerImpl::shuffle(
-                    std::vector<Address> &memberAddresses) const {// obtain a time-based seed:
-                unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-                std::shuffle(memberAddresses.begin(), memberAddresses.end(), std::default_random_engine(seed));
-            }
-
-            std::unique_ptr<ClientConnectionStrategy>
-            ClientConnectionManagerImpl::initializeStrategy(spi::ClientContext &client) {
-                // TODO: Add a way so that this strategy can be configurable as in Java
-                return std::unique_ptr<ClientConnectionStrategy>(new DefaultClientConnectionStrategy(client, logger,
-                                                                                                     client.getClientConfig().getConnectionStrategyConfig()));
-            }
-
-            void ClientConnectionManagerImpl::connectToCluster() {
-                connectToClusterAsync()->get();
-            }
-
-            bool ClientConnectionManagerImpl::isAlive() {
-                return alive;
-            }
-
-            void ClientConnectionManagerImpl::onClose(Connection &connection) {
-                removeFromActiveConnections(connection.shared_from_this());
-            }
-
-            void
-            ClientConnectionManagerImpl::addConnectionListener(
-                    const std::shared_ptr<ConnectionListener> &connectionListener) {
-                connectionListeners.add(connectionListener);
-            }
-
-            ClientConnectionManagerImpl::~ClientConnectionManagerImpl() {
-                shutdown();
-            }
-
-            util::ILogger &ClientConnectionManagerImpl::getLogger() {
-                return client.getLogger();
-            }
-
-            ClientConnectionManagerImpl::AuthCallback::AuthCallback(
-                    std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture,
-                    const std::shared_ptr<Connection> &connection,
-                    bool asOwner,
-                    const Address &target,
-                    std::shared_ptr<AuthenticationFuture> &future,
-                    ClientConnectionManagerImpl &connectionManager) : invocationFuture(invocationFuture),
-                                                                      connection(connection), asOwner(asOwner),
-                                                                      target(target), future(future),
-                                                                      connectionManager(connectionManager),
-                                                                      cancelled(false) {
-                scheduleTimeoutTask();
-            }
-
-            void ClientConnectionManagerImpl::AuthCallback::cancelTimeoutTask() {
-                {
-                    std::lock_guard<std::mutex> g(timeoutMutex);
-                    cancelled = true;
+                void NearCacheStatsImpl::decrementOwnedEntryCount() {
+                    --ownedEntryCount;
                 }
-                timeoutCondition.notify_one();
-                timeoutTaskFuture.get();
-            }
 
-            void ClientConnectionManagerImpl::AuthCallback::scheduleTimeoutTask() {
-                timeoutTaskFuture = std::async([&] {
-                    std::unique_lock<std::mutex> uniqueLock(timeoutMutex);
-                    if (cancelled) {
-                        return;
-                    }
-
-                    if (timeoutCondition.wait_for(uniqueLock,
-                                                  std::chrono::milliseconds(connectionManager.connectionTimeoutMillis),
-                                                  [&] { return cancelled; })) {
-                        return;
-                    }
-
-                    invocationFuture->complete((exception::ExceptionBuilder<exception::TimeoutException>(
-                            "ClientConnectionManagerImpl::authenticate")
-                            << "Authentication response did not come back in "
-                            << connectionManager.connectionTimeoutMillis
-                            << " millis").buildShared());
-                });
-            }
-
-            void ClientConnectionManagerImpl::AuthCallback::onResponse(
-                    const std::shared_ptr<protocol::ClientMessage> &response) {
-                cancelTimeoutTask();
-
-                std::unique_ptr<protocol::codec::ClientAuthenticationCodec::ResponseParameters> result;
-                try {
-                    result.reset(new protocol::codec::ClientAuthenticationCodec::ResponseParameters(
-                            protocol::codec::ClientAuthenticationCodec::ResponseParameters::decode(*response)));
-                } catch (exception::IException &e) {
-                    handleAuthenticationException(std::shared_ptr<exception::IException>(e.clone()));
-                    return;
+                int64_t NearCacheStatsImpl::getOwnedEntryMemoryCost() {
+                    return ownedEntryMemoryCost;
                 }
-                protocol::AuthenticationStatus authenticationStatus = (protocol::AuthenticationStatus) result->status;
-                switch (authenticationStatus) {
-                    case protocol::AUTHENTICATED: {
-                        connection->setConnectedServerVersion(result->serverHazelcastVersion);
-                        connection->setRemoteEndpoint(std::shared_ptr<Address>(std::move(result->address)));
-                        if (asOwner) {
-                            connection->setIsAuthenticatedAsOwner();
-                            std::shared_ptr<protocol::Principal> principal(
-                                    new protocol::Principal(result->uuid, result->ownerUuid));
-                            connectionManager.setPrincipal(principal);
-                            //setting owner connection is moved to here(before onAuthenticated/before connected event)
-                            //so that invocations that requires owner connection on this connection go through
-                            connectionManager.setOwnerConnectionAddress(connection->getRemoteEndpoint());
-                            connectionManager.logger.info("Setting ", *connection, " as owner with principal ",
-                                                          *principal);
-                        }
-                        connectionManager.onAuthenticated(target, connection);
-                        future->onSuccess(connection);
-                        break;
-                    }
-                    case protocol::CREDENTIALS_FAILED: {
-                        std::shared_ptr<protocol::Principal> p = connectionManager.principal;
-                        std::shared_ptr<exception::AuthenticationException> exception;
-                        if (p.get()) {
-                            exception = (exception::ExceptionBuilder<exception::AuthenticationException>(
-                                    "ConnectionManager::AuthCallback::onResponse") << "Invalid credentials! Principal: "
-                                                                                   << *p).buildShared();
+
+                void NearCacheStatsImpl::setOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost) {
+                    this->ownedEntryMemoryCost = ownedEntryMemoryCost;
+                }
+
+                void NearCacheStatsImpl::incrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost) {
+                    this->ownedEntryMemoryCost += ownedEntryMemoryCost;
+                }
+
+                void NearCacheStatsImpl::decrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost) {
+                    this->ownedEntryMemoryCost -= ownedEntryMemoryCost;
+                }
+
+                int64_t NearCacheStatsImpl::getHits() {
+                    return hits;
+                }
+
+                // just for testing
+                void NearCacheStatsImpl::setHits(int64_t hits) {
+                    this->hits = hits;
+                }
+
+                void NearCacheStatsImpl::incrementHits() {
+                    ++hits;
+                }
+
+                int64_t NearCacheStatsImpl::getMisses() {
+                    return misses;
+                }
+
+                // just for testing
+                void NearCacheStatsImpl::setMisses(int64_t misses) {
+                    this->misses = misses;
+                }
+
+                void NearCacheStatsImpl::incrementMisses() {
+                    ++misses;
+                }
+
+                double NearCacheStatsImpl::getRatio() {
+                    if (misses == (int64_t) 0) {
+                        if (hits == (int64_t) 0) {
+                            return std::numeric_limits<double>::signaling_NaN();
                         } else {
-                            exception.reset(new exception::AuthenticationException(
-                                    "ConnectionManager::AuthCallback::onResponse",
-                                    "Invalid credentials! No principal."));
+                            return std::numeric_limits<double>::infinity();
                         }
-                        handleAuthenticationException(exception);
-                        break;
-                    }
-                    default: {
-                        handleAuthenticationException((exception::ExceptionBuilder<exception::AuthenticationException>(
-                                "ConnectionManager::AuthCallback::onResponse")
-                                << "Authentication status code not supported. status: "
-                                << authenticationStatus).buildShared());
+                    } else {
+                        return ((double) hits / misses) * PERCENTAGE;
                     }
                 }
+
+                int64_t NearCacheStatsImpl::getEvictions() {
+                    return evictions;
+                }
+
+                void NearCacheStatsImpl::incrementEvictions() {
+                    ++evictions;
+                }
+
+                int64_t NearCacheStatsImpl::getExpirations() {
+                    return expirations;
+                }
+
+                void NearCacheStatsImpl::incrementExpirations() {
+                    ++expirations;
+                }
+
+                int64_t NearCacheStatsImpl::getInvalidations() {
+                    return invalidations.load();
+                }
+
+                void NearCacheStatsImpl::incrementInvalidations() {
+                    ++invalidations;
+                }
+
+                int64_t NearCacheStatsImpl::getInvalidationRequests() {
+                    return invalidationRequests.load();
+                }
+
+                void NearCacheStatsImpl::incrementInvalidationRequests() {
+                    ++invalidationRequests;
+                }
+
+                void NearCacheStatsImpl::resetInvalidationEvents() {
+                    invalidationRequests = 0;
+                }
+
+                int64_t NearCacheStatsImpl::getPersistenceCount() {
+                    return persistenceCount;
+                }
+
+                void NearCacheStatsImpl::addPersistence(int64_t duration, int32_t writtenBytes, int32_t keyCount) {
+                    ++persistenceCount;
+                    lastPersistenceTime = util::currentTimeMillis();
+                    lastPersistenceDuration = duration;
+                    lastPersistenceWrittenBytes = writtenBytes;
+                    lastPersistenceKeyCount = keyCount;
+                    lastPersistenceFailure = "";
+                }
+
+                int64_t NearCacheStatsImpl::getLastPersistenceTime() {
+                    return lastPersistenceTime;
+                }
+
+                int64_t NearCacheStatsImpl::getLastPersistenceDuration() {
+                    return lastPersistenceDuration;
+                }
+
+                int64_t NearCacheStatsImpl::getLastPersistenceWrittenBytes() {
+                    return lastPersistenceWrittenBytes;
+                }
+
+                int64_t NearCacheStatsImpl::getLastPersistenceKeyCount() {
+                    return lastPersistenceKeyCount;
+                }
+
+                std::string NearCacheStatsImpl::getLastPersistenceFailure() {
+                    return lastPersistenceFailure;
+                }
+
+                std::string NearCacheStatsImpl::toString() {
+                    std::ostringstream out;
+                    std::string failureString = lastPersistenceFailure;
+                    out << "NearCacheStatsImpl{"
+                        << "ownedEntryCount=" << ownedEntryCount
+                        << ", ownedEntryMemoryCost=" << ownedEntryMemoryCost
+                        << ", creationTime=" << creationTime
+                        << ", hits=" << hits
+                        << ", misses=" << misses
+                        << ", ratio=" << std::setprecision(1) << getRatio()
+                        << ", evictions=" << evictions
+                        << ", expirations=" << expirations
+                        << ", invalidations=" << invalidations.load()
+                        << ", invalidationRequests=" << invalidationRequests.load()
+                        << ", lastPersistenceTime=" << lastPersistenceTime
+                        << ", persistenceCount=" << persistenceCount
+                        << ", lastPersistenceDuration=" << lastPersistenceDuration
+                        << ", lastPersistenceWrittenBytes=" << lastPersistenceWrittenBytes
+                        << ", lastPersistenceKeyCount=" << lastPersistenceKeyCount
+                        << ", lastPersistenceFailure='" << failureString << "'"
+                        << '}';
+
+                    return out.str();
+                }
+
+                const double NearCacheStatsImpl::PERCENTAGE = 100.0;
+            }
+        }
+    }
+}
+
+
+namespace hazelcast {
+    namespace client {
+        namespace monitor {
+            const int64_t LocalInstanceStats::STAT_NOT_AVAILABLE = -99L;
+        }
+    }
+}
+
+
+
+
+namespace hazelcast {
+    namespace client {
+        HazelcastClient::HazelcastClient() : clientImpl(new impl::HazelcastClientInstanceImpl(ClientConfig())) {
+            clientImpl->start();
+        }
+
+        HazelcastClient::HazelcastClient(const ClientConfig &config) : clientImpl(
+                new impl::HazelcastClientInstanceImpl(config)) {
+            clientImpl->start();
+        }
+
+        const std::string &HazelcastClient::getName() const {
+            return clientImpl->getName();
+        }
+
+        IdGenerator HazelcastClient::getIdGenerator(const std::string &name) {
+            return clientImpl->getIdGenerator(name);
+        }
+
+        FlakeIdGenerator HazelcastClient::getFlakeIdGenerator(const std::string &name) {
+            return clientImpl->getFlakeIdGenerator(name);
+        }
+
+        IAtomicLong HazelcastClient::getIAtomicLong(const std::string &name) {
+            return clientImpl->getIAtomicLong(name);
+        }
+
+        std::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
+            return clientImpl->getPNCounter(name);
+        }
+
+        ICountDownLatch HazelcastClient::getICountDownLatch(const std::string &name) {
+            return clientImpl->getICountDownLatch(name);
+        }
+
+        ILock HazelcastClient::getILock(const std::string &name) {
+            return clientImpl->getILock(name);
+        }
+
+        ISemaphore HazelcastClient::getISemaphore(const std::string &name) {
+            return clientImpl->getISemaphore(name);
+        }
+
+        ClientConfig &HazelcastClient::getClientConfig() {
+            return clientImpl->getClientConfig();
+        }
+
+        TransactionContext HazelcastClient::newTransactionContext() {
+            return clientImpl->newTransactionContext();
+        }
+
+        TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions &options) {
+            return clientImpl->newTransactionContext(options);
+        }
+
+        Cluster &HazelcastClient::getCluster() {
+            return clientImpl->getCluster();
+        }
+
+        void HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener) {
+            clientImpl->addLifecycleListener(lifecycleListener);
+        }
+
+        bool HazelcastClient::removeLifecycleListener(LifecycleListener *lifecycleListener) {
+            return clientImpl->removeLifecycleListener(lifecycleListener);
+        }
+
+        void HazelcastClient::shutdown() {
+            clientImpl->shutdown();
+        }
+
+        mixedtype::HazelcastClient &HazelcastClient::toMixedType() const {
+            return clientImpl->toMixedType();
+        }
+
+        spi::LifecycleService &HazelcastClient::getLifecycleService() {
+            return clientImpl->getLifecycleService();
+        }
+
+        std::shared_ptr<IExecutorService> HazelcastClient::getExecutorService(const std::string &name) {
+            return clientImpl->getExecutorService(name);
+        }
+
+        Client HazelcastClient::getLocalEndpoint() const {
+            return clientImpl->getLocalEndpoint();
+        }
+
+        HazelcastClient::~HazelcastClient() {
+            clientImpl->shutdown();
+        }
+    }
+}
+
+
+
+namespace hazelcast {
+    namespace client {
+        namespace flakeidgen {
+            namespace impl {
+                FlakeIdGeneratorProxyFactory::FlakeIdGeneratorProxyFactory(spi::ClientContext *clientContext)
+                        : clientContext(
+                        clientContext) {}
+
+                std::shared_ptr<spi::ClientProxy> FlakeIdGeneratorProxyFactory::create(const std::string &id) {
+                    return std::shared_ptr<spi::ClientProxy>(
+                            new proxy::ClientFlakeIdGeneratorProxy(id, clientContext));
+                }
+            }
+        }
+    }
+}
+
+namespace hazelcast {
+    namespace client {
+        namespace flakeidgen {
+            namespace impl {
+
+                AutoBatcher::AutoBatcher(int32_t batchSize, int64_t validity,
+                                         const std::shared_ptr<AutoBatcher::IdBatchSupplier> &batchIdSupplier)
+                        : batchSize(batchSize), validity(validity), batchIdSupplier(batchIdSupplier),
+                          block(std::shared_ptr<Block>(new Block(IdBatch(0, 0, 0), 0))) {}
+
+                int64_t AutoBatcher::newId() {
+                    for (;;) {
+                        std::shared_ptr<Block> block = this->block;
+                        int64_t res = block->next();
+                        if (res != INT64_MIN) {
+                            return res;
+                        }
+
+                        {
+                            std::lock_guard<std::mutex> guard(lock);
+                            if (block != this->block.get()) {
+                                // new block was assigned in the meantime
+                                continue;
+                            }
+                            this->block = std::shared_ptr<Block>(
+                                    new Block(batchIdSupplier->newIdBatch(batchSize), validity));
+                        }
+                    }
+                }
+
+                AutoBatcher::Block::Block(const IdBatch &idBatch, int64_t validity) : idBatch(idBatch), numReturned(0) {
+                    invalidSince = validity > 0 ? util::currentTimeMillis() + validity : INT64_MAX;
+                }
+
+                int64_t AutoBatcher::Block::next() {
+                    if (invalidSince <= util::currentTimeMillis()) {
+                        return INT64_MIN;
+                    }
+                    int32_t index;
+                    do {
+                        index = numReturned;
+                        if (index == idBatch.getBatchSize()) {
+                            return INT64_MIN;
+                        }
+                    } while (!numReturned.compare_exchange_strong(index, index + 1));
+
+                    return idBatch.getBase() + index * idBatch.getIncrement();
+                }
+            }
+        }
+    }
+}
+
+
+namespace hazelcast {
+    namespace client {
+        namespace flakeidgen {
+            namespace impl {
+                IdBatch::IdIterator IdBatch::endOfBatch;
+
+                const int64_t IdBatch::getBase() const {
+                    return base;
+                }
+
+                const int64_t IdBatch::getIncrement() const {
+                    return increment;
+                }
+
+                const int32_t IdBatch::getBatchSize() const {
+                    return batchSize;
+                }
+
+                IdBatch::IdBatch(const int64_t base, const int64_t increment, const int32_t batchSize)
+                        : base(base), increment(increment), batchSize(batchSize) {}
+
+                IdBatch::IdIterator &IdBatch::end() {
+                    return endOfBatch;
+                }
+
+                IdBatch::IdIterator IdBatch::iterator() {
+                    return IdBatch::IdIterator(base, increment, batchSize);
+                }
+
+                IdBatch::IdIterator::IdIterator(int64_t base2, const int64_t increment, int32_t remaining) : base2(
+                        base2), increment(increment), remaining(remaining) {}
+
+                bool IdBatch::IdIterator::operator==(const IdBatch::IdIterator &rhs) const {
+                    return base2 == rhs.base2 && increment == rhs.increment && remaining == rhs.remaining;
+                }
+
+                bool IdBatch::IdIterator::operator!=(const IdBatch::IdIterator &rhs) const {
+                    return !(rhs == *this);
+                }
+
+                IdBatch::IdIterator::IdIterator() : base2(-1), increment(-1), remaining(-1) {
+                }
+
+                IdBatch::IdIterator &IdBatch::IdIterator::operator++() {
+                    if (remaining == 0) {
+                        return IdBatch::end();
+                    }
+
+                    --remaining;
+
+                    base2 += increment;
+
+                    return *this;
+                }
+            }
+        }
+    }
+}
+
+namespace hazelcast {
+    namespace client {
+        namespace txn {
+            const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> ClientTransactionUtil::exceptionFactory(
+                    new TransactionExceptionFactory());
+
+            std::shared_ptr<protocol::ClientMessage>
+            ClientTransactionUtil::invoke(std::unique_ptr<protocol::ClientMessage> &request,
+                                          const std::string &objectName,
+                                          spi::ClientContext &client,
+                                          const std::shared_ptr<connection::Connection> &connection) {
+                try {
+                    std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
+                            client, request, objectName, connection);
+                    std::shared_ptr<spi::impl::ClientInvocationFuture> future = clientInvocation->invoke();
+                    return future->get();
+                } catch (exception::IException &e) {
+                    TRANSACTION_EXCEPTION_FACTORY()->rethrow(e, "ClientTransactionUtil::invoke failed");
+                }
+                return std::shared_ptr<protocol::ClientMessage>();
+            }
+
+            const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
+            ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY() {
+                return exceptionFactory;
             }
 
             void
-            ClientConnectionManagerImpl::AuthCallback::onFailure(const std::shared_ptr<exception::IException> &e) {
-                cancelTimeoutTask();
+            ClientTransactionUtil::TransactionExceptionFactory::rethrow(const client::exception::IException &throwable,
+                                                                        const std::string &message) {
+                throw TransactionException("TransactionExceptionFactory::create", message,
+                                           std::shared_ptr<IException>(throwable.clone()));
+            }
+        }
+    }
+}
 
-                handleAuthenticationException(e);
+
+namespace hazelcast {
+    namespace client {
+        namespace txn {
+#define MILLISECOND_IN_A_SECOND 1000
+
+            TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
+                                               std::shared_ptr<connection::Connection> connection)
+                    : options(txnOptions), clientContext(clientContext), connection(connection),
+                      threadId(util::getCurrentThreadId()), state(TxnState::NO_TXN), startTime(0) {
             }
 
-            void ClientConnectionManagerImpl::AuthCallback::handleAuthenticationException(
-                    const std::shared_ptr<exception::IException> &e) {
-                this->onAuthenticationFailed(this->target, this->connection, e);
-                this->future->onFailure(e);
+
+            TransactionProxy::TransactionProxy(const TransactionProxy &rhs) : options(rhs.options),
+                                                                              clientContext(rhs.clientContext),
+                                                                              connection(rhs.connection),
+                                                                              threadId(rhs.threadId), txnId(rhs.txnId),
+                                                                              state(rhs.state),
+                                                                              startTime(rhs.startTime) {
+                TransactionProxy &nonConstRhs = const_cast<TransactionProxy &>(rhs);
+
+                TRANSACTION_EXISTS.store(nonConstRhs.TRANSACTION_EXISTS.load());
             }
 
-            void ClientConnectionManagerImpl::AuthCallback::onAuthenticationFailed(const Address &target,
-                                                                                   const std::shared_ptr<Connection> &connection,
-                                                                                   const std::shared_ptr<exception::IException> &cause) {
-                if (connectionManager.logger.isFinestEnabled()) {
-                    connectionManager.logger.finest("Authentication of ", connection, " failed.", cause);
-                }
-                connection->close("", cause);
-                connectionManager.connectionsInProgress.remove(target);
+            const std::string &TransactionProxy::getTxnId() const {
+                return txnId;
             }
 
-            ClientConnectionManagerImpl::DisconnecFromClusterTask::DisconnecFromClusterTask(
-                    const std::shared_ptr<Connection> &connection, ClientConnectionManagerImpl &connectionManager,
-                    ClientConnectionStrategy &connectionStrategy)
-                    : connection(
-                    connection), connectionManager(connectionManager), connectionStrategy(connectionStrategy) {
+            TxnState TransactionProxy::getState() const {
+                return state;
             }
 
-            void ClientConnectionManagerImpl::DisconnecFromClusterTask::run() {
-                std::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
-                // it may be possible that while waiting on executor queue, the client got connected (another connection),
-                // then we do not need to do anything for cluster disconnect.
-                std::shared_ptr<Address> ownerAddress = connectionManager.ownerConnectionAddress;
-                if (ownerAddress.get() && (endpoint.get() && *endpoint != *ownerAddress)) {
-                    return;
-                }
-
-                connectionManager.setOwnerConnectionAddress(std::shared_ptr<Address>());
-                connectionStrategy.onDisconnectFromCluster();
-
-                if (connectionManager.client.getLifecycleService().isRunning()) {
-                    connectionManager.fireConnectionEvent(LifecycleEvent::CLIENT_DISCONNECTED);
-                }
+            int TransactionProxy::getTimeoutSeconds() const {
+                return options.getTimeout();
             }
 
-            const std::string ClientConnectionManagerImpl::DisconnecFromClusterTask::getName() const {
-                return "DisconnecFromClusterTask";
-            }
 
-            ClientConnectionManagerImpl::ConnectToClusterTask::ConnectToClusterTask(
-                    const spi::ClientContext &clientContext) : clientContext(clientContext) {
-            }
-
-            std::shared_ptr<bool> ClientConnectionManagerImpl::ConnectToClusterTask::call() {
-                ClientConnectionManagerImpl &connectionManager = clientContext.getConnectionManager();
+            void TransactionProxy::begin() {
                 try {
-                    connectionManager.connectToClusterInternal();
-                    return std::shared_ptr<bool>(new bool(true));
-                } catch (exception::IException &e) {
-                    connectionManager.getLogger().warning("Could not connect to cluster, shutting down the client. ",
-                                                          e.getMessage());
+                    if (clientContext.getConnectionManager().getOwnerConnection().get() == NULL) {
+                        throw exception::TransactionException("TransactionProxy::begin()",
+                                                              "Owner connection needs to be present to begin a transaction");
+                    }
+                    if (state == TxnState::ACTIVE) {
+                        throw exception::IllegalStateException("TransactionProxy::begin()",
+                                                               "Transaction is already active");
+                    }
+                    checkThread();
+                    if (TRANSACTION_EXISTS) {
+                        throw exception::IllegalStateException("TransactionProxy::begin()",
+                                                               "Nested transactions are not allowed!");
+                    }
+                    TRANSACTION_EXISTS.store(true);
+                    startTime = util::currentTimeMillis();
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::TransactionCreateCodec::encodeRequest(
+                            options.getTimeout() * MILLISECOND_IN_A_SECOND, options.getDurability(),
+                            options.getTransactionType(), threadId);
 
-                    static_cast<DefaultClientConnectionStrategy &>(*connectionManager.connectionStrategy).shutdownWithExternalThread(
-                            clientContext.getHazelcastClientImplementation());
+                    std::shared_ptr<protocol::ClientMessage> response = invoke(request);
+
+                    protocol::codec::TransactionCreateCodec::ResponseParameters result =
+                            protocol::codec::TransactionCreateCodec::ResponseParameters::decode(*response);
+                    txnId = result.response;
+                    state = TxnState::ACTIVE;
+                } catch (exception::IException &) {
+                    TRANSACTION_EXISTS.store(false);
                     throw;
-                } catch (...) {
-                    throw;
                 }
             }
 
-            const std::string ClientConnectionManagerImpl::ConnectToClusterTask::getName() const {
-                return "ClientConnectionManagerImpl::ConnectToClusterTask";
-            }
-        }
-    }
-}
-
-
-
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-            AuthenticationFuture::AuthenticationFuture(const Address &address,
-                                                       util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress)
-                    : countDownLatch(new util::CountDownLatch(1)), address(address),
-                      connectionsInProgress(connectionsInProgress), isSet(false) {
-            }
-
-            void AuthenticationFuture::onSuccess(const std::shared_ptr<Connection> &connection) {
-                bool expected = false;
-                if (!isSet.compare_exchange_strong(expected, true)) {
-                    return;
-                }
-                this->connection = connection;
-                countDownLatch->countDown();
-            }
-
-            void AuthenticationFuture::onFailure(const std::shared_ptr<exception::IException> &throwable) {
-                bool expected = false;
-                if (!isSet.compare_exchange_strong(expected, true)) {
-                    return;
-                }
-                connectionsInProgress.remove(address);
-                this->throwable = throwable;
-                countDownLatch->countDown();
-            }
-
-            std::shared_ptr<Connection> AuthenticationFuture::get() {
-                countDownLatch->await();
-                auto connPtr = connection.get();
-                if (connPtr.get() != NULL) {
-                    return connPtr;
-                }
-
-                auto exceptionPtr = throwable.get();
-                assert(exceptionPtr.get() != NULL);
-                throw exception::ExecutionException("AuthenticationFuture::get", "Could not be authenticated.",
-                                                    exceptionPtr);
-            }
-
-        }
-    }
-}
-
-
-
-
-//#define BOOST_THREAD_PROVIDES_FUTURE
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-            ReadHandler::ReadHandler(Connection &connection, size_t bufferSize)
-                    : buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize), builder(connection) {
-                lastReadTimeMillis = util::currentTimeMillis();
-            }
-
-            ReadHandler::~ReadHandler() {
-                delete[] buffer;
-            }
-
-            void ReadHandler::handle() {
-                lastReadTimeMillis = util::currentTimeMillis();
-
-                if (byteBuffer.position() == 0)
-                    return;
-
-                byteBuffer.flip();
-
-                // it is important to check the onData return value since there may be left data less than a message
-                // header size, and this may cause an infinite loop.
-                while (byteBuffer.hasRemaining() && builder.onData(byteBuffer)) {
-                }
-
-                if (byteBuffer.hasRemaining()) {
-                    byteBuffer.compact();
-                } else {
-                    byteBuffer.clear();
-                }
-            }
-
-            int64_t ReadHandler::getLastReadTimeMillis() {
-                return lastReadTimeMillis;
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-            Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
-                                   const std::shared_ptr<AuthenticationFuture> &authFuture,
-                                   internal::socket::SocketFactory &socketFactory, boost::asio::io_context &ioContext,
-                                   bool asOwner,
-                                   ClientConnectionManagerImpl &clientConnectionManager, int64_t connectTimeoutInMillis)
-                    : readHandler(*this, 16 << 10),
-                      startTimeInMillis(util::currentTimeMillis()), closedTimeMillis(0),
-                      clientContext(clientContext),
-                      invocationService(clientContext.getInvocationService()),
-                      authFuture(authFuture),
-                      connectionId(connectionId),
-                      connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION),
-                      logger(clientContext.getLogger()), asOwner(asOwner),
-                      connectionManager(clientConnectionManager) {
-                socket = socketFactory.create(address, connectTimeoutInMillis);
-            }
-
-            Connection::~Connection() {
-            }
-
-            void Connection::authenticate() {
-                auto thisConnection = shared_from_this();
-                connectionManager.authenticate(socket->getRemoteEndpoint(), thisConnection, asOwner, authFuture);
-            }
-
-            void Connection::reAuthenticateAsOwner() {
-                asOwner = true;
-                auto thisConnection = shared_from_this();
-                connectionManager.reAuthenticate(socket->getRemoteEndpoint(), thisConnection, asOwner, authFuture);
-                authFuture->get();
-            }
-
-            void Connection::asyncStart() {
-                socket->asyncStart(shared_from_this(), authFuture);
-            }
-
-            void Connection::close() {
-                close("");
-            }
-
-            void Connection::close(const std::string &reason) {
-                close(reason, std::shared_ptr<exception::IException>());
-            }
-
-            void Connection::close(const std::string &reason, const std::shared_ptr<exception::IException> &cause) {
-                int64_t expected = 0;
-                if (!closedTimeMillis.compare_exchange_strong(expected, util::currentTimeMillis())) {
-                    return;
-                }
-
-                closeCause = cause;
-                closeReason = reason;
-
-                logClose();
-
+            void TransactionProxy::commit() {
                 try {
-                    innerClose();
+                    if (state != TxnState::ACTIVE) {
+                        throw exception::IllegalStateException("TransactionProxy::commit()",
+                                                               "Transaction is not active");
+                    }
+                    state = TxnState::COMMITTING;
+                    checkThread();
+                    checkTimeout();
+
+                    std::unique_ptr<protocol::ClientMessage> request =
+                            protocol::codec::TransactionCommitCodec::encodeRequest(txnId, threadId);
+
+                    invoke(request);
+
+                    state = TxnState::COMMITTED;
                 } catch (exception::IException &e) {
-                    clientContext.getLogger().warning("Exception while closing connection", e.getMessage());
-                }
-
-                clientContext.getConnectionManager().onClose(*this);
-            }
-
-            bool Connection::write(const std::shared_ptr<protocol::ClientMessage> &message) {
-                socket->asyncWrite(shared_from_this(), message);
-                return true;
-            }
-
-            const std::shared_ptr<Address> &Connection::getRemoteEndpoint() const {
-                return remoteEndpoint;
-            }
-
-            void Connection::setRemoteEndpoint(const std::shared_ptr<Address> &remoteEndpoint) {
-                this->remoteEndpoint = remoteEndpoint;
-            }
-
-            void Connection::handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message) {
-                if (message->isFlagSet(protocol::ClientMessage::LISTENER_EVENT_FLAG)) {
-                    spi::impl::listener::AbstractClientListenerService &listenerService =
-                            (spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService();
-                    listenerService.handleClientMessage(message, shared_from_this());
-                } else {
-                    invocationService.handleClientMessage(shared_from_this(), message);
+                    state = TxnState::COMMIT_FAILED;
+                    TRANSACTION_EXISTS.store(false);
+                    util::ExceptionUtil::rethrow(e);
                 }
             }
 
-            int Connection::getConnectionId() const {
-                return connectionId;
-            }
-
-            bool Connection::isAlive() {
-                return closedTimeMillis == 0;
-            }
-
-            const std::string &Connection::getCloseReason() const {
-                return closeReason;
-            }
-
-            void Connection::logClose() {
-                std::ostringstream message;
-                message << *this << " closed. Reason: ";
-                if (!closeReason.empty()) {
-                    message << closeReason;
-                } else if (closeCause.get() != NULL) {
-                    message << closeCause->getSource() << "[" + closeCause->getMessage() << "]";
-                } else {
-                    message << "Socket explicitly closed";
-                }
-
-                util::ILogger &logger = clientContext.getLogger();
-                if (clientContext.getLifecycleService().isRunning()) {
-                    if (!closeCause.get()) {
-                        logger.info(message.str());
-                    } else {
-                        logger.warning(message.str(), *closeCause);
+            void TransactionProxy::rollback() {
+                try {
+                    if (state == TxnState::NO_TXN || state == TxnState::ROLLED_BACK) {
+                        throw exception::IllegalStateException("TransactionProxy::rollback()",
+                                                               "Transaction is not active");
                     }
-                } else {
-                    if (closeCause.get() == NULL) {
-                        logger.finest(message.str());
-                    } else {
-                        logger.finest(message.str(), *closeCause);
+                    state = TxnState::ROLLING_BACK;
+                    checkThread();
+                    try {
+                        std::unique_ptr<protocol::ClientMessage> request =
+                                protocol::codec::TransactionRollbackCodec::encodeRequest(txnId, threadId);
+
+                        invoke(request);
+                    } catch (exception::IException &exception) {
+                        clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:",
+                                                          exception);
                     }
+                    state = TxnState::ROLLED_BACK;
+                    TRANSACTION_EXISTS.store(false);
+                } catch (exception::IException &) {
+                    TRANSACTION_EXISTS.store(false);
+                    throw;
                 }
             }
 
-            bool Connection::isAuthenticatedAsOwner() {
-                return authenticatedAsOwner;
+            serialization::pimpl::SerializationService &TransactionProxy::getSerializationService() {
+                return clientContext.getSerializationService();
             }
 
-            void Connection::setIsAuthenticatedAsOwner() {
-                authenticatedAsOwner.store(true);
+            std::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
+                return connection;
             }
 
-            bool Connection::operator==(const Connection &rhs) const {
-                return connectionId == rhs.connectionId;
-            }
-
-            bool Connection::operator!=(const Connection &rhs) const {
-                return !(rhs == *this);
-            }
-
-            const std::string &Connection::getConnectedServerVersionString() const {
-                return connectedServerVersionString;
-            }
-
-            void Connection::setConnectedServerVersion(const std::string &connectedServerVersionString) {
-                Connection::connectedServerVersionString = connectedServerVersionString;
-                connectedServerVersion = impl::BuildInfo::calculateVersion(connectedServerVersionString);
-            }
-
-            int Connection::getConnectedServerVersion() const {
-                return connectedServerVersion;
-            }
-
-            std::unique_ptr<Address> Connection::getLocalSocketAddress() const {
-                return socket->localSocketAddress();
-            }
-
-            int64_t Connection::lastReadTimeMillis() {
-                return readHandler.getLastReadTimeMillis();
-            }
-
-            void Connection::innerClose() {
-                if (!socket.get()) {
-                    return;;
+            void TransactionProxy::checkThread() {
+                if (threadId != util::getCurrentThreadId()) {
+                    throw exception::IllegalStateException("TransactionProxy::checkThread()",
+                                                           "Transaction cannot span multiple threads!");
                 }
-
-                socket->close();
             }
 
-            std::ostream &operator<<(std::ostream &os, const Connection &connection) {
-                Connection &conn = const_cast<Connection &>(connection);
-                int64_t lastRead = conn.lastReadTimeMillis();
-                int64_t closedTime = conn.closedTimeMillis;
-                os << "ClientConnection{"
-                   << "alive=" << conn.isAlive()
-                   << ", connectionId=" << connection.getConnectionId()
-                   << ", remoteEndpoint=";
-                if (connection.getRemoteEndpoint().get()) {
-                    os << *connection.getRemoteEndpoint();
-                } else {
-                    os << "null";
+            void TransactionProxy::checkTimeout() {
+                if (startTime + options.getTimeoutMillis() < util::currentTimeMillis()) {
+                    throw exception::TransactionException("TransactionProxy::checkTimeout()",
+                                                          "Transaction is timed-out!");
                 }
-                os << ", lastReadTime=" << util::StringUtil::timeToStringFriendly(lastRead)
-                   << ", closedTime=" << util::StringUtil::timeToStringFriendly(closedTime)
-                   << ", connected server version=" << conn.connectedServerVersionString
-                   << '}';
+            }
 
+            TxnState::TxnState(State value)
+                    : value(value) {
+                values.resize(9);
+                values[0] = NO_TXN;
+                values[1] = ACTIVE;
+                values[2] = PREPARING;
+                values[3] = PREPARED;
+                values[4] = COMMITTING;
+                values[5] = COMMITTED;
+                values[6] = COMMIT_FAILED;
+                values[7] = ROLLING_BACK;
+                values[8] = ROLLED_BACK;
+            }
+
+            TxnState::operator int() const {
+                return value;
+            }
+
+            void TxnState::operator=(int i) {
+                value = values[i];
+            }
+
+            std::shared_ptr<protocol::ClientMessage> TransactionProxy::invoke(
+                    std::unique_ptr<protocol::ClientMessage> &request) {
+                return ClientTransactionUtil::invoke(request, getTxnId(), clientContext, connection);
+            }
+
+            spi::ClientContext &TransactionProxy::getClientContext() const {
+                return clientContext;
+            }
+        }
+    }
+}
+
+namespace hazelcast {
+    namespace client {
+        namespace proxy {
+            ReliableTopicImpl::ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context,
+                                                 std::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
+                    : proxy::ProxyImpl("hz:impl:topicService", instanceName, context), ringbuffer(rb),
+                      logger(context->getLogger()),
+                      config(context->getClientConfig().getReliableTopicConfig(instanceName)) {
+            }
+
+            void ReliableTopicImpl::publish(const serialization::pimpl::Data &data) {
+                std::unique_ptr<Address> nullAddress;
+                topic::impl::reliable::ReliableTopicMessage message(data, nullAddress);
+                ringbuffer->add(message);
+            }
+        }
+    }
+}
+
+
+namespace hazelcast {
+    namespace client {
+        namespace proxy {
+            const std::string ClientPNCounterProxy::SERVICE_NAME = "hz:impl:PNCounterService";
+            const std::shared_ptr<std::set<Address> > ClientPNCounterProxy::EMPTY_ADDRESS_LIST(
+                    new std::set<Address>());
+
+            ClientPNCounterProxy::ClientPNCounterProxy(const std::string &serviceName, const std::string &objectName,
+                                                       spi::ClientContext *context)
+                    : ProxyImpl(serviceName, objectName, context), maxConfiguredReplicaCount(0),
+                      observedClock(std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
+                      logger(context->getLogger()) {
+            }
+
+            std::ostream &operator<<(std::ostream &os, const ClientPNCounterProxy &proxy) {
+                os << "PNCounter{name='" << proxy.getName() << "\'}";
                 return os;
             }
 
-            bool Connection::operator<(const Connection &rhs) const {
-                return connectionId < rhs.connectionId;
+            int64_t ClientPNCounterProxy::get() {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::get",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeGetInternal(EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
+                protocol::codec::PNCounterGetCodec::ResponseParameters resultParameters = protocol::codec::PNCounterGetCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
             }
 
-            int64_t Connection::getStartTimeInMillis() const {
-                return startTimeInMillis;
+            int64_t ClientPNCounterProxy::getAndAdd(int64_t delta) {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndAdd",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, true, EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
+
+                protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
             }
 
-            const Socket &Connection::getSocket() const {
-                return *socket;
-            }
-        }
-    }
-}
+            int64_t ClientPNCounterProxy::addAndGet(int64_t delta) {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::addAndGet",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, false,
+                                                                                      EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
-
-
-
-
-//#define BOOST_THREAD_PROVIDES_FUTURE
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-
-            ClientConnectionStrategy::ClientConnectionStrategy(spi::ClientContext &clientContext, util::ILogger &logger,
-                                                               const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig)
-                    : clientContext(clientContext), logger(logger),
-                      clientConnectionStrategyConfig(clientConnectionStrategyConfig) {
+                protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
             }
 
-            ClientConnectionStrategy::~ClientConnectionStrategy() {
-            }
-        }
-    }
-}
+            int64_t ClientPNCounterProxy::getAndSubtract(int64_t delta) {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndSubtract",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, true,
+                                                                                      EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-
-            HeartbeatManager::HeartbeatManager(spi::ClientContext &client) : client(client), clientConnectionManager(
-                    client.getConnectionManager()), logger(client.getLogger()) {
-                ClientProperties &clientProperties = client.getClientProperties();
-                int timeoutSeconds = clientProperties.getInteger(clientProperties.getHeartbeatTimeout());
-                heartbeatTimeout = timeoutSeconds > 0 ? timeoutSeconds * 1000 : util::IOUtil::to_value<int>(
-                        (std::string) ClientProperties::PROP_HEARTBEAT_TIMEOUT_DEFAULT) * 1000;
-
-                int intervalSeconds = clientProperties.getInteger(clientProperties.getHeartbeatInterval());
-                heartbeatInterval = intervalSeconds > 0 ? intervalSeconds * 1000 : util::IOUtil::to_value<int>(
-                        (std::string) ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT) * 1000;
+                protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
             }
 
-            void HeartbeatManager::start() {
-                spi::impl::ClientExecutionServiceImpl &clientExecutionService = client.getClientExecutionService();
+            int64_t ClientPNCounterProxy::subtractAndGet(int64_t delta) {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::subtractAndGet",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, false,
+                                                                                      EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
 
-                clientExecutionService.scheduleWithRepetition(
-                        std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), heartbeatInterval,
-                        heartbeatInterval);
+                protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
             }
 
-            void HeartbeatManager::run() {
-                if (!clientConnectionManager.isAlive()) {
-                    return;
+            int64_t ClientPNCounterProxy::decrementAndGet() {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::decrementAndGet",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, false, EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
+
+                protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
+            }
+
+            int64_t ClientPNCounterProxy::incrementAndGet() {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::incrementAndGet",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, false, EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
+
+                protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
+            }
+
+            int64_t ClientPNCounterProxy::getAndDecrement() {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndDecrement",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, true, EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
+
+                protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
+            }
+
+            int64_t ClientPNCounterProxy::getAndIncrement() {
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                if (target.get() == NULL) {
+                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndIncrement",
+                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                }
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, true, EMPTY_ADDRESS_LIST,
+                                                                                      std::unique_ptr<exception::HazelcastException>(),
+                                                                                      target);
+
+                protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
+                        *response);
+                updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
+                return resultParameters.value;
+            }
+
+            void ClientPNCounterProxy::reset() {
+                observedClock = std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock());
+            }
+
+            std::shared_ptr<Address>
+            ClientPNCounterProxy::getCRDTOperationTarget(const std::set<Address> &excludedAddresses) {
+                if (currentTargetReplicaAddress.get().get() != NULL &&
+                    excludedAddresses.find(*currentTargetReplicaAddress.get()) == excludedAddresses.end()) {
+                    return currentTargetReplicaAddress;
                 }
 
-                int64_t now = util::currentTimeMillis();
-                for (std::shared_ptr<Connection> connection : clientConnectionManager.getActiveConnections()) {
-                    checkConnection(now, connection);
-                }
-            }
-
-            const std::string HeartbeatManager::getName() const {
-                return "HeartbeatManager";
-            }
-
-            void HeartbeatManager::checkConnection(int64_t now, std::shared_ptr<Connection> &connection) {
-                if (!connection->isAlive()) {
-                    return;
-                }
-
-                if (now - connection->lastReadTimeMillis() > heartbeatTimeout) {
-                    if (connection->isAlive()) {
-                        logger.warning("Heartbeat failed over the connection: ", *connection);
-                        onHeartbeatStopped(connection, "Heartbeat timed out");
+                {
+                    util::LockGuard guard(targetSelectionMutex);
+                    if (currentTargetReplicaAddress.get() == NULL ||
+                        excludedAddresses.find(*currentTargetReplicaAddress.get()) != excludedAddresses.end()) {
+                        currentTargetReplicaAddress = chooseTargetReplica(excludedAddresses);
                     }
                 }
+                return currentTargetReplicaAddress;
+            }
 
-                if (now - connection->lastReadTimeMillis() > heartbeatInterval) {
-                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::encodeRequest();
-                    std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
-                            client, request, "", connection);
-                    clientInvocation->invokeUrgent();
+            std::shared_ptr<Address>
+            ClientPNCounterProxy::chooseTargetReplica(const std::set<Address> &excludedAddresses) {
+                std::vector<Address> replicaAddresses = getReplicaAddresses(excludedAddresses);
+                if (replicaAddresses.empty()) {
+                    return std::shared_ptr<Address>();
                 }
+                // TODO: Use a random generator as used in Java (ThreadLocalRandomProvider) which is per thread
+                int randomReplicaIndex = std::abs(rand()) % (int) replicaAddresses.size();
+                return std::shared_ptr<Address>(new Address(replicaAddresses[randomReplicaIndex]));
             }
 
-            void
-            HeartbeatManager::onHeartbeatStopped(std::shared_ptr<Connection> &connection, const std::string &reason) {
-                connection->close(reason.c_str(), (exception::ExceptionBuilder<exception::TargetDisconnectedException>(
-                        "HeartbeatManager::onHeartbeatStopped") << "Heartbeat timed out to connection "
-                                                                << *connection).buildShared());
+            std::vector<Address> ClientPNCounterProxy::getReplicaAddresses(const std::set<Address> &excludedAddresses) {
+                std::vector<Member> dataMembers = getContext().getClientClusterService().getMembers(
+                        *cluster::memberselector::MemberSelectors::DATA_MEMBER_SELECTOR);
+                int32_t maxConfiguredReplicaCount = getMaxConfiguredReplicaCount();
+                int currentReplicaCount = util::min<int>(maxConfiguredReplicaCount, (int) dataMembers.size());
+
+                std::vector<Address> replicaAddresses;
+                for (int i = 0; i < currentReplicaCount; i++) {
+                    const Address &dataMemberAddress = dataMembers[i].getAddress();
+                    if (excludedAddresses.find(dataMemberAddress) == excludedAddresses.end()) {
+                        replicaAddresses.push_back(dataMemberAddress);
+                    }
+                }
+                return replicaAddresses;
             }
 
-            void HeartbeatManager::shutdown() {
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        Member::Member() : liteMember(false) {
-        }
-
-        Member::Member(const Address &address, const std::string &uuid, bool lite,
-                       const std::map<std::string, std::string> &attr) :
-                address(address), uuid(uuid), liteMember(lite), attributes(attr) {
-        }
-
-        Member::Member(const Address &memberAddress) : address(memberAddress), liteMember(false) {
-        }
-
-        Member::Member(const std::string &uuid) : uuid(uuid), liteMember(false) {
-        }
-
-        bool Member::operator==(const Member &rhs) const {
-            return address == rhs.address;
-        }
-
-        const Address &Member::getAddress() const {
-            return address;
-        }
-
-        const std::string &Member::getUuid() const {
-            return uuid;
-        }
-
-        bool Member::isLiteMember() const {
-            return liteMember;
-        }
-
-        const std::map<std::string, std::string> &Member::getAttributes() const {
-            return attributes;
-        }
-
-        std::ostream &operator<<(std::ostream &out, const Member &member) {
-            const Address &address = member.getAddress();
-            out << "Member[";
-            out << address.getHost();
-            out << "]";
-            out << ":";
-            out << address.getPort();
-            out << " - " << member.getUuid();
-            return out;
-        }
-
-        const std::string *Member::getAttribute(const std::string &key) const {
-            std::map<std::string, std::string>::const_iterator it = attributes.find(key);
-            if (attributes.end() != it) {
-                return &(it->second);
-            } else {
-                return NULL;
-            }
-        }
-
-        bool Member::lookupAttribute(const std::string &key) const {
-            return attributes.find(key) != attributes.end();
-        }
-
-        bool Member::operator<(const Member &rhs) const {
-            return uuid < rhs.uuid;
-        }
-
-        void Member::updateAttribute(Member::MemberAttributeOperationType operationType, const std::string &key,
-                                     std::unique_ptr<std::string> &value) {
-            switch (operationType) {
-                case PUT:
-                    attributes[key] = *value;
-                    break;
-                case REMOVE:
-                    attributes.erase(key);
-                    break;
-                default:
-                    throw (exception::ExceptionBuilder<exception::IllegalArgumentException>("Member::updateAttribute")
-                            << "Not a known OperationType: " << operationType).build();
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace connection {
-
-            DefaultClientConnectionStrategy::DefaultClientConnectionStrategy(spi::ClientContext &clientContext,
-                                                                             util::ILogger &logger,
-                                                                             const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig)
-                    : ClientConnectionStrategy(clientContext, logger, clientConnectionStrategyConfig),
-                      isShutdown(false) {
-            }
-
-            void DefaultClientConnectionStrategy::start() {
-                clientStartAsync = clientConnectionStrategyConfig.isAsyncStart();
-                reconnectMode = clientConnectionStrategyConfig.getReconnectMode();
-                if (clientStartAsync) {
-                    clientContext.getConnectionManager().connectToClusterAsync();
+            int32_t ClientPNCounterProxy::getMaxConfiguredReplicaCount() {
+                if (maxConfiguredReplicaCount > 0) {
+                    return maxConfiguredReplicaCount;
                 } else {
-                    clientContext.getConnectionManager().connectToCluster();
-                }
-            }
-
-            void DefaultClientConnectionStrategy::beforeGetConnection(const Address &target) {
-                checkShutdown("DefaultClientConnectionStrategy::beforeGetConnection");
-
-                if (isClusterAvailable()) {
-                    return;
-                }
-                if (clientStartAsync && !disconnectedFromCluster) {
-                    throw exception::HazelcastClientOfflineException(
-                            "DefaultClientConnectionStrategy::beforeGetConnection", "Client is connecting to cluster.");
-                }
-                if (reconnectMode == config::ClientConnectionStrategyConfig::ASYNC && disconnectedFromCluster) {
-                    throw exception::HazelcastClientOfflineException(
-                            "DefaultClientConnectionStrategy::beforeGetConnection", "Client is offline.");
-                }
-            }
-
-            void DefaultClientConnectionStrategy::beforeOpenConnection(const Address &target) {
-                checkShutdown("DefaultClientConnectionStrategy::beforeOpenConnection");
-
-                if (isClusterAvailable()) {
-                    return;
-                }
-                if (reconnectMode == config::ClientConnectionStrategyConfig::ASYNC && disconnectedFromCluster) {
-                    throw exception::HazelcastClientOfflineException(
-                            "DefaultClientConnectionStrategy::beforeGetConnection", "Client is offline");
-                }
-            }
-
-            void DefaultClientConnectionStrategy::onConnectToCluster() {
-                checkShutdown("DefaultClientConnectionStrategy::onConnectToCluster");
-
-                disconnectedFromCluster.store(false);
-            }
-
-            void DefaultClientConnectionStrategy::onDisconnectFromCluster() {
-                checkShutdown("DefaultClientConnectionStrategy::onDisconnectFromCluster");
-
-                disconnectedFromCluster.store(true);
-                if (reconnectMode == config::ClientConnectionStrategyConfig::OFF) {
-                    shutdownWithExternalThread(clientContext.getHazelcastClientImplementation());
-                    return;
-                }
-                if (clientContext.getLifecycleService().isRunning()) {
-                    try {
-                        clientContext.getConnectionManager().connectToClusterAsync();
-                    } catch (exception::RejectedExecutionException &) {
-                        shutdownWithExternalThread(clientContext.getHazelcastClientImplementation());
-                    }
-                }
-            }
-
-            void DefaultClientConnectionStrategy::onConnect(const std::shared_ptr<Connection> &connection) {
-                checkShutdown("DefaultClientConnectionStrategy::onConnect");
-            }
-
-            void DefaultClientConnectionStrategy::onDisconnect(const std::shared_ptr<Connection> &connection) {
-                checkShutdown("DefaultClientConnectionStrategy::onDisconnect");
-            }
-
-            void DefaultClientConnectionStrategy::shutdown() {
-                isShutdown = true;
-            }
-
-            bool DefaultClientConnectionStrategy::isClusterAvailable() const {
-                return clientContext.getConnectionManager().getOwnerConnectionAddress().get() != NULL;
-            }
-
-            void
-            DefaultClientConnectionStrategy::shutdownWithExternalThread(
-                    std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl) {
-
-                std::thread shutdownThread([=] {
-                    std::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
-                    if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
-                        return;
-                    }
-
-                    try {
-                        clientInstance->getLifecycleService().shutdown();
-                    } catch (exception::IException &exception) {
-                        clientInstance->getLogger()->severe("Exception during client shutdown task ",
-                                                            clientInstance->getName() + ".clientShutdown-", ":",
-                                                            exception);
-                    }
-                });
-
-                shutdownThread.detach();
-            }
-
-            void DefaultClientConnectionStrategy::checkShutdown(const std::string &methodName) {
-                if (isShutdown) {
-                    throw exception::IllegalStateException(methodName, "Client is shutdown.");
-                }
-            }
-        }
-    }
-}
-
-
-// Includes for parameters classes
-
-
-namespace hazelcast {
-    namespace client {
-
-        ICountDownLatch::ICountDownLatch(const std::string &objectName, spi::ClientContext *context)
-                : proxy::ProxyImpl("hz:impl:atomicLongService", objectName, context) {
-            serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&objectName);
-            partitionId = getPartitionId(keyData);
-        }
-
-        bool ICountDownLatch::await(long timeoutInMillis) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchAwaitCodec::encodeRequest(getName(), timeoutInMillis);
-
-            return invokeAndGetResult<bool, protocol::codec::CountDownLatchAwaitCodec::ResponseParameters>(request,
-                                                                                                           partitionId);
-        }
-
-        void ICountDownLatch::countDown() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchCountDownCodec::encodeRequest(getName());
-
-            invokeOnPartition(request, partitionId);
-        }
-
-        int ICountDownLatch::getCount() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchGetCountCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int, protocol::codec::CountDownLatchGetCountCodec::ResponseParameters>(request,
-                                                                                                             partitionId);
-        }
-
-        bool ICountDownLatch::trySetCount(int count) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchTrySetCountCodec::encodeRequest(getName(), count);
-
-            return invokeAndGetResult<bool, protocol::codec::CountDownLatchTrySetCountCodec::ResponseParameters>(
-                    request, partitionId);
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-
-        MapEvent::MapEvent(const Member &member, EntryEventType eventType, const std::string &name,
-                           int numberOfEntriesAffected)
-                : member(member), eventType(eventType), name(name), numberOfEntriesAffected(numberOfEntriesAffected) {
-
-        }
-
-        Member MapEvent::getMember() const {
-            return member;
-        }
-
-        EntryEventType MapEvent::getEventType() const {
-            return eventType;
-        }
-
-        const std::string &MapEvent::getName() const {
-            return name;
-        }
-
-        int MapEvent::getNumberOfEntriesAffected() const {
-            return numberOfEntriesAffected;
-        }
-
-        std::ostream &operator<<(std::ostream &os, const MapEvent &event) {
-            os << "MapEvent{member: " << event.member << " eventType: " << event.eventType << " name: " << event.name
-               << " numberOfEntriesAffected: " << event.numberOfEntriesAffected;
-            return os;
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        Endpoint::Endpoint(std::shared_ptr<std::string> uuid, std::shared_ptr<Address> socketAddress) : uuid(uuid),
-                                                                                                        socketAddress(
-                                                                                                                socketAddress) {}
-
-        const std::shared_ptr<std::string> &Endpoint::getUuid() const {
-            return uuid;
-        }
-
-        const std::shared_ptr<Address> &Endpoint::getSocketAddress() const {
-            return socketAddress;
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-
-            ClientFlakeIdGeneratorConfig::ClientFlakeIdGeneratorConfig(const std::string &name)
-                    : name(name), prefetchCount(DEFAULT_PREFETCH_COUNT),
-                      prefetchValidityMillis(DEFAULT_PREFETCH_VALIDITY_MILLIS) {}
-
-            const std::string &ClientFlakeIdGeneratorConfig::getName() const {
-                return name;
-            }
-
-            ClientFlakeIdGeneratorConfig &ClientFlakeIdGeneratorConfig::setName(const std::string &name) {
-                ClientFlakeIdGeneratorConfig::name = name;
-                return *this;
-            }
-
-            int32_t ClientFlakeIdGeneratorConfig::getPrefetchCount() const {
-                return prefetchCount;
-            }
-
-            ClientFlakeIdGeneratorConfig &ClientFlakeIdGeneratorConfig::setPrefetchCount(int32_t prefetchCount) {
-                std::ostringstream out;
-                out << "prefetch-count must be 1.." << MAXIMUM_PREFETCH_COUNT << ", not " << prefetchCount;
-                util::Preconditions::checkTrue(prefetchCount > 0 && prefetchCount <= MAXIMUM_PREFETCH_COUNT, out.str());
-                ClientFlakeIdGeneratorConfig::prefetchCount = prefetchCount;
-                return *this;
-            }
-
-            int64_t ClientFlakeIdGeneratorConfig::getPrefetchValidityMillis() const {
-                return prefetchValidityMillis;
-            }
-
-            ClientFlakeIdGeneratorConfig &
-            ClientFlakeIdGeneratorConfig::setPrefetchValidityMillis(int64_t prefetchValidityMillis) {
-                util::Preconditions::checkNotNegative(prefetchValidityMillis,
-                                                      "prefetchValidityMs must be non negative");
-                ClientFlakeIdGeneratorConfig::prefetchValidityMillis = prefetchValidityMillis;
-                return *this;
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-            SSLConfig::SSLConfig() : enabled(false), sslProtocol(tlsv12) {
-            }
-
-            bool SSLConfig::isEnabled() const {
-                return enabled;
-            }
-
-            SSLConfig &SSLConfig::setEnabled(bool enabled) {
-                util::Preconditions::checkSSL("getAwsConfig");
-                this->enabled = enabled;
-                return *this;
-            }
-
-            SSLConfig &SSLConfig::setProtocol(SSLProtocol protocol) {
-                this->sslProtocol = protocol;
-                return *this;
-            }
-
-            SSLProtocol SSLConfig::getProtocol() const {
-                return sslProtocol;
-            }
-
-            const std::vector<std::string> &SSLConfig::getVerifyFiles() const {
-                return clientVerifyFiles;
-            }
-
-            SSLConfig &SSLConfig::addVerifyFile(const std::string &filename) {
-                this->clientVerifyFiles.push_back(filename);
-                return *this;
-            }
-
-            const std::string &SSLConfig::getCipherList() const {
-                return cipherList;
-            }
-
-            SSLConfig &SSLConfig::setCipherList(const std::string &ciphers) {
-                this->cipherList = ciphers;
-                return *this;
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-            int32_t ClientNetworkConfig::CONNECTION_ATTEMPT_PERIOD = 3000;
-
-            ClientNetworkConfig::ClientNetworkConfig()
-                    : connectionTimeout(5000), smartRouting(true), connectionAttemptLimit(-1),
-                      connectionAttemptPeriod(CONNECTION_ATTEMPT_PERIOD) {
-            }
-
-            SSLConfig &ClientNetworkConfig::getSSLConfig() {
-                return sslConfig;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(const config::SSLConfig &sslConfig) {
-                this->sslConfig = sslConfig;
-                return *this;
-            }
-
-            int64_t ClientNetworkConfig::getConnectionTimeout() const {
-                return connectionTimeout;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionTimeout(int64_t connectionTimeoutInMillis) {
-                this->connectionTimeout = connectionTimeoutInMillis;
-                return *this;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
-                this->clientAwsConfig = clientAwsConfig;
-                return *this;
-            }
-
-            ClientAwsConfig &ClientNetworkConfig::getAwsConfig() {
-                return clientAwsConfig;
-            }
-
-            bool ClientNetworkConfig::isSmartRouting() const {
-                return smartRouting;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setSmartRouting(bool smartRouting) {
-                ClientNetworkConfig::smartRouting = smartRouting;
-                return *this;
-            }
-
-            int32_t ClientNetworkConfig::getConnectionAttemptLimit() const {
-                return connectionAttemptLimit;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptLimit(int32_t connectionAttemptLimit) {
-                if (connectionAttemptLimit < 0) {
-                    throw exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptLimit",
-                                                              "connectionAttemptLimit cannot be negative");
-                }
-                this->connectionAttemptLimit = connectionAttemptLimit;
-                return *this;
-            }
-
-            int32_t ClientNetworkConfig::getConnectionAttemptPeriod() const {
-                return connectionAttemptPeriod;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptPeriod(int32_t connectionAttemptPeriod) {
-                if (connectionAttemptPeriod < 0) {
-                    throw exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptPeriod",
-                                                              "connectionAttemptPeriod cannot be negative");
-                }
-                this->connectionAttemptPeriod = connectionAttemptPeriod;
-                return *this;
-            }
-
-            std::vector<Address> ClientNetworkConfig::getAddresses() const {
-                return addressList;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::addAddresses(const std::vector<Address> &addresses) {
-                addressList.insert(addressList.end(), addresses.begin(), addresses.end());
-                return *this;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setAddresses(const std::vector<Address> &addresses) {
-                addressList = addresses;
-                return *this;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::addAddress(const Address &address) {
-                addressList.push_back(address);
-                return *this;
-            }
-
-            SocketOptions &ClientNetworkConfig::getSocketOptions() {
-                return socketOptions;
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-
-            const std::string &LoggerConfig::getConfigurationFileName() const {
-                return configurationFileName;
-            }
-
-            void LoggerConfig::setConfigurationFileName(const std::string &fileName) {
-                LoggerConfig::configurationFileName = fileName;
-            }
-
-            LoggerConfig::LoggerConfig() : type(Type::EASYLOGGINGPP), logLevel(LoggerLevel::INFO) {}
-
-            LoggerConfig::Type::LoggerType LoggerConfig::getType() const {
-                return type;
-            }
-
-            void LoggerConfig::setType(LoggerConfig::Type::LoggerType type) {
-                LoggerConfig::type = type;
-            }
-
-            LoggerLevel::Level LoggerConfig::getLogLevel() const {
-                return logLevel;
-            }
-
-            void LoggerConfig::setLogLevel(LoggerLevel::Level logLevel) {
-                LoggerConfig::logLevel = logLevel;
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-            namespace matcher {
-                std::shared_ptr<std::string>
-                MatchingPointConfigPatternMatcher::matches(const std::vector<std::string> &configPatterns,
-                                                           const std::string &itemName) const {
-                    std::shared_ptr<std::string> candidate;
-                    std::shared_ptr<std::string> duplicate;
-                    int lastMatchingPoint = -1;
-                    for (const std::string &pattern  : configPatterns) {
-                        int matchingPoint = getMatchingPoint(pattern, itemName);
-                        if (matchingPoint > -1 && matchingPoint >= lastMatchingPoint) {
-                            if (matchingPoint == lastMatchingPoint) {
-                                duplicate = candidate;
-                            } else {
-                                duplicate.reset();
-                            }
-                            lastMatchingPoint = matchingPoint;
-                            candidate.reset(new std::string(pattern));
-                        }
-                    }
-                    if (duplicate.get() != NULL) {
-                        throw (exception::ExceptionBuilder<exception::ConfigurationException>(
-                                "MatchingPointConfigPatternMatcher::matches") << "Configuration " << itemName
-                                                                              << " has duplicate configuration. Candidate:"
-                                                                              << *candidate << ", duplicate:"
-                                                                              << *duplicate).build();
-                    }
-                    return candidate;
-                }
-
-                int MatchingPointConfigPatternMatcher::getMatchingPoint(const std::string &pattern,
-                                                                        const std::string &itemName) const {
-                    size_t index = pattern.find('*');
-                    if (index == std::string::npos) {
-                        return -1;
-                    }
-
-                    std::string firstPart = pattern.substr(0, index);
-                    if (itemName.find(firstPart) != 0) {
-                        return -1;
-                    }
-
-                    std::string secondPart = pattern.substr(index + 1);
-                    if (itemName.rfind(secondPart) != (itemName.length() - secondPart.length())) {
-                        return -1;
-                    }
-
-                    return (int) (firstPart.length() + secondPart.length());
-                }
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-            ClientConnectionStrategyConfig::ClientConnectionStrategyConfig() : asyncStart(false), reconnectMode(ON) {
-            }
-
-            ClientConnectionStrategyConfig::ReconnectMode ClientConnectionStrategyConfig::getReconnectMode() const {
-                return reconnectMode;
-            }
-
-            bool ClientConnectionStrategyConfig::isAsyncStart() const {
-                return asyncStart;
-            }
-
-            ClientConnectionStrategyConfig &ClientConnectionStrategyConfig::setAsyncStart(bool asyncStart) {
-                this->asyncStart = asyncStart;
-                return *this;
-            }
-
-            ClientConnectionStrategyConfig &
-            ClientConnectionStrategyConfig::setReconnectMode(ReconnectMode reconnectMode) {
-                this->reconnectMode = reconnectMode;
-                return *this;
-            }
-
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-            const int ReliableTopicConfig::DEFAULT_READ_BATCH_SIZE = 10;
-
-            ReliableTopicConfig::ReliableTopicConfig() {
-
-            }
-
-            ReliableTopicConfig::ReliableTopicConfig(const char *topicName) : readBatchSize(DEFAULT_READ_BATCH_SIZE),
-                                                                              name(topicName) {
-            }
-
-            const std::string &ReliableTopicConfig::getName() const {
-                return name;
-            }
-
-            int ReliableTopicConfig::getReadBatchSize() const {
-                return readBatchSize;
-            }
-
-            ReliableTopicConfig &ReliableTopicConfig::setReadBatchSize(int batchSize) {
-                if (batchSize <= 0) {
-                    throw exception::IllegalArgumentException("ReliableTopicConfig::setReadBatchSize",
-                                                              "readBatchSize should be positive");
-                }
-
-                this->readBatchSize = batchSize;
-
-                return *this;
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-            SocketOptions::SocketOptions() : tcpNoDelay(true), keepAlive(true), reuseAddress(true), lingerSeconds(3),
-                                             bufferSize(DEFAULT_BUFFER_SIZE_BYTE) {}
-
-            bool SocketOptions::isTcpNoDelay() const {
-                return tcpNoDelay;
-            }
-
-            SocketOptions &SocketOptions::setTcpNoDelay(bool tcpNoDelay) {
-                SocketOptions::tcpNoDelay = tcpNoDelay;
-                return *this;
-            }
-
-            bool SocketOptions::isKeepAlive() const {
-                return keepAlive;
-            }
-
-            SocketOptions &SocketOptions::setKeepAlive(bool keepAlive) {
-                SocketOptions::keepAlive = keepAlive;
-                return *this;
-            }
-
-            bool SocketOptions::isReuseAddress() const {
-                return reuseAddress;
-            }
-
-            SocketOptions &SocketOptions::setReuseAddress(bool reuseAddress) {
-                SocketOptions::reuseAddress = reuseAddress;
-                return *this;
-            }
-
-            int SocketOptions::getLingerSeconds() const {
-                return lingerSeconds;
-            }
-
-            SocketOptions &SocketOptions::setLingerSeconds(int lingerSeconds) {
-                SocketOptions::lingerSeconds = lingerSeconds;
-                return *this;
-            }
-
-            int SocketOptions::getBufferSizeInBytes() const {
-                return bufferSize;
-            }
-
-            SocketOptions &SocketOptions::setBufferSizeInBytes(int bufferSize) {
-                SocketOptions::bufferSize = bufferSize;
-                return *this;
-            }
-
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace config {
-            ClientAwsConfig::ClientAwsConfig() : enabled(false), region("us-east-1"), hostHeader("ec2.amazonaws.com"),
-                                                 insideAws(false) {
-            }
-
-            const std::string &ClientAwsConfig::getAccessKey() const {
-                return accessKey;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setAccessKey(const std::string &accessKey) {
-                this->accessKey = util::Preconditions::checkHasText(accessKey, "accessKey must contain text");
-                return *this;
-            }
-
-            const std::string &ClientAwsConfig::getSecretKey() const {
-                return secretKey;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setSecretKey(const std::string &secretKey) {
-                this->secretKey = util::Preconditions::checkHasText(secretKey, "secretKey must contain text");
-                return *this;
-            }
-
-            const std::string &ClientAwsConfig::getRegion() const {
-                return region;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setRegion(const std::string &region) {
-                this->region = util::Preconditions::checkHasText(region, "region must contain text");
-                return *this;
-            }
-
-            const std::string &ClientAwsConfig::getHostHeader() const {
-                return hostHeader;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setHostHeader(const std::string &hostHeader) {
-                this->hostHeader = util::Preconditions::checkHasText(hostHeader, "hostHeader must contain text");
-                return *this;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setEnabled(bool enabled) {
-                util::Preconditions::checkSSL("getAwsConfig");
-                this->enabled = enabled;
-                return *this;
-            }
-
-            bool ClientAwsConfig::isEnabled() const {
-                return enabled;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setSecurityGroupName(const std::string &securityGroupName) {
-                this->securityGroupName = securityGroupName;
-                return *this;
-            }
-
-            const std::string &ClientAwsConfig::getSecurityGroupName() const {
-                return securityGroupName;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setTagKey(const std::string &tagKey) {
-                this->tagKey = tagKey;
-                return *this;
-            }
-
-            const std::string &ClientAwsConfig::getTagKey() const {
-                return tagKey;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setTagValue(const std::string &tagValue) {
-                this->tagValue = tagValue;
-                return *this;
-            }
-
-            const std::string &ClientAwsConfig::getTagValue() const {
-                return tagValue;
-            }
-
-            const std::string &ClientAwsConfig::getIamRole() const {
-                return iamRole;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setIamRole(const std::string &iamRole) {
-                this->iamRole = iamRole;
-                return *this;
-            }
-
-            bool ClientAwsConfig::isInsideAws() const {
-                return insideAws;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setInsideAws(bool insideAws) {
-                this->insideAws = insideAws;
-                return *this;
-            }
-
-            std::ostream &operator<<(std::ostream &out, const ClientAwsConfig &config) {
-                return out << "ClientAwsConfig{"
-                           << "enabled=" << config.isEnabled()
-                           << ", region='" << config.getRegion() << '\''
-                           << ", securityGroupName='" << config.getSecurityGroupName() << '\''
-                           << ", tagKey='" << config.getTagKey() << '\''
-                           << ", tagValue='" << config.getTagValue() << '\''
-                           << ", hostHeader='" << config.getHostHeader() << '\''
-                           << ", iamRole='" << config.getIamRole() << "\'}";
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            MultiMap::MultiMap(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::MultiMapImpl(instanceName, context) {
-            }
-
-            std::vector<TypedData> MultiMap::keySet() {
-                return toTypedDataCollection(proxy::MultiMapImpl::keySetData());
-            }
-
-            std::vector<TypedData> MultiMap::values() {
-                return toTypedDataCollection(proxy::MultiMapImpl::valuesData());
-            }
-
-            std::vector<std::pair<TypedData, TypedData> > MultiMap::entrySet() {
-                return toTypedDataEntrySet(proxy::MultiMapImpl::entrySetData());
-            }
-
-            int MultiMap::size() {
-                return proxy::MultiMapImpl::size();
-            }
-
-            void MultiMap::clear() {
-                proxy::MultiMapImpl::clear();
-            }
-
-            std::string MultiMap::addEntryListener(MixedEntryListener &listener, bool includeValue) {
-                spi::ClientClusterService &clusterService = getContext().getClientClusterService();
-                serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
-                impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
-                        new impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
-                                getName(), clusterService, ss, listener, includeValue);
-                return proxy::MultiMapImpl::addEntryListener(entryEventHandler, includeValue);
-            }
-
-            bool MultiMap::removeEntryListener(const std::string &registrationId) {
-                return proxy::MultiMapImpl::removeEntryListener(registrationId);
-            }
-
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            namespace impl {
-                HazelcastClientImpl::HazelcastClientImpl(client::impl::HazelcastClientInstanceImpl &client) : client(
-                        client) {
-                }
-
-                HazelcastClientImpl::~HazelcastClientImpl() {
-                }
-
-                IMap HazelcastClientImpl::getMap(const std::string &name) {
-                    map::impl::MapMixedTypeProxyFactory factory(&client.clientContext);
-                    std::shared_ptr<spi::ClientProxy> proxy =
-                            client.getDistributedObjectForService("hz:impl:mapService", name, factory);
-                    return IMap(std::static_pointer_cast<ClientMapProxy>(proxy));
-                }
-
-                MultiMap HazelcastClientImpl::getMultiMap(const std::string &name) {
-                    return client.getDistributedObject<MultiMap>(name);
-                }
-
-                IQueue HazelcastClientImpl::getQueue(const std::string &name) {
-                    return client.getDistributedObject<IQueue>(name);
-                }
-
-                ISet HazelcastClientImpl::getSet(const std::string &name) {
-                    return client.getDistributedObject<ISet>(name);
-                }
-
-                IList HazelcastClientImpl::getList(const std::string &name) {
-                    return client.getDistributedObject<IList>(name);
-                }
-
-                ITopic HazelcastClientImpl::getTopic(const std::string &name) {
-                    return client.getDistributedObject<ITopic>(name);
-                }
-
-                Ringbuffer HazelcastClientImpl::getRingbuffer(
-                        const std::string &instanceName) {
-                    return client.getDistributedObject<Ringbuffer>(instanceName);
-                }
-
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            std::string IQueue::addItemListener(MixedItemListener &listener, bool includeValue) {
-                spi::ClientClusterService &cs = getContext().getClientClusterService();
-                serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
-                impl::MixedItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler> *itemEventHandler =
-                        new impl::MixedItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(
-                                getName(), cs, ss, listener);
-                return proxy::IQueueImpl::addItemListener(itemEventHandler, includeValue);
-            }
-
-            bool IQueue::removeItemListener(const std::string &registrationId) {
-                return proxy::IQueueImpl::removeItemListener(registrationId);
-            }
-
-            int IQueue::remainingCapacity() {
-                return proxy::IQueueImpl::remainingCapacity();
-            }
-
-            TypedData IQueue::take() {
-                return poll(-1);
-            }
-
-            size_t IQueue::drainTo(std::vector<TypedData> &elements) {
-                return drainTo(elements, -1);
-            }
-
-            size_t IQueue::drainTo(std::vector<TypedData> &elements, int64_t maxElements) {
-                typedef std::vector<serialization::pimpl::Data> DATA_VECTOR;
-                serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
-                size_t numElements = 0;
-                for (const DATA_VECTOR::value_type data : proxy::IQueueImpl::drainToData((size_t) maxElements)) {
-                    elements.push_back(TypedData(std::unique_ptr<serialization::pimpl::Data>(
-                            new serialization::pimpl::Data(data)), serializationService));
-                    ++numElements;
-                }
-                return numElements;
-            }
-
-            TypedData IQueue::poll() {
-                return poll(0);
-            }
-
-            TypedData IQueue::poll(long timeoutInMillis) {
-                return TypedData(proxy::IQueueImpl::pollData(timeoutInMillis), getContext().getSerializationService());
-            }
-
-            TypedData IQueue::peek() {
-                return TypedData(proxy::IQueueImpl::peekData(), getContext().getSerializationService());
-            }
-
-            int IQueue::size() {
-                return proxy::IQueueImpl::size();
-            }
-
-            bool IQueue::isEmpty() {
-                return size() == 0;
-            }
-
-            std::vector<TypedData> IQueue::toArray() {
-                return toTypedDataCollection(proxy::IQueueImpl::toArrayData());
-            }
-
-            void IQueue::clear() {
-                proxy::IQueueImpl::clear();
-            }
-
-            IQueue::IQueue(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::IQueueImpl(instanceName, context) {
-            }
-
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            IMap::IMap(std::shared_ptr<mixedtype::ClientMapProxy> proxy) : mapImpl(proxy) {
-            }
-
-            void IMap::removeAll(const query::Predicate &predicate) {
-                mapImpl->removeAll(predicate);
-            }
-
-            void IMap::flush() {
-                mapImpl->flush();
-            }
-
-            void IMap::removeInterceptor(const std::string &id) {
-                mapImpl->removeInterceptor(id);
-            }
-
-            std::string IMap::addEntryListener(MixedEntryListener &listener, bool includeValue) {
-                return mapImpl->addEntryListener(listener, includeValue);
-            }
-
-            std::string
-            IMap::addEntryListener(MixedEntryListener &listener, const query::Predicate &predicate,
-                                   bool includeValue) {
-                return mapImpl->addEntryListener(listener, predicate, includeValue);
-            }
-
-            bool IMap::removeEntryListener(const std::string &registrationId) {
-                return mapImpl->removeEntryListener(registrationId);
-            }
-
-            void IMap::evictAll() {
-                mapImpl->evictAll();
-            }
-
-            std::vector<TypedData> IMap::keySet() {
-                return mapImpl->keySet();
-            }
-
-            std::vector<TypedData> IMap::keySet(const serialization::IdentifiedDataSerializable &predicate) {
-                return mapImpl->keySet(predicate);
-            }
-
-            std::vector<TypedData> IMap::keySet(const query::Predicate &predicate) {
-                return mapImpl->keySet(predicate);
-            }
-
-            std::vector<TypedData> IMap::values() {
-                return mapImpl->values();
-            }
-
-            std::vector<TypedData> IMap::values(const serialization::IdentifiedDataSerializable &predicate) {
-                return mapImpl->values(predicate);
-            }
-
-            std::vector<TypedData> IMap::values(const query::Predicate &predicate) {
-                return mapImpl->values(predicate);
-            }
-
-            std::vector<std::pair<TypedData, TypedData> > IMap::entrySet() {
-                return mapImpl->entrySet();
-            }
-
-            std::vector<std::pair<TypedData, TypedData> >
-            IMap::entrySet(const serialization::IdentifiedDataSerializable &predicate) {
-                return mapImpl->entrySet(predicate);
-            }
-
-            std::vector<std::pair<TypedData, TypedData> > IMap::entrySet(const query::Predicate &predicate) {
-                return mapImpl->entrySet(predicate);
-            }
-
-            void IMap::addIndex(const std::string &attribute, bool ordered) {
-                mapImpl->addIndex(attribute, ordered);
-            }
-
-            int IMap::size() {
-                return mapImpl->size();
-            }
-
-            bool IMap::isEmpty() {
-                return mapImpl->isEmpty();
-            }
-
-            void IMap::clear() {
-                return mapImpl->clear();
-            }
-
-            void IMap::destroy() {
-                mapImpl->destroy();
-            }
-
-            monitor::LocalMapStats &IMap::getLocalMapStats() {
-                return mapImpl->getLocalMapStats();
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            Ringbuffer::Ringbuffer(const std::string &objectName, spi::ClientContext *context) : proxy::ProxyImpl(
-                    "hz:impl:ringbufferService", objectName, context), bufferCapacity(-1) {
-                partitionId = getPartitionId(toData(objectName));
-            }
-
-            Ringbuffer::Ringbuffer(const Ringbuffer &rhs) : proxy::ProxyImpl(rhs), partitionId(rhs.partitionId),
-                                                            bufferCapacity(
-                                                                    const_cast<Ringbuffer &>(rhs).bufferCapacity.load()) {
-            }
-
-            Ringbuffer::~Ringbuffer() {
-            }
-
-            int64_t Ringbuffer::capacity() {
-                if (-1 == bufferCapacity) {
-                    std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferCapacityCodec::encodeRequest(
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterGetConfiguredReplicaCountCodec::encodeRequest(
                             getName());
-                    bufferCapacity = invokeAndGetResult<int64_t, protocol::codec::RingbufferCapacityCodec::ResponseParameters>(
-                            msg, partitionId);
+                    maxConfiguredReplicaCount = invokeAndGetResult<int32_t, protocol::codec::PNCounterGetConfiguredReplicaCountCodec::ResponseParameters>(
+                            request);
                 }
-                return bufferCapacity;
+                return maxConfiguredReplicaCount;
             }
 
-            int64_t Ringbuffer::size() {
-                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferSizeCodec::encodeRequest(
-                        getName());
-                return invokeAndGetResult<int64_t, protocol::codec::RingbufferSizeCodec::ResponseParameters>(msg,
-                                                                                                             partitionId);
-            }
-
-            int64_t Ringbuffer::tailSequence() {
-                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferTailSequenceCodec::encodeRequest(
-                        getName());
-                return invokeAndGetResult<int64_t, protocol::codec::RingbufferTailSequenceCodec::ResponseParameters>(
-                        msg, partitionId);
-            }
-
-            int64_t Ringbuffer::headSequence() {
-                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferHeadSequenceCodec::encodeRequest(
-                        getName());
-                return invokeAndGetResult<int64_t, protocol::codec::RingbufferHeadSequenceCodec::ResponseParameters>(
-                        msg, partitionId);
-            }
-
-            int64_t Ringbuffer::remainingCapacity() {
-                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferRemainingCapacityCodec::encodeRequest(
-                        getName());
-                return invokeAndGetResult<int64_t, protocol::codec::RingbufferRemainingCapacityCodec::ResponseParameters>(
-                        msg, partitionId);
-            }
-
-            TypedData Ringbuffer::readOne(int64_t sequence) {
-                checkSequence(sequence);
-
-                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadOneCodec::encodeRequest(
-                        getName(), sequence);
-
-                std::unique_ptr<serialization::pimpl::Data> itemData = invokeAndGetResult<
-                        std::unique_ptr<serialization::pimpl::Data>, protocol::codec::RingbufferReadOneCodec::ResponseParameters>(
-                        msg, partitionId);
-
-                return TypedData(itemData, getContext().getSerializationService());
-            }
-
-            void Ringbuffer::checkSequence(int64_t sequence) {
-                if (sequence < 0) {
-                    throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(
-                            "Ringbuffer::checkSequence") << "sequence can't be smaller than 0, but was: "
-                                                         << sequence).build();
-                }
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            std::string ITopic::addMessageListener(topic::MessageListener &listener) {
-                client::impl::BaseEventHandler *topicEventHandler = new mixedtype::topic::impl::TopicEventHandlerImpl(
-                        getName(), getContext().getClientClusterService(),
-                        getContext().getSerializationService(),
-                        listener);
-                return proxy::ITopicImpl::addMessageListener(topicEventHandler);
-            }
-
-            bool ITopic::removeMessageListener(const std::string &registrationId) {
-                return proxy::ITopicImpl::removeMessageListener(registrationId);
-            }
-
-            ITopic::ITopic(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::ITopicImpl(instanceName, context) {
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            std::string ISet::addItemListener(MixedItemListener &listener, bool includeValue) {
-                impl::MixedItemEventHandler<protocol::codec::SetAddListenerCodec::AbstractEventHandler> *itemEventHandler =
-                        new impl::MixedItemEventHandler<protocol::codec::SetAddListenerCodec::AbstractEventHandler>(
-                                getName(), getContext().getClientClusterService(),
-                                getContext().getSerializationService(), listener);
-                return proxy::ISetImpl::addItemListener(itemEventHandler, includeValue);
-            }
-
-            bool ISet::removeItemListener(const std::string &registrationId) {
-                return proxy::ISetImpl::removeItemListener(registrationId);
-            }
-
-            int ISet::size() {
-                return proxy::ISetImpl::size();
-            }
-
-            bool ISet::isEmpty() {
-                return proxy::ISetImpl::isEmpty();
-            }
-
-            std::vector<TypedData> ISet::toArray() {
-                return toTypedDataCollection(proxy::ISetImpl::toArrayData());
-            }
-
-            void ISet::clear() {
-                proxy::ISetImpl::clear();
-            }
-
-            ISet::ISet(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::ISetImpl(instanceName, context) {
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            NearCachedClientMapProxy::NearCachedClientMapProxy(const std::string &instanceName,
-                                                               spi::ClientContext *context,
-                                                               const mixedtype::config::MixedNearCacheConfig &config)
-                    : ClientMapProxy(instanceName, context), cacheLocalEntries(false), invalidateOnChange(false),
-                      keyStateMarker(NULL), nearCacheConfig(config) {
-            }
-
-            monitor::LocalMapStats &NearCachedClientMapProxy::getLocalMapStats() {
-                monitor::LocalMapStats &localMapStats = ClientMapProxy::getLocalMapStats();
-                monitor::NearCacheStats &nearCacheStats = nearCache->getNearCacheStats();
-                ((monitor::impl::LocalMapStatsImpl &) localMapStats).setNearCacheStats(nearCacheStats);
-                return localMapStats;
-            }
-
-            void NearCachedClientMapProxy::onInitialize() {
-                ClientMapProxy::onInitialize();
-
-                internal::nearcache::NearCacheManager &nearCacheManager = getContext().getNearCacheManager();
-                cacheLocalEntries = nearCacheConfig.isCacheLocalEntries();
-                int partitionCount = getContext().getPartitionService().getPartitionCount();
-                nearCache = nearCacheManager.getOrCreateNearCache<TypedData, TypedData, serialization::pimpl::Data>(
-                        proxy::ProxyImpl::getName(), nearCacheConfig);
-
-                nearCache = map::impl::nearcache::InvalidationAwareWrapper<serialization::pimpl::Data, TypedData>::asInvalidationAware(
-                        nearCache, partitionCount);
-
-                keyStateMarker = getKeyStateMarker();
-
-                invalidateOnChange = nearCache->isInvalidatedOnChange();
-                if (invalidateOnChange) {
-                    std::unique_ptr<client::impl::BaseEventHandler> invalidationHandler(
-                            new ClientMapAddNearCacheEventHandler(nearCache));
-                    addNearCacheInvalidateListener(invalidationHandler);
-                }
-            }
-
-            //@Override
-            bool NearCachedClientMapProxy::containsKeyInternal(const serialization::pimpl::Data &keyData) {
-                std::shared_ptr<serialization::pimpl::Data> key = toShared(keyData);
-                std::shared_ptr<TypedData> cached = nearCache->get(key);
-                if (cached.get() != NULL) {
-                    return internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT != cached;
-                }
-
-                return ClientMapProxy::containsKeyInternal(*key);
-            }
-
-            //@override
-            std::shared_ptr<TypedData> NearCachedClientMapProxy::getInternal(serialization::pimpl::Data &keyData) {
-                std::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(keyData);
-                std::shared_ptr<TypedData> cached = nearCache->get(key);
-                if (cached.get() != NULL) {
-                    if (internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT == cached) {
-                        return std::shared_ptr<TypedData>(
-                                new TypedData(std::unique_ptr<serialization::pimpl::Data>(),
-                                              getSerializationService()));
+            std::shared_ptr<protocol::ClientMessage>
+            ClientPNCounterProxy::invokeGetInternal(std::shared_ptr<std::set<Address> > excludedAddresses,
+                                                    const std::unique_ptr<exception::IException> &lastException,
+                                                    const std::shared_ptr<Address> &target) {
+                if (target.get() == NULL) {
+                    if (lastException.get()) {
+                        throw *lastException;
+                    } else {
+                        throw (exception::ExceptionBuilder<exception::NoDataMemberInClusterException>(
+                                "ClientPNCounterProxy::invokeGetInternal") <<
+                                                                           "Cannot invoke operations on a CRDT because the cluster does not contain any data members").build();
                     }
-                    return cached;
                 }
-
-                bool marked = keyStateMarker->tryMark(*key);
-
                 try {
-                    std::shared_ptr<TypedData> value = ClientMapProxy::getInternal(*key);
-                    if (marked && value->getData().get()) {
-                        tryToPutNearCache(key, value);
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterGetCodec::encodeRequest(
+                            getName(), observedClock.get()->entrySet(), *target);
+                    return invokeOnAddress(request, *target);
+                } catch (exception::HazelcastException &e) {
+                    logger.finest("Exception occurred while invoking operation on target ", *target,
+                                  ", choosing different target. Cause: ", e);
+                    if (excludedAddresses == EMPTY_ADDRESS_LIST) {
+                        // TODO: Make sure that this only affects the local variable of the method
+                        excludedAddresses = std::shared_ptr<std::set<Address> >(new std::set<Address>());
                     }
-                    return value;
-                } catch (exception::IException &) {
-                    resetToUnmarkedState(key);
-                    throw;
+                    excludedAddresses->insert(*target);
+                    std::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
+                    std::unique_ptr<exception::IException> exception = e.clone();
+                    return invokeGetInternal(excludedAddresses, exception, newTarget);
                 }
             }
 
-            //@Override
-            std::unique_ptr<serialization::pimpl::Data> NearCachedClientMapProxy::removeInternal(
-                    const serialization::pimpl::Data &key) {
-                try {
-                    std::unique_ptr<serialization::pimpl::Data> responseData = ClientMapProxy::removeInternal(key);
-                    invalidateNearCache(key);
-                    return responseData;
-                } catch (exception::IException &) {
-                    invalidateNearCache(key);
-                    throw;
-                }
-            }
 
-            //@Override
-            bool NearCachedClientMapProxy::removeInternal(
-                    const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
-                try {
-                    bool response = ClientMapProxy::removeInternal(key, value);
-                    invalidateNearCache(key);
-                    return response;
-                } catch (exception::IException &) {
-                    invalidateNearCache(key);
-                    throw;
-                }
-            }
-
-            void NearCachedClientMapProxy::removeAllInternal(const serialization::pimpl::Data &predicateData) {
-                try {
-                    ClientMapProxy::removeAllInternal(predicateData);
-
-                    nearCache->clear();
-                } catch (exception::IException &) {
-                    nearCache->clear();
-                    throw;
-                }
-            }
-
-            void NearCachedClientMapProxy::deleteInternal(const serialization::pimpl::Data &key) {
-                try {
-                    ClientMapProxy::deleteInternal(key);
-                    invalidateNearCache(key);
-                } catch (exception::IException &) {
-                    invalidateNearCache(key);
-                    throw;
-                }
-            }
-
-            bool
-            NearCachedClientMapProxy::tryRemoveInternal(const serialization::pimpl::Data &key, long timeoutInMillis) {
-                try {
-                    bool response = ClientMapProxy::tryRemoveInternal(key, timeoutInMillis);
-                    invalidateNearCache(key);
-                    return response;
-                } catch (exception::IException &) {
-                    invalidateNearCache(key);
-                    throw;
-                }
-            }
-
-            bool NearCachedClientMapProxy::tryPutInternal(const serialization::pimpl::Data &key,
-                                                          const serialization::pimpl::Data &value,
-                                                          long timeoutInMillis) {
-                try {
-                    bool response = ClientMapProxy::tryPutInternal(key, value, timeoutInMillis);
-                    invalidateNearCache(key);
-                    return response;
-                } catch (exception::IException &) {
-                    invalidateNearCache(key);
-                    throw;
-                }
-            }
-
-            std::unique_ptr<serialization::pimpl::Data>
-            NearCachedClientMapProxy::putInternal(const serialization::pimpl::Data &key,
-                                                  const serialization::pimpl::Data &value,
-                                                  long timeoutInMillis) {
-                try {
-                    std::unique_ptr<serialization::pimpl::Data> previousValue =
-                            ClientMapProxy::putInternal(key, value, timeoutInMillis);
-                    invalidateNearCache(key);
-                    return previousValue;
-                } catch (exception::IException &) {
-                    invalidateNearCache(key);
-                    throw;
-                }
-            }
-
-            void NearCachedClientMapProxy::tryPutTransientInternal(const serialization::pimpl::Data &key,
-                                                                   const serialization::pimpl::Data &value,
-                                                                   int64_t ttlInMillis) {
-                try {
-                    ClientMapProxy::tryPutTransientInternal(key, value, ttlInMillis);
-                    invalidateNearCache(key);
-                } catch (exception::IException &) {
-                    invalidateNearCache(key);
-                    throw;
-                }
-            }
-
-            std::unique_ptr<serialization::pimpl::Data>
-            NearCachedClientMapProxy::putIfAbsentInternal(const serialization::pimpl::Data &keyData,
-                                                          const serialization::pimpl::Data &valueData,
-                                                          int64_t ttlInMillis) {
-                try {
-                    std::unique_ptr<serialization::pimpl::Data> previousValue =
-                            ClientMapProxy::putIfAbsentData(keyData, valueData, ttlInMillis);
-                    invalidateNearCache(keyData);
-                    return previousValue;
-                } catch (exception::IException &) {
-                    invalidateNearCache(keyData);
-                    throw;
-                }
-            }
-
-            bool NearCachedClientMapProxy::replaceIfSameInternal(const serialization::pimpl::Data &keyData,
-                                                                 const serialization::pimpl::Data &valueData,
-                                                                 const serialization::pimpl::Data &newValueData) {
-                try {
-                    bool result = proxy::IMapImpl::replace(keyData, valueData, newValueData);
-                    invalidateNearCache(keyData);
-                    return result;
-                } catch (exception::IException &) {
-                    invalidateNearCache(keyData);
-                    throw;
-                }
-            }
-
-            std::unique_ptr<serialization::pimpl::Data>
-            NearCachedClientMapProxy::replaceInternal(const serialization::pimpl::Data &keyData,
-                                                      const serialization::pimpl::Data &valueData) {
-                try {
-                    std::unique_ptr<serialization::pimpl::Data> value =
-                            proxy::IMapImpl::replaceData(keyData, valueData);
-                    invalidateNearCache(keyData);
-                    return value;
-                } catch (exception::IException &) {
-                    invalidateNearCache(keyData);
-                    throw;
-                }
-            }
-
-            void NearCachedClientMapProxy::setInternal(const serialization::pimpl::Data &keyData,
-                                                       const serialization::pimpl::Data &valueData,
-                                                       int64_t ttlInMillis) {
-                try {
-                    proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
-                    invalidateNearCache(keyData);
-                } catch (exception::IException &) {
-                    invalidateNearCache(keyData);
-                    throw;
-                }
-            }
-
-            bool NearCachedClientMapProxy::evictInternal(const serialization::pimpl::Data &keyData) {
-                try {
-                    bool evicted = proxy::IMapImpl::evict(keyData);
-                    invalidateNearCache(keyData);
-                    return evicted;
-                } catch (exception::IException &) {
-                    invalidateNearCache(keyData);
-                    throw;
-                }
-            }
-
-            EntryVector NearCachedClientMapProxy::getAllInternal(const ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData) {
-                MARKER_MAP markers;
-                try {
-                    ClientMapProxy::PID_TO_KEY_MAP nonCachedPidToKeyMap;
-                    EntryVector result = populateFromNearCache(pIdToKeyData, nonCachedPidToKeyMap, markers);
-
-                    EntryVector responses = ClientMapProxy::getAllInternal(nonCachedPidToKeyMap);
-                    for (const EntryVector::value_type &entry : responses) {
-                        std::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(
-                                entry.first);
-                        std::shared_ptr<TypedData> value = std::shared_ptr<TypedData>(new TypedData(
-                                std::unique_ptr<serialization::pimpl::Data>(
-                                        new serialization::pimpl::Data(entry.second)),
-                                getSerializationService()));
-                        bool marked = false;
-                        if (markers.count(key)) {
-                            marked = markers[key];
-                            markers.erase(key);
-                        }
-
-                        if (marked) {
-                            tryToPutNearCache(key, value);
-                        } else {
-                            nearCache->put(key, value);
-                        }
+            std::shared_ptr<protocol::ClientMessage>
+            ClientPNCounterProxy::invokeAddInternal(int64_t delta, bool getBeforeUpdate,
+                                                    std::shared_ptr<std::set<Address> > excludedAddresses,
+                                                    const std::unique_ptr<exception::IException> &lastException,
+                                                    const std::shared_ptr<Address> &target) {
+                if (target.get() == NULL) {
+                    if (lastException.get()) {
+                        throw *lastException;
+                    } else {
+                        throw (exception::ExceptionBuilder<exception::NoDataMemberInClusterException>(
+                                "ClientPNCounterProxy::invokeAddInternal") <<
+                                                                           "Cannot invoke operations on a CRDT because the cluster does not contain any data members").build();
                     }
-
-                    unmarkRemainingMarkedKeys(markers);
-
-                    result.insert(result.end(), responses.begin(), responses.end());
-
-                    return result;
-                } catch (exception::IException &) {
-                    unmarkRemainingMarkedKeys(markers);
-                    throw;
                 }
-            }
 
-            std::unique_ptr<serialization::pimpl::Data>
-            NearCachedClientMapProxy::executeOnKeyInternal(const serialization::pimpl::Data &keyData,
-                                                           const serialization::pimpl::Data &processor) {
                 try {
-                    std::unique_ptr<serialization::pimpl::Data> response =
-                            ClientMapProxy::executeOnKeyData(keyData, processor);
-                    invalidateNearCache(keyData);
-                    return response;
-                } catch (exception::IException &) {
-                    invalidateNearCache(keyData);
-                    throw;
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterAddCodec::encodeRequest(
+                            getName(), delta, getBeforeUpdate, observedClock.get()->entrySet(), *target);
+                    return invokeOnAddress(request, *target);
+                } catch (exception::HazelcastException &e) {
+                    logger.finest("Unable to provide session guarantees when sending operations to ", *target,
+                                  ", choosing different target. Cause: ", e);
+                    if (excludedAddresses == EMPTY_ADDRESS_LIST) {
+                        // TODO: Make sure that this only affects the local variable of the method
+                        excludedAddresses = std::shared_ptr<std::set<Address> >(new std::set<Address>());
+                    }
+                    excludedAddresses->insert(*target);
+                    std::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
+                    std::unique_ptr<exception::IException> exception = e.clone();
+                    return invokeAddInternal(delta, getBeforeUpdate, excludedAddresses, exception, newTarget);
                 }
             }
 
-            void
-            NearCachedClientMapProxy::putAllInternal(const std::map<int, EntryVector> &entries) {
-                try {
-                    ClientMapProxy::putAllInternal(entries);
-                    invalidateEntries(entries);
-                } catch (exception::IException &) {
-                    invalidateEntries(entries);
-                    throw;
-                }
-            }
-
-            void NearCachedClientMapProxy::invalidateEntries(const std::map<int, EntryVector> &entries) {
-                for (std::map<int, EntryVector>::const_iterator it = entries.begin(); it != entries.end(); ++it) {
-                    for (EntryVector::const_iterator entryIt = it->second.begin();
-                         entryIt != it->second.end(); ++entryIt) {
-                        invalidateNearCache(ClientMapProxy::toShared(entryIt->first));
+            void ClientPNCounterProxy::updateObservedReplicaTimestamps(
+                    const std::vector<std::pair<std::string, int64_t> > &receivedLogicalTimestamps) {
+                std::shared_ptr<cluster::impl::VectorClock> received = toVectorClock(receivedLogicalTimestamps);
+                for (;;) {
+                    std::shared_ptr<cluster::impl::VectorClock> currentClock = this->observedClock;
+                    if (currentClock->isAfter(*received)) {
+                        break;
+                    }
+                    if (observedClock.compareAndSet(currentClock, received)) {
+                        break;
                     }
                 }
             }
 
-            map::impl::nearcache::KeyStateMarker *NearCachedClientMapProxy::getKeyStateMarker() {
-                return std::static_pointer_cast<
-                        map::impl::nearcache::InvalidationAwareWrapper<serialization::pimpl::Data, TypedData> >(
-                        nearCache)->
-                        getKeyStateMarker();
+            std::shared_ptr<cluster::impl::VectorClock> ClientPNCounterProxy::toVectorClock(
+                    const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps) {
+                return std::shared_ptr<cluster::impl::VectorClock>(
+                        new cluster::impl::VectorClock(replicaLogicalTimestamps));
             }
 
-            void NearCachedClientMapProxy::addNearCacheInvalidateListener(
-                    std::unique_ptr<client::impl::BaseEventHandler> &handler) {
-                try {
-                    invalidationListenerId = std::shared_ptr<std::string>(
-                            new std::string(proxy::ProxyImpl::registerListener(
-                                    createNearCacheEntryListenerCodec(), handler.release())));
-
-                } catch (exception::IException &e) {
-                    std::ostringstream out;
-                    out << "-----------------\n Near Cache is not initialized!!! \n-----------------";
-                    out << e.what();
-                    getContext().getLogger().severe(out.str());
-                }
-            }
-
-            std::shared_ptr<spi::impl::ListenerMessageCodec>
-            NearCachedClientMapProxy::createNearCacheEntryListenerCodec() {
-                int32_t listenerFlags = EntryEventType::INVALIDATION;
-                return std::shared_ptr<spi::impl::ListenerMessageCodec>(
-                        new NearCacheEntryListenerMessageCodec(getName(), listenerFlags));
-            }
-
-            void NearCachedClientMapProxy::resetToUnmarkedState(std::shared_ptr<serialization::pimpl::Data> &key) {
-                if (keyStateMarker->tryUnmark(*key)) {
-                    return;
-                }
-
-                invalidateNearCache(key);
-                keyStateMarker->forceUnmark(*key);
-            }
-
-            void NearCachedClientMapProxy::unmarkRemainingMarkedKeys(
-                    std::map<std::shared_ptr<serialization::pimpl::Data>, bool> &markers) {
-                for (std::map<std::shared_ptr<serialization::pimpl::Data>, bool>::const_iterator it = markers.begin();
-                     it != markers.end(); ++it) {
-                    if (it->second) {
-                        keyStateMarker->forceUnmark(*it->first);
-                    }
-                }
-            }
-
-            void NearCachedClientMapProxy::tryToPutNearCache(std::shared_ptr<serialization::pimpl::Data> &keyData,
-                                                             std::shared_ptr<TypedData> &response) {
-                try {
-                    if (response.get()) {
-                        nearCache->put(keyData, response);
-                    }
-                    resetToUnmarkedState(keyData);
-                } catch (exception::IException &) {
-                    resetToUnmarkedState(keyData);
-                    throw;
-                }
-            }
-
-            /**
-             * This method modifies the key Data internal pointer although it is marked as const
-             * @param key The key for which to invalidate the near cache
-             */
-            void NearCachedClientMapProxy::invalidateNearCache(const serialization::pimpl::Data &key) {
-                nearCache->invalidate(ClientMapProxy::toShared(key));
-            }
-
-            void NearCachedClientMapProxy::invalidateNearCache(std::shared_ptr<serialization::pimpl::Data> key) {
-                nearCache->invalidate(key);
-            }
-
-            EntryVector
-            NearCachedClientMapProxy::populateFromNearCache(const ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData,
-                                                            PID_TO_KEY_MAP &nonCachedPidToKeyMap, MARKER_MAP &markers) {
-                EntryVector result;
-
-                for (const ClientMapProxy::PID_TO_KEY_MAP::value_type &partitionDatas : pIdToKeyData) {
-                    typedef std::vector<std::shared_ptr<serialization::pimpl::Data> > SHARED_DATA_VECTOR;
-                    SHARED_DATA_VECTOR nonCachedData;
-                    for (const SHARED_DATA_VECTOR::value_type &keyData : partitionDatas.second) {
-                        std::shared_ptr<TypedData> cached = nearCache->get(keyData);
-                        if (cached.get() != NULL && !cached->getData().get() &&
-                            internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT !=
-                            cached) {
-                            serialization::pimpl::Data valueData(*cached->getData());
-                            result.push_back(std::make_pair(*keyData, valueData));
-                        } else if (invalidateOnChange) {
-                            markers[keyData] = keyStateMarker->tryMark(*keyData);
-                            nonCachedData.push_back(keyData);
-                        }
-                    }
-                    nonCachedPidToKeyMap[partitionDatas.first] = nonCachedData;
-                }
-                return result;
-            }
-
-            std::unique_ptr<protocol::ClientMessage>
-            NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::MapAddNearCacheEntryListenerCodec::encodeRequest(name, listenerFlags,
-                                                                                         localOnly);
-            }
-
-            std::string NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::decodeAddResponse(
-                    protocol::ClientMessage &responseMessage) const {
-                return protocol::codec::MapAddNearCacheEntryListenerCodec::ResponseParameters::decode(
-                        responseMessage).response;
-            }
-
-            std::unique_ptr<protocol::ClientMessage>
-            NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::encodeRemoveRequest(
-                    const std::string &realRegistrationId) const {
-                return protocol::codec::MapRemoveEntryListenerCodec::encodeRequest(name, realRegistrationId);
-            }
-
-            bool NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::decodeRemoveResponse(
-                    protocol::ClientMessage &clientMessage) const {
-                return protocol::codec::MapRemoveEntryListenerCodec::ResponseParameters::decode(clientMessage).response;
-            }
-
-            NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::NearCacheEntryListenerMessageCodec(
-                    const std::string &name, int32_t listenerFlags) : name(name), listenerFlags(listenerFlags) {}
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            IList::IList(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::IListImpl(instanceName, context) {
-            }
-
-            std::string IList::addItemListener(MixedItemListener &listener, bool includeValue) {
-                impl::MixedItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler> *entryEventHandler =
-                        new impl::MixedItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler>(
-                                getName(), (spi::ClientClusterService &) getContext().getClientClusterService(),
-                                getContext().getSerializationService(), listener);
-                return proxy::IListImpl::addItemListener(entryEventHandler, includeValue);
-            }
-
-            bool IList::removeItemListener(const std::string &registrationId) {
-                return proxy::IListImpl::removeItemListener(registrationId);
-            }
-
-            int IList::size() {
-                return proxy::IListImpl::size();
-            }
-
-            bool IList::isEmpty() {
-                return size() == 0;
-            }
-
-            std::vector<TypedData> IList::toArray() {
-                return toTypedDataCollection(proxy::IListImpl::toArrayData());
-            }
-
-            void IList::clear() {
-                proxy::IListImpl::clear();
-            }
-
-            TypedData IList::get(int index) {
-                return TypedData(proxy::IListImpl::getData(index), getContext().getSerializationService());
-            }
-
-            TypedData IList::remove(int index) {
-                return TypedData(proxy::IListImpl::removeData(index), getContext().getSerializationService());
-            }
-
-            std::vector<TypedData> IList::subList(int fromIndex, int toIndex) {
-                return toTypedDataCollection(proxy::IListImpl::subListData(fromIndex, toIndex));
+            std::shared_ptr<Address> ClientPNCounterProxy::getCurrentTargetReplicaAddress() {
+                return currentTargetReplicaAddress.get();
             }
         }
     }
 }
 
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
-            ClientMapProxy::ClientMapProxy(const std::string &instanceName, spi::ClientContext *context)
-                    : proxy::IMapImpl(instanceName, context) {
-            }
 
-            void ClientMapProxy::removeAll(const query::Predicate &predicate) {
-                serialization::pimpl::Data predicateData = toData(predicate);
 
-                removeAllInternal(predicateData);
-            }
-
-            void ClientMapProxy::flush() {
-                proxy::IMapImpl::flush();
-            }
-
-            void ClientMapProxy::removeInterceptor(const std::string &id) {
-                proxy::IMapImpl::removeInterceptor(id);
-            }
-
-            std::string ClientMapProxy::addEntryListener(MixedEntryListener &listener, bool includeValue) {
-                impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
-                        new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
-                                getName(), getContext().getClientClusterService(),
-                                getContext().getSerializationService(),
-                                listener,
-                                includeValue);
-                return proxy::IMapImpl::addEntryListener(entryEventHandler, includeValue);
-            }
-
-            std::string
-            ClientMapProxy::addEntryListener(MixedEntryListener &listener, const query::Predicate &predicate,
-                                             bool includeValue) {
-                impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
-                        new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
-                                getName(), getContext().getClientClusterService(),
-                                getContext().getSerializationService(),
-                                listener,
-                                includeValue);
-                return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
-            }
-
-            bool ClientMapProxy::removeEntryListener(const std::string &registrationId) {
-                return proxy::IMapImpl::removeEntryListener(registrationId);
-            }
-
-            void ClientMapProxy::evictAll() {
-                proxy::IMapImpl::evictAll();
-            }
-
-            std::vector<TypedData> ClientMapProxy::keySet() {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData();
-                size_t size = dataResult.size();
-                std::vector<TypedData> keys(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> keyData(new serialization::pimpl::Data(dataResult[i]));
-                    keys[i] = TypedData(keyData, getContext().getSerializationService());
-                }
-                return keys;
-            }
-
-            std::vector<TypedData> ClientMapProxy::keySet(const serialization::IdentifiedDataSerializable &predicate) {
-                const query::Predicate *p = (const query::Predicate *) (&predicate);
-                return keySet(*p);
-            }
-
-            std::vector<TypedData> ClientMapProxy::keySet(const query::Predicate &predicate) {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData(predicate);
-                size_t size = dataResult.size();
-                std::vector<TypedData> keys(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> keyData(new serialization::pimpl::Data(dataResult[i]));
-                    keys[i] = TypedData(keyData, getContext().getSerializationService());
-                }
-                return keys;
-            }
-
-            std::vector<TypedData> ClientMapProxy::values() {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData();
-                size_t size = dataResult.size();
-                std::vector<TypedData> values(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> valueData(
-                            new serialization::pimpl::Data(dataResult[i]));
-                    values[i] = TypedData(valueData, getContext().getSerializationService());
-                }
-                return values;
-            }
-
-            std::vector<TypedData> ClientMapProxy::values(const serialization::IdentifiedDataSerializable &predicate) {
-                const query::Predicate *p = (const query::Predicate *) (&predicate);
-                return values(*p);
-            }
-
-            std::vector<TypedData> ClientMapProxy::values(const query::Predicate &predicate) {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData(predicate);
-                size_t size = dataResult.size();
-                std::vector<TypedData> values(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> valueData(
-                            new serialization::pimpl::Data(dataResult[i]));
-                    values[i] = TypedData(valueData, getContext().getSerializationService());
-                }
-                return values;
-            }
-
-            std::vector<std::pair<TypedData, TypedData> > ClientMapProxy::entrySet() {
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData();
-                size_t size = dataResult.size();
-                std::vector<std::pair<TypedData, TypedData> > entries(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> keyData(
-                            new serialization::pimpl::Data(dataResult[i].first));
-                    std::unique_ptr<serialization::pimpl::Data> valueData(
-                            new serialization::pimpl::Data(dataResult[i].second));
-                    serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
-                    entries[i] = std::make_pair(TypedData(keyData, serializationService), TypedData(valueData,
-                                                                                                    serializationService));
-                }
-                return entries;
-            }
-
-            std::vector<std::pair<TypedData, TypedData> >
-            ClientMapProxy::entrySet(const serialization::IdentifiedDataSerializable &predicate) {
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
-                        predicate);
-                size_t size = dataResult.size();
-                std::vector<std::pair<TypedData, TypedData> > entries(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> keyData(
-                            new serialization::pimpl::Data(dataResult[i].first));
-                    std::unique_ptr<serialization::pimpl::Data> valueData(
-                            new serialization::pimpl::Data(dataResult[i].second));
-                    serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
-                    entries[i] = std::make_pair(TypedData(keyData, serializationService),
-                                                TypedData(valueData, serializationService));
-                }
-                return entries;
-            }
-
-            std::vector<std::pair<TypedData, TypedData> > ClientMapProxy::entrySet(const query::Predicate &predicate) {
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
-                        predicate);
-                size_t size = dataResult.size();
-                std::vector<std::pair<TypedData, TypedData> > entries(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::unique_ptr<serialization::pimpl::Data> keyData(
-                            new serialization::pimpl::Data(dataResult[i].first));
-                    std::unique_ptr<serialization::pimpl::Data> valueData(
-                            new serialization::pimpl::Data(dataResult[i].second));
-                    serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
-                    entries[i] = std::make_pair(TypedData(keyData, serializationService),
-                                                TypedData(valueData, serializationService));
-                }
-                return entries;
-            }
-
-            void ClientMapProxy::addIndex(const std::string &attribute, bool ordered) {
-                proxy::IMapImpl::addIndex(attribute, ordered);
-            }
-
-            int ClientMapProxy::size() {
-                return proxy::IMapImpl::size();
-            }
-
-            bool ClientMapProxy::isEmpty() {
-                return proxy::IMapImpl::isEmpty();
-            }
-
-            void ClientMapProxy::clear() {
-                proxy::IMapImpl::clear();
-            }
-
-            serialization::pimpl::SerializationService &ClientMapProxy::getSerializationService() {
-                return getContext().getSerializationService();
-            }
-
-            monitor::LocalMapStats &ClientMapProxy::getLocalMapStats() {
-                return stats;
-            }
-
-            std::shared_ptr<TypedData> ClientMapProxy::getInternal(serialization::pimpl::Data &keyData) {
-                std::unique_ptr<serialization::pimpl::Data> valueData = proxy::IMapImpl::getData(keyData);
-                return std::shared_ptr<TypedData>(new TypedData(valueData, getContext().getSerializationService()));
-            }
-
-            bool ClientMapProxy::containsKeyInternal(const serialization::pimpl::Data &keyData) {
-                return proxy::IMapImpl::containsKey(keyData);
-            }
-
-            std::unique_ptr<serialization::pimpl::Data> ClientMapProxy::removeInternal(
-                    const serialization::pimpl::Data &keyData) {
-                return proxy::IMapImpl::removeData(keyData);
-            }
-
-            bool ClientMapProxy::removeInternal(
-                    const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData) {
-                return proxy::IMapImpl::remove(keyData, valueData);
-            }
-
-            void ClientMapProxy::removeAllInternal(const serialization::pimpl::Data &predicateData) {
-                return proxy::IMapImpl::removeAll(predicateData);
-            }
-
-            void ClientMapProxy::deleteInternal(const serialization::pimpl::Data &keyData) {
-                proxy::IMapImpl::deleteEntry(keyData);
-            }
-
-            bool
-            ClientMapProxy::tryRemoveInternal(const serialization::pimpl::Data &keyData, long timeoutInMillis) {
-                return proxy::IMapImpl::tryRemove(keyData, timeoutInMillis);
-            }
-
-            bool ClientMapProxy::tryPutInternal(const serialization::pimpl::Data &keyData,
-                                                const serialization::pimpl::Data &valueData,
-                                                long timeoutInMillis) {
-                return proxy::IMapImpl::tryPut(keyData, valueData, timeoutInMillis);
-            }
-
-            std::unique_ptr<serialization::pimpl::Data>
-            ClientMapProxy::putInternal(const serialization::pimpl::Data &keyData,
-                                        const serialization::pimpl::Data &valueData, long timeoutInMillis) {
-                return proxy::IMapImpl::putData(keyData, valueData, timeoutInMillis);
-            }
-
-            void ClientMapProxy::tryPutTransientInternal(const serialization::pimpl::Data &keyData,
-                                                         const serialization::pimpl::Data &valueData,
-                                                         int64_t ttlInMillis) {
-                proxy::IMapImpl::tryPut(keyData, valueData, ttlInMillis);
-            }
-
-            std::unique_ptr<serialization::pimpl::Data>
-            ClientMapProxy::putIfAbsentInternal(const serialization::pimpl::Data &keyData,
-                                                const serialization::pimpl::Data &valueData,
-                                                int64_t ttlInMillis) {
-                return proxy::IMapImpl::putIfAbsentData(keyData, valueData, ttlInMillis);
-            }
-
-            bool ClientMapProxy::replaceIfSameInternal(const serialization::pimpl::Data &keyData,
-                                                       const serialization::pimpl::Data &valueData,
-                                                       const serialization::pimpl::Data &newValueData) {
-                return proxy::IMapImpl::replace(keyData, valueData, newValueData);
-            }
-
-            std::unique_ptr<serialization::pimpl::Data>
-            ClientMapProxy::replaceInternal(const serialization::pimpl::Data &keyData,
-                                            const serialization::pimpl::Data &valueData) {
-                return proxy::IMapImpl::replaceData(keyData, valueData);
-
-            }
-
-            void ClientMapProxy::setInternal(const serialization::pimpl::Data &keyData,
-                                             const serialization::pimpl::Data &valueData,
-                                             int64_t ttlInMillis) {
-                proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
-            }
-
-            bool ClientMapProxy::evictInternal(const serialization::pimpl::Data &keyData) {
-                return proxy::IMapImpl::evict(keyData);
-            }
-
-            EntryVector ClientMapProxy::getAllInternal(const PID_TO_KEY_MAP &partitionToKeyData) {
-                std::map<int, std::vector<serialization::pimpl::Data> > datas;
-                for (PID_TO_KEY_MAP::const_iterator it = partitionToKeyData.begin();
-                     it != partitionToKeyData.end(); ++it) {
-                    const std::vector<std::shared_ptr<serialization::pimpl::Data> > &valueDatas = it->second;
-                    for (std::vector<std::shared_ptr<serialization::pimpl::Data> >::const_iterator valueIt = valueDatas.begin();
-                         valueIt != valueDatas.end(); ++valueIt) {
-                        datas[it->first].push_back(*(*valueIt));
-                    }
-                }
-                return proxy::IMapImpl::getAllData(datas);
-            }
-
-            std::unique_ptr<serialization::pimpl::Data>
-            ClientMapProxy::executeOnKeyInternal(const serialization::pimpl::Data &keyData,
-                                                 const serialization::pimpl::Data &processor) {
-                return proxy::IMapImpl::executeOnKeyData(keyData, processor);
-            }
-
-            std::unique_ptr<serialization::pimpl::Data>
-            ClientMapProxy::submitToKeyDecoder(protocol::ClientMessage &response) {
-                return protocol::codec::MapExecuteOnKeyCodec::ResponseParameters::decode(response).response;
-            }
-
-            void
-            ClientMapProxy::putAllInternal(const std::map<int, EntryVector> &entries) {
-                proxy::IMapImpl::putAllData(entries);
-            }
-
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        const int Address::ID = cluster::impl::ADDRESS;
-
-        const byte Address::IPV4 = 4;
-        const byte Address::IPV6 = 6;
-
-        Address::Address() : host("localhost"), type(IPV4), scopeId(0) {
-        }
-
-        Address::Address(const std::string &url, int port)
-                : host(url), port(port), type(IPV4), scopeId(0) {
-        }
-
-        Address::Address(const std::string &hostname, int port, unsigned long scopeId) : host(hostname), port(port),
-                                                                                         type(IPV6), scopeId(scopeId) {
-        }
-
-        bool Address::operator==(const Address &rhs) const {
-            return rhs.port == port && rhs.type == type && 0 == rhs.host.compare(host);
-        }
-
-        bool Address::operator!=(const Address &rhs) const {
-            return !(*this == rhs);
-        }
-
-        int Address::getPort() const {
-            return port;
-        }
-
-        const std::string &Address::getHost() const {
-            return host;
-        }
-
-        int Address::getFactoryId() const {
-            return cluster::impl::F_ID;
-        }
-
-        int Address::getClassId() const {
-            return ID;
-        }
-
-        void Address::writeData(serialization::ObjectDataOutput &out) const {
-            out.writeInt(port);
-            out.writeByte(type);
-            int len = (int) host.size();
-            out.writeInt(len);
-            out.writeBytes((const byte *) host.c_str(), len);
-        }
-
-        void Address::readData(serialization::ObjectDataInput &in) {
-            port = in.readInt();
-            type = in.readByte();
-            int len = in.readInt();
-            if (len > 0) {
-                std::vector<byte> bytes;
-                in.readFully(bytes);
-                host.clear();
-                host.append(bytes.begin(), bytes.end());
-            }
-        }
-
-        bool Address::operator<(const Address &rhs) const {
-            if (host < rhs.host) {
-                return true;
-            }
-            if (rhs.host < host) {
-                return false;
-            }
-            if (port < rhs.port) {
-                return true;
-            }
-            if (rhs.port < port) {
-                return false;
-            }
-            return type < rhs.type;
-        }
-
-        bool Address::isIpV4() const {
-            return type == IPV4;
-        }
-
-        unsigned long Address::getScopeId() const {
-            return scopeId;
-        }
-
-        std::string Address::toString() const {
-            std::ostringstream out;
-            out << "Address[" << getHost() << ":" << getPort() << "]";
-            return out.str();
-        }
-
-        std::ostream &operator<<(std::ostream &stream, const Address &address) {
-            return stream << address.toString();
-        }
-
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
-                                         const std::vector<Member> &membersList) :
-                cluster(&cluster), member(member), eventType(eventType), members(membersList) {
-        }
-
-        MembershipEvent::~MembershipEvent() {
-        }
-
-        const std::vector<Member> MembershipEvent::getMembers() const {
-            return members;
-        }
-
-        const Cluster &MembershipEvent::getCluster() const {
-            return *cluster;
-        }
-
-        MembershipEvent::MembershipEventType MembershipEvent::getEventType() const {
-            return eventType;
-        }
-
-        const Member &MembershipEvent::getMember() const {
-            return member;
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        TransactionContext::TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transactionManager,
-                                               const TransactionOptions &txnOptions) : options(txnOptions),
-                                                                                       txnConnection(
-                                                                                               transactionManager.connect()),
-                                                                                       transaction(options,
-                                                                                                   transactionManager.getClient(),
-                                                                                                   txnConnection) {
-        }
-
-        std::string TransactionContext::getTxnId() const {
-            return transaction.getTxnId();
-        }
-
-        void TransactionContext::beginTransaction() {
-            transaction.begin();
-        }
-
-        void TransactionContext::commitTransaction() {
-            transaction.commit();
-        }
-
-        void TransactionContext::rollbackTransaction() {
-            transaction.rollback();
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
