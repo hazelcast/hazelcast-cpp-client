@@ -14,320 +14,364 @@
  * limitations under the License.
  */
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <winsock2.h>
-#endif
+/*
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-#include <algorithm>
-#include <boost/asio.hpp>
-#include <boost/date_time.hpp>
-#include <boost/format.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <cctype>
-#include <chrono>
-#include <climits>
-#include <clocale>
-#include <condition_variable>
-#include <ctime>
-#include <functional>
-#include <limits>
-#include <random>
-#include <regex>
-#include <stdint.h>
-#include <utility>
-
-#ifdef HZ_BUILD_WITH_SSL
-
-#include <openssl/ssl.h>
-
-#endif // HZ_BUILD_WITH_SSL
-
-#include "hazelcast/client/config/SSLConfig.h"
-#include "hazelcast/client/internal/socket/SSLSocket.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/impl/BuildInfo.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/impl/RoundRobinLB.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/impl/MemberAttributeChange.h"
-#include "hazelcast/client/impl/ClientMessageDecoder.h"
-#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
-#include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
-#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
-#include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
-#include "hazelcast/client/spi/impl/NonSmartClientInvocationService.h"
-#include "hazelcast/client/spi/impl/listener/NonSmartClientListenerService.h"
-#include "hazelcast/client/spi/impl/listener/SmartClientListenerService.h"
-#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"
-#include "hazelcast/client/spi/impl/AwsAddressProvider.h"
-#include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
-#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
-#include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
-#include "hazelcast/client/ICountDownLatch.h"
-#include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/ILock.h"
+#include "hazelcast/client/mixedtype/HazelcastClient.h"
 #include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
-#include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
-#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
-#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
-#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
-#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
-#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
-#include "hazelcast/client/impl/AbstractLoadBalancer.h"
-#include "hazelcast/util/LockGuard.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/cluster/impl/VectorClock.h"
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
-#include "hazelcast/client/Member.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
-#include "hazelcast/client/monitor/NearCacheStats.h"
-#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/IdGenerator.h"
-#include "hazelcast/client/IAtomicLong.h"
-#include "hazelcast/client/TransactionContext.h"
-#include "hazelcast/client/flakeidgen/impl/AutoBatcher.h"
-#include "hazelcast/client/flakeidgen/impl/IdBatch.h"
-#include "hazelcast/client/txn/ClientTransactionUtil.h"
-#include "hazelcast/client/txn/TransactionProxy.h"
-#include "hazelcast/client/TransactionOptions.h"
-#include "hazelcast/client/proxy/ReliableTopicImpl.h"
-#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
-#include "hazelcast/client/proxy/IListImpl.h"
-#include "hazelcast/client/spi/ClientListenerService.h"
-#include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/proxy/TransactionalMapImpl.h"
-#include "hazelcast/client/proxy/TransactionalMultiMapImpl.h"
-#include "hazelcast/client/proxy/TransactionalListImpl.h"
-#include "hazelcast/client/proxy/TransactionalSetImpl.h"
-#include "hazelcast/client/proxy/TransactionalObject.h"
-#include "hazelcast/client/spi/ClientInvocationService.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
-#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
-#include "hazelcast/client/proxy/IQueueImpl.h"
-#include "hazelcast/client/TypedData.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
-#include "hazelcast/util/ExceptionUtil.h"
-#include "hazelcast/client/proxy/PartitionSpecificClientProxy.h"
-#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
-#include "hazelcast/client/spi/InternalCompletableFuture.h"
-#include "hazelcast/client/proxy/MultiMapImpl.h"
-#include "hazelcast/client/impl/EntryEventHandler.h"
-#include "hazelcast/client/proxy/IMapImpl.h"
-#include "hazelcast/client/EntryView.h"
-#include "hazelcast/util/TimeUtil.h"
-#include "hazelcast/client/proxy/TransactionalQueueImpl.h"
-#include "hazelcast/client/proxy/ISetImpl.h"
-#include "hazelcast/client/proxy/ITopicImpl.h"
-#include "hazelcast/client/ExecutionCallback.h"
-#include "hazelcast/client/LifecycleEvent.h"
-#include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
-#include "hazelcast/client/connection/AddressProvider.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/client/protocol/AuthenticationStatus.h"
-#include "hazelcast/client/exception/AuthenticationException.h"
-#include "hazelcast/client/connection/ConnectionListener.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/Executor.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/connection/AuthenticationFuture.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/client/connection/HeartbeatManager.h"
-#include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
-#include "hazelcast/client/connection/ClientConnectionStrategy.h"
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/MapEvent.h"
-#include "hazelcast/client/Endpoint.h"
-#include "hazelcast/util/Preconditions.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/config/LoggerConfig.h"
-#include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/config/ReliableTopicConfig.h"
-#include "hazelcast/client/config/SocketOptions.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/client/mixedtype/MultiMap.h"
-#include "hazelcast/client/map/impl/MapMixedTypeProxyFactory.h"
+#include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/mixedtype/IQueue.h"
-#include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/mixedtype/IMap.h"
 #include "hazelcast/client/mixedtype/Ringbuffer.h"
 #include "hazelcast/client/mixedtype/ITopic.h"
 #include "hazelcast/client/mixedtype/ISet.h"
+#include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/mixedtype/NearCachedClientMapProxy.h"
-#include "hazelcast/client/config/NearCacheConfig.h"
+#include "hazelcast/client/ItemListener.h"
+#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
 #include "hazelcast/client/map/impl/nearcache/InvalidationAwareWrapper.h"
 #include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
-#include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
-#include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/client/mixedtype/IList.h"
-#include "hazelcast/client/mixedtype/ClientMapProxy.h"
-#include "hazelcast/util/AddressUtil.h"
-#include "hazelcast/client/cluster/impl/ClusterDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/MembershipEvent.h"
-#include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
-#include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
-#include "hazelcast/client/serialization/FieldDefinition.h"
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
-#include "hazelcast/client/serialization/pimpl/DataOutput.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/serialization/FieldType.h"
-#include "hazelcast/client/serialization/Serializer.h"
-#include "hazelcast/util/Bits.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "hazelcast/client/serialization/ClassDefinition.h"
-#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/exception/HazelcastSerializationException.h"
-#include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
-#include "hazelcast/client/SerializationConfig.h"
-#include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
-#include "hazelcast/client/serialization/pimpl/MorphingPortableReader.h"
-#include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
-#include "hazelcast/client/serialization/VersionedPortable.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
-#include "hazelcast/util/UTFUtil.h"
-#include "hazelcast/client/serialization/pimpl/DataSerializer.h"
-#include "hazelcast/client/serialization/pimpl/PortableContext.h"
-#include "hazelcast/client/serialization/pimpl/PortableReaderBase.h"
-#include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
-#include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
-#include "hazelcast/client/serialization/TypeIDS.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/serialization/Portable.h"
-#include "hazelcast/client/LoadBalancer.h"
-#include "hazelcast/client/internal/nearcache/impl/record/NearCacheDataRecord.h"
-#include "hazelcast/util/HashUtil.h"
-#include "hazelcast/client/internal/socket/SocketFactory.h"
-#include "hazelcast/client/internal/eviction/EvictionChecker.h"
-#include "hazelcast/client/Client.h"
-#include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
-#include "hazelcast/client/topic/impl/TopicDataSerializerHook.h"
-#include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
-#include "hazelcast/client/proxy/ClientRingbufferProxy.h"
-#include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/client/map/DataEntryView.h"
-#include "hazelcast/client/protocol/ClientExceptionFactory.h"
-#include "hazelcast/client/protocol/codec/StackTraceElement.h"
-#include "hazelcast/client/protocol/codec/AddressCodec.h"
-#include "hazelcast/client/protocol/codec/ErrorCodec.h"
-#include "hazelcast/client/protocol/codec/MemberCodec.h"
-#include "hazelcast/client/protocol/codec/UUIDCodec.h"
-#include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
-#include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
-#include "hazelcast/client/protocol/Principal.h"
-#include "hazelcast/client/protocol/ClientMessageBuilder.h"
-#include "hazelcast/client/protocol/IMessageHandler.h"
-#include "hazelcast/client/ItemEvent.h"
-#include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/util/UuidUtil.h"
-#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
-#include "hazelcast/client/spi/impl/listener/ClientEventRegistration.h"
-#include "hazelcast/client/spi/impl/listener/ClientRegistrationKey.h"
-#include "hazelcast/util/Callable.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/spi/impl/ClientMembershipListener.h"
-#include "hazelcast/util/RuntimeAvailableProcessors.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
-#include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h"
-#include "hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h"
-#include "hazelcast/client/spi/impl/sequence/AbstractCallIdSequence.h"
-#include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
-#include "hazelcast/util/Runnable.h"
-#include "hazelcast/client/exception/IException.h"
-#include "hazelcast/util/AddressHelper.h"
-#include "hazelcast/client/spi/ProxyManager.h"
-#include "hazelcast/client/spi/ClientProxy.h"
-#include "hazelcast/client/spi/ClientProxyFactory.h"
-#include "hazelcast/client/impl/statistics/Statistics.h"
-#include "hazelcast/client/spi/DefaultObjectNamespace.h"
-#include "hazelcast/client/FlakeIdGenerator.h"
-#include "hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h"
-#include "hazelcast/client/IExecutorService.h"
-#include "hazelcast/client/aws/impl/Filter.h"
-#include "hazelcast/client/aws/impl/DescribeInstances.h"
-#include "hazelcast/client/aws/impl/Constants.h"
-#include "hazelcast/client/aws/utility/CloudUtility.h"
-#include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/util/SyncHttpClient.h"
-#include "hazelcast/client/aws/utility/AwsURLEncoder.h"
-#include "hazelcast/client/aws/security/EC2RequestSigner.h"
-#include "hazelcast/client/aws/AWSClient.h"
-#include "hazelcast/client/query/InstanceOfPredicate.h"
-#include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
-#include "hazelcast/client/query/ILikePredicate.h"
-#include "hazelcast/client/query/TruePredicate.h"
-#include "hazelcast/client/query/OrPredicate.h"
-#include "hazelcast/client/query/NotPredicate.h"
-#include "hazelcast/client/query/QueryConstants.h"
-#include "hazelcast/client/query/SqlPredicate.h"
-#include "hazelcast/client/query/FalsePredicate.h"
-#include "hazelcast/client/query/RegexPredicate.h"
-#include "hazelcast/client/query/AndPredicate.h"
-#include "hazelcast/client/query/LikePredicate.h"
-#include "hazelcast/client/GroupConfig.h"
-#include "hazelcast/client/internal/config/ConfigUtils.h"
-#include "hazelcast/client/impl/statistics/Statistics.h"
-#include "hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h"
-#include "hazelcast/client/flakeidgen/impl/IdBatch.h"
-#include "hazelcast/client/txn/ClientTransactionUtil.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
-#include "hazelcast/client/spi/ClientProxy.h"
-#include "hazelcast/client/IExecutorService.h"
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4355) //for strerror
-#pragma warning(disable: 4996) //for strerror
-#endif
-
+#include "hazelcast/client/map/impl/MapMixedTypeProxyFactory.h"
+#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 namespace hazelcast {
     namespace client {
         namespace mixedtype {
+            MultiMap::MultiMap(const std::string &instanceName, spi::ClientContext *context)
+                    : proxy::MultiMapImpl(instanceName, context) {
+            }
+
+            std::vector<TypedData> MultiMap::keySet() {
+                return toTypedDataCollection(proxy::MultiMapImpl::keySetData());
+            }
+
+            std::vector<TypedData> MultiMap::values() {
+                return toTypedDataCollection(proxy::MultiMapImpl::valuesData());
+            }
+
+            std::vector<std::pair<TypedData, TypedData> > MultiMap::entrySet() {
+                return toTypedDataEntrySet(proxy::MultiMapImpl::entrySetData());
+            }
+
+            int MultiMap::size() {
+                return proxy::MultiMapImpl::size();
+            }
+
+            void MultiMap::clear() {
+                proxy::MultiMapImpl::clear();
+            }
+
+            std::string MultiMap::addEntryListener(MixedEntryListener &listener, bool includeValue) {
+                spi::ClientClusterService &clusterService = getContext().getClientClusterService();
+                serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
+                impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
+                        new impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
+                                getName(), clusterService, ss, listener, includeValue);
+                return proxy::MultiMapImpl::addEntryListener(entryEventHandler, includeValue);
+            }
+
+            bool MultiMap::removeEntryListener(const std::string &registrationId) {
+                return proxy::MultiMapImpl::removeEntryListener(registrationId);
+            }
+
+            std::string IQueue::addItemListener(MixedItemListener &listener, bool includeValue) {
+                spi::ClientClusterService &cs = getContext().getClientClusterService();
+                serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
+                impl::MixedItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler> *itemEventHandler =
+                        new impl::MixedItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(
+                                getName(), cs, ss, listener);
+                return proxy::IQueueImpl::addItemListener(itemEventHandler, includeValue);
+            }
+
+            bool IQueue::removeItemListener(const std::string &registrationId) {
+                return proxy::IQueueImpl::removeItemListener(registrationId);
+            }
+
+            int IQueue::remainingCapacity() {
+                return proxy::IQueueImpl::remainingCapacity();
+            }
+
+            TypedData IQueue::take() {
+                return poll(-1);
+            }
+
+            size_t IQueue::drainTo(std::vector<TypedData> &elements) {
+                return drainTo(elements, -1);
+            }
+
+            size_t IQueue::drainTo(std::vector<TypedData> &elements, int64_t maxElements) {
+                typedef std::vector<serialization::pimpl::Data> DATA_VECTOR;
+                serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
+                size_t numElements = 0;
+                for (const DATA_VECTOR::value_type data : proxy::IQueueImpl::drainToData((size_t) maxElements)) {
+                    elements.push_back(TypedData(std::unique_ptr<serialization::pimpl::Data>(
+                            new serialization::pimpl::Data(data)), serializationService));
+                    ++numElements;
+                }
+                return numElements;
+            }
+
+            TypedData IQueue::poll() {
+                return poll(0);
+            }
+
+            TypedData IQueue::poll(long timeoutInMillis) {
+                return TypedData(proxy::IQueueImpl::pollData(timeoutInMillis), getContext().getSerializationService());
+            }
+
+            TypedData IQueue::peek() {
+                return TypedData(proxy::IQueueImpl::peekData(), getContext().getSerializationService());
+            }
+
+            int IQueue::size() {
+                return proxy::IQueueImpl::size();
+            }
+
+            bool IQueue::isEmpty() {
+                return size() == 0;
+            }
+
+            std::vector<TypedData> IQueue::toArray() {
+                return toTypedDataCollection(proxy::IQueueImpl::toArrayData());
+            }
+
+            void IQueue::clear() {
+                proxy::IQueueImpl::clear();
+            }
+
+            IQueue::IQueue(const std::string &instanceName, spi::ClientContext *context)
+                    : proxy::IQueueImpl(instanceName, context) {
+            }
+
+            IMap::IMap(std::shared_ptr<mixedtype::ClientMapProxy> proxy) : mapImpl(proxy) {
+            }
+
+            void IMap::removeAll(const query::Predicate &predicate) {
+                mapImpl->removeAll(predicate);
+            }
+
+            void IMap::flush() {
+                mapImpl->flush();
+            }
+
+            void IMap::removeInterceptor(const std::string &id) {
+                mapImpl->removeInterceptor(id);
+            }
+
+            std::string IMap::addEntryListener(MixedEntryListener &listener, bool includeValue) {
+                return mapImpl->addEntryListener(listener, includeValue);
+            }
+
+            std::string
+            IMap::addEntryListener(MixedEntryListener &listener, const query::Predicate &predicate,
+                                   bool includeValue) {
+                return mapImpl->addEntryListener(listener, predicate, includeValue);
+            }
+
+            bool IMap::removeEntryListener(const std::string &registrationId) {
+                return mapImpl->removeEntryListener(registrationId);
+            }
+
+            void IMap::evictAll() {
+                mapImpl->evictAll();
+            }
+
+            std::vector<TypedData> IMap::keySet() {
+                return mapImpl->keySet();
+            }
+
+            std::vector<TypedData> IMap::keySet(const serialization::IdentifiedDataSerializable &predicate) {
+                return mapImpl->keySet(predicate);
+            }
+
+            std::vector<TypedData> IMap::keySet(const query::Predicate &predicate) {
+                return mapImpl->keySet(predicate);
+            }
+
+            std::vector<TypedData> IMap::values() {
+                return mapImpl->values();
+            }
+
+            std::vector<TypedData> IMap::values(const serialization::IdentifiedDataSerializable &predicate) {
+                return mapImpl->values(predicate);
+            }
+
+            std::vector<TypedData> IMap::values(const query::Predicate &predicate) {
+                return mapImpl->values(predicate);
+            }
+
+            std::vector<std::pair<TypedData, TypedData> > IMap::entrySet() {
+                return mapImpl->entrySet();
+            }
+
+            std::vector<std::pair<TypedData, TypedData> >
+            IMap::entrySet(const serialization::IdentifiedDataSerializable &predicate) {
+                return mapImpl->entrySet(predicate);
+            }
+
+            std::vector<std::pair<TypedData, TypedData> > IMap::entrySet(const query::Predicate &predicate) {
+                return mapImpl->entrySet(predicate);
+            }
+
+            void IMap::addIndex(const std::string &attribute, bool ordered) {
+                mapImpl->addIndex(attribute, ordered);
+            }
+
+            int IMap::size() {
+                return mapImpl->size();
+            }
+
+            bool IMap::isEmpty() {
+                return mapImpl->isEmpty();
+            }
+
+            void IMap::clear() {
+                return mapImpl->clear();
+            }
+
+            void IMap::destroy() {
+                mapImpl->destroy();
+            }
+
+            monitor::LocalMapStats &IMap::getLocalMapStats() {
+                return mapImpl->getLocalMapStats();
+            }
+
+            Ringbuffer::Ringbuffer(const std::string &objectName, spi::ClientContext *context) : proxy::ProxyImpl(
+                    "hz:impl:ringbufferService", objectName, context), bufferCapacity(-1) {
+                partitionId = getPartitionId(toData(objectName));
+            }
+
+            Ringbuffer::Ringbuffer(const Ringbuffer &rhs) : proxy::ProxyImpl(rhs), partitionId(rhs.partitionId),
+                                                            bufferCapacity(
+                                                                    const_cast<Ringbuffer &>(rhs).bufferCapacity.load()) {
+            }
+
+            Ringbuffer::~Ringbuffer() {
+            }
+
+            int64_t Ringbuffer::capacity() {
+                if (-1 == bufferCapacity) {
+                    std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferCapacityCodec::encodeRequest(
+                            getName());
+                    bufferCapacity = invokeAndGetResult<int64_t, protocol::codec::RingbufferCapacityCodec::ResponseParameters>(
+                            msg, partitionId);
+                }
+                return bufferCapacity;
+            }
+
+            int64_t Ringbuffer::size() {
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferSizeCodec::encodeRequest(
+                        getName());
+                return invokeAndGetResult<int64_t, protocol::codec::RingbufferSizeCodec::ResponseParameters>(msg,
+                                                                                                             partitionId);
+            }
+
+            int64_t Ringbuffer::tailSequence() {
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferTailSequenceCodec::encodeRequest(
+                        getName());
+                return invokeAndGetResult<int64_t, protocol::codec::RingbufferTailSequenceCodec::ResponseParameters>(
+                        msg, partitionId);
+            }
+
+            int64_t Ringbuffer::headSequence() {
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferHeadSequenceCodec::encodeRequest(
+                        getName());
+                return invokeAndGetResult<int64_t, protocol::codec::RingbufferHeadSequenceCodec::ResponseParameters>(
+                        msg, partitionId);
+            }
+
+            int64_t Ringbuffer::remainingCapacity() {
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferRemainingCapacityCodec::encodeRequest(
+                        getName());
+                return invokeAndGetResult<int64_t, protocol::codec::RingbufferRemainingCapacityCodec::ResponseParameters>(
+                        msg, partitionId);
+            }
+
+            TypedData Ringbuffer::readOne(int64_t sequence) {
+                checkSequence(sequence);
+
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadOneCodec::encodeRequest(
+                        getName(), sequence);
+
+                std::unique_ptr<serialization::pimpl::Data> itemData = invokeAndGetResult<
+                        std::unique_ptr<serialization::pimpl::Data>, protocol::codec::RingbufferReadOneCodec::ResponseParameters>(
+                        msg, partitionId);
+
+                return TypedData(itemData, getContext().getSerializationService());
+            }
+
+            void Ringbuffer::checkSequence(int64_t sequence) {
+                if (sequence < 0) {
+                    throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(
+                            "Ringbuffer::checkSequence") << "sequence can't be smaller than 0, but was: "
+                                                         << sequence).build();
+                }
+            }
+
+            std::string ITopic::addMessageListener(topic::MessageListener &listener) {
+                client::impl::BaseEventHandler *topicEventHandler = new mixedtype::topic::impl::TopicEventHandlerImpl(
+                        getName(), getContext().getClientClusterService(),
+                        getContext().getSerializationService(),
+                        listener);
+                return proxy::ITopicImpl::addMessageListener(topicEventHandler);
+            }
+
+            bool ITopic::removeMessageListener(const std::string &registrationId) {
+                return proxy::ITopicImpl::removeMessageListener(registrationId);
+            }
+
+            ITopic::ITopic(const std::string &instanceName, spi::ClientContext *context)
+                    : proxy::ITopicImpl(instanceName, context) {
+            }
+
+            std::string ISet::addItemListener(MixedItemListener &listener, bool includeValue) {
+                impl::MixedItemEventHandler<protocol::codec::SetAddListenerCodec::AbstractEventHandler> *itemEventHandler =
+                        new impl::MixedItemEventHandler<protocol::codec::SetAddListenerCodec::AbstractEventHandler>(
+                                getName(), getContext().getClientClusterService(),
+                                getContext().getSerializationService(), listener);
+                return proxy::ISetImpl::addItemListener(itemEventHandler, includeValue);
+            }
+
+            bool ISet::removeItemListener(const std::string &registrationId) {
+                return proxy::ISetImpl::removeItemListener(registrationId);
+            }
+
+            int ISet::size() {
+                return proxy::ISetImpl::size();
+            }
+
+            bool ISet::isEmpty() {
+                return proxy::ISetImpl::isEmpty();
+            }
+
+            std::vector<TypedData> ISet::toArray() {
+                return toTypedDataCollection(proxy::ISetImpl::toArrayData());
+            }
+
+            void ISet::clear() {
+                proxy::ISetImpl::clear();
+            }
+
+            ISet::ISet(const std::string &instanceName, spi::ClientContext *context)
+                    : proxy::ISetImpl(instanceName, context) {
+            }
+
             NearCachedClientMapProxy::NearCachedClientMapProxy(const std::string &instanceName,
                                                                spi::ClientContext *context,
                                                                const mixedtype::config::MixedNearCacheConfig &config)
@@ -761,13 +805,7 @@ namespace hazelcast {
 
             NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::NearCacheEntryListenerMessageCodec(
                     const std::string &name, int32_t listenerFlags) : name(name), listenerFlags(listenerFlags) {}
-        }
-    }
-}
 
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
             IList::IList(const std::string &instanceName, spi::ClientContext *context)
                     : proxy::IListImpl(instanceName, context) {
             }
@@ -811,13 +849,7 @@ namespace hazelcast {
             std::vector<TypedData> IList::subList(int fromIndex, int toIndex) {
                 return toTypedDataCollection(proxy::IListImpl::subListData(fromIndex, toIndex));
             }
-        }
-    }
-}
 
-namespace hazelcast {
-    namespace client {
-        namespace mixedtype {
             ClientMapProxy::ClientMapProxy(const std::string &instanceName, spi::ClientContext *context)
                     : proxy::IMapImpl(instanceName, context) {
             }
@@ -1106,343 +1138,47 @@ namespace hazelcast {
                 proxy::IMapImpl::putAllData(entries);
             }
 
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        const int Address::ID = cluster::impl::ADDRESS;
-
-        const byte Address::IPV4 = 4;
-        const byte Address::IPV6 = 6;
-
-        Address::Address() : host("localhost"), type(IPV4), scopeId(0) {
-        }
-
-        Address::Address(const std::string &url, int port)
-                : host(url), port(port), type(IPV4), scopeId(0) {
-        }
-
-        Address::Address(const std::string &hostname, int port, unsigned long scopeId) : host(hostname), port(port),
-                                                                                         type(IPV6), scopeId(scopeId) {
-        }
-
-        bool Address::operator==(const Address &rhs) const {
-            return rhs.port == port && rhs.type == type && 0 == rhs.host.compare(host);
-        }
-
-        bool Address::operator!=(const Address &rhs) const {
-            return !(*this == rhs);
-        }
-
-        int Address::getPort() const {
-            return port;
-        }
-
-        const std::string &Address::getHost() const {
-            return host;
-        }
-
-        int Address::getFactoryId() const {
-            return cluster::impl::F_ID;
-        }
-
-        int Address::getClassId() const {
-            return ID;
-        }
-
-        void Address::writeData(serialization::ObjectDataOutput &out) const {
-            out.writeInt(port);
-            out.writeByte(type);
-            int len = (int) host.size();
-            out.writeInt(len);
-            out.writeBytes((const byte *) host.c_str(), len);
-        }
-
-        void Address::readData(serialization::ObjectDataInput &in) {
-            port = in.readInt();
-            type = in.readByte();
-            int len = in.readInt();
-            if (len > 0) {
-                std::vector<byte> bytes;
-                in.readFully(bytes);
-                host.clear();
-                host.append(bytes.begin(), bytes.end());
-            }
-        }
-
-        bool Address::operator<(const Address &rhs) const {
-            if (host < rhs.host) {
-                return true;
-            }
-            if (rhs.host < host) {
-                return false;
-            }
-            if (port < rhs.port) {
-                return true;
-            }
-            if (rhs.port < port) {
-                return false;
-            }
-            return type < rhs.type;
-        }
-
-        bool Address::isIpV4() const {
-            return type == IPV4;
-        }
-
-        unsigned long Address::getScopeId() const {
-            return scopeId;
-        }
-
-        std::string Address::toString() const {
-            std::ostringstream out;
-            out << "Address[" << getHost() << ":" << getPort() << "]";
-            return out.str();
-        }
-
-        std::ostream &operator<<(std::ostream &stream, const Address &address) {
-            return stream << address.toString();
-        }
-
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
-                                         const std::vector<Member> &membersList) :
-                cluster(&cluster), member(member), eventType(eventType), members(membersList) {
-        }
-
-        MembershipEvent::~MembershipEvent() {
-        }
-
-        const std::vector<Member> MembershipEvent::getMembers() const {
-            return members;
-        }
-
-        const Cluster &MembershipEvent::getCluster() const {
-            return *cluster;
-        }
-
-        MembershipEvent::MembershipEventType MembershipEvent::getEventType() const {
-            return eventType;
-        }
-
-        const Member &MembershipEvent::getMember() const {
-            return member;
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        TransactionContext::TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transactionManager,
-                                               const TransactionOptions &txnOptions) : options(txnOptions),
-                                                                                       txnConnection(
-                                                                                               transactionManager.connect()),
-                                                                                       transaction(options,
-                                                                                                   transactionManager.getClient(),
-                                                                                                   txnConnection) {
-        }
-
-        std::string TransactionContext::getTxnId() const {
-            return transaction.getTxnId();
-        }
-
-        void TransactionContext::beginTransaction() {
-            transaction.begin();
-        }
-
-        void TransactionContext::commitTransaction() {
-            transaction.commit();
-        }
-
-        void TransactionContext::rollbackTransaction() {
-            transaction.rollback();
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace serialization {
-            ClassDefinitionBuilder::ClassDefinitionBuilder(int factoryId, int classId, int version)
-                    : factoryId(factoryId), classId(classId), version(version), index(0), done(false) {
-
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addIntField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_INT);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addLongField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_LONG);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addUTFField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_UTF);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addBooleanField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_BOOLEAN);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addByteField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_BYTE);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addCharField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_CHAR);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addDoubleField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_DOUBLE);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addFloatField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_FLOAT);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addShortField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_SHORT);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addByteArrayField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addBooleanArrayField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_BOOLEAN_ARRAY);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addCharArrayField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addIntArrayField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_INT_ARRAY);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addLongArrayField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_LONG_ARRAY);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addDoubleArrayField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addFloatArrayField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_FLOAT_ARRAY);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addShortArrayField(const std::string &fieldName) {
-                addField(fieldName, FieldTypes::TYPE_SHORT_ARRAY);
-                return *this;
-            }
-
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addPortableField(const std::string &fieldName,
-                                                                             std::shared_ptr<ClassDefinition> def) {
-                check();
-                if (def->getClassId() == 0) {
-                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
-                                                              "Portable class id cannot be zero!");
+            namespace impl {
+                HazelcastClientImpl::HazelcastClientImpl(client::impl::HazelcastClientInstanceImpl &client) : client(
+                        client) {
                 }
-                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, def->getFactoryId(),
-                                                def->getClassId(), def->getVersion());
-                fieldDefinitions.push_back(fieldDefinition);
-                return *this;
-            }
 
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addPortableArrayField(const std::string &fieldName,
-                                                                                  std::shared_ptr<ClassDefinition> def) {
-                check();
-                if (def->getClassId() == 0) {
-                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
-                                                              "Portable class id cannot be zero!");
+                HazelcastClientImpl::~HazelcastClientImpl() {
                 }
-                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY,
-                                                def->getFactoryId(), def->getClassId(), def->getVersion());
-                fieldDefinitions.push_back(fieldDefinition);
-                return *this;
-            }
 
-            ClassDefinitionBuilder &ClassDefinitionBuilder::addField(FieldDefinition &fieldDefinition) {
-                check();
-                int defIndex = fieldDefinition.getIndex();
-                if (index != defIndex) {
-                    char buf[100];
-                    util::hz_snprintf(buf, 100, "Invalid field index. Index in definition:%d, being added at index:%d",
-                                      defIndex, index);
-                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addField", buf);
+                IMap HazelcastClientImpl::getMap(const std::string &name) {
+                    map::impl::MapMixedTypeProxyFactory factory(&client.clientContext);
+                    std::shared_ptr<spi::ClientProxy> proxy =
+                            client.getDistributedObjectForService("hz:impl:mapService", name, factory);
+                    return IMap(std::static_pointer_cast<ClientMapProxy>(proxy));
                 }
-                index++;
-                fieldDefinitions.push_back(fieldDefinition);
-                return *this;
-            }
 
-            std::shared_ptr<ClassDefinition> ClassDefinitionBuilder::build() {
-                done = true;
-                std::shared_ptr<ClassDefinition> cd(new ClassDefinition(factoryId, classId, version));
-
-                std::vector<FieldDefinition>::iterator fdIt;
-                for (fdIt = fieldDefinitions.begin(); fdIt != fieldDefinitions.end(); fdIt++) {
-                    cd->addFieldDef(*fdIt);
+                MultiMap HazelcastClientImpl::getMultiMap(const std::string &name) {
+                    return client.getDistributedObject<MultiMap>(name);
                 }
-                return cd;
-            }
 
-            void ClassDefinitionBuilder::check() {
-                if (done) {
-                    throw exception::HazelcastSerializationException("ClassDefinitionBuilder::check",
-                                                                     "ClassDefinition is already built for " +
-                                                                     util::IOUtil::to_string(classId));
+                IQueue HazelcastClientImpl::getQueue(const std::string &name) {
+                    return client.getDistributedObject<IQueue>(name);
                 }
-            }
 
-            void ClassDefinitionBuilder::addField(const std::string &fieldName, FieldType const &fieldType) {
-                check();
-                FieldDefinition fieldDefinition(index++, fieldName, fieldType, version);
-                fieldDefinitions.push_back(fieldDefinition);
-            }
+                ISet HazelcastClientImpl::getSet(const std::string &name) {
+                    return client.getDistributedObject<ISet>(name);
+                }
 
-            int ClassDefinitionBuilder::getFactoryId() {
-                return factoryId;
-            }
+                IList HazelcastClientImpl::getList(const std::string &name) {
+                    return client.getDistributedObject<IList>(name);
+                }
 
-            int ClassDefinitionBuilder::getClassId() {
-                return classId;
-            }
+                ITopic HazelcastClientImpl::getTopic(const std::string &name) {
+                    return client.getDistributedObject<ITopic>(name);
+                }
 
-            int ClassDefinitionBuilder::getVersion() {
-                return version;
+                Ringbuffer HazelcastClientImpl::getRingbuffer(
+                        const std::string &instanceName) {
+                    return client.getDistributedObject<Ringbuffer>(instanceName);
+                }
+
             }
         }
     }
 }
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
