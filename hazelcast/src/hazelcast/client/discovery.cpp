@@ -29,13 +29,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#include <winsock2.h>
+#endif
+
 #include <sstream>
 #include <iomanip>
 
 #ifdef HZ_BUILD_WITH_SSL
-
 #include <openssl/ssl.h>
-
 #endif
 
 #include <boost/algorithm/string/replace.hpp>

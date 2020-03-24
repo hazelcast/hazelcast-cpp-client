@@ -30,6 +30,12 @@
  * limitations under the License.
  */
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <winsock2.h>
+#endif
+
 #include <vector>
 #include <easylogging++.h>
 
