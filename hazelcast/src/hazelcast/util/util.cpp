@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <winsock2.h>
+#include "hazelcast/util/WindowsUtil.inl"
+#else
+#include "hazelcast/util/LinuxUtil.inl"
+#include <unistd.h>
+#include <sys/errno.h>
+#include <sys/time.h>
+#include <pthread.h>
+#endif
+
 #include <cmath>
 #include <cassert>
 #include <cerrno>
@@ -34,19 +47,6 @@
 #include <mutex>
 #include <stdlib.h>
 #include <time.h>
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <winsock2.h>
-#include "hazelcast/util/WindowsUtil.inl"
-#else
-#include "hazelcast/util/LinuxUtil.inl"
-#include <unistd.h>
-#include <sys/errno.h>
-#include <sys/time.h>
-#include <pthread.h>
-#endif
 
 #ifdef HZ_BUILD_WITH_SSL
 #include <boost/asio/io_service.hpp>
