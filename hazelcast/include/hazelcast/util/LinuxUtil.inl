@@ -1,3 +1,4 @@
+#include <cassert>
 
 #include "hazelcast/util/PosixThread.inl"
 
