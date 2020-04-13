@@ -20,12 +20,9 @@
 #define HAZELCAST_EXCEPTION
 
 #include <string>
-#include <sstream>
 #include <stdexcept>
 #include <ostream>
-#include <memory>
 
-#include <memory>
 #include <boost/format.hpp>
 #include <boost/exception_ptr.hpp>
 
@@ -36,8 +33,6 @@
 #pragma warning(disable: 4251) //for dll export	
 #pragma warning(disable: 4275) //for dll export	
 #endif
-
-using namespace boost;
 
 namespace hazelcast {
     namespace client {
@@ -111,7 +106,7 @@ namespace hazelcast {
                  *
                  * @return The constructed exception.
                  */
-                exception_detail::clone_impl<EXCEPTIONCLASS> build() {
+                boost::exception_detail::clone_impl<EXCEPTIONCLASS> build() {
                     return boost::enable_current_exception(EXCEPTIONCLASS(source, msg.str()));
                 }
             private:

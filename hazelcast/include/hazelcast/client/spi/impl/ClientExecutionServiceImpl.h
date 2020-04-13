@@ -46,19 +46,19 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    template<BOOST_ASIO_COMPLETION_TOKEN_FOR(void()) CompletionToken>
-                    void execute(BOOST_ASIO_MOVE_ARG(CompletionToken)token) {
+                    template<typename CompletionToken>
+                    void execute(CompletionToken token) {
                         boost::asio::post(*internalExecutor, token);
                     }
 
-                    template<BOOST_ASIO_COMPLETION_TOKEN_FOR(void()) CompletionToken>
-                    void schedule(BOOST_ASIO_MOVE_ARG(CompletionToken)token,
+                    template<typename CompletionToken>
+                    void schedule(CompletionToken token,
                                   const std::chrono::steady_clock::duration &delay) {
                         scheduleWithRepetition(token, delay, std::chrono::seconds(0));
                     }
 
-                    template<BOOST_ASIO_COMPLETION_TOKEN_FOR(void()) CompletionToken>
-                    void scheduleWithRepetition(BOOST_ASIO_MOVE_ARG(CompletionToken)token,
+                    template<typename CompletionToken>
+                    void scheduleWithRepetition(CompletionToken token,
                                                 const std::chrono::steady_clock::duration &delay,
                                                 const std::chrono::steady_clock::duration &period) {
                         // TODO: Look at boost thread scheduler for this implementation

@@ -114,6 +114,7 @@ namespace hazelcast {
                     inline int getSize(T *dummy) {
                         BOOST_THROW_EXCEPTION(
                                 exception::HazelcastSerializationException("DataInput::getSize", "Unsupported type"));
+                        return -1;
                     }
 
                     template <typename T>

@@ -257,8 +257,7 @@ namespace hazelcast {
                 TEST_F(ExceptionTest, testExceptionDetail) {
                     std::string details("A lot of details");
                     exception::TargetDisconnectedException targetDisconnectedException("testExceptionCause",
-                                                                                       "test message", details,
-                                                                                       protocol::IO);
+                                                                                       "test message", details);
 
 
                     ASSERT_EQ(details, targetDisconnectedException.getDetails());

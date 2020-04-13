@@ -2400,7 +2400,7 @@ namespace hazelcast {
                     futures[i] = std::async([&]() {
                         std::set<int64_t> localIds;
                         startLatch.await();
-                        for (int j = 0; j < NUM_IDS_PER_THREAD; ++j) {
+                        for (size_t j = 0; j < NUM_IDS_PER_THREAD; ++j) {
                             localIds.insert(flakeIdGenerator.newId());
                         }
 
