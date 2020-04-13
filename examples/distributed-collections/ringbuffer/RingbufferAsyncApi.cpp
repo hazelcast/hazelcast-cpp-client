@@ -16,29 +16,22 @@
 
 #include <hazelcast/client/HazelcastClient.h>
 
-class ItemPrinter : public ExecutionCallback<int64_t> {
-public:
-    virtual void onResponse(const std::shared_ptr<int64_t> &response) {
-        std::cout << "The sequence id of the added item is " << *response << std::endl;
-    }
-
-    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
-        std::cerr << "The response is a failure with exception:" << e << std::endl;
-    }
-};
-
 int main() {
     hazelcast::client::HazelcastClient hz;
 
     std::shared_ptr<hazelcast::client::Ringbuffer<std::string> > rb = hz.getRingbuffer<std::string>("myringbuffer");
 
     // add an item in an unblocking way
-    std::shared_ptr<ICompletableFuture<int64_t> > future = rb->addAsync("new item",
-                                                                          hazelcast::client::Ringbuffer<std::string>::OVERWRITE);
+    auto future = rb->addAsync("new item", hazelcast::client::Ringbuffer<std::string>::OVERWRITE);
 
     // let the result processed by a callback
-    std::shared_ptr<ExecutionCallback<int64_t> > callback(new ItemPrinter);
-    future->andThen(callback);
+    future.then([=](boost::future<std::shared_ptr<int64_t>> f) {
+        try {
+            std::cout << "The sequence id of the added item is " << *f.get() << std::endl;
+        } catch (hazelcast::client::exception::IException &e) {
+            std::cerr << "The response is a failure with exception:" << e << std::endl;
+        }
+    });
 
     std::vector<std::string> items;
     items.push_back("item2");
@@ -49,15 +42,14 @@ int main() {
     // do some other work
 
     // wait for the addAllAsync to complete and print the sequenceId of the last written item.
-    std::cout << "Sequence id of the last written item is :" << *future->get() << std::endl;
+    std::cout << "Sequence id of the last written item is :" << *future.get() << std::endl;
 
-    std::shared_ptr<ICompletableFuture<hazelcast::client::ringbuffer::ReadResultSet<std::string> > > resultSetFuture = rb->readManyAsync<void>(
-            0, 2, 3, NULL);
+    auto resultSetFuture = rb->readManyAsync<void>(0, 2, 3, NULL);
 
     // do some other work
 
     // get the result set
-    std::shared_ptr<ringbuffer::ReadResultSet<std::string> > readItems = resultSetFuture->get();
+    auto readItems = resultSetFuture.get();
     std::cout << "Read " << readItems->readCount() << " items." << std::endl;
 
     std::cout << "Finished" << std::endl;

@@ -16,25 +16,6 @@
 
 #include <hazelcast/client/HazelcastClient.h>
 
-/**
- * This class prints message on receiving the response or prints the exception if exception occurs
- */
-class PrinterCallback : public hazelcast::client::ExecutionCallback<std::string> {
-public:
-    virtual void onResponse(const std::shared_ptr<std::string> &response) {
-        std::cout << "Response was received. ";
-        if (response.get()) {
-            std::cout << "Received response is : " << *response << std::endl;
-        } else {
-            std::cout << "Received null response" << std::endl;
-        }
-    }
-
-    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
-        std::cerr << "A failure occured. The exception is:" << e << std::endl;
-    }
-};
-
 int main() {
     hazelcast::client::HazelcastClient hz;
 
@@ -42,10 +23,10 @@ int main() {
             hz.getMap<std::string, std::string>("themap");
 
     // initiate map put in an unblocking way
-    std::shared_ptr<ICompletableFuture<std::string> > future = map.putAsync("key", "value");
+    auto future = map.putAsync("key", "value");
 
     // later on get the result of the put operation
-    std::shared_ptr<std::string> result = future->get();
+    std::shared_ptr<std::string> result = future.get();
     if (result.get()) {
         std::cout << "There was a previous value for key. The value was:" << *result << std::endl;
     } else {
@@ -57,8 +38,19 @@ int main() {
 
     // Let the callback handle the response when received and print the appropriate message
     // The callback will be called using the user executor thread.
-    std::shared_ptr<hazelcast::client::ExecutionCallback<std::string> > callback(new PrinterCallback);
-    future->andThen(callback);
+    future.then([=](boost::future<std::shared_ptr<std::string>> f) {
+        try {
+            std::cout << "Response was received. ";
+            auto result = f.get();
+            if (result) {
+                std::cout << "Received response is : " << *result << std::endl;
+            } else {
+                std::cout << "Received null response" << std::endl;
+            }
+        } catch (hazelcast::client::exception::IException &e) {
+
+        }
+    });
 
     // Set the value to a new value in an unblocking manner
     map.setAsync("key", "value2", 5, hazelcast::util::concurrent::TimeUnit::SECONDS());
