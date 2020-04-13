@@ -36,27 +36,7 @@ namespace hazelcast {
         namespace protocol {
             class ClientMessage;
 
-            class HAZELCAST_API ExceptionFactory {
-            public:
-                virtual ~ExceptionFactory();
-
-                virtual std::unique_ptr<exception::IException> createException(const std::string &source,
-                                                                             const std::unique_ptr<std::string> &message,
-                                                                             const std::string &details,
-                                                                             int32_t causeErrorCode) = 0;
-            };
-
-            template<typename EXCEPTION>
-            class ExceptionFactoryImpl : public ExceptionFactory {
-            public:
-                std::unique_ptr<exception::IException>
-                createException(const std::string &source, const std::unique_ptr<std::string> &message,
-                        const std::string &details, int32_t causeErrorCode) {
-                    return std::unique_ptr<exception::IException>(
-                            new EXCEPTION(source, (message.get() ? (*message + ". Details:") : ". Details:") + details,
-                                    causeErrorCode));
-                }
-            };
+            class ExceptionFactory;
 
             class HAZELCAST_API ClientExceptionFactory {
             public:
@@ -64,13 +44,52 @@ namespace hazelcast {
 
                 virtual ~ClientExceptionFactory();
 
-                std::unique_ptr<exception::IException> createException(const std::string &source,
-                                                                     protocol::ClientMessage &clientMessage) const;
+                void throwException(const std::string &source,
+                                    protocol::ClientMessage &clientMessage) const;
+
+                void throwException(int32_t errorCode) const;
+
             private:
                 void registerException(int32_t errorCode, ExceptionFactory *factory);
 
                 std::map<int32_t, ExceptionFactory *> errorCodeToFactory;
             };
+
+            class HAZELCAST_API ExceptionFactory {
+            public:
+                virtual ~ExceptionFactory();
+
+                virtual void
+                throwException(const ClientExceptionFactory &clientExceptionFactory, const std::string &source,
+                               const std::string &message, const std::string &details,
+                               int32_t causeErrorCode) const = 0;
+
+                virtual void throwException() const = 0;
+            };
+
+            template<typename EXCEPTION>
+            class ExceptionFactoryImpl : public ExceptionFactory {
+            public:
+                void throwException(const ClientExceptionFactory &clientExceptionFactory, const std::string &source,
+                                    const std::string &message,
+                                    const std::string &details = nullptr, int32_t causeErrorCode = -1) const {
+                    EXCEPTION e(source, message, details);
+                    if (causeErrorCode < 0) {
+                        throw boost::enable_current_exception(e);
+                    }
+
+                    try {
+                        clientExceptionFactory.throwException(causeErrorCode);
+                    } catch (...) {
+                        std::throw_with_nested(boost::enable_current_exception(e));
+                    }
+                }
+
+                void throwException() const {
+                    return BOOST_THROW_EXCEPTION(EXCEPTION());
+                }
+            };
+
         }
     }
 }

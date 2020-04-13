@@ -18,12 +18,11 @@
 #define HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_
 
 #include <string>
+#include <future>
+#include <unordered_map>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/spi/ObjectNamespace.h"
 #include "hazelcast/client/spi/DefaultObjectNamespace.h"
-#include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/util/Future.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -74,7 +73,8 @@ namespace hazelcast {
 
                 void initialize(const std::shared_ptr<ClientProxy> &clientProxy);
 
-                util::SynchronizedMap<DefaultObjectNamespace, util::Future<ClientProxy> > proxies;
+                std::unordered_map<DefaultObjectNamespace, std::shared_future<std::shared_ptr<ClientProxy>>> proxies;
+                std::mutex lock;
                 int64_t invocationTimeoutMillis;
                 int64_t invocationRetryPauseMillis;
                 ClientContext &client;

@@ -26,6 +26,8 @@
 #include <memory>
 
 #include <memory>
+#include <boost/format.hpp>
+#include <boost/exception_ptr.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -34,6 +36,8 @@
 #pragma warning(disable: 4251) //for dll export	
 #pragma warning(disable: 4275) //for dll export	
 #endif
+
+using namespace boost;
 
 namespace hazelcast {
     namespace client {
@@ -52,47 +56,27 @@ namespace hazelcast {
              */
             class HAZELCAST_API IException : public std::exception {
             public:
-                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           const std::string &details, int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable = false);
+                IException();
 
+                // TODO: Remove isRuntime and retryable and use the derived class concept as in Java
                 IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable = false);
+                           const std::string &details, int32_t errorNo, bool isRuntime = false, bool retryable = false);
 
-                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           int32_t errorNo, bool isRuntime, bool retryable = false);
-
-                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           int32_t errorNo, const std::shared_ptr<IException> &cause, bool isRuntime, bool retryable = false);
-
-                virtual ~IException() throw();
+                virtual ~IException() noexcept;
 
                 /**
                  *
                  * return  pointer to the explanation string.
                  */
-                virtual char const *what() const throw();
+                virtual char const *what() const noexcept;
 
                 const std::string &getSource() const;
 
                 const std::string &getMessage() const;
 
-                virtual void raise() const;
-
-                /**
-                 * We need this method to clone the specific derived exception when needed. The exception has to be the
-                 * derived type so that the exception rethrowing works as expected by throwing the derived exception.
-                 * Exception throwing internals works by making a temporary copy of the exception.
-                 * @return The copy of this exception
-                 */
-                virtual std::unique_ptr<IException> clone() const;
-
                 const std::string &getDetails() const;
 
                 int32_t getErrorCode() const;
-
-                int32_t getCauseErrorCode() const;
-
-                const std::shared_ptr<IException> &getCause() const;
 
                 bool isRuntimeException() const;
 
@@ -104,12 +88,10 @@ namespace hazelcast {
                 std::string src;
                 std::string msg;
                 std::string details;
-                std::string report;
                 int32_t errorCode;
-                int32_t causeErrorCode;
-                std::shared_ptr<IException> cause;
                 bool runtimeException;
                 bool retryable;
+                std::string report;
             };
 
             std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
@@ -129,14 +111,9 @@ namespace hazelcast {
                  *
                  * @return The constructed exception.
                  */
-                EXCEPTIONCLASS build() {
-                    return EXCEPTIONCLASS(source, msg.str());
+                exception_detail::clone_impl<EXCEPTIONCLASS> build() {
+                    return boost::enable_current_exception(EXCEPTIONCLASS(source, msg.str()));
                 }
-
-                std::shared_ptr<EXCEPTIONCLASS> buildShared() {
-                    return std::shared_ptr<EXCEPTIONCLASS>(new EXCEPTIONCLASS(source, msg.str()));
-                }
-
             private:
                 std::string source;
                 std::ostringstream msg;

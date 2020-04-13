@@ -350,7 +350,7 @@ namespace hazelcast {
 
                     std::stringstream out;
                     out << "No translation is found for private ip:" << address;
-                    throw exception::IOException("AwsAddressTranslator::translate", out.str());
+                    BOOST_THROW_EXCEPTION(exception::IOException("AwsAddressTranslator::translate", out.str()));
                 }
 
                 void AwsAddressTranslator::refresh() {
@@ -457,9 +457,10 @@ namespace hazelcast {
                         responseStream >> roleName;
                         awsConfig.setIamRole(roleName);
                     } catch (exception::IOException &e) {
-                        throw exception::InvalidConfigurationException("tryGetDefaultIamRole",
-                                                                       std::string("Invalid Aws Configuration. ") +
-                                                                       e.what());
+                        BOOST_THROW_EXCEPTION(exception::InvalidConfigurationException("tryGetDefaultIamRole",
+                                                                                       std::string(
+                                                                                               "Invalid Aws Configuration. ") +
+                                                                                       e.what()));
                     }
                 }
 
@@ -468,8 +469,8 @@ namespace hazelcast {
                     // in which case, AWS_CONTAINER_CREDENTIALS_RELATIVE_URI will exist as an env var.
                     const char *uri = getenv(Constants::ECS_CREDENTIALS_ENV_VAR_NAME);
                     if (!uri) {
-                        throw exception::IllegalArgumentException("getKeysFromIamTaskRole",
-                                                                  "Could not acquire credentials! Did not find declared AWS access key or IAM Role, and could not discover IAM Task Role or default role.");
+                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("getKeysFromIamTaskRole",
+                                                                                  "Could not acquire credentials! Did not find declared AWS access key or IAM Role, and could not discover IAM Task Role or default role."));
                     }
 
                     util::SyncHttpClient httpClient(IAM_TASK_ROLE_ENDPOINT, uri);
@@ -480,7 +481,8 @@ namespace hazelcast {
                     } catch (exception::IException &e) {
                         std::stringstream out;
                         out << "Unable to retrieve credentials from IAM Task Role. URI: " << uri << ". \n " << e.what();
-                        throw exception::InvalidConfigurationException("getKeysFromIamTaskRole", out.str());
+                        BOOST_THROW_EXCEPTION(
+                                exception::InvalidConfigurationException("getKeysFromIamTaskRole", out.str()));
                     }
                 }
 
@@ -496,7 +498,8 @@ namespace hazelcast {
                         std::stringstream out;
                         out << "Unable to retrieve credentials from IAM Task Role. URI: " << query << ". \n "
                             << e.what();
-                        throw exception::InvalidConfigurationException("getKeysFromIamRole", out.str());
+                        BOOST_THROW_EXCEPTION(
+                                exception::InvalidConfigurationException("getKeysFromIamRole", out.str()));
                     }
                 }
 
@@ -615,8 +618,8 @@ namespace hazelcast {
                 this->endpoint = awsConfig.getHostHeader();
                 if (!awsConfig.getRegion().empty() && awsConfig.getRegion().length() > 0) {
                     if (awsConfig.getHostHeader().find("ec2.") != 0) {
-                        throw exception::InvalidConfigurationException("AWSClient::AWSClient",
-                                                                       "HostHeader should start with \"ec2.\" prefix");
+                        BOOST_THROW_EXCEPTION(exception::InvalidConfigurationException("AWSClient::AWSClient",
+                                                                                       "HostHeader should start with \"ec2.\" prefix"));
                     }
                     boost::replace_all(this->endpoint, "ec2.", std::string("ec2.") + awsConfig.getRegion() + ".");
                 }

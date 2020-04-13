@@ -237,8 +237,9 @@ namespace hazelcast {
 
             ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptLimit(int32_t connectionAttemptLimit) {
                 if (connectionAttemptLimit < 0) {
-                    throw exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptLimit",
-                                                              "connectionAttemptLimit cannot be negative");
+                    BOOST_THROW_EXCEPTION(
+                            exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptLimit",
+                                                                "connectionAttemptLimit cannot be negative"));
                 }
                 this->connectionAttemptLimit = connectionAttemptLimit;
                 return *this;
@@ -250,8 +251,9 @@ namespace hazelcast {
 
             ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptPeriod(int32_t connectionAttemptPeriod) {
                 if (connectionAttemptPeriod < 0) {
-                    throw exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptPeriod",
-                                                              "connectionAttemptPeriod cannot be negative");
+                    BOOST_THROW_EXCEPTION(
+                            exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptPeriod",
+                                                                "connectionAttemptPeriod cannot be negative"));
                 }
                 this->connectionAttemptPeriod = connectionAttemptPeriod;
                 return *this;
@@ -348,8 +350,8 @@ namespace hazelcast {
 
             ReliableTopicConfig &ReliableTopicConfig::setReadBatchSize(int batchSize) {
                 if (batchSize <= 0) {
-                    throw exception::IllegalArgumentException("ReliableTopicConfig::setReadBatchSize",
-                                                              "readBatchSize should be positive");
+                    BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ReliableTopicConfig::setReadBatchSize",
+                                                                              "readBatchSize should be positive"));
                 }
 
                 this->readBatchSize = batchSize;
@@ -686,8 +688,8 @@ namespace hazelcast {
 
         ClientConfig &ClientConfig::addListener(MembershipListener *listener) {
             if (listener == NULL) {
-                throw exception::NullPointerException("ClientConfig::addListener(MembershipListener *)",
-                                                      "listener can't be null");
+                BOOST_THROW_EXCEPTION(exception::NullPointerException("ClientConfig::addListener(MembershipListener *)",
+                                                                      "listener can't be null"));
             }
 
             membershipListeners.insert(listener);
@@ -698,8 +700,9 @@ namespace hazelcast {
 
         ClientConfig &ClientConfig::addListener(InitialMembershipListener *listener) {
             if (listener == NULL) {
-                throw exception::NullPointerException("ClientConfig::addListener(InitialMembershipListener *)",
-                                                      "listener can't be null");
+                BOOST_THROW_EXCEPTION(
+                        exception::NullPointerException("ClientConfig::addListener(InitialMembershipListener *)",
+                                                        "listener can't be null"));
             }
 
             membershipListeners.insert(listener);

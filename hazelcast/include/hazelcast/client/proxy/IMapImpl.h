@@ -22,6 +22,7 @@
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/concurrent/TimeUnit.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/map/DataEntryView.h"
@@ -168,11 +169,9 @@ namespace hazelcast {
                     std::unique_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::encodeRequest(
                             getName(), processor);
 
-                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
-                            invokeAndGetResult<EntryVector, protocol::codec::MapExecuteOnAllKeysCodec::ResponseParameters>(
-                                    request);
+                    return invokeAndGetResult<EntryVector, protocol::codec::MapExecuteOnAllKeysCodec::ResponseParameters>(
+                            request);
 
-                    return response;
                 }
 
                 template<typename EntryProcessor>
@@ -237,13 +236,13 @@ namespace hazelcast {
 
                 virtual void onInitialize();
 
-                std::shared_ptr<spi::impl::ClientInvocationFuture>
+                future <protocol::ClientMessage>
                 putAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, const int64_t *maxIdle,
                                      const util::concurrent::TimeUnit &maxIdleUnit,
                                      const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &valueData);
 
-                std::shared_ptr<spi::impl::ClientInvocationFuture>
+                future <protocol::ClientMessage>
                 setAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, const int64_t *maxIdle,
                                      const util::concurrent::TimeUnit &maxIdleUnit,
                                      const serialization::pimpl::Data &keyData,

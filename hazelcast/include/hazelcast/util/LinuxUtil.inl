@@ -1,6 +1,9 @@
 #include <cassert>
-
-#include "hazelcast/util/PosixThread.inl"
+#include <errno.h>
+#include <sys/time.h>
+#include <limits>
+#include "hazelcast/util/ConditionVariable.h"
+#include "hazelcast/util/Mutex.h"
 
 namespace hazelcast {
     namespace util {

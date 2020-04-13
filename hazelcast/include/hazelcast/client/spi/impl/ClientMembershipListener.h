@@ -73,7 +73,6 @@ namespace hazelcast {
                     static int INITIAL_MEMBERS_TIMEOUT_SECONDS;
 
                     ClientContext &client;
-                    util::ILogger &logger;
                     std::set<Member> members;
                     ClientClusterServiceImpl &clusterService;
                     ClientPartitionServiceImpl &partitionService;
@@ -86,7 +85,7 @@ namespace hazelcast {
 
                     void memberRemoved(const Member &member);
 
-                    std::shared_ptr<exception::IException> newTargetDisconnectedExceptionCausedByMemberLeftEvent(
+                    std::exception_ptr newTargetDisconnectedExceptionCausedByMemberLeftEvent(
                             const std::shared_ptr<connection::Connection> &connection);
 
                     std::vector<MembershipEvent> detectMembershipEvents(std::map<std::string, Member> &prevMembers);

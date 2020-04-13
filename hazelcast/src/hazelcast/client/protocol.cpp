@@ -103,35 +103,35 @@ namespace hazelcast {
 
             //----- Setter methods begin --------------------------------------
             void ClientMessage::setFrameLength(int32_t length) {
-                util::Bits::nativeToLittleEndian4(&length, &(*buffer)[FRAME_LENGTH_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian4(&length, &buffer[FRAME_LENGTH_FIELD_OFFSET]);
             }
 
             void ClientMessage::setMessageType(uint16_t type) {
-                util::Bits::nativeToLittleEndian2(&type, &(*buffer)[TYPE_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian2(&type, &buffer[TYPE_FIELD_OFFSET]);
             }
 
             void ClientMessage::setVersion(uint8_t value) {
-                (*buffer)[VERSION_FIELD_OFFSET] = value;
+                buffer[VERSION_FIELD_OFFSET] = value;
             }
 
             uint8_t ClientMessage::getFlags() {
-                return (*buffer)[FLAGS_FIELD_OFFSET];
+                return buffer[FLAGS_FIELD_OFFSET];
             }
 
             void ClientMessage::addFlag(uint8_t flags) {
-                (*buffer)[FLAGS_FIELD_OFFSET] = getFlags() | flags;
+                buffer[FLAGS_FIELD_OFFSET] = getFlags() | flags;
             }
 
             void ClientMessage::setCorrelationId(int64_t id) {
-                util::Bits::nativeToLittleEndian8(&id, &(*buffer)[CORRELATION_ID_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian8(&id, &buffer[CORRELATION_ID_FIELD_OFFSET]);
             }
 
             void ClientMessage::setPartitionId(int32_t partitionId) {
-                util::Bits::nativeToLittleEndian4(&partitionId, &(*buffer)[PARTITION_ID_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian4(&partitionId, &buffer[PARTITION_ID_FIELD_OFFSET]);
             }
 
             void ClientMessage::setDataOffset(uint16_t offset) {
-                util::Bits::nativeToLittleEndian2(&offset, &(*buffer)[DATA_OFFSET_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian2(&offset, &buffer[DATA_OFFSET_FIELD_OFFSET]);
             }
 
             void ClientMessage::updateFrameLength() {
@@ -159,7 +159,7 @@ namespace hazelcast {
 
             int32_t ClientMessage::fillMessageFrom(util::ByteBuffer &byteBuff, int32_t offset, int32_t frameLen) {
                 size_t numToRead = (size_t) (frameLen - offset);
-                size_t numRead = byteBuff.readBytes(&(*buffer)[offset], numToRead);
+                size_t numRead = byteBuff.readBytes(&buffer[offset], numToRead);
 
                 if (numRead == numToRead) {
                     wrapForRead(frameLen, ClientMessage::HEADER_SIZE);
@@ -172,7 +172,7 @@ namespace hazelcast {
             int32_t ClientMessage::getFrameLength() const {
                 int32_t result;
 
-                util::Bits::littleEndianToNative4(&(*buffer)[FRAME_LENGTH_FIELD_OFFSET], &result);
+                util::Bits::littleEndianToNative4(&buffer[FRAME_LENGTH_FIELD_OFFSET], &result);
 
                 return result;
             }
@@ -180,35 +180,35 @@ namespace hazelcast {
             uint16_t ClientMessage::getMessageType() const {
                 uint16_t type;
 
-                util::Bits::littleEndianToNative2(&(*buffer)[TYPE_FIELD_OFFSET], &type);
+                util::Bits::littleEndianToNative2(&buffer[TYPE_FIELD_OFFSET], &type);
 
                 return type;
             }
 
             uint8_t ClientMessage::getVersion() {
-                return (*buffer)[VERSION_FIELD_OFFSET];
+                return buffer[VERSION_FIELD_OFFSET];
             }
 
             int64_t ClientMessage::getCorrelationId() const {
                 int64_t value;
-                util::Bits::littleEndianToNative8(&(*buffer)[CORRELATION_ID_FIELD_OFFSET], &value);
+                util::Bits::littleEndianToNative8(&buffer[CORRELATION_ID_FIELD_OFFSET], &value);
                 return value;
             }
 
             int32_t ClientMessage::getPartitionId() const {
                 int32_t value;
-                util::Bits::littleEndianToNative4(&(*buffer)[PARTITION_ID_FIELD_OFFSET], &value);
+                util::Bits::littleEndianToNative4(&buffer[PARTITION_ID_FIELD_OFFSET], &value);
                 return value;
             }
 
             uint16_t ClientMessage::getDataOffset() const {
                 uint16_t value;
-                util::Bits::littleEndianToNative2(&(*buffer)[DATA_OFFSET_FIELD_OFFSET], &value);
+                util::Bits::littleEndianToNative2(&buffer[DATA_OFFSET_FIELD_OFFSET], &value);
                 return value;
             }
 
             bool ClientMessage::isFlagSet(uint8_t flag) const {
-                return flag == ((*buffer)[FLAGS_FIELD_OFFSET] & flag);
+                return flag == (buffer[FLAGS_FIELD_OFFSET] & flag);
             }
 
             template<>
@@ -350,7 +350,7 @@ namespace hazelcast {
                 int32_t existingFrameLen = getFrameLength();
                 int32_t newFrameLen = existingFrameLen + dataSize;
                 ensureBufferSize(newFrameLen);
-                memcpy(&(*buffer)[existingFrameLen], &(*msg->buffer)[0], (size_t) dataSize);
+                memcpy(&buffer[existingFrameLen], &msg->buffer[0], (size_t) dataSize);
                 setFrameLength(newFrameLen);
             }
 
@@ -364,7 +364,7 @@ namespace hazelcast {
                     // allocate new memory
                     int32_t newSize = findSuitableCapacity(requiredCapacity, currentCapacity);
 
-                    buffer->resize(newSize, 0);
+                    buffer.resize(newSize, 0);
                     wrapForWrite(newSize, getIndex());
                 } else {
                     // Should never be here
@@ -414,6 +414,8 @@ namespace hazelcast {
             }
 
             ClientExceptionFactory::ClientExceptionFactory() {
+                registerException(UNDEFINED,
+                                  new ExceptionFactoryImpl<exception::UndefinedErrorCodeException>());
                 registerException(ARRAY_INDEX_OUT_OF_BOUNDS,
                                   new ExceptionFactoryImpl<exception::ArrayIndexOutOfBoundsException>());
                 registerException(ARRAY_STORE, new ExceptionFactoryImpl<exception::ArrayStoreException>());
@@ -528,20 +530,25 @@ namespace hazelcast {
                 }
             }
 
-            std::unique_ptr<exception::IException> ClientExceptionFactory::createException(const std::string &source,
-                                                                                           protocol::ClientMessage &clientMessage) const {
+            void ClientExceptionFactory::throwException(const std::string &source,
+                                                        protocol::ClientMessage &clientMessage) const {
                 codec::ErrorCodec error = codec::ErrorCodec::decode(clientMessage);
                 std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
                         error.errorCode);
                 if (errorCodeToFactory.end() == it) {
-                    return std::unique_ptr<exception::IException>(
-                            new exception::UndefinedErrorCodeException(source, "",
-                                                                       error.errorCode,
-                                                                       clientMessage.getCorrelationId(),
-                                                                       error.toString()));
+                    it = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
                 }
+                it->second->throwException(*this, source, error.message ? *error.message : "nullptr",
+                                           error.toString(), error.causeErrorCode);
+            }
 
-                return it->second->createException(source, error.message, error.toString(), error.causeErrorCode);
+            void ClientExceptionFactory::throwException(int32_t errorCode) const {
+                std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
+                        errorCode);
+                if (errorCodeToFactory.end() == it) {
+                    it = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
+                }
+                return it->second->throwException();
             }
 
             void ClientExceptionFactory::registerException(int32_t errorCode, ExceptionFactory *factory) {
@@ -550,7 +557,8 @@ namespace hazelcast {
                 if (errorCodeToFactory.end() != it) {
                     char msg[100];
                     util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
-                    throw exception::IllegalStateException("ClientExceptionFactory::registerException", msg);
+                    BOOST_THROW_EXCEPTION(
+                            exception::IllegalStateException("ClientExceptionFactory::registerException", msg));
                 }
 
                 errorCodeToFactory[errorCode] = factory;
@@ -888,7 +896,7 @@ namespace hazelcast {
 
         namespace impl {
             std::shared_ptr<void>
-            VoidMessageDecoder::decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
+            VoidMessageDecoder::decodeClientMessage(protocol::ClientMessage &&clientMessage,
                                                     serialization::pimpl::SerializationService &serializationService) {
                 return std::shared_ptr<void>();
             }

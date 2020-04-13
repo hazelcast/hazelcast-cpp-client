@@ -78,7 +78,7 @@ namespace hazelcast {
                     std::shared_ptr<serialization::pimpl::Data> keyData;
                     try {
                         serialization::pimpl::Data valueData = toData<V>(value);
-                        std::shared_ptr<serialization::pimpl::Data> keyData = toSharedData<K>(key);
+                        auto keyData = toSharedData<K>(key);
                         std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapPutCodec::encodeRequest(
                                 name, *keyData, valueData, ttl);
                         std::unique_ptr<serialization::pimpl::Data> response = invokeAndGetResult<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::ReplicatedMapPutCodec::ResponseParameters>(
@@ -272,9 +272,8 @@ namespace hazelcast {
                 virtual std::shared_ptr<DataArray<K> > keySet() {
                     std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapKeySetCodec::encodeRequest(
                             name);
-                    std::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, targetPartitionId);
                     protocol::codec::ReplicatedMapKeySetCodec::ResponseParameters result = protocol::codec::ReplicatedMapKeySetCodec::ResponseParameters::decode(
-                            *response);
+                            invokeOnPartition(request, targetPartitionId));
                     return std::shared_ptr<DataArray<K> >(
                             new impl::DataArrayImpl<K>(result.response, getContext().getSerializationService()));
                 }
@@ -282,9 +281,8 @@ namespace hazelcast {
                 virtual std::shared_ptr<DataArray<V> > values() {
                     std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapValuesCodec::encodeRequest(
                             name);
-                    std::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, targetPartitionId);
                     protocol::codec::ReplicatedMapValuesCodec::ResponseParameters result = protocol::codec::ReplicatedMapValuesCodec::ResponseParameters::decode(
-                            *response);
+                            invokeOnPartition(request, targetPartitionId));
                     return std::shared_ptr<DataArray<V> >(
                             new impl::DataArrayImpl<V>(result.response, getContext().getSerializationService()));
                 }
@@ -292,9 +290,8 @@ namespace hazelcast {
                 virtual std::shared_ptr<LazyEntryArray<K, V> > entrySet() {
                     std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapEntrySetCodec::encodeRequest(
                             name);
-                    std::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, targetPartitionId);
                     protocol::codec::ReplicatedMapEntrySetCodec::ResponseParameters result = protocol::codec::ReplicatedMapEntrySetCodec::ResponseParameters::decode(
-                            *response);
+                            invokeOnPartition(request, targetPartitionId));
                     return std::shared_ptr<LazyEntryArray<K, V> >(
                             new impl::LazyEntryArrayImpl<K, V>(result.response, getContext().getSerializationService()));
                 }
@@ -352,7 +349,7 @@ namespace hazelcast {
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
                         return protocol::codec::ReplicatedMapAddNearCacheEntryListenerCodec::ResponseParameters::decode(
-                                responseMessage).response;
+                                std::move(responseMessage)).response;
                     }
 
                     virtual std::unique_ptr<protocol::ClientMessage>
@@ -363,7 +360,7 @@ namespace hazelcast {
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
-                                clientMessage).response;
+                                std::move(clientMessage)).response;
                     }
 
                 private:
@@ -385,7 +382,7 @@ namespace hazelcast {
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
                         return protocol::codec::ReplicatedMapAddEntryListenerToKeyWithPredicateCodec::ResponseParameters::decode(
-                                responseMessage).response;
+                                std::move(responseMessage)).response;
                     }
 
                     virtual std::unique_ptr<protocol::ClientMessage>
@@ -396,7 +393,7 @@ namespace hazelcast {
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
-                                clientMessage).response;
+                                std::move(clientMessage)).response;
                     }
 
                 private:
@@ -420,7 +417,7 @@ namespace hazelcast {
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
                         return protocol::codec::ReplicatedMapAddEntryListenerWithPredicateCodec::ResponseParameters::decode(
-                                responseMessage).response;
+                                std::move(responseMessage)).response;
                     }
 
                     virtual std::unique_ptr<protocol::ClientMessage>
@@ -431,7 +428,7 @@ namespace hazelcast {
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
-                                clientMessage).response;
+                                std::move(clientMessage)).response;
                     }
 
                 private:
@@ -452,7 +449,7 @@ namespace hazelcast {
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
                         return protocol::codec::ReplicatedMapAddEntryListenerToKeyCodec::ResponseParameters::decode(
-                                responseMessage).response;
+                                std::move(responseMessage)).response;
                     }
 
                     virtual std::unique_ptr<protocol::ClientMessage>
@@ -463,7 +460,7 @@ namespace hazelcast {
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
-                                clientMessage).response;
+                                std::move(clientMessage)).response;
                     }
 
                 private:
@@ -481,7 +478,7 @@ namespace hazelcast {
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
                         return protocol::codec::ReplicatedMapAddEntryListenerCodec::ResponseParameters::decode(
-                                responseMessage).response;
+                                std::move(responseMessage)).response;
                     }
 
                     virtual std::unique_ptr<protocol::ClientMessage>
@@ -492,7 +489,7 @@ namespace hazelcast {
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
-                                clientMessage).response;
+                                std::move(clientMessage)).response;
                     }
 
                 private:

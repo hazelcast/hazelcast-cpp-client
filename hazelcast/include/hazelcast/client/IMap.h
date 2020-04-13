@@ -29,7 +29,6 @@
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/map/ClientMapProxy.h"
-#include "hazelcast/client/Future.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -780,7 +779,7 @@ namespace hazelcast {
              * @return Future from which the result of the operation can be retrieved.
              */
             template<typename ResultType, typename EntryProcessor>
-            Future<ResultType> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
+            future<std::shared_ptr<ResultType>> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                 return mapImpl->template submitToKey<ResultType, EntryProcessor>(key, entryProcessor);
             }
 
@@ -941,7 +940,7 @@ namespace hazelcast {
              * <pre>
              *   std::shared_ptr<ICompletableFuture> future = map.getAsync(key);
              *   // do some other stuff, when ready get the result.
-             *   std::shared_ptr<V> value = future->get();
+             *   std::shared_ptr<V> value = future.get();
              * </pre>
              * {@link ICompletableFuture#get()} will block until the actual map.get() completes.
              * If the application requires timely response,
@@ -949,7 +948,7 @@ namespace hazelcast {
              * <pre>
              *   try {
              *     std::shared_ptr<ICompletableFuture> future = map.getAsync(key);
-             *     std::shared_ptr<V> value = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     std::shared_ptr<V> value = future.get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
@@ -975,7 +974,7 @@ namespace hazelcast {
              * @return ICompletableFuture from which the value of the key can be retrieved
              * @see ICompletableFuture
              */
-            std::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
+            future<std::shared_ptr<V>> getAsync(const K &key) {
                 return mapImpl->getAsync(key);
             }
 
@@ -984,7 +983,7 @@ namespace hazelcast {
              * <pre>
              *   std::shared_ptr<V> value = future->putAsync(key, value);
              *   // do some other stuff, when ready get the result.
-             *   std::shared_ptr<V> value = future->get();
+             *   std::shared_ptr<V> value = future.get();
              * </pre>
              * ICompletableFuture::get() will block until the actual map.put() completes.
              * If the application requires a timely response,
@@ -992,7 +991,7 @@ namespace hazelcast {
              * <pre>
              *   try {
              *     std::shared_ptr<ICompletableFuture> future = imap.putAsync(key, newValue);
-             *     std::shared_ptr<V> value = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     std::shared_ptr<V> value = future.get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
@@ -1034,7 +1033,7 @@ namespace hazelcast {
              * @see ICompletableFuture
              * @see #setAsync(Object, Object)
              */
-            std::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
+            future<std::shared_ptr<V>> putAsync(const K &key, const V &value) {
                 return mapImpl->putAsync(key, value);
             }
 
@@ -1047,7 +1046,7 @@ namespace hazelcast {
              * <pre>
              *   std::shared_ptr<ICompletableFuture> future = map.putAsync(key, value, ttl, timeunit);
              *   // do some other stuff, when ready get the result
-             *   std::shared_ptr<V> value = future->get();
+             *   std::shared_ptr<V> value = future.get();
              * </pre>
              * ICompletableFuture::get() will block until the actual map.put() completes.
              * If your application requires a timely response,
@@ -1055,7 +1054,7 @@ namespace hazelcast {
              * <pre>
              *   try {
              *     std::shared_ptr<ICompletableFuture> future = map.putAsync(key, newValue, ttl, timeunit);
-             *     std::shared_ptr<V> oldValue = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     std::shared_ptr<V> oldValue = future.get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
@@ -1104,7 +1103,7 @@ namespace hazelcast {
              * @see ICompletableFuture
              * @see #setAsync(const K&, const V&, int64_t, TimeUnit)
              */
-            std::shared_ptr<ICompletableFuture<V> >
+            future<std::shared_ptr<V>>
             putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
                 return mapImpl->putAsync(key, value, ttl, ttlUnit);
             }
@@ -1122,7 +1121,7 @@ namespace hazelcast {
              * <pre>
              *   std::shared_ptr<ICompletableFuture> future = map.putAsync(key, value, ttl, timeunit);
              *   // do some other stuff, when ready get the result
-             *   std::shared_ptr<V> value = future->get();
+             *   std::shared_ptr<V> value = future.get();
              * </pre>
              * ICompletableFuture::get() will block until the actual map.put() completes.
              * If your application requires a timely response,
@@ -1130,7 +1129,7 @@ namespace hazelcast {
              * <pre>
              *   try {
              *     std::shared_ptr<ICompletableFuture> future = map.putAsync(key, newValue, ttl, timeunit);
-             *     Object oldValue = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     Object oldValue = future.get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
@@ -1182,7 +1181,7 @@ namespace hazelcast {
              * @see ICompletableFuture
              * @see #setAsync(const K&, const V&, int64_t, TimeUnit)
              */
-            std::shared_ptr<ICompletableFuture<V> >
+            future<std::shared_ptr<V>>
             putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                      int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
                 return mapImpl->putAsync(key, value, ttl, ttlUnit, maxIdle, maxIdleUnit);
@@ -1194,17 +1193,17 @@ namespace hazelcast {
              * Similar to the put operation except that set
              * doesn't return the old value, which is more efficient.
              * <pre>{@code
-             *   std::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, value);
+             *   future<void> future = map.setAsync(key, value);
              *   // do some other stuff, when ready wait for completion
-             *   future->get();
+             *   future.get();
              * }</pre>
              * ICompletableFuture::get() will block until the actual map.set() operation completes.
              * If your application requires a timely response,
              * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
              * <pre>{@code
              *   try {
-             *     std::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue);
-             *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     future<void> future = map.setAsync(key, newValue);
+             *     future.get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
@@ -1235,7 +1234,7 @@ namespace hazelcast {
              * register an {@link ExecutionCallback<V>} to be invoked upon completion
              * @see ICompletableFuture
              */
-            std::shared_ptr<ICompletableFuture<void> > setAsync(const K &key, const V &value) {
+            future<void> setAsync(const K &key, const V &value) {
                 return mapImpl->setAsync(key, value);
             }
 
@@ -1253,15 +1252,15 @@ namespace hazelcast {
              * <pre>
              *   ICompletableFuture&lt;void&gt; future = map.setAsync(key, value, ttl, timeunit);
              *   // do some other stuff, when you want to make sure set operation is complete:
-             *   future->get();
+             *   future.get();
              * </pre>
              * ICompletableFuture::get() will block until the actual map set operation completes.
              * If your application requires a timely response,
              * then you can use {@link ICompletableFuture#get(int64_t, TimeUnit)}.
              * <pre>
              *   try {
-             *     std::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue, ttl, timeunit);
-             *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     future<void> future = map.setAsync(key, newValue, ttl, timeunit);
+             *     future.get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
@@ -1300,7 +1299,7 @@ namespace hazelcast {
              * or provide an {@link ExecutionCallback<V>} to be invoked upon set operation completion
              * @see ICompletableFuture
              */
-            std::shared_ptr<ICompletableFuture<void> >
+            future<void>
             setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
                 return mapImpl->setAsync(key, value, ttl, ttlUnit);
             }
@@ -1319,15 +1318,15 @@ namespace hazelcast {
              * <pre>
              *   ICompletableFuture&lt;void&gt; future = map.setAsync(key, value, ttl, timeunit);
              *   // do some other stuff, when you want to make sure set operation is complete:
-             *   future->get();
+             *   future.get();
              * </pre>
              * ICompletableFuture::get() will block until the actual map set operation completes.
              * If your application requires a timely response,
              * then you can use {@link ICompletableFuture#get(int64_t, TimeUnit)}.
              * <pre>
              *   try {
-             *     std::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue, ttl, timeunit);
-             *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *     future<void> future = map.setAsync(key, newValue, ttl, timeunit);
+             *     future.get(40, util::concurrent::TimeUnit::MILLISECONDS());
              *   } catch (exception::TimeoutException &t) {
              *     // time wasn't enough
              *   }
@@ -1369,7 +1368,7 @@ namespace hazelcast {
              * or provide an {@link ExecutionCallback<V>} to be invoked upon set operation completion
              * @see ICompletableFuture
              */
-            std::shared_ptr<ICompletableFuture<void> >
+            future<void>
             setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                      int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
                 return mapImpl->setAsync(key, value, ttl, ttlUnit, maxIdle, maxIdleUnit);
@@ -1399,7 +1398,7 @@ namespace hazelcast {
              * @return {@link ICompletableFuture} from which the value removed from the map can be retrieved
              * @see ICompletableFuture
              */
-            std::shared_ptr<ICompletableFuture<V> > removeAsync(const K &key) {
+            future<std::shared_ptr<V>> removeAsync(const K &key) {
                 return mapImpl->removeAsync(key);
             }
 

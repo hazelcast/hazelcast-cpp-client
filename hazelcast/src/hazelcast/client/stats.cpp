@@ -93,9 +93,25 @@ namespace hazelcast {
                 }
 
                 void Statistics::schedulePeriodicStatisticsSendTask(int64_t periodSeconds) {
-                    clientContext.getClientExecutionService().scheduleWithRepetition(
-                            std::shared_ptr<util::Runnable>(new CollectStatisticsTask(*this)), 0,
-                            periodSeconds * MILLIS_IN_A_SECOND);
+                    clientContext.getClientExecutionService().scheduleWithRepetition([=]() {
+                        if (!clientContext.getLifecycleService().isRunning()) {
+                            return;
+                        }
+
+                        std::shared_ptr<connection::Connection> ownerConnection = getOwnerConnection();
+                        if (NULL == ownerConnection.get()) {
+                            logger.finest("Cannot send client statistics to the server. No owner connection.");
+                            return;
+                        }
+
+                        std::ostringstream stats;
+
+                        periodicStats.fillMetrics(stats, ownerConnection);
+
+                        periodicStats.addNearCacheStats(stats);
+
+                        sendStats(stats.str(), ownerConnection);
+                    }, std::chrono::seconds(0), std::chrono::seconds(periodSeconds));
                 }
 
                 std::shared_ptr<connection::Connection> Statistics::getOwnerConnection() {
@@ -146,33 +162,6 @@ namespace hazelcast {
                         }
                     }
                 }
-
-                const std::string Statistics::CollectStatisticsTask::getName() const {
-                    return std::string();
-                }
-
-                void Statistics::CollectStatisticsTask::run() {
-                    if (!statistics.clientContext.getLifecycleService().isRunning()) {
-                        return;
-                    }
-
-                    std::shared_ptr<connection::Connection> ownerConnection = statistics.getOwnerConnection();
-                    if (NULL == ownerConnection.get()) {
-                        statistics.logger.finest("Cannot send client statistics to the server. No owner connection.");
-                        return;
-                    }
-
-                    std::ostringstream stats;
-
-                    statistics.periodicStats.fillMetrics(stats, ownerConnection);
-
-                    statistics.periodicStats.addNearCacheStats(stats);
-
-                    statistics.sendStats(stats.str(), ownerConnection);
-                }
-
-                Statistics::CollectStatisticsTask::CollectStatisticsTask(Statistics &statistics) : statistics(
-                        statistics) {}
 
                 void Statistics::PeriodicStatistics::fillMetrics(std::ostringstream &stats,
                                                                  const std::shared_ptr<connection::Connection> &ownerConnection) {

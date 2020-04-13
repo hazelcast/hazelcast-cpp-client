@@ -49,18 +49,18 @@ namespace hazelcast {
                  * More specifically IOException, because in case of a IO problem in ClientInvocation that send to a connection
                  * sends IOException to user. This wraps that exception into a TransactionException.
                  */
-                static std::shared_ptr<protocol::ClientMessage>
+                static protocol::ClientMessage
                 invoke(std::unique_ptr<protocol::ClientMessage> &request, const std::string &objectName,
                        spi::ClientContext &client, const std::shared_ptr<connection::Connection> &connection);
+
+                static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
+                TRANSACTION_EXCEPTION_FACTORY();
 
             private:
                 class TransactionExceptionFactory : public util::ExceptionUtil::RuntimeExceptionFactory {
                 public:
-                    virtual void rethrow(const client::exception::IException &throwable, const std::string &message);
+                    virtual void rethrow(std::exception_ptr throwable, const std::string &message);
                 };
-
-                static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
-                TRANSACTION_EXCEPTION_FACTORY();
 
                 static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> exceptionFactory;
             };

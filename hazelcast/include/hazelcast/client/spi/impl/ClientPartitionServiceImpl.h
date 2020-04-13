@@ -45,8 +45,6 @@ namespace hazelcast {
         namespace spi {
             class ClientContext;
 
-            class ClientExecutionService;
-
             namespace impl {
                 class ClientExecutionServiceImpl;
 
@@ -59,15 +57,15 @@ namespace hazelcast {
 
                     void start();
 
+                    void refreshPartitions();
+
                     void stop();
 
                     void listenPartitionTable(const std::shared_ptr<connection::Connection> &ownerConnection);
 
-                    void refreshPartitions();
-
                     virtual void
                     handlePartitionsEventV15(const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
-                                     const int32_t &partitionStateVersion);
+                                             const int32_t &partitionStateVersion);
 
                     virtual void beforeListenerRegister();
 
@@ -97,48 +95,19 @@ namespace hazelcast {
                         ClientPartitionServiceImpl &partitionService;
                     };
 
-                    class RefreshTask : public util::Runnable {
-                    public:
-                        RefreshTask(ClientContext &client, ClientPartitionServiceImpl &partitionService);
-
-                        virtual void run();
-
-                        virtual const std::string getName() const;
-
-                    private:
-                        ClientContext &client;
-                        ClientPartitionServiceImpl &partitionService;
-                    };
-
-                    class RefreshTaskCallback
-                            : public client::ExecutionCallback<protocol::ClientMessage> {
-                    public:
-                        RefreshTaskCallback(ClientPartitionServiceImpl &partitionService);
-
-                        virtual void onResponse(const std::shared_ptr<protocol::ClientMessage> &responseMessage);
-
-                        virtual void onFailure(const std::shared_ptr<exception::IException> &e);
-
-                    private:
-                        ClientPartitionServiceImpl &partitionService;
-                    };
-
                     bool processPartitionResponse(
                             const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
                             int32_t partitionStateVersion, bool partitionStateVersionExist);
 
                     ClientContext &client;
-                    util::ILogger &logger;
-                    ClientExecutionService &clientExecutionService;
-                    std::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> > refreshTaskCallback;
-
-                    static const int64_t PERIOD = 10 * 1000;
-                    static const int64_t INITIAL_DELAY = 10 * 1000;
+                    ClientExecutionServiceImpl &clientExecutionService;
 
                     util::SynchronizedMap<int, Address> partitions;
                     std::atomic<int32_t> partitionCount;
                     std::atomic<int32_t> lastPartitionStateVersion;
                     util::Mutex lock;
+
+                    std::future<void> refreshPartitionsFuture;
 
                     void waitForPartitionsFetchedOnce();
 

@@ -58,8 +58,8 @@ namespace hazelcast {
 
                     std::shared_ptr<connection::Connection> throwException(bool smartRouting);
 
-                    exception::OperationTimeoutException
-                    newOperationTimeoutException(exception::IException &throwable, int64_t invocationTimeoutMillis,
+                    std::exception_ptr
+                    newOperationTimeoutException(std::exception_ptr cause, int64_t invocationTimeoutMillis,
                                                  int64_t startTimeMillis);
                 };
             }

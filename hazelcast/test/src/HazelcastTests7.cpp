@@ -27,6 +27,7 @@
 #include <hazelcast/client/serialization/pimpl/SerializationService.h>
 #include <hazelcast/util/UuidUtil.h>
 #include <hazelcast/client/impl/Partition.h>
+#include <hazelcast/client/spi/impl/ClientInvocation.h>
 #include <gtest/gtest.h>
 #include <thread>
 #include <hazelcast/client/spi/ClientContext.h>
@@ -46,9 +47,7 @@
 #include <hazelcast/util/IOUtil.h>
 #include <hazelcast/util/CountDownLatch.h>
 #include <ClientTestSupportBase.h>
-#include <hazelcast/util/Executor.h>
 #include <hazelcast/util/Util.h>
-#include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <hazelcast/util/ILogger.h>
@@ -86,7 +85,6 @@
 #include "TestHelperFunctions.h"
 #include <cmath>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/util/Thread.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
@@ -147,7 +145,6 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
@@ -157,8 +154,6 @@
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
@@ -1789,23 +1784,24 @@ namespace hazelcast {
 
                 class FailingExecutionCallback : public ExecutionCallback<std::string> {
                 public:
-                    FailingExecutionCallback(const std::shared_ptr<hazelcast::util::CountDownLatch> &latch) : latch(latch) {}
+                    FailingExecutionCallback(const std::shared_ptr<hazelcast::util::CountDownLatch> &latch) : latch(
+                            latch) {}
 
                     virtual void onResponse(const std::shared_ptr<std::string> &response) {
                     }
 
-                    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
+                    virtual void onFailure(std::exception_ptr e) {
                         latch->countDown();
                         exception = e;
                     }
 
-                    std::shared_ptr<exception::IException> getException() {
-                        return exception.get();
+                    std::exception_ptr getException() {
+                        return exception;
                     }
 
                 private:
                     const std::shared_ptr<hazelcast::util::CountDownLatch> latch;
-                    hazelcast::util::Sync<std::shared_ptr<exception::IException> > exception;
+                    hazelcast::util::Sync<std::exception_ptr> exception;
                 };
 
                 class SuccessfullExecutionCallback : public ExecutionCallback<std::string> {
@@ -1816,7 +1812,7 @@ namespace hazelcast {
                         latch->countDown();
                     }
 
-                    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
+                    virtual void onFailure(std::exception_ptr e) {
                     }
 
                 private:
@@ -1832,7 +1828,7 @@ namespace hazelcast {
                         latch->countDown();
                     }
 
-                    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
+                    virtual void onFailure(std::exception_ptr e) {
                     }
 
                     std::shared_ptr<std::string> getResult() {
@@ -1846,7 +1842,7 @@ namespace hazelcast {
 
                 class MultiExecutionCompletionCallback : public MultiExecutionCallback<std::string> {
                 public:
-                    MultiExecutionCompletionCallback(const string &msg,
+                    MultiExecutionCompletionCallback(const std::string &msg,
                                                      const std::shared_ptr<hazelcast::util::CountDownLatch> &responseLatch,
                                                      const std::shared_ptr<hazelcast::util::CountDownLatch> &completeLatch)
                             : msg(
@@ -1863,11 +1859,11 @@ namespace hazelcast {
                     }
 
                     virtual void
-                    onFailure(const Member &member, const std::shared_ptr<exception::IException> &exception) {
+                    onFailure(const Member &member, std::exception_ptr exception) {
                     }
 
-                    virtual void onComplete(const std::map<Member, std::shared_ptr<std::string> > &values,
-                                            const std::map<Member, std::shared_ptr<exception::IException> > &exceptions) {
+                    virtual void onComplete(const std::unordered_map<Member, std::shared_ptr<std::string> > &values,
+                                            const std::unordered_map<Member, std::exception_ptr> &exceptions) {
                         typedef std::map<Member, std::shared_ptr<std::string> > VALUE_MAP;
                         std::string expectedValue(msg + executor::tasks::AppendCallable::APPENDAGE);
                         for (const VALUE_MAP::value_type &entry  : values) {
@@ -1896,11 +1892,11 @@ namespace hazelcast {
                     }
 
                     virtual void
-                    onFailure(const Member &member, const std::shared_ptr<exception::IException> &exception) {
+                    onFailure(const Member &member, std::exception_ptr exception) {
                     }
 
-                    virtual void onComplete(const std::map<Member, std::shared_ptr<std::string> > &values,
-                                            const std::map<Member, std::shared_ptr<exception::IException> > &exceptions) {
+                    virtual void onComplete(const std::unordered_map<Member, std::shared_ptr<std::string> > &values,
+                                            const std::unordered_map<Member, std::exception_ptr> &exceptions) {
                         typedef std::map<Member, std::shared_ptr<std::string> > VALUE_MAP;
                         for (const VALUE_MAP::value_type &entry  : values) {
                             if (entry.second.get() == NULL) {
@@ -1958,11 +1954,9 @@ namespace hazelcast {
 
                 executor::tasks::CancellationAwareTask task(INT64_MAX);
 
-                std::shared_ptr<ICompletableFuture<bool> > future = service->submit<executor::tasks::CancellationAwareTask, bool>(
-                        task);
+                auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
 
-                ASSERT_THROW(future->get(1, hazelcast::util::concurrent::TimeUnit::SECONDS()),
-                             exception::TimeoutException);
+                ASSERT_EQ(future_status::timeout, promise.get_future().wait_for(chrono::seconds(1)));
             }
 
             TEST_F(ClientExecutorServiceTest, testFutureAfterCancellationAwareTaskTimeOut) {
@@ -1970,16 +1964,12 @@ namespace hazelcast {
 
                 executor::tasks::CancellationAwareTask task(INT64_MAX);
 
-                std::shared_ptr<ICompletableFuture<bool> > future = service->submit<executor::tasks::CancellationAwareTask, bool>(
-                        task);
+                auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
+                auto future = promise.get_future();
 
-                try {
-                    future->get(1, hazelcast::util::concurrent::TimeUnit::SECONDS());
-                } catch (TimeoutException &ignored) {
-                }
+                ASSERT_EQ(future_status::timeout, future.wait_for(chrono::seconds(1)));
 
-                ASSERT_FALSE(future->isDone());
-                ASSERT_FALSE(future->isCancelled());
+                ASSERT_FALSE(future.is_ready());
             }
 
             TEST_F(ClientExecutorServiceTest, testGetFutureAfterCancel) {
@@ -1987,17 +1977,14 @@ namespace hazelcast {
 
                 executor::tasks::CancellationAwareTask task(INT64_MAX);
 
-                std::shared_ptr<ICompletableFuture<bool> > future = service->submit<executor::tasks::CancellationAwareTask, bool>(
-                        task);
+                auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
 
-                try {
-                    future->get(1, hazelcast::util::concurrent::TimeUnit::SECONDS());
-                } catch (TimeoutException &ignored) {
-                }
+                auto future = promise.get_future();
+                ASSERT_EQ(future_status::timeout, future.wait_for(chrono::seconds(1)));
 
-                ASSERT_TRUE(future->cancel(true));
+                ASSERT_TRUE(promise.cancel(true));
 
-                ASSERT_THROW(future->get(), exception::CancellationException);
+                ASSERT_THROW(future.get(), exception::CancellationException);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException) {
@@ -2005,10 +1992,9 @@ namespace hazelcast {
 
                 executor::tasks::FailingCallable task;
 
-                std::shared_ptr<ICompletableFuture<std::string> > future = service->submit<executor::tasks::FailingCallable, std::string>(
-                        task);
+                auto future = service->submit<executor::tasks::FailingCallable, std::string>(task).get_future();
 
-                ASSERT_THROW(future->get(), exception::ExecutionException);
+                ASSERT_THROW(future.get(), exception::IllegalStateException);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException_withExecutionCallback) {
@@ -2027,14 +2013,10 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableReasonExceptionCause) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                const std::shared_ptr<ICompletableFuture<std::string> > &failingFuture = service->submit<executor::tasks::FailingCallable, std::string>(
-                        executor::tasks::FailingCallable());
+                auto failingFuture = service->submit<executor::tasks::FailingCallable, std::string>(
+                        executor::tasks::FailingCallable()).get_future();
 
-                try {
-                    failingFuture->get();
-                } catch (exception::ExecutionException &e) {
-                    ASSERT_THROW(e.getCause()->raise(), exception::IllegalStateException);
-                }
+                ASSERT_THROW(failingFuture.get(), exception::IllegalStateException);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecute_withNoMemberSelected) {
@@ -2045,8 +2027,7 @@ namespace hazelcast {
                 executor::tasks::SelectNoMembers selector;
 
                 ASSERT_THROW(service->execute<executor::tasks::MapPutPartitionAwareCallable>(
-                        executor::tasks::MapPutPartitionAwareCallable(mapName, randomString()),
-                        selector),
+                        executor::tasks::MapPutPartitionAwareCallable(mapName, randomString()), selector),
                              exception::RejectedExecutionException);
             }
 
@@ -2057,9 +2038,9 @@ namespace hazelcast {
 
                 executor::tasks::SerializedCounterCallable counterCallable;
 
-                std::shared_ptr<ICompletableFuture<int> > future = service->submitToKeyOwner<executor::tasks::SerializedCounterCallable, int, std::string>(
-                        counterCallable, name);
-                std::shared_ptr<int> value = future->get();
+                auto future = service->submitToKeyOwner<executor::tasks::SerializedCounterCallable, int, std::string>(
+                        counterCallable, name).get_future();
+                std::shared_ptr<int> value = future.get();
                 ASSERT_NOTNULL(value.get(), int);
                 ASSERT_EQ(2, *value);
             }
@@ -2073,9 +2054,9 @@ namespace hazelcast {
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_FALSE(members.empty());
-                std::shared_ptr<ICompletableFuture<int> > future = service->submitToMember<executor::tasks::SerializedCounterCallable, int>(
-                        counterCallable, members[0]);
-                std::shared_ptr<int> value = future->get();
+                auto future = service->submitToMember<executor::tasks::SerializedCounterCallable, int>(
+                        counterCallable, members[0]).get_future();
+                auto value = future.get();
                 ASSERT_NOTNULL(value.get(), int);
                 ASSERT_EQ(2, *value);
             }
@@ -2087,14 +2068,10 @@ namespace hazelcast {
 
                 executor::tasks::TaskWithUnserializableResponse taskWithUnserializableResponse;
 
-                std::shared_ptr<ICompletableFuture<bool> > future = service->submit<executor::tasks::TaskWithUnserializableResponse, bool>(
-                        taskWithUnserializableResponse);
+                auto future = service->submit<executor::tasks::TaskWithUnserializableResponse, bool>(
+                        taskWithUnserializableResponse).get_future();
 
-                try {
-                    future->get();
-                } catch (exception::ExecutionException &e) {
-                    ASSERT_THROW(e.getCause()->raise(), exception::HazelcastSerializationException);
-                }
+                ASSERT_THROW(future.get(), exception::HazelcastSerializationException);
             }
 
             TEST_F(ClientExecutorServiceTest, testUnserializableResponse_exceptionPropagatesToClientCallback) {
@@ -2113,9 +2090,9 @@ namespace hazelcast {
 
                 ASSERT_OPEN_EVENTUALLY(*latch);
 
-                std::shared_ptr<exception::IException> exception = callback->getException();
-                ASSERT_NOTNULL(exception.get(), exception::IException);
-                ASSERT_THROW(exception->raise(), exception::HazelcastSerializationException);
+                auto exception = callback->getException();
+                ASSERT_NE(nullptr, exception);
+                ASSERT_THROW(std::rethrow_exception(exception), exception::HazelcastSerializationException);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMember) {
@@ -2126,10 +2103,10 @@ namespace hazelcast {
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_EQ(numberOfMembers, members.size());
 
-                std::shared_ptr<ICompletableFuture<std::string> > future = service->submitToMember<executor::tasks::GetMemberUuidTask, std::string>(
-                        task, members[0]);
+                auto future = service->submitToMember<executor::tasks::GetMemberUuidTask, std::string>(
+                        task, members[0]).get_future();
 
-                std::shared_ptr<std::string> uuid = future->get();
+                std::shared_ptr<std::string> uuid = future.get();
                 ASSERT_NOTNULL(uuid.get(), std::string);
                 ASSERT_EQ(members[0].getUuid(), *uuid);
             }
@@ -2142,12 +2119,14 @@ namespace hazelcast {
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_EQ(numberOfMembers, members.size());
 
-                std::map<Member, std::shared_ptr<ICompletableFuture<std::string> > > futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, std::string>(
-                        task, members);
+                auto futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, std::string>(task,
+                                                                                                            members);
 
                 for (const Member &member : members) {
                     ASSERT_EQ(1U, futuresMap.count(member));
-                    std::shared_ptr<std::string> uuid = futuresMap[member]->get();
+                    auto it = futuresMap.find(member);
+                    ASSERT_NE(futuresMap.end(), it);
+                    std::shared_ptr<std::string> uuid = (*it).second.get_future().get();
                     ASSERT_NOTNULL(uuid.get(), std::string);
                     ASSERT_EQ(member.getUuid(), *uuid);
                 }
@@ -2160,10 +2139,10 @@ namespace hazelcast {
                 executor::tasks::AppendCallable callable(msg);
                 executor::tasks::SelectAllMembers selectAll;
 
-                std::shared_ptr<ICompletableFuture<std::string> > f = service->submit<executor::tasks::AppendCallable, std::string>(
-                        callable, selectAll);
+                auto f = service->submit<executor::tasks::AppendCallable, std::string>(callable,
+                                                                                       selectAll).get_future();
 
-                std::shared_ptr<std::string> result = f->get();
+                std::shared_ptr<std::string> result = f.get();
                 ASSERT_NOTNULL(result.get(), std::string);
                 ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *result);
             }
@@ -2174,15 +2153,14 @@ namespace hazelcast {
                 executor::tasks::GetMemberUuidTask task;
                 executor::tasks::SelectAllMembers selectAll;
 
-                typedef std::map<Member, std::shared_ptr<ICompletableFuture<std::string> > > FUTURESMAP;
-                FUTURESMAP futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, std::string>(
+                auto futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, std::string>(
                         task, selectAll);
 
-                for (const FUTURESMAP::value_type &pair : futuresMap) {
+                for (auto &pair : futuresMap) {
                     const Member &member = pair.first;
-                    const std::shared_ptr<ICompletableFuture<std::string> > &future = pair.second;
+                    auto future = pair.second.get_future();
 
-                    std::shared_ptr<std::string> uuid = future->get();
+                    std::shared_ptr<std::string> uuid = future.get();
 
                     ASSERT_NOTNULL(uuid.get(), std::string);
                     ASSERT_EQ(member.getUuid(), *uuid);
@@ -2195,14 +2173,12 @@ namespace hazelcast {
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
 
-                typedef std::map<Member, std::shared_ptr<ICompletableFuture<std::string> > > FUTURESMAP;
-                FUTURESMAP futuresMap = service->submitToAllMembers<executor::tasks::AppendCallable, std::string>(
-                        callable);
+                auto futuresMap = service->submitToAllMembers<executor::tasks::AppendCallable, std::string>(callable);
 
-                for (const FUTURESMAP::value_type &pair : futuresMap) {
-                    const std::shared_ptr<ICompletableFuture<std::string> > &future = pair.second;
+                for (auto &pair : futuresMap) {
+                    auto future = pair.second.get_future();
 
-                    std::shared_ptr<std::string> result = future->get();
+                    std::shared_ptr<std::string> result = future.get();
 
                     ASSERT_NOTNULL(result.get(), std::string);
                     ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *result);
@@ -2339,10 +2315,9 @@ namespace hazelcast {
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
 
-                std::shared_ptr<ICompletableFuture<std::string> > result = service->submit<executor::tasks::AppendCallable, std::string>(
-                        callable);
+                auto result = service->submit<executor::tasks::AppendCallable, std::string>(callable).get_future();
 
-                std::shared_ptr<std::string> message = result->get();
+                std::shared_ptr<std::string> message = result.get();
                 ASSERT_NOTNULL(message.get(), std::string);
                 ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *message);
             }
@@ -2372,10 +2347,10 @@ namespace hazelcast {
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
 
-                std::shared_ptr<ICompletableFuture<std::string> > f = service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(
-                        callable, "key");
+                auto f = service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(callable,
+                                                                                                              "key").get_future();
 
-                std::shared_ptr<std::string> result = f->get();
+                std::shared_ptr<std::string> result = f.get();
                 ASSERT_NOTNULL(result.get(), std::string);
                 ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *result);
             }
@@ -2412,10 +2387,10 @@ namespace hazelcast {
 
                 executor::tasks::MapPutPartitionAwareCallable callable(testName, key);
 
-                std::shared_ptr<ICompletableFuture<std::string> > f = service->submit<executor::tasks::MapPutPartitionAwareCallable, std::string>(
-                        callable);
+                auto f = service->submit<executor::tasks::MapPutPartitionAwareCallable, std::string>(
+                        callable).get_future();
 
-                std::shared_ptr<std::string> result = f->get();
+                std::shared_ptr<std::string> result = f.get();
                 ASSERT_NOTNULL(result.get(), std::string);
                 ASSERT_EQ(member.getUuid(), *result);
                 ASSERT_TRUE(map.containsKey(member.getUuid()));
@@ -2984,9 +2959,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-
 
 namespace hazelcast {
     namespace client {

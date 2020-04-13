@@ -1,4 +1,4 @@
-#include "hazelcast/util/WindowsThread.inl"
+#include "hazelcast/util/ConditionVariable.h"
 
 namespace hazelcast {
     namespace util {

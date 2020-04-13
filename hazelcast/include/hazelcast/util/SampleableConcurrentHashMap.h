@@ -182,7 +182,8 @@ namespace hazelcast {
 
             std::unique_ptr<util::Iterable<E> > getRandomSamples(int sampleCount) const {
                 if (sampleCount < 0) {
-                    throw client::exception::IllegalArgumentException("Sample count cannot be a negative value.");
+                    BOOST_THROW_EXCEPTION(
+                            client::exception::IllegalArgumentException("Sample count cannot be a negative value."));
                 }
                 if (sampleCount == 0 || SynchronizedMap<std::shared_ptr<KS>, VS>::size() == 0) {
                     return std::unique_ptr<util::Iterable<E> >();
@@ -279,7 +280,8 @@ namespace hazelcast {
                     if (currentSample.get() != NULL) {
                         return currentSample;
                     } else {
-                        throw client::exception::NoSuchElementException("No more elements in the iterated collection");
+                        BOOST_THROW_EXCEPTION(client::exception::NoSuchElementException(
+                                                      "No more elements in the iterated collection"));
                     }
                 }
 

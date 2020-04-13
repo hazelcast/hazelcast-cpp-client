@@ -35,7 +35,6 @@
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/Future.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -890,7 +889,7 @@ namespace hazelcast {
                 }
 
                 template<typename K, typename EntryProcessor>
-                Future<TypedData> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
+                future<TypedData> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData<K>(key);
                     serialization::pimpl::Data processorData = toData<EntryProcessor>(entryProcessor);
 
@@ -1075,22 +1074,23 @@ namespace hazelcast {
                                      const serialization::pimpl::Data &processor);
 
                 template<typename ResultType>
-                Future<ResultType>
+                future<ResultType>
                 submitToKeyInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &processor) {
                     int partitionId = getPartitionId(keyData);
 
                     std::unique_ptr<protocol::ClientMessage> request =
                             protocol::codec::MapSubmitToKeyCodec::encodeRequest(getName(),
-                                                                                            processor,
-                                                                                            keyData,
+                                                                                processor,
+                                                                                keyData,
                                                                                 util::getCurrentThreadId());
 
-                    std::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = invokeAndGetFuture(
-                            request, partitionId);
-
-                    return client::Future<ResultType>(clientInvocationFuture, getSerializationService(),
-                                                      submitToKeyDecoder);
+                    auto clientInvocationFuture = invokeAndGetFuture(request, partitionId);
+                    return clientInvocationFuture.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                        auto message = f.get();
+                        auto data = submitToKeyDecoder(message);
+                        return TypedData(data, getSerializationService());
+                    });
                 }
 
                 static std::unique_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response);

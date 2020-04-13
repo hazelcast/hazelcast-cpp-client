@@ -18,13 +18,15 @@
 
 #include <vector>
 
-#include "hazelcast/client/ICompletableFuture.h"
+#include <boost/thread/future.hpp>
+
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/util/ConditionVariable.h"
-#include "hazelcast/util/concurrent/ConcurrencyUtil.h"
 
 namespace hazelcast {
     namespace client {
+        using namespace boost;
+
         /**
          * @Beta
          *
@@ -105,8 +107,9 @@ namespace hazelcast {
             std::vector<std::shared_ptr<E> > results() {
                 std::vector<std::shared_ptr<E> > result;
                 result.reserve(futures.size());
-                for (typename FuturesVector::const_iterator it = futures.begin(); it != futures.end(); ++it) {
-                    result.push_back((*it)->get());
+                auto result_futures = when_all(futures.begin(), futures.end());
+                for (auto f : result_futures.get()) {
+                    result.push_back(f.get());
                 }
                 return result;
             }
@@ -121,16 +124,18 @@ namespace hazelcast {
              * @return the future added.
              * @throws NullPointerException if future is null.
              */
-            const std::shared_ptr<ICompletableFuture<E> > &
-            add(const std::shared_ptr<ICompletableFuture<E> > &future) {
-                util::Preconditions::checkNotNull<ICompletableFuture<E> >(future, "future can't be null");
-
+            shared_future<std::shared_ptr<E>>
+            add(future<std::shared_ptr<E>> future) {
                 down();
-                futures.push_back(future);
-                future->andThen(std::shared_ptr<ExecutionCallback<E> >(
-                        new PipeliningExecutionCallback(this->shared_from_this())),
-                                util::concurrent::ConcurrencyUtil::CALLER_RUNS());
-                return future;
+
+                auto new_future = future.then(launch::sync, [=](boost::future<std::shared_ptr<E>> f) {
+                    up();
+                    return f.get();
+                });
+
+                auto sharedFuture = new_future.share();
+                futures.push_back(sharedFuture);
+                return sharedFuture;
             }
 
         private:
@@ -142,7 +147,7 @@ namespace hazelcast {
                     pipelining->up();
                 }
 
-                virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
+                virtual void onFailure(std::exception_ptr e) {
                     pipelining->up();
                 }
 
@@ -170,9 +175,8 @@ namespace hazelcast {
                 ++permits;
             }
 
-            typedef std::vector<std::shared_ptr<ICompletableFuture<E> > > FuturesVector;
             int permits;
-            FuturesVector futures;
+            std::vector<shared_future<std::shared_ptr<E>>> futures;
             util::ConditionVariable conditionVariable;
             util::Mutex mutex;
         };

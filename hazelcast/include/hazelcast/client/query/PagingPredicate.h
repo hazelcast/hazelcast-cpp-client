@@ -344,8 +344,8 @@ namespace hazelcast {
                  */
                 void readData(serialization::ObjectDataInput &in) {
                     // Not need to read at the client side
-                    throw exception::HazelcastSerializationException("PagingPredicate::readData",
-                                                "Client should not need to use readData method!!!");
+                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PagingPredicate::readData",
+                                                                                     "Client should not need to use readData method!!!"));
                 }
 
                 void setAnchor(size_t page, const std::pair<K *, V *> &anchorEntry) {
@@ -361,7 +361,7 @@ namespace hazelcast {
                         char msg[200];
                         util::hz_snprintf(msg, 200, "Anchor index is not correct, expected: %d but found: %d", page,
                                           anchorCount);
-                        throw exception::IllegalArgumentException("PagingPredicate::setAnchor", msg);
+                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("PagingPredicate::setAnchor", msg));
                     }
                 }
 

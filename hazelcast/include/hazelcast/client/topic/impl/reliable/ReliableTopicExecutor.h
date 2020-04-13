@@ -26,7 +26,6 @@
 #include "hazelcast/client/DataArray.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/client/ExecutionCallback.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -67,7 +66,7 @@ namespace hazelcast {
                         void execute(const Message &m);
 
                     private:
-                        class Task : public util::Runnable {
+                        class Task {
                         public:
                             Task(Ringbuffer <ReliableTopicMessage> &rb, util::BlockingConcurrentQueue<Message> &q,
                                  util::AtomicBoolean &shutdown);
@@ -83,7 +82,7 @@ namespace hazelcast {
                         };
 
                         Ringbuffer <ReliableTopicMessage> &ringbuffer;
-                        util::Thread runnerThread;
+                        std::thread runnerThread;
                         util::BlockingConcurrentQueue<Message> q;
                         util::AtomicBoolean shutdown;
                     };

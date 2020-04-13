@@ -31,46 +31,37 @@ namespace hazelcast {
                 namespace listener {
                     class SmartClientListenerService : public AbstractClientListenerService {
                     public:
-                        SmartClientListenerService(ClientContext &clientContext, int32_t eventThreadCount,
-                                                   int32_t eventQueueCapacity);
+                        SmartClientListenerService(ClientContext &clientContext, int32_t eventThreadCount);
 
                         virtual void start();
 
                         virtual std::string
-                        registerListener(const std::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
-                                         const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+                        registerListener(const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
+                                         const std::shared_ptr<EventHandler < protocol::ClientMessage>
+
+                        > handler);
 
                         void asyncConnectToAllMembersInternal();
+
                     protected:
 
                         virtual bool registersLocalOnly() const;
+
                     private:
-
-                        class AsyncConnectToAllMembersTask : public util::Runnable {
-                        public:
-                            AsyncConnectToAllMembersTask(
-                                    const std::shared_ptr<SmartClientListenerService> &listenerService);
-
-                            virtual void run();
-
-                            virtual const std::string getName() const;
-
-                        private:
-                            std::shared_ptr<SmartClientListenerService> listenerService;
-                        };
 
                         void trySyncConnectToAllMembers();
 
                         void timeOutOrSleepBeforeNextTry(int64_t startMillis, const Member &lastFailedMember,
-                                                         std::shared_ptr<exception::IException> &lastException);
+                                                         std::exception_ptr lastException);
 
                         void
                         throwOperationTimeoutException(int64_t startMillis, int64_t nowInMillis, int64_t elapsedMillis,
                                                        const Member &lastFailedMember,
-                                                       std::shared_ptr<exception::IException> &lastException);
+                                                       std::exception_ptr lastException);
 
                         void sleepBeforeNextTry();
 
+                        void scheduleConnectToAllMembers();
                     };
                 }
             }

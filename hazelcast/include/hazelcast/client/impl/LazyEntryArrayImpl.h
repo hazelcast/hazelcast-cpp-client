@@ -53,12 +53,14 @@ namespace hazelcast {
                  */
                 LazyEntryArrayImpl(LazyEntryArrayImpl &array, size_t begin, size_t end) : serializationService(array.serializationService) {
                     if (end < begin) {
-                        throw exception::IllegalArgumentException("LazyEntryArrayImpl", "end should be greater than begin!");
+                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("LazyEntryArrayImpl",
+                                                                                  "end should be greater than begin!"));
                     }
 
                     size_t size = array.size();
                     if (end > size) {
-                        throw exception::IllegalArgumentException("LazyEntryArrayImpl", "end should not be greater than array size!");
+                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("LazyEntryArrayImpl",
+                                                                                  "end should not be greater than array size!"));
                     }
 
                     // make sure that items are deserialized

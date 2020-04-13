@@ -23,7 +23,6 @@
 
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/ringbuffer/ReadResultSet.h"
-#include "hazelcast/client/ICompletableFuture.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -241,7 +240,7 @@ namespace hazelcast {
              * @param overflowPolicy the OverflowPolicy to use.
              * @return the sequenceId of the added item, or -1 if the add failed.
              */
-            virtual std::shared_ptr<ICompletableFuture<int64_t> >
+            virtual future<std::shared_ptr<int64_t>>
             addAsync(const E &item, OverflowPolicy overflowPolicy) = 0;
 
             /**
@@ -268,7 +267,7 @@ namespace hazelcast {
              * @return the ICompletableFuture to synchronize on completion.
              * @throws IllegalArgumentException if items is empty
              */
-            virtual std::shared_ptr<ICompletableFuture<int64_t> >
+            virtual future<std::shared_ptr<int64_t>>
             addAllAsync(const std::vector<E> &items, OverflowPolicy overflowPolicy) = 0;
 
             /**
@@ -311,14 +310,14 @@ namespace hazelcast {
              *                                  or if maxCount larger than 1000 (to prevent overload)
              */
             template<typename IFUNCTION>
-            std::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
+            future<std::shared_ptr<ringbuffer::ReadResultSet<E>>>
             readManyAsync(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter) {
                 return readManyAsyncInternal(startSequence, minCount, maxCount,
                                              getSerializationService().template toData<IFUNCTION>(filter));
             }
 
         protected:
-            virtual std::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
+            virtual future<std::shared_ptr<ringbuffer::ReadResultSet<E>>>
             readManyAsyncInternal(int64_t startSequence, int32_t minCount, int32_t maxCount,
                                   const serialization::pimpl::Data &filterData) = 0;
 

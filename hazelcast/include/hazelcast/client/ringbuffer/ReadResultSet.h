@@ -78,8 +78,8 @@ namespace hazelcast {
                  */
                 virtual int64_t getSequence(int32_t index) const {
                     if (!itemSeqsExist) {
-                        throw exception::IllegalArgumentException("ReadResultSet::getSequence",
-                                                                  "No item sequences exist");
+                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ReadResultSet::getSequence",
+                                                                                  "No item sequences exist"));
                     }
                     if (index >= (int32_t) itemSeqs->size() || index < 0) {
                         throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(

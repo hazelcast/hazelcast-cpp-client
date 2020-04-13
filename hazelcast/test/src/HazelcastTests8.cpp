@@ -46,9 +46,7 @@
 #include <hazelcast/util/IOUtil.h>
 #include <hazelcast/util/CountDownLatch.h>
 #include <ClientTestSupportBase.h>
-#include <hazelcast/util/Executor.h>
 #include <hazelcast/util/Util.h>
-#include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <hazelcast/util/ILogger.h>
@@ -86,7 +84,6 @@
 #include "TestHelperFunctions.h"
 #include <cmath>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/util/Thread.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
@@ -147,7 +144,6 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
@@ -157,8 +153,6 @@
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
@@ -444,7 +438,7 @@ namespace hazelcast {
                 void populateNearCache() {
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        std::shared_ptr<string> value = nearCachedMap->get(i);
+                        std::shared_ptr<std::string> value = nearCachedMap->get(i);
                         ASSERT_NOTNULL(value.get(), std::string);
                         hazelcast::util::hz_snprintf(buf, 30, "value-%d", i);
                         ASSERT_EQ(buf, *value);
@@ -1833,28 +1827,21 @@ namespace hazelcast {
                                                             << logger->getInstanceName()).build();
                         }
 
-                        hazelcast::util::Thread monitor(
-                                std::shared_ptr<hazelcast::util::Runnable>(new StatsPrinterTask(stats)),
-                                *logger);
+                        auto monitor = std::async([&]() {
+                            StatsPrinterTask(stats).run();
+                        });
 
                         HazelcastClient hazelcastClient(clientConfig);
 
                         IMap<int, std::vector<char> > map = hazelcastClient.getMap<int, std::vector<char> >(
                                 "cppDefault");
 
-                        std::vector<std::shared_ptr<hazelcast::util::Thread> > threads;
-
+                        std::vector<std::future<void>> futures;
                         for (int i = 0; i < THREAD_COUNT; i++) {
-                            std::shared_ptr<hazelcast::util::Thread> thread = std::shared_ptr<hazelcast::util::Thread>(
-                                    new hazelcast::util::Thread(
-                                            std::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map, logger)),
-                                            *logger));
-                            thread->start();
-                            threads.push_back(thread);
+                            futures.push_back(std::async([&]() { Task(stats, map, logger).run(); }));
                         }
 
-                        monitor.start();
-                        monitor.join();
+                        monitor.wait();
                     }
                 };
 
@@ -2021,7 +2008,6 @@ namespace hazelcast {
 // 8. Verify that the 2nd entry is received by the listener
                 ASSERT_TRUE(latch.await(20, 0)); // timeout of 20 seconds
 
-                t.cancel();
                 t.join();
 
 // 9. Shut down the server
@@ -2171,9 +2157,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-
 
 namespace hazelcast {
     namespace client {

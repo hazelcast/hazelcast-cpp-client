@@ -29,7 +29,6 @@
 #include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/Address.h>
 
-using namespace std;
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;

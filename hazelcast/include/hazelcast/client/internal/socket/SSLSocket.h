@@ -54,8 +54,8 @@ namespace hazelcast {
                      */
                     std::vector<SSLSocket::CipherInfo> getCiphers() const;
 
-                    void async_handle_connect(const std::shared_ptr<connection::Connection> &connection,
-                                              const std::shared_ptr<connection::AuthenticationFuture> &authFuture) override;
+                    void async_handle_connect(const std::shared_ptr<connection::Connection> connection,
+                                              const std::shared_ptr<connection::AuthenticationFuture> authFuture) override;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);

@@ -96,12 +96,12 @@ namespace hazelcast {
                     /**
                      * Default expiration task initial delay time as seconds
                      */
-                    static const int DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS = 5;
+                    static const int DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS;
 
                     /**
                      * Default expiration task delay time as seconds
                      */
-                    static const int DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS = 5;
+                    static const int DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS;
 
                     /**
                      * Gets the value associated with the given <code>key</code>.
@@ -177,6 +177,12 @@ namespace hazelcast {
 
                 template<typename K, typename V>
                 std::shared_ptr<void> NearCache<K, V>::NULL_OBJECT(new char);
+
+                template<typename K, typename V>
+                const int NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS = 5;
+
+                template<typename K, typename V>
+                const int NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS = 5;
             }
         }
     }

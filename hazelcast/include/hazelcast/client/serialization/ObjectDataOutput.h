@@ -191,10 +191,11 @@ namespace hazelcast {
                         std::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
 
                         if (NULL == serializer.get()) {
-                            const std::string message = "No serializer found for serializerId :"+
-                                                         util::IOUtil::to_string(type) + ", typename :" +
-                                                         typeid(T).name();
-                            throw exception::HazelcastSerializationException("ObjectDataOutput::toData", message);
+                            const std::string message = "No serializer found for serializerId :" +
+                                                        util::IOUtil::to_string(type) + ", typename :" +
+                                                        typeid(T).name();
+                            BOOST_THROW_EXCEPTION(
+                                    exception::HazelcastSerializationException("ObjectDataOutput::toData", message));
                         }
 
                         std::shared_ptr<StreamSerializer> streamSerializer = std::static_pointer_cast<StreamSerializer>(

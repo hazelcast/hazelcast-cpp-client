@@ -89,7 +89,7 @@ namespace hazelcast {
                             default:
                                 std::ostringstream out;
                                 out << "Unsupported eviction policy type: " << (int) evictionPolicyType;
-                                throw exception::IllegalArgumentException(out.str());
+                                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
                         }
                     }
 

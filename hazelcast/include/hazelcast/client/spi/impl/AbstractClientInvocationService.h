@@ -22,7 +22,6 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/AtomicBoolean.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
@@ -49,61 +48,44 @@ namespace hazelcast {
 
                     void shutdown();
 
+                    void
+                    registerRetriedInvocation(int64_t callId, const std::shared_ptr<impl::ClientInvocation> invocation);
+
+                    void removeRetriedInvocation(int64_t callId);
+
                     int64_t getInvocationTimeoutMillis() const;
 
                     int64_t getInvocationRetryPauseMillis() const;
 
                     bool isRedoOperation();
 
-                    void handleClientMessage(const std::shared_ptr<connection::Connection> &connection,
-                                             const std::shared_ptr<protocol::ClientMessage> &message);
+                    void handleClientMessage(const std::shared_ptr<ClientInvocation> invocation,
+                                             const std::shared_ptr<protocol::ClientMessage> response);
 
                 protected:
 
-                    class ResponseThread : public util::Runnable {
+                    class ResponseProcessor {
                     public:
-                        ResponseThread(const std::string &name, util::ILogger &invocationLogger,
-                                       AbstractClientInvocationService &invocationService,
-                                       ClientContext &clientContext);
+                        ResponseProcessor(util::ILogger &invocationLogger,
+                                          AbstractClientInvocationService &invocationService,
+                                          ClientContext &clientContext);
 
-                        virtual ~ResponseThread();
-
-                        virtual void run();
-
-                        virtual const std::string getName() const;
+                        virtual ~ResponseProcessor();
 
                         void shutdown();
 
                         void start();
 
-                        // TODO: implement java MPSCQueue and replace this
-                        util::BlockingConcurrentQueue<std::shared_ptr<protocol::ClientMessage> > responseQueue;
+                        void process(const std::shared_ptr<ClientInvocation> invocation,
+                                     const std::shared_ptr<protocol::ClientMessage> response);
+
                     private:
                         util::ILogger &invocationLogger;
-                        AbstractClientInvocationService &invocationService;
                         ClientContext &client;
-                        util::Thread worker;
+                        std::unique_ptr<boost::asio::thread_pool> pool;
 
-                        void doRun();
-
-                        void process(const std::shared_ptr<protocol::ClientMessage> &clientMessage);
-
-                        void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage);
-                    };
-
-                    class CleanResourcesTask : public util::Runnable {
-                    public:
-                        CleanResourcesTask(util::SynchronizedMap<int64_t, ClientInvocation> &invocations);
-
-                        void run();
-
-                        virtual const std::string getName() const;
-
-                    private:
-                        void notifyException(ClientInvocation &invocation,
-                                             std::shared_ptr<connection::Connection> &connection);
-
-                        util::SynchronizedMap<int64_t, ClientInvocation> &invocations;
+                        void processInternal(const std::shared_ptr<ClientInvocation> invocation,
+                                             const std::shared_ptr<protocol::ClientMessage> response);
                     };
 
                     const ClientProperty &CLEAN_RESOURCES_MILLIS;
@@ -118,14 +100,14 @@ namespace hazelcast {
                     util::AtomicBoolean isShutdown;
                     int64_t invocationTimeoutMillis;
                     int64_t invocationRetryPauseMillis;
-                    ResponseThread responseThread;
+                    ResponseProcessor responseThread;
 
                     std::shared_ptr<ClientInvocation> deRegisterCallId(int64_t callId);
 
                     void registerInvocation(const std::shared_ptr<ClientInvocation> &clientInvocation);
 
-                    bool writeToConnection(connection::Connection &connection,
-                                           const std::shared_ptr<protocol::ClientMessage> &clientMessage);
+                    void writeToConnection(connection::Connection &connection,
+                                           const std::shared_ptr<ClientInvocation> &clientInvocation);
 
                     void send(std::shared_ptr<impl::ClientInvocation> invocation,
                               std::shared_ptr<connection::Connection> connection);

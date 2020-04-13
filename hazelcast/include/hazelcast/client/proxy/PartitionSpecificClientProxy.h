@@ -17,7 +17,6 @@
 #define HAZELCAST_CLIENT_PROXY_PARTITIONSPECIFICPROXY_H_
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/internal/ClientDelegatingFuture.h"
 #include "hazelcast/util/ExceptionUtil.h"
 
 namespace hazelcast {
@@ -34,19 +33,18 @@ namespace hazelcast {
                 virtual void onInitialize();
 
                 template<typename V>
-                std::shared_ptr<internal::ClientDelegatingFuture<V> >
+                future<std::shared_ptr<V>>
                 invokeOnPartitionAsync(std::unique_ptr<protocol::ClientMessage> &request,
                                        const std::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder) {
                     try {
-                        std::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeAndGetFuture(request,
-                                                                                                         partitionId);
-                        return std::shared_ptr<internal::ClientDelegatingFuture<V> >(
-                                new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
-                                                                        clientMessageDecoder));
+                        auto future = invokeAndGetFuture(request, partitionId);
+                        return future.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                            return clientMessageDecoder->decodeClientMessage(f.get(), getSerializationService());
+                        });
                     } catch (exception::IException &e) {
-                        util::ExceptionUtil::rethrow(e);
+                        util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return std::shared_ptr<internal::ClientDelegatingFuture<V> >();
+                    return future<std::shared_ptr<V>>();
                 }
 
                 int partitionId;

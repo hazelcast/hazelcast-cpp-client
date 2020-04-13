@@ -24,6 +24,8 @@
 #ifndef HAZELCAST_SERIALIZATION_SERVICE
 #define HAZELCAST_SERIALIZATION_SERVICE
 
+#include <boost/optional.hpp>
+
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
 #include "hazelcast/client/serialization/pimpl/DataSerializer.h"
@@ -53,7 +55,10 @@
 
 namespace hazelcast {
     namespace client {
+        using namespace boost;
+
         class SerializationConfig;
+
         class TypedData;
 
         namespace serialization {
@@ -143,6 +148,11 @@ namespace hazelcast {
 
                     template<typename T>
                     inline const std::shared_ptr<T> toSharedObject(const std::shared_ptr<Data> &data) {
+                        return std::shared_ptr<T>(toObject<T>(data.get()));
+                    }
+
+                    template<typename T>
+                    inline const std::shared_ptr<T> toSharedObject(const std::unique_ptr<Data> &data) {
                         return std::shared_ptr<T>(toObject<T>(data.get()));
                     }
 

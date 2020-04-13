@@ -44,14 +44,14 @@ namespace hazelcast {
 
                 void onSuccess(const std::shared_ptr<Connection> &connection);
 
-                void onFailure(const std::shared_ptr<exception::IException> &throwable);
+                void onFailure(std::exception_ptr throwable);
 
                 std::shared_ptr<Connection> get();
 
             private:
                 std::shared_ptr<util::CountDownLatch> countDownLatch;
                 util::Sync<std::shared_ptr<Connection>> connection;
-                util::Sync<std::shared_ptr<exception::IException>> throwable;
+                util::Sync<std::exception_ptr> throwable;
                 const Address address;
                 util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress;
                 std::atomic_bool isSet;

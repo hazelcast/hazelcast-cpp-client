@@ -33,6 +33,7 @@
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
 #include <hazelcast/client/protocol/Principal.h>
 #include <hazelcast/client/connection/Connection.h>
+#include <hazelcast/client/spi/impl/ClientInvocation.h>
 #include <ClientTestSupport.h>
 #include <memory>
 #include <hazelcast/client/proxy/ClientPNCounterProxy.h>
@@ -46,9 +47,7 @@
 #include <hazelcast/util/IOUtil.h>
 #include <hazelcast/util/CountDownLatch.h>
 #include <ClientTestSupportBase.h>
-#include <hazelcast/util/Executor.h>
 #include <hazelcast/util/Util.h>
-#include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <hazelcast/util/ILogger.h>
@@ -86,7 +85,6 @@
 #include "TestHelperFunctions.h"
 #include <cmath>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/util/Thread.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
@@ -147,7 +145,6 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
@@ -157,8 +154,6 @@
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
@@ -222,33 +217,6 @@
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(disable: 4996) //for unsafe getenv
 #endif
-
-#ifndef HAZELCAST_CLIENT_TEST_PROTOCOL_PROTOCOLEXCEPTIONTEST_H
-#define HAZELCAST_CLIENT_TEST_PROTOCOL_PROTOCOLEXCEPTIONTEST_H
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            namespace protocol {
-                TEST(ProtocolExceptionTest, testUndefinedErrorCodeException) {
-                    int32_t undefinedError = client::protocol::SERVICE_NOT_FOUND + 1;
-                    int64_t callId = 0x1122334455667788LL;
-                    const std::string details = "This is the detail about the exception";
-                    client::exception::UndefinedErrorCodeException exception("testUndefinedErrorCodeException",
-                                                                             "this is a test", undefinedError, callId,
-                                                                             details);
-                    ASSERT_EQ(undefinedError, exception.getUndefinedErrorCode());
-                    ASSERT_EQ(callId, exception.getMessageCallId());
-                    ASSERT_EQ(details, exception.getDetailedErrorMessage());
-                }
-            }
-        }
-    }
-}
-
-#endif //HAZELCAST_CLIENT_TEST_PROTOCOL_PROTOCOLEXCEPTIONTEST_H
-
-
 
 namespace hazelcast {
     namespace client {
@@ -3349,24 +3317,9 @@ namespace hazelcast {
 // Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(3000, 4);
 
-                    hazelcast::client::Future<int> initialFuture =
-                            employees->submitToKey<int, WaitMultiplierProcessor>(
-                                    4, processor);
+                    auto future = employees->submitToKey<int, WaitMultiplierProcessor>(4, processor);
 
-// Should invalidate the initialFuture
-                    hazelcast::client::Future<int> future = initialFuture;
-
-                    ASSERT_FALSE(initialFuture.valid());
-                    ASSERT_THROW(initialFuture.wait_for(1000), exception::FutureUninitialized);
-                    ASSERT_TRUE(future.valid());
-
-                    future_status status = future.wait_for(1 * 1000);
-                    ASSERT_EQ(future_status::timeout, status);
-                    ASSERT_TRUE(future.valid());
-
-                    status = future.wait_for(3 * 1000);
-                    ASSERT_EQ(future_status::ready, status);
-                    std::unique_ptr<int> result = future.get();
+                    auto result = future.get();
                     ASSERT_NE((int *) NULL, result.get());
                     ASSERT_EQ(4 * processor.getMultiplier(), *result);
                     ASSERT_FALSE(future.valid());
@@ -3384,33 +3337,28 @@ namespace hazelcast {
 // Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(waitTimeInMillis, 4);
 
-                    std::vector<hazelcast::client::Future<int> > allFutures;
+                    std::vector<future<std::shared_ptr<int>>> allFutures;
 
 // test putting into a vector of futures
-                    hazelcast::client::Future<int> future = employees->submitToKey<int, WaitMultiplierProcessor>(
-                            3, processor);
-                    allFutures.push_back(future);
+                    allFutures.push_back(employees->submitToKey<int, WaitMultiplierProcessor>(
+                            3, processor));
 
 // test re-assigning a future and putting into the vector
-                    future = employees->submitToKey<int, WaitMultiplierProcessor>(
-                            3, processor);
-                    allFutures.push_back(future);
+                    allFutures.push_back(employees->submitToKey<int, WaitMultiplierProcessor>(
+                            3, processor));
 
 // test submitting a non-existent key
                     allFutures.push_back(employees->submitToKey<int, WaitMultiplierProcessor>(
                             99, processor));
 
-                    for (std::vector<hazelcast::client::Future<int> >::const_iterator it = allFutures.begin();
-                         it != allFutures.end(); ++it) {
-                        future_status status = (*it).wait_for(2 * waitTimeInMillis);
+                    for (auto &f : allFutures) {
+                        future_status status = f.wait_for(chrono::milliseconds(2 * waitTimeInMillis));
                         ASSERT_EQ(future_status::ready, status);
                     }
 
-                    for (std::vector<hazelcast::client::Future<int> >::iterator it = allFutures.begin();
-                         it != allFutures.end(); ++it) {
-                        std::unique_ptr<int> result = (*it).get();
+                    for (auto &f : allFutures) {
+                        auto result = f.get();
                         ASSERT_NE((int *) NULL, result.get());
-                        ASSERT_FALSE((*it).valid());
                     }
                 }
 

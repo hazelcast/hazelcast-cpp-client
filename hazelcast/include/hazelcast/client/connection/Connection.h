@@ -22,6 +22,7 @@
 #include <ostream>
 #include <stdint.h>
 #include <atomic>
+#include <unordered_map>
 #include <boost/asio.hpp>
 
 #include "hazelcast/client/Socket.h"
@@ -34,6 +35,7 @@
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -83,9 +85,9 @@ namespace hazelcast {
 
                 void close(const std::string &reason);
 
-                void close(const std::string &reason, const std::shared_ptr<exception::IException> &cause);
+                void close(const std::string &reason, std::exception_ptr cause);
 
-                bool write(const std::shared_ptr<protocol::ClientMessage> &message);
+                void write(const std::shared_ptr<spi::impl::ClientInvocation> &clientInvocation);
 
                 const std::shared_ptr<Address> &getRemoteEndpoint() const;
 
@@ -101,7 +103,7 @@ namespace hazelcast {
 
                 bool isAlive();
 
-                int64_t lastReadTimeMillis();
+                const std::chrono::steady_clock::time_point lastReadTime();
 
                 const std::string &getCloseReason() const;
 
@@ -130,6 +132,7 @@ namespace hazelcast {
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
                 ReadHandler readHandler;
+                std::unordered_map<int64_t, std::shared_ptr<spi::impl::ClientInvocation>> invocations;
             private:
                 void logClose();
 
@@ -145,7 +148,7 @@ namespace hazelcast {
 
                 int connectionId;
                 std::string closeReason;
-                std::shared_ptr<exception::IException> closeCause;
+                std::exception_ptr closeCause;
 
                 std::string connectedServerVersionString;
                 int connectedServerVersion;
@@ -155,6 +158,7 @@ namespace hazelcast {
                 util::ILogger &logger;
                 bool asOwner;
                 ClientConnectionManagerImpl &connectionManager;
+                boost::asio::io_context &io;
             };
         }
     }

@@ -57,7 +57,6 @@ namespace hazelcast {
                     static const int FEATURE_SUPPORTED_SINCE_VERSION;
                     static const char STAT_SEPARATOR = ',';
                     static const char KEY_VALUE_SEPARATOR = '=';
-                    static const int MILLIS_IN_A_SECOND = 1000;
 
                     class PeriodicStatistics {
                     public:
@@ -87,18 +86,6 @@ namespace hazelcast {
                          */
                         void getNameWithPrefix(const std::string &name, std::ostringstream &out);
 
-                        Statistics &statistics;
-                    };
-
-                    class CollectStatisticsTask : public util::Runnable {
-                    public:
-                        CollectStatisticsTask(Statistics &statistics);
-
-                        virtual const std::string getName() const;
-
-                        virtual void run();
-
-                    private:
                         Statistics &statistics;
                     };
 

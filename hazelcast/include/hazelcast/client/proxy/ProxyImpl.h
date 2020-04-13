@@ -20,6 +20,7 @@
 #define HAZELCAST_ProxyImpl
 
 #include <memory>
+#include <hazelcast/util/ExceptionUtil.h>
 
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -44,6 +45,8 @@ namespace hazelcast {
         typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > EntryVector;
 
         namespace proxy {
+            using namespace boost;
+
             class HAZELCAST_API ProxyImpl : public spi::ClientProxy {
             protected:
                 /**
@@ -64,15 +67,14 @@ namespace hazelcast {
                 * @param partitionId that given request will be send to.
                 * @param request Client request message to be sent.
                 */
-                std::shared_ptr<protocol::ClientMessage> invokeOnPartition(std::unique_ptr<protocol::ClientMessage> &request,
-                                                                         int partitionId);
+                protocol::ClientMessage invokeOnPartition(std::unique_ptr<protocol::ClientMessage> &request,
+                                                          int partitionId);
 
-                std::shared_ptr<spi::impl::ClientInvocationFuture> invokeAndGetFuture(std::unique_ptr<protocol::ClientMessage> &request,
-                                                              int partitionId);
+                future <protocol::ClientMessage> invokeAndGetFuture(std::unique_ptr<protocol::ClientMessage> &request,
+                                                                    int partitionId);
 
-                std::shared_ptr<spi::impl::ClientInvocationFuture>
-                invokeOnKeyOwner(std::unique_ptr<protocol::ClientMessage> &request,
-                                 const serialization::pimpl::Data &keyData);
+                future <protocol::ClientMessage> invokeOnKeyOwner(std::unique_ptr<protocol::ClientMessage> &request,
+                                                                  const serialization::pimpl::Data &keyData);
 
                 /**
                 * Internal API.
@@ -81,10 +83,10 @@ namespace hazelcast {
                 *
                 * @param request ClientMessage ptr.
                 */
-                std::shared_ptr<protocol::ClientMessage> invoke(std::unique_ptr<protocol::ClientMessage> &request);
+                protocol::ClientMessage invoke(std::unique_ptr<protocol::ClientMessage> &request);
 
-                std::shared_ptr<protocol::ClientMessage> invokeOnAddress(std::unique_ptr<protocol::ClientMessage> &request,
-                                                                  const Address &address);
+                protocol::ClientMessage invokeOnAddress(std::unique_ptr<protocol::ClientMessage> &request,
+                                                        const Address &address);
 
                 /**
                 * Internal API.
@@ -185,29 +187,23 @@ namespace hazelcast {
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::unique_ptr<protocol::ClientMessage> &request) {
-                    std::shared_ptr<protocol::ClientMessage> response = invoke(request);
-
-                    return (T)CODEC::decode(*response).response;
+                    return (T) CODEC::decode(invoke(request)).response;
                 }
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
-                    std::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, partitionId);
-
-                    return (T)CODEC::decode(*response).response;
+                    return (T) CODEC::decode(invokeOnPartition(request, partitionId)).response;
                 }
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::unique_ptr<protocol::ClientMessage> &request,
                                      const serialization::pimpl::Data &key) {
-                    std::shared_ptr<protocol::ClientMessage> response;
                     try {
-                        std::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request, key);
-                        response = future->get();
+                        return (T) CODEC::decode(invokeOnKeyOwner(request, key).get()).response;
                     } catch (exception::IException &e) {
-                        util::ExceptionUtil::rethrow(e);
+                        util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return (T)CODEC::decode(*response).response;
+                    return T();
                 }
 
                 std::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data);

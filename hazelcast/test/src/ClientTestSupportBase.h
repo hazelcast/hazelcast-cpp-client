@@ -21,6 +21,7 @@
 #define HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H
 
 #include <memory>
+#include <thread>
 #include <string>
 #include <stdint.h>
 
@@ -67,16 +68,12 @@ namespace hazelcast {
     }
 
     namespace util {
-        class Thread;
-
         class ThreadArgs {
         public:
             const void *arg0;
             const void *arg1;
             const void *arg2;
             const void *arg3;
-            util::Thread *currentThread;
-
             void (*func)(ThreadArgs &);
         };
 
@@ -96,8 +93,6 @@ namespace hazelcast {
 
             bool join();
 
-            void cancel();
-
             virtual void run();
 
             virtual const std::string getName() const;
@@ -105,7 +100,7 @@ namespace hazelcast {
         private:
             ThreadArgs threadArgs;
             std::string name;
-            std::unique_ptr<util::Thread> thread;
+            std::thread thread;
             std::shared_ptr<util::ILogger> logger;
 
             void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3);

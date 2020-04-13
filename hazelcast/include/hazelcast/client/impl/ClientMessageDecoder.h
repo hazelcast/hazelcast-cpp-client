@@ -38,7 +38,7 @@ namespace hazelcast {
                 }
 
                 virtual std::shared_ptr<T>
-                decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
+                decodeClientMessage(protocol::ClientMessage &&clientMessage,
                                     serialization::pimpl::SerializationService &serializationService) = 0;
             };
 
@@ -46,10 +46,10 @@ namespace hazelcast {
             class DataMessageDecoder : public ClientMessageDecoder<V> {
             public:
                 virtual std::shared_ptr<V>
-                decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
+                decodeClientMessage(protocol::ClientMessage &&clientMessage,
                                     serialization::pimpl::SerializationService &serializationService) {
                     return std::shared_ptr<V>(serializationService.toObject<V>(
-                            CODEC::ResponseParameters::decode(*clientMessage).response.get()));
+                            CODEC::ResponseParameters::decode(clientMessage).response.get()));
                 }
 
                 static const std::shared_ptr<ClientMessageDecoder<V> > &instance();
@@ -64,7 +64,7 @@ namespace hazelcast {
             class HAZELCAST_API VoidMessageDecoder : public ClientMessageDecoder<void> {
             public:
                 virtual std::shared_ptr<void>
-                decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
+                decodeClientMessage(protocol::ClientMessage &&clientMessage,
                                     serialization::pimpl::SerializationService &serializationService);
 
                 static const std::shared_ptr<ClientMessageDecoder<void> > &instance();
@@ -75,10 +75,10 @@ namespace hazelcast {
             class PrimitiveMessageDecoder : public ClientMessageDecoder<PRIMITIVE_TYPE> {
             public:
                 virtual std::shared_ptr<PRIMITIVE_TYPE>
-                decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
+                decodeClientMessage(protocol::ClientMessage &&clientMessage,
                                     serialization::pimpl::SerializationService &serializationService) {
                     return std::shared_ptr<PRIMITIVE_TYPE>(new PRIMITIVE_TYPE(
-                            CODEC::ResponseParameters::decode(*clientMessage).response));
+                            CODEC::ResponseParameters::decode(clientMessage).response));
                 }
 
                 static const std::shared_ptr<ClientMessageDecoder<PRIMITIVE_TYPE> > &instance();

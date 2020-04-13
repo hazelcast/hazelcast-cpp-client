@@ -141,9 +141,9 @@ namespace hazelcast {
                  * @throws NoDataMemberInClusterException if there are no replicas and the
                  *                                        {@code lastException} is false
                  */
-                std::shared_ptr<protocol::ClientMessage>
+                protocol::ClientMessage
                 invokeGetInternal(std::shared_ptr<std::set<Address> > excludedAddresses,
-                                  const std::unique_ptr<exception::IException> &lastException,
+                                  std::exception_ptr lastException,
                                   const std::shared_ptr<Address> &target);
 
 
@@ -171,9 +171,10 @@ namespace hazelcast {
                  * @throws NoDataMemberInClusterException if there are no replicas and the
                  *                                        {@code lastException} is {@code null}
                  */
-                std::shared_ptr<protocol::ClientMessage>
-                invokeAddInternal(int64_t delta, bool getBeforeUpdate, std::shared_ptr<std::set<Address> > excludedAddresses,
-                                  const std::unique_ptr<exception::IException> &lastException, const std::shared_ptr<Address> &target);
+                protocol::ClientMessage
+                invokeAddInternal(int64_t delta, bool getBeforeUpdate,
+                                  std::shared_ptr<std::set<Address> > excludedAddresses,
+                                  std::exception_ptr lastException, const std::shared_ptr<Address> &target);
 
                 /**
                  * Updates the locally observed CRDT vector clock atomically. This method

@@ -442,7 +442,7 @@ namespace hazelcast {
                 ClientProperties clientProperties;
                 spi::ClientContext clientContext;
                 serialization::pimpl::SerializationService serializationService;
-                std::unique_ptr<connection::ClientConnectionManagerImpl> connectionManager;
+                std::shared_ptr<connection::ClientConnectionManagerImpl> connectionManager;
                 std::unique_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
                 spi::impl::ClientClusterServiceImpl clusterService;
                 std::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
@@ -477,7 +477,7 @@ namespace hazelcast {
 
                 std::shared_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
 
-                std::unique_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
+                std::shared_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
                         const std::vector<std::shared_ptr<connection::AddressProvider> > &addressProviders);
 
                 std::vector<std::shared_ptr<connection::AddressProvider> > createAddressProviders();

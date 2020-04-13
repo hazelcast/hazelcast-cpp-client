@@ -46,9 +46,7 @@
 #include <hazelcast/util/IOUtil.h>
 #include <hazelcast/util/CountDownLatch.h>
 #include <ClientTestSupportBase.h>
-#include <hazelcast/util/Executor.h>
 #include <hazelcast/util/Util.h>
-#include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <hazelcast/util/ILogger.h>
@@ -86,7 +84,6 @@
 #include "TestHelperFunctions.h"
 #include <cmath>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/util/Thread.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
@@ -147,7 +144,6 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
@@ -157,8 +153,6 @@
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
@@ -3302,25 +3296,16 @@ namespace hazelcast {
 // Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(3000, 4);
 
-                    hazelcast::client::Future<TypedData> initialFuture = imap->submitToKey<int, WaitMultiplierProcessor>(
-                            4, processor);
-
-// Should invalidate the initialFuture
-                    hazelcast::client::Future<TypedData> future = initialFuture;
-
-                    ASSERT_FALSE(initialFuture.valid());
-                    ASSERT_THROW(initialFuture.wait_for(1000), exception::FutureUninitialized);
+                    auto future = imap->submitToKey<int, WaitMultiplierProcessor>(4, processor);
                     ASSERT_TRUE(future.valid());
 
-                    future_status status = future.wait_for(1 * 1000);
+                    future_status status = future.wait_for(chrono::seconds(1));
                     ASSERT_EQ(future_status::timeout, status);
-                    ASSERT_TRUE(future.valid());
 
-                    status = future.wait_for(3 * 1000);
+                    status = future.wait_for(chrono::seconds(3));
                     ASSERT_EQ(future_status::ready, status);
-                    TypedData result = future.get();
+                    auto result = future.get();
                     ASSERT_EQ(4 * processor.getMultiplier(), *result.get<int>());
-                    ASSERT_FALSE(future.valid());
                 }
 
                 TEST_P(MixedMapAPITest, testSubmitToKeyMultipleAsyncCalls) {
@@ -3335,33 +3320,25 @@ namespace hazelcast {
 // Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(waitTimeInMillis, 4);
 
-                    std::vector<hazelcast::client::Future<TypedData> > allFutures;
+                    std::vector<future<TypedData> > allFutures;
 
 // test putting into a vector of futures
-                    hazelcast::client::Future<TypedData> future = imap->submitToKey<int, WaitMultiplierProcessor>(3,
-                                                                                                                  processor);
-                    allFutures.push_back(future);
+                    allFutures.push_back(imap->submitToKey<int, WaitMultiplierProcessor>(3,
+                                                                                         processor));
 
 // test re-assigning a future and putting into the vector
-                    future = imap->submitToKey<int, WaitMultiplierProcessor>(
-                            3, processor);
-                    allFutures.push_back(future);
+                    allFutures.push_back(imap->submitToKey<int, WaitMultiplierProcessor>(
+                            3, processor));
 
 // test submitting a non-existent key
                     allFutures.push_back(imap->submitToKey<int, WaitMultiplierProcessor>(
                             99, processor));
 
-                    for (std::vector<hazelcast::client::Future<TypedData> >::const_iterator it = allFutures.begin();
-                         it != allFutures.end(); ++it) {
-                        future_status status = (*it).wait_for(2 * waitTimeInMillis);
+                    for (auto &f : allFutures) {
+                        future_status status = f.wait_for(chrono::seconds(2));
                         ASSERT_EQ(future_status::ready, status);
-                    }
-
-                    for (std::vector<hazelcast::client::Future<TypedData> >::iterator it = allFutures.begin();
-                         it != allFutures.end(); ++it) {
-                        TypedData result = (*it).get();
+                        auto result = f.get();
                         ASSERT_NE((int *) NULL, result.get<int>().get());
-                        ASSERT_FALSE((*it).valid());
                     }
                 }
 
@@ -3772,41 +3749,41 @@ namespace hazelcast {
             }
 
             TEST_F(IAtomicLongTest, testAsync) {
-                std::shared_ptr<ICompletableFuture<int64_t> > future = l->getAndAddAsync(10);
-                ASSERT_EQ(0, *future->get());
+                auto future = l->getAndAddAsync(10);
+                ASSERT_EQ(0, *future.get());
 
-                std::shared_ptr<ICompletableFuture<bool> > booleanFuture = l->compareAndSetAsync(10, 42);
-                ASSERT_TRUE(booleanFuture->get());
+                auto booleanFuture = l->compareAndSetAsync(10, 42);
+                ASSERT_TRUE(*booleanFuture.get());
 
                 future = l->getAsync();
-                ASSERT_EQ(42, *future->get());
+                ASSERT_EQ(42, *future.get());
 
                 future = l->incrementAndGetAsync();
-                ASSERT_EQ(43, *future->get());
+                ASSERT_EQ(43, *future.get());
 
                 future = l->addAndGetAsync(-13);
-                ASSERT_EQ(30, *future->get());
+                ASSERT_EQ(30, *future.get());
 
                 future = l->decrementAndGetAsync();
-                ASSERT_EQ(29, *future->get());
+                ASSERT_EQ(29, *future.get());
 
                 future = l->getAndSetAsync(15);
-                ASSERT_EQ(29, *future->get());
+                ASSERT_EQ(29, *future.get());
 
                 future = l->getAsync();
-                ASSERT_EQ(15, *future->get());
+                ASSERT_EQ(15, *future.get());
 
                 future = l->getAndIncrementAsync();
-                ASSERT_EQ(15, *future->get());
+                ASSERT_EQ(15, *future.get());
 
                 future = l->getAsync();
-                ASSERT_EQ(16, *future->get());
+                ASSERT_EQ(16, *future.get());
 
-                std::shared_ptr<ICompletableFuture<void> > voidFuture = l->setAsync(55);
-                voidFuture->get();
+                auto voidFuture = l->setAsync(55);
+                voidFuture.get();
 
                 future = l->getAsync();
-                ASSERT_EQ(55, *future->get());
+                ASSERT_EQ(55, *future.get());
             }
         }
     }
