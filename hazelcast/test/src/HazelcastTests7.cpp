@@ -2091,7 +2091,6 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(*latch);
 
                 auto exception = callback->getException();
-                ASSERT_NE(nullptr, exception);
                 ASSERT_THROW(std::rethrow_exception(exception), exception::HazelcastSerializationException);
             }
 
