@@ -473,13 +473,6 @@ namespace hazelcast {
                                     const std::shared_ptr<MultiExecutionCallback<T> > &callback) {
                 std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
                 submitToMembers<HazelcastSerializable, T>(task, memberList, callback);
-                std::shared_ptr<MultiExecutionCallbackWrapper < T> >
-                multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) memberList.size(), callback));
-                for (std::vector<Member>::const_iterator it = memberList.begin(); it != memberList.end(); ++it) {
-                    std::shared_ptr<ExecutionCallbackWrapper < T> >
-                    executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, *it));
-                    submitToMember<HazelcastSerializable, T>(task, *it, executionCallback);
-                }
             }
 
             /**

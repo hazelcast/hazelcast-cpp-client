@@ -35,13 +35,10 @@ namespace hazelcast {
                 public:
                     BaseSocket(std::unique_ptr<T> socket, const Address &address,
                                client::config::SocketOptions &socketOptions,
-                               boost::asio::io_context &io, int64_t connectTimeoutInMillis) : socketOptions(
-                            socketOptions), socket_(std::move(socket)),
-                                                                                              remoteEndpoint(address),
-                                                                                              io(io), resolver(io),
-                                                                                              connectTimer(io),
-                                                                                              connectTimeoutMillis(
-                                                                                                      connectTimeoutInMillis) {
+                               boost::asio::io_context &io, int64_t connectTimeoutInMillis)
+                            : socketOptions(socketOptions), socket_(std::move(socket)), remoteEndpoint(address), io(io),
+                              resolver(socket_->get_executor()), connectTimer(socket_->get_executor()),
+                              connectTimeoutMillis(connectTimeoutInMillis) {
                     }
 
                     ~BaseSocket() {
@@ -54,7 +51,7 @@ namespace hazelcast {
                         using namespace boost::asio::ip;
 
                         connectTimer.expires_from_now(connectTimeoutMillis);
-                        connectTimer.async_wait([=](const boost::system::error_code &ec) {
+                        connectTimer.async_wait([this, connection, authFuture](const boost::system::error_code &ec) {
                             if (ec == boost::asio::error::operation_aborted) {
                                 return;
                             }

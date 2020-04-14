@@ -1845,13 +1845,11 @@ namespace hazelcast {
                 public:
                     MultiExecutionCompletionCallback(const std::string &msg,
                                                      const std::shared_ptr<latch> &responseLatch,
-                                                     const std::shared_ptr<latch> &completeLatch)
-                            : msg(
-                            msg),
-                              responseLatch(
-                                      responseLatch),
-                              completeLatch(
-                                      completeLatch) {}
+                                                     const std::shared_ptr<latch> &completeLatch) : msg(msg),
+                                                                                                    responseLatch(
+                                                                                                            responseLatch),
+                                                                                                    completeLatch(
+                                                                                                            completeLatch) {}
 
                     virtual void onResponse(const Member &member, const std::shared_ptr<std::string> &response) {
                         if (response.get() && *response == msg + executor::tasks::AppendCallable::APPENDAGE) {
@@ -2210,10 +2208,8 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, submitCallableToMember_withMultiExecutionCallback) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                std::shared_ptr<latch> responseLatch(
-                        new latch(numberOfMembers));
-                std::shared_ptr<latch> completeLatch(
-                        new latch(numberOfMembers));
+                std::shared_ptr<latch> responseLatch(new latch(numberOfMembers));
+                std::shared_ptr<latch> completeLatch(new latch(numberOfMembers));
 
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
@@ -2293,10 +2289,8 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, submitCallableWithNullResultToAllMembers_withMultiExecutionCallback) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                std::shared_ptr<latch> responseLatch(
-                        new latch(numberOfMembers));
-                std::shared_ptr<latch> completeLatch(
-                        new latch(numberOfMembers));
+                std::shared_ptr<latch> responseLatch(new latch(numberOfMembers));
+                std::shared_ptr<latch> completeLatch(new latch(numberOfMembers));
 
                 executor::tasks::NullCallable callable;
 
