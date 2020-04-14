@@ -50,7 +50,7 @@ namespace hazelcast {
 
                 std::string getName() const;
 
-                void setName(const std::string & name);
+                void setName(const std::string &n);
 
                 bool operator ==(const TestCustomPerson & rhs) const;
 

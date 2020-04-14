@@ -673,7 +673,7 @@ namespace hazelcast {
                 }
 
                 {
-                    util::LockGuard guard(targetSelectionMutex);
+                    std::lock_guard<std::mutex> guard(targetSelectionMutex);
                     if (currentTargetReplicaAddress.get() == NULL ||
                         excludedAddresses.find(*currentTargetReplicaAddress.get()) != excludedAddresses.end()) {
                         currentTargetReplicaAddress = chooseTargetReplica(excludedAddresses);
@@ -1014,7 +1014,7 @@ namespace hazelcast {
                                                            const IAtomicLong &atomicLong)
                     : proxy::ProxyImpl(ClientIdGeneratorProxy::SERVICE_NAME, instanceName, context),
                       atomicLong(atomicLong), local(new std::atomic<int64_t>(-1)),
-                      residue(new std::atomic<int32_t>(BLOCK_SIZE)), localLock(new util::Mutex) {
+                      residue(new std::atomic<int32_t>(BLOCK_SIZE)), localLock(new std::mutex) {
                 this->atomicLong.get();
             }
 
@@ -1024,7 +1024,7 @@ namespace hazelcast {
                 }
                 int64_t step = (id / BLOCK_SIZE);
 
-                util::LockGuard lg(*localLock);
+                std::lock_guard<std::mutex> lg(*localLock);
                 bool init = atomicLong.compareAndSet(0, step + 1);
                 if (init) {
                     local->store(step);
@@ -1046,7 +1046,7 @@ namespace hazelcast {
                 }
 
                 {
-                    util::LockGuard lg(*localLock);
+                    std::lock_guard<std::mutex> lg(*localLock);
                     value = *residue;
                     if (value >= BLOCK_SIZE) {
                         *local = atomicLong.getAndIncrement();
@@ -1058,7 +1058,7 @@ namespace hazelcast {
             }
 
             void ClientIdGeneratorProxy::destroy() {
-                util::LockGuard lg(*localLock);
+                std::lock_guard<std::mutex> lg(*localLock);
                 atomicLong.destroy();
                 *local = -1;
                 *residue = BLOCK_SIZE;

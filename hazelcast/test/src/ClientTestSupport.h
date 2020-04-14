@@ -21,6 +21,8 @@
 #define HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
 
 #include <memory>
+#include <boost/thread/latch.hpp>
+
 #include <gtest/gtest.h>
 
 #include "ClientTestSupportBase.h"
@@ -43,17 +45,32 @@ namespace hazelcast {
 
             extern HazelcastServerFactory *g_srvFactory;
 
-        class ClientTestSupport : public ClientTestSupportBase, public ::testing::Test {
+            using namespace boost;
+
+            class ClientTestSupport : public ClientTestSupportBase, public ::testing::Test {
             public:
                 ClientTestSupport();
 
             protected:
                 util::ILogger &getLogger();
+
                 const std::string &getTestName() const;
 
             private:
                 std::shared_ptr<hazelcast::util::ILogger> logger;
                 std::string testName;
+            };
+
+            class CountDownLatchWaiter {
+            public:
+                CountDownLatchWaiter &add(latch &latch1);
+
+                cv_status wait_for(chrono::steady_clock::duration duration);
+
+                void reset();
+
+            private:
+                std::vector<latch *> latches;
             };
         }
     }

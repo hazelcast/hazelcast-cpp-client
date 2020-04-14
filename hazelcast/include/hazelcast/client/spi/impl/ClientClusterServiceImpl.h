@@ -87,7 +87,7 @@ namespace hazelcast {
                     util::Sync<std::map<Address, std::shared_ptr<Member> > > members;
                     util::SynchronizedMap<std::string, MembershipListener> listeners;
 
-                    util::Mutex initialMembershipListenerMutex;
+                    std::mutex initialMembershipListenerMutex;
 
                     std::string addMembershipListenerWithoutInit(const std::shared_ptr<MembershipListener> &listener);
 

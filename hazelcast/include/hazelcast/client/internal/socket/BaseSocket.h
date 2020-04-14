@@ -186,22 +186,26 @@ namespace hazelcast {
                         return remoteEndpoint;
                     }
 
+                    boost::asio::executor get_executor() const noexcept override {
+                        return socket_->get_executor();
+                    }
+
                 protected:
-                    void setSocketOptions(const client::config::SocketOptions &socketOptions) {
+                    void setSocketOptions(const client::config::SocketOptions &options) {
                         auto &lowestLayer = socket_->lowest_layer();
 
-                        lowestLayer.set_option(boost::asio::ip::tcp::no_delay(socketOptions.isTcpNoDelay()));
+                        lowestLayer.set_option(boost::asio::ip::tcp::no_delay(options.isTcpNoDelay()));
 
-                        lowestLayer.set_option(boost::asio::socket_base::keep_alive(socketOptions.isKeepAlive()));
+                        lowestLayer.set_option(boost::asio::socket_base::keep_alive(options.isKeepAlive()));
 
-                        lowestLayer.set_option(boost::asio::socket_base::reuse_address(socketOptions.isReuseAddress()));
+                        lowestLayer.set_option(boost::asio::socket_base::reuse_address(options.isReuseAddress()));
 
-                        int lingerSeconds = socketOptions.getLingerSeconds();
+                        int lingerSeconds = options.getLingerSeconds();
                         if (lingerSeconds > 0) {
                             lowestLayer.set_option(boost::asio::socket_base::linger(true, lingerSeconds));
                         }
 
-                        int bufferSize = socketOptions.getBufferSizeInBytes();
+                        int bufferSize = options.getBufferSizeInBytes();
                         if (bufferSize > 0) {
                             lowestLayer.set_option(boost::asio::socket_base::receive_buffer_size(bufferSize));
                             lowestLayer.set_option(boost::asio::socket_base::send_buffer_size(bufferSize));

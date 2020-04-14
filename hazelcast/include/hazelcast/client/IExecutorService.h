@@ -606,8 +606,8 @@ namespace hazelcast {
                                                                                             getSerializationService());
                         getContext().getClientExecutionService().execute([=]() { callback->onResponse(result); });
                     } catch (exception::IException &e) {
-                        getContext().getClientExecutionService().execute(
-                                [=]() { callback->onFailure(std::current_exception()); });
+                        auto exception = std::current_exception();
+                        getContext().getClientExecutionService().execute([=]() { callback->onFailure(exception); });
                     }
                 });
             }

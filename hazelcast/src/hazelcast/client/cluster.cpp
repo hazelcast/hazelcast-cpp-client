@@ -366,8 +366,8 @@ namespace hazelcast {
             }
 
             void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
-                util::LockGuard lg(const_cast<util::Mutex &>(rhs.membersLock));
-                util::LockGuard lg2(membersLock);
+                std::lock_guard<std::mutex> lg(const_cast<std::mutex &>(rhs.membersLock));
+                std::lock_guard<std::mutex> lg2(membersLock);
                 membersRef = rhs.membersRef;
                 cluster = rhs.cluster;
             }
@@ -379,7 +379,7 @@ namespace hazelcast {
             }
 
             void AbstractLoadBalancer::setMembersRef() {
-                util::LockGuard lg(membersLock);
+                std::lock_guard<std::mutex> lg(membersLock);
                 membersRef = cluster->getMembers();
             }
 
@@ -395,7 +395,7 @@ namespace hazelcast {
             }
 
             std::vector<Member> AbstractLoadBalancer::getMembers() {
-                util::LockGuard lg(membersLock);
+                std::lock_guard<std::mutex> lg(membersLock);
                 return membersRef;
             }
 

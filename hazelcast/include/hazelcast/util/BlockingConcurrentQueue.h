@@ -19,19 +19,19 @@
 
 #ifndef HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
 #define HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
+
 #include <list>
 #include <iostream>
+#include <mutex>
+#include <condition_variable>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/LockGuard.h"
-#include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/client/exception/InterruptedException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace util {
@@ -43,30 +43,30 @@ namespace hazelcast {
             }
 
             void push(const T &e) {
-                util::LockGuard lg(m);
+                std::unique_lock<std::mutex> lock(m);
                 while (internalQueue.size() == capacity) {
                     if (isInterrupted) {
                         throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
                     }
                     // wait on condition
-                    notFull.wait(m);
+                    notFull.wait(lock);
                 }
                 internalQueue.push_back(e);
-                notEmpty.notify();
+                notEmpty.notify_one();
             }
 
             T pop() {
-                util::LockGuard lg(m);
+                std::unique_lock<std::mutex> lock(m);
                 while (internalQueue.empty()) {
                     if (isInterrupted) {
                         throw client::exception::InterruptedException("BlockingConcurrentQueue::pop");
                     }
                     // wait for notEmpty condition
-                    notEmpty.wait(m);
+                    notEmpty.wait(lock);
                 }
                 T element = internalQueue.front();
                 internalQueue.pop_front();
-                notFull.notify();
+                notFull.notify_one();
                 return element;
             }
 
@@ -76,37 +76,37 @@ namespace hazelcast {
              *
              */
             void clear() {
-                util::LockGuard lg(m);
+                std::unique_lock<std::mutex> lock(m);
                 internalQueue.clear();
-                notFull.notify();
+                notFull.notify_one();
             }
 
             void interrupt() {
-                util::LockGuard lg(m);
-                notFull.notify();
-                notEmpty.notify();
+                notFull.notify_one();
+                notEmpty.notify_one();
                 isInterrupted = true;
             }
 
             bool isEmpty() {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lock(m);
                 return internalQueue.empty();
             }
 
             size_t size() {
-                util::LockGuard lg(m);
+                std::unique_lock<std::mutex> lock(m);
                 return internalQueue.size();
             }
+
         private:
-            util::Mutex m;
+            std::mutex m;
             /**
              * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
             std::list<T> internalQueue;
             size_t capacity;
-            util::ConditionVariable notFull;
-            util::ConditionVariable notEmpty;
+            std::condition_variable notFull;
+            std::condition_variable notEmpty;
             bool isInterrupted;
         };
     }

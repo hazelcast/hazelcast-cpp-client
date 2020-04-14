@@ -47,6 +47,5 @@ namespace hazelcast {
     }
 }
 
-
 #endif //HAZELCAST_UTIL_UUIDUTIL_H_
 

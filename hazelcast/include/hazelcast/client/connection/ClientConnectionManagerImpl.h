@@ -131,7 +131,7 @@ namespace hazelcast {
 
                 std::shared_ptr<Address> getOwnerConnectionAddress();
 
-                void setOwnerConnectionAddress(const std::shared_ptr<Address> &ownerConnectionAddress);
+                void setOwnerConnectionAddress(const std::shared_ptr<Address> &ownerAddress);
 
                 std::shared_ptr<Connection> getActiveConnection(const Address &target);
 
@@ -139,7 +139,7 @@ namespace hazelcast {
 
                 const std::shared_ptr<protocol::Principal> getPrincipal();
 
-                void setPrincipal(const std::shared_ptr<protocol::Principal> &principal);
+                void setPrincipal(const std::shared_ptr<protocol::Principal> &p);
 
                 void connectToCluster();
 
@@ -171,7 +171,7 @@ namespace hazelcast {
 
                 std::unique_ptr<protocol::ClientMessage>
                 encodeAuthenticationRequest(bool asOwner, serialization::pimpl::SerializationService &ss,
-                                            const protocol::Principal *principal);
+                                            const protocol::Principal *p);
 
                 void onAuthenticated(const Address &target, const std::shared_ptr<Connection> &connection);
 
@@ -189,7 +189,7 @@ namespace hazelcast {
 
                 std::set<Address> getPossibleMemberAddresses();
 
-                std::unique_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &client);
+                std::unique_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &context);
 
                 void shuffle(std::vector<Address> &memberAddresses) const;
 
@@ -258,7 +258,7 @@ namespace hazelcast {
                 std::atomic<int> connectionIdGen;
                 internal::socket::SocketFactory socketFactory;
 
-                util::Mutex lock;
+                std::mutex lock;
                 HeartbeatManager heartbeat;
 
                 boost::asio::io_context ioContext;

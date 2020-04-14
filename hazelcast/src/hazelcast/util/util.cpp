@@ -14,19 +14,6 @@
  * limitations under the License.
  */
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <winsock2.h>
-#include "hazelcast/util/WindowsUtil.inl"
-#else
-#include "hazelcast/util/LinuxUtil.inl"
-#include <unistd.h>
-#include <sys/errno.h>
-#include <sys/time.h>
-#include <pthread.h>
-#endif
-
 #include <cmath>
 #include <cassert>
 #include <cerrno>
@@ -56,7 +43,6 @@
 #include <boost/system/system_error.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
-#include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/AddressUtil.h"
@@ -65,10 +51,8 @@
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/Clearable.h"
-#include "hazelcast/util/ConditionVariable.h"
-#include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/LockGuard.h"
+#include <mutex>
+
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/util/TimeUtil.h"
 #include "hazelcast/util/concurrent/TimeUnit.h"
@@ -76,21 +60,17 @@
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/UUID.h"
 #include "hazelcast/util/UTFUtil.h"
-#include "hazelcast/client/exception/UTFDataFormatException.h"
 #include "hazelcast/util/SyncHttpClient.h"
-#include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
 #include "hazelcast/util/concurrent/CancellationException.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/UuidUtil.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/ExceptionUtil.h"
 
@@ -399,24 +379,6 @@ namespace hazelcast {
         }
     }
 }
-
-//  Copyright (c) 2015 ihsan demir. All rights reserved.
-//
-
-
-namespace hazelcast {
-    namespace util {
-        LockGuard::LockGuard(Mutex &mutex) : mutex(mutex) {
-            mutex.lock();
-        }
-
-        LockGuard::~LockGuard() {
-            mutex.unlock();
-        }
-    }
-}
-
-
 
 namespace hazelcast {
     namespace util {
@@ -1524,164 +1486,6 @@ namespace hazelcast {
         }
     }
 }
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-
-namespace hazelcast {
-    namespace util {
-
-        Mutex::Mutex() {
-            InitializeCriticalSection(&mutex);
-        }
-
-        Mutex::~Mutex() {
-            DeleteCriticalSection(&mutex);
-        }
-
-        void Mutex::lock() {
-            EnterCriticalSection(&mutex);
-        }
-
-        Mutex::status Mutex::tryLock() {
-            BOOL success = TryEnterCriticalSection(&mutex);
-            if (!success) {
-                return Mutex::alreadyLocked;
-            }
-            return Mutex::ok;
-        }
-
-        void Mutex::unlock() {
-            LeaveCriticalSection(&mutex);
-        }
-    }
-}
-
-
-#else
-
-
-namespace hazelcast {
-    namespace util {
-
-        Mutex::Mutex() {
-            pthread_mutex_init(&mutex, NULL);
-        }
-
-        Mutex::~Mutex() {
-            pthread_mutex_destroy(&mutex);
-        }
-
-        void Mutex::lock() {
-            int error = pthread_mutex_lock(&mutex);
-            (void) error;
-            assert (!(error == EINVAL || error == EAGAIN));
-            assert (error != EDEADLK);
-        }
-
-        void Mutex::unlock() {
-            int error = pthread_mutex_unlock(&mutex);
-            (void) error;
-            assert (!(error == EINVAL || error == EAGAIN));
-            assert (error != EPERM);
-        }
-    }
-}
-
-
-#endif
-
-
-//
-// Created by sancar koyunlu on 8/15/13.
-
-
-
-
-namespace hazelcast {
-    namespace util {
-        CountDownLatch::CountDownLatch(int count)
-                : count(count) {
-
-        }
-
-        void CountDownLatch::countDown() {
-            --count;
-        }
-
-        bool CountDownLatch::await(int seconds) {
-            return awaitMillis(seconds * MILLISECONDS_IN_A_SECOND);
-        }
-
-        bool CountDownLatch::awaitMillis(int64_t milliseconds) {
-            int64_t elapsed;
-            return awaitMillis(milliseconds, elapsed);
-        }
-
-        bool CountDownLatch::awaitMillis(int64_t milliseconds, int64_t &elapsed) {
-            // set elapsed to zero in case it returns before sleep
-            elapsed = 0;
-
-            if (count <= 0 || milliseconds <= 0) {
-                return true;
-            }
-
-            do {
-                util::sleepmillis(CHECK_INTERVAL);
-                elapsed += CHECK_INTERVAL;
-                if (count <= 0) {
-                    return true;
-                }
-            } while (elapsed < milliseconds);
-
-            return false;
-        }
-
-        void CountDownLatch::await() {
-            awaitMillis(HZ_INFINITE);
-        }
-
-        int CountDownLatch::get() {
-            return count;
-        }
-
-        bool CountDownLatch::await(int seconds, int expectedCount) {
-            while (seconds > 0 && count > expectedCount) {
-                util::sleep(1);
-                --seconds;
-            }
-            return count <= expectedCount;
-        }
-
-        CountDownLatchWaiter &CountDownLatchWaiter::add(CountDownLatch &latch) {
-            latches.push_back(&latch);
-            return *this;
-        }
-
-        bool CountDownLatchWaiter::awaitMillis(int64_t milliseconds) {
-            if (latches.empty()) {
-                return true;
-            }
-
-            for (std::vector<util::CountDownLatch *>::const_iterator it = latches.begin(); it != latches.end(); ++it) {
-                int64_t elapsed;
-                bool result = (*it)->awaitMillis(milliseconds, elapsed);
-                if (!result) {
-                    return false;
-                }
-                milliseconds -= elapsed;
-                if (milliseconds <= 0) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        void CountDownLatchWaiter::reset() {
-            latches.clear();
-        }
-
-    }
-}
-
 
 namespace hazelcast {
     namespace util {

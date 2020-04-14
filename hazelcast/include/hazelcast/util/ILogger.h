@@ -25,16 +25,12 @@
 #include <sstream>
 #include <mutex>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-// We need to include this header before easylogging++/easylogging++.h
-#include <winsock2.h>
-#endif
 #include <easylogging++.h>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/LoggerConfig.h"
-#include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/LockGuard.h"
+#include <mutex>
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

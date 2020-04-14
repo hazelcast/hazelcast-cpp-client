@@ -17,11 +17,12 @@
 #define HAZELCAST_CLIENT_PIPELINING_H_
 
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
 #include <boost/thread/future.hpp>
 
 #include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/ConditionVariable.h"
 
 namespace hazelcast {
     namespace client {
@@ -139,36 +140,20 @@ namespace hazelcast {
             }
 
         private:
-            class PipeliningExecutionCallback : public ExecutionCallback<E> {
-            public:
-                PipeliningExecutionCallback(const std::shared_ptr<Pipelining> &pipelining) : pipelining(pipelining) {}
-
-                virtual void onResponse(const std::shared_ptr<E> &response) {
-                    pipelining->up();
-                }
-
-                virtual void onFailure(std::exception_ptr e) {
-                    pipelining->up();
-                }
-
-            private:
-                const std::shared_ptr<Pipelining> pipelining;
-            };
-
             Pipelining(int depth) : permits(util::Preconditions::checkPositive(depth, "depth must be positive")) {
             }
 
             // TODO: Change with lock-free implementation when atomic is integrated into the library
             void down() {
-                util::LockGuard lockGuard(mutex);
+                std::unique_lock<std::mutex> uniqueLock(mutex);
                 while (permits == 0) {
-                    conditionVariable.wait(mutex);
+                    conditionVariable.wait(uniqueLock);
                 }
                 --permits;
             }
 
             void up() {
-                util::LockGuard lockGuard(mutex);
+                std::unique_lock<std::mutex> uniqueLock(mutex);
                 if (permits == 0) {
                     conditionVariable.notify_all();
                 }
@@ -177,8 +162,8 @@ namespace hazelcast {
 
             int permits;
             std::vector<shared_future<std::shared_ptr<E>>> futures;
-            util::ConditionVariable conditionVariable;
-            util::Mutex mutex;
+            std::condition_variable conditionVariable;
+            std::mutex mutex;
         };
     }
 }

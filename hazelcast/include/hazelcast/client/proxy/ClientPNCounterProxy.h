@@ -197,7 +197,7 @@ namespace hazelcast {
                 toVectorClock(const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps);
 
                 util::Sync<std::shared_ptr<Address> > currentTargetReplicaAddress;
-                util::Mutex targetSelectionMutex;
+                std::mutex targetSelectionMutex;
                 std::atomic<int32_t> maxConfiguredReplicaCount;
                 /**
                  * The last vector clock observed by this proxy. It is used for maintaining

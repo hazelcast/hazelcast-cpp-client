@@ -401,7 +401,7 @@ namespace hazelcast {
             void LifecycleService::shutdown() {
                 bool expected = true;
                 if (!active.compare_exchange_strong(expected, false)) {
-                    shutdownCompletedLatch.await();
+                    shutdownCompletedLatch.wait();
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
@@ -415,21 +415,21 @@ namespace hazelcast {
                 clientContext.getClientExecutionService().shutdown();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
                 clientContext.getSerializationService().dispose();
-                shutdownCompletedLatch.countDown();
+                shutdownCompletedLatch.count_down();
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
-                util::LockGuard lg(listenerLock);
+                std::lock_guard<std::mutex> lg(listenerLock);
                 listeners.insert(lifecycleListener);
             }
 
             bool LifecycleService::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-                util::LockGuard lg(listenerLock);
+                std::lock_guard<std::mutex> lg(listenerLock);
                 return listeners.erase(lifecycleListener) == 1;
             }
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
-                util::LockGuard lg(listenerLock);
+                std::lock_guard<std::mutex> lg(listenerLock);
                 util::ILogger &logger = clientContext.getLogger();
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING : {
@@ -908,7 +908,7 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::handleMembershipEvent(const MembershipEvent &event) {
-                    util::LockGuard guard(initialMembershipListenerMutex);
+                    std::lock_guard<std::mutex> guard(initialMembershipListenerMutex);
                     const Member &member = event.getMember();
                     std::map<Address, std::shared_ptr<Member> > newMap = members.get();
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
@@ -937,7 +937,7 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::handleInitialMembershipEvent(const InitialMembershipEvent &event) {
-                    util::LockGuard guard(initialMembershipListenerMutex);
+                    std::lock_guard<std::mutex> guard(initialMembershipListenerMutex);
                     const std::vector<Member> &initialMembers = event.getMembers();
                     std::map<Address, std::shared_ptr<Member> > newMap;
                     for (const Member &initialMember : initialMembers) {
@@ -962,7 +962,7 @@ namespace hazelcast {
 
                 void ClientClusterServiceImpl::listenMembershipEvents(
                         const std::shared_ptr<connection::Connection> &ownerConnection) {
-                    clientMembershipListener->listenMembershipEvents(clientMembershipListener, ownerConnection);
+                    clientMembershipListener->listenMembershipEvents(ownerConnection);
                 }
 
                 std::string
@@ -973,7 +973,7 @@ namespace hazelcast {
                                                                 "listener can't be null"));
                     }
 
-                    util::LockGuard guard(initialMembershipListenerMutex);
+                    std::lock_guard<std::mutex> guard(initialMembershipListenerMutex);
                     std::string id = addMembershipListenerWithoutInit(listener);
                     initMembershipListener(*listener);
                     return id;
@@ -1135,14 +1135,14 @@ namespace hazelcast {
                         logger->info(membersString());
                         clusterService.handleInitialMembershipEvent(
                                 InitialMembershipEvent(client.getCluster(), members));
-                        initialListFetchedLatch.get()->countDown();
+                        initialListFetchedLatch.load()->count_down();
                         return;
                     }
 
                     std::vector<MembershipEvent> events = detectMembershipEvents(prevMembers);
                     logger->info(membersString());
                     fireMembershipEvent(events);
-                    initialListFetchedLatch.get()->countDown();
+                    initialListFetchedLatch.load()->count_down();
                 }
 
                 void
@@ -1260,23 +1260,22 @@ namespace hazelcast {
 
                 void
                 ClientMembershipListener::listenMembershipEvents(
-                        const std::shared_ptr<ClientMembershipListener> &listener,
                         const std::shared_ptr<connection::Connection> &ownerConnection) {
-                    listener->initialListFetchedLatch = std::shared_ptr<util::CountDownLatch>(
-                            new util::CountDownLatch(1));
+                    initialListFetchedLatch = make_shared<latch>(1);
                     std::unique_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientAddMembershipListenerCodec::encodeRequest(
                             false);
-                    std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(listener->client,
+                    std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
                                                                                             clientMessage, "",
                                                                                             ownerConnection);
-                    invocation->setEventHandler(listener);
+                    invocation->setEventHandler(shared_from_this());
                     invocation->invokeUrgent().get();
-                    listener->waitInitialMemberListFetched();
+                    waitInitialMemberListFetched();
                 }
 
                 void ClientMembershipListener::waitInitialMemberListFetched() {
-                    bool success = initialListFetchedLatch.get()->await(INITIAL_MEMBERS_TIMEOUT_SECONDS);
-                    if (!success) {
+                    auto status = initialListFetchedLatch.load()->wait_for(
+                            chrono::seconds(INITIAL_MEMBERS_TIMEOUT_SECONDS));
+                    if (status == cv_status::timeout) {
                         logger->warning("Error while getting initial member list from cluster!");
                     }
                 }
@@ -1856,7 +1855,7 @@ namespace hazelcast {
                         const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
                         int32_t partitionStateVersion, bool partitionStateVersionExist) {
                     {
-                        util::LockGuard guard(lock);
+                        std::lock_guard<std::mutex> guard(lock);
                         if (!partitionStateVersionExist || partitionStateVersion > lastPartitionStateVersion) {
                             typedef std::vector<std::pair<Address, std::vector<int32_t> > > PARTITION_VECTOR;
                             for (const PARTITION_VECTOR::value_type &entry : partitions) {

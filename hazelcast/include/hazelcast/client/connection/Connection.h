@@ -73,8 +73,7 @@ namespace hazelcast {
             public:
                 Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
                            const std::shared_ptr<AuthenticationFuture> &authFuture,
-                           internal::socket::SocketFactory &socketFactory,
-                           boost::asio::io_context &ioContext, bool asOwner,
+                           internal::socket::SocketFactory &socketFactory, bool asOwner,
                            ClientConnectionManagerImpl &clientConnectionManager, int64_t connectTimeoutInMillis);
 
                 virtual ~Connection();
@@ -91,7 +90,7 @@ namespace hazelcast {
 
                 const std::shared_ptr<Address> &getRemoteEndpoint() const;
 
-                void setRemoteEndpoint(const std::shared_ptr<Address> &remoteEndpoint);
+                void setRemoteEndpoint(const std::shared_ptr<Address> &endpoint);
 
                 bool isAuthenticatedAsOwner();
 
@@ -115,7 +114,7 @@ namespace hazelcast {
 
                 const std::string &getConnectedServerVersionString() const;
 
-                void setConnectedServerVersion(const std::string &connectedServerVersionString);
+                void setConnectedServerVersion(const std::string &connectedServer);
 
                 std::unique_ptr<Address> getLocalSocketAddress() const;
 
@@ -158,7 +157,6 @@ namespace hazelcast {
                 util::ILogger &logger;
                 bool asOwner;
                 ClientConnectionManagerImpl &connectionManager;
-                boost::asio::io_context &io;
             };
         }
     }

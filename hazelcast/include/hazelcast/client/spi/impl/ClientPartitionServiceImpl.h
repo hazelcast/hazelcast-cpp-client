@@ -105,7 +105,7 @@ namespace hazelcast {
                     util::SynchronizedMap<int, Address> partitions;
                     std::atomic<int32_t> partitionCount;
                     std::atomic<int32_t> lastPartitionStateVersion;
-                    util::Mutex lock;
+                    std::mutex lock;
 
                     std::future<void> refreshPartitionsFuture;
 

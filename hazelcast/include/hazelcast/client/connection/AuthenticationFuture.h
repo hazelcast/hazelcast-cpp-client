@@ -17,10 +17,10 @@
 #define HAZELCAST_CLIENT_CONNECTION_AUTHENTICATIONFUTURE_H_
 
 #include <memory>
+#include <boost/thread/latch.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -44,12 +44,12 @@ namespace hazelcast {
 
                 void onSuccess(const std::shared_ptr<Connection> &connection);
 
-                void onFailure(std::exception_ptr throwable);
+                void onFailure(std::exception_ptr t);
 
                 std::shared_ptr<Connection> get();
 
             private:
-                std::shared_ptr<util::CountDownLatch> countDownLatch;
+                std::shared_ptr<latch> countDownLatch;
                 util::Sync<std::shared_ptr<Connection>> connection;
                 util::Sync<std::exception_ptr> throwable;
                 const Address address;

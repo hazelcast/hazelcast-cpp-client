@@ -19,10 +19,11 @@
 #ifndef HAZELCAST_LIFECYCLE_SERVICE
 #define HAZELCAST_LIFECYCLE_SERVICE
 
+#include <mutex>
+#include <boost/thread/latch.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/AtomicBoolean.h"
-#include "hazelcast/util/CountDownLatch.h"
 
 #include <set>
 
@@ -71,11 +72,11 @@ namespace hazelcast {
 
                 ClientContext &clientContext;
                 std::set<LifecycleListener *> listeners;
-                util::Mutex listenerLock;
+                std::mutex listenerLock;
                 util::AtomicBoolean active;
                 LoadBalancer *loadBalancer;
                 Cluster &cluster;
-                util::CountDownLatch shutdownCompletedLatch;
+                latch shutdownCompletedLatch;
             };
 
         }

@@ -100,7 +100,7 @@ include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(BOOST_HINTS "C:\\\\Boost")
 endif ()
-find_package(Boost 1.69 REQUIRED COMPONENTS thread chrono HINTS ${BOOST_HINTS})
+find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono HINTS ${BOOST_HINTS})
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(Boost::thread Boost::chrono)
 add_definitions("-DBOOST_THREAD_VERSION=5")

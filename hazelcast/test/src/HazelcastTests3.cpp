@@ -44,7 +44,7 @@
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
-#include <hazelcast/util/CountDownLatch.h>
+
 #include <ClientTestSupportBase.h>
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
@@ -130,7 +130,7 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/CountDownLatch.h"
+
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -1639,27 +1639,27 @@ namespace hazelcast {
 
             class MyMessageListener : public topic::MessageListener<std::string> {
             public:
-                MyMessageListener(hazelcast::util::CountDownLatch &latch)
-                        : latch(latch) {
+                MyMessageListener(latch &latch1)
+                        : latch1(latch1) {
                 }
 
                 void onMessage(std::unique_ptr<topic::Message<std::string> > &&message) {
-                    latch.countDown();
+                    latch1.count_down();
                 }
 
             private:
-                hazelcast::util::CountDownLatch &latch;
+                latch &latch1;
             };
 
             TEST_F(ClientTopicTest, testTopicListeners) {
-                hazelcast::util::CountDownLatch latch(10);
-                MyMessageListener listener(latch);
+                latch latch1(10);
+                MyMessageListener listener(latch1);
                 std::string id = topic.addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
                     topic.publish(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
                 }
-                ASSERT_TRUE(latch.await(20));
+                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(20)));
                 topic.removeMessageListener(id);
             }
         }
@@ -1689,16 +1689,16 @@ namespace hazelcast {
 
             class MixedMessageListener : public hazelcast::client::mixedtype::topic::MessageListener {
             public:
-                MixedMessageListener(hazelcast::util::CountDownLatch &latch)
-                        : latch(latch) {
+                MixedMessageListener(latch &latch1)
+                        : latch1(latch1) {
                 }
 
                 void onMessage(std::unique_ptr<client::topic::Message<TypedData> > &&message) {
-                    latch.countDown();
+                    latch1.count_down();
                 }
 
             private:
-                hazelcast::util::CountDownLatch &latch;
+                latch &latch1;
             };
 
 
@@ -1708,14 +1708,14 @@ namespace hazelcast {
             }
 
             TEST_F(MixedTopicTest, testTopicListeners) {
-                hazelcast::util::CountDownLatch latch(10);
-                MixedMessageListener listener(latch);
+                latch latch1(10);
+                MixedMessageListener listener(latch1);
                 std::string id = topic.addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
                     topic.publish<std::string>(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
                 }
-                ASSERT_TRUE(latch.await(20));
+                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(20)));
                 topic.removeMessageListener(id);
             }
         }

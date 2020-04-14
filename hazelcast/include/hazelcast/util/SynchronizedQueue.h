@@ -19,8 +19,8 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/LockGuard.h"
-#include "hazelcast/util/Mutex.h"
+
+#include <mutex>
 #include <deque>
 #include <vector>
 #include <iostream>
@@ -28,7 +28,7 @@
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace util {
@@ -37,13 +37,13 @@ namespace hazelcast {
         class SynchronizedQueue {
         public:
             void offer(const std::shared_ptr<T> &e) {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 internalQueue.push_back(e);
             }
 
             std::shared_ptr<T> poll() {
                 std::shared_ptr<T> e;
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 if (!internalQueue.empty()) {
                     e = internalQueue.front();
                     internalQueue.pop_front();
@@ -52,12 +52,12 @@ namespace hazelcast {
             }
 
             size_t size() {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 return internalQueue.size();
             }
 
             std::vector<std::shared_ptr<T> > values() {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 std::vector<std::shared_ptr<T> > values;
                 for (typename std::deque<std::shared_ptr<T> >::const_iterator it = internalQueue.begin();
                      it != internalQueue.end(); ++it) {
@@ -67,7 +67,7 @@ namespace hazelcast {
             }
 
         private:
-            util::Mutex m;
+            std::mutex m;
             /**
              * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).

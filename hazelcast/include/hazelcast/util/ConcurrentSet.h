@@ -18,8 +18,8 @@
 #define HAZELCAST_UTIL_CONCURRENTSET_H_
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/LockGuard.h"
-#include "hazelcast/util/Mutex.h"
+
+#include <mutex>
 #include <set>
 #include <vector>
 
@@ -27,7 +27,7 @@
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace util {
@@ -54,7 +54,7 @@ namespace hazelcast {
              *         element
              */
             bool add(const T &e) {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 return internalSet.insert(e).second;
             }
 
@@ -64,7 +64,7 @@ namespace hazelcast {
              * @return the number of elements in this set (its cardinality)
              */
             size_t size() {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 return internalSet.size();
             }
 
@@ -74,7 +74,7 @@ namespace hazelcast {
              * @return <tt>true</tt> if this set contains no elements
              */
             bool isEmpty() {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 return internalSet.empty();
             }
 
@@ -92,7 +92,7 @@ namespace hazelcast {
              * @return an array containing all the elements in this set
              */
             std::vector<T> toArray() {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 std::vector<T> result;
                 for (const typename std::set<T>::value_type &value  : internalSet) {
                                 result.push_back(value);
@@ -101,11 +101,11 @@ namespace hazelcast {
             }
 
             void clear() {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 internalSet.clear();
             }
         private:
-            util::Mutex m;
+            std::mutex m;
             std::set<T> internalSet;
         };
     }

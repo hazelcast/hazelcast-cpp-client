@@ -66,6 +66,8 @@ namespace hazelcast {
             virtual std::unique_ptr<Address> localSocketAddress() const = 0;
 
             virtual const Address &getRemoteEndpoint() const = 0;
+
+            virtual boost::asio::executor get_executor() const noexcept = 0;
         };
     }
 }

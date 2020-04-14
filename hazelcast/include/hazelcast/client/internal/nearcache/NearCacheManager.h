@@ -74,7 +74,7 @@ namespace hazelcast {
                         std::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
                         if (NULL == nearCache.get()) {
                             {
-                                util::LockGuard guard(mutex);
+                                std::lock_guard<std::mutex> guard(mutex);
                                 nearCache = nearCacheMap.get(name);
                                 if (NULL == nearCache.get()) {
                                     nearCache = createNearCache<K, V, KS>(name, nearCacheConfig);
@@ -133,7 +133,7 @@ namespace hazelcast {
                     serialization::pimpl::SerializationService &serializationService;
                     util::ILogger &logger;
                     util::SynchronizedMap<std::string, BaseNearCache> nearCacheMap;
-                    util::Mutex mutex;
+                    std::mutex mutex;
                 };
             }
         }

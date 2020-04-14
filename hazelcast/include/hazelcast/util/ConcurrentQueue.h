@@ -21,15 +21,15 @@
 #define HAZELCAST_CONCURRENT_QUEUE
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/LockGuard.h"
-#include "hazelcast/util/Mutex.h"
+
+#include <mutex>
 #include <deque>
 #include <iostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace util {
@@ -42,13 +42,13 @@ namespace hazelcast {
             }
 
             void offer(T *e) {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 internalQueue.push_back(e);
             }
 
             T *poll() {
                 T *e = NULL;
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 if (!internalQueue.empty()) {
                     e = internalQueue.front();
                     internalQueue.pop_front();
@@ -63,7 +63,7 @@ namespace hazelcast {
              * @return number of items removed from the queue
              */
             int removeAll(const T *itemToBeRemoved) {
-                util::LockGuard lg(m);
+                std::lock_guard<std::mutex> lg(m);
                 int numErased = 0;
                 bool isFound;
                 do {
@@ -82,7 +82,7 @@ namespace hazelcast {
             }
 
         private:
-            util::Mutex m;
+            std::mutex m;
             /**
              * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).

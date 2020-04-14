@@ -44,7 +44,7 @@
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
-#include <hazelcast/util/CountDownLatch.h>
+
 #include <ClientTestSupportBase.h>
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
@@ -130,7 +130,7 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/CountDownLatch.h"
+
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -371,7 +371,7 @@ namespace hazelcast {
 
                     hazelcast::util::BlockingConcurrentQueue<int> q(capacity);
 
-                    hazelcast::util::CountDownLatch latch(1);
+                    latch latch1(1);
                     hazelcast::util::StartedThread t(Interrupt, &q);
 // Note that this test is time sensitive, this thread shoulc be waiting at blocking pop when the
 // other thread executes the interrup call.
@@ -762,23 +762,23 @@ namespace hazelcast {
                     class ConcurrentQueueTask : public hazelcast::util::Runnable {
                     public:
                         ConcurrentQueueTask(hazelcast::util::ConcurrentQueue<int> &q,
-                                            hazelcast::util::CountDownLatch &startLatch,
-                                            hazelcast::util::CountDownLatch &startRemoveLatch, int removalValue) : q(q),
-                                                                                                                   startLatch(
-                                                                                                                           startLatch),
-                                                                                                                   startRemoveLatch(
-                                                                                                                           startRemoveLatch),
-                                                                                                                   removalValue(
-                                                                                                                           removalValue) {}
+                                            latch &startLatch,
+                                            latch &startRemoveLatch, int removalValue) : q(q),
+                                                                                         startLatch(
+                                                                                                 startLatch),
+                                                                                         startRemoveLatch(
+                                                                                                 startRemoveLatch),
+                                                                                         removalValue(
+                                                                                                 removalValue) {}
 
                         virtual void run() {
                             int numItems = 1000;
 
-                            std::vector<int> values((size_t)numItems);
+                            std::vector<int> values((size_t) numItems);
 
-                            startLatch.countDown();
+                            startLatch.count_down();
 
-                            ASSERT_TRUE(startLatch.await(10));
+                            ASSERT_EQ(cv_status::no_timeout, startLatch.wait_for(chrono::seconds(10)));
 
                             // insert items
                             for (int i = 0; i < numItems; ++i) {
@@ -787,12 +787,12 @@ namespace hazelcast {
                             }
 
                             q.offer(&removalValue);
-                            startRemoveLatch.countDown();
+                            startRemoveLatch.count_down();
 
                             // poll items
                             for (int i = 0; i < numItems; ++i) {
                                 values[i] = i;
-                                ASSERT_NE((int *)NULL, q.poll());
+                                ASSERT_NE((int *) NULL, q.poll());
                             }
                         }
 
@@ -802,8 +802,8 @@ namespace hazelcast {
 
                     private:
                         hazelcast::util::ConcurrentQueue<int> &q;
-                        hazelcast::util::CountDownLatch &startLatch;
-                        hazelcast::util::CountDownLatch &startRemoveLatch;
+                        latch &startLatch;
+                        latch &startRemoveLatch;
                         int removalValue;
                     };
                 };
@@ -838,9 +838,9 @@ namespace hazelcast {
                 TEST_F(ConcurentQueueTest, testMultiThread) {
                     constexpr int numThreads = 40;
 
-                    hazelcast::util::CountDownLatch startLatch(numThreads);
+                    latch startLatch(numThreads);
 
-                    hazelcast::util::CountDownLatch startRemoveLatch(numThreads);
+                    latch startRemoveLatch(numThreads);
 
                     hazelcast::util::ConcurrentQueue<int> q;
 
@@ -854,7 +854,7 @@ namespace hazelcast {
                     }
 
                     // wait for the remove start
-                    ASSERT_TRUE(startRemoveLatch.await(30));
+                    ASSERT_EQ(cv_status::no_timeout, startRemoveLatch.wait_for(chrono::seconds(30)));
 
                     int numRemoved = q.removeAll(&removalValue);
 
@@ -1001,18 +1001,18 @@ namespace hazelcast {
                 protected:
                     class LifecycleStateListener : public LifecycleListener {
                     public:
-                        LifecycleStateListener(hazelcast::util::CountDownLatch &connectedLatch,
+                        LifecycleStateListener(latch &connectedLatch,
                                                const LifecycleEvent::LifeCycleState expectedState)
                                 : connectedLatch(connectedLatch), expectedState(expectedState) {}
 
                         virtual void stateChanged(const LifecycleEvent &event) {
                             if (event.getState() == expectedState) {
-                                connectedLatch.countDown();
+                                connectedLatch.try_count_down();
                             }
                         }
 
                     private:
-                        hazelcast::util::CountDownLatch &connectedLatch;
+                        latch &connectedLatch;
                         const LifecycleEvent::LifeCycleState expectedState;
                     };
 
@@ -1040,7 +1040,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrue) {
-                    hazelcast::util::CountDownLatch connectedLatch(1);
+                    latch connectedLatch(1);
 
                     // trying 8.8.8.8 address will delay the initial connection since no such server exist
                     clientConfig.getNetworkConfig().addAddress(Address("8.8.8.8", 5701))
@@ -1070,7 +1070,7 @@ namespace hazelcast {
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
                     HazelcastClient client(clientConfig);
-                    hazelcast::util::CountDownLatch shutdownLatch(1);
+                    latch shutdownLatch(1);
                     LifecycleStateListener lifecycleListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
                     client.addLifecycleListener(&lifecycleListener);
 
@@ -1093,7 +1093,7 @@ namespace hazelcast {
                             config::ClientConnectionStrategyConfig::OFF);
                     HazelcastClient client(clientConfig);
                     HazelcastServer hazelcastInstance2(*g_srvFactory);
-                    hazelcast::util::CountDownLatch shutdownLatch(1);
+                    latch shutdownLatch(1);
                     LifecycleStateListener lifecycleListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
                     client.addLifecycleListener(&lifecycleListener);
 
@@ -1115,7 +1115,7 @@ namespace hazelcast {
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
                     HazelcastClient client(clientConfig);
-                    hazelcast::util::CountDownLatch shutdownLatch(1);
+                    latch shutdownLatch(1);
                     LifecycleStateListener lifecycleListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
                     client.addLifecycleListener(&lifecycleListener);
 
@@ -1134,7 +1134,7 @@ namespace hazelcast {
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMember) {
                     HazelcastServer hazelcastInstance(*g_srvFactory);
 
-                    hazelcast::util::CountDownLatch connectedLatch(1);
+                    latch connectedLatch(1);
 
                     LifecycleStateListener listener(connectedLatch, LifecycleEvent::CLIENT_CONNECTED);
                     clientConfig.addListener(&listener);
@@ -1153,8 +1153,8 @@ namespace hazelcast {
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberStartLate) {
                     HazelcastServer hazelcastInstance(*g_srvFactory);
 
-                    hazelcast::util::CountDownLatch initialConnectionLatch(1);
-                    hazelcast::util::CountDownLatch reconnectedLatch(1);
+                    latch initialConnectionLatch(1);
+                    latch reconnectedLatch(1);
 
                     clientConfig.getNetworkConfig().setConnectionAttemptLimit(10);
                     LifecycleStateListener listener(initialConnectionLatch, LifecycleEvent::CLIENT_CONNECTED);
@@ -1163,6 +1163,8 @@ namespace hazelcast {
                             config::ClientConnectionStrategyConfig::ASYNC);
                     HazelcastClient client(clientConfig);
 
+                    ASSERT_OPEN_EVENTUALLY(initialConnectionLatch);
+
                     hazelcastInstance.shutdown();
 
                     LifecycleStateListener reconnectListener(reconnectedLatch, LifecycleEvent::CLIENT_CONNECTED);
@@ -1170,8 +1172,8 @@ namespace hazelcast {
 
                     HazelcastServer hazelcastInstance2(*g_srvFactory);
 
-                            assertTrue(client.getLifecycleService().isRunning());
-                            assertOpenEventually(reconnectedLatch);
+                    ASSERT_TRUE(client.getLifecycleService().isRunning());
+                    ASSERT_OPEN_EVENTUALLY(reconnectedLatch);
 
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     map.size();
@@ -1182,9 +1184,9 @@ namespace hazelcast {
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers) {
                     HazelcastServer ownerServer(*g_srvFactory);
 
-                    hazelcast::util::CountDownLatch connectedLatch(1);
-                    hazelcast::util::CountDownLatch disconnectedLatch(1);
-                    hazelcast::util::CountDownLatch reconnectedLatch(1);
+                    latch connectedLatch(1);
+                    latch disconnectedLatch(1);
+                    latch reconnectedLatch(1);
 
                     clientConfig.getNetworkConfig().setConnectionAttemptLimit(10);
                     LifecycleStateListener listener(connectedLatch, LifecycleEvent::CLIENT_CONNECTED);
@@ -3489,96 +3491,96 @@ namespace hazelcast {
 
             void testLockLockThread(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
+                latch *latch1 = (latch *) args.arg1;
                 if (!l->tryLock())
-                    latch->countDown();
+                    latch1->count_down();
             }
 
             TEST_F(ClientLockTest, testLock) {
                 l->lock();
-                hazelcast::util::CountDownLatch latch(1);
-                hazelcast::util::StartedThread t(testLockLockThread, l, &latch);
+                latch latch1(1);
+                hazelcast::util::StartedThread t(testLockLockThread, l, &latch1);
 
-                ASSERT_TRUE(latch.await(5));
+                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(5)));
                 l->forceUnlock();
             }
 
             void testLockTtlThread(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
+                latch *latch1 = (latch *) args.arg1;
                 if (!l->tryLock()) {
-                    latch->countDown();
+                    latch1->count_down();
                 }
                 if (l->tryLock(5 * 1000)) {
-                    latch->countDown();
+                    latch1->count_down();
                 }
             }
 
             TEST_F(ClientLockTest, testLockTtl) {
                 l->lock(3 * 1000);
-                hazelcast::util::CountDownLatch latch(2);
-                hazelcast::util::StartedThread t(testLockTtlThread, l, &latch);
-                ASSERT_TRUE(latch.await(10));
+                latch latch1(2);
+                hazelcast::util::StartedThread t(testLockTtlThread, l, &latch1);
+                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(10)));
                 l->forceUnlock();
             }
 
             void testLockTryLockThread1(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
+                latch *latch1 = (latch *) args.arg1;
                 if (!l->tryLock(2 * 1000)) {
-                    latch->countDown();
+                    latch1->count_down();
                 }
             }
 
             void testLockTryLockThread2(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
+                latch *latch1 = (latch *) args.arg1;
                 if (l->tryLock(20 * 1000)) {
-                    latch->countDown();
+                    latch1->count_down();
                 }
             }
 
             TEST_F(ClientLockTest, testTryLock) {
 
                 ASSERT_TRUE(l->tryLock(2 * 1000));
-                hazelcast::util::CountDownLatch latch(1);
-                hazelcast::util::StartedThread t1(testLockTryLockThread1, l, &latch);
-                ASSERT_TRUE(latch.await(100));
+                latch latch1(1);
+                hazelcast::util::StartedThread t1(testLockTryLockThread1, l, &latch1);
+                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(100)));
 
                 ASSERT_TRUE(l->isLocked());
 
-                hazelcast::util::CountDownLatch latch2(1);
+                latch latch2(1);
                 hazelcast::util::StartedThread t2(testLockTryLockThread2, l, &latch2);
                 hazelcast::util::sleep(1);
                 l->unlock();
-                ASSERT_TRUE(latch2.await(100));
+                ASSERT_EQ(cv_status::no_timeout, latch2.wait_for(chrono::seconds(100)));
                 ASSERT_TRUE(l->isLocked());
                 l->forceUnlock();
             }
 
             void testLockForceUnlockThread(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
+                latch *latch1 = (latch *) args.arg1;
                 l->forceUnlock();
-                latch->countDown();
+                latch1->count_down();
             }
 
             TEST_F(ClientLockTest, testForceUnlock) {
                 l->lock();
-                hazelcast::util::CountDownLatch latch(1);
-                hazelcast::util::StartedThread t(testLockForceUnlockThread, l, &latch);
-                ASSERT_TRUE(latch.await(100));
+                latch latch1(1);
+                hazelcast::util::StartedThread t(testLockForceUnlockThread, l, &latch1);
+                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(100)));
                 ASSERT_FALSE(l->isLocked());
             }
 
             void testStatsThread(hazelcast::util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
+                latch *latch1 = (latch *) args.arg1;
                 ASSERT_TRUE(l->isLocked());
                 ASSERT_FALSE(l->isLockedByCurrentThread());
                 ASSERT_EQ(1, l->getLockCount());
                 ASSERT_TRUE(l->getRemainingLeaseTime() > 1000 * 30);
-                latch->countDown();
+                latch1->count_down();
             }
 
             TEST_F(ClientLockTest, testStats) {
@@ -3598,9 +3600,9 @@ namespace hazelcast {
                 ASSERT_EQ(1, l->getLockCount());
                 ASSERT_TRUE(l->getRemainingLeaseTime() > 1000 * 30);
 
-                hazelcast::util::CountDownLatch latch(1);
-                hazelcast::util::StartedThread t(testStatsThread, l, &latch);
-                ASSERT_TRUE(latch.await(60));
+                latch latch1(1);
+                hazelcast::util::StartedThread t(testStatsThread, l, &latch1);
+                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(60)));
             }
         }
     }
