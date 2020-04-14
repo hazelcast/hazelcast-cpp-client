@@ -18,10 +18,6 @@
 
 #include <string>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <WinSock2.h>
-#endif
-
 #include <vector>
 
 #include "hazelcast/util/HazelcastDll.h"

@@ -1972,14 +1972,14 @@ namespace hazelcast {
             }
 
             void IssueTest::Issue864MapListener::entryAdded(const EntryEvent<int, int> &event) {
-                if (cv_status::timeout == latch2.wait_for(chrono::seconds(0))) {
+                auto key = event.getKey();
+                ASSERT_TRUE(1 == key || 2 == key);
+                if (key == 1) {
                     // The received event should be the addition of key value: 1, 10
-                    ASSERT_EQ(1, event.getKey());
                     ASSERT_EQ(10, event.getValue());
                     latch1.count_down();
                 } else {
                     // The received event should be the addition of key value: 2, 20
-                    ASSERT_EQ(2, event.getKey());
                     ASSERT_EQ(20, event.getValue());
                     latch2.count_down();
                 }

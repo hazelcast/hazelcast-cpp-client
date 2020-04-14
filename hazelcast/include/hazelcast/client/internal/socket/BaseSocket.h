@@ -237,7 +237,16 @@ namespace hazelcast {
 
                     virtual void async_handle_connect(const std::shared_ptr<connection::Connection> connection,
                                                       const std::shared_ptr<connection::AuthenticationFuture> authFuture) {
-                        setSocketOptions(socketOptions);
+                        try {
+                            setSocketOptions(socketOptions);
+                        } catch (std::exception &e) {
+                            std::make_exception_ptr(exception::IOException(
+                                    "Connection::do_connect",
+                                    (boost::format(
+                                            "Failed to set socket options for %1%. %2%") % e.what() %
+                                     (*connection)).str()));
+                            return;
+                        }
 
                         static const std::string PROTOCOL_TYPE_BYTES("CB2");
                         async_write(*socket_, boost::asio::buffer(PROTOCOL_TYPE_BYTES),
