@@ -2124,11 +2124,9 @@ namespace hazelcast {
 
                 class SampleInitialListener : public InitialMembershipListener {
                 public:
-                    SampleInitialListener(latch &_memberAdded, latch &_attributeLatch,
-                                          latch &_memberRemoved)
+                    SampleInitialListener(latch &_memberAdded, latch &_attributeLatch, latch &_memberRemoved)
                             : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch),
                               _memberRemoved(_memberRemoved) {
-
                     }
 
                     void init(const InitialMembershipEvent &event) {
@@ -2164,7 +2162,6 @@ namespace hazelcast {
                                                        latch &_memberRemoved)
                             : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch),
                               _memberRemoved(_memberRemoved) {
-
                     }
 
                     void memberAdded(const MembershipEvent &event) {
@@ -2274,7 +2271,7 @@ namespace hazelcast {
 
             TEST_P(SimpleListenerTest, testClusterListenersFromConfig) {
                 latch memberAdded(1);
-                latch memberAddedInit(1);
+                latch memberAddedInit(2);
                 latch memberRemoved(1);
                 latch memberRemovedInit(1);
                 latch attributeLatch(7);
