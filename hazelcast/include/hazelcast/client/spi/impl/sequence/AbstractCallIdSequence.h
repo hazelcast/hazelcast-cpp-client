@@ -66,14 +66,16 @@ namespace hazelcast {
                         virtual void handleNoSpaceLeft() = 0;
 
                         bool hasSpace();
+
                     private:
-                        static const size_t INDEX_HEAD = 7;
-                        static const size_t INDEX_TAIL = 15;
+                        static constexpr size_t INDEX_HEAD = 7;
+                        static constexpr size_t INDEX_TAIL = 15;
 
                         int32_t maxConcurrentInvocations;
 
                         // instead of using 2 AtomicLongs, we use an array if width of 3 cache lines to prevent any false sharing.
-                        util::AtomicArray<int64_t> longs;
+                        std::array<std::atomic<int64_t>,
+                                3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES> longs;
                     };
                 }
             }

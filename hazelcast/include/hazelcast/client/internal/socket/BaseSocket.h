@@ -35,7 +35,7 @@ namespace hazelcast {
                 public:
                     BaseSocket(std::unique_ptr<T> socket, const Address &address,
                                client::config::SocketOptions &socketOptions,
-                               boost::asio::io_context &io, int64_t connectTimeoutInMillis)
+                               boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis)
                             : socketOptions(socketOptions), socket_(std::move(socket)), remoteEndpoint(address), io(io),
                               resolver(socket_->get_executor()), connectTimer(socket_->get_executor()),
                               connectTimeoutMillis(connectTimeoutInMillis) {
@@ -130,10 +130,9 @@ namespace hazelcast {
                                                          if (ec) {
                                                              auto invocationIt = connection->invocations.find(
                                                                      correlationId);
-                                                             //TODO
-/*                                                             if (invocationIt == connection->invocations.end()) {
-                                                                 connection->getLogger().warning("async_write could not find invocation for correlation id: ", correlationId);
-                                                             }*/
+
+                                                             assert(invocationIt != connection->invocations.end());
+
                                                              auto message = (boost::format{
                                                                      "Error %1% during invocation write for %2% on connection %3%"} %
                                                                              ec % *invocation % *connection).str();
@@ -274,7 +273,7 @@ namespace hazelcast {
                     boost::asio::io_context &io;
                     boost::asio::ip::tcp::resolver resolver;
                     boost::asio::steady_timer connectTimer;
-                    std::chrono::milliseconds connectTimeoutMillis;
+                    std::chrono::steady_clock::duration connectTimeoutMillis;
                 };
             }
         }

@@ -87,15 +87,17 @@ namespace hazelcast {
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
                                                                      const std::shared_ptr<AddressTranslator> &addressTranslator,
                                                                      const std::vector<std::shared_ptr<AddressProvider> > &addressProviders)
-                    : logger(client.getLogger()), client(client),
+                    : logger(client.getLogger()), connectionTimeoutMillis(std::chrono::milliseconds::max()),
+                      client(client),
                       socketInterceptor(client.getClientConfig().getSocketInterceptor()),
                       executionService(client.getClientExecutionService()),
                       translator(addressTranslator), clusterConnectionExecutor(1), connectionIdGen(0),
                       socketFactory(client, ioContext), heartbeat(client, *this) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
-
                 int64_t connTimeout = networkConfig.getConnectionTimeout();
-                connectionTimeoutMillis = connTimeout == 0 ? INT64_MAX : connTimeout;
+                if (connTimeout > 0) {
+                    connectionTimeoutMillis = std::chrono::milliseconds(connTimeout);
+                }
 
                 credentials = client.getClientConfig().getCredentials();
 
@@ -700,39 +702,27 @@ namespace hazelcast {
                                                                     ClientConnectionManagerImpl &connectionManager)
                     : connection(connection), asOwner(asOwner),
                       target(target), authFuture(f),
-                      connectionManager(connectionManager.shared_from_this()),
-                      cancelled(false) {
+                      connectionManager(connectionManager.shared_from_this()) {
                 scheduleTimeoutTask();
             }
 
             void ClientConnectionManagerImpl::AuthCallback::cancelTimeoutTask() {
-                {
-                    std::lock_guard<std::mutex> g(timeoutMutex);
-                    cancelled = true;
-                }
-                timeoutCondition.notify_one();
-                timeoutTaskFuture.get();
+                timeoutTimer->cancel();
             }
 
             void ClientConnectionManagerImpl::AuthCallback::scheduleTimeoutTask() {
-                timeoutTaskFuture = std::async([=] {
-                    std::unique_lock<std::mutex> uniqueLock(timeoutMutex);
-                    if (cancelled) {
+                auto executor = connection->getSocket().get_executor();
+                timeoutTimer = std::make_shared<boost::asio::steady_timer>(executor);
+                timeoutTimer->expires_from_now(connectionManager->connectionTimeoutMillis);
+                timeoutTimer->async_wait([=](boost::system::error_code ec) {
+                    if (ec) {
                         return;
                     }
-
-                    if (timeoutCondition.wait_for(uniqueLock,
-                                                  std::chrono::milliseconds(connectionManager->connectionTimeoutMillis),
-                                                  [&] { return cancelled; })) {
-                        return;
-                    }
-
                     authFuture->onFailure(
                             std::make_exception_ptr((exception::ExceptionBuilder<exception::TimeoutException>(
                                     "ClientConnectionManagerImpl::authenticate")
                                     << "Authentication response did not come back in "
-                                    << connectionManager->connectionTimeoutMillis
-                                    << " millis").build()));
+                                    << connectionManager->connectionTimeoutMillis.count() << " millis").build()));
                 });
             }
 
@@ -900,7 +890,8 @@ namespace hazelcast {
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
                                    const std::shared_ptr<AuthenticationFuture> &authFuture,
                                    internal::socket::SocketFactory &socketFactory, bool asOwner,
-                                   ClientConnectionManagerImpl &clientConnectionManager, int64_t connectTimeoutInMillis)
+                                   ClientConnectionManagerImpl &clientConnectionManager,
+                                   std::chrono::steady_clock::duration &connectTimeoutInMillis)
                     : readHandler(*this, 16 << 10),
                       startTimeInMillis(util::currentTimeMillis()), closedTimeMillis(0),
                       clientContext(clientContext),
@@ -1132,6 +1123,10 @@ namespace hazelcast {
                 return *socket;
             }
 
+            void Connection::deregisterListenerInvocation(int64_t callId) {
+                invocations.erase(callId);
+            }
+
             ClientConnectionStrategy::ClientConnectionStrategy(spi::ClientContext &clientContext, util::ILogger &logger,
                                                                const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig)
                     : clientContext(clientContext), logger(logger),
@@ -1294,7 +1289,7 @@ namespace hazelcast {
             DefaultClientConnectionStrategy::shutdownWithExternalThread(
                     std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl) {
 
-                std::thread shutdownThread([=] {
+                std::thread([=] {
                     std::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
                     if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
                         return;
@@ -1307,9 +1302,7 @@ namespace hazelcast {
                                                             clientInstance->getName() + ".clientShutdown-", ":",
                                                             exception);
                     }
-                });
-
-                shutdownThread.detach();
+                }).detach();
             }
 
             void DefaultClientConnectionStrategy::checkShutdown(const std::string &methodName) {
@@ -1373,11 +1366,11 @@ namespace hazelcast {
 #else
                     (void) clientContext;
 #endif
-
                     return true;
                 }
 
-                std::unique_ptr<Socket> SocketFactory::create(const Address &address, int64_t connectTimeoutInMillis) {
+                std::unique_ptr<Socket> SocketFactory::create(const Address &address,
+                                                              std::chrono::steady_clock::duration &connectTimeoutInMillis) {
 #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
                         return std::unique_ptr<Socket>(new internal::socket::SSLSocket(io, *sslContext, address,
@@ -1395,7 +1388,7 @@ namespace hazelcast {
 
                 SSLSocket::SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &sslContext,
                                      const client::Address &address, client::config::SocketOptions &socketOptions,
-                                     int64_t connectTimeoutInMillis)
+                                     std::chrono::steady_clock::duration &connectTimeoutInMillis)
                         : BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(
                         std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(
                                 new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(ioService, sslContext)),
@@ -1450,7 +1443,8 @@ namespace hazelcast {
 #endif // HZ_BUILD_WITH_SSL
 
                 TcpSocket::TcpSocket(boost::asio::io_context &io, const Address &address,
-                                     client::config::SocketOptions &socketOptions, int64_t connectTimeoutInMillis)
+                                     client::config::SocketOptions &socketOptions,
+                                     std::chrono::steady_clock::duration &connectTimeoutInMillis)
                         : BaseSocket<boost::asio::ip::tcp::socket>(
                         std::unique_ptr<boost::asio::ip::tcp::socket>(new boost::asio::ip::tcp::socket(io)),
                         address, socketOptions, io, connectTimeoutInMillis) {

@@ -47,7 +47,7 @@ namespace hazelcast {
 
                     SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &context,
                               const client::Address &address, client::config::SocketOptions &socketOptions,
-                              int64_t connectTimeoutInMillis);
+                              std::chrono::steady_clock::duration &connectTimeoutInMillis);
 
                     /**
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.

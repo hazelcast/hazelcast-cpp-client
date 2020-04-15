@@ -211,10 +211,7 @@ namespace hazelcast {
                     Address target;
                     std::shared_ptr<AuthenticationFuture> authFuture;
                     std::shared_ptr<ClientConnectionManagerImpl> connectionManager;
-                    std::future<void> timeoutTaskFuture;
-                    std::mutex timeoutMutex;
-                    std::condition_variable timeoutCondition;
-                    bool cancelled;
+                    std::shared_ptr<boost::asio::steady_timer> timeoutTimer;
 
                     void onAuthenticationFailed(const Address &target, const std::shared_ptr<Connection> &connection,
                                                 std::exception_ptr cause);
@@ -229,7 +226,7 @@ namespace hazelcast {
                 util::AtomicBoolean alive;
 
                 util::ILogger &logger;
-                int64_t connectionTimeoutMillis;
+                std::chrono::steady_clock::duration connectionTimeoutMillis;
 
                 spi::ClientContext &client;
                 SocketInterceptor *socketInterceptor;

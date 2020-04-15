@@ -597,7 +597,6 @@ namespace hazelcast {
                           client(client), invocationLogger(client.getLogger()),
                           connectionManager(NULL),
                           partitionService(client.getPartitionService()),
-                          clientListenerService(NULL),
                           invocationTimeoutMillis(client.getClientProperties().getInteger(
                                   client.getClientProperties().getInvocationTimeoutSeconds()) * 1000),
                           invocationRetryPauseMillis(client.getClientProperties().getLong(
@@ -607,45 +606,7 @@ namespace hazelcast {
 
                 bool AbstractClientInvocationService::start() {
                     connectionManager = &client.getConnectionManager();
-                    clientListenerService = static_cast<listener::AbstractClientListenerService *>(&client.getClientListenerService());
-
                     responseThread.start();
-
-/*
-                    int64_t cleanResourcesMillis = client.getClientProperties().getLong(CLEAN_RESOURCES_MILLIS);
-                    if (cleanResourcesMillis <= 0) {
-                        cleanResourcesMillis = util::IOUtil::to_value<int64_t>(
-                                CLEAN_RESOURCES_MILLIS.getDefaultValue());
-                    }
-
-                    auto duration = std::chrono::milliseconds(cleanResourcesMillis);
-                    client.getClientExecutionService().scheduleWithRepetition([=]() {
-                        std::vector<int64_t> invocationsToBeRemoved;
-                        for (auto &entry : this->invocations.entrySet()) {
-                            int64_t key = entry.first;
-                            const std::shared_ptr<ClientInvocation> &invocation = entry.second;
-                            std::shared_ptr<connection::Connection> connection = invocation->getSendConnection();
-                            if (!connection.get()) {
-                                continue;
-                            }
-
-                            if (connection->isAlive()) {
-                                continue;
-                            }
-
-                            invocationsToBeRemoved.push_back(key);
-
-                            invocation->notifyException(
-                                    std::make_exception_ptr(exception::TargetDisconnectedException("CleanResourcesTask",
-                                                                                                   connection->getCloseReason())));
-                        }
-
-                        for (int64_t invocationId : invocationsToBeRemoved) {
-                            invocations.remove(invocationId);
-                        }
-                    }, duration, duration);
-*/
-
                     return true;
                 }
 
@@ -673,10 +634,6 @@ namespace hazelcast {
                     responseThread.process(invocation, response);
                 }
 
-                std::shared_ptr<ClientInvocation> AbstractClientInvocationService::deRegisterCallId(int64_t callId) {
-                    return invocations.remove(callId);
-                }
-
                 void AbstractClientInvocationService::send(std::shared_ptr<impl::ClientInvocation> invocation,
                                                            std::shared_ptr<connection::Connection> connection) {
                     if (isShutdown) {
@@ -687,17 +644,6 @@ namespace hazelcast {
 
                     writeToConnection(*connection, invocation);
                     invocation->setSendConnection(connection);
-                }
-
-                void AbstractClientInvocationService::registerInvocation(
-                        const std::shared_ptr<ClientInvocation> &clientInvocation) {
-                    const std::shared_ptr<protocol::ClientMessage> &clientMessage = clientInvocation->getClientMessage();
-                    int64_t correlationId = clientMessage->getCorrelationId();
-                    const std::shared_ptr<
-                            EventHandler<protocol::ClientMessage> > handler = clientInvocation->getEventHandler();
-                    if (handler.get() != NULL) {
-                        clientListenerService->addEventHandler(correlationId, handler);
-                    }
                 }
 
                 void AbstractClientInvocationService::writeToConnection(connection::Connection &connection,
@@ -1329,14 +1275,20 @@ namespace hazelcast {
                     assert (clientMessage.get() != NULL);
                     clientMessage.get()->setCorrelationId(callIdSequence->next());
                     invokeOnSelection();
-                    return invocationPromise.get_future();
+                    return invocationPromise.get_future().then(launch::sync, [=](future<protocol::ClientMessage> f) {
+                        callIdSequence->complete();
+                        return f.get();
+                    });
                 }
 
                 future<protocol::ClientMessage> ClientInvocation::invokeUrgent() {
                     assert (clientMessage.get() != NULL);
                     clientMessage.get()->setCorrelationId(callIdSequence->forceNext());
                     invokeOnSelection();
-                    return invocationPromise.get_future();
+                    return invocationPromise.get_future().then(launch::sync, [=](future<protocol::ClientMessage> f) {
+                        callIdSequence->complete();
+                        return f.get();
+                    });
                 }
 
                 void ClientInvocation::invokeOnSelection() {
@@ -2035,14 +1987,17 @@ namespace hazelcast {
                         return head;
                     }
 
-                    AbstractCallIdSequence::AbstractCallIdSequence(int32_t maxConcurrentInvocations) : longs(
-                            3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES) {
+                    // TODO: see if we can utilize std::hardware_destructive_interference_size
+                    AbstractCallIdSequence::AbstractCallIdSequence(int32_t maxConcurrentInvocations) {
                         std::ostringstream out;
                         out << "maxConcurrentInvocations should be a positive number. maxConcurrentInvocations="
                             << maxConcurrentInvocations;
-                        util::Preconditions::checkPositive(maxConcurrentInvocations, out.str());
+                        this->maxConcurrentInvocations = util::Preconditions::checkPositive(maxConcurrentInvocations,
+                                                                                            out.str());
 
-                        this->maxConcurrentInvocations = maxConcurrentInvocations;
+                        for (size_t i = 0; i < longs.size(); ++i) {
+                            longs[i] = 0;
+                        }
                     }
 
                     AbstractCallIdSequence::~AbstractCallIdSequence() {
@@ -2060,24 +2015,24 @@ namespace hazelcast {
                     }
 
                     int64_t AbstractCallIdSequence::forceNext() {
-                        return longs.incrementAndGet(INDEX_HEAD);
+                        return ++longs[INDEX_HEAD];
                     }
 
                     void AbstractCallIdSequence::complete() {
-                        int64_t newTail = longs.incrementAndGet(INDEX_TAIL);
-                        assert(newTail <= longs.get(INDEX_HEAD));
+                        ++longs[INDEX_TAIL];
+                        assert(longs[INDEX_TAIL] <= longs[INDEX_HEAD]);
                     }
 
                     int64_t AbstractCallIdSequence::getLastCallId() {
-                        return longs.get(INDEX_HEAD);
+                        return longs[INDEX_HEAD];
                     }
 
                     bool AbstractCallIdSequence::hasSpace() {
-                        return longs.get(INDEX_HEAD) - longs.get(INDEX_TAIL) < maxConcurrentInvocations;
+                        return longs[INDEX_HEAD] - longs[INDEX_TAIL] < maxConcurrentInvocations;
                     }
 
                     int64_t AbstractCallIdSequence::getTail() {
-                        return longs.get(INDEX_TAIL);
+                        return longs[INDEX_TAIL];
                     }
 
                     const std::unique_ptr<util::concurrent::IdleStrategy> CallIdSequenceWithBackpressure::IDLER(
@@ -2182,37 +2137,27 @@ namespace hazelcast {
 /*                      TODO
                         assert (!Thread.currentThread().getName().contains("eventRegistration"));
 */
-                        return boost::asio::post(registrationExecutor, std::packaged_task<bool()>([=]() {
-                            return deregisterListenerInternal(registrationId);
-                        })).get();
+                        return deregisterListenerInternal(registrationId);
                     }
 
                     void AbstractClientListenerService::connectionAdded(
                             const std::shared_ptr<connection::Connection> connection) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
                         boost::asio::post(registrationExecutor, [=]() { connectionAddedInternal(connection); });
                     }
 
                     void AbstractClientListenerService::connectionRemoved(
                             const std::shared_ptr<connection::Connection> connection) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
-
                         boost::asio::post(registrationExecutor, [=]() { connectionRemovedInternal(connection); });
                     }
 
-                    void AbstractClientListenerService::addEventHandler(int64_t callId,
-                                                                        const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
-                        eventHandlerMap.put(callId, handler);
-                    }
-
-                    void AbstractClientListenerService::removeEventHandler(int64_t callId) {
-                        eventHandlerMap.remove(callId);
+                    void
+                    AbstractClientListenerService::removeEventHandler(const ClientEventRegistration &registration) {
+                        auto callId = registration.getCallId();
+                        auto connection = registration.getSubscriber();
+                        boost::asio::post(connection->getSocket().get_executor(),
+                                          std::packaged_task<void()>([=]() {
+                                              connection->deregisterListenerInvocation(callId);
+                                          }));
                     }
 
                     void AbstractClientListenerService::handleClientMessage(
@@ -2295,7 +2240,8 @@ namespace hazelcast {
                                                                                                         request, "",
                                                                                                         subscriber);
                                 invocation->invoke().get();
-                                removeEventHandler(registration.getCallId());
+
+                                removeEventHandler(registration);
 
                                 ConnectionRegistrationsMap::iterator oldEntry = it;
                                 ++it;
@@ -2338,7 +2284,7 @@ namespace hazelcast {
                             ConnectionRegistrationsMap::iterator foundRegistration = registrationMap->find(
                                     connection);
                             if (foundRegistration != registrationMap->end()) {
-                                removeEventHandler(foundRegistration->second.getCallId());
+                                removeEventHandler(foundRegistration->second);
                                 registrationMap->erase(foundRegistration);
                                 registrations.put(registrationMapEntry.first,
                                                   registrationMap);
@@ -2483,7 +2429,6 @@ namespace hazelcast {
                         timer->expires_from_now(std::chrono::seconds(1));
                         timer->async_wait([this, timer](system::error_code ec) {
                             if (ec) {
-                                logger.warning("Error during connecting to all members. ", ec);
                                 return;
                             }
                             asyncConnectToAllMembersInternal();

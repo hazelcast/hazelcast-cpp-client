@@ -59,9 +59,6 @@ namespace hazelcast {
 
                         virtual void shutdown();
 
-                        void addEventHandler(int64_t callId,
-                                             const std::shared_ptr<EventHandler<protocol::ClientMessage>> &handler);
-
                         void handleClientMessage(const std::shared_ptr<ClientInvocation> invocation,
                                                  const std::shared_ptr<protocol::ClientMessage> response);
 
@@ -91,7 +88,7 @@ namespace hazelcast {
                         typedef std::map<std::shared_ptr<connection::Connection>, ClientEventRegistration, ConnectionPointerLessComparator> ConnectionRegistrationsMap;
                         typedef util::SynchronizedMap<ClientRegistrationKey, ConnectionRegistrationsMap> RegistrationsMap;
 
-                        void removeEventHandler(int64_t callId);
+                        void removeEventHandler(const ClientEventRegistration &registration);
 
                         virtual std::string
                         registerListenerInternal(const std::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
@@ -109,7 +106,6 @@ namespace hazelcast {
                         void invoke(const ClientRegistrationKey &registrationKey,
                                     const std::shared_ptr<connection::Connection> &connection);
 
-                        util::SynchronizedMap<int64_t, EventHandler<protocol::ClientMessage> > eventHandlerMap;
                         ClientContext &clientContext;
                         serialization::pimpl::SerializationService &serializationService;
                         util::ILogger &logger;

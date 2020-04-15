@@ -74,7 +74,8 @@ namespace hazelcast {
                 Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
                            const std::shared_ptr<AuthenticationFuture> &authFuture,
                            internal::socket::SocketFactory &socketFactory, bool asOwner,
-                           ClientConnectionManagerImpl &clientConnectionManager, int64_t connectTimeoutInMillis);
+                           ClientConnectionManagerImpl &clientConnectionManager,
+                           std::chrono::steady_clock::duration &connectTimeoutInMillis);
 
                 virtual ~Connection();
 
@@ -123,6 +124,8 @@ namespace hazelcast {
                 int64_t getStartTimeInMillis() const;
 
                 const Socket &getSocket() const;
+
+                void deregisterListenerInvocation(int64_t callId);
 
                 void authenticate();
 

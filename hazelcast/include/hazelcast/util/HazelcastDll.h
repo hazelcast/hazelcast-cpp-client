@@ -16,13 +16,7 @@
 #ifndef HAZELCAST_HAZELCASTDLL
 #define HAZELCAST_HAZELCASTDLL
 
-#if defined(__SIZEOF_INT128__)
-#  define BOOST_HAS_INT128
-#endif
-
-//# pragma warning(push)
-//#pragma warning(disable: 4251) 	
-//# pragma warning(pop)
+#include <boost/config.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #if !(defined(HAZELCAST_USE_STATIC) || defined(HAZELCAST_USE_SHARED))
@@ -47,6 +41,7 @@
     #define HAZELCAST_API
  #endif
 namespace hazelcast{
+    using namespace boost;
     typedef unsigned char byte;
 }
 

@@ -88,18 +88,11 @@ namespace hazelcast {
                     util::ILogger &invocationLogger;
                     connection::ClientConnectionManagerImpl *connectionManager;
                     ClientPartitionService &partitionService;
-                    spi::impl::listener::AbstractClientListenerService *clientListenerService;
-
-                    util::SynchronizedMap<int64_t, ClientInvocation> invocations;
 
                     util::AtomicBoolean isShutdown;
                     int64_t invocationTimeoutMillis;
                     int64_t invocationRetryPauseMillis;
                     ResponseProcessor responseThread;
-
-                    std::shared_ptr<ClientInvocation> deRegisterCallId(int64_t callId);
-
-                    void registerInvocation(const std::shared_ptr<ClientInvocation> &clientInvocation);
 
                     void writeToConnection(connection::Connection &connection,
                                            const std::shared_ptr<ClientInvocation> &clientInvocation);
