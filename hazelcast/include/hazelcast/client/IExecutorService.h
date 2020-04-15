@@ -67,7 +67,7 @@ namespace hazelcast {
             template<typename T>
             class executor_promise {
             public:
-                executor_promise(future<std::shared_ptr<T>> &future, const std::string &uuid, int partitionId,
+                executor_promise(boost::future<std::shared_ptr<T>> &future, const std::string &uuid, int partitionId,
                                  const Address &address, spi::ClientContext &context,
                                  const std::shared_ptr<spi::impl::ClientInvocation> &invocation)
                         : sharedFuture(future.share()), uuid(uuid), partitionId(partitionId), address(address),
@@ -86,12 +86,12 @@ namespace hazelcast {
                     return false;
                 }
 
-                shared_future<std::shared_ptr<T>> get_future() {
+                boost::shared_future<std::shared_ptr<T>> get_future() {
                     return sharedFuture;
                 }
 
             private:
-                shared_future<std::shared_ptr<T>> sharedFuture;
+                boost::shared_future<std::shared_ptr<T>> sharedFuture;
                 std::string uuid;
                 int partitionId;
                 Address address;
@@ -593,7 +593,7 @@ namespace hazelcast {
 
                 auto messageFuture = invokeOnPartitionInternal(taskData, partitionId, uuid);
 
-                messageFuture.first.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                messageFuture.first.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     try {
                         auto result = SUBMIT_TO_PARTITION_DECODER<T>()->decodeClientMessage(f.get(),
                                                                                             getSerializationService());
@@ -605,7 +605,7 @@ namespace hazelcast {
                 });
             }
 
-            std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
+            std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
             invokeOnPartitionInternal(const serialization::pimpl::Data &taskData, int partitionId,
                                       const std::string &uuid) {
                 std::unique_ptr<protocol::ClientMessage> request =
@@ -673,7 +673,7 @@ namespace hazelcast {
 
                 auto messageFuture = invokeOnAddressInternal<HazelcastSerializable>(task, address, uuid);
 
-                messageFuture.first.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                messageFuture.first.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     try {
                         auto result = SUBMIT_TO_ADDRESS_DECODER<T>()->decodeClientMessage(f.get(),
                                                                                           getSerializationService());
@@ -685,7 +685,7 @@ namespace hazelcast {
             }
 
             template<typename HazelcastSerializable>
-            std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
+            std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
             invokeOnAddressInternal(const HazelcastSerializable &task, const Address &address,
                                     const std::string &uuid) {
                 auto request = protocol::codec::ExecutorServiceSubmitToAddressCodec::encodeRequest(name, uuid,
@@ -695,15 +695,15 @@ namespace hazelcast {
                 return invokeOnTarget(request, address);
             }
 
-            std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
+            std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
             invokeOnPartitionOwner(std::unique_ptr<protocol::ClientMessage> &request, int partitionId);
 
-            std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
+            std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
             invokeOnTarget(std::unique_ptr<protocol::ClientMessage> &request, const Address &target);
 
             template<typename T, typename DECODER>
             std::shared_ptr<T>
-            retrieveResultFromMessage(future<protocol::ClientMessage> &f) {
+            retrieveResultFromMessage(boost::future<protocol::ClientMessage> &f) {
                 return impl::DataMessageDecoder<DECODER, T>::instance()->decodeClientMessage(f.get(),
                                                                                              getSerializationService());
             }
@@ -711,36 +711,38 @@ namespace hazelcast {
             template<typename T, typename DECODER>
             executor_promise<T>
             checkSync(
-                    std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
+                    std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
                     const std::string &uuid, int partitionId, bool preventSync) {
                 return checkSync<T, DECODER>(futurePair, uuid, partitionId, Address(), preventSync);
             }
 
             template<typename T, typename DECODER>
-            future<std::shared_ptr<T>>
-            retrieveResultSync(future<protocol::ClientMessage> &future) {
+            boost::future<std::shared_ptr<T>>
+            retrieveResultSync(boost::future<protocol::ClientMessage> &future) {
                 try {
                     std::shared_ptr<T> response = retrieveResultFromMessage<T, DECODER>(future);
                     return boost::make_ready_future<std::shared_ptr<T>>(response);
                 } catch (exception::IException &e) {
-                    return boost::make_exceptional_future<std::shared_ptr<T>>(current_exception());
+                    return boost::make_exceptional_future<std::shared_ptr<T>>(boost::current_exception());
                 }
             }
 
             template<typename T, typename DECODER>
             executor_promise<T>
             checkSync(
-                    std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
+                    std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
                     const std::string &uuid, int partitionId, const Address &address, bool preventSync) {
                 bool sync = isSyncComputation(preventSync);
-                future<std::shared_ptr<T>> objectFuture;
+                boost::future<std::shared_ptr<T>> objectFuture;
                 if (sync) {
                     objectFuture = retrieveResultSync<T, DECODER>(futurePair.first);
                 } else {
-                    objectFuture = futurePair.first.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
-                        return impl::DataMessageDecoder<DECODER, T>::instance()->decodeClientMessage(f.get(),
-                                                                                                     getSerializationService());
-                    });
+                    objectFuture = futurePair.first.then(boost::launch::sync,
+                                                         [=](boost::future<protocol::ClientMessage> f) {
+                                                             return impl::DataMessageDecoder<DECODER, T>::instance()->decodeClientMessage(
+                                                                     f.get(),
+                                                                     getSerializationService());
+                                                         });
                 }
 
                 return executor_promise<T>(objectFuture, uuid, partitionId, address, getContext(), futurePair.second);

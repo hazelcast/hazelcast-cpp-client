@@ -62,23 +62,23 @@ namespace hazelcast {
 
                 virtual void set(int64_t newValue);
 
-                virtual future<std::shared_ptr<int64_t>> addAndGetAsync(int64_t delta);
+                virtual boost::future<std::shared_ptr<int64_t>> addAndGetAsync(int64_t delta);
 
-                virtual future<std::shared_ptr<bool>> compareAndSetAsync(int64_t expect, int64_t update);
+                virtual boost::future<std::shared_ptr<bool>> compareAndSetAsync(int64_t expect, int64_t update);
 
-                virtual future<std::shared_ptr<int64_t>> decrementAndGetAsync();
+                virtual boost::future<std::shared_ptr<int64_t>> decrementAndGetAsync();
 
-                virtual future<std::shared_ptr<int64_t>> getAsync();
+                virtual boost::future<std::shared_ptr<int64_t>> getAsync();
 
-                virtual future<std::shared_ptr<int64_t>> getAndAddAsync(int64_t delta);
+                virtual boost::future<std::shared_ptr<int64_t>> getAndAddAsync(int64_t delta);
 
-                virtual future<std::shared_ptr<int64_t>> getAndSetAsync(int64_t newValue);
+                virtual boost::future<std::shared_ptr<int64_t>> getAndSetAsync(int64_t newValue);
 
-                virtual future<std::shared_ptr<int64_t>> incrementAndGetAsync();
+                virtual boost::future<std::shared_ptr<int64_t>> incrementAndGetAsync();
 
-                virtual future<std::shared_ptr<int64_t>> getAndIncrementAsync();
+                virtual boost::future<std::shared_ptr<int64_t>> getAndIncrementAsync();
 
-                virtual future<void> setAsync(int64_t newValue);
+                virtual boost::future<void> setAsync(int64_t newValue);
             };
         }
     }

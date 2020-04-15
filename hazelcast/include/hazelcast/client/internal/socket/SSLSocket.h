@@ -29,8 +29,6 @@
 #pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
 
-using namespace boost;
-
 namespace hazelcast {
     namespace client {
         namespace internal {

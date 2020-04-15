@@ -49,7 +49,7 @@ namespace hazelcast {
                 std::shared_ptr<Connection> get();
 
             private:
-                std::shared_ptr<latch> countDownLatch;
+                std::shared_ptr<boost::latch> countDownLatch;
                 util::Sync<std::shared_ptr<Connection>> connection;
                 util::Sync<std::exception_ptr> throwable;
                 const Address address;

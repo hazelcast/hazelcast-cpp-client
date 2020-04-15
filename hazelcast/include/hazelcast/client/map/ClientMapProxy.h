@@ -971,7 +971,8 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                future <std::shared_ptr<ResultType>> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
+                boost::future<std::shared_ptr<ResultType>>
+                submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
@@ -1127,45 +1128,45 @@ namespace hazelcast {
                     return stats;
                 }
 
-                virtual future <std::shared_ptr<V>> getAsync(const K &key) {
+                virtual boost::future<std::shared_ptr<V>> getAsync(const K &key) {
                     auto future = getAsyncInternal(key);
-                    return future.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                    return future.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                         return GET_ASYNC_RESPONSE_DECODER()->decodeClientMessage(f.get(), getSerializationService());
                     });
                 }
 
-                future <std::shared_ptr<V>> putAsync(const K &key, const V &value) {
+                boost::future<std::shared_ptr<V>> putAsync(const K &key, const V &value) {
                     return putAsyncInternal(DEFAULT_TTL, util::concurrent::TimeUnit::MILLISECONDS(), NULL,
                                             util::concurrent::TimeUnit::MILLISECONDS(), toData<K>(key), value);
                 }
 
-                future <std::shared_ptr<V>>
+                boost::future<std::shared_ptr<V>>
                 putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
                     return putAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, toData<K>(key), value);
                 }
 
-                future <std::shared_ptr<V>>
+                boost::future<std::shared_ptr<V>>
                 putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                          int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
                     return putAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, toData<K>(key), value);
                 }
 
-                future<void> setAsync(const K &key, const V &value) {
+                boost::future<void> setAsync(const K &key, const V &value) {
                     return setAsync(key, value, DEFAULT_TTL, util::concurrent::TimeUnit::MILLISECONDS());
                 }
 
-                future<void>
+                boost::future<void>
                 setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
                     return setAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, toData<K>(key), value);
                 }
 
-                future<void>
+                boost::future<void>
                 setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                          int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
                     return setAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, toData<K>(key), value);
                 }
 
-                future <std::shared_ptr<V>> removeAsync(const K &key) {
+                boost::future<std::shared_ptr<V>> removeAsync(const K &key) {
                     return removeAsyncInternal(toData<K>(key));
                 }
 
@@ -1218,20 +1219,20 @@ namespace hazelcast {
                     return proxy::IMapImpl::remove(keyData, valueData);
                 }
 
-                virtual future <std::shared_ptr<V>>
+                virtual boost::future<std::shared_ptr<V>>
                 removeAsyncInternal(const serialization::pimpl::Data &keyData) {
                     try {
                         auto request = protocol::codec::MapRemoveCodec::encodeRequest(name, keyData,
                                                                                       util::getCurrentThreadId());
                         auto future = invokeOnKeyOwner(request, keyData);
-                        return future.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                        return future.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                             return REMOVE_ASYNC_RESPONSE_DECODER()->decodeClientMessage(f.get(),
                                                                                         getSerializationService());
                         });
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return future<std::shared_ptr<V>>();
+                    return boost::future<std::shared_ptr<V>>();
                 }
 
                 virtual void removeAllInternal(const serialization::pimpl::Data &predicateData) {
@@ -1338,7 +1339,7 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType>
-                future <std::shared_ptr<ResultType>>
+                boost::future<std::shared_ptr<ResultType>>
                 submitToKeyInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &processor) {
                     int partitionId = getPartitionId(keyData);
@@ -1350,7 +1351,7 @@ namespace hazelcast {
                                                                                 util::getCurrentThreadId());
 
                     auto future = invokeAndGetFuture(request, partitionId);
-                    return future.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                    return future.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                         auto data = protocol::codec::MapSubmitToKeyCodec::ResponseParameters::decode(f.get()).response;
                         return getSerializationService().template toSharedObject<ResultType>(data);
                     });
@@ -1381,17 +1382,17 @@ namespace hazelcast {
                     return std::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
                 }
 
-                virtual future <protocol::ClientMessage> getAsyncInternal(const K &key) {
+                virtual boost::future<protocol::ClientMessage> getAsyncInternal(const K &key) {
                     try {
                         serialization::pimpl::Data keyData = toData<K>(key);
                         return getAsyncInternal(keyData);
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return future<protocol::ClientMessage>();
+                    return boost::future<protocol::ClientMessage>();
                 }
 
-                virtual future <protocol::ClientMessage>
+                virtual boost::future<protocol::ClientMessage>
                 getAsyncInternal(const serialization::pimpl::Data &keyData) {
                     try {
                         std::unique_ptr<protocol::ClientMessage> request = protocol::codec::MapGetCodec::encodeRequest(
@@ -1400,10 +1401,10 @@ namespace hazelcast {
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return future<protocol::ClientMessage>();
+                    return boost::future<protocol::ClientMessage>();
                 }
 
-                virtual future <std::shared_ptr<V>>
+                virtual boost::future<std::shared_ptr<V>>
                 putAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
                                  const util::concurrent::TimeUnit &maxIdleUnit,
                                  const serialization::pimpl::Data &keyData,
@@ -1411,29 +1412,29 @@ namespace hazelcast {
                     try {
                         serialization::pimpl::Data valueData = toData<V>(value);
                         auto future = putAsyncInternalData(ttl, ttlUnit, maxIdle, maxIdleUnit, keyData, valueData);
-                        return future.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                        return future.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                             return PUT_ASYNC_RESPONSE_DECODER()->decodeClientMessage(f.get(),
                                                                                      getSerializationService());
                         });
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return future<std::shared_ptr<V>>();
+                    return boost::future<std::shared_ptr<V>>();
                 }
 
-                virtual future<void>
+                virtual boost::future<void>
                 setAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
                                  const util::concurrent::TimeUnit &maxIdleUnit,
                                  const serialization::pimpl::Data &keyData, const V &value) {
                     try {
                         serialization::pimpl::Data valueData = toData<V>(value);
                         return setAsyncInternalData(ttl, ttlUnit, maxIdle, maxIdleUnit, keyData, valueData).then(
-                                launch::sync,
+                                boost::launch::sync,
                                 [](boost::future<protocol::ClientMessage> f) { f.get(); });
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return future<void>();
+                    return boost::future<void>();
                 }
 
             private:

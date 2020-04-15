@@ -236,13 +236,13 @@ namespace hazelcast {
 
                 virtual void onInitialize();
 
-                future <protocol::ClientMessage>
+                boost::future<protocol::ClientMessage>
                 putAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, const int64_t *maxIdle,
                                      const util::concurrent::TimeUnit &maxIdleUnit,
                                      const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &valueData);
 
-                future <protocol::ClientMessage>
+                boost::future<protocol::ClientMessage>
                 setAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, const int64_t *maxIdle,
                                      const util::concurrent::TimeUnit &maxIdleUnit,
                                      const serialization::pimpl::Data &keyData,

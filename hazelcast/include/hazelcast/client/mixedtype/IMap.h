@@ -745,7 +745,7 @@ namespace hazelcast {
                 }
 
                 template<typename K, typename EntryProcessor>
-                future<TypedData> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
+                boost::future<TypedData> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                     return mapImpl->submitToKey<K, EntryProcessor>(key, entryProcessor);
                 }
 

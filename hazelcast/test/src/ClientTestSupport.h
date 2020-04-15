@@ -45,8 +45,6 @@ namespace hazelcast {
 
             extern HazelcastServerFactory *g_srvFactory;
 
-            using namespace boost;
-
             class ClientTestSupport : public ClientTestSupportBase, public ::testing::Test {
             public:
                 ClientTestSupport();
@@ -63,14 +61,14 @@ namespace hazelcast {
 
             class CountDownLatchWaiter {
             public:
-                CountDownLatchWaiter &add(latch &latch1);
+                CountDownLatchWaiter &add(boost::latch &latch1);
 
-                cv_status wait_for(chrono::steady_clock::duration duration);
+                boost::cv_status wait_for(boost::chrono::steady_clock::duration duration);
 
                 void reset();
 
             private:
-                std::vector<latch *> latches;
+                std::vector<boost::latch *> latches;
             };
         }
     }

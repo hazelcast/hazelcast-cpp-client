@@ -33,18 +33,18 @@ namespace hazelcast {
                 virtual void onInitialize();
 
                 template<typename V>
-                future<std::shared_ptr<V>>
+                boost::future<std::shared_ptr<V>>
                 invokeOnPartitionAsync(std::unique_ptr<protocol::ClientMessage> &request,
                                        const std::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder) {
                     try {
                         auto future = invokeAndGetFuture(request, partitionId);
-                        return future.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                        return future.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                             return clientMessageDecoder->decodeClientMessage(f.get(), getSerializationService());
                         });
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return future<std::shared_ptr<V>>();
+                    return boost::future<std::shared_ptr<V>>();
                 }
 
                 int partitionId;

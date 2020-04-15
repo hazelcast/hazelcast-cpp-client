@@ -106,7 +106,7 @@ namespace hazelcast {
                  * can be provided for execution upon completion, as demonstrated in the
                  * following examples:
                  * <pre><code>
-                 * std::shared_ptr<future<int64_t> > future = atomicLong.addAndGetAsync(13);
+                 * std::shared_ptr<boost::future<int64_t> > future = atomicLong.addAndGetAsync(13);
                  * // do something else, then read the result
                  *
                  * // this method will block until the result is available
@@ -120,7 +120,7 @@ namespace hazelcast {
                  * @return an {@link future} bearing the response
                  * @since cluster version 3.7
                  */
-                virtual future<std::shared_ptr<int64_t>> addAndGetAsync(int64_t delta) = 0;
+                virtual boost::future<std::shared_ptr<int64_t>> addAndGetAsync(int64_t delta) = 0;
 
                 /**
                  * Atomically sets the value to the given updated value
@@ -135,7 +135,7 @@ namespace hazelcast {
                  * or {@code false} if the actual value was not equal to the expected value
                  * @since cluster version 3.7
                  */
-                virtual future<std::shared_ptr<bool>>
+                virtual boost::future<std::shared_ptr<bool>>
                 compareAndSetAsync(int64_t expect, int64_t update) = 0;
 
                 /**
@@ -147,7 +147,7 @@ namespace hazelcast {
                  * @return an {@link future} with the updated value
                  * @since cluster version 3.7
                  */
-                virtual future<std::shared_ptr<int64_t>> decrementAndGetAsync() = 0;
+                virtual boost::future<std::shared_ptr<int64_t>> decrementAndGetAsync() = 0;
 
                 /**
                  * Gets the current value. This method will dispatch a request and return
@@ -156,7 +156,7 @@ namespace hazelcast {
                  * @return an {@link future} with the current value
                  * @since cluster version 3.7
                  */
-                virtual future<std::shared_ptr<int64_t>> getAsync() = 0;
+                virtual boost::future<std::shared_ptr<int64_t>> getAsync() = 0;
 
                 /**
                  * Atomically adds the given value to the current value.
@@ -168,7 +168,7 @@ namespace hazelcast {
                  * @return an {@link future} with the old value before the addition
                  * @since cluster version 3.7
                  */
-                virtual future<std::shared_ptr<int64_t>> getAndAddAsync(int64_t delta) = 0;
+                virtual boost::future<std::shared_ptr<int64_t>> getAndAddAsync(int64_t delta) = 0;
 
                 /**
                  * Atomically sets the given value and returns the old value.
@@ -180,7 +180,7 @@ namespace hazelcast {
                  * @return an {@link future} with the old value
                  * @since cluster version 3.7
                  */
-                virtual future<std::shared_ptr<int64_t>> getAndSetAsync(int64_t newValue) = 0;
+                virtual boost::future<std::shared_ptr<int64_t>> getAndSetAsync(int64_t newValue) = 0;
 
                 /**
                  * Atomically increments the current value by one.
@@ -191,7 +191,7 @@ namespace hazelcast {
                  * @return an {@link future} with the updated value
                  * @since cluster version 3.7
                  */
-                virtual future<std::shared_ptr<int64_t>> incrementAndGetAsync() = 0;
+                virtual boost::future<std::shared_ptr<int64_t>> incrementAndGetAsync() = 0;
 
                 /**
                  * Atomically increments the current value by one.
@@ -202,7 +202,7 @@ namespace hazelcast {
                  * @return an {@link future} with the old value
                  * @since cluster version 3.7
                  */
-                virtual future<std::shared_ptr<int64_t>> getAndIncrementAsync() = 0;
+                virtual boost::future<std::shared_ptr<int64_t>> getAndIncrementAsync() = 0;
 
                 /**
                  * Atomically sets the given value.
@@ -214,7 +214,7 @@ namespace hazelcast {
                  * @return an {@link future}
                  * @since cluster version 3.7
                  */
-                virtual future<void> setAsync(int64_t newValue) = 0;
+                virtual boost::future<void> setAsync(int64_t newValue) = 0;
             };
         }
     }

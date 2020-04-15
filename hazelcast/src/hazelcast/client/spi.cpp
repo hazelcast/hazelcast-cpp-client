@@ -1191,7 +1191,7 @@ namespace hazelcast {
                 void
                 ClientMembershipListener::listenMembershipEvents(
                         const std::shared_ptr<connection::Connection> &ownerConnection) {
-                    initialListFetchedLatch = make_shared<latch>(1);
+                    initialListFetchedLatch = boost::make_shared<boost::latch>(1);
                     std::unique_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientAddMembershipListenerCodec::encodeRequest(
                             false);
                     std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
@@ -1204,8 +1204,8 @@ namespace hazelcast {
 
                 void ClientMembershipListener::waitInitialMemberListFetched() {
                     auto status = initialListFetchedLatch.load()->wait_for(
-                            chrono::seconds(INITIAL_MEMBERS_TIMEOUT_SECONDS));
-                    if (status == cv_status::timeout) {
+                            boost::chrono::seconds(INITIAL_MEMBERS_TIMEOUT_SECONDS));
+                    if (status == boost::cv_status::timeout) {
                         logger->warning("Error while getting initial member list from cluster!");
                     }
                 }
@@ -1271,24 +1271,26 @@ namespace hazelcast {
                 ClientInvocation::~ClientInvocation() {
                 }
 
-                future<protocol::ClientMessage> ClientInvocation::invoke() {
+                boost::future<protocol::ClientMessage> ClientInvocation::invoke() {
                     assert (clientMessage.get() != NULL);
                     clientMessage.get()->setCorrelationId(callIdSequence->next());
                     invokeOnSelection();
-                    return invocationPromise.get_future().then(launch::sync, [=](future<protocol::ClientMessage> f) {
-                        callIdSequence->complete();
-                        return f.get();
-                    });
+                    return invocationPromise.get_future().then(boost::launch::sync,
+                                                               [=](boost::future<protocol::ClientMessage> f) {
+                                                                   callIdSequence->complete();
+                                                                   return f.get();
+                                                               });
                 }
 
-                future<protocol::ClientMessage> ClientInvocation::invokeUrgent() {
+                boost::future<protocol::ClientMessage> ClientInvocation::invokeUrgent() {
                     assert (clientMessage.get() != NULL);
                     clientMessage.get()->setCorrelationId(callIdSequence->forceNext());
                     invokeOnSelection();
-                    return invocationPromise.get_future().then(launch::sync, [=](future<protocol::ClientMessage> f) {
-                        callIdSequence->complete();
-                        return f.get();
-                    });
+                    return invocationPromise.get_future().then(boost::launch::sync,
+                                                               [=](boost::future<protocol::ClientMessage> f) {
+                                                                   callIdSequence->complete();
+                                                                   return f.get();
+                                                               });
                 }
 
                 void ClientInvocation::invokeOnSelection() {
@@ -1328,16 +1330,16 @@ namespace hazelcast {
                     try {
                         invokeOnSelection();
                     } catch (exception::IException &e) {
-                        setException(e, current_exception());
+                        setException(e, boost::current_exception());
                     } catch (std::exception &se) {
                         assert(false);
                     }
                 }
 
-                void ClientInvocation::setException(const exception::IException &e, exception_ptr exceptionPtr) {
+                void ClientInvocation::setException(const exception::IException &e, boost::exception_ptr exceptionPtr) {
                     try {
                         invocationPromise.set_exception(exceptionPtr);
-                    } catch (promise_already_satisfied &se) {
+                    } catch (boost::promise_already_satisfied &se) {
                         if (!eventHandler) {
                             logger.warning("Failed to set the exception for invocation. ", se.what(), ", ", *this,
                                            " Exception to be set: ", e);
@@ -1355,13 +1357,13 @@ namespace hazelcast {
                                         exception::HazelcastClientNotActiveException(iex.getSource(),
                                                                                      "Client is shutting down")));
                             } catch (exception::IException &e) {
-                                setException(e, current_exception());
+                                setException(e, boost::current_exception());
                             }
                             return;
                         }
 
                         if (isNotAllowedToRetryOnSelection(iex)) {
-                            setException(iex, current_exception());
+                            setException(iex, boost::current_exception());
                             return;
                         }
 
@@ -1371,7 +1373,7 @@ namespace hazelcast {
                                          clientMessage.get()->isRetryable());
 
                         if (!retry) {
-                            setException(iex, current_exception());
+                            setException(iex, boost::current_exception());
                             return;
                         }
 
@@ -1401,7 +1403,7 @@ namespace hazelcast {
                             try {
                                 BOOST_THROW_EXCEPTION(timeoutException);
                             } catch (...) {
-                                setException(timeoutException, current_exception());
+                                setException(timeoutException, boost::current_exception());
                             }
 
                             return;
@@ -1410,7 +1412,7 @@ namespace hazelcast {
                         try {
                             execute();
                         } catch (exception::IException &e) {
-                            setException(e, current_exception());
+                            setException(e, boost::current_exception());
                         }
                     } catch (std::exception &se) {
                         assert(false);
@@ -1598,7 +1600,7 @@ namespace hazelcast {
                     return executionService->getUserExecutor();
                 }
 
-                promise<protocol::ClientMessage> &ClientInvocation::getPromise() {
+                boost::promise<protocol::ClientMessage> &ClientInvocation::getPromise() {
                     return invocationPromise;
                 }
 
@@ -1842,7 +1844,7 @@ namespace hazelcast {
                             std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
                                                                                                     requestMessage, "");
                             auto future = invocation->invokeUrgent();
-                            future.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                            future.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                                 try {
                                     auto responseMessage = f.get();
                                     protocol::codec::ClientGetPartitionsCodec::ResponseParameters response =
@@ -2425,9 +2427,9 @@ namespace hazelcast {
 
                     std::shared_ptr<boost::asio::steady_timer>
                     SmartClientListenerService::scheduleConnectToAllMembers() {
-                        auto timer = std::make_shared<asio::steady_timer>(registrationExecutor);
+                        auto timer = std::make_shared<boost::asio::steady_timer>(registrationExecutor);
                         timer->expires_from_now(std::chrono::seconds(1));
-                        timer->async_wait([this, timer](system::error_code ec) {
+                        timer->async_wait([this, timer](boost::system::error_code ec) {
                             if (ec) {
                                 return;
                             }

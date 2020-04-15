@@ -41,8 +41,6 @@ namespace hazelcast {
     }
 
     namespace client {
-        using namespace boost;
-
         class Address;
 
         namespace connection {
@@ -95,9 +93,9 @@ namespace hazelcast {
                                                                     const std::string &objectName,
                                                                     const Address &address);
 
-                    future<protocol::ClientMessage> invoke();
+                    boost::future<protocol::ClientMessage> invoke();
 
-                    future<protocol::ClientMessage> invokeUrgent();
+                    boost::future<protocol::ClientMessage> invokeUrgent();
 
                     void run();
 
@@ -130,7 +128,7 @@ namespace hazelcast {
 
                     const boost::asio::thread_pool &getUserExecutor() const;
 
-                    promise<protocol::ClientMessage> &getPromise();
+                    boost::promise<protocol::ClientMessage> &getPromise();
 
                 private:
                     ClientInvocation(spi::ClientContext &clientContext,
@@ -164,7 +162,7 @@ namespace hazelcast {
                     util::Sync<std::shared_ptr<connection::Connection>> sendConnection;
                     std::shared_ptr<EventHandler < protocol::ClientMessage>> eventHandler;
                     std::atomic<int64_t> invokeCount;
-                    promise<protocol::ClientMessage> invocationPromise;
+                    boost::promise<protocol::ClientMessage> invocationPromise;
 
                     bool isNotAllowedToRetryOnSelection(exception::IException &exception);
 
@@ -178,7 +176,7 @@ namespace hazelcast {
 
                     std::shared_ptr<protocol::ClientMessage> copyMessage();
 
-                    void setException(const exception::IException &e, exception_ptr exceptionPtr);
+                    void setException(const exception::IException &e, boost::exception_ptr exceptionPtr);
                 };
             }
         }

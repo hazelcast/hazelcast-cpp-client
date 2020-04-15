@@ -22,8 +22,6 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/AddressHelper.h"
 
-using namespace boost;
-
 namespace hazelcast {
     namespace util {
         class HAZELCAST_API AddressUtil {

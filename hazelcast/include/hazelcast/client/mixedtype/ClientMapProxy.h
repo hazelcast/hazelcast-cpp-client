@@ -889,7 +889,7 @@ namespace hazelcast {
                 }
 
                 template<typename K, typename EntryProcessor>
-                future<TypedData> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
+                boost::future<TypedData> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData<K>(key);
                     serialization::pimpl::Data processorData = toData<EntryProcessor>(entryProcessor);
 
@@ -1074,7 +1074,7 @@ namespace hazelcast {
                                      const serialization::pimpl::Data &processor);
 
                 template<typename ResultType>
-                future<ResultType>
+                boost::future<ResultType>
                 submitToKeyInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &processor) {
                     int partitionId = getPartitionId(keyData);
@@ -1086,11 +1086,12 @@ namespace hazelcast {
                                                                                 util::getCurrentThreadId());
 
                     auto clientInvocationFuture = invokeAndGetFuture(request, partitionId);
-                    return clientInvocationFuture.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
-                        auto message = f.get();
-                        auto data = submitToKeyDecoder(message);
-                        return TypedData(data, getSerializationService());
-                    });
+                    return clientInvocationFuture.then(boost::launch::sync,
+                                                       [=](boost::future<protocol::ClientMessage> f) {
+                                                           auto message = f.get();
+                                                           auto data = submitToKeyDecoder(message);
+                                                           return TypedData(data, getSerializationService());
+                                                       });
                 }
 
                 static std::unique_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response);

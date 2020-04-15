@@ -59,12 +59,12 @@ namespace hazelcast {
                           logger(context->getLogger()) {
                 }
 
-                virtual future <std::shared_ptr<V>> getAsync(const K &key) {
+                virtual boost::future<std::shared_ptr<V>> getAsync(const K &key) {
                     std::shared_ptr<serialization::pimpl::Data> ncKey = ClientMapProxy<K, V>::toSharedData(key);
                     std::shared_ptr<V> cached = nearCache->get(ncKey);
                     if (cached.get() != NULL) {
                         if (internal::nearcache::NearCache<K, V>::NULL_OBJECT == cached) {
-                            make_ready_future<std::shared_ptr<V>>(nullptr);
+                            boost::make_ready_future<std::shared_ptr<V>>(nullptr);
                         }
                     }
 
@@ -75,28 +75,32 @@ namespace hazelcast {
                             std::shared_ptr<ExecutionCallback<protocol::ClientMessage> > callback(
                                     new GetAsyncExecutionCallback(ncKey,
                                                                   std::enable_shared_from_this<NearCachedClientMapProxy<K, V> >::shared_from_this()));
-                            return invocationFuture.then(launch::sync, [=](future <protocol::ClientMessage> f) {
-                                try {
-                                    std::shared_ptr<V> value = ClientMapProxy<K, V>::GET_ASYNC_RESPONSE_DECODER()->decodeClientMessage(
-                                            f.get(), ClientMapProxy<K, V>::getSerializationService());
-                                    tryToPutNearCache(ncKey, value);
-                                    return value;
-                                } catch (...) {
-                                    resetToUnmarkedState(ncKey);
-                                    throw;
-                                }
-                            });
+                            return invocationFuture.then(boost::launch::sync,
+                                                         [=](boost::future<protocol::ClientMessage> f) {
+                                                             try {
+                                                                 std::shared_ptr<V> value = ClientMapProxy<K, V>::GET_ASYNC_RESPONSE_DECODER()->decodeClientMessage(
+                                                                         f.get(),
+                                                                         ClientMapProxy<K, V>::getSerializationService());
+                                                                 tryToPutNearCache(ncKey, value);
+                                                                 return value;
+                                                             } catch (...) {
+                                                                 resetToUnmarkedState(ncKey);
+                                                                 throw;
+                                                             }
+                                                         });
                         }
 
-                        return invocationFuture.then(launch::sync, [=](future <protocol::ClientMessage> f) {
-                            return ClientMapProxy<K, V>::GET_ASYNC_RESPONSE_DECODER()->decodeClientMessage(
-                                    f.get(), ClientMapProxy<K, V>::getSerializationService());
-                        });
+                        return invocationFuture.then(boost::launch::sync,
+                                                     [=](boost::future<protocol::ClientMessage> f) {
+                                                         return ClientMapProxy<K, V>::GET_ASYNC_RESPONSE_DECODER()->decodeClientMessage(
+                                                                 f.get(),
+                                                                 ClientMapProxy<K, V>::getSerializationService());
+                                                     });
                     } catch (exception::IException &e) {
                         resetToUnmarkedState(ncKey);
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
-                    return future<std::shared_ptr<V>>();
+                    return boost::future<std::shared_ptr<V>>();
                 }
 
                 virtual monitor::LocalMapStats &getLocalMapStats() {
@@ -212,7 +216,7 @@ namespace hazelcast {
                     }
                 }
 
-                virtual future <std::shared_ptr<V>>
+                virtual boost::future<std::shared_ptr<V>>
                 removeAsyncInternal(const serialization::pimpl::Data &keyData) {
                     try {
                         auto future = ClientMapProxy<K, V>::removeAsyncInternal(keyData);
@@ -283,7 +287,7 @@ namespace hazelcast {
                     }
                 }
 
-                virtual future <std::shared_ptr<V>>
+                virtual boost::future<std::shared_ptr<V>>
                 putAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
                                  const util::concurrent::TimeUnit &maxIdleUnit,
                                  const serialization::pimpl::Data &keyData, const V &value) {
@@ -358,7 +362,7 @@ namespace hazelcast {
                     }
                 }
 
-                virtual future<void>
+                virtual boost::future<void>
                 setAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
                                  const util::concurrent::TimeUnit &maxIdleUnit,
                                  const serialization::pimpl::Data &keyData, const V &value) {

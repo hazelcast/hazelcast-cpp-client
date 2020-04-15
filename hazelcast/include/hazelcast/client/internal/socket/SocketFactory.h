@@ -32,8 +32,6 @@
 #pragma warning(disable: 4251) //for dll export	
 #endif
 
-using namespace boost;
-
 namespace hazelcast {
     namespace client {
         class Socket;

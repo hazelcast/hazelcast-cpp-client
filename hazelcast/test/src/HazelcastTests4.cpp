@@ -226,7 +226,7 @@ namespace hazelcast {
                 protected:
                     class MySetItemListener : public ItemListener<std::string> {
                     public:
-                        MySetItemListener(latch &latch1)
+                        MySetItemListener(boost::latch &latch1)
                                 : latch1(latch1) {
 
                         }
@@ -239,7 +239,7 @@ namespace hazelcast {
                         }
 
                     private:
-                        latch &latch1;
+                        boost::latch &latch1;
                     };
 
                     bool itemExists(const std::vector<std::string> &items, const std::string &item) const {
@@ -383,7 +383,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerSetTest, testListener) {
-                    latch latch1(6);
+                    boost::latch latch1(6);
 
                     MySetItemListener listener(latch1);
                     std::string registrationId = set->addItemListener(listener, true);
@@ -393,7 +393,7 @@ namespace hazelcast {
                     }
                     set->add("done");
 
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(20)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
 
                     ASSERT_TRUE(set->removeItemListener(registrationId));
                 }
@@ -554,7 +554,7 @@ namespace hazelcast {
                 HazelcastServerFactory *RawPointerMapTest::sslFactory = NULL;
 
                 void tryPutThread(hazelcast::util::ThreadArgs &args) {
-                    latch *l = (latch *) args.arg0;
+                    boost::latch *l = (boost::latch *) args.arg0;
                     client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
                     bool result = imap->tryPut("key1", "value3", 1 * 1000);
                     if (!result) {
@@ -563,7 +563,7 @@ namespace hazelcast {
                 }
 
                 void tryRemoveThread(hazelcast::util::ThreadArgs &args) {
-                    latch *latch1 = (latch *) args.arg0;
+                    boost::latch *latch1 = (boost::latch *) args.arg0;
                     client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
                     bool result = imap->tryRemove("key2", 1 * 1000);
                     if (!result) {
@@ -572,21 +572,21 @@ namespace hazelcast {
                 }
 
                 void testLockThread(hazelcast::util::ThreadArgs &args) {
-                    latch *latch1 = (latch *) args.arg0;
+                    boost::latch *latch1 = (boost::latch *) args.arg0;
                     client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
                     imap->tryPut("key1", "value2", 1);
                     latch1->count_down();
                 }
 
                 void testLockTTLThread(hazelcast::util::ThreadArgs &args) {
-                    latch *latch1 = (latch *) args.arg0;
+                    boost::latch *latch1 = (boost::latch *) args.arg0;
                     client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
                     imap->tryPut("key1", "value2", 5 * 1000);
                     latch1->count_down();
                 }
 
                 void testLockTTL2Thread(hazelcast::util::ThreadArgs &args) {
-                    latch *latch1 = (latch *) args.arg0;
+                    boost::latch *latch1 = (boost::latch *) args.arg0;
                     client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
                     if (!imap->tryLock("key1")) {
                         latch1->count_down();
@@ -597,7 +597,7 @@ namespace hazelcast {
                 }
 
                 void testMapTryLockThread1(hazelcast::util::ThreadArgs &args) {
-                    latch *latch1 = (latch *) args.arg0;
+                    boost::latch *latch1 = (boost::latch *) args.arg0;
                     client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
                     if (!imap->tryLock("key1", 2)) {
                         latch1->count_down();
@@ -605,7 +605,7 @@ namespace hazelcast {
                 }
 
                 void testMapTryLockThread2(hazelcast::util::ThreadArgs &args) {
-                    latch *latch1 = (latch *) args.arg0;
+                    boost::latch *latch1 = (boost::latch *) args.arg0;
                     client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
                     if (imap->tryLock("key1", 20 * 1000)) {
                         latch1->count_down();
@@ -613,7 +613,7 @@ namespace hazelcast {
                 }
 
                 void testMapForceUnlockThread(hazelcast::util::ThreadArgs &args) {
-                    latch *latch1 = (latch *) args.arg0;
+                    boost::latch *latch1 = (boost::latch *) args.arg0;
                     client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
                     imap->forceUnlock("key1");
                     latch1->count_down();
@@ -622,8 +622,8 @@ namespace hazelcast {
                 template <typename K, typename V>
                 class CountdownListener : public EntryAdapter<K, V> {
                 public:
-                    CountdownListener(latch &addLatch, latch &removeLatch,
-                                      latch &updateLatch, latch &evictLatch)
+                    CountdownListener(boost::latch &addLatch, boost::latch &removeLatch,
+                                      boost::latch &updateLatch, boost::latch &evictLatch)
                             : addLatch(addLatch), removeLatch(removeLatch), updateLatch(updateLatch),
                               evictLatch(evictLatch) {
                     }
@@ -645,15 +645,15 @@ namespace hazelcast {
                     }
 
                 private:
-                    latch &addLatch;
-                    latch &removeLatch;
-                    latch &updateLatch;
-                    latch &evictLatch;
+                    boost::latch &addLatch;
+                    boost::latch &removeLatch;
+                    boost::latch &updateLatch;
+                    boost::latch &evictLatch;
                 };
 
                 class MyListener : public EntryAdapter<std::string, std::string> {
                 public:
-                    MyListener(latch &l, latch &nullLatch)
+                    MyListener(boost::latch &l, boost::latch &nullLatch)
                             : l(l), nullLatch(nullLatch) {
                     }
 
@@ -670,13 +670,13 @@ namespace hazelcast {
                     }
 
                 private:
-                    latch &l;
-                    latch &nullLatch;
+                    boost::latch &l;
+                    boost::latch &nullLatch;
                 };
 
                 class ClearListener : public EntryAdapter<std::string, std::string> {
                 public:
-                    ClearListener(latch &latch1) : latch1(latch1) {
+                    ClearListener(boost::latch &latch1) : latch1(latch1) {
                     }
 
                     void mapCleared(const MapEvent &event) {
@@ -684,12 +684,12 @@ namespace hazelcast {
                     }
 
                 private:
-                    latch &latch1;
+                    boost::latch &latch1;
                 };
 
                 class EvictListener : public EntryAdapter<std::string, std::string> {
                 public:
-                    EvictListener(latch &latch1) : latch1(latch1) {
+                    EvictListener(boost::latch &latch1) : latch1(latch1) {
                     }
 
                     void mapEvicted(const MapEvent &event) {
@@ -697,12 +697,12 @@ namespace hazelcast {
                     }
 
                 private:
-                    latch &latch1;
+                    boost::latch &latch1;
                 };
 
                 class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
                 public:
-                    SampleEntryListenerForPortableKey(latch &latch1, hazelcast::util::AtomicInt &atomicInteger)
+                    SampleEntryListenerForPortableKey(boost::latch &latch1, hazelcast::util::AtomicInt &atomicInteger)
                             : latch1(latch1), atomicInteger(atomicInteger) {
 
                     }
@@ -713,7 +713,7 @@ namespace hazelcast {
                     }
 
                 private:
-                    latch &latch1;
+                    boost::latch &latch1;
                     hazelcast::util::AtomicInt &atomicInteger;
                 };
 
@@ -820,15 +820,15 @@ namespace hazelcast {
                 };
 
                 TEST_F(RawPointerMapTest, testIssue537) {
-                    latch latch1(2);
-                    latch nullLatch(1);
+                    boost::latch latch1(2);
+                    boost::latch nullLatch(1);
                     MyListener myListener(latch1, nullLatch);
                     std::string id = imap->addEntryListener(myListener, true);
 
                     imap->put("key1", "value1", 2 * 1000);
 
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(10)));
-                    ASSERT_EQ(cv_status::no_timeout, nullLatch.wait_for(chrono::seconds(1)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, nullLatch.wait_for(boost::chrono::seconds(1)));
 
                     ASSERT_TRUE(imap->removeEntryListener(id));
 
@@ -954,12 +954,12 @@ namespace hazelcast {
                     imap->lock("key1");
                     imap->lock("key2");
 
-                    latch latch1(2);
+                    boost::latch latch1(2);
 
                     hazelcast::util::StartedThread t1(tryPutThread, &latch1, imap);
                     hazelcast::util::StartedThread t2(tryRemoveThread, &latch1, imap);
 
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(20)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
                     ASSERT_EQ("value1", *(imap->get("key1")));
                     ASSERT_EQ("value2", *(imap->get("key2")));
                     imap->forceUnlock("key1");
@@ -979,8 +979,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testPutTtl) {
-                    latch dummy(10);
-                    latch evict(1);
+                    boost::latch dummy(10);
+                    boost::latch evict(1);
                     CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = imap->addEntryListener(sampleEntryListener, false);
 
@@ -992,7 +992,7 @@ namespace hazelcast {
                     }
 // trigger eviction
                     ASSERT_NULL_EVENTUALLY(imap->get("key1").get(), std::string);
-                    ASSERT_EQ(cv_status::no_timeout, evict.wait_for(chrono::seconds(5)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, evict.wait_for(boost::chrono::seconds(5)));
 
                     ASSERT_TRUE(imap->removeEntryListener(id));
                 }
@@ -1001,8 +1001,8 @@ namespace hazelcast {
                     IMap<std::string, std::string> oneSecMap = client->getMap<std::string, std::string>(
                             "OneSecondTtlMap");
                     hazelcast::client::adaptor::RawPointerMap<std::string, std::string> map(oneSecMap);
-                    latch dummy(10);
-                    latch evict(1);
+                    boost::latch dummy(10);
+                    boost::latch evict(1);
                     CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
@@ -1014,7 +1014,7 @@ namespace hazelcast {
                     }
 // trigger eviction
                     ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
-                    ASSERT_EQ(cv_status::no_timeout, evict.wait_for(chrono::seconds(5)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, evict.wait_for(boost::chrono::seconds(5)));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
                 }
@@ -1050,8 +1050,8 @@ namespace hazelcast {
                     IMap<std::string, std::string> oneSecMap = client->getMap<std::string, std::string>(
                             getTestName());
                     hazelcast::client::adaptor::RawPointerMap<std::string, std::string> map(oneSecMap);
-                    latch dummy(10);
-                    latch evict(1);
+                    boost::latch dummy(10);
+                    boost::latch evict(1);
                     CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
@@ -1063,7 +1063,7 @@ namespace hazelcast {
                     }
 // trigger eviction
                     ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
-                    ASSERT_EQ(cv_status::no_timeout, evict.wait_for(chrono::seconds(5)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, evict.wait_for(boost::chrono::seconds(5)));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
                 }
@@ -1072,8 +1072,8 @@ namespace hazelcast {
                     IMap<std::string, std::string> oneSecMap = client->getMap<std::string, std::string>(
                             "OneSecondTtlMap");
                     hazelcast::client::adaptor::RawPointerMap<std::string, std::string> map(oneSecMap);
-                    latch dummy(10);
-                    latch evict(1);
+                    boost::latch dummy(10);
+                    boost::latch evict(1);
                     CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
@@ -1085,7 +1085,7 @@ namespace hazelcast {
                     }
 // trigger eviction
                     ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
-                    ASSERT_EQ(cv_status::no_timeout, evict.wait_for(chrono::seconds(5)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, evict.wait_for(boost::chrono::seconds(5)));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
                 }
@@ -1094,9 +1094,9 @@ namespace hazelcast {
                     imap->put("key1", "value1");
                     ASSERT_EQ("value1", *(imap->get("key1")));
                     imap->lock("key1");
-                    latch latch1(1);
+                    boost::latch latch1(1);
                     hazelcast::util::StartedThread t1(testLockThread, &latch1, imap);
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(5)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
                     ASSERT_EQ("value1", *(imap->get("key1")));
                     imap->forceUnlock("key1");
 
@@ -1106,9 +1106,9 @@ namespace hazelcast {
                     imap->put("key1", "value1");
                     ASSERT_EQ("value1", *(imap->get("key1")));
                     imap->lock("key1", 2 * 1000);
-                    latch latch1(1);
+                    boost::latch latch1(1);
                     hazelcast::util::StartedThread t1(testLockTTLThread, &latch1, imap);
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(10)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
                     ASSERT_FALSE(imap->isLocked("key1"));
                     ASSERT_EQ("value2", *(imap->get("key1")));
                     imap->forceUnlock("key1");
@@ -1117,9 +1117,9 @@ namespace hazelcast {
 
                 TEST_F(RawPointerMapTest, testLockTtl2) {
                     imap->lock("key1", 3 * 1000);
-                    latch latch1(2);
+                    boost::latch latch1(2);
                     hazelcast::util::StartedThread t1(testLockTTL2Thread, &latch1, imap);
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(10)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
                     imap->forceUnlock("key1");
 
                 }
@@ -1127,19 +1127,19 @@ namespace hazelcast {
                 TEST_F(RawPointerMapTest, testTryLock) {
 
                     ASSERT_TRUE(imap->tryLock("key1", 2 * 1000));
-                    latch latch1(1);
+                    boost::latch latch1(1);
                     hazelcast::util::StartedThread t1(testMapTryLockThread1, &latch1, imap);
 
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(100)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
 
                     ASSERT_TRUE(imap->isLocked("key1"));
 
-                    latch latch2(1);
+                    boost::latch latch2(1);
                     hazelcast::util::StartedThread t2(testMapTryLockThread2, &latch2, imap);
 
                     hazelcast::util::sleep(1);
                     imap->unlock("key1");
-                    ASSERT_EQ(cv_status::no_timeout, latch2.wait_for(chrono::seconds(100)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
                     ASSERT_TRUE(imap->isLocked("key1"));
                     imap->forceUnlock("key1");
 
@@ -1147,9 +1147,9 @@ namespace hazelcast {
 
                 TEST_F(RawPointerMapTest, testForceUnlock) {
                     imap->lock("key1");
-                    latch latch1(1);
+                    boost::latch latch1(1);
                     hazelcast::util::StartedThread t2(testMapForceUnlockThread, &latch1, imap);
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(100)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
                     t2.join();
                     ASSERT_FALSE(imap->isLocked("key1"));
 
@@ -2688,7 +2688,7 @@ namespace hazelcast {
                 TEST_F(RawPointerMapTest, testPredicateListenerWithPortableKey) {
                     IMap<Employee, int> map = client->getMap<Employee, int>("tradeMap");
                     hazelcast::client::adaptor::RawPointerMap<Employee, int> tradeMap(map);
-                    latch countDownLatch(1);
+                    boost::latch countDownLatch(1);
                     hazelcast::util::AtomicInt atomicInteger(0);
                     SampleEntryListenerForPortableKey listener(countDownLatch, atomicInteger);
                     Employee key("a", 1);
@@ -2696,18 +2696,18 @@ namespace hazelcast {
                     Employee key2("a", 2);
                     tradeMap.put(key2, 1);
                     tradeMap.put(key, 3);
-                    ASSERT_EQ(cv_status::no_timeout, countDownLatch.wait_for(chrono::seconds(5)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, countDownLatch.wait_for(boost::chrono::seconds(5)));
                     ASSERT_EQ(1, (int) atomicInteger);
 
                     ASSERT_TRUE(tradeMap.removeEntryListener(id));
                 }
 
                 TEST_F(RawPointerMapTest, testListener) {
-                    latch latch1Add(5);
-                    latch latch1Remove(2);
-                    latch dummy(10);
-                    latch latch2Add(1);
-                    latch latch2Remove(1);
+                    boost::latch latch1Add(5);
+                    boost::latch latch1Remove(2);
+                    boost::latch dummy(10);
+                    boost::latch latch2Add(1);
+                    boost::latch latch2Remove(1);
 
                     CountdownListener<std::string, std::string> listener1(latch1Add, latch1Remove, dummy, dummy);
                     CountdownListener<std::string, std::string> listener2(latch2Add, latch2Remove, dummy, dummy);
@@ -2726,10 +2726,10 @@ namespace hazelcast {
                     imap->remove("key1");
                     imap->remove("key3");
 
-                    ASSERT_EQ(cv_status::no_timeout, latch1Add.wait_for(chrono::seconds(10)));
-                    ASSERT_EQ(cv_status::no_timeout, latch1Remove.wait_for(chrono::seconds(10)));
-                    ASSERT_EQ(cv_status::no_timeout, latch2Add.wait_for(chrono::seconds(5)));
-                    ASSERT_EQ(cv_status::no_timeout, latch2Remove.wait_for(chrono::seconds(5)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1Add.wait_for(boost::chrono::seconds(10)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1Remove.wait_for(boost::chrono::seconds(10)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch2Add.wait_for(boost::chrono::seconds(5)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch2Remove.wait_for(boost::chrono::seconds(5)));
 
                     ASSERT_TRUE(imap->removeEntryListener(listener1ID));
                     ASSERT_TRUE(imap->removeEntryListener(listener2ID));
@@ -2737,10 +2737,10 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithTruePredicate) {
-                    latch latchAdd(3);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(3);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -2763,16 +2763,16 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithFalsePredicate) {
-                    latch latchAdd(3);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(3);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -2795,16 +2795,16 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
-                    ASSERT_EQ(cv_status::timeout, latches.wait_for(chrono::seconds(2)));
+                    ASSERT_EQ(boost::cv_status::timeout, latches.wait_for(boost::chrono::seconds(2)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithEqualPredicate) {
-                    latch latchAdd(1);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(1);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -2828,20 +2828,20 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchEvict);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
                     latches.reset();
                     latches.add(latchUpdate).add(latchRemove);
-                    ASSERT_EQ(cv_status::timeout, latches.wait_for(chrono::seconds(2)));
+                    ASSERT_EQ(boost::cv_status::timeout, latches.wait_for(boost::chrono::seconds(2)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithNotEqualPredicate) {
-                    latch latchAdd(2);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(2);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -2865,20 +2865,20 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchRemove).add(latchUpdate);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
                     latches.reset();
                     latches.add(latchEvict);
-                    ASSERT_EQ(cv_status::timeout, latches.wait_for(chrono::seconds(2)));
+                    ASSERT_EQ(boost::cv_status::timeout, latches.wait_for(boost::chrono::seconds(2)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithGreaterLessPredicate) {
-                    latch latchAdd(2);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(2);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -2903,18 +2903,18 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchRemove).add(latchUpdate);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
-                    ASSERT_EQ(cv_status::timeout, latchEvict.wait_for(chrono::seconds(2)));
+                    ASSERT_EQ(boost::cv_status::timeout, latchEvict.wait_for(boost::chrono::seconds(2)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithBetweenPredicate) {
-                    latch latchAdd(2);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(2);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -2939,18 +2939,18 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchRemove).add(latchUpdate);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
-                    ASSERT_EQ(cv_status::timeout, latchEvict.wait_for(chrono::seconds(2)));
+                    ASSERT_EQ(boost::cv_status::timeout, latchEvict.wait_for(boost::chrono::seconds(2)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithSqlPredicate) {
-                    latch latchAdd(1);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(1);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -2974,20 +2974,20 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchUpdate);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
                     latches.reset();
                     latches.add(latchRemove).add(latchEvict);
-                    ASSERT_EQ(cv_status::timeout, latches.wait_for(chrono::seconds(2)));
+                    ASSERT_EQ(boost::cv_status::timeout, latches.wait_for(boost::chrono::seconds(2)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithRegExPredicate) {
-                    latch latchAdd(2);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(2);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<std::string, std::string> listener(latchAdd, latchRemove, latchUpdate,
                                                                          latchEvict);
@@ -3014,18 +3014,18 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchRemove).add(latchEvict);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
-                    ASSERT_EQ(cv_status::timeout, latchUpdate.wait_for(chrono::seconds(2)));
+                    ASSERT_EQ(boost::cv_status::timeout, latchUpdate.wait_for(boost::chrono::seconds(2)));
 
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithInstanceOfPredicate) {
-                    latch latchAdd(3);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(3);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -3051,16 +3051,16 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithNotPredicate) {
-                    latch latchAdd(2);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(2);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -3088,20 +3088,20 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchRemove).add(latchUpdate);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
                     latches.reset();
                     latches.add(latchEvict);
-                    ASSERT_EQ(cv_status::timeout, latches.wait_for(chrono::seconds(1)));
+                    ASSERT_EQ(boost::cv_status::timeout, latches.wait_for(boost::chrono::seconds(1)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithAndPredicate) {
-                    latch latchAdd(1);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(1);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -3134,20 +3134,20 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchUpdate);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
                     latches.reset();
                     latches.add(latchEvict).add(latchRemove);
-                    ASSERT_EQ(cv_status::timeout, latches.wait_for(chrono::seconds(1)));
+                    ASSERT_EQ(boost::cv_status::timeout, latches.wait_for(boost::chrono::seconds(1)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testListenerWithOrPredicate) {
-                    latch latchAdd(2);
-                    latch latchRemove(1);
-                    latch latchEvict(1);
-                    latch latchUpdate(1);
+                    boost::latch latchAdd(2);
+                    boost::latch latchRemove(1);
+                    boost::latch latchEvict(1);
+                    boost::latch latchUpdate(1);
 
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
@@ -3180,30 +3180,30 @@ namespace hazelcast {
 
                     CountDownLatchWaiter latches;
                     latches.add(latchAdd).add(latchEvict).add(latchRemove);
-                    ASSERT_EQ(cv_status::no_timeout, latches.wait_for(chrono::seconds(2)));;
+                    ASSERT_EQ(boost::cv_status::no_timeout, latches.wait_for(boost::chrono::seconds(2)));;
 
-                    ASSERT_EQ(cv_status::timeout, latchUpdate.wait_for(chrono::seconds(2)));
+                    ASSERT_EQ(boost::cv_status::timeout, latchUpdate.wait_for(boost::chrono::seconds(2)));
 
                     ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testClearEvent) {
-                    latch latch1(1);
+                    boost::latch latch1(1);
                     ClearListener clearListener(latch1);
                     std::string listenerId = imap->addEntryListener(clearListener, false);
                     imap->put("key1", "value1");
                     imap->clear();
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(120)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(120)));
                     imap->removeEntryListener(listenerId);
                 }
 
                 TEST_F(RawPointerMapTest, testEvictAllEvent) {
-                    latch latch1(1);
+                    boost::latch latch1(1);
                     EvictListener evictListener(latch1);
                     std::string listenerId = imap->addEntryListener(evictListener, false);
                     imap->put("key1", "value1");
                     imap->evictAll();
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(120)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(120)));
                     imap->removeEntryListener(listenerId);
                 }
 
@@ -3337,7 +3337,7 @@ namespace hazelcast {
 // Waits at the server side before running the operation
                     WaitMultiplierProcessor processor(waitTimeInMillis, 4);
 
-                    std::vector<future<std::shared_ptr<int>>> allFutures;
+                    std::vector<boost::future<std::shared_ptr<int>>> allFutures;
 
 // test putting into a vector of futures
                     allFutures.push_back(employees->submitToKey<int, WaitMultiplierProcessor>(
@@ -3352,8 +3352,8 @@ namespace hazelcast {
                             99, processor));
 
                     for (auto &f : allFutures) {
-                        future_status status = f.wait_for(chrono::milliseconds(2 * waitTimeInMillis));
-                        ASSERT_EQ(future_status::ready, status);
+                        boost::future_status status = f.wait_for(boost::chrono::milliseconds(2 * waitTimeInMillis));
+                        ASSERT_EQ(boost::future_status::ready, status);
                     }
 
                     for (auto &f : allFutures) {
@@ -3847,7 +3847,7 @@ namespace hazelcast {
                 protected:
                     class MyListItemListener : public ItemListener<std::string> {
                     public:
-                        MyListItemListener(latch &latch1)
+                        MyListItemListener(boost::latch &latch1)
                                 : latch1(latch1) {
 
                         }
@@ -3860,7 +3860,7 @@ namespace hazelcast {
                         }
 
                     private:
-                        latch &latch1;
+                        boost::latch &latch1;
                     };
 
                     virtual void TearDown() {
@@ -4027,7 +4027,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerListTest, testListener) {
-                    latch latch1(5);
+                    boost::latch latch1(5);
 
                     MyListItemListener listener(latch1);
                     std::string registrationId = list->addItemListener(listener, true);
@@ -4036,7 +4036,7 @@ namespace hazelcast {
                         list->add(std::string("item") + hazelcast::util::IOUtil::to_string(i));
                     }
 
-                    ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(20)));
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
 
                     ASSERT_TRUE(list->removeItemListener(registrationId));
                 }
@@ -4091,14 +4091,14 @@ namespace hazelcast {
                 }
 
                 void testTransactionalOfferPoll2Thread(hazelcast::util::ThreadArgs &args) {
-                    latch *latch1 = (latch *) args.arg0;
+                    boost::latch *latch1 = (boost::latch *) args.arg0;
                     HazelcastClient *client = (HazelcastClient *) args.arg1;
                     latch1->wait();
                     client->getQueue<std::string>("defQueue0").offer("item0");
                 }
 
                 TEST_F(RawPointerTxnQueueTest, testTransactionalOfferPoll2) {
-                    latch latch1(1);
+                    boost::latch latch1(1);
                     hazelcast::util::StartedThread t(testTransactionalOfferPoll2Thread, &latch1, client);
                     TransactionContext context = client->newTransactionContext();
                     context.beginTransaction();

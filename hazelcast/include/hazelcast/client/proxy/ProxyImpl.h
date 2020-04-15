@@ -45,8 +45,6 @@ namespace hazelcast {
         typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > EntryVector;
 
         namespace proxy {
-            using namespace boost;
-
             class HAZELCAST_API ProxyImpl : public spi::ClientProxy {
             protected:
                 /**
@@ -70,11 +68,13 @@ namespace hazelcast {
                 protocol::ClientMessage invokeOnPartition(std::unique_ptr<protocol::ClientMessage> &request,
                                                           int partitionId);
 
-                future <protocol::ClientMessage> invokeAndGetFuture(std::unique_ptr<protocol::ClientMessage> &request,
-                                                                    int partitionId);
+                boost::future<protocol::ClientMessage>
+                invokeAndGetFuture(std::unique_ptr<protocol::ClientMessage> &request,
+                                   int partitionId);
 
-                future <protocol::ClientMessage> invokeOnKeyOwner(std::unique_ptr<protocol::ClientMessage> &request,
-                                                                  const serialization::pimpl::Data &keyData);
+                boost::future<protocol::ClientMessage>
+                invokeOnKeyOwner(std::unique_ptr<protocol::ClientMessage> &request,
+                                 const serialization::pimpl::Data &keyData);
 
                 /**
                 * Internal API.

@@ -1313,7 +1313,7 @@ namespace hazelcast {
                 return *protocol::ClientMessage::create(0);
             }
 
-            future<protocol::ClientMessage>
+            boost::future<protocol::ClientMessage>
             ProxyImpl::invokeAndGetFuture(std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
                 try {
                     std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
@@ -1322,10 +1322,10 @@ namespace hazelcast {
                 } catch (exception::IException &) {
                     util::ExceptionUtil::rethrow(std::current_exception());
                 }
-                return future<protocol::ClientMessage>();
+                return boost::future<protocol::ClientMessage>();
             }
 
-            future<protocol::ClientMessage>
+            boost::future<protocol::ClientMessage>
             ProxyImpl::invokeOnKeyOwner(std::unique_ptr<protocol::ClientMessage> &request,
                                         const serialization::pimpl::Data &keyData) {
                 int partitionId = getPartitionId(keyData);
@@ -1444,7 +1444,7 @@ namespace hazelcast {
                 setAsync(newValue).get();
             }
 
-            future<std::shared_ptr<int64_t>>
+            boost::future<std::shared_ptr<int64_t>>
             ClientAtomicLongProxy::addAndGetAsync(int64_t delta) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongAddAndGetCodec::encodeRequest(name, delta);
@@ -1453,7 +1453,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongAddAndGetCodec, int64_t>::instance());
             }
 
-            future<std::shared_ptr<bool>>
+            boost::future<std::shared_ptr<bool>>
             ClientAtomicLongProxy::compareAndSetAsync(int64_t expect, int64_t update) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongCompareAndSetCodec::encodeRequest(name, expect, update);
@@ -1462,7 +1462,7 @@ namespace hazelcast {
                                                     impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongCompareAndSetCodec, bool>::instance());
             }
 
-            future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::decrementAndGetAsync() {
+            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::decrementAndGetAsync() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongDecrementAndGetCodec::encodeRequest(name);
 
@@ -1470,7 +1470,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongDecrementAndGetCodec, int64_t>::instance());
             }
 
-            future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::getAsync() {
+            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::getAsync() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongGetCodec::encodeRequest(name);
 
@@ -1478,7 +1478,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetCodec, int64_t>::instance());
             }
 
-            future<std::shared_ptr<int64_t>>
+            boost::future<std::shared_ptr<int64_t>>
             ClientAtomicLongProxy::getAndAddAsync(int64_t delta) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongGetAndAddCodec::encodeRequest(name, delta);
@@ -1487,7 +1487,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndAddCodec, int64_t>::instance());
             }
 
-            future<std::shared_ptr<int64_t>>
+            boost::future<std::shared_ptr<int64_t>>
             ClientAtomicLongProxy::getAndSetAsync(int64_t newValue) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongGetAndSetCodec::encodeRequest(name, newValue);
@@ -1496,7 +1496,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndSetCodec, int64_t>::instance());
             }
 
-            future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::incrementAndGetAsync() {
+            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::incrementAndGetAsync() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongIncrementAndGetCodec::encodeRequest(name);
 
@@ -1504,7 +1504,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongIncrementAndGetCodec, int64_t>::instance());
             }
 
-            future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::getAndIncrementAsync() {
+            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::getAndIncrementAsync() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongGetAndIncrementCodec::encodeRequest(name);
 
@@ -1512,11 +1512,11 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndIncrementCodec, int64_t>::instance());
             }
 
-            future<void> ClientAtomicLongProxy::setAsync(int64_t newValue) {
+            boost::future<void> ClientAtomicLongProxy::setAsync(int64_t newValue) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongSetCodec::encodeRequest(name, newValue);
 
-                return invokeAndGetFuture(request, partitionId).then(launch::sync,
+                return invokeAndGetFuture(request, partitionId).then(boost::launch::sync,
                                                                      [](boost::future<protocol::ClientMessage> f) { f.get(); });
             }
 
@@ -1780,7 +1780,7 @@ namespace hazelcast {
 
             EntryVector
             IMapImpl::getAllData(const std::map<int, std::vector<serialization::pimpl::Data> > &partitionToKeyData) {
-                std::vector<future<protocol::ClientMessage> > futures;
+                std::vector<boost::future<protocol::ClientMessage> > futures;
 
                 for (std::map<int, std::vector<serialization::pimpl::Data> >::const_iterator it = partitionToKeyData.begin();
                      it != partitionToKeyData.end(); ++it) {
@@ -1914,7 +1914,7 @@ namespace hazelcast {
             }
 
             void IMapImpl::putAllData(const std::map<int, EntryVector> &partitionedEntries) {
-                std::vector<future<protocol::ClientMessage>> futures;
+                std::vector<boost::future<protocol::ClientMessage>> futures;
 
                 for (std::map<int, EntryVector>::const_iterator it = partitionedEntries.begin();
                      it != partitionedEntries.end(); ++it) {
@@ -2096,7 +2096,7 @@ namespace hazelcast {
                 return protocol::codec::MapRemoveEntryListenerCodec::ResponseParameters::decode(clientMessage).response;
             }
 
-            future<protocol::ClientMessage>
+            boost::future<protocol::ClientMessage>
             IMapImpl::putAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                                            const int64_t *maxIdle, const util::concurrent::TimeUnit &maxIdleUnit,
                                            const serialization::pimpl::Data &keyData,
@@ -2119,7 +2119,7 @@ namespace hazelcast {
                 return invokeOnKeyOwner(request, keyData);
             }
 
-            future<protocol::ClientMessage>
+            boost::future<protocol::ClientMessage>
             IMapImpl::setAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                                            const int64_t *maxIdle, const util::concurrent::TimeUnit &maxIdleUnit,
                                            const serialization::pimpl::Data &keyData,
@@ -2477,7 +2477,7 @@ namespace hazelcast {
                                         static_cast<proxy::ClientRingbufferProxy<ReliableTopicMessage> &>(rb);
                                 auto future = ringbufferProxy.readManyAsync(m.sequence, 1, m.maxCount);
                                 do {
-                                    if (future.wait_for(chrono::seconds(1)) == future_status::ready) {
+                                    if (future.wait_for(boost::chrono::seconds(1)) == boost::future_status::ready) {
                                         std::shared_ptr<DataArray<ReliableTopicMessage> > allMessages(
                                                 ringbufferProxy.getReadManyAsyncResponseObject(future.get()));
 
@@ -2733,39 +2733,39 @@ namespace hazelcast {
             impl->destroy();
         }
 
-        future<std::shared_ptr<int64_t>> IAtomicLong::addAndGetAsync(int64_t delta) {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::addAndGetAsync(int64_t delta) {
             return impl->addAndGetAsync(delta);
         }
 
-        future<std::shared_ptr<bool>> IAtomicLong::compareAndSetAsync(int64_t expect, int64_t update) {
+        boost::future<std::shared_ptr<bool>> IAtomicLong::compareAndSetAsync(int64_t expect, int64_t update) {
             return impl->compareAndSetAsync(expect, update);
         }
 
-        future<std::shared_ptr<int64_t>> IAtomicLong::decrementAndGetAsync() {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::decrementAndGetAsync() {
             return impl->decrementAndGetAsync();
         }
 
-        future<std::shared_ptr<int64_t>> IAtomicLong::getAsync() {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAsync() {
             return impl->getAsync();
         }
 
-        future<std::shared_ptr<int64_t>> IAtomicLong::getAndAddAsync(int64_t delta) {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndAddAsync(int64_t delta) {
             return impl->getAndAddAsync(delta);
         }
 
-        future<std::shared_ptr<int64_t>> IAtomicLong::getAndSetAsync(int64_t newValue) {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndSetAsync(int64_t newValue) {
             return impl->getAndSetAsync(newValue);
         }
 
-        future<std::shared_ptr<int64_t>> IAtomicLong::incrementAndGetAsync() {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::incrementAndGetAsync() {
             return impl->incrementAndGetAsync();
         }
 
-        future<std::shared_ptr<int64_t>> IAtomicLong::getAndIncrementAsync() {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndIncrementAsync() {
             return impl->getAndIncrementAsync();
         }
 
-        future<void> IAtomicLong::setAsync(int64_t newValue) {
+        boost::future<void> IAtomicLong::setAsync(int64_t newValue) {
             return impl->setAsync(newValue);
         }
 

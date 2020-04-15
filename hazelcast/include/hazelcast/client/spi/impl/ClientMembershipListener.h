@@ -79,7 +79,7 @@ namespace hazelcast {
                     ClientClusterServiceImpl &clusterService;
                     ClientPartitionServiceImpl &partitionService;
                     connection::ClientConnectionManagerImpl &connectionManager;
-                    atomic_shared_ptr <latch> initialListFetchedLatch;
+                    boost::atomic_shared_ptr<boost::latch> initialListFetchedLatch;
 
                     void memberAdded(const Member &member);
 

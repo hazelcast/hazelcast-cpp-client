@@ -665,7 +665,7 @@ namespace hazelcast {
             return selected;
         }
 
-        std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
+        std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
         IExecutorService::invokeOnTarget(std::unique_ptr<protocol::ClientMessage> &request, const Address &target) {
             try {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
@@ -674,10 +674,10 @@ namespace hazelcast {
             } catch (exception::IException &e) {
                 util::ExceptionUtil::rethrow(std::current_exception());
             }
-            return std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();
+            return std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();
         }
 
-        std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
+        std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
         IExecutorService::invokeOnPartitionOwner(std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
             try {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
@@ -686,7 +686,7 @@ namespace hazelcast {
             } catch (exception::IException &e) {
                 util::ExceptionUtil::rethrow(std::current_exception());
             }
-            return std::pair<future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();
+            return std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();
         }
 
         bool IExecutorService::isSyncComputation(bool preventSync) {

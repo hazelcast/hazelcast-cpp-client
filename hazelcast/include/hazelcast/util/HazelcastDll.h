@@ -16,8 +16,6 @@
 #ifndef HAZELCAST_HAZELCASTDLL
 #define HAZELCAST_HAZELCASTDLL
 
-#include <boost/config.hpp>
-
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #if !(defined(HAZELCAST_USE_STATIC) || defined(HAZELCAST_USE_SHARED))
         #ifndef HAZELCAST_EXPORTS
@@ -41,7 +39,6 @@
     #define HAZELCAST_API
  #endif
 namespace hazelcast{
-    using namespace boost;
     typedef unsigned char byte;
 }
 

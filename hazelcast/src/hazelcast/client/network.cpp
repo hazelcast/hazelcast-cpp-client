@@ -360,7 +360,7 @@ namespace hazelcast {
                 auto invocationFuture = clientInvocation->invokeUrgent();
 
                 auto authCallback = std::make_shared<AuthCallback>(connection, asOwner, target, future, *this);
-                invocationFuture.then(launch::sync, [=](boost::future<protocol::ClientMessage> f) {
+                invocationFuture.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     try {
                         authCallback->onResponse(f.get());
                     } catch (exception::IException &e) {
@@ -813,7 +813,7 @@ namespace hazelcast {
 
             AuthenticationFuture::AuthenticationFuture(const Address &address,
                                                        util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress)
-                    : countDownLatch(new latch(1)), address(address),
+                    : countDownLatch(new boost::latch(1)), address(address),
                       connectionsInProgress(connectionsInProgress), isSet(false) {
             }
 

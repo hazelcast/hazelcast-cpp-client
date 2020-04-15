@@ -22,11 +22,11 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::ICountDownLatch latch = hz.getICountDownLatch("countDownLatch");
+    hazelcast::client::ICountDownLatch boost::latch = hz.getICountDownLatch("countDownLatch");
 
     std::cout << "Starting" << std::endl;
 
-    //we init the latch with 1, since we only need to complete a single step.
+    //we init the boost::latch with 1, since we only need to complete a single step.
     latch.trySetCount(1);
 
     //do some sleeping to simulate doing something

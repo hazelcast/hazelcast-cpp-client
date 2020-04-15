@@ -26,8 +26,6 @@
 
 namespace hazelcast {
     namespace client {
-        using namespace boost;
-
         /**
          * @Beta
          *
@@ -125,11 +123,11 @@ namespace hazelcast {
              * @return the future added.
              * @throws NullPointerException if future is null.
              */
-            shared_future<std::shared_ptr<E>>
-            add(future<std::shared_ptr<E>> future) {
+            boost::shared_future<std::shared_ptr<E>>
+            add(boost::future<std::shared_ptr<E>> future) {
                 down();
 
-                auto new_future = future.then(launch::sync, [=](boost::future<std::shared_ptr<E>> f) {
+                auto new_future = future.then(boost::launch::sync, [=](boost::future<std::shared_ptr<E>> f) {
                     up();
                     return f.get();
                 });
@@ -161,7 +159,7 @@ namespace hazelcast {
             }
 
             int permits;
-            std::vector<shared_future<std::shared_ptr<E>>> futures;
+            std::vector<boost::shared_future<std::shared_ptr<E>>> futures;
             std::condition_variable conditionVariable;
             std::mutex mutex;
         };

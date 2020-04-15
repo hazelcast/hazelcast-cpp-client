@@ -1639,7 +1639,7 @@ namespace hazelcast {
 
             class MyMessageListener : public topic::MessageListener<std::string> {
             public:
-                MyMessageListener(latch &latch1)
+                MyMessageListener(boost::latch &latch1)
                         : latch1(latch1) {
                 }
 
@@ -1648,18 +1648,18 @@ namespace hazelcast {
                 }
 
             private:
-                latch &latch1;
+                boost::latch &latch1;
             };
 
             TEST_F(ClientTopicTest, testTopicListeners) {
-                latch latch1(10);
+                boost::latch latch1(10);
                 MyMessageListener listener(latch1);
                 std::string id = topic.addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
                     topic.publish(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
                 }
-                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(20)));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
                 topic.removeMessageListener(id);
             }
         }
@@ -1689,7 +1689,7 @@ namespace hazelcast {
 
             class MixedMessageListener : public hazelcast::client::mixedtype::topic::MessageListener {
             public:
-                MixedMessageListener(latch &latch1)
+                MixedMessageListener(boost::latch &latch1)
                         : latch1(latch1) {
                 }
 
@@ -1698,7 +1698,7 @@ namespace hazelcast {
                 }
 
             private:
-                latch &latch1;
+                boost::latch &latch1;
             };
 
 
@@ -1708,14 +1708,14 @@ namespace hazelcast {
             }
 
             TEST_F(MixedTopicTest, testTopicListeners) {
-                latch latch1(10);
+                boost::latch latch1(10);
                 MixedMessageListener listener(latch1);
                 std::string id = topic.addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
                     topic.publish<std::string>(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
                 }
-                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(20)));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
                 topic.removeMessageListener(id);
             }
         }

@@ -55,8 +55,6 @@
 
 namespace hazelcast {
     namespace client {
-        using namespace boost;
-
         class SerializationConfig;
 
         class TypedData;
