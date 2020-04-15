@@ -33,21 +33,23 @@ namespace hazelcast {
                     public:
                         SmartClientListenerService(ClientContext &clientContext, int32_t eventThreadCount);
 
-                        virtual void start();
+                        void start() override;
 
-                        virtual std::string
+                        void shutdown() override;
+
+                        std::string
                         registerListener(const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
-                                         const std::shared_ptr<EventHandler < protocol::ClientMessage>
+                                         const std::shared_ptr<EventHandler < protocol::ClientMessage>>
 
-                        > handler);
+                        handler)
+                        override;
 
                         void asyncConnectToAllMembersInternal();
 
-                    protected:
-
-                        virtual bool registersLocalOnly() const;
-
                     private:
+                        std::shared_ptr<boost::asio::steady_timer> timer;
+
+                        bool registersLocalOnly() const override;
 
                         void trySyncConnectToAllMembers();
 
@@ -61,7 +63,7 @@ namespace hazelcast {
 
                         void sleepBeforeNextTry();
 
-                        void scheduleConnectToAllMembers();
+                        std::shared_ptr<boost::asio::steady_timer> scheduleConnectToAllMembers();
                     };
                 }
             }

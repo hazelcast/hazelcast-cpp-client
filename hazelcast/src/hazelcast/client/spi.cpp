@@ -405,6 +405,7 @@ namespace hazelcast {
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
+                clientContext.getClientstatistics().shutdown();
                 clientContext.getProxyManager().destroy();
                 clientContext.getConnectionManager().shutdown();
                 ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).shutdown();
@@ -412,8 +413,8 @@ namespace hazelcast {
                 ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
-                clientContext.getClientExecutionService().shutdown();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
+                clientContext.getClientExecutionService().shutdown();
                 clientContext.getSerializationService().dispose();
                 shutdownCompletedLatch.count_down();
             }
@@ -652,26 +653,10 @@ namespace hazelcast {
                     isShutdown.store(true);
 
                     responseThread.shutdown();
-
-                    for (auto &entry : invocations.clear()) {
-                        entry.second->notifyException(
-                                std::make_exception_ptr(exception::HazelcastClientNotActiveException(
-                                        "AbstractClientInvocationService::shutdown",
-                                        "Client is shutting down")));
-                    }
                 }
 
                 int64_t AbstractClientInvocationService::getInvocationTimeoutMillis() const {
                     return invocationTimeoutMillis;
-                }
-
-                void AbstractClientInvocationService::registerRetriedInvocation(int64_t callId,
-                                                                                const std::shared_ptr<ClientInvocation> invocation) {
-                    invocations.put(callId, invocation);
-                }
-
-                void AbstractClientInvocationService::removeRetriedInvocation(int64_t callId) {
-                    invocations.remove(callId);
                 }
 
                 int64_t AbstractClientInvocationService::getInvocationRetryPauseMillis() const {
@@ -708,7 +693,6 @@ namespace hazelcast {
                         const std::shared_ptr<ClientInvocation> &clientInvocation) {
                     const std::shared_ptr<protocol::ClientMessage> &clientMessage = clientInvocation->getClientMessage();
                     int64_t correlationId = clientMessage->getCorrelationId();
-                    invocations.put(correlationId, clientInvocation);
                     const std::shared_ptr<
                             EventHandler<protocol::ClientMessage> > handler = clientInvocation->getEventHandler();
                     if (handler.get() != NULL) {
@@ -1282,8 +1266,9 @@ namespace hazelcast {
 
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const ClientProperties &clientProperties,
-                                                                       int32_t poolSize) {
-
+                                                                       int32_t poolSize,
+                                                                       spi::LifecycleService &service)
+                        : lifecycleService(service) {
                     int internalPoolSize = clientProperties.getInteger(clientProperties.getInternalExecutorPoolSize());
                     if (internalPoolSize <= 0) {
                         internalPoolSize = util::IOUtil::to_value<int>(
@@ -1307,8 +1292,6 @@ namespace hazelcast {
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
-                    userExecutor->stop();
-                    internalExecutor->stop();
                     userExecutor->join();
                     internalExecutor->join();
                 }
@@ -1346,14 +1329,7 @@ namespace hazelcast {
                     assert (clientMessage.get() != NULL);
                     clientMessage.get()->setCorrelationId(callIdSequence->next());
                     invokeOnSelection();
-                    return invocationPromise.get_future().then(launch::sync,
-                                                               [=](boost::future<protocol::ClientMessage> f) {
-                                                                   if (invokeCount > 1) {
-                                                                       invocationService.removeRetriedInvocation(
-                                                                               clientMessage.get()->getCorrelationId());
-                                                                   }
-                                                                   return f.get();
-                                                               });
+                    return invocationPromise.get_future();
                 }
 
                 future<protocol::ClientMessage> ClientInvocation::invokeUrgent() {
@@ -1375,10 +1351,12 @@ namespace hazelcast {
                         } else {
                             invocationService.invokeOnRandomTarget(shared_from_this());
                         }
-                    } catch (exception::HazelcastOverloadException &) {
+                    } catch (exception::HazelcastOverloadException &oe) {
                         throw;
                     } catch (exception::IException &e) {
                         notifyException(std::current_exception());
+                    } catch (std::exception &e) {
+                        assert(false);
                     }
                 }
 
@@ -1399,6 +1377,8 @@ namespace hazelcast {
                         invokeOnSelection();
                     } catch (exception::IException &e) {
                         setException(e, current_exception());
+                    } catch (std::exception &se) {
+                        assert(false);
                     }
                 }
 
@@ -1639,10 +1619,6 @@ namespace hazelcast {
                     // through that takes our slot!
                     int64_t callId = callIdSequence->forceNext();
                     clientMessage.get()->setCorrelationId(callId);
-
-                    if (invokeCount == 1) {
-                        invocationService.registerRetriedInvocation(callId, this_invocation);
-                    }
 
                     //we release the old slot
                     callIdSequence->complete();
@@ -2498,10 +2474,11 @@ namespace hazelcast {
                     void SmartClientListenerService::start() {
                         AbstractClientListenerService::start();
 
-                        scheduleConnectToAllMembers();
+                        timer = scheduleConnectToAllMembers();
                     }
 
-                    void SmartClientListenerService::scheduleConnectToAllMembers() {
+                    std::shared_ptr<boost::asio::steady_timer>
+                    SmartClientListenerService::scheduleConnectToAllMembers() {
                         auto timer = std::make_shared<asio::steady_timer>(registrationExecutor);
                         timer->expires_from_now(std::chrono::seconds(1));
                         timer->async_wait([this, timer](system::error_code ec) {
@@ -2512,6 +2489,8 @@ namespace hazelcast {
                             asyncConnectToAllMembersInternal();
                             scheduleConnectToAllMembers();
                         });
+
+                        return timer;
                     }
 
                     std::string
@@ -2615,6 +2594,13 @@ namespace hazelcast {
                             }
                         }
 
+                    }
+
+                    void SmartClientListenerService::shutdown() {
+                        if (timer) {
+                            timer->cancel();
+                        }
+                        AbstractClientListenerService::shutdown();
                     }
 
                     ClientRegistrationKey::ClientRegistrationKey(const std::string &userRegistrationId,

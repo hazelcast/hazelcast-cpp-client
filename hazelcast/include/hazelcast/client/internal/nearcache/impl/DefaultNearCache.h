@@ -116,6 +116,10 @@ namespace hazelcast {
                         //@Override
                         void destroy() {
                             expiration_cancelled_.store(true);
+                            if (expirationTimer) {
+                                boost::system::error_code ignored;
+                                expirationTimer->cancel(ignored);
+                            }
                             nearCacheRecordStore->destroy();
                         }
 
@@ -162,17 +166,17 @@ namespace hazelcast {
                         void scheduleExpirationTask() {
                             if (nearCacheConfig.getMaxIdleSeconds() > 0L ||
                                 nearCacheConfig.getTimeToLiveSeconds() > 0L) {
-                                executionService->scheduleWithRepetition([=]() {
-                                                                             std::atomic_bool expirationInProgress(false);
-                                                                             while (!expiration_cancelled_) {
-                                                                                 bool expected = false;
-                                                                                 if (expirationInProgress.compare_exchange_strong(expected, true)) {
-                                                                                     try {
-                                                                                         nearCacheRecordStore->doExpiration();
-                                                                                     } catch (exception::IException &e) {
-                                                                                         expirationInProgress.store(false);
-                                                                                         // TODO: What to do here
-                                                                                         logger.info("ExpirationTask nearCacheRecordStore.doExpiration failed. ",
+                                expirationTimer = executionService->scheduleWithRepetition([=]() {
+                                                                                               std::atomic_bool expirationInProgress(false);
+                                                                                               while (!expiration_cancelled_) {
+                                                                                                   bool expected = false;
+                                                                                                   if (expirationInProgress.compare_exchange_strong(expected, true)) {
+                                                                                                       try {
+                                                                                                           nearCacheRecordStore->doExpiration();
+                                                                                                       } catch (exception::IException &e) {
+                                                                                                           expirationInProgress.store(false);
+                                                                                                           // TODO: What to do here
+                                                                                                           logger.info("ExpirationTask nearCacheRecordStore.doExpiration failed. ",
                                                                                                      e.what(),
                                                                                                      " This may NOT be a vital problem since this doExpiration "
                                                                                                      "runs periodically and it should recover eventually.");
@@ -181,7 +185,7 @@ namespace hazelcast {
                                                                              }
                                                                          }, std::chrono::seconds(
                                         NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
-                                                                         std::chrono::seconds(
+                                                                                           std::chrono::seconds(
                                                                                  NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS));
                             }
                         }
@@ -194,6 +198,7 @@ namespace hazelcast {
 
                         std::unique_ptr<NearCacheRecordStore<KS, V> > nearCacheRecordStore;
                         std::atomic_bool expiration_cancelled_;
+                        std::shared_ptr<boost::asio::steady_timer> expirationTimer;
                     };
                 }
             }

@@ -57,7 +57,7 @@ namespace hazelcast {
 
                         virtual void start();
 
-                        void shutdown();
+                        virtual void shutdown();
 
                         void addEventHandler(int64_t callId,
                                              const std::shared_ptr<EventHandler<protocol::ClientMessage>> &handler);

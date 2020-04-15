@@ -590,9 +590,6 @@ namespace hazelcast {
     }
 }
 
-
-
-
 using namespace hazelcast::client::mixedtype;
 
 namespace hazelcast {

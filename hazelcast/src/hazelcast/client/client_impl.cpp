@@ -398,7 +398,8 @@ namespace hazelcast {
             std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
             HazelcastClientInstanceImpl::initExecutionService() {
                 return std::make_shared<spi::impl::ClientExecutionServiceImpl>(instanceName, clientProperties,
-                                                                               clientConfig.getExecutorPoolSize());
+                                                                               clientConfig.getExecutorPoolSize(),
+                                                                               lifecycleService);
             }
 
             std::shared_ptr<connection::ClientConnectionManagerImpl>

@@ -21,6 +21,9 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/post.hpp>
 
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -40,7 +43,7 @@ namespace hazelcast {
                         public std::enable_shared_from_this<ClientExecutionServiceImpl> {
                 public:
                     ClientExecutionServiceImpl(const std::string &name, const ClientProperties &clientProperties,
-                                               int32_t poolSize);
+                                               int32_t poolSize, spi::LifecycleService &service);
 
                     void start();
 
@@ -52,18 +55,34 @@ namespace hazelcast {
                     }
 
                     template<typename CompletionToken>
-                    void schedule(CompletionToken token,
-                                  const std::chrono::steady_clock::duration &delay) {
-                        scheduleWithRepetition(token, delay, std::chrono::seconds(0));
+                    std::shared_ptr<boost::asio::steady_timer> schedule(CompletionToken token,
+                                                                        const std::chrono::steady_clock::duration &delay) {
+                        return scheduleWithRepetition(token, delay, std::chrono::seconds(0));
                     }
 
                     template<typename CompletionToken>
-                    void scheduleWithRepetition(CompletionToken token,
-                                                const std::chrono::steady_clock::duration &delay,
-                                                const std::chrono::steady_clock::duration &period) {
+                    std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetition(CompletionToken token,
+                                                                                      const std::chrono::steady_clock::duration &delay,
+                                                                                      const std::chrono::steady_clock::duration &period) {
                         // TODO: Look at boost thread scheduler for this implementation
                         auto timer = std::make_shared<boost::asio::steady_timer>(*internalExecutor);
-                        if (delay.count() >= 0) {
+                        return scheduleWithRepetitionInternal(token, delay, period, timer);
+                    }
+
+                    const boost::asio::thread_pool &getUserExecutor() const;
+
+                private:
+                    std::unique_ptr<boost::asio::thread_pool> internalExecutor;
+                    std::unique_ptr<boost::asio::thread_pool> userExecutor;
+                    spi::LifecycleService &lifecycleService;
+
+                    template<typename CompletionToken>
+                    std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetitionInternal(CompletionToken token,
+                                                                                              const std::chrono::steady_clock::duration &delay,
+                                                                                              const std::chrono::steady_clock::duration &period,
+                                                                                              std::shared_ptr<boost::asio::steady_timer> timer) {
+                        // TODO: Look at boost thread scheduler for this implementation
+                        if (delay.count() > 0) {
                             timer->expires_from_now(delay);
                         } else {
                             timer->expires_from_now(period);
@@ -72,18 +91,20 @@ namespace hazelcast {
                             if (ec) {
                                 return;
                             }
-                            token();
+                            try {
+                                token();
+                            } catch (std::exception &e) {
+                                assert(false);
+                            }
                             if (period.count()) {
-                                scheduleWithRepetition(token, std::chrono::seconds(-1), period);
+                                if (!lifecycleService.isRunning()) {
+                                    return;
+                                }
+                                scheduleWithRepetitionInternal(token, std::chrono::seconds(-1), period, timer);
                             }
                         });
+                        return timer;
                     }
-
-                    const boost::asio::thread_pool &getUserExecutor() const;
-
-                private:
-                    std::unique_ptr<boost::asio::thread_pool> internalExecutor;
-                    std::unique_ptr<boost::asio::thread_pool> userExecutor;
                 };
             }
         }

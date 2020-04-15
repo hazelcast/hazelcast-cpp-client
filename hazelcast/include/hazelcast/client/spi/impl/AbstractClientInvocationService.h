@@ -48,11 +48,6 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    void
-                    registerRetriedInvocation(int64_t callId, const std::shared_ptr<impl::ClientInvocation> invocation);
-
-                    void removeRetriedInvocation(int64_t callId);
-
                     int64_t getInvocationTimeoutMillis() const;
 
                     int64_t getInvocationRetryPauseMillis() const;

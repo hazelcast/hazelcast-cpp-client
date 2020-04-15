@@ -89,11 +89,17 @@ namespace hazelcast {
                     schedulePeriodicStatisticsSendTask(periodSeconds);
 
                     logger.info("Client statistics is enabled with period ", periodSeconds, " seconds.");
+                }
 
+                void Statistics::shutdown() {
+                    if (sendTaskTimer) {
+                        boost::system::error_code ignored;
+                        sendTaskTimer->cancel(ignored);
+                    }
                 }
 
                 void Statistics::schedulePeriodicStatisticsSendTask(int64_t periodSeconds) {
-                    clientContext.getClientExecutionService().scheduleWithRepetition([=]() {
+                    sendTaskTimer = clientContext.getClientExecutionService().scheduleWithRepetition([=]() {
                         if (!clientContext.getLifecycleService().isRunning()) {
                             return;
                         }

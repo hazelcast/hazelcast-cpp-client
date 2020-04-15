@@ -2436,9 +2436,8 @@ namespace hazelcast {
                 namespace reliable {
                     ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb,
                                                                  util::ILogger &logger)
-                            : ringbuffer(rb),
-                              runnerThread([&]() { Task(ringbuffer, q, shutdown).run(); }),
-                              q(10), shutdown(false) {
+                            : ringbuffer(rb), q(10), shutdown(false) {
+                        runnerThread = std::thread([&]() { Task(ringbuffer, q, shutdown).run(); });
                     }
 
                     ReliableTopicExecutor::~ReliableTopicExecutor() {

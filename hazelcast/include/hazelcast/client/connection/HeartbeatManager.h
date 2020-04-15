@@ -50,6 +50,7 @@ namespace hazelcast {
                 util::ILogger &logger;
                 std::chrono::seconds heartbeatIntervalSeconds;
                 std::chrono::seconds heartbeatTimeoutSeconds;
+                std::shared_ptr<boost::asio::steady_timer> timer;
 
                 void checkConnection(const std::shared_ptr<Connection> &connection);
 

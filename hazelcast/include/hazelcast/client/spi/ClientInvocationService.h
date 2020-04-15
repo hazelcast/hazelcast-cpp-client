@@ -59,11 +59,6 @@ namespace hazelcast {
                 virtual int64_t getInvocationTimeoutMillis() const = 0;
 
                 virtual int64_t getInvocationRetryPauseMillis() const = 0;
-
-                virtual void
-                registerRetriedInvocation(int64_t callId, const std::shared_ptr<impl::ClientInvocation> invocation) = 0;
-
-                virtual void removeRetriedInvocation(int64_t callId) = 0;
             };
         }
     }

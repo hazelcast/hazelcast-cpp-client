@@ -1159,7 +1159,7 @@ namespace hazelcast {
             void HeartbeatManager::start() {
                 spi::impl::ClientExecutionServiceImpl &clientExecutionService = client.getClientExecutionService();
 
-                clientExecutionService.scheduleWithRepetition([=]() {
+                timer = clientExecutionService.scheduleWithRepetition([=]() {
                     if (!clientConnectionManager.isAlive()) {
                         return;
                     }
@@ -1201,6 +1201,9 @@ namespace hazelcast {
             }
 
             void HeartbeatManager::shutdown() {
+                if (timer) {
+                    timer->cancel();
+                }
             }
 
             DefaultClientConnectionStrategy::DefaultClientConnectionStrategy(spi::ClientContext &clientContext,
