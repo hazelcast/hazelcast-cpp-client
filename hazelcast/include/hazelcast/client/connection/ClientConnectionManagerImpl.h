@@ -196,7 +196,7 @@ namespace hazelcast {
                 class AuthCallback {
                 public:
                     AuthCallback(const std::shared_ptr<Connection> &connection, bool asOwner, const Address &target,
-                                 std::shared_ptr<AuthenticationFuture> &future,
+                                 std::shared_ptr<AuthenticationFuture> &f,
                                  ClientConnectionManagerImpl &connectionManager);
 
                     virtual ~AuthCallback();
@@ -209,7 +209,7 @@ namespace hazelcast {
                     const std::shared_ptr<Connection> connection;
                     bool asOwner;
                     Address target;
-                    std::shared_ptr<AuthenticationFuture> future;
+                    std::shared_ptr<AuthenticationFuture> authFuture;
                     std::shared_ptr<ClientConnectionManagerImpl> connectionManager;
                     std::future<void> timeoutTaskFuture;
                     std::mutex timeoutMutex;

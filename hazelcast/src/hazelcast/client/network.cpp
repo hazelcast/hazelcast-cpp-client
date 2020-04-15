@@ -696,10 +696,10 @@ namespace hazelcast {
             ClientConnectionManagerImpl::AuthCallback::AuthCallback(const std::shared_ptr<Connection> &connection,
                                                                     bool asOwner,
                                                                     const Address &target,
-                                                                    std::shared_ptr<AuthenticationFuture> &future,
+                                                                    std::shared_ptr<AuthenticationFuture> &f,
                                                                     ClientConnectionManagerImpl &connectionManager)
                     : connection(connection), asOwner(asOwner),
-                      target(target), future(future),
+                      target(target), authFuture(f),
                       connectionManager(connectionManager.shared_from_this()),
                       cancelled(false) {
                 scheduleTimeoutTask();
@@ -727,11 +727,12 @@ namespace hazelcast {
                         return;
                     }
 
-                    future->onFailure(std::make_exception_ptr((exception::ExceptionBuilder<exception::TimeoutException>(
-                            "ClientConnectionManagerImpl::authenticate")
-                            << "Authentication response did not come back in "
-                            << connectionManager->connectionTimeoutMillis
-                            << " millis").build()));
+                    authFuture->onFailure(
+                            std::make_exception_ptr((exception::ExceptionBuilder<exception::TimeoutException>(
+                                    "ClientConnectionManagerImpl::authenticate")
+                                    << "Authentication response did not come back in "
+                                    << connectionManager->connectionTimeoutMillis
+                                    << " millis").build()));
                 });
             }
 
@@ -763,7 +764,7 @@ namespace hazelcast {
                                                            *principal);
                         }
                         connectionManager->onAuthenticated(target, connection);
-                        future->onSuccess(connection);
+                        authFuture->onSuccess(connection);
                         break;
                     }
                     case protocol::CREDENTIALS_FAILED: {
@@ -800,7 +801,7 @@ namespace hazelcast {
             void ClientConnectionManagerImpl::AuthCallback::handleAuthenticationException(
                     std::exception_ptr e) {
                 this->onAuthenticationFailed(this->target, this->connection, e);
-                this->future->onFailure(e);
+                this->authFuture->onFailure(e);
             }
 
             void ClientConnectionManagerImpl::AuthCallback::onAuthenticationFailed(const Address &target,
