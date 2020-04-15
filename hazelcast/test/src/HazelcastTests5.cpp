@@ -2756,7 +2756,7 @@ namespace hazelcast {
                                                        NearCachedObjectMapClientConfig()));
 
             TEST_P(ClientMapTest, testIssue537) {
-                latch latch1(12);
+                latch latch1(2);
                 latch nullLatch(1);
                 MyListener myListener(latch1, nullLatch);
                 std::string id = imap.addEntryListener(myListener, true);

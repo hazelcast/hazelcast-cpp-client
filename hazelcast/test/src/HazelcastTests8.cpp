@@ -1436,7 +1436,7 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(rt->publish(&empl1));
 
-                ASSERT_EQ(cv_status::no_timeout, latch1.wait_for(chrono::seconds(2)));
+                ASSERT_EQ(cv_status::timeout, latch1.wait_for(chrono::seconds(2)));
                 ASSERT_EQ(0, listener.getNumberOfMessagesReceived());
             }
 
