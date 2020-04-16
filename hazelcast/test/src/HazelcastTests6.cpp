@@ -3335,9 +3335,8 @@ namespace hazelcast {
                             99, processor));
 
                     for (auto &f : allFutures) {
-                        boost::future_status status = f.wait_for(boost::chrono::seconds(2));
-                        ASSERT_EQ(boost::future_status::ready, status);
-                        auto result = f.get();
+                        TypedData result;
+                        ASSERT_NO_THROW(result = f.get());
                         ASSERT_NE((int *) NULL, result.get<int>().get());
                     }
                 }
