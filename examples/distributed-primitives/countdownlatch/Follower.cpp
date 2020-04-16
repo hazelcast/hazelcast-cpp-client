@@ -22,11 +22,11 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::ICountDownLatch boost::latch = hz.getICountDownLatch("countDownLatch");
+    hazelcast::client::ICountDownLatch l = hz.getICountDownLatch("countDownLatch");
 
     std::cout << "Waiting" << std::endl;
 
-    bool success = latch.await(30000);
+    bool success = l.await(30000);
 
     std::cout << "Complete:" << success << std::endl;
 

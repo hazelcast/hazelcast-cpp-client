@@ -20,23 +20,23 @@
 
 class ConnectedListener : public hazelcast::client::LifecycleListener {
 public:
-    ConnectedListener() : latch1(1) {}
+    ConnectedListener() : l(1) {}
 
     virtual void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) {
         if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
-            latch1.count_down();
+            l.count_down();
         }
     }
 
     bool isConnected() {
-        return latch.wait_for(boost::chrono::seconds(0)) == boost::cv_status::no_timeout;
+        return l.wait_for(boost::chrono::seconds(0)) == boost::cv_status::no_timeout;
     }
 
     void waitForConnection() {
-        latch1.wait();
+        l.wait();
     }
 private:
-    boost::latch latch1;
+    boost::latch l;
 };
 
 int main() {
