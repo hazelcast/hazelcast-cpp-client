@@ -30,6 +30,11 @@
  * limitations under the License.
  */
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// required due to issue at asio https://github.com/chriskohlhoff/asio/issues/431
+#include <boost/asio/detail/win_iocp_io_context.hpp>
+#endif
+
 #include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/LifecycleEvent.h"
@@ -97,8 +102,8 @@ namespace hazelcast {
                 spi::impl::AbstractClientInvocationService &invocationService =
                         (spi::impl::AbstractClientInvocationService &) client.getInvocationService();
 
-                invocationTimeoutMillis = invocationService.getInvocationTimeoutMillis();
-                invocationRetryPauseMillis = invocationService.getInvocationRetryPauseMillis();
+                invocationTimeout = invocationService.getInvocationTimeout();
+                invocationRetryPause = invocationService.getInvocationRetryPause();
             }
 
             void ProxyManager::destroy() {
@@ -157,8 +162,8 @@ namespace hazelcast {
             }
 
             void ProxyManager::initializeWithRetry(const std::shared_ptr<ClientProxy> &clientProxy) {
-                int64_t startMillis = util::currentTimeMillis();
-                while (util::currentTimeMillis() < startMillis + invocationTimeoutMillis) {
+                auto start = std::chrono::steady_clock::now();
+                while (std::chrono::steady_clock::now() < start + invocationTimeout) {
                     try {
                         initialize(clientProxy);
                         return;
@@ -183,12 +188,12 @@ namespace hazelcast {
                         }
                     }
                 }
-                int64_t elapsedTime = util::currentTimeMillis() - startMillis;
+                auto elapsedTime = std::chrono::steady_clock::now() - start;
                 throw (exception::ExceptionBuilder<exception::OperationTimeoutException>(
                         "ProxyManager::initializeWithRetry") << "Initializing  " << clientProxy->getServiceName() << ":"
                                                              << clientProxy->getName() << " is timed out after "
-                                                             << elapsedTime << " ms. Configured invocation timeout is "
-                                                             << invocationTimeoutMillis << " ms").build();
+                                                             << std::chrono::duration_cast<std::chrono::milliseconds>(elapsedTime).count() << " ms. Configured invocation timeout is "
+                                                             << std::chrono::duration_cast<std::chrono::milliseconds>(invocationTimeout).count() << " ms").build();
             }
 
             void ProxyManager::initialize(const std::shared_ptr<ClientProxy> &clientProxy) {
@@ -239,7 +244,7 @@ namespace hazelcast {
 
             void ProxyManager::sleepForProxyInitRetry() {
                 // TODO: change to interruptible sleep
-                util::sleepmillis(invocationRetryPauseMillis);
+                std::this_thread::sleep_for(invocationRetryPause);
             }
 
             void ProxyManager::destroyProxy(ClientProxy &proxy) {
@@ -404,19 +409,24 @@ namespace hazelcast {
                     shutdownCompletedLatch.wait();
                     return;
                 }
-                fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
-                clientContext.getClientstatistics().shutdown();
-                clientContext.getProxyManager().destroy();
-                clientContext.getConnectionManager().shutdown();
-                ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).shutdown();
-                ((spi::impl::AbstractClientInvocationService &) clientContext.getInvocationService()).shutdown();
-                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
-                clientContext.getNearCacheManager().destroyAllNearCaches();
-                ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
-                fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
-                clientContext.getClientExecutionService().shutdown();
-                clientContext.getSerializationService().dispose();
-                shutdownCompletedLatch.count_down();
+                try {
+                    fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
+                    clientContext.getClientstatistics().shutdown();
+                    clientContext.getProxyManager().destroy();
+                    clientContext.getConnectionManager().shutdown();
+                    ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).shutdown();
+                    ((spi::impl::AbstractClientInvocationService &) clientContext.getInvocationService()).shutdown();
+                    ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
+                    clientContext.getNearCacheManager().destroyAllNearCaches();
+                    ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
+                    fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
+                    clientContext.getClientExecutionService().shutdown();
+                    clientContext.getSerializationService().dispose();
+                    shutdownCompletedLatch.count_down();
+                } catch (std::exception &e) {
+                    clientContext.getLogger().info("An exception occured during LifecycleService shutdown. ", e.what());
+                    shutdownCompletedLatch.count_down();
+                }
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
@@ -593,14 +603,13 @@ namespace hazelcast {
 
             namespace impl {
                 AbstractClientInvocationService::AbstractClientInvocationService(ClientContext &client)
-                        : CLEAN_RESOURCES_MILLIS(client.getClientProperties().getCleanResourcesPeriodMillis()),
-                          client(client), invocationLogger(client.getLogger()),
+                        : client(client), invocationLogger(client.getLogger()),
                           connectionManager(NULL),
                           partitionService(client.getPartitionService()),
-                          invocationTimeoutMillis(client.getClientProperties().getInteger(
-                                  client.getClientProperties().getInvocationTimeoutSeconds()) * 1000),
-                          invocationRetryPauseMillis(client.getClientProperties().getLong(
-                                  client.getClientProperties().getInvocationRetryPauseMillis())),
+                          invocationTimeout(std::chrono::seconds(client.getClientProperties().getInteger(
+                                  client.getClientProperties().getInvocationTimeoutSeconds()))),
+                          invocationRetryPause(std::chrono::milliseconds(client.getClientProperties().getLong(
+                                  client.getClientProperties().getInvocationRetryPauseMillis()))),
                           responseThread(invocationLogger, *this, client) {
                 }
 
@@ -616,12 +625,12 @@ namespace hazelcast {
                     responseThread.shutdown();
                 }
 
-                int64_t AbstractClientInvocationService::getInvocationTimeoutMillis() const {
-                    return invocationTimeoutMillis;
+                std::chrono::steady_clock::duration AbstractClientInvocationService::getInvocationTimeout() const {
+                    return invocationTimeout;
                 }
 
-                int64_t AbstractClientInvocationService::getInvocationRetryPauseMillis() const {
-                    return invocationRetryPauseMillis;
+                std::chrono::steady_clock::duration AbstractClientInvocationService::getInvocationRetryPause() const {
+                    return invocationRetryPause;
                 }
 
                 bool AbstractClientInvocationService::isRedoOperation() {
@@ -683,10 +692,7 @@ namespace hazelcast {
                 }
 
                 void AbstractClientInvocationService::ResponseProcessor::shutdown() {
-                    if (pool) {
-                        pool->stop();
-                        pool->join();
-                    }
+                    ClientExecutionServiceImpl::shutdownThreadPool(pool.get());
                 }
 
                 void AbstractClientInvocationService::ResponseProcessor::start() {
@@ -1211,39 +1217,51 @@ namespace hazelcast {
                 }
 
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
-                                                                       const ClientProperties &clientProperties,
+                                                                       const ClientProperties &properties,
                                                                        int32_t poolSize,
                                                                        spi::LifecycleService &service)
-                        : lifecycleService(service) {
+                        : lifecycleService(service), clientProperties(properties), userExecutorPoolSize(poolSize) {}
+
+                void ClientExecutionServiceImpl::start() {
                     int internalPoolSize = clientProperties.getInteger(clientProperties.getInternalExecutorPoolSize());
                     if (internalPoolSize <= 0) {
                         internalPoolSize = util::IOUtil::to_value<int>(
                                 ClientProperties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT);
                     }
 
-                    int32_t executorPoolSize = poolSize;
-                    if (executorPoolSize <= 0) {
-                        executorPoolSize = util::RuntimeAvailableProcessors::get();
+                    if (userExecutorPoolSize <= 0) {
+                        userExecutorPoolSize = util::RuntimeAvailableProcessors::get();
                     }
-                    if (executorPoolSize <= 0) {
-                        executorPoolSize = 4; // hard coded thread pool count in case we could not get the processor count
+                    if (userExecutorPoolSize <= 0) {
+                        userExecutorPoolSize = 4; // hard coded thread pool count in case we could not get the processor count
                     }
 
                     internalExecutor.reset(new boost::asio::thread_pool(internalPoolSize));
-
-                    userExecutor.reset(new boost::asio::thread_pool(executorPoolSize));
-                }
-
-                void ClientExecutionServiceImpl::start() {
+                    userExecutor.reset(new boost::asio::thread_pool(userExecutorPoolSize));
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
-                    userExecutor->join();
-                    internalExecutor->join();
+                    shutdownThreadPool(userExecutor.get());
+                    shutdownThreadPool(internalExecutor.get());
                 }
 
                 const boost::asio::thread_pool &ClientExecutionServiceImpl::getUserExecutor() const {
                     return *userExecutor;
+                }
+
+                void ClientExecutionServiceImpl::shutdownThreadPool(boost::asio::thread_pool *pool) {
+                    if (!pool) {
+                        return;
+                    }
+
+                    pool->stop();
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    // needed due to bug https://github.com/chriskohlhoff/asio/issues/431
+                    boost::asio::use_service<boost::asio::detail::win_iocp_io_context>(*pool).stop();
+#else
+                    boost::asio::use_service<boost::asio::detail::io_context_impl>(*pool).stop();
+#endif
+                    pool->join();
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
@@ -1261,8 +1279,8 @@ namespace hazelcast {
                         callIdSequence(clientContext.getCallIdSequence()),
                         address(serverAddress),
                         partitionId(partition),
-                        startTimeMillis(util::currentTimeMillis()),
-                        retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
+                        startTime(std::chrono::steady_clock::now()),
+                        retryPause(invocationService.getInvocationRetryPause()),
                         objectName(name),
                         connection(conn),
                         invokeCount(0) {
@@ -1377,29 +1395,31 @@ namespace hazelcast {
                             return;
                         }
 
-                        int64_t timePassed = util::currentTimeMillis() - startTimeMillis;
-                        if (timePassed > invocationService.getInvocationTimeoutMillis()) {
+                        auto timePassed = std::chrono::steady_clock::now() - startTime;
+                        if (timePassed > invocationService.getInvocationTimeout()) {
                             if (logger.isFinestEnabled()) {
                                 std::ostringstream out;
                                 out << "Exception will not be retried because invocation timed out. " << iex.what();
                                 logger.finest(out.str());
                             }
 
-                            int64_t nowInMillis = util::currentTimeMillis();
+                            auto now = std::chrono::steady_clock::now();
+
                             auto timeoutException = (exception::ExceptionBuilder<exception::OperationTimeoutException>(
                                     "ClientInvocation::newOperationTimeoutException") << *this
                                                                                       << " timed out because exception occurred after client invocation timeout "
-                                                                                      << "Current time :"
-                                                                                      << invocationService.getInvocationTimeoutMillis()
+                                                                                      << std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                                                              invocationService.getInvocationTimeout()).count()
+                                                                                      << "msecs. Current time :"
                                                                                       << util::StringUtil::timeToString(
-                                                                                              nowInMillis) << ". "
+                                                                                              now) << ". "
                                                                                       << "Start time: "
                                                                                       << util::StringUtil::timeToString(
-                                                                                              startTimeMillis)
+                                                                                              startTime)
                                                                                       << ". Total elapsed time: "
-                                                                                      << (nowInMillis - startTimeMillis)
+                                                                                      << std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                                                              now - startTime).count()
                                                                                       << " ms. ").build();
-
                             try {
                                 BOOST_THROW_EXCEPTION(timeoutException);
                             } catch (...) {
@@ -1446,21 +1466,19 @@ namespace hazelcast {
 
                 std::exception_ptr
                 ClientInvocation::newOperationTimeoutException(std::exception_ptr exception) {
-                    int64_t nowInMillis = util::currentTimeMillis();
-
+                    auto now = std::chrono::steady_clock::now();
                     return std::make_exception_ptr((exception::ExceptionBuilder<exception::OperationTimeoutException>(
                             "ClientInvocation::newOperationTimeoutException") << *this
                                                                               << " timed out because exception occurred after client invocation timeout "
-                                                                              << "Current time :"
-                                                                              << invocationService.getInvocationTimeoutMillis()
+                                                                              << std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                                                      invocationService.getInvocationTimeout()).count()
+                                                                              << "msecs. Current time :"
+                                                                              << util::StringUtil::timeToString(now)
+                                                                              << ". Start time: "
                                                                               << util::StringUtil::timeToString(
-                                                                                      nowInMillis) << ". "
-                                                                              << "Start time: "
-                                                                              << util::StringUtil::timeToString(
-                                                                                      startTimeMillis)
+                                                                                      std::chrono::steady_clock::now())
                                                                               << ". Total elapsed time: "
-                                                                              << (nowInMillis - startTimeMillis)
-                                                                              << " ms. ").build());
+                                                                              << std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count() << " msecs. ").build());
                 }
 
                 std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation) {
@@ -1583,7 +1601,7 @@ namespace hazelcast {
                     } else {
                         // progressive retry delay
                         int64_t delayMillis = util::min<int64_t>(1 << (invokeCount - MAX_FAST_INVOCATION_COUNT),
-                                                                 retryPauseMillis);
+                                                                 std::chrono::duration_cast<std::chrono::milliseconds>(retryPause).count());
                         executionService->schedule(command, std::chrono::milliseconds(delayMillis));
                     }
                 }
@@ -1614,8 +1632,8 @@ namespace hazelcast {
 
                 std::shared_ptr<connection::Connection> ClientTransactionManagerServiceImpl::connect() {
                     AbstractClientInvocationService &invocationService = (AbstractClientInvocationService &) client.getInvocationService();
-                    int64_t startTimeMillis = util::currentTimeMillis();
-                    int64_t invocationTimeoutMillis = invocationService.getInvocationTimeoutMillis();
+                    auto startTime = std::chrono::steady_clock::now();
+                    auto invocationTimeout = invocationService.getInvocationTimeout();
                     ClientConfig &clientConfig = client.getClientConfig();
                     bool smartRouting = clientConfig.getNetworkConfig().isSmartRouting();
 
@@ -1628,14 +1646,14 @@ namespace hazelcast {
                             }
                         } catch (exception::HazelcastClientOfflineException &) {
                             throw;
-                        } catch (exception::IException &e) {
-                            if (util::currentTimeMillis() - startTimeMillis > invocationTimeoutMillis) {
+                        } catch (exception::IException &) {
+                            if (std::chrono::steady_clock::now() - startTime > invocationTimeout) {
                                 std::rethrow_exception(
-                                        newOperationTimeoutException(std::current_exception(), invocationTimeoutMillis,
-                                                                     startTimeMillis));
+                                        newOperationTimeoutException(std::current_exception(), invocationTimeout,
+                                                                     startTime));
                             }
                         }
-                        util::sleepmillis(invocationService.getInvocationRetryPauseMillis());
+                        std::this_thread::sleep_for(invocationService.getInvocationRetryPause());
                     }
                     BOOST_THROW_EXCEPTION(
                             exception::HazelcastClientNotActiveException("ClientTransactionManagerServiceImpl::connect",
@@ -1709,15 +1727,16 @@ namespace hazelcast {
 
                 std::exception_ptr
                 ClientTransactionManagerServiceImpl::newOperationTimeoutException(std::exception_ptr cause,
-                                                                                  int64_t invocationTimeoutMillis,
-                                                                                  int64_t startTimeMillis) {
+                                                                                  std::chrono::steady_clock::duration invocationTimeout,
+                                                                                  std::chrono::steady_clock::time_point startTime) {
                     std::ostringstream sb;
+                    auto now = std::chrono::steady_clock::now();
                     sb
                             << "Creating transaction context timed out because exception occurred after client invocation timeout "
-                            << invocationTimeoutMillis << " ms. " << "Current time: "
-                            << util::StringUtil::timeToString(util::currentTimeMillis()) << ". " << "Start time: "
-                            << util::StringUtil::timeToString(startTimeMillis) << ". Total elapsed time: "
-                            << (util::currentTimeMillis() - startTimeMillis) << " ms. ";
+                            << std::chrono::duration_cast<std::chrono::milliseconds>(invocationTimeout).count() << " ms. " << "Current time: "
+                            << util::StringUtil::timeToString(std::chrono::steady_clock::now()) << ". " << "Start time: "
+                            << util::StringUtil::timeToString(startTime) << ". Total elapsed time: "
+                            << std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count() << " ms. ";
                     try {
                         std::rethrow_exception(cause);
                     } catch (...) {
@@ -2056,10 +2075,10 @@ namespace hazelcast {
                     }
 
                     void CallIdSequenceWithBackpressure::handleNoSpaceLeft() {
-                        auto start = std::chrono::system_clock::now();
+                        auto start = std::chrono::steady_clock::now();
                         for (int64_t idleCount = 0;; idleCount++) {
                             int64_t elapsedNanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                    std::chrono::system_clock::now() - start).count();
+                                    std::chrono::steady_clock::now() - start).count();
                             if (elapsedNanos > backoffTimeoutNanos) {
                                 throw (exception::ExceptionBuilder<exception::HazelcastOverloadException>(
                                         "CallIdSequenceWithBackpressure::handleNoSpaceLeft")
@@ -2112,14 +2131,10 @@ namespace hazelcast {
                               serializationService(clientContext.getSerializationService()),
                               logger(clientContext.getLogger()),
                               clientConnectionManager(clientContext.getConnectionManager()),
-                              eventExecutor(eventThreadCount),
-                              registrationExecutor(1) {
+                              numberOfEventThreads(eventThreadCount) {
                         AbstractClientInvocationService &invocationService = (AbstractClientInvocationService &) clientContext.getInvocationService();
-                        invocationTimeoutMillis = invocationService.getInvocationTimeoutMillis();
-                        invocationRetryPauseMillis = invocationService.getInvocationRetryPauseMillis();
-                        for (int i = 0; i < eventThreadCount; ++i) {
-                            eventStrands.emplace_back(eventExecutor.get_executor());
-                        }
+                        invocationTimeout = invocationService.getInvocationTimeout();
+                        invocationRetryPause = invocationService.getInvocationRetryPause();
                     }
 
                     AbstractClientListenerService::~AbstractClientListenerService() {
@@ -2129,27 +2144,25 @@ namespace hazelcast {
                     AbstractClientListenerService::registerListener(
                             const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
                             const std::shared_ptr<EventHandler<protocol::ClientMessage> > handler) {
-                        return boost::asio::post(registrationExecutor, std::packaged_task<std::string()>([=]() {
+                        return boost::asio::post(*registrationExecutor, std::packaged_task<std::string()>([=]() {
                             return registerListenerInternal(listenerMessageCodec, handler);
                         })).get();
                     }
 
                     bool AbstractClientListenerService::deregisterListener(const std::string registrationId) {
-                        //This method should not be called from registrationExecutor
-/*                      TODO
-                        assert (!Thread.currentThread().getName().contains("eventRegistration"));
-*/
-                        return deregisterListenerInternal(registrationId);
+                        return boost::asio::post(*registrationExecutor, std::packaged_task<bool()>([=]() {
+                            return deregisterListenerInternal(registrationId);
+                        })).get();
                     }
 
                     void AbstractClientListenerService::connectionAdded(
                             const std::shared_ptr<connection::Connection> connection) {
-                        boost::asio::post(registrationExecutor, [=]() { connectionAddedInternal(connection); });
+                        boost::asio::post(*registrationExecutor, [=]() { connectionAddedInternal(connection); });
                     }
 
                     void AbstractClientListenerService::connectionRemoved(
                             const std::shared_ptr<connection::Connection> connection) {
-                        boost::asio::post(registrationExecutor, [=]() { connectionRemovedInternal(connection); });
+                        boost::asio::post(*registrationExecutor, [=]() { connectionRemovedInternal(connection); });
                     }
 
                     void
@@ -2169,7 +2182,7 @@ namespace hazelcast {
                             auto partitionId = response->getPartitionId();
                             if (partitionId == -1) {
                                 // execute on random thread on the thread pool
-                                boost::asio::post(eventExecutor, [=]() { processEventMessage(invocation, response); });
+                                boost::asio::post(*eventExecutor, [=]() { processEventMessage(invocation, response); });
                                 return;
                             }
 
@@ -2183,13 +2196,18 @@ namespace hazelcast {
                     }
 
                     void AbstractClientListenerService::shutdown() {
-                        eventExecutor.stop();
-                        registrationExecutor.stop();
-                        eventExecutor.join();
-                        registrationExecutor.join();
+                        ClientExecutionServiceImpl::shutdownThreadPool(eventExecutor.get());
+                        ClientExecutionServiceImpl::shutdownThreadPool(registrationExecutor.get());
                     }
 
                     void AbstractClientListenerService::start() {
+                        eventExecutor.reset(new boost::asio::thread_pool(numberOfEventThreads));
+                        registrationExecutor.reset(new boost::asio::thread_pool(1));
+
+                        for (int i = 0; i < numberOfEventThreads; ++i) {
+                            eventStrands.emplace_back(eventExecutor->get_executor());
+                        }
+
                         clientConnectionManager.addConnectionListener(shared_from_this());
                     }
 
@@ -2313,11 +2331,6 @@ namespace hazelcast {
                     void
                     AbstractClientListenerService::invoke(const ClientRegistrationKey &registrationKey,
                                                           const std::shared_ptr<connection::Connection> &connection) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
-
                         std::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrations.get(
                                 registrationKey);
                         if (registrationMap->find(connection) != registrationMap->end()) {
@@ -2427,7 +2440,7 @@ namespace hazelcast {
 
                     std::shared_ptr<boost::asio::steady_timer>
                     SmartClientListenerService::scheduleConnectToAllMembers() {
-                        auto timer = std::make_shared<boost::asio::steady_timer>(registrationExecutor);
+                        auto timer = std::make_shared<boost::asio::steady_timer>(*registrationExecutor);
                         timer->expires_from_now(std::chrono::seconds(1));
                         timer->async_wait([this, timer](boost::system::error_code ec) {
                             if (ec) {
@@ -2455,7 +2468,7 @@ namespace hazelcast {
 
                     void SmartClientListenerService::trySyncConnectToAllMembers() {
                         ClientClusterService &clientClusterService = clientContext.getClientClusterService();
-                        int64_t startMillis = util::currentTimeMillis();
+                        auto start = std::chrono::steady_clock::now();
 
                         do {
                             Member lastFailedMember;
@@ -2475,21 +2488,18 @@ namespace hazelcast {
                                 break;
                             }
 
-                            timeOutOrSleepBeforeNextTry(startMillis, lastFailedMember, lastException);
+                            timeOutOrSleepBeforeNextTry(start, lastFailedMember, lastException);
 
                         } while (clientContext.getLifecycleService().isRunning());
                     }
 
-                    void SmartClientListenerService::timeOutOrSleepBeforeNextTry(int64_t startMillis,
+                    void SmartClientListenerService::timeOutOrSleepBeforeNextTry(std::chrono::steady_clock::time_point start,
                                                                                  const Member &lastFailedMember,
                                                                                  std::exception_ptr lastException) {
-                        int64_t nowInMillis = util::currentTimeMillis();
-                        int64_t elapsedMillis = nowInMillis - startMillis;
-                        bool timedOut = elapsedMillis > invocationTimeoutMillis;
-
-                        if (timedOut) {
-                            throwOperationTimeoutException(startMillis, nowInMillis, elapsedMillis, lastFailedMember,
-                                                           lastException);
+                        auto now = std::chrono::steady_clock::now();
+                        auto elapsed = now - start;
+                        if (elapsed > invocationTimeout) {
+                            throwOperationTimeoutException(start, now, elapsed, lastFailedMember, lastException);
                         } else {
                             sleepBeforeNextTry();
                         }
@@ -2497,8 +2507,8 @@ namespace hazelcast {
                     }
 
                     void
-                    SmartClientListenerService::throwOperationTimeoutException(int64_t startMillis, int64_t nowInMillis,
-                                                                               int64_t elapsedMillis,
+                    SmartClientListenerService::throwOperationTimeoutException(std::chrono::steady_clock::time_point start, std::chrono::steady_clock::time_point now,
+                                                                               std::chrono::steady_clock::duration elapsed,
                                                                                const Member &lastFailedMember,
                                                                                std::exception_ptr lastException) {
                         try {
@@ -2509,16 +2519,16 @@ namespace hazelcast {
                                             "SmartClientListenerService::throwOperationTimeoutException")
                                             << "Registering listeners is timed out."
                                             << " Last failed member : " << lastFailedMember << ", "
-                                            << " Current time: " << util::StringUtil::timeToString(nowInMillis) << ", "
-                                            << " Start time : " << util::StringUtil::timeToString(startMillis) << ", "
-                                            << " Client invocation timeout : " << invocationTimeoutMillis << " ms, "
-                                            << " Elapsed time : " << elapsedMillis << " ms. ").build())));
+                                            << " Current time: " << util::StringUtil::timeToString(now) << ", "
+                                            << " Start time : " << util::StringUtil::timeToString(start) << ", "
+                                            << " Client invocation timeout : " << std::chrono::duration_cast<std::chrono::milliseconds>(invocationTimeout).count() << " ms, "
+                                            << " Elapsed time : " << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() << " ms. ").build())));
                         }
                     }
 
                     void SmartClientListenerService::sleepBeforeNextTry() {
                         // TODO: change with interruptible sleep
-                        util::sleepmillis(invocationRetryPauseMillis);
+                        std::this_thread::sleep_for(invocationRetryPause);
                     }
 
                     bool SmartClientListenerService::registersLocalOnly() const {
@@ -2545,7 +2555,8 @@ namespace hazelcast {
 
                     void SmartClientListenerService::shutdown() {
                         if (timer) {
-                            timer->cancel();
+                            boost::system::error_code ignored;
+                            timer->cancel(ignored);
                         }
                         AbstractClientListenerService::shutdown();
                     }

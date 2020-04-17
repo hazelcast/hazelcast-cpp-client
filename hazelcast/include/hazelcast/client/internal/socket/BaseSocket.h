@@ -78,7 +78,8 @@ namespace hazelcast {
                                                    async_connect(socket_->lowest_layer(), resolvedAddresses,
                                                                  [=](const boost::system::error_code &ec,
                                                                      const tcp::endpoint &) {
-                                                                     connectTimer.cancel();
+                                                                     boost::system::error_code ignored;
+                                                                     connectTimer.cancel(ignored);
                                                                      if (ec) {
                                                                          authFuture->onFailure(
                                                                                  std::make_exception_ptr(

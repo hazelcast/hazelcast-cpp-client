@@ -42,7 +42,7 @@ namespace hazelcast {
                 class HAZELCAST_API ClientExecutionServiceImpl :
                         public std::enable_shared_from_this<ClientExecutionServiceImpl> {
                 public:
-                    ClientExecutionServiceImpl(const std::string &name, const ClientProperties &clientProperties,
+                    ClientExecutionServiceImpl(const std::string &name, const ClientProperties &properties,
                                                int32_t poolSize, spi::LifecycleService &service);
 
                     void start();
@@ -71,10 +71,13 @@ namespace hazelcast {
 
                     const boost::asio::thread_pool &getUserExecutor() const;
 
+                    static void shutdownThreadPool(boost::asio::thread_pool *pool);
                 private:
                     std::unique_ptr<boost::asio::thread_pool> internalExecutor;
                     std::unique_ptr<boost::asio::thread_pool> userExecutor;
                     spi::LifecycleService &lifecycleService;
+                    const ClientProperties &clientProperties;
+                    int userExecutorPoolSize;
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetitionInternal(CompletionToken token,
@@ -93,7 +96,7 @@ namespace hazelcast {
                             }
                             try {
                                 token();
-                            } catch (std::exception &e) {
+                            } catch (std::exception &) {
                                 assert(false);
                             }
                             if (period.count()) {

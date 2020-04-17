@@ -722,7 +722,7 @@ namespace hazelcast {
                 try {
                     std::shared_ptr<T> response = retrieveResultFromMessage<T, DECODER>(future);
                     return boost::make_ready_future<std::shared_ptr<T>>(response);
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     return boost::make_exceptional_future<std::shared_ptr<T>>(boost::current_exception());
                 }
             }

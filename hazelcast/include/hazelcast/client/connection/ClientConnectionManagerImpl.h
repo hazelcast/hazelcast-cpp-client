@@ -245,7 +245,7 @@ namespace hazelcast {
 
                 util::Sync<std::shared_ptr<protocol::Principal> > principal;
                 std::unique_ptr<ClientConnectionStrategy> connectionStrategy;
-                boost::asio::thread_pool clusterConnectionExecutor;
+                std::unique_ptr<boost::asio::thread_pool> clusterConnectionExecutor;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
                 int32_t ioThreadCount;

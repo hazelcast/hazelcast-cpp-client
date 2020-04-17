@@ -239,25 +239,13 @@ namespace hazelcast {
 
                 try {
                     if (!lifecycleService.start()) {
-                        try {
-                            lifecycleService.shutdown();
-                        } catch (exception::IException &e) {
-                            logger->info("Lifecycle service start failed. Exception during shutdown: ", e.what());
-                            // ignore
-                        }
+                        lifecycleService.shutdown();
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("HazelcastClient",
                                                                                "HazelcastClient could not be started!"));
                     }
                 } catch (exception::IException &) {
-                    try {
-                        lifecycleService.shutdown();
-                    } catch (exception::IException &e) {
-                        logger->info("Exception during shutdown: ", e.what());
-                        // ignore
-                    }
+                    lifecycleService.shutdown();
                     throw;
-                } catch (std::exception &se) {
-                    std::cout << se.what() << std::endl;
                 }
 
                 mixedTypeSupportAdaptor.reset(new mixedtype::impl::HazelcastClientImpl(*this));

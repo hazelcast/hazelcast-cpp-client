@@ -37,9 +37,7 @@ namespace hazelcast {
             public:
                 virtual std::string
                 registerListener(const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
-                                 const std::shared_ptr<EventHandler < protocol::ClientMessage>>
-
-                handler) = 0;
+                                 const std::shared_ptr<EventHandler<protocol::ClientMessage>> handler) = 0;
 
                 virtual bool deregisterListener(const std::string registrationId) = 0;
             };

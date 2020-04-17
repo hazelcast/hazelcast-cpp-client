@@ -175,7 +175,7 @@ namespace hazelcast {
                     addStat(stats, "enterprise", false);
                     addStat(stats, "clientType", protocol::ClientTypes::CPP);
                     addStat(stats, "clientVersion", HAZELCAST_VERSION);
-                    addStat(stats, "clusterConnectionTimestamp", ownerConnection->getStartTimeInMillis());
+                    addStat(stats, "clusterConnectionTimestamp", ownerConnection->getStartTime().time_since_epoch().count());
 
                     std::unique_ptr<Address> localSocketAddress = ownerConnection->getLocalSocketAddress();
                     stats << STAT_SEPARATOR << "clientAddress" << KEY_VALUE_SEPARATOR;

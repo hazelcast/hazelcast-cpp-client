@@ -75,8 +75,8 @@ namespace hazelcast {
 
                 std::unordered_map<DefaultObjectNamespace, std::shared_future<std::shared_ptr<ClientProxy>>> proxies;
                 std::mutex lock;
-                int64_t invocationTimeoutMillis;
-                int64_t invocationRetryPauseMillis;
+                std::chrono::steady_clock::duration invocationTimeout;
+                std::chrono::steady_clock::duration invocationRetryPause;
                 ClientContext &client;
 
                 bool isRetryable(exception::IException &exception);

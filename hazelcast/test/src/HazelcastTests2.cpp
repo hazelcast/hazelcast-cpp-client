@@ -912,7 +912,7 @@ namespace hazelcast {
 
             TEST_F (ClientUtilTest, testStringUtilTimeToString) {
                 std::string timeString = hazelcast::util::StringUtil::timeToString(
-                        hazelcast::util::currentTimeMillis());
+                        std::chrono::steady_clock::now());
 //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
                 ASSERT_EQ((size_t) 23, timeString.length());
                 ASSERT_EQ(timeString[0], '2');
@@ -922,7 +922,7 @@ namespace hazelcast {
             }
 
             TEST_F (ClientUtilTest, testStringUtilTimeToStringFriendly) {
-                ASSERT_EQ("never", hazelcast::util::StringUtil::timeToStringFriendly(0));
+                ASSERT_EQ("never", hazelcast::util::StringUtil::timeToString(std::chrono::steady_clock::time_point()));
             }
 
             TEST_F (ClientUtilTest, testLockSupport) {

@@ -91,7 +91,7 @@ namespace hazelcast {
                       client(client),
                       socketInterceptor(client.getClientConfig().getSocketInterceptor()),
                       executionService(client.getClientExecutionService()),
-                      translator(addressTranslator), clusterConnectionExecutor(1), connectionIdGen(0),
+                      translator(addressTranslator), connectionIdGen(0),
                       socketFactory(client, ioContext), heartbeat(client, *this) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
                 int64_t connTimeout = networkConfig.getConnectionTimeout();
@@ -144,6 +144,8 @@ namespace hazelcast {
                     });
                 }
 
+                clusterConnectionExecutor.reset(new boost::asio::thread_pool(1));
+
                 heartbeat.start();
                 connectionStrategy->start();
 
@@ -157,6 +159,7 @@ namespace hazelcast {
                 }
                 alive.store(false);
 
+                connectionStrategy->shutdown();
                 heartbeat.shutdown();
 
                 // let the waiting authentication futures not block anymore
@@ -166,7 +169,8 @@ namespace hazelcast {
                             std::make_exception_ptr(
                                     exception::IllegalStateException("ClientConnectionManagerImpl::shutdown",
                                                                      "Client is shutting down")));
-                    std::get<1>(*authFutureTuple)->close();
+
+                    util::IOUtil::closeResource(std::get<1>(*authFutureTuple).get(), "Hazelcast client is shutting down");
                 }
 
                 // close connections
@@ -175,13 +179,10 @@ namespace hazelcast {
                     util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
                 }
 
-                clusterConnectionExecutor.stop();
-                clusterConnectionExecutor.join();
+                spi::impl::ClientExecutionServiceImpl::shutdownThreadPool(clusterConnectionExecutor.get());
 
                 ioContext.stop();
                 std::for_each(ioThreads.begin(), ioThreads.end(), [](std::thread &t) { t.join(); });
-
-                connectionStrategy->shutdown();
 
                 connectionListeners.clear();
                 activeConnections.clear();
@@ -506,7 +507,7 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::disconnectFromCluster(const std::shared_ptr<Connection> connection) {
-                boost::asio::post(clusterConnectionExecutor, [=]() {
+                boost::asio::post(*clusterConnectionExecutor, [=]() {
                     std::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
                     // it may be possible that while waiting on executor queue, the client got connected (another connection),
                     // then we do not need to do anything for cluster disconnect.
@@ -559,7 +560,7 @@ namespace hazelcast {
                     }
                     return false;
                 });
-                return boost::asio::post(clusterConnectionExecutor, std::move(task));
+                return boost::asio::post(*clusterConnectionExecutor, std::move(task));
             }
 
             void ClientConnectionManagerImpl::connectToClusterInternal() {
@@ -707,7 +708,8 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::AuthCallback::cancelTimeoutTask() {
-                timeoutTimer->cancel();
+                boost::system::error_code ignored;
+                timeoutTimer->cancel(ignored);
             }
 
             void ClientConnectionManagerImpl::AuthCallback::scheduleTimeoutTask() {
@@ -893,14 +895,14 @@ namespace hazelcast {
                                    ClientConnectionManagerImpl &clientConnectionManager,
                                    std::chrono::steady_clock::duration &connectTimeoutInMillis)
                     : readHandler(*this, 16 << 10),
-                      startTimeInMillis(util::currentTimeMillis()), closedTimeMillis(0),
+                      startTime(std::chrono::steady_clock::now()),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       authFuture(authFuture),
                       connectionId(connectionId),
                       connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION),
                       logger(clientContext.getLogger()), asOwner(asOwner),
-                      connectionManager(clientConnectionManager) {
+                      connectionManager(clientConnectionManager), alive(true) {
                 socket = socketFactory.create(address, connectTimeoutInMillis);
             }
 
@@ -932,10 +934,12 @@ namespace hazelcast {
             }
 
             void Connection::close(const std::string &reason, std::exception_ptr cause) {
-                int64_t expected = 0;
-                if (!closedTimeMillis.compare_exchange_strong(expected, util::currentTimeMillis())) {
+                bool expected = true;
+                if (!alive.compare_exchange_strong(expected, false)) {
                     return;
                 }
+
+                closedTime.store(std::chrono::steady_clock::now());
 
                 closeCause = cause;
                 closeReason = reason;
@@ -998,7 +1002,7 @@ namespace hazelcast {
             }
 
             bool Connection::isAlive() {
-                return closedTimeMillis == 0;
+                return alive;
             }
 
             const std::string &Connection::getCloseReason() const {
@@ -1078,7 +1082,7 @@ namespace hazelcast {
                 return socket->localSocketAddress();
             }
 
-            const std::chrono::steady_clock::time_point Connection::lastReadTime() {
+            const std::chrono::steady_clock::time_point Connection::lastReadTime() const {
                 return readHandler.getLastReadTime();
             }
 
@@ -1092,8 +1096,6 @@ namespace hazelcast {
 
             std::ostream &operator<<(std::ostream &os, const Connection &connection) {
                 Connection &conn = const_cast<Connection &>(connection);
-                auto lastRead = conn.lastReadTime();
-                int64_t closedTime = conn.closedTimeMillis;
                 os << "ClientConnection{"
                    << "alive=" << conn.isAlive()
                    << ", connectionId=" << connection.getConnectionId()
@@ -1103,8 +1105,8 @@ namespace hazelcast {
                 } else {
                     os << "null";
                 }
-                os << ", lastReadTime=" << util::StringUtil::timeToStringFriendly(lastRead.time_since_epoch().count())
-                   << ", closedTime=" << util::StringUtil::timeToStringFriendly(closedTime)
+                os << ", lastReadTime=" << util::StringUtil::timeToString(conn.lastReadTime())
+                   << ", closedTime=" << util::StringUtil::timeToString(conn.closedTime)
                    << ", connected server version=" << conn.connectedServerVersionString
                    << '}';
 
@@ -1115,8 +1117,8 @@ namespace hazelcast {
                 return connectionId < rhs.connectionId;
             }
 
-            int64_t Connection::getStartTimeInMillis() const {
-                return startTimeInMillis;
+            std::chrono::steady_clock::time_point Connection::getStartTime() const {
+                return startTime;
             }
 
             const Socket &Connection::getSocket() const {
@@ -1197,7 +1199,8 @@ namespace hazelcast {
 
             void HeartbeatManager::shutdown() {
                 if (timer) {
-                    timer->cancel();
+                    boost::system::error_code ignored;
+                    timer->cancel(ignored);
                 }
             }
 

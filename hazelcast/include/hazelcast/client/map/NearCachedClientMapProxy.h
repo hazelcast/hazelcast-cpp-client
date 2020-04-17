@@ -96,7 +96,7 @@ namespace hazelcast {
                                                                  f.get(),
                                                                  ClientMapProxy<K, V>::getSerializationService());
                                                      });
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         resetToUnmarkedState(ncKey);
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }

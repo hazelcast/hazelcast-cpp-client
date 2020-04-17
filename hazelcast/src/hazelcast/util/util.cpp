@@ -606,12 +606,12 @@ namespace hazelcast {
 
         int64_t currentTimeMillis() {
             return std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count();
+                    std::chrono::steady_clock::now().time_since_epoch()).count();
         }
 
         int64_t currentTimeNanos() {
             return std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count();
+                    std::chrono::steady_clock::now().time_since_epoch()).count();
         }
 
         int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
@@ -662,22 +662,24 @@ namespace hazelcast {
 #endif
         }
 
-        std::string StringUtil::timeToString(int64_t timeInMillis) {
+        std::string StringUtil::timeToString(std::chrono::steady_clock::time_point t) {
             using namespace std::chrono;
 
-            auto timePoint = system_clock::time_point() + milliseconds(timeInMillis);
-            auto brokenTime = system_clock::to_time_t(timePoint);
-            auto localBrokenTime = std::localtime(&brokenTime);
+            if (!t.time_since_epoch().count()) {
+                return std::string("never");
+            }
+
+            auto systemDuration = duration_cast<system_clock::duration>(t - steady_clock::now());
+            auto brokenTime = system_clock::to_time_t(system_clock::now() + systemDuration);
+            struct tm localBrokenTime;
+            int result = util::localtime(&brokenTime, &localBrokenTime);
+            assert(!result);
 
             std::ostringstream oss;
-            oss << std::put_time(localBrokenTime, "%Y-%m-%d %H:%M:%S");
-            oss << '.' << std::setfill('0') << std::setw(3) << timeInMillis % 1000;
+            oss << std::put_time(&localBrokenTime, "%Y-%m-%d %H:%M:%S");
+            oss << '.' << std::setfill('0') << std::setw(3) << duration_cast<milliseconds>(systemDuration).count() % 1000;
 
             return oss.str();
-        }
-
-        std::string StringUtil::timeToStringFriendly(int64_t timeInMillis) {
-            return timeInMillis == 0 ? "never" : timeToString(timeInMillis);
         }
 
         std::vector<std::string> StringUtil::tokenizeVersionString(const std::string &version) {

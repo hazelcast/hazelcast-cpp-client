@@ -56,9 +56,9 @@ namespace hazelcast {
 
                 virtual bool isRedoOperation() = 0;
 
-                virtual int64_t getInvocationTimeoutMillis() const = 0;
+                virtual std::chrono::steady_clock::duration getInvocationTimeout() const = 0;
 
-                virtual int64_t getInvocationRetryPauseMillis() const = 0;
+                virtual std::chrono::steady_clock::duration getInvocationRetryPause() const = 0;
             };
         }
     }

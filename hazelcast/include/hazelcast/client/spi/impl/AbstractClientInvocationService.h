@@ -48,9 +48,9 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    int64_t getInvocationTimeoutMillis() const;
+                    std::chrono::steady_clock::duration getInvocationTimeout() const;
 
-                    int64_t getInvocationRetryPauseMillis() const;
+                    std::chrono::steady_clock::duration getInvocationRetryPause() const;
 
                     bool isRedoOperation();
 
@@ -83,15 +83,14 @@ namespace hazelcast {
                                              const std::shared_ptr<protocol::ClientMessage> response);
                     };
 
-                    const ClientProperty &CLEAN_RESOURCES_MILLIS;
                     ClientContext &client;
                     util::ILogger &invocationLogger;
                     connection::ClientConnectionManagerImpl *connectionManager;
                     ClientPartitionService &partitionService;
 
                     util::AtomicBoolean isShutdown;
-                    int64_t invocationTimeoutMillis;
-                    int64_t invocationRetryPauseMillis;
+                    std::chrono::steady_clock::duration invocationTimeout;
+                    std::chrono::steady_clock::duration invocationRetryPause;
                     ResponseProcessor responseThread;
 
                     void writeToConnection(connection::Connection &connection,

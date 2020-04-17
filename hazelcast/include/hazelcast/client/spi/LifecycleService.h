@@ -69,7 +69,6 @@ namespace hazelcast {
                 bool isRunning();
 
             private:
-
                 ClientContext &clientContext;
                 std::set<LifecycleListener *> listeners;
                 std::mutex listenerLock;
@@ -78,7 +77,6 @@ namespace hazelcast {
                 Cluster &cluster;
                 boost::latch shutdownCompletedLatch;
             };
-
         }
     }
 }

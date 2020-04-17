@@ -39,10 +39,7 @@ namespace hazelcast {
 
                         std::string
                         registerListener(const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
-                                         const std::shared_ptr<EventHandler < protocol::ClientMessage>>
-
-                        handler)
-                        override;
+                                         const std::shared_ptr<EventHandler < protocol::ClientMessage>> handler) override;
 
                         void asyncConnectToAllMembersInternal();
 
@@ -53,11 +50,13 @@ namespace hazelcast {
 
                         void trySyncConnectToAllMembers();
 
-                        void timeOutOrSleepBeforeNextTry(int64_t startMillis, const Member &lastFailedMember,
+                        void timeOutOrSleepBeforeNextTry(std::chrono::steady_clock::time_point start, const Member &lastFailedMember,
                                                          std::exception_ptr lastException);
 
                         void
-                        throwOperationTimeoutException(int64_t startMillis, int64_t nowInMillis, int64_t elapsedMillis,
+                        throwOperationTimeoutException(std::chrono::steady_clock::time_point start,
+                                                       std::chrono::steady_clock::time_point now,
+                                                       std::chrono::steady_clock::duration elapsed,
                                                        const Member &lastFailedMember,
                                                        std::exception_ptr lastException);
 

@@ -114,13 +114,9 @@ namespace hazelcast {
 
                     const std::shared_ptr<protocol::ClientMessage> getClientMessage();
 
-                    const std::shared_ptr<EventHandler < protocol::ClientMessage> > &
+                    const std::shared_ptr<EventHandler < protocol::ClientMessage> > &getEventHandler() const;
 
-                    getEventHandler() const;
-
-                    void setEventHandler(const std::shared_ptr<EventHandler < protocol::ClientMessage>>
-
-                    &eventHandler);
+                    void setEventHandler(const std::shared_ptr<EventHandler < protocol::ClientMessage>> &eventHandler);
 
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
@@ -155,8 +151,8 @@ namespace hazelcast {
                     std::shared_ptr<sequence::CallIdSequence> callIdSequence;
                     std::shared_ptr<Address> address;
                     int partitionId;
-                    int64_t startTimeMillis;
-                    int64_t retryPauseMillis;
+                    std::chrono::steady_clock::time_point startTime;
+                    std::chrono::steady_clock::duration retryPause;
                     std::string objectName;
                     std::shared_ptr<connection::Connection> connection;
                     util::Sync<std::shared_ptr<connection::Connection>> sendConnection;

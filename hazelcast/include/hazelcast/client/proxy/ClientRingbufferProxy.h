@@ -164,7 +164,7 @@ namespace hazelcast {
                                                          return impl::PrimitiveMessageDecoder<protocol::codec::RingbufferAddCodec, int64_t>::instance()->decodeClientMessage(
                                                                  f.get(), getSerializationService());
                                                      });
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
                     return boost::future<std::shared_ptr<int64_t>>();
@@ -187,7 +187,7 @@ namespace hazelcast {
                                                          return impl::PrimitiveMessageDecoder<protocol::codec::RingbufferAddAllCodec, int64_t>::instance()->decodeClientMessage(
                                                                  f.get(), getSerializationService());
                                                      });
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
                     return boost::future<std::shared_ptr<int64_t>>();
@@ -208,7 +208,7 @@ namespace hazelcast {
                             throw (exception::ExceptionBuilder<exception::StaleSequenceException>(se.getSource())
                                     << se.getMessage() << ", head sequence:" << l).build();
                         }
-                    } catch (const exception::IException &e) {
+                    } catch (const exception::IException &) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
                     return *protocol::ClientMessage::create(0);
@@ -224,7 +224,7 @@ namespace hazelcast {
 
                     try {
                         capacity();
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         //in case of exception return the exception via future to behave consistently to member
                         try {
                             std::throw_with_nested(boost::enable_current_exception(
@@ -256,7 +256,7 @@ namespace hazelcast {
                                                                  f.get(),
                                                                  getSerializationService());
                                                      });
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
                     return boost::future<std::shared_ptr<ringbuffer::ReadResultSet<E>>>();

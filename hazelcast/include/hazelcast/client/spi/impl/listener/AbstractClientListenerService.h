@@ -110,12 +110,13 @@ namespace hazelcast {
                         serialization::pimpl::SerializationService &serializationService;
                         util::ILogger &logger;
                         connection::ClientConnectionManagerImpl &clientConnectionManager;
-                        boost::asio::thread_pool eventExecutor;
+                        std::unique_ptr<boost::asio::thread_pool> eventExecutor;
                         std::vector<boost::asio::thread_pool::executor_type> eventStrands;
-                        boost::asio::thread_pool registrationExecutor;
-                        int64_t invocationTimeoutMillis;
-                        int64_t invocationRetryPauseMillis;
+                        std::unique_ptr<boost::asio::thread_pool> registrationExecutor;
+                        std::chrono::steady_clock::duration invocationTimeout;
+                        std::chrono::steady_clock::duration invocationRetryPause;
                         RegistrationsMap registrations;
+                        int numberOfEventThreads;
 
                     private:
                         void invokeFromInternalThread(const ClientRegistrationKey &registrationKey,

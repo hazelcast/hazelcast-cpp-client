@@ -103,7 +103,7 @@ namespace hazelcast {
 
                 bool isAlive();
 
-                const std::chrono::steady_clock::time_point lastReadTime();
+                const std::chrono::steady_clock::time_point lastReadTime() const;
 
                 const std::string &getCloseReason() const;
 
@@ -121,7 +121,7 @@ namespace hazelcast {
 
                 int getConnectedServerVersion() const;
 
-                int64_t getStartTimeInMillis() const;
+                std::chrono::steady_clock::time_point getStartTime() const;
 
                 const Socket &getSocket() const;
 
@@ -140,8 +140,8 @@ namespace hazelcast {
 
                 void innerClose();
 
-                int64_t startTimeInMillis;
-                std::atomic<int64_t> closedTimeMillis;
+                std::chrono::steady_clock::time_point startTime;
+                std::atomic<std::chrono::steady_clock::time_point> closedTime;
                 spi::ClientContext &clientContext;
                 protocol::IMessageHandler &invocationService;
                 std::unique_ptr<Socket> socket;
@@ -160,6 +160,7 @@ namespace hazelcast {
                 util::ILogger &logger;
                 bool asOwner;
                 ClientConnectionManagerImpl &connectionManager;
+                std::atomic_bool alive;
             };
         }
     }
