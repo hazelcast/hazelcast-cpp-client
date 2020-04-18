@@ -77,7 +77,7 @@ namespace hazelcast {
                     private:
                         util::ILogger &invocationLogger;
                         ClientContext &client;
-                        std::unique_ptr<boost::asio::thread_pool> pool;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> pool;
 
                         void processInternal(const std::shared_ptr<ClientInvocation> invocation,
                                              const std::shared_ptr<protocol::ClientMessage> response);

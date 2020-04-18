@@ -91,8 +91,7 @@ namespace hazelcast {
                       client(client),
                       socketInterceptor(client.getClientConfig().getSocketInterceptor()),
                       executionService(client.getClientExecutionService()),
-                      translator(addressTranslator), connectionIdGen(0),
-                      socketFactory(client, ioContext), heartbeat(client, *this) {
+                      translator(addressTranslator), connectionIdGen(0), heartbeat(client, *this) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
                 int64_t connTimeout = networkConfig.getConnectionTimeout();
                 if (connTimeout > 0) {
@@ -130,21 +129,22 @@ namespace hazelcast {
                 }
                 alive.store(true);
 
-                if (!socketFactory.start()) {
+                ioContext.reset(new boost::asio::io_context);
+                ioResolver.reset(new boost::asio::ip::tcp::resolver(ioContext->get_executor()));
+                socketFactory.reset(new internal::socket::SocketFactory(client, *ioContext, *ioResolver));
+                ioGuard.reset(new boost::asio::io_context::work(*ioContext));
+
+                if (!socketFactory->start()) {
                     return false;
                 }
 
                 socketInterceptor = client.getClientConfig().getSocketInterceptor();
 
                 for (int j = 0; j < ioThreadCount; ++j) {
-                    ioThreads.emplace_back([=]() {
-                        boost::asio::executor_work_guard<decltype(ioContext.get_executor())> work{
-                                ioContext.get_executor()};
-                        ioContext.run();
-                    });
+                    ioThreads.emplace_back([=]() { ioContext->run(); });
                 }
 
-                clusterConnectionExecutor.reset(new boost::asio::thread_pool(1));
+                clusterConnectionExecutor.reset(new hazelcast::util::hz_thread_pool(1));
 
                 heartbeat.start();
                 connectionStrategy->start();
@@ -181,8 +181,12 @@ namespace hazelcast {
 
                 spi::impl::ClientExecutionServiceImpl::shutdownThreadPool(clusterConnectionExecutor.get());
 
-                ioContext.stop();
+                ioGuard.reset();
+                ioResolver.reset();
+                ioContext->stop();
+                boost::asio::use_service<boost::asio::detail::resolver_service<boost::asio::ip::tcp>>(*ioContext).shutdown();
                 std::for_each(ioThreads.begin(), ioThreads.end(), [](std::thread &t) { t.join(); });
+                ioContext.reset();
 
                 connectionListeners.clear();
                 activeConnections.clear();
@@ -288,7 +292,8 @@ namespace hazelcast {
                 std::shared_ptr<AuthenticationFuture> future(new AuthenticationFuture(address, connectionsInProgress));
 
                 auto connection = std::make_shared<Connection>(address, client, ++connectionIdGen, future,
-                                                               socketFactory, asOwner, *this, connectionTimeoutMillis);
+                                                               *socketFactory, asOwner, *this, connectionTimeoutMillis,
+                                                               *ioResolver);
 
                 auto authTuple = std::make_shared<FutureTuple>(future, connection);
                 auto oldFutureTuple = connectionsInProgress.putIfAbsent(address, authTuple);
@@ -507,7 +512,7 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::disconnectFromCluster(const std::shared_ptr<Connection> connection) {
-                boost::asio::post(*clusterConnectionExecutor, [=]() {
+                boost::asio::post(clusterConnectionExecutor->get_executor(), [=]() {
                     std::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
                     // it may be possible that while waiting on executor queue, the client got connected (another connection),
                     // then we do not need to do anything for cluster disconnect.
@@ -560,7 +565,7 @@ namespace hazelcast {
                     }
                     return false;
                 });
-                return boost::asio::post(*clusterConnectionExecutor, std::move(task));
+                return boost::asio::post(clusterConnectionExecutor->get_executor(), std::move(task));
             }
 
             void ClientConnectionManagerImpl::connectToClusterInternal() {
@@ -893,7 +898,8 @@ namespace hazelcast {
                                    const std::shared_ptr<AuthenticationFuture> &authFuture,
                                    internal::socket::SocketFactory &socketFactory, bool asOwner,
                                    ClientConnectionManagerImpl &clientConnectionManager,
-                                   std::chrono::steady_clock::duration &connectTimeoutInMillis)
+                                   std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                                   boost::asio::ip::tcp::resolver &resolver)
                     : readHandler(*this, 16 << 10),
                       startTime(std::chrono::steady_clock::now()),
                       clientContext(clientContext),
@@ -1318,8 +1324,9 @@ namespace hazelcast {
 
         namespace internal {
             namespace socket {
-                SocketFactory::SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io)
-                        : clientContext(clientContext), io(io) {
+                SocketFactory::SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io,
+                                             boost::asio::ip::tcp::resolver &resolver)
+                        : clientContext(clientContext), io(io), ioResolver(resolver) {
                 }
 
                 bool SocketFactory::start() {
@@ -1378,24 +1385,25 @@ namespace hazelcast {
                     if (sslContext.get()) {
                         return std::unique_ptr<Socket>(new internal::socket::SSLSocket(io, *sslContext, address,
                                                                                        clientContext.getClientConfig().getNetworkConfig().getSocketOptions(),
-                                                                                       connectTimeoutInMillis));
+                                                                                       connectTimeoutInMillis, ioResolver));
                     }
 #endif
 
                     return std::unique_ptr<Socket>(new internal::socket::TcpSocket(io, address,
                                                                                    clientContext.getClientConfig().getNetworkConfig().getSocketOptions(),
-                                                                                   connectTimeoutInMillis));
+                                                                                   connectTimeoutInMillis, ioResolver));
                 }
 
 #ifdef HZ_BUILD_WITH_SSL
 
                 SSLSocket::SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &sslContext,
                                      const client::Address &address, client::config::SocketOptions &socketOptions,
-                                     std::chrono::steady_clock::duration &connectTimeoutInMillis)
+                                     std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                                     boost::asio::ip::tcp::resolver &resolver)
                         : BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(
                         std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(
                                 new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(ioService, sslContext)),
-                        address, socketOptions, ioService, connectTimeoutInMillis) {
+                        resolver, address, socketOptions, ioService, connectTimeoutInMillis) {
                 }
 
                 std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() const {
@@ -1447,10 +1455,11 @@ namespace hazelcast {
 
                 TcpSocket::TcpSocket(boost::asio::io_context &io, const Address &address,
                                      client::config::SocketOptions &socketOptions,
-                                     std::chrono::steady_clock::duration &connectTimeoutInMillis)
+                                     std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                                     boost::asio::ip::tcp::resolver &resolver)
                         : BaseSocket<boost::asio::ip::tcp::socket>(
                         std::unique_ptr<boost::asio::ip::tcp::socket>(new boost::asio::ip::tcp::socket(io)),
-                        address, socketOptions, io, connectTimeoutInMillis) {
+                        resolver, address, socketOptions, io, connectTimeoutInMillis) {
                 }
 
             }

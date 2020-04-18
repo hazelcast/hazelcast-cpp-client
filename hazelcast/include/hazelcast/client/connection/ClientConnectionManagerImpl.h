@@ -48,6 +48,9 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class hz_thread_pool;
+    }
     namespace client {
         class Credentials;
 
@@ -229,37 +232,32 @@ namespace hazelcast {
                 std::chrono::steady_clock::duration connectionTimeoutMillis;
 
                 spi::ClientContext &client;
+                std::unique_ptr<boost::asio::io_context> ioContext;
                 SocketInterceptor *socketInterceptor;
-
                 spi::impl::ClientExecutionServiceImpl &executionService;
-
                 std::shared_ptr<AddressTranslator> translator;
                 util::SynchronizedMap<Address, Connection> activeConnections;
                 util::SynchronizedMap<Address, FutureTuple> connectionsInProgress;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
                 const Credentials *credentials;
-
                 util::Sync<std::shared_ptr<Address> > ownerConnectionAddress;
                 util::Sync<std::shared_ptr<Address> > previousOwnerConnectionAddress;
-
                 util::Sync<std::shared_ptr<protocol::Principal> > principal;
                 std::unique_ptr<ClientConnectionStrategy> connectionStrategy;
-                std::unique_ptr<boost::asio::thread_pool> clusterConnectionExecutor;
+                std::unique_ptr<hazelcast::util::hz_thread_pool> clusterConnectionExecutor;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
                 int32_t ioThreadCount;
                 bool shuffleMemberList;
                 std::vector<std::shared_ptr<AddressProvider> > addressProviders;
-
                 std::atomic<int> connectionIdGen;
-                internal::socket::SocketFactory socketFactory;
-
+                std::unique_ptr<boost::asio::ip::tcp::resolver> ioResolver;
+                std::unique_ptr<internal::socket::SocketFactory> socketFactory;
                 std::mutex lock;
                 HeartbeatManager heartbeat;
-
-                boost::asio::io_context ioContext;
                 std::vector<std::thread> ioThreads;
+                std::unique_ptr<boost::asio::io_context::work> ioGuard;
             };
         }
     }

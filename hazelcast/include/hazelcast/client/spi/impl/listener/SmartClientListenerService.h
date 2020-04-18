@@ -62,7 +62,7 @@ namespace hazelcast {
 
                         void sleepBeforeNextTry();
 
-                        std::shared_ptr<boost::asio::steady_timer> scheduleConnectToAllMembers();
+                        void scheduleConnectToAllMembers();
                     };
                 }
             }

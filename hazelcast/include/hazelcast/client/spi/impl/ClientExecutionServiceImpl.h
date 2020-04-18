@@ -23,6 +23,7 @@
 
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/util/hz_thread_pool.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -32,6 +33,7 @@
 namespace hazelcast {
     namespace util {
         class ILogger;
+        class hz_thread_pool;
     }
 
     namespace client {
@@ -51,7 +53,7 @@ namespace hazelcast {
 
                     template<typename CompletionToken>
                     void execute(CompletionToken token) {
-                        boost::asio::post(*internalExecutor, token);
+                        boost::asio::post(internalExecutor->get_executor(), token);
                     }
 
                     template<typename CompletionToken>
@@ -64,17 +66,16 @@ namespace hazelcast {
                     std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetition(CompletionToken token,
                                                                                       const std::chrono::steady_clock::duration &delay,
                                                                                       const std::chrono::steady_clock::duration &period) {
-                        // TODO: Look at boost thread scheduler for this implementation
-                        auto timer = std::make_shared<boost::asio::steady_timer>(*internalExecutor);
+                        auto timer = std::make_shared<boost::asio::steady_timer>(internalExecutor->get_executor());
                         return scheduleWithRepetitionInternal(token, delay, period, timer);
                     }
 
-                    const boost::asio::thread_pool &getUserExecutor() const;
+                    boost::asio::thread_pool::executor_type getUserExecutor() const;
 
-                    static void shutdownThreadPool(boost::asio::thread_pool *pool);
+                    static void shutdownThreadPool(hazelcast::util::hz_thread_pool *pool);
                 private:
-                    std::unique_ptr<boost::asio::thread_pool> internalExecutor;
-                    std::unique_ptr<boost::asio::thread_pool> userExecutor;
+                    std::unique_ptr<hazelcast::util::hz_thread_pool> internalExecutor;
+                    std::unique_ptr<hazelcast::util::hz_thread_pool> userExecutor;
                     spi::LifecycleService &lifecycleService;
                     const ClientProperties &clientProperties;
                     int userExecutorPoolSize;
@@ -84,25 +85,24 @@ namespace hazelcast {
                                                                                               const std::chrono::steady_clock::duration &delay,
                                                                                               const std::chrono::steady_clock::duration &period,
                                                                                               std::shared_ptr<boost::asio::steady_timer> timer) {
-                        // TODO: Look at boost thread scheduler for this implementation
                         if (delay.count() > 0) {
                             timer->expires_from_now(delay);
                         } else {
                             timer->expires_from_now(period);
                         }
-                        timer->async_wait([this, token, period, timer](boost::system::error_code ec) {
+
+                        timer->async_wait([=](boost::system::error_code ec) {
                             if (ec) {
                                 return;
                             }
+
                             try {
                                 token();
                             } catch (std::exception &) {
                                 assert(false);
                             }
-                            if (period.count()) {
-                                if (!lifecycleService.isRunning()) {
-                                    return;
-                                }
+
+                            if (lifecycleService.isRunning() && period.count()) {
                                 scheduleWithRepetitionInternal(token, std::chrono::seconds(-1), period, timer);
                             }
                         });

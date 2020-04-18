@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_
-#define HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_
+#pragma once
 
-#include <boost/asio.hpp>
+#include <boost/asio/thread_pool.hpp>
 
-#include "hazelcast/client/internal/socket/BaseSocket.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,18 +25,17 @@
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace internal {
-            namespace socket {
-                class HAZELCAST_API TcpSocket : public BaseSocket<boost::asio::ip::tcp::socket> {
-                public:
-                    TcpSocket(boost::asio::io_context &io, const Address &address,
-                              client::config::SocketOptions &socketOptions,
-                              std::chrono::steady_clock::duration &connectTimeoutInMillis,
-                              boost::asio::ip::tcp::resolver &resolver);
-                };
-            }
-        }
+    namespace util {
+        class HAZELCAST_API hz_thread_pool {
+        public:
+            hz_thread_pool(size_t numThreads);
+
+            void shutdown_gracefully();
+
+            boost::asio::thread_pool::executor_type get_executor() const;
+        private:
+            std::unique_ptr<boost::asio::thread_pool> pool_;
+        };
     }
 }
 
@@ -45,4 +43,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_ */

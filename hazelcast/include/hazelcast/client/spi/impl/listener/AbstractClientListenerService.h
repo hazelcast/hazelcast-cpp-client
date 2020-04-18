@@ -110,9 +110,9 @@ namespace hazelcast {
                         serialization::pimpl::SerializationService &serializationService;
                         util::ILogger &logger;
                         connection::ClientConnectionManagerImpl &clientConnectionManager;
-                        std::unique_ptr<boost::asio::thread_pool> eventExecutor;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> eventExecutor;
                         std::vector<boost::asio::thread_pool::executor_type> eventStrands;
-                        std::unique_ptr<boost::asio::thread_pool> registrationExecutor;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> registrationExecutor;
                         std::chrono::steady_clock::duration invocationTimeout;
                         std::chrono::steady_clock::duration invocationRetryPause;
                         RegistrationsMap registrations;

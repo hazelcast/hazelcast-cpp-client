@@ -686,8 +686,8 @@ namespace hazelcast {
                         } else {
                             invocation->notify(response);
                         }
-                    } catch (exception::IException &e) {
-                        invocationLogger.severe("Failed to process response for ", *invocation, ". ", e);
+                    } catch (std::exception &e) {
+                        invocationLogger.severe("Failed to process response for ", *invocation, ". ", e.what());
                     }
                 }
 
@@ -699,7 +699,7 @@ namespace hazelcast {
                     ClientProperties &clientProperties = client.getClientProperties();
                     auto threadCount = clientProperties.getInteger(clientProperties.getResponseExecutorThreadCount());
                     if (threadCount > 0) {
-                        pool.reset(new boost::asio::thread_pool(threadCount));
+                        pool.reset(new hazelcast::util::hz_thread_pool(threadCount));
                     }
                 }
 
@@ -715,7 +715,7 @@ namespace hazelcast {
                         return;
                     }
 
-                    boost::asio::post(*pool, [=] { processInternal(invocation, response); });
+                    boost::asio::post(pool->get_executor(), [=] { processInternal(invocation, response); });
                 }
 
                 NonSmartClientInvocationService::NonSmartClientInvocationService(ClientContext &client)
@@ -1236,8 +1236,8 @@ namespace hazelcast {
                         userExecutorPoolSize = 4; // hard coded thread pool count in case we could not get the processor count
                     }
 
-                    internalExecutor.reset(new boost::asio::thread_pool(internalPoolSize));
-                    userExecutor.reset(new boost::asio::thread_pool(userExecutorPoolSize));
+                    internalExecutor.reset(new hazelcast::util::hz_thread_pool(internalPoolSize));
+                    userExecutor.reset(new hazelcast::util::hz_thread_pool(userExecutorPoolSize));
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
@@ -1245,23 +1245,15 @@ namespace hazelcast {
                     shutdownThreadPool(internalExecutor.get());
                 }
 
-                const boost::asio::thread_pool &ClientExecutionServiceImpl::getUserExecutor() const {
-                    return *userExecutor;
+                boost::asio::thread_pool::executor_type ClientExecutionServiceImpl::getUserExecutor() const {
+                    return userExecutor->get_executor();
                 }
 
-                void ClientExecutionServiceImpl::shutdownThreadPool(boost::asio::thread_pool *pool) {
+                void ClientExecutionServiceImpl::shutdownThreadPool(hazelcast::util::hz_thread_pool *pool) {
                     if (!pool) {
                         return;
                     }
-
-                    pool->stop();
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    // needed due to bug https://github.com/chriskohlhoff/asio/issues/431
-                    boost::asio::use_service<boost::asio::detail::win_iocp_io_context>(*pool).stop();
-#else
-                    boost::asio::use_service<boost::asio::detail::io_context_impl>(*pool).stop();
-#endif
-                    pool->join();
+                    pool->shutdown_gracefully();
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
@@ -1604,6 +1596,17 @@ namespace hazelcast {
                                                                  std::chrono::duration_cast<std::chrono::milliseconds>(retryPause).count());
                         executionService->schedule(command, std::chrono::milliseconds(delayMillis));
                     }
+
+                    // We need to double check here since the executor service may have stopped already and the execute
+                    // or schedule calls will not fail but the job will not be executed.
+/*
+                    if (!lifecycleService.isRunning()) {
+                        notifyException(std::make_exception_ptr(boost::enable_current_exception(
+                                exception::HazelcastClientNotActiveException(
+                                        "ClientTransactionManagerServiceImpl::connect",
+                                        "Client is shutdown"))));
+                    }
+*/
                 }
 
                 const std::string ClientInvocation::getName() const {
@@ -1612,10 +1615,6 @@ namespace hazelcast {
 
                 std::shared_ptr<protocol::ClientMessage> ClientInvocation::copyMessage() {
                     return std::make_shared<protocol::ClientMessage>(*clientMessage.get());
-                }
-
-                const boost::asio::thread_pool &ClientInvocation::getUserExecutor() const {
-                    return executionService->getUserExecutor();
                 }
 
                 boost::promise<protocol::ClientMessage> &ClientInvocation::getPromise() {
@@ -1851,7 +1850,6 @@ namespace hazelcast {
                         if (!client.getLifecycleService().isRunning()) {
                             return;
                         }
-
 
                         try {
                             connection::ClientConnectionManagerImpl &connectionManager = client.getConnectionManager();
@@ -2144,25 +2142,25 @@ namespace hazelcast {
                     AbstractClientListenerService::registerListener(
                             const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
                             const std::shared_ptr<EventHandler<protocol::ClientMessage> > handler) {
-                        return boost::asio::post(*registrationExecutor, std::packaged_task<std::string()>([=]() {
+                        return boost::asio::post(registrationExecutor->get_executor(), std::packaged_task<std::string()>([=]() {
                             return registerListenerInternal(listenerMessageCodec, handler);
                         })).get();
                     }
 
                     bool AbstractClientListenerService::deregisterListener(const std::string registrationId) {
-                        return boost::asio::post(*registrationExecutor, std::packaged_task<bool()>([=]() {
+                        return boost::asio::post(registrationExecutor->get_executor(), std::packaged_task<bool()>([=]() {
                             return deregisterListenerInternal(registrationId);
                         })).get();
                     }
 
                     void AbstractClientListenerService::connectionAdded(
                             const std::shared_ptr<connection::Connection> connection) {
-                        boost::asio::post(*registrationExecutor, [=]() { connectionAddedInternal(connection); });
+                        boost::asio::post(registrationExecutor->get_executor(), [=]() { connectionAddedInternal(connection); });
                     }
 
                     void AbstractClientListenerService::connectionRemoved(
                             const std::shared_ptr<connection::Connection> connection) {
-                        boost::asio::post(*registrationExecutor, [=]() { connectionRemovedInternal(connection); });
+                        boost::asio::post(registrationExecutor->get_executor(), [=]() { connectionRemovedInternal(connection); });
                     }
 
                     void
@@ -2182,7 +2180,7 @@ namespace hazelcast {
                             auto partitionId = response->getPartitionId();
                             if (partitionId == -1) {
                                 // execute on random thread on the thread pool
-                                boost::asio::post(*eventExecutor, [=]() { processEventMessage(invocation, response); });
+                                boost::asio::post(eventExecutor->get_executor(), [=]() { processEventMessage(invocation, response); });
                                 return;
                             }
 
@@ -2191,7 +2189,10 @@ namespace hazelcast {
                                               [=]() { processEventMessage(invocation, response); });
 
                         } catch (const std::exception &e) {
-                            logger.warning("Event clientMessage could not be handled. ", e.what());
+                            if (clientContext.getLifecycleService().isRunning()) {
+                                logger.warning("Delivery of event message to event handler failed. ", e.what(),
+                                               ", *response, "", ", *invocation);
+                            }
                         }
                     }
 
@@ -2201,8 +2202,8 @@ namespace hazelcast {
                     }
 
                     void AbstractClientListenerService::start() {
-                        eventExecutor.reset(new boost::asio::thread_pool(numberOfEventThreads));
-                        registrationExecutor.reset(new boost::asio::thread_pool(1));
+                        eventExecutor.reset(new hazelcast::util::hz_thread_pool(numberOfEventThreads));
+                        registrationExecutor.reset(new hazelcast::util::hz_thread_pool(1));
 
                         for (int i = 0; i < numberOfEventThreads; ++i) {
                             eventStrands.emplace_back(eventExecutor->get_executor());
@@ -2236,10 +2237,6 @@ namespace hazelcast {
 
                     bool
                     AbstractClientListenerService::deregisterListenerInternal(const std::string &userRegistrationId) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
                         ClientRegistrationKey key(userRegistrationId);
                         std::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrations.get(key);
                         if (registrationMap.get() == NULL) {
@@ -2316,10 +2313,6 @@ namespace hazelcast {
                     AbstractClientListenerService::invokeFromInternalThread(
                             const ClientRegistrationKey &registrationKey,
                             const std::shared_ptr<connection::Connection> &connection) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
                         try {
                             invoke(registrationKey, connection);
                         } catch (exception::IException &e) {
@@ -2364,12 +2357,22 @@ namespace hazelcast {
                             const std::shared_ptr<protocol::ClientMessage> response) {
                         auto eventHandler = invocation->getEventHandler();
                         if (eventHandler.get() == NULL) {
-                            logger.warning("No eventHandler for invocation. Ignoring this invocation response. ",
-                                           *invocation);
+                            if (clientContext.getLifecycleService().isRunning()) {
+                                logger.warning("No eventHandler for invocation. Ignoring this invocation response. ",
+                                               *invocation);
+                            }
+
                             return;
                         }
 
-                        eventHandler->handle(response);
+                        try {
+                            eventHandler->handle(response);
+                        } catch (std::exception &e) {
+                            if (clientContext.getLifecycleService().isRunning()) {
+                                logger.warning("Delivery of event message to event handler failed. ", e.what(),
+                                               ", *response, "", ", *invocation);
+                            }
+                        }
                     }
 
                     bool AbstractClientListenerService::ConnectionPointerLessComparator::operator()(
@@ -2434,35 +2437,29 @@ namespace hazelcast {
 
                     void SmartClientListenerService::start() {
                         AbstractClientListenerService::start();
-
-                        timer = scheduleConnectToAllMembers();
+                        timer = std::make_shared<boost::asio::steady_timer>(registrationExecutor->get_executor());
+                        scheduleConnectToAllMembers();
                     }
 
-                    std::shared_ptr<boost::asio::steady_timer>
-                    SmartClientListenerService::scheduleConnectToAllMembers() {
-                        auto timer = std::make_shared<boost::asio::steady_timer>(*registrationExecutor);
+                    void SmartClientListenerService::scheduleConnectToAllMembers() {
+                        if (!clientContext.getLifecycleService().isRunning()) {
+                            return;
+                        }
                         timer->expires_from_now(std::chrono::seconds(1));
-                        timer->async_wait([this, timer](boost::system::error_code ec) {
+                        timer->async_wait([=](boost::system::error_code ec) {
                             if (ec) {
                                 return;
                             }
                             asyncConnectToAllMembersInternal();
                             scheduleConnectToAllMembers();
                         });
-
-                        return timer;
                     }
 
                     std::string
                     SmartClientListenerService::registerListener(
                             const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
                             const std::shared_ptr<EventHandler<protocol::ClientMessage> > handler) {
-                        //This method should not be called from registrationExecutor
-/*                      TODO
-                        assert (!Thread.currentThread().getName().contains("eventRegistration"));
-*/
                         trySyncConnectToAllMembers();
-
                         return AbstractClientListenerService::registerListener(listenerMessageCodec, handler);
                     }
 

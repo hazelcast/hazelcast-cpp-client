@@ -45,7 +45,8 @@ namespace hazelcast {
             namespace socket {
                 class HAZELCAST_API SocketFactory {
                 public:
-                    SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io);
+                    SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io,
+                            boost::asio::ip::tcp::resolver &resolver);
 
                     bool start();
 
@@ -55,7 +56,7 @@ namespace hazelcast {
                 private:
                     spi::ClientContext &clientContext;
                     boost::asio::io_context &io;
-
+                    boost::asio::ip::tcp::resolver &ioResolver;
 #ifdef HZ_BUILD_WITH_SSL
                     std::unique_ptr<boost::asio::ssl::context> sslContext;
 #endif

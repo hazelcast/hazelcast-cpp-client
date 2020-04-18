@@ -89,6 +89,7 @@ namespace hazelcast {
             el::Logger *easyLogger;
             client::config::LoggerConfig loggerConfig;
             std::once_flag elOnceflag;
+            std::mutex mutex_;
 
             ILogger(const ILogger &);
 
@@ -109,6 +110,7 @@ namespace hazelcast {
                 }
                 std::ostringstream out;
                 composeMessage(out, value, fargs...);
+                std::lock_guard<std::mutex> lock(mutex_);
                 switch (level) {
                     case el::Level::Debug:
                         easyLogger->debug(out.str());

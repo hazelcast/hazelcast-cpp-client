@@ -958,10 +958,8 @@ namespace hazelcast {
 
                     class GetRemoveTestTask : public hazelcast::util::Runnable {
                     public:
-                        GetRemoveTestTask(MultiMap<std::string, std::string> &mm,
-                                          boost::latch &latch1) : mm(
-                                mm),
-                                                                  latch1(latch1) {}
+                        GetRemoveTestTask(MultiMap<std::string, std::string> &mm, boost::latch &latch1) : mm(mm),
+                                                                                                          latch1(latch1) {}
 
                         virtual void run() {
                             std::string key = hazelcast::util::IOUtil::to_string(hazelcast::util::getCurrentThreadId());

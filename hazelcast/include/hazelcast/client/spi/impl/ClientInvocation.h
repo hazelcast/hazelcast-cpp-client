@@ -122,8 +122,6 @@ namespace hazelcast {
 
                     static bool isRetrySafeException(exception::IException &exception);
 
-                    const boost::asio::thread_pool &getUserExecutor() const;
-
                     boost::promise<protocol::ClientMessage> &getPromise();
 
                 private:

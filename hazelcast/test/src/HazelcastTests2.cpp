@@ -371,7 +371,6 @@ namespace hazelcast {
 
                     hazelcast::util::BlockingConcurrentQueue<int> q(capacity);
 
-                    boost::latch latch1(1);
                     hazelcast::util::StartedThread t(Interrupt, &q);
 // Note that this test is time sensitive, this thread shoulc be waiting at blocking pop when the
 // other thread executes the interrup call.

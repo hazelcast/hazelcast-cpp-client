@@ -33,12 +33,11 @@ namespace hazelcast {
                 template<typename T>
                 class BaseSocket : public Socket {
                 public:
-                    BaseSocket(std::unique_ptr<T> socket, const Address &address,
-                               client::config::SocketOptions &socketOptions,
-                               boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis)
+                    BaseSocket(std::unique_ptr<T> socket, boost::asio::ip::tcp::resolver &ioResolver,
+                            const Address &address, client::config::SocketOptions &socketOptions,
+                            boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis)
                             : socketOptions(socketOptions), socket_(std::move(socket)), remoteEndpoint(address), io(io),
-                              resolver(socket_->get_executor()), connectTimer(socket_->get_executor()),
-                              connectTimeoutMillis(connectTimeoutInMillis) {
+                              connectTimer(io), connectTimeoutMillis(connectTimeoutInMillis), resolver(ioResolver) {
                     }
 
                     ~BaseSocket() {
@@ -50,8 +49,9 @@ namespace hazelcast {
                         using namespace boost::asio;
                         using namespace boost::asio::ip;
 
-                        connectTimer.expires_from_now(connectTimeoutMillis);
-                        connectTimer.async_wait([this, connection, authFuture](const boost::system::error_code &ec) {
+                        auto connectTimer(new boost::asio::steady_timer(socket_->get_executor()));
+                        connectTimer->expires_from_now(connectTimeoutMillis);
+                        connectTimer->async_wait([this, connection, authFuture](const boost::system::error_code &ec) {
                             if (ec == boost::asio::error::operation_aborted) {
                                 return;
                             }
@@ -66,6 +66,8 @@ namespace hazelcast {
                                                [=](const boost::system::error_code &ec,
                                                    tcp::resolver::results_type resolvedAddresses) {
                                                    if (ec) {
+                                                       boost::system::error_code ignored;
+                                                       connectTimer->cancel(ignored);
                                                        authFuture->onFailure(
                                                                std::make_exception_ptr(exception::IOException(
                                                                        "Connection::asyncStart", (boost::format(
@@ -79,7 +81,7 @@ namespace hazelcast {
                                                                  [=](const boost::system::error_code &ec,
                                                                      const tcp::endpoint &) {
                                                                      boost::system::error_code ignored;
-                                                                     connectTimer.cancel(ignored);
+                                                                     connectTimer->cancel(ignored);
                                                                      if (ec) {
                                                                          authFuture->onFailure(
                                                                                  std::make_exception_ptr(
@@ -153,7 +155,6 @@ namespace hazelcast {
 
                     void close() override {
                         boost::system::error_code ignored;
-                        connectTimer.cancel(ignored);
                         socket_->lowest_layer().close(ignored);
                     }
 
@@ -220,9 +221,10 @@ namespace hazelcast {
                                                         connection->readHandler.byteBuffer.remaining()),
                                                  [=](const boost::system::error_code &ec, std::size_t bytesRead) {
                                                      if (ec) {
-                                                         connection->close(
-                                                                 (boost::format("Socket read error. %1% for %2%") % ec %
-                                                                  (*connection)).str());
+                                                         // prevent any exceptions
+                                                         util::IOUtil::closeResource(connection.get(),
+                                                                 (boost::format("Socket read error. %1% for %2%")
+                                                                 %ec %(*connection)).str().c_str());
                                                          return;
                                                      }
 
@@ -272,9 +274,9 @@ namespace hazelcast {
                     std::unique_ptr<T> socket_;
                     Address remoteEndpoint;
                     boost::asio::io_context &io;
-                    boost::asio::ip::tcp::resolver resolver;
                     boost::asio::steady_timer connectTimer;
                     std::chrono::steady_clock::duration connectTimeoutMillis;
+                    boost::asio::ip::tcp::resolver &resolver;
                 };
             }
         }

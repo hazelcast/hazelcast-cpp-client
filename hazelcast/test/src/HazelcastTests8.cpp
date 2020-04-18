@@ -1908,16 +1908,15 @@ namespace hazelcast {
                 HazelcastClient client(clientConfig);
 
                 client::IMap<int, int> map = client.getMap<int, int>("m");
-                hazelcast::util::StartedThread *thread = NULL;
+                std::unique_ptr<hazelcast::util::StartedThread> thread = NULL;
                 int expected = 1000;
                 for (int i = 0; i < expected; i++) {
                     if (i == 5) {
-                        thread = new hazelcast::util::StartedThread(threadTerminateNode, &hz1);
+                        thread.reset(new hazelcast::util::StartedThread(threadTerminateNode, &hz1));
                     }
                     map.put(i, i);
                 }
                 thread->join();
-                delete thread;
                 ASSERT_EQ(expected, map.size());
             }
 

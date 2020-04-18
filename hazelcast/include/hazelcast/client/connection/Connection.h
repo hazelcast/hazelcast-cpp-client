@@ -75,7 +75,8 @@ namespace hazelcast {
                            const std::shared_ptr<AuthenticationFuture> &authFuture,
                            internal::socket::SocketFactory &socketFactory, bool asOwner,
                            ClientConnectionManagerImpl &clientConnectionManager,
-                           std::chrono::steady_clock::duration &connectTimeoutInMillis);
+                           std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                           boost::asio::ip::tcp::resolver &resolver);
 
                 virtual ~Connection();
 

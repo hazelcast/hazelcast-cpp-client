@@ -51,6 +51,7 @@
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/Clearable.h"
+#include "hazelcast/util/hz_thread_pool.h"
 #include <mutex>
 
 #include "hazelcast/util/Destroyable.h"
@@ -541,28 +542,16 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-
         int64_t getCurrentThreadId() {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            return (int64_t) GetCurrentThreadId();
-#else
-            int64_t threadId = 0;
-            pthread_t thread = pthread_self();
-            memcpy(&threadId, &thread, std::min(sizeof(threadId), sizeof(thread)));
-            return threadId;
-#endif
+            return std::hash<std::thread::id>{}(std::this_thread::get_id());
         }
 
         void sleep(int seconds) {
-            sleepmillis((unsigned long) (1000 * seconds));
+            std::this_thread::sleep_for(std::chrono::seconds(seconds));
         }
 
         void sleepmillis(uint64_t milliseconds) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            Sleep((DWORD) milliseconds);
-#else
-            ::usleep((useconds_t) (1000 * milliseconds));
-#endif
+            std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
         }
 
         int localtime(const time_t *clock, struct tm *result) {
@@ -653,13 +642,7 @@ namespace hazelcast {
         }
 
         int32_t getAvailableCoreCount() {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            SYSTEM_INFO sysinfo;
-            GetSystemInfo(&sysinfo);
-            return sysinfo.dwNumberOfProcessors;
-#else
-            return (int32_t) sysconf(_SC_NPROCESSORS_ONLN);
-#endif
+            return (int32_t) std::thread::hardware_concurrency();
         }
 
         std::string StringUtil::timeToString(std::chrono::steady_clock::time_point t) {
@@ -1585,6 +1568,22 @@ namespace hazelcast {
             memcpy(target, ix(), numBytesToCopy);
             pos += numBytesToCopy;
             return numBytesToCopy;
+        }
+
+        hz_thread_pool::hz_thread_pool(size_t numThreads) : pool_(new boost::asio::thread_pool(numThreads)) {}
+
+        void hz_thread_pool::shutdown_gracefully() {
+            pool_->join();
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            // needed due to bug https://github.com/chriskohlhoff/asio/issues/431
+            boost::asio::use_service<boost::asio::detail::win_iocp_io_context>(*pool_).stop();
+#endif
+            pool_.reset();
+        }
+
+        boost::asio::thread_pool::executor_type hz_thread_pool::get_executor() const {
+            return pool_->get_executor();
         }
     }
 }
