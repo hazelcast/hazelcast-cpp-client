@@ -91,7 +91,7 @@ namespace hazelcast {
             virtual void entryMerged(const EntryEvent<K, V>& event) = 0;
 
             /**
-            *  Invoked upon load of an entry by {@link MapLoader}
+            *  Invoked upon load of an entry by MapLoader
             *
             * @param event the event invoked when an entry is loaded.
             */
@@ -161,7 +161,7 @@ namespace hazelcast {
                 virtual void entryMerged(const MixedEntryEvent& event) = 0;
 
                 /**
-                *  Invoked upon load of an entry by {@link MapLoader}
+                *  Invoked upon load of an entry by MapLoader
                 *
                 * @param event the event invoked when an entry is loaded.
                 */
