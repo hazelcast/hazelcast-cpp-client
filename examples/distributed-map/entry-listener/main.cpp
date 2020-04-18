@@ -46,6 +46,10 @@ public:
         std::cout << "[entryMerged] " << event << std::endl;
     }
 
+    void entryLoaded(const hazelcast::client::EntryEvent<int, int> &event) {
+        std::cout << "[entryLoaded] " << event << std::endl;
+    }
+
     void mapEvicted(const hazelcast::client::MapEvent &event) {
         std::cout << "[mapEvicted] " << event << std::endl;
     }

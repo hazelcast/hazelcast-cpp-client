@@ -91,6 +91,13 @@ namespace hazelcast {
             virtual void entryMerged(const EntryEvent<K, V>& event) = 0;
 
             /**
+            *  Invoked upon load of an entry by {@link MapLoader}
+            *
+            * @param event the event invoked when an entry is loaded.
+            */
+            virtual void entryLoaded(const EntryEvent<K, V>& event) = 0;
+
+            /**
             * Invoked when all entries evicted by {@link IMap#evictAll()}.
             *
             * @param event map event
@@ -152,6 +159,13 @@ namespace hazelcast {
                 * @param event the event invoked when an entry is expired.
                 */
                 virtual void entryMerged(const MixedEntryEvent& event) = 0;
+
+                /**
+                *  Invoked upon load of an entry by {@link MapLoader}
+                *
+                * @param event the event invoked when an entry is loaded.
+                */
+                virtual void entryLoaded(const MixedEntryEvent& event) = 0;
 
                 /**
                 * Invoked when all entries evicted by {@link IMap#evictAll()}.

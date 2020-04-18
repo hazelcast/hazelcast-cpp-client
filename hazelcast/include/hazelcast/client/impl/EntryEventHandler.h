@@ -125,6 +125,8 @@ namespace hazelcast {
                         listener.entryExpired(entryEvent);
                     } else if (type == EntryEventType::MERGED) {
                         listener.entryMerged(entryEvent);
+                    } else if (type == EntryEventType::LOADED) {
+                        listener.entryLoaded(entryEvent);
                     }
                 }
 
@@ -208,6 +210,8 @@ namespace hazelcast {
                             listener.entryExpired(entryEvent);
                         } else if (type == EntryEventType::MERGED) {
                             listener.entryMerged(entryEvent);
+                        } else if (type == EntryEventType::LOADED) {
+                            listener.entryLoaded(entryEvent);
                         }
                     }
 

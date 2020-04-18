@@ -823,6 +823,9 @@ namespace hazelcast {
                     virtual void entryMerged(const EntryEvent<int, int> &event) {
                     }
 
+                    virtual void entryLoaded(const EntryEvent<int, int> &event) {
+                    }
+
                     virtual void mapEvicted(const MapEvent &event) {
                         ++mapEvictCount;
                     }

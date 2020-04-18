@@ -65,6 +65,10 @@ namespace hazelcast {
 
             }
 
+            virtual void entryLoaded(const EntryEvent<K, V>& event){
+
+            }
+
             virtual void mapEvicted(const MapEvent& event) {
 
             }

@@ -2022,6 +2022,9 @@ public:
     virtual void entryMerged(const hazelcast::client::EntryEvent<int, std::string> &event) {
     }
 
+    virtual void entryLoaded(const hazelcast::client::EntryEvent<int, std::string> &event) {
+    }
+
     virtual void mapEvicted(const hazelcast::client::MapEvent &event) {
     }
 
@@ -2071,6 +2074,9 @@ public:
     }
 
     virtual void entryMerged(const hazelcast::client::EntryEvent<int, std::string> &event) {
+    }
+
+    virtual void entryLoaded(const hazelcast::client::EntryEvent<int, std::string> &event) {
     }
 
     virtual void mapEvicted(const hazelcast::client::MapEvent &event) {

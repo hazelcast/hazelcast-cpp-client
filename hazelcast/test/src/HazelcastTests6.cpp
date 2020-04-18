@@ -459,6 +459,9 @@ namespace hazelcast {
 
                     }
 
+                    virtual void entryLoaded(const MixedEntryEvent &event) {
+                    }
+
                     virtual void mapEvicted(const MapEvent &event) {
                     }
 
@@ -504,6 +507,9 @@ namespace hazelcast {
 
                     }
 
+                    virtual void entryLoaded(const MixedEntryEvent &event) {
+                    }
+
                     virtual void mapEvicted(const MapEvent &event) {
                     }
 
@@ -539,6 +545,9 @@ namespace hazelcast {
                     virtual void entryMerged(const MixedEntryEvent &event) {
                     }
 
+                    virtual void entryLoaded(const MixedEntryEvent &event) {
+                    }
+
                     virtual void mapEvicted(const MapEvent &event) {
                     }
 
@@ -571,6 +580,9 @@ namespace hazelcast {
                     }
 
                     virtual void entryMerged(const MixedEntryEvent &event) {
+                    }
+
+                    virtual void entryLoaded(const MixedEntryEvent &event) {
                     }
 
                     virtual void mapCleared(const MapEvent &event) {
@@ -609,6 +621,9 @@ namespace hazelcast {
                     }
 
                     virtual void entryMerged(const MixedEntryEvent &event) {
+                    }
+
+                    virtual void entryLoaded(const MixedEntryEvent &event) {
                     }
 
                     virtual void mapEvicted(const MapEvent &event) {
@@ -3840,6 +3855,9 @@ namespace hazelcast {
                     }
 
                     virtual void entryMerged(const MixedEntryEvent &event) {
+                    }
+
+                    virtual void entryLoaded(const MixedEntryEvent &event) {
                     }
 
                     virtual void mapEvicted(const MapEvent &event) {

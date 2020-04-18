@@ -41,6 +41,10 @@ public:
         std::cout << "Entry merged:" << event.getKey();
     }
 
+    virtual void entryLoaded(const hazelcast::client::EntryEvent<int, int> &event) {
+        std::cout << "Entry loaded:" << event.getKey();
+    }
+
     virtual void mapEvicted(const hazelcast::client::MapEvent &event) {
         std::cout << "Map evicted:" << event.getName();
     }
