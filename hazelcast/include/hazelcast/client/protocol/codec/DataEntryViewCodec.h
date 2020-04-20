@@ -20,13 +20,10 @@
 #define HAZELCAST_CLIENT_PROTOCOL_CODEC_ENTRYVIEWCODEC_
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/map/DataEntryView.h"
 
 namespace hazelcast {
     namespace client {
-        namespace map {
-            class DataEntryView;
-        }
-
         namespace protocol {
             class ClientMessage;
 
