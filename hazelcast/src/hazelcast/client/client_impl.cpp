@@ -39,11 +39,6 @@
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/IdGenerator.h"
-#include "hazelcast/client/IAtomicLong.h"
-#include "hazelcast/client/ICountDownLatch.h"
-#include "hazelcast/client/ILock.h"
-#include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/spi/LifecycleService.h"
@@ -67,18 +62,11 @@
 #include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
 #include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
-#include "hazelcast/client/ICountDownLatch.h"
-#include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/ILock.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
 #include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
-#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
 #include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
-#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
-#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
-#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -101,32 +89,12 @@ namespace hazelcast {
             return clientImpl->getName();
         }
 
-        IdGenerator HazelcastClient::getIdGenerator(const std::string &name) {
-            return clientImpl->getIdGenerator(name);
-        }
-
         FlakeIdGenerator HazelcastClient::getFlakeIdGenerator(const std::string &name) {
             return clientImpl->getFlakeIdGenerator(name);
         }
 
-        IAtomicLong HazelcastClient::getIAtomicLong(const std::string &name) {
-            return clientImpl->getIAtomicLong(name);
-        }
-
         std::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
             return clientImpl->getPNCounter(name);
-        }
-
-        ICountDownLatch HazelcastClient::getICountDownLatch(const std::string &name) {
-            return clientImpl->getICountDownLatch(name);
-        }
-
-        ILock HazelcastClient::getILock(const std::string &name) {
-            return clientImpl->getILock(name);
-        }
-
-        ISemaphore HazelcastClient::getISemaphore(const std::string &name) {
-            return clientImpl->getISemaphore(name);
         }
 
         ClientConfig &HazelcastClient::getClientConfig() {
@@ -284,49 +252,12 @@ namespace hazelcast {
                 lifecycleService.shutdown();
             }
 
-            IdGenerator HazelcastClientInstanceImpl::getIdGenerator(const std::string &name) {
-                idgen::impl::IdGeneratorProxyFactory factory(&clientContext);
-                std::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService(proxy::ClientIdGeneratorProxy::SERVICE_NAME, name, factory);
-
-                std::shared_ptr<impl::IdGeneratorInterface> impl = std::static_pointer_cast<proxy::ClientIdGeneratorProxy>(
-                        proxy);
-
-                return IdGenerator(impl);
-            }
-
-            IAtomicLong HazelcastClientInstanceImpl::getIAtomicLong(const std::string &name) {
-                atomiclong::impl::AtomicLongProxyFactory factory(&clientContext);
-                std::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService(proxy::ClientAtomicLongProxy::SERVICE_NAME, name, factory);
-
-                std::shared_ptr<proxy::ClientAtomicLongProxy> impl = std::static_pointer_cast<proxy::ClientAtomicLongProxy>(
-                        proxy);
-
-                return IAtomicLong(impl);
-            }
-
             FlakeIdGenerator HazelcastClientInstanceImpl::getFlakeIdGenerator(const std::string &name) {
                 flakeidgen::impl::FlakeIdGeneratorProxyFactory factory(&clientContext);
                 std::shared_ptr<spi::ClientProxy> proxy =
                         getDistributedObjectForService(proxy::ClientFlakeIdGeneratorProxy::SERVICE_NAME, name, factory);
 
-                std::shared_ptr<impl::IdGeneratorInterface> impl = std::static_pointer_cast<proxy::ClientFlakeIdGeneratorProxy>(
-                        proxy);
-
-                return FlakeIdGenerator(impl);
-            }
-
-            ICountDownLatch HazelcastClientInstanceImpl::getICountDownLatch(const std::string &instanceName) {
-                return getDistributedObject<ICountDownLatch>(instanceName);
-            }
-
-            ISemaphore HazelcastClientInstanceImpl::getISemaphore(const std::string &instanceName) {
-                return getDistributedObject<ISemaphore>(instanceName);
-            }
-
-            ILock HazelcastClientInstanceImpl::getILock(const std::string &instanceName) {
-                return getDistributedObject<ILock>(instanceName);
+                return FlakeIdGenerator(std::static_pointer_cast<proxy::ClientFlakeIdGeneratorProxy>(proxy));
             }
 
             TransactionContext HazelcastClientInstanceImpl::newTransactionContext() {

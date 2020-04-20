@@ -162,7 +162,6 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/ILock.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
@@ -197,8 +196,6 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/IAtomicLong.h"
 #include "hazelcast/client/mixedtype/MultiMap.h"
 #include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/IList.h"
@@ -209,9 +206,7 @@
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/mixedtype/ISet.h"
-#include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/IdGenerator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(disable: 4996) //for unsafe getenv
@@ -3446,162 +3441,6 @@ namespace hazelcast {
                                              ::testing::Values(config::BINARY, config::OBJECT));
 
                 }
-            }
-        }
-    }
-}
-
-
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            class ClientLockTest : public ClientTestSupport {
-            protected:
-                virtual void TearDown() {
-                    // clear
-                    l->forceUnlock();
-                }
-
-                static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(getConfig());
-                    l = new ILock(client->getILock("MyLock"));
-                }
-
-                static void TearDownTestCase() {
-                    delete l;
-                    delete client;
-                    delete instance;
-
-                    l = NULL;
-                    client = NULL;
-                    instance = NULL;
-                }
-
-                static HazelcastServer *instance;
-                static HazelcastClient *client;
-                static ILock *l;
-            };
-
-            HazelcastServer *ClientLockTest::instance = NULL;
-            HazelcastClient *ClientLockTest::client = NULL;
-            ILock *ClientLockTest::l = NULL;
-
-            void testLockLockThread(hazelcast::util::ThreadArgs &args) {
-                ILock *l = (ILock *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                if (!l->tryLock())
-                    latch1->count_down();
-            }
-
-            TEST_F(ClientLockTest, testLock) {
-                l->lock();
-                boost::latch latch1(1);
-                hazelcast::util::StartedThread t(testLockLockThread, l, &latch1);
-
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
-                l->forceUnlock();
-            }
-
-            void testLockTtlThread(hazelcast::util::ThreadArgs &args) {
-                ILock *l = (ILock *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                if (!l->tryLock()) {
-                    latch1->count_down();
-                }
-                if (l->tryLock(5 * 1000)) {
-                    latch1->count_down();
-                }
-            }
-
-            TEST_F(ClientLockTest, testLockTtl) {
-                l->lock(3 * 1000);
-                boost::latch latch1(2);
-                hazelcast::util::StartedThread t(testLockTtlThread, l, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
-                l->forceUnlock();
-            }
-
-            void testLockTryLockThread1(hazelcast::util::ThreadArgs &args) {
-                ILock *l = (ILock *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                if (!l->tryLock(2 * 1000)) {
-                    latch1->count_down();
-                }
-            }
-
-            void testLockTryLockThread2(hazelcast::util::ThreadArgs &args) {
-                ILock *l = (ILock *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                if (l->tryLock(20 * 1000)) {
-                    latch1->count_down();
-                }
-            }
-
-            TEST_F(ClientLockTest, testTryLock) {
-
-                ASSERT_TRUE(l->tryLock(2 * 1000));
-                boost::latch latch1(1);
-                hazelcast::util::StartedThread t1(testLockTryLockThread1, l, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
-
-                ASSERT_TRUE(l->isLocked());
-
-                boost::latch latch2(1);
-                hazelcast::util::StartedThread t2(testLockTryLockThread2, l, &latch2);
-                hazelcast::util::sleep(1);
-                l->unlock();
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
-                ASSERT_TRUE(l->isLocked());
-                l->forceUnlock();
-            }
-
-            void testLockForceUnlockThread(hazelcast::util::ThreadArgs &args) {
-                ILock *l = (ILock *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                l->forceUnlock();
-                latch1->count_down();
-            }
-
-            TEST_F(ClientLockTest, testForceUnlock) {
-                l->lock();
-                boost::latch latch1(1);
-                hazelcast::util::StartedThread t(testLockForceUnlockThread, l, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
-                ASSERT_FALSE(l->isLocked());
-            }
-
-            void testStatsThread(hazelcast::util::ThreadArgs &args) {
-                ILock *l = (ILock *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                ASSERT_TRUE(l->isLocked());
-                ASSERT_FALSE(l->isLockedByCurrentThread());
-                ASSERT_EQ(1, l->getLockCount());
-                ASSERT_TRUE(l->getRemainingLeaseTime() > 1000 * 30);
-                latch1->count_down();
-            }
-
-            TEST_F(ClientLockTest, testStats) {
-                l->lock();
-                ASSERT_TRUE(l->isLocked());
-                ASSERT_TRUE(l->isLockedByCurrentThread());
-                ASSERT_EQ(1, l->getLockCount());
-
-                l->unlock();
-                ASSERT_FALSE(l->isLocked());
-                ASSERT_EQ(0, l->getLockCount());
-                ASSERT_EQ(-1L, l->getRemainingLeaseTime());
-
-                l->lock(1 * 1000 * 60);
-                ASSERT_TRUE(l->isLocked());
-                ASSERT_TRUE(l->isLockedByCurrentThread());
-                ASSERT_EQ(1, l->getLockCount());
-                ASSERT_TRUE(l->getRemainingLeaseTime() > 1000 * 30);
-
-                boost::latch latch1(1);
-                hazelcast::util::StartedThread t(testStatsThread, l, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(60)));
             }
         }
     }

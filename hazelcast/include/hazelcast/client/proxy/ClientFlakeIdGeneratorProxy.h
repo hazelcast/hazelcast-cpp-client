@@ -19,7 +19,6 @@
 #include <memory>
 
 #include "hazelcast/client/flakeidgen/impl/AutoBatcher.h"
-#include "hazelcast/client/impl/IdGeneratorInterface.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 
 namespace hazelcast {
@@ -28,7 +27,7 @@ namespace hazelcast {
             /**
              * Client proxy implementation for a {@link PNCounter}.
              */
-            class ClientFlakeIdGeneratorProxy : public impl::IdGeneratorInterface, public ProxyImpl {
+            class ClientFlakeIdGeneratorProxy : public ProxyImpl {
             public:
                 static const std::string SERVICE_NAME;
 
@@ -55,7 +54,6 @@ namespace hazelcast {
                 };
 
             private:
-
                 std::shared_ptr<flakeidgen::impl::AutoBatcher> batcher;
             };
         }

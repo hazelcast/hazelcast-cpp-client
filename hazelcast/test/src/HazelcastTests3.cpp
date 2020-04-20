@@ -162,7 +162,6 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/ILock.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
@@ -197,8 +196,6 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/IAtomicLong.h"
 #include "hazelcast/client/mixedtype/MultiMap.h"
 #include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/IList.h"
@@ -209,9 +206,7 @@
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/mixedtype/ISet.h"
-#include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/IdGenerator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(disable: 4996) //for unsafe getenv
