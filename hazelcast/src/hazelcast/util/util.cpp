@@ -35,6 +35,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <boost/concept_check.hpp>
+
 #ifdef HZ_BUILD_WITH_SSL
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/basic_resolver.hpp>
@@ -657,6 +659,7 @@ namespace hazelcast {
             struct tm localBrokenTime;
             int result = util::localtime(&brokenTime, &localBrokenTime);
             assert(!result);
+            boost::ignore_unused_variable_warning(result);
 
             std::ostringstream oss;
             oss << std::put_time(&localBrokenTime, "%Y-%m-%d %H:%M:%S");

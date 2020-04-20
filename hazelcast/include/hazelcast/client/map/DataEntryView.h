@@ -33,8 +33,6 @@ namespace hazelcast {
     namespace client {
         namespace map {
             class HAZELCAST_API DataEntryView {
-
-
             public:
                 DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, int64_t cost,
                               int64_t creationTime, int64_t expirationTime, int64_t hits, int64_t lastAccessTime,

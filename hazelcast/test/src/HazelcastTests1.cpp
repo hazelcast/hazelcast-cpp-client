@@ -1447,16 +1447,13 @@ namespace hazelcast {
             }
 
 #ifdef HZ_BUILD_WITH_SSL
-
             INSTANTIATE_TEST_SUITE_P(All,
                                      ClusterTest,
                                      ::testing::Values(new SmartTcpClientConfig(), new SmartSSLClientConfig()));
 #else
             INSTANTIATE_TEST_SUITE_P(All,
                                      ClusterTest,
-                                     ::testing::Values(new SmartTcpClientConfig()));                                                                                                                                    INSTANTIATE_TEST_SUITE_P(All,
-                                    ClusterTest,
-                                    ::testing::Values(new SmartTcpClientConfig()));
+                                     ::testing::Values(new SmartTcpClientConfig()));
 #endif
         }
     }

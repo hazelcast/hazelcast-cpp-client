@@ -30,6 +30,8 @@
  * limitations under the License.
  */
 
+#include <boost/concept_check.hpp>
+
 #include "hazelcast/client/serialization/VersionedPortable.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
 #include "hazelcast/client/TypedData.h"
@@ -1868,6 +1870,7 @@ namespace hazelcast {
                         SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
                         int32_t objectTypeId = objectDataInput.readInt();
                         assert(type.typeId == objectTypeId);
+                        boost::ignore_unused_variable_warning(objectTypeId);
 
                         if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId) {
                             bool identified = objectDataInput.readBoolean();
