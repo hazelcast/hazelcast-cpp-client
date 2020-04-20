@@ -236,6 +236,12 @@ https://hazelcast.org/documentation/.
         <time-to-live-seconds>1</time-to-live-seconds>
     </map>
 
+    <map name="StoreEnabledMap">
+        <map-store enabled="true">
+            <class-name>com.hazelcast.client.test.com.SampleMapStore</class-name>
+        </map-store>
+    </map>
+
     <multimap name="default">
         <backup-count>1</backup-count>
         <value-collection-type>SET</value-collection-type>
