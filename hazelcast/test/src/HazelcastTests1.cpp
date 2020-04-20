@@ -3191,11 +3191,10 @@ namespace hazelcast {
                 constexpr int n = 10;
                 boost::latch latch1(n);
 
-                std::array<std::future<void>, n> allFutures;
                 for (int i = 0; i < n; i++) {
-                    allFutures[i] = std::async(std::packaged_task<void()>([&]() {
+                    std::thread(std::packaged_task<void()>([&]() {
                         PutGetRemoveTestTask(client, mm, latch1).run();
-                    }));
+                    })).detach();
                 }
 
                 ASSERT_OPEN_EVENTUALLY(latch1);

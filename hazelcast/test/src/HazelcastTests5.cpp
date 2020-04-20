@@ -1000,9 +1000,10 @@ namespace hazelcast {
                     constexpr int n = 10;
                     boost::latch latch1(n);
 
-                    std::array<std::future<void>, n> allFutures;
                     for (int i = 0; i < n; i++) {
-                        allFutures[i] = std::async([&]() { GetRemoveTestTask(mm, latch1).run(); });
+                        std::thread(std::packaged_task<void()>([&]() {
+                            GetRemoveTestTask(mm, latch1).run();
+                        })).detach();
                     }
                     ASSERT_OPEN_EVENTUALLY(latch1);
                 }
