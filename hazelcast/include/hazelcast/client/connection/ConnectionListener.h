@@ -25,9 +25,9 @@ namespace hazelcast {
         namespace connection {
             class HAZELCAST_API ConnectionListener {
             public:
-                virtual void connectionAdded(const std::shared_ptr<Connection> &connection) = 0;
+                virtual void connectionAdded(const std::shared_ptr<Connection> connection) = 0;
 
-                virtual void connectionRemoved(const std::shared_ptr<Connection> &connection) = 0;
+                virtual void connectionRemoved(const std::shared_ptr<Connection> connection) = 0;
             };
         }
     }

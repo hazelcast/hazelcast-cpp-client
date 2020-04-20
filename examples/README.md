@@ -35,7 +35,7 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
 
 **distributed primitives** — Examples for basic distributed primitive structures.
   * **atomiclong**: Illustrates simple IAtomicLong usage.
-  * **countdownlatch**: Illustrates simple ICountdown latch usage in the cluster.
+  * **countdownlatch**: Illustrates simple ICountdown boost::latch usage in the cluster.
   * **crdt-pncounter**: Illustrates simple conflict free pozitive negtative counter usage.
   * **idgenerator**: Illustrates IDGenerator usages. Example for Flake Id Generator and deprecated older implementations exist.
   * **lock**: Illustrates simple ILock usage for eliminating races.

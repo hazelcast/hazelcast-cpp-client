@@ -49,7 +49,6 @@
 #include "hazelcast/client/map/DataEntryView.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 #include "hazelcast/client/proxy/ClientRingbufferProxy.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
 #include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
 #include "hazelcast/client/ICountDownLatch.h"
@@ -118,15 +117,15 @@ namespace hazelcast {
 
                 int64_t AutoBatcher::newId() {
                     for (;;) {
-                        std::shared_ptr<Block> block = this->block;
-                        int64_t res = block->next();
+                        std::shared_ptr<Block> b = this->block;
+                        int64_t res = b->next();
                         if (res != INT64_MIN) {
                             return res;
                         }
 
                         {
                             std::lock_guard<std::mutex> guard(lock);
-                            if (block != this->block.get()) {
+                            if (b != this->block.get()) {
                                 // new block was assigned in the meantime
                                 continue;
                             }
@@ -513,14 +512,14 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::get() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::get",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::get",
+                                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeGetInternal(EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeGetInternal(EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
                 protocol::codec::PNCounterGetCodec::ResponseParameters resultParameters = protocol::codec::PNCounterGetCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -528,15 +527,15 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::getAndAdd(int64_t delta) {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndAdd",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndAdd",
+                                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, true, EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeAddInternal(delta, true, EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -544,16 +543,16 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::addAndGet(int64_t delta) {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::addAndGet",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::addAndGet",
+                                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, false,
-                                                                                      EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeAddInternal(delta, false,
+                                                  EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -561,16 +560,17 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::getAndSubtract(int64_t delta) {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndSubtract",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(
+                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndSubtract",
+                                                                      "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, true,
-                                                                                      EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeAddInternal(-delta, true,
+                                                  EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -578,16 +578,17 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::subtractAndGet(int64_t delta) {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::subtractAndGet",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(
+                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::subtractAndGet",
+                                                                      "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, false,
-                                                                                      EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeAddInternal(-delta, false,
+                                                  EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -595,15 +596,16 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::decrementAndGet() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::decrementAndGet",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(
+                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::decrementAndGet",
+                                                                      "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, false, EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeAddInternal(-1, false, EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -611,15 +613,16 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::incrementAndGet() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::incrementAndGet",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(
+                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::incrementAndGet",
+                                                                      "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, false, EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeAddInternal(1, false, EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -627,15 +630,16 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::getAndDecrement() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndDecrement",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(
+                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndDecrement",
+                                                                      "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, true, EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeAddInternal(-1, true, EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -643,15 +647,16 @@ namespace hazelcast {
             int64_t ClientPNCounterProxy::getAndIncrement() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
-                    throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndIncrement",
-                                                                    "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
+                    BOOST_THROW_EXCEPTION(
+                            exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndIncrement",
+                                                                      "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
-                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, true, EMPTY_ADDRESS_LIST,
-                                                                                      std::unique_ptr<exception::HazelcastException>(),
-                                                                                      target);
+                auto response = invokeAddInternal(1, true, EMPTY_ADDRESS_LIST,
+                                                  nullptr,
+                                                  target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
-                        *response);
+                        response);
                 updateObservedReplicaTimestamps(resultParameters.replicaTimestamps);
                 return resultParameters.value;
             }
@@ -668,7 +673,7 @@ namespace hazelcast {
                 }
 
                 {
-                    util::LockGuard guard(targetSelectionMutex);
+                    std::lock_guard<std::mutex> guard(targetSelectionMutex);
                     if (currentTargetReplicaAddress.get() == NULL ||
                         excludedAddresses.find(*currentTargetReplicaAddress.get()) != excludedAddresses.end()) {
                         currentTargetReplicaAddress = chooseTargetReplica(excludedAddresses);
@@ -691,8 +696,8 @@ namespace hazelcast {
             std::vector<Address> ClientPNCounterProxy::getReplicaAddresses(const std::set<Address> &excludedAddresses) {
                 std::vector<Member> dataMembers = getContext().getClientClusterService().getMembers(
                         *cluster::memberselector::MemberSelectors::DATA_MEMBER_SELECTOR);
-                int32_t maxConfiguredReplicaCount = getMaxConfiguredReplicaCount();
-                int currentReplicaCount = util::min<int>(maxConfiguredReplicaCount, (int) dataMembers.size());
+                int32_t replicaCount = getMaxConfiguredReplicaCount();
+                int currentReplicaCount = util::min<int>(replicaCount, (int) dataMembers.size());
 
                 std::vector<Address> replicaAddresses;
                 for (int i = 0; i < currentReplicaCount; i++) {
@@ -716,17 +721,17 @@ namespace hazelcast {
                 return maxConfiguredReplicaCount;
             }
 
-            std::shared_ptr<protocol::ClientMessage>
+            protocol::ClientMessage
             ClientPNCounterProxy::invokeGetInternal(std::shared_ptr<std::set<Address> > excludedAddresses,
-                                                    const std::unique_ptr<exception::IException> &lastException,
+                                                    std::exception_ptr lastException,
                                                     const std::shared_ptr<Address> &target) {
                 if (target.get() == NULL) {
-                    if (lastException.get()) {
-                        throw *lastException;
+                    if (lastException) {
+                        std::rethrow_exception(lastException);
                     } else {
-                        throw (exception::ExceptionBuilder<exception::NoDataMemberInClusterException>(
-                                "ClientPNCounterProxy::invokeGetInternal") <<
-                                                                           "Cannot invoke operations on a CRDT because the cluster does not contain any data members").build();
+                        BOOST_THROW_EXCEPTION(
+                                exception::NoDataMemberInClusterException("ClientPNCounterProxy::invokeGetInternal",
+                                                                          "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                     }
                 }
                 try {
@@ -742,24 +747,23 @@ namespace hazelcast {
                     }
                     excludedAddresses->insert(*target);
                     std::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
-                    std::unique_ptr<exception::IException> exception = e.clone();
-                    return invokeGetInternal(excludedAddresses, exception, newTarget);
+                    return invokeGetInternal(excludedAddresses, std::current_exception(), newTarget);
                 }
             }
 
 
-            std::shared_ptr<protocol::ClientMessage>
+            protocol::ClientMessage
             ClientPNCounterProxy::invokeAddInternal(int64_t delta, bool getBeforeUpdate,
                                                     std::shared_ptr<std::set<Address> > excludedAddresses,
-                                                    const std::unique_ptr<exception::IException> &lastException,
+                                                    std::exception_ptr lastException,
                                                     const std::shared_ptr<Address> &target) {
                 if (target.get() == NULL) {
-                    if (lastException.get()) {
-                        throw *lastException;
+                    if (lastException) {
+                        std::rethrow_exception(lastException);
                     } else {
-                        throw (exception::ExceptionBuilder<exception::NoDataMemberInClusterException>(
-                                "ClientPNCounterProxy::invokeAddInternal") <<
-                                                                           "Cannot invoke operations on a CRDT because the cluster does not contain any data members").build();
+                        BOOST_THROW_EXCEPTION(
+                                exception::NoDataMemberInClusterException("ClientPNCounterProxy::invokeGetInternal",
+                                                                          "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                     }
                 }
 
@@ -776,8 +780,8 @@ namespace hazelcast {
                     }
                     excludedAddresses->insert(*target);
                     std::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
-                    std::unique_ptr<exception::IException> exception = e.clone();
-                    return invokeAddInternal(delta, getBeforeUpdate, excludedAddresses, exception, newTarget);
+                    return invokeAddInternal(delta, getBeforeUpdate, excludedAddresses, std::current_exception(),
+                                             newTarget);
                 }
             }
 
@@ -1010,7 +1014,7 @@ namespace hazelcast {
                                                            const IAtomicLong &atomicLong)
                     : proxy::ProxyImpl(ClientIdGeneratorProxy::SERVICE_NAME, instanceName, context),
                       atomicLong(atomicLong), local(new std::atomic<int64_t>(-1)),
-                      residue(new std::atomic<int32_t>(BLOCK_SIZE)), localLock(new util::Mutex) {
+                      residue(new std::atomic<int32_t>(BLOCK_SIZE)), localLock(new std::mutex) {
                 this->atomicLong.get();
             }
 
@@ -1020,7 +1024,7 @@ namespace hazelcast {
                 }
                 int64_t step = (id / BLOCK_SIZE);
 
-                util::LockGuard lg(*localLock);
+                std::lock_guard<std::mutex> lg(*localLock);
                 bool init = atomicLong.compareAndSet(0, step + 1);
                 if (init) {
                     local->store(step);
@@ -1042,7 +1046,7 @@ namespace hazelcast {
                 }
 
                 {
-                    util::LockGuard lg(*localLock);
+                    std::lock_guard<std::mutex> lg(*localLock);
                     value = *residue;
                     if (value >= BLOCK_SIZE) {
                         *local = atomicLong.getAndIncrement();
@@ -1054,7 +1058,7 @@ namespace hazelcast {
             }
 
             void ClientIdGeneratorProxy::destroy() {
-                util::LockGuard lg(*localLock);
+                std::lock_guard<std::mutex> lg(*localLock);
                 atomicLong.destroy();
                 *local = -1;
                 *residue = BLOCK_SIZE;
@@ -1081,10 +1085,10 @@ namespace hazelcast {
             flakeidgen::impl::IdBatch ClientFlakeIdGeneratorProxy::newIdBatch(int32_t batchSize) {
                 std::unique_ptr<protocol::ClientMessage> requestMsg = protocol::codec::FlakeIdGeneratorNewIdBatchCodec::encodeRequest(
                         getName(), batchSize);
-                std::shared_ptr<protocol::ClientMessage> responseMsg = spi::impl::ClientInvocation::create(
-                        getContext(), requestMsg, getName())->invoke()->get();
-                protocol::codec::FlakeIdGeneratorNewIdBatchCodec::ResponseParameters response =
-                        protocol::codec::FlakeIdGeneratorNewIdBatchCodec::ResponseParameters::decode(*responseMsg);
+                auto invocation = spi::impl::ClientInvocation::create(getContext(), requestMsg,
+                                                                      getName())->invoke();
+                auto response =
+                        protocol::codec::FlakeIdGeneratorNewIdBatchCodec::ResponseParameters::decode(invocation.get());
                 return flakeidgen::impl::IdBatch(response.base, response.increment, response.batchSize);
             }
 
@@ -1299,31 +1303,29 @@ namespace hazelcast {
                 return getContext().getPartitionService().getPartitionId(key);
             }
 
-            std::shared_ptr<protocol::ClientMessage> ProxyImpl::invokeOnPartition(
+            protocol::ClientMessage ProxyImpl::invokeOnPartition(
                     std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
                 try {
-                    std::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeAndGetFuture(request,
-                                                                                                   partitionId);
-                    return future->get();
-                } catch (exception::IException &e) {
-                    util::ExceptionUtil::rethrow(e);
+                    return invokeAndGetFuture(request, partitionId).get();
+                } catch (exception::IException &) {
+                    util::ExceptionUtil::rethrow(std::current_exception());
                 }
-                return std::shared_ptr<protocol::ClientMessage>();
+                return *protocol::ClientMessage::create(0);
             }
 
-            std::shared_ptr<spi::impl::ClientInvocationFuture>
+            boost::future<protocol::ClientMessage>
             ProxyImpl::invokeAndGetFuture(std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
                 try {
                     std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                             getContext(), request, getName(), partitionId);
                     return invocation->invoke();
-                } catch (exception::IException &e) {
-                    util::ExceptionUtil::rethrow(e);
+                } catch (exception::IException &) {
+                    util::ExceptionUtil::rethrow(std::current_exception());
                 }
-                return std::shared_ptr<spi::impl::ClientInvocationFuture>();
+                return boost::future<protocol::ClientMessage>();
             }
 
-            std::shared_ptr<spi::impl::ClientInvocationFuture>
+            boost::future<protocol::ClientMessage>
             ProxyImpl::invokeOnKeyOwner(std::unique_ptr<protocol::ClientMessage> &request,
                                         const serialization::pimpl::Data &keyData) {
                 int partitionId = getPartitionId(keyData);
@@ -1332,29 +1334,29 @@ namespace hazelcast {
                 return invocation->invoke();
             }
 
-            std::shared_ptr<protocol::ClientMessage>
+            protocol::ClientMessage
             ProxyImpl::invoke(std::unique_ptr<protocol::ClientMessage> &request) {
                 try {
                     std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                             getContext(), request, getName());
-                    return invocation->invoke()->get();
-                } catch (exception::IException &e) {
-                    util::ExceptionUtil::rethrow(e);
+                    return invocation->invoke().get();
+                } catch (exception::IException &) {
+                    util::ExceptionUtil::rethrow(std::current_exception());
                 }
-                return std::shared_ptr<protocol::ClientMessage>();
+                return *protocol::ClientMessage::create(0);
             }
 
-            std::shared_ptr<protocol::ClientMessage>
+            protocol::ClientMessage
             ProxyImpl::invokeOnAddress(std::unique_ptr<protocol::ClientMessage> &request, const Address &address) {
                 try {
 
                     std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                             getContext(), request, getName(), address);
-                    return invocation->invoke()->get();
-                } catch (exception::IException &e) {
-                    util::ExceptionUtil::rethrow(e);
+                    return invocation->invoke().get();
+                } catch (exception::IException &) {
+                    util::ExceptionUtil::rethrow(std::current_exception());
                 }
-                return std::shared_ptr<protocol::ClientMessage>();
+                return *protocol::ClientMessage::create(0);
             }
 
             std::vector<hazelcast::client::TypedData>
@@ -1407,49 +1409,42 @@ namespace hazelcast {
             }
 
             int64_t ClientAtomicLongProxy::addAndGet(int64_t delta) {
-                return *(std::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
-                        addAndGetAsync(delta))->join());
+                return *addAndGetAsync(delta).get();
             }
 
             bool ClientAtomicLongProxy::compareAndSet(int64_t expect, int64_t update) {
-                return *(std::static_pointer_cast<spi::InternalCompletableFuture<bool> >(
-                        compareAndSetAsync(expect, update))->join());
+                return *compareAndSetAsync(expect, update).get();
             }
 
             int64_t ClientAtomicLongProxy::decrementAndGet() {
-                return *(std::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
-                        decrementAndGetAsync())->join());
+                return *decrementAndGetAsync().get();
             }
 
             int64_t ClientAtomicLongProxy::get() {
-                return *(std::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(getAsync())->join());
+                return *getAsync().get();
             }
 
             int64_t ClientAtomicLongProxy::getAndAdd(int64_t delta) {
-                return *(std::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
-                        getAndAddAsync(delta))->join());
+                return *getAndAddAsync(delta).get();
             }
 
             int64_t ClientAtomicLongProxy::getAndSet(int64_t newValue) {
-                return *(std::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
-                        getAndSetAsync(newValue))->join());
+                return *getAndSetAsync(newValue).get();
             }
 
             int64_t ClientAtomicLongProxy::incrementAndGet() {
-                return *(std::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
-                        incrementAndGetAsync())->join());
+                return *incrementAndGetAsync().get();
             }
 
             int64_t ClientAtomicLongProxy::getAndIncrement() {
-                return *(std::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
-                        getAndIncrementAsync())->join());
+                return *getAndIncrementAsync().get();
             }
 
             void ClientAtomicLongProxy::set(int64_t newValue) {
-                std::static_pointer_cast<spi::InternalCompletableFuture<void> >(setAsync(newValue))->join();
+                setAsync(newValue).get();
             }
 
-            std::shared_ptr<ICompletableFuture<int64_t> >
+            boost::future<std::shared_ptr<int64_t>>
             ClientAtomicLongProxy::addAndGetAsync(int64_t delta) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongAddAndGetCodec::encodeRequest(name, delta);
@@ -1458,7 +1453,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongAddAndGetCodec, int64_t>::instance());
             }
 
-            std::shared_ptr<ICompletableFuture<bool> >
+            boost::future<std::shared_ptr<bool>>
             ClientAtomicLongProxy::compareAndSetAsync(int64_t expect, int64_t update) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongCompareAndSetCodec::encodeRequest(name, expect, update);
@@ -1467,7 +1462,7 @@ namespace hazelcast {
                                                     impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongCompareAndSetCodec, bool>::instance());
             }
 
-            std::shared_ptr<ICompletableFuture<int64_t> > ClientAtomicLongProxy::decrementAndGetAsync() {
+            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::decrementAndGetAsync() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongDecrementAndGetCodec::encodeRequest(name);
 
@@ -1475,7 +1470,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongDecrementAndGetCodec, int64_t>::instance());
             }
 
-            std::shared_ptr<ICompletableFuture<int64_t> > ClientAtomicLongProxy::getAsync() {
+            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::getAsync() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongGetCodec::encodeRequest(name);
 
@@ -1483,7 +1478,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetCodec, int64_t>::instance());
             }
 
-            std::shared_ptr<ICompletableFuture<int64_t> >
+            boost::future<std::shared_ptr<int64_t>>
             ClientAtomicLongProxy::getAndAddAsync(int64_t delta) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongGetAndAddCodec::encodeRequest(name, delta);
@@ -1492,7 +1487,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndAddCodec, int64_t>::instance());
             }
 
-            std::shared_ptr<ICompletableFuture<int64_t> >
+            boost::future<std::shared_ptr<int64_t>>
             ClientAtomicLongProxy::getAndSetAsync(int64_t newValue) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongGetAndSetCodec::encodeRequest(name, newValue);
@@ -1501,7 +1496,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndSetCodec, int64_t>::instance());
             }
 
-            std::shared_ptr<ICompletableFuture<int64_t> > ClientAtomicLongProxy::incrementAndGetAsync() {
+            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::incrementAndGetAsync() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongIncrementAndGetCodec::encodeRequest(name);
 
@@ -1509,7 +1504,7 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongIncrementAndGetCodec, int64_t>::instance());
             }
 
-            std::shared_ptr<ICompletableFuture<int64_t> > ClientAtomicLongProxy::getAndIncrementAsync() {
+            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::getAndIncrementAsync() {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongGetAndIncrementCodec::encodeRequest(name);
 
@@ -1517,11 +1512,12 @@ namespace hazelcast {
                                                        impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndIncrementCodec, int64_t>::instance());
             }
 
-            std::shared_ptr<ICompletableFuture<void> > ClientAtomicLongProxy::setAsync(int64_t newValue) {
+            boost::future<void> ClientAtomicLongProxy::setAsync(int64_t newValue) {
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::AtomicLongSetCodec::encodeRequest(name, newValue);
 
-                return invokeOnPartitionAsync<void>(request, impl::VoidMessageDecoder::instance());
+                return invokeAndGetFuture(request, partitionId).then(boost::launch::sync,
+                                                                     [](boost::future<protocol::ClientMessage> f) { f.get(); });
             }
 
             IMapImpl::IMapImpl(const std::string &instanceName, spi::ClientContext *context)
@@ -1784,7 +1780,7 @@ namespace hazelcast {
 
             EntryVector
             IMapImpl::getAllData(const std::map<int, std::vector<serialization::pimpl::Data> > &partitionToKeyData) {
-                std::vector<std::shared_ptr<spi::impl::ClientInvocationFuture> > futures;
+                std::vector<boost::future<protocol::ClientMessage> > futures;
 
                 for (std::map<int, std::vector<serialization::pimpl::Data> >::const_iterator it = partitionToKeyData.begin();
                      it != partitionToKeyData.end(); ++it) {
@@ -1794,13 +1790,12 @@ namespace hazelcast {
                     futures.push_back(invokeAndGetFuture(request, it->first));
                 }
 
+                // TODO: change to use boost::when_all
                 EntryVector result;
                 // wait for all futures
-                for (const std::shared_ptr<spi::impl::ClientInvocationFuture> &future : futures) {
-                    std::shared_ptr<protocol::ClientMessage> responseForPartition = future->get();
+                for (auto &future : futures) {
                     protocol::codec::MapGetAllCodec::ResponseParameters resultForPartition =
-                            protocol::codec::MapGetAllCodec::ResponseParameters::decode(
-                                    *responseForPartition);
+                            protocol::codec::MapGetAllCodec::ResponseParameters::decode(future.get());
                     result.insert(result.end(), resultForPartition.response.begin(),
                                   resultForPartition.response.end());
 
@@ -1919,7 +1914,7 @@ namespace hazelcast {
             }
 
             void IMapImpl::putAllData(const std::map<int, EntryVector> &partitionedEntries) {
-                std::vector<std::shared_ptr<spi::impl::ClientInvocationFuture> > futures;
+                std::vector<boost::future<protocol::ClientMessage>> futures;
 
                 for (std::map<int, EntryVector>::const_iterator it = partitionedEntries.begin();
                      it != partitionedEntries.end(); ++it) {
@@ -1930,9 +1925,7 @@ namespace hazelcast {
                 }
 
                 // wait for all futures
-                for (const std::shared_ptr<spi::impl::ClientInvocationFuture> &future : futures) {
-                    future->get();
-                }
+                wait_for_all(futures.begin(), futures.end());
             }
 
             void IMapImpl::clear() {
@@ -2103,7 +2096,7 @@ namespace hazelcast {
                 return protocol::codec::MapRemoveEntryListenerCodec::ResponseParameters::decode(clientMessage).response;
             }
 
-            std::shared_ptr<spi::impl::ClientInvocationFuture>
+            boost::future<protocol::ClientMessage>
             IMapImpl::putAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                                            const int64_t *maxIdle, const util::concurrent::TimeUnit &maxIdleUnit,
                                            const serialization::pimpl::Data &keyData,
@@ -2112,37 +2105,37 @@ namespace hazelcast {
                 std::unique_ptr<protocol::ClientMessage> request;
                 if (maxIdle != NULL) {
                     request = protocol::codec::MapPutWithMaxIdleCodec::encodeRequest(name, keyData, valueData,
-                                                                                     getCurrentThreadId(),
+                                                                                     util::getCurrentThreadId(),
                                                                                      ttlMillis,
-                                                                                     TimeUtil::timeInMsOrOneIfResultIsZero(
+                                                                                     util::TimeUtil::timeInMsOrOneIfResultIsZero(
                                                                                              *maxIdle,
                                                                                              maxIdleUnit));
                 } else {
                     request = protocol::codec::MapPutCodec::encodeRequest(name, keyData, valueData,
-                                                                          getCurrentThreadId(),
+                                                                          util::getCurrentThreadId(),
                                                                           ttlMillis);
                 }
 
                 return invokeOnKeyOwner(request, keyData);
             }
 
-            std::shared_ptr<spi::impl::ClientInvocationFuture>
+            boost::future<protocol::ClientMessage>
             IMapImpl::setAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                                            const int64_t *maxIdle, const util::concurrent::TimeUnit &maxIdleUnit,
                                            const serialization::pimpl::Data &keyData,
                                            const serialization::pimpl::Data &valueData) {
-                int64_t ttlMillis = TimeUtil::timeInMsOrOneIfResultIsZero(ttl, ttlUnit);
+                int64_t ttlMillis = util::TimeUtil::timeInMsOrOneIfResultIsZero(ttl, ttlUnit);
                 std::unique_ptr<protocol::ClientMessage> request;
                 if (maxIdle != NULL) {
                     request = protocol::codec::MapSetWithMaxIdleCodec::encodeRequest(name, keyData, valueData,
-                                                                                     getCurrentThreadId(),
+                                                                                     util::getCurrentThreadId(),
                                                                                      ttlMillis,
-                                                                                     TimeUtil::timeInMsOrOneIfResultIsZero(
+                                                                                     util::TimeUtil::timeInMsOrOneIfResultIsZero(
                                                                                              *maxIdle,
                                                                                              maxIdleUnit));
                 } else {
                     request = protocol::codec::MapSetCodec::encodeRequest(name, keyData, valueData,
-                                                                          getCurrentThreadId(),
+                                                                          util::getCurrentThreadId(),
                                                                           ttlMillis);
                 }
 
@@ -2443,9 +2436,8 @@ namespace hazelcast {
                 namespace reliable {
                     ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb,
                                                                  util::ILogger &logger)
-                            : ringbuffer(rb),
-                              runnerThread(std::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown)), logger),
-                              q(10), shutdown(false) {
+                            : ringbuffer(rb), q(10), shutdown(false) {
+                        runnerThread = std::thread([&]() { Task(ringbuffer, q, shutdown).run(); });
                     }
 
                     ReliableTopicExecutor::~ReliableTopicExecutor() {
@@ -2453,7 +2445,6 @@ namespace hazelcast {
                     }
 
                     void ReliableTopicExecutor::start() {
-                        runnerThread.start();
                     }
 
                     void ReliableTopicExecutor::stop() {
@@ -2482,26 +2473,20 @@ namespace hazelcast {
                                 return;
                             }
                             try {
-                                proxy::ClientRingbufferProxy<ReliableTopicMessage> &ringbuffer =
+                                proxy::ClientRingbufferProxy<ReliableTopicMessage> &ringbufferProxy =
                                         static_cast<proxy::ClientRingbufferProxy<ReliableTopicMessage> &>(rb);
-                                std::shared_ptr<spi::impl::ClientInvocationFuture> future = ringbuffer.readManyAsync(
-                                        m.sequence, 1, m.maxCount);
-                                std::shared_ptr<protocol::ClientMessage> responseMsg;
+                                auto future = ringbufferProxy.readManyAsync(m.sequence, 1, m.maxCount);
                                 do {
-                                    if (future->get(1000, TimeUnit::MILLISECONDS())) {
-                                        responseMsg = future->get(); // every one second
+                                    if (future.wait_for(boost::chrono::seconds(1)) == boost::future_status::ready) {
+                                        std::shared_ptr<DataArray<ReliableTopicMessage> > allMessages(
+                                                ringbufferProxy.getReadManyAsyncResponseObject(future.get()));
+
+                                        m.callback->onResponse(allMessages);
+                                        break;
                                     }
-                                } while (!shutdown && (protocol::ClientMessage *) NULL == responseMsg.get());
-
-                                if (!shutdown) {
-                                    std::shared_ptr<DataArray<ReliableTopicMessage> > allMessages(
-                                            ringbuffer.getReadManyAsyncResponseObject(
-                                                    responseMsg));
-
-                                    m.callback->onResponse(allMessages);
-                                }
+                                } while (!shutdown);
                             } catch (exception::IException &e) {
-                                m.callback->onFailure(std::shared_ptr<exception::IException>(e.clone()));
+                                m.callback->onFailure(std::current_exception());
                             }
                         }
                     }
@@ -2748,39 +2733,39 @@ namespace hazelcast {
             impl->destroy();
         }
 
-        std::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::addAndGetAsync(int64_t delta) {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::addAndGetAsync(int64_t delta) {
             return impl->addAndGetAsync(delta);
         }
 
-        std::shared_ptr<ICompletableFuture<bool> > IAtomicLong::compareAndSetAsync(int64_t expect, int64_t update) {
+        boost::future<std::shared_ptr<bool>> IAtomicLong::compareAndSetAsync(int64_t expect, int64_t update) {
             return impl->compareAndSetAsync(expect, update);
         }
 
-        std::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::decrementAndGetAsync() {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::decrementAndGetAsync() {
             return impl->decrementAndGetAsync();
         }
 
-        std::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::getAsync() {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAsync() {
             return impl->getAsync();
         }
 
-        std::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::getAndAddAsync(int64_t delta) {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndAddAsync(int64_t delta) {
             return impl->getAndAddAsync(delta);
         }
 
-        std::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::getAndSetAsync(int64_t newValue) {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndSetAsync(int64_t newValue) {
             return impl->getAndSetAsync(newValue);
         }
 
-        std::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::incrementAndGetAsync() {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::incrementAndGetAsync() {
             return impl->incrementAndGetAsync();
         }
 
-        std::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::getAndIncrementAsync() {
+        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndIncrementAsync() {
             return impl->getAndIncrementAsync();
         }
 
-        std::shared_ptr<ICompletableFuture<void> > IAtomicLong::setAsync(int64_t newValue) {
+        boost::future<void> IAtomicLong::setAsync(int64_t newValue) {
             return impl->setAsync(newValue);
         }
 
@@ -2979,7 +2964,8 @@ namespace hazelcast {
 
         void ISemaphore::checkNegative(int32_t permits) const {
             if (permits < 0) {
-                throw exception::IllegalArgumentException("ISemaphore::checkNegative", "Permits cannot be negative!");
+                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ISemaphore::checkNegative",
+                                                                          "Permits cannot be negative!"));
             }
         }
 

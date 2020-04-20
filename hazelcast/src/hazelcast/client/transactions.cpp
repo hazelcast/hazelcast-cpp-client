@@ -85,17 +85,17 @@ namespace hazelcast {
             void TransactionProxy::begin() {
                 try {
                     if (clientContext.getConnectionManager().getOwnerConnection().get() == NULL) {
-                        throw exception::TransactionException("TransactionProxy::begin()",
-                                                              "Owner connection needs to be present to begin a transaction");
+                        BOOST_THROW_EXCEPTION(exception::TransactionException("TransactionProxy::begin()",
+                                                                              "Owner connection needs to be present to begin a transaction"));
                     }
                     if (state == TxnState::ACTIVE) {
-                        throw exception::IllegalStateException("TransactionProxy::begin()",
-                                                               "Transaction is already active");
+                        BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::begin()",
+                                                                               "Transaction is already active"));
                     }
                     checkThread();
                     if (TRANSACTION_EXISTS) {
-                        throw exception::IllegalStateException("TransactionProxy::begin()",
-                                                               "Nested transactions are not allowed!");
+                        BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::begin()",
+                                                                               "Nested transactions are not allowed!"));
                     }
                     TRANSACTION_EXISTS.store(true);
                     startTime = util::currentTimeMillis();
@@ -103,10 +103,10 @@ namespace hazelcast {
                             options.getTimeout() * MILLISECOND_IN_A_SECOND, options.getDurability(),
                             options.getTransactionType(), threadId);
 
-                    std::shared_ptr<protocol::ClientMessage> response = invoke(request);
+                    auto response = invoke(request);
 
                     protocol::codec::TransactionCreateCodec::ResponseParameters result =
-                            protocol::codec::TransactionCreateCodec::ResponseParameters::decode(*response);
+                            protocol::codec::TransactionCreateCodec::ResponseParameters::decode(response);
                     txnId = result.response;
                     state = TxnState::ACTIVE;
                 } catch (exception::IException &) {
@@ -118,8 +118,8 @@ namespace hazelcast {
             void TransactionProxy::commit() {
                 try {
                     if (state != TxnState::ACTIVE) {
-                        throw exception::IllegalStateException("TransactionProxy::commit()",
-                                                               "Transaction is not active");
+                        BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::commit()",
+                                                                               "Transaction is not active"));
                     }
                     state = TxnState::COMMITTING;
                     checkThread();
@@ -134,15 +134,16 @@ namespace hazelcast {
                 } catch (exception::IException &e) {
                     state = TxnState::COMMIT_FAILED;
                     TRANSACTION_EXISTS.store(false);
-                    util::ExceptionUtil::rethrow(e);
+                    ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
+                                                                                    "TransactionProxy::commit() failed");
                 }
             }
 
             void TransactionProxy::rollback() {
                 try {
                     if (state == TxnState::NO_TXN || state == TxnState::ROLLED_BACK) {
-                        throw exception::IllegalStateException("TransactionProxy::rollback()",
-                                                               "Transaction is not active");
+                        BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::rollback()",
+                                                                               "Transaction is not active"));
                     }
                     state = TxnState::ROLLING_BACK;
                     checkThread();
@@ -173,15 +174,15 @@ namespace hazelcast {
 
             void TransactionProxy::checkThread() {
                 if (threadId != util::getCurrentThreadId()) {
-                    throw exception::IllegalStateException("TransactionProxy::checkThread()",
-                                                           "Transaction cannot span multiple threads!");
+                    BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::checkThread()",
+                                                                           "Transaction cannot span multiple threads!"));
                 }
             }
 
             void TransactionProxy::checkTimeout() {
                 if (startTime + options.getTimeoutMillis() < util::currentTimeMillis()) {
-                    throw exception::TransactionException("TransactionProxy::checkTimeout()",
-                                                          "Transaction is timed-out!");
+                    BOOST_THROW_EXCEPTION(exception::TransactionException("TransactionProxy::checkTimeout()",
+                                                                          "Transaction is timed-out!"));
                 }
             }
 
@@ -207,7 +208,7 @@ namespace hazelcast {
                 value = values[i];
             }
 
-            std::shared_ptr<protocol::ClientMessage> TransactionProxy::invoke(
+            protocol::ClientMessage TransactionProxy::invoke(
                     std::unique_ptr<protocol::ClientMessage> &request) {
                 return ClientTransactionUtil::invoke(request, getTxnId(), clientContext, connection);
             }
@@ -219,7 +220,7 @@ namespace hazelcast {
             const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> ClientTransactionUtil::exceptionFactory(
                     new TransactionExceptionFactory());
 
-            std::shared_ptr<protocol::ClientMessage>
+            protocol::ClientMessage
             ClientTransactionUtil::invoke(std::unique_ptr<protocol::ClientMessage> &request,
                                           const std::string &objectName,
                                           spi::ClientContext &client,
@@ -227,12 +228,12 @@ namespace hazelcast {
                 try {
                     std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                             client, request, objectName, connection);
-                    std::shared_ptr<spi::impl::ClientInvocationFuture> future = clientInvocation->invoke();
-                    return future->get();
+                    return clientInvocation->invoke().get();
                 } catch (exception::IException &e) {
-                    TRANSACTION_EXCEPTION_FACTORY()->rethrow(e, "ClientTransactionUtil::invoke failed");
+                    TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
+                                                             "ClientTransactionUtil::invoke failed");
                 }
-                return std::shared_ptr<protocol::ClientMessage>();
+                return *protocol::ClientMessage::create(0);
             }
 
             const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
@@ -241,10 +242,15 @@ namespace hazelcast {
             }
 
             void
-            ClientTransactionUtil::TransactionExceptionFactory::rethrow(const client::exception::IException &throwable,
+            ClientTransactionUtil::TransactionExceptionFactory::rethrow(std::exception_ptr throwable,
                                                                         const std::string &message) {
-                throw TransactionException("TransactionExceptionFactory::create", message,
-                                           std::shared_ptr<IException>(throwable.clone()));
+                try {
+                    std::rethrow_exception(throwable);
+                } catch (...) {
+                    std::throw_with_nested(
+                            boost::enable_current_exception(
+                                    exception::TransactionException("TransactionExceptionFactory::create", message)));
+                }
             }
         }
 
@@ -570,7 +576,7 @@ namespace hazelcast {
                 std::shared_ptr<connection::Connection> connection = context->getConnection();
                 std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         context->getClientContext(), request, name, connection);
-                invocation->invoke()->get();
+                invocation->invoke().get();
             }
 
             void TransactionalObject::onDestroy() {
@@ -585,12 +591,12 @@ namespace hazelcast {
                 return context->getTimeoutSeconds() * MILLISECONDS_IN_A_SECOND;
             }
 
-            std::shared_ptr<protocol::ClientMessage> TransactionalObject::invoke(
+            protocol::ClientMessage TransactionalObject::invoke(
                     std::unique_ptr<protocol::ClientMessage> &request) {
                 std::shared_ptr<connection::Connection> connection = context->getConnection();
                 std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         context->getClientContext(), request, name, connection);
-                return invocation->invoke()->get();
+                return invocation->invoke().get();
             }
         }
 
@@ -642,7 +648,8 @@ namespace hazelcast {
 
         TransactionOptions &TransactionOptions::setTimeout(int timeoutInSeconds) {
             if (timeoutInSeconds <= 0) {
-                throw exception::IllegalStateException("TransactionOptions::setTimeout", "Timeout must be positive!");
+                BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setTimeout",
+                                                                       "Timeout must be positive!"));
             }
             this->timeoutSeconds = timeoutInSeconds;
             return *this;
@@ -654,8 +661,8 @@ namespace hazelcast {
 
         TransactionOptions &TransactionOptions::setDurability(int durability) {
             if (durability < 0) {
-                throw exception::IllegalStateException("TransactionOptions::setDurability",
-                                                       "Durability cannot be negative!");
+                BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setDurability",
+                                                                       "Durability cannot be negative!"));
             }
             this->durability = durability;
             return *this;

@@ -21,11 +21,14 @@
 #include <memory>
 #include <atomic>
 
-#include "hazelcast/util/Runnable.h"
+#include <boost/thread/future.hpp>
+#include <boost/asio/thread_pool.hpp>
+
+#include "hazelcast/util/Sync.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
 #include "hazelcast/client/spi/EventHandler.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -44,22 +47,20 @@ namespace hazelcast {
             class Connection;
         }
 
-        namespace protocol {
-            class ClientMessage;
-        }
-
         namespace spi {
             class LifecycleService;
-
-            class ClientClusterService;
 
             class ClientInvocationService;
 
             class ClientContext;
 
-            class ClientExecutionService;
+            class ClientClusterService;
 
             namespace impl {
+                class ClientClusterServiceImpl;
+
+                class ClientExecutionServiceImpl;
+
                 namespace sequence {
                     class CallIdSequence;
                 }
@@ -72,33 +73,29 @@ namespace hazelcast {
                  * 3) How many times is it retried?
                  */
                 class HAZELCAST_API ClientInvocation
-                        : public util::Runnable,
-                          public std::enable_shared_from_this<ClientInvocation> {
+                        : public std::enable_shared_from_this<ClientInvocation> {
                 public:
                     virtual ~ClientInvocation();
 
                     static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                      std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                                                      const std::string &objectName, int partitionId);
+                                                                    std::unique_ptr<protocol::ClientMessage> &clientMessage,
+                                                                    const std::string &objectName, int partitionId);
 
 
                     static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                      std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                                                      const std::string &objectName,
-                                                                      const std::shared_ptr<connection::Connection> &connection);
+                                                                    std::unique_ptr<protocol::ClientMessage> &clientMessage,
+                                                                    const std::string &objectName,
+                                                                    const std::shared_ptr<connection::Connection> &connection = nullptr);
 
 
                     static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                      std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                                                      const std::string &objectName, const Address &address);
+                                                                    std::unique_ptr<protocol::ClientMessage> &clientMessage,
+                                                                    const std::string &objectName,
+                                                                    const Address &address);
 
-                    static std::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
-                                                                      std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                                                      const std::string &objectName);
+                    boost::future<protocol::ClientMessage> invoke();
 
-                    std::shared_ptr<ClientInvocationFuture> invoke();
-
-                    std::shared_ptr<ClientInvocationFuture> invokeUrgent();
+                    boost::future<protocol::ClientMessage> invokeUrgent();
 
                     void run();
 
@@ -106,7 +103,7 @@ namespace hazelcast {
 
                     void notify(const std::shared_ptr<protocol::ClientMessage> &clientMessage);
 
-                    void notifyException(const std::shared_ptr<exception::IException> &exception);
+                    void notifyException(std::exception_ptr exception);
 
                     std::shared_ptr<connection::Connection> getSendConnection();
 
@@ -117,47 +114,24 @@ namespace hazelcast {
 
                     const std::shared_ptr<protocol::ClientMessage> getClientMessage();
 
-                    const std::shared_ptr<EventHandler<protocol::ClientMessage> > &getEventHandler() const;
+                    const std::shared_ptr<EventHandler < protocol::ClientMessage> > &getEventHandler() const;
 
-                    void setEventHandler(const std::shared_ptr<EventHandler<protocol::ClientMessage> > &eventHandler);
+                    void setEventHandler(const std::shared_ptr<EventHandler < protocol::ClientMessage>> &eventHandler);
 
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
                     static bool isRetrySafeException(exception::IException &exception);
 
-                    std::shared_ptr<util::Executor> getUserExecutor();
+                    boost::promise<protocol::ClientMessage> &getPromise();
 
                 private:
-                    /**
-                     * Create an invocation that will be executed on owner of {@code partitionId}.
-                     */
                     ClientInvocation(spi::ClientContext &clientContext,
-                                     std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                     const std::string &objectName, int partitionId);
+                                     std::unique_ptr<protocol::ClientMessage> &message,
+                                     const std::string &name, int partition = UNASSIGNED_PARTITION,
+                                     const std::shared_ptr<connection::Connection> &conn = nullptr,
+                                     const std::shared_ptr<Address> serverAddress = nullptr);
 
-                    /**
-                     * Create an invocation that will be executed on given {@code connection}.
-                     */
-                    ClientInvocation(spi::ClientContext &clientContext,
-                                     std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                     const std::string &objectName,
-                                     const std::shared_ptr<connection::Connection> &connection);
-
-                    /**
-                     * Create an invocation that will be executed on random member.
-                     */
-                    ClientInvocation(spi::ClientContext &clientContext,
-                                     std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                     const std::string &objectName);
-
-                    /**
-                     * Create an invocation that will be executed on member with given {@code address}.
-                     */
-                    ClientInvocation(spi::ClientContext &clientContext,
-                                     std::unique_ptr<protocol::ClientMessage> &clientMessage,
-                                     const std::string &objectName, const Address &address);
-
-                    static void invokeOnSelection(const std::shared_ptr<ClientInvocation> &invocation);
+                    void invokeOnSelection();
 
                     bool isBindToSingleConnection() const;
 
@@ -170,23 +144,23 @@ namespace hazelcast {
                     LifecycleService &lifecycleService;
                     ClientClusterService &clientClusterService;
                     ClientInvocationService &invocationService;
-                    std::shared_ptr<ClientExecutionService> executionService;
-                    util::Sync<std::shared_ptr<protocol::ClientMessage> > clientMessage;
+                    std::shared_ptr<ClientExecutionServiceImpl> executionService;
+                    util::Sync<std::shared_ptr<protocol::ClientMessage>> clientMessage;
                     std::shared_ptr<sequence::CallIdSequence> callIdSequence;
                     std::shared_ptr<Address> address;
                     int partitionId;
-                    int64_t startTimeMillis;
-                    int64_t retryPauseMillis;
+                    std::chrono::steady_clock::time_point startTime;
+                    std::chrono::steady_clock::duration retryPause;
                     std::string objectName;
                     std::shared_ptr<connection::Connection> connection;
-                    util::Sync<std::shared_ptr<connection::Connection> > sendConnection;
-                    std::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler;
+                    util::Sync<std::shared_ptr<connection::Connection>> sendConnection;
+                    std::shared_ptr<EventHandler < protocol::ClientMessage>> eventHandler;
                     std::atomic<int64_t> invokeCount;
-                    std::shared_ptr<ClientInvocationFuture> clientInvocationFuture;
+                    boost::promise<protocol::ClientMessage> invocationPromise;
 
                     bool isNotAllowedToRetryOnSelection(exception::IException &exception);
 
-                    std::shared_ptr<exception::OperationTimeoutException> newOperationTimeoutException(exception::IException &exception);
+                    std::exception_ptr newOperationTimeoutException(std::exception_ptr exception);
 
                     void execute();
 
@@ -195,6 +169,8 @@ namespace hazelcast {
                     void operator=(const ClientInvocation &rhs);
 
                     std::shared_ptr<protocol::ClientMessage> copyMessage();
+
+                    void setException(const exception::IException &e, boost::exception_ptr exceptionPtr);
                 };
             }
         }

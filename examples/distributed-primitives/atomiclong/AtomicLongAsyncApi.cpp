@@ -17,36 +17,18 @@
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/IAtomicLong.h>
 
-/**
- * This class prints message on receiving the response or prints the exception if exception occurs
- */
-class PrinterCallback : public hazelcast::client::ExecutionCallback<int64_t> {
-public:
-    virtual void onResponse(const std::shared_ptr<int64_t> &response) {
-        if (response.get()) {
-            std::cout << "Received response is : " << *response << std::endl;
-        } else {
-            std::cout << "Received null response" << std::endl;
-        }
-    }
-
-    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
-        std::cerr << "A failure occured. The exception is:" << e << std::endl;
-    }
-};
-
 int main() {
     hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IAtomicLong counter = hz.getIAtomicLong("counter");
 
     // Initiate an increment for the atomic long but do not block
-    std::shared_ptr<ICompletableFuture<int64_t> > future = counter.incrementAndGetAsync();
+    auto future = counter.incrementAndGetAsync();
 
     // Do some other work
 
     // Get the result of the incrementAndGetAsync api using the future
-    std::shared_ptr<int64_t> result = future->get();
+    std::shared_ptr<int64_t> result = future.get();
 
     // It will print the value as 1
     std::cout << "The counter value is " << *result << std::endl;
@@ -54,7 +36,7 @@ int main() {
     future = counter.getAndIncrementAsync();
 
     // This will print 1
-    std::cout << "Result of getAndIncrementAsync is " << *future->get() << std::endl;
+    std::cout << "Result of getAndIncrementAsync is " << *future.get() << std::endl;
 
     // Initiate a get call
     future = counter.getAsync();
@@ -62,7 +44,7 @@ int main() {
     // do some other stuff
 
     // Obtain the result of the getAsync call. It will print the value as 2.
-    std::cout << "The counter value is " << *future->get() << std::endl;
+    std::cout << "The counter value is " << *future.get() << std::endl;
 
     // Initiate a get and add operation to increase the counter by 5
     future = counter.getAndAddAsync(5);
@@ -70,27 +52,37 @@ int main() {
     // do some other stuff
 
     // Obtain the result of the getAndAddAsync call. It will print the value as 2.
-    std::cout << "The counter value is " << *future->get() << std::endl;
+    std::cout << "The counter value is " << *future.get() << std::endl;
 
     // This will print the updated value as 7
     std::cout << "The counter value is " << counter.get() << std::endl;
 
     // Set the counter value to 100 in an unblocking way
-    std::shared_ptr<ICompletableFuture<void> > voidFuture = counter.setAsync(100);
+    auto voidFuture = counter.setAsync(100);
 
     // do some othee stuff
 
     // wait until the setAsync call is completed
-    voidFuture->get();
+    voidFuture.get();
 
     // This will print the updated value as 100
     std::cout << "The counter value is " << counter.get() << std::endl;
 
-    std::shared_ptr<ExecutionCallback<int64_t> > callback(new PrinterCallback);
-    std::shared_ptr<ICompletableFuture<int64_t> > f = counter.decrementAndGetAsync();
+    auto f = counter.decrementAndGetAsync();
     // Use a callback to write the result of decrement operation in a non-blocking async way
-    f->andThen(callback);
-    
+    f.then([=](boost::future<std::shared_ptr<int64_t>> f) {
+        try {
+            auto response = f.get();
+            if (f.get()) {
+                std::cout << "Received response is : " << *response << std::endl;
+            } else {
+                std::cout << "Received null response" << std::endl;
+            }
+        } catch (hazelcast::client::exception::IException &ie) {
+            std::cerr << "A failure occured. The exception is:" << ie << std::endl;
+        }
+    });
+
     std::cout << "Finished" << std::endl;
 
     return 0;

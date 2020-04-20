@@ -17,7 +17,13 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTEXECUTIONSERVICEIMPL_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTEXECUTIONSERVICEIMPL_H_
 
-#include "hazelcast/client/spi/ClientExecutionService.h"
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/post.hpp>
+
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/util/hz_thread_pool.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,11 +32,8 @@
 
 namespace hazelcast {
     namespace util {
-        class Runnable;
-
-        class ScheduledExecutorService;
-
         class ILogger;
+        class hz_thread_pool;
     }
 
     namespace client {
@@ -38,37 +41,73 @@ namespace hazelcast {
 
         namespace spi {
             namespace impl {
-            class HAZELCAST_API ClientExecutionServiceImpl : public ClientExecutionService,
-                    public std::enable_shared_from_this<ClientExecutionServiceImpl> {
+                class HAZELCAST_API ClientExecutionServiceImpl :
+                        public std::enable_shared_from_this<ClientExecutionServiceImpl> {
                 public:
-                    static const int SHUTDOWN_CHECK_INTERVAL_SECONDS;
-
-                    ClientExecutionServiceImpl(const std::string &name, const ClientProperties &clientProperties,
-                                               int32_t poolSize, util::ILogger &logger);
-
-                    void execute(const std::shared_ptr<util::Runnable> &command);
+                    ClientExecutionServiceImpl(const std::string &name, const ClientProperties &properties,
+                                               int32_t poolSize, spi::LifecycleService &service);
 
                     void start();
 
                     void shutdown();
 
-                    static void
-                    shutdownExecutor(const std::string &name, util::ExecutorService &executor, util::ILogger &logger);
+                    template<typename CompletionToken>
+                    void execute(CompletionToken token) {
+                        boost::asio::post(internalExecutor->get_executor(), token);
+                    }
 
-                    virtual void
-                    schedule(const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis);
+                    template<typename CompletionToken>
+                    std::shared_ptr<boost::asio::steady_timer> schedule(CompletionToken token,
+                                                                        const std::chrono::steady_clock::duration &delay) {
+                        return scheduleWithRepetition(token, delay, std::chrono::seconds(0));
+                    }
 
-                    virtual void
-                    scheduleWithRepetition(const std::shared_ptr<util::Runnable> &command,
-                                           int64_t initialDelayInMillis,
-                                           int64_t periodInMillis);
+                    template<typename CompletionToken>
+                    std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetition(CompletionToken token,
+                                                                                      const std::chrono::steady_clock::duration &delay,
+                                                                                      const std::chrono::steady_clock::duration &period) {
+                        auto timer = std::make_shared<boost::asio::steady_timer>(internalExecutor->get_executor());
+                        return scheduleWithRepetitionInternal(token, delay, period, timer);
+                    }
 
-                virtual const std::shared_ptr<util::ExecutorService> getUserExecutor() const;
+                    boost::asio::thread_pool::executor_type getUserExecutor() const;
 
-            private:
-                    util::ILogger &logger;
-                    std::shared_ptr<util::ScheduledExecutorService> internalExecutor;
-                    std::shared_ptr<util::ExecutorService> userExecutor;
+                    static void shutdownThreadPool(hazelcast::util::hz_thread_pool *pool);
+                private:
+                    std::unique_ptr<hazelcast::util::hz_thread_pool> internalExecutor;
+                    std::unique_ptr<hazelcast::util::hz_thread_pool> userExecutor;
+                    spi::LifecycleService &lifecycleService;
+                    const ClientProperties &clientProperties;
+                    int userExecutorPoolSize;
+
+                    template<typename CompletionToken>
+                    std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetitionInternal(CompletionToken token,
+                                                                                              const std::chrono::steady_clock::duration &delay,
+                                                                                              const std::chrono::steady_clock::duration &period,
+                                                                                              std::shared_ptr<boost::asio::steady_timer> timer) {
+                        if (delay.count() > 0) {
+                            timer->expires_from_now(delay);
+                        } else {
+                            timer->expires_from_now(period);
+                        }
+
+                        timer->async_wait([=](boost::system::error_code ec) {
+                            if (ec) {
+                                return;
+                            }
+
+                            try {
+                                token();
+                            } catch (std::exception &) {
+                                assert(false);
+                            }
+
+                            if (lifecycleService.isRunning() && period.count()) {
+                                scheduleWithRepetitionInternal(token, std::chrono::seconds(-1), period, timer);
+                            }
+                        });
+                        return timer;
+                    }
                 };
             }
         }

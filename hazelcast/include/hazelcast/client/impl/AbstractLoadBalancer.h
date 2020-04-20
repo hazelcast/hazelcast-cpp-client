@@ -22,7 +22,7 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
-#include "hazelcast/util/Mutex.h"
+#include <mutex>
 
 #include <vector>
 
@@ -61,7 +61,7 @@ namespace hazelcast {
                 virtual ~AbstractLoadBalancer();
 
             private:
-                util::Mutex membersLock;
+                std::mutex membersLock;
                 std::vector<Member> membersRef;
                 Cluster *cluster;
             };

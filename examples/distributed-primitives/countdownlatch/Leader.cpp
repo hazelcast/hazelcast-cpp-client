@@ -22,23 +22,23 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::ICountDownLatch latch = hz.getICountDownLatch("countDownLatch");
+    hazelcast::client::ICountDownLatch l = hz.getICountDownLatch("countDownLatch");
 
     std::cout << "Starting" << std::endl;
 
-    //we init the latch with 1, since we only need to complete a single step.
-    latch.trySetCount(1);
+    //we init the boost::latch with 1, since we only need to complete a single step.
+    l.trySetCount(1);
 
     //do some sleeping to simulate doing something
     hazelcast::util::sleep(30);
 
     //now we do a countdown which notifies all followers
-    latch.countDown();
+    l.countDown();
 
     std::cout << "Leader finished" << std::endl;
 
     //we need to clean up the latch
-    latch.destroy();
+    l.destroy();
 
     std::cout << "Finished" << std::endl;
 

@@ -65,8 +65,8 @@ namespace hazelcast {
 
             void InstanceOfPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("InstanceOfPredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("InstanceOfPredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             ILikePredicate::ILikePredicate(const std::string &attribute, const std::string &expression) : attributeName(
@@ -88,8 +88,8 @@ namespace hazelcast {
 
             void ILikePredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("ILikePredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("ILikePredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             int TruePredicate::getFactoryId() const {
@@ -105,8 +105,8 @@ namespace hazelcast {
 
             void TruePredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("TruePredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("TruePredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             OrPredicate::~OrPredicate() {
@@ -143,8 +143,8 @@ namespace hazelcast {
 
             void OrPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("OrPredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("OrPredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             NotPredicate::NotPredicate(std::unique_ptr<Predicate> &predicate)
@@ -169,8 +169,8 @@ namespace hazelcast {
 
             void NotPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("NotPredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("NotPredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             const char *QueryConstants::getKeyAttributeName() {
@@ -198,8 +198,8 @@ namespace hazelcast {
 
             void SqlPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("SqlPredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("SqlPredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             int FalsePredicate::getFactoryId() const {
@@ -215,8 +215,8 @@ namespace hazelcast {
 
             void FalsePredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("FalsePredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("FalsePredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             RegexPredicate::RegexPredicate(const char *attribute, const char *regex) : attributeName(attribute),
@@ -238,8 +238,8 @@ namespace hazelcast {
 
             void RegexPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("RegexPredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("RegexPredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             AndPredicate::~AndPredicate() {
@@ -276,8 +276,8 @@ namespace hazelcast {
 
             void AndPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("AndPredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("AndPredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
             LikePredicate::LikePredicate(const std::string &attribute, const std::string &expression) : attributeName(
@@ -299,8 +299,8 @@ namespace hazelcast {
 
             void LikePredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::HazelcastSerializationException("LikePredicate::readData",
-                                                                 "Client should not need to use readData method!!!");
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("LikePredicate::readData",
+                                                                                 "Client should not need to use readData method!!!"));
             }
 
         }

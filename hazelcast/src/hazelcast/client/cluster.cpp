@@ -318,8 +318,8 @@ namespace hazelcast {
             const Member RoundRobinLB::next() {
                 std::vector<Member> members = getMembers();
                 if (members.size() == 0) {
-                    throw exception::IllegalStateException("const Member& RoundRobinLB::next()",
-                                                           "No member in member list!!");
+                    BOOST_THROW_EXCEPTION(exception::IllegalStateException("const Member& RoundRobinLB::next()",
+                                                                           "No member in member list!!"));
                 }
                 return members[++index % members.size()];
             }
@@ -366,8 +366,8 @@ namespace hazelcast {
             }
 
             void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
-                util::LockGuard lg(const_cast<util::Mutex &>(rhs.membersLock));
-                util::LockGuard lg2(membersLock);
+                std::lock_guard<std::mutex> lg(const_cast<std::mutex &>(rhs.membersLock));
+                std::lock_guard<std::mutex> lg2(membersLock);
                 membersRef = rhs.membersRef;
                 cluster = rhs.cluster;
             }
@@ -379,7 +379,7 @@ namespace hazelcast {
             }
 
             void AbstractLoadBalancer::setMembersRef() {
-                util::LockGuard lg(membersLock);
+                std::lock_guard<std::mutex> lg(membersLock);
                 membersRef = cluster->getMembers();
             }
 
@@ -395,7 +395,7 @@ namespace hazelcast {
             }
 
             std::vector<Member> AbstractLoadBalancer::getMembers() {
-                util::LockGuard lg(membersLock);
+                std::lock_guard<std::mutex> lg(membersLock);
                 return membersRef;
             }
 
@@ -489,3 +489,10 @@ namespace hazelcast {
         }
     }
 }
+
+namespace std {
+    std::size_t hash<hazelcast::client::Member>::operator()(const hazelcast::client::Member &k) const {
+        return std::hash<std::string>()(k.getUuid());
+    }
+}
+

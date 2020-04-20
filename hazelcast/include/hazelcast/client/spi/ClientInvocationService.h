@@ -49,16 +49,16 @@ namespace hazelcast {
                 virtual void
                 invokeOnPartitionOwner(std::shared_ptr<impl::ClientInvocation> invocation, int partitionId)  = 0;
 
-                virtual void invokeOnRandomTarget(std::shared_ptr<impl::ClientInvocation> invocation)  = 0;
+                virtual void invokeOnRandomTarget(std::shared_ptr<impl::ClientInvocation> invocation) = 0;
 
                 virtual void invokeOnTarget(std::shared_ptr<impl::ClientInvocation> invocation,
-                                            const std::shared_ptr<Address> &target)  = 0;
+                                            const std::shared_ptr<Address> &target) = 0;
 
                 virtual bool isRedoOperation() = 0;
 
-                virtual int64_t getInvocationTimeoutMillis() const = 0;
+                virtual std::chrono::steady_clock::duration getInvocationTimeout() const = 0;
 
-                virtual int64_t getInvocationRetryPauseMillis() const = 0;
+                virtual std::chrono::steady_clock::duration getInvocationRetryPause() const = 0;
             };
         }
     }

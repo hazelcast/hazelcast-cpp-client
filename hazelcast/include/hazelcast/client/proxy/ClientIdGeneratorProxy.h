@@ -63,7 +63,7 @@ namespace hazelcast {
                 IAtomicLong atomicLong;
                 std::shared_ptr<std::atomic<int64_t> > local;
                 std::shared_ptr<std::atomic<int32_t> > residue;
-                std::shared_ptr<util::Mutex> localLock;
+                std::shared_ptr<std::mutex> localLock;
 
             };
         }

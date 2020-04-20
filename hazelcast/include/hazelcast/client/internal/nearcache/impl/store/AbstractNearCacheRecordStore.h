@@ -277,8 +277,8 @@ namespace hazelcast {
 
                             void checkAvailable() const {
                                 if (!isAvailable()) {
-                                    throw exception::IllegalStateException(nearCacheConfig.getName() +
-                                                                           " named Near Cache record store is not available");
+                                    BOOST_THROW_EXCEPTION(exception::IllegalStateException(nearCacheConfig.getName() +
+                                                                                           " named Near Cache record store is not available"));
                                 }
                             }
 

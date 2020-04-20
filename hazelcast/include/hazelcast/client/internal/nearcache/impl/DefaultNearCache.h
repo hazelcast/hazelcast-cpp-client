@@ -18,8 +18,8 @@
 
 #include <string>
 #include <memory>
+#include <thread>
 
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h"
@@ -29,6 +29,8 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -43,9 +45,12 @@ namespace hazelcast {
                     template<typename K, typename V, typename KS>
                     class DefaultNearCache : public NearCache<KS, V> {
                     public:
-                        DefaultNearCache(const std::string &cacheName, const client::config::NearCacheConfig<K, V> &config,
+                        DefaultNearCache(const std::string &cacheName,
+                                         const client::config::NearCacheConfig<K, V> &config,
+                                         const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
                                          serialization::pimpl::SerializationService &ss, util::ILogger &logger)
-                                : name(cacheName), nearCacheConfig(config), serializationService(ss), logger(logger) {
+                                : name(cacheName), nearCacheConfig(config), executionService(es),
+                                  serializationService(ss), logger(logger) {
                         }
 
                         virtual ~DefaultNearCache() {
@@ -58,7 +63,7 @@ namespace hazelcast {
                             }
                             nearCacheRecordStore->initialize();
 
-                            expirationTaskFuture = createAndScheduleExpirationTask();
+                            scheduleExpirationTask();
                         }
 
                         //@Override
@@ -75,7 +80,7 @@ namespace hazelcast {
 
                         //@Override
                         void put(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value) {
-                            util::Preconditions::checkNotNull(key, "key cannot be null on put!");
+                            util::Preconditions::checkNotNull<KS>(key, "key cannot be null on put!");
 
                             nearCacheRecordStore->doEvictionIfRequired();
 
@@ -85,7 +90,7 @@ namespace hazelcast {
                         //@Override
                         void put(const std::shared_ptr<KS> &key,
                                  const std::shared_ptr<serialization::pimpl::Data> &value) {
-                            util::Preconditions::checkNotNull(key, "key cannot be null on put!");
+                            util::Preconditions::checkNotNull<KS>(key, "key cannot be null on put!");
 
                             nearCacheRecordStore->doEvictionIfRequired();
 
@@ -93,7 +98,7 @@ namespace hazelcast {
                         }
 
                         bool invalidate(const std::shared_ptr<KS> &key) {
-                            util::Preconditions::checkNotNull(key, "key cannot be null on invalidate!");
+                            util::Preconditions::checkNotNull<KS>(key, "key cannot be null on invalidate!");
 
                             return nearCacheRecordStore->invalidate(key);
                         }
@@ -110,8 +115,10 @@ namespace hazelcast {
 
                         //@Override
                         void destroy() {
-                            if (NULL != expirationTaskFuture.get()) {
-                                expirationTaskFuture->cancel();
+                            expiration_cancelled_.store(true);
+                            if (expirationTimer) {
+                                boost::system::error_code ignored;
+                                expirationTimer->cancel(ignored);
                             }
                             nearCacheRecordStore->destroy();
                         }
@@ -136,8 +143,9 @@ namespace hazelcast {
                         }
 
                     private:
-                        std::unique_ptr<NearCacheRecordStore<KS, V> > createNearCacheRecordStore(const std::string &name,
-                                                                                               const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                        std::unique_ptr<NearCacheRecordStore<KS, V> >
+                        createNearCacheRecordStore(const std::string &name,
+                                                   const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                             client::config::InMemoryFormat inMemoryFormat = nearCacheConfig.getInMemoryFormat();
                             switch (inMemoryFormat) {
                                 case client::config::BINARY:
@@ -151,113 +159,46 @@ namespace hazelcast {
                                 default:
                                     std::ostringstream out;
                                     out << "Invalid in memory format: " << (int) inMemoryFormat;
-                                    throw exception::IllegalArgumentException(out.str());
+                                    BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
                             }
                         }
 
-                        class ExpirationTask : public util::Runnable {
-                        public:
-                            ExpirationTask(const std::string &mapName, NearCacheRecordStore<KS, V> &store,
-                                    util::ILogger &logger)
-                                    : expirationInProgress(false), nearCacheRecordStore(store),
-                                      initialDelayInSeconds(
-                                              NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
-                                      periodInSeconds(NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS),
-                                      cancelled(false), name(mapName), logger(logger) {
-                            }
-
-                            virtual ~ExpirationTask() {
-                            }
-
-                            virtual void run() {
-                                std::ostringstream out;
-                                out << "Near cache expiration thread started for map " << name << ". The period is:" <<
-                                periodInSeconds << " seconds.";
-                                logger.info(out.str());
-                                int periodInMillis = periodInSeconds * 1000;
-
-                                util::sleep(initialDelayInSeconds);
-
-                                while (!cancelled) {
-                                    int64_t end = util::currentTimeMillis() + periodInMillis;
-                                    bool expected = false;
-                                    if (expirationInProgress.compare_exchange_strong(expected, true)) {
-                                        try {
-                                            nearCacheRecordStore.doExpiration();
-                                        } catch (exception::IException &e) {
-                                            expirationInProgress.store(false);
-                                            // TODO: What to do here
-                                            std::ostringstream out;
-                                            out << "ExpirationTask nearCacheRecordStore.doExpiration failed. "
-                                            << e.what() << " This mat NOT a vital problem since this doExpiration runs "
-                                                    "periodically every " << periodInMillis <<
-                                            "milliseconds and it should recover eventually.";
-                                            logger.info(out.str());
-                                        }
-                                    }
-
-                                    // sleep to complete the period
-                                    int64_t now = util::currentTimeMillis();
-                                    if (end > now) {
-                                        util::sleepmillis((uint64_t) end - now);
-                                    }
-                                }
-                            }
-
-                            virtual const std::string getName() const {
-                                return "ExpirationTask";
-                            }
-
-                            void schedule() {
-                                task = std::unique_ptr<util::Thread>(new util::Thread(std::shared_ptr<util::Runnable>(
-                                        new ExpirationTask(name, nearCacheRecordStore, logger)), logger));
-                                task->start();
-                                cancelled.store(false);
-                            }
-
-                            void cancel() {
-                                bool expected = false;
-                                if(!cancelled.compare_exchange_strong(expected, true)) {
-                                    return;
-                                }
-
-                                task->cancel();
-                                task->join();
-                                logger.info("Near cache expiration thread is stopped for map ", name,
-                                            " since near cache is being destroyed.");
-                            }
-
-                        private:
-                            util::AtomicBoolean expirationInProgress;
-                            NearCacheRecordStore<KS, V> &nearCacheRecordStore;
-                            int initialDelayInSeconds;
-                            int periodInSeconds;
-                            std::unique_ptr<util::Thread> task;
-                            util::AtomicBoolean cancelled;
-                            std::string name;
-                            util::ILogger &logger;
-                        };
-
-                        std::unique_ptr<ExpirationTask> createAndScheduleExpirationTask() {
+                        void scheduleExpirationTask() {
                             if (nearCacheConfig.getMaxIdleSeconds() > 0L ||
                                 nearCacheConfig.getTimeToLiveSeconds() > 0L) {
-                                std::unique_ptr<ExpirationTask> expirationTask(
-                                        new ExpirationTask(name, *nearCacheRecordStore, logger));
-                                expirationTask->schedule();
-                                return expirationTask;
+                                expirationTimer = executionService->scheduleWithRepetition([=]() {
+                                                                                               std::atomic_bool expirationInProgress(false);
+                                                                                               while (!expiration_cancelled_) {
+                                                                                                   bool expected = false;
+                                                                                                   if (expirationInProgress.compare_exchange_strong(expected, true)) {
+                                                                                                       try {
+                                                                                                           nearCacheRecordStore->doExpiration();
+                                                                                                       } catch (exception::IException &e) {
+                                                                                                           expirationInProgress.store(false);
+                                                                                                           // TODO: What to do here
+                                                                                                           logger.info("ExpirationTask nearCacheRecordStore.doExpiration failed. ",
+                                                                                                     e.what(),
+                                                                                                     " This may NOT be a vital problem since this doExpiration "
+                                                                                                     "runs periodically and it should recover eventually.");
+                                                                                     }
+                                                                                 }
+                                                                             }
+                                                                         }, std::chrono::seconds(
+                                        NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
+                                                                                           std::chrono::seconds(
+                                                                                 NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS));
                             }
-                            return std::unique_ptr<ExpirationTask>();
                         }
 
                         const std::string &name;
                         const client::config::NearCacheConfig<K, V> &nearCacheConfig;
+                        std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
                         serialization::pimpl::SerializationService &serializationService;
                         util::ILogger &logger;
 
                         std::unique_ptr<NearCacheRecordStore<KS, V> > nearCacheRecordStore;
-                        std::unique_ptr<ExpirationTask> expirationTaskFuture;
-
-                        util::AtomicBoolean preloadDone;
+                        std::atomic_bool expiration_cancelled_;
+                        std::shared_ptr<boost::asio::steady_timer> expirationTimer;
                     };
                 }
             }

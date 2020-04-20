@@ -44,11 +44,9 @@
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
-#include <hazelcast/util/CountDownLatch.h>
+
 #include <ClientTestSupportBase.h>
-#include <hazelcast/util/Executor.h>
 #include <hazelcast/util/Util.h>
-#include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <hazelcast/util/ILogger.h>
@@ -86,7 +84,6 @@
 #include "TestHelperFunctions.h"
 #include <cmath>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/util/Thread.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
@@ -133,7 +130,7 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/CountDownLatch.h"
+
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -147,7 +144,6 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
@@ -157,8 +153,6 @@
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
@@ -260,8 +254,8 @@ namespace hazelcast {
 
                 class SamplePortableFactory : public serialization::PortableFactory {
                 public:
-                    virtual unique_ptr<serialization::Portable> create(int32_t classId) const {
-                        return unique_ptr<serialization::Portable>(new SamplePortable());
+                    virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
+                        return std::unique_ptr<serialization::Portable>(new SamplePortable());
                     }
                 };
 
@@ -362,20 +356,20 @@ namespace hazelcast {
                 ASSERT_EQ((int32_t) mapTest.size(), map1->size());
                 std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map1->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
 
                 entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
@@ -436,20 +430,20 @@ namespace hazelcast {
 
                 std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
 
                 entries = map1->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
@@ -472,20 +466,20 @@ namespace hazelcast {
 
                 std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
 
                 entries = map1->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
@@ -512,20 +506,20 @@ namespace hazelcast {
 
                 std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
 
                 entries = map1->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
@@ -538,14 +532,14 @@ namespace hazelcast {
 
                 entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar2", *value);
                 }
 
                 entries = map1->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar2", *value);
                 }
@@ -569,20 +563,20 @@ namespace hazelcast {
 
                 std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
 
                 entries = map1->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
-                    const string *key = entries->getKey(j);
+                    const std::string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
                     ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const string *value = entries->getValue(j);
+                    const std::string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
@@ -1160,7 +1154,7 @@ namespace hazelcast {
                 void populateNearCache() {
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        std::shared_ptr<string> value = nearCachedMap->get(i);
+                        std::shared_ptr<std::string> value = nearCachedMap->get(i);
                         ASSERT_NOTNULL(value.get(), std::string);
                         hazelcast::util::hz_snprintf(buf, 30, "value-%d", i);
                         ASSERT_EQ(buf, *value);
@@ -1645,27 +1639,27 @@ namespace hazelcast {
 
             class MyMessageListener : public topic::MessageListener<std::string> {
             public:
-                MyMessageListener(hazelcast::util::CountDownLatch &latch)
-                        : latch(latch) {
+                MyMessageListener(boost::latch &latch1)
+                        : latch1(latch1) {
                 }
 
                 void onMessage(std::unique_ptr<topic::Message<std::string> > &&message) {
-                    latch.countDown();
+                    latch1.count_down();
                 }
 
             private:
-                hazelcast::util::CountDownLatch &latch;
+                boost::latch &latch1;
             };
 
             TEST_F(ClientTopicTest, testTopicListeners) {
-                hazelcast::util::CountDownLatch latch(10);
-                MyMessageListener listener(latch);
+                boost::latch latch1(10);
+                MyMessageListener listener(latch1);
                 std::string id = topic.addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
                     topic.publish(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
                 }
-                ASSERT_TRUE(latch.await(20));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
                 topic.removeMessageListener(id);
             }
         }
@@ -1695,16 +1689,16 @@ namespace hazelcast {
 
             class MixedMessageListener : public hazelcast::client::mixedtype::topic::MessageListener {
             public:
-                MixedMessageListener(hazelcast::util::CountDownLatch &latch)
-                        : latch(latch) {
+                MixedMessageListener(boost::latch &latch1)
+                        : latch1(latch1) {
                 }
 
                 void onMessage(std::unique_ptr<client::topic::Message<TypedData> > &&message) {
-                    latch.countDown();
+                    latch1.count_down();
                 }
 
             private:
-                hazelcast::util::CountDownLatch &latch;
+                boost::latch &latch1;
             };
 
 
@@ -1714,14 +1708,14 @@ namespace hazelcast {
             }
 
             TEST_F(MixedTopicTest, testTopicListeners) {
-                hazelcast::util::CountDownLatch latch(10);
-                MixedMessageListener listener(latch);
+                boost::latch latch1(10);
+                MixedMessageListener listener(latch1);
                 std::string id = topic.addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
                     topic.publish<std::string>(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
                 }
-                ASSERT_TRUE(latch.await(20));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
                 topic.removeMessageListener(id);
             }
         }

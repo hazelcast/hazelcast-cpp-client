@@ -634,7 +634,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -692,7 +692,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -746,7 +746,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -802,7 +802,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -856,7 +856,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -912,7 +912,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -966,7 +966,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1020,7 +1020,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1119,7 +1119,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1282,7 +1282,7 @@ namespace hazelcast {
                         std::unique_ptr<std::vector<Member> > clientUnregisteredMembers;
                         bool clientUnregisteredMembersExist;
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -1371,7 +1371,7 @@ namespace hazelcast {
                         std::unique_ptr<std::vector<Member> > clientUnregisteredMembers;
                         bool clientUnregisteredMembersExist;
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -1519,7 +1519,7 @@ namespace hazelcast {
                         int32_t partitionStateVersion;
                         bool partitionStateVersionExist;
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1657,7 +1657,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1753,7 +1753,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1809,7 +1809,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1868,7 +1868,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1926,7 +1926,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1980,7 +1980,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2088,7 +2088,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -2156,7 +2156,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -2219,7 +2219,7 @@ namespace hazelcast {
                         int32_t batchSize;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2280,7 +2280,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2343,7 +2343,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2404,7 +2404,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2467,7 +2467,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2637,7 +2637,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2698,7 +2698,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2759,7 +2759,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2820,7 +2820,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2874,7 +2874,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2935,7 +2935,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -2999,7 +2999,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3053,7 +3053,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3114,7 +3114,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3175,7 +3175,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3231,7 +3231,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3292,7 +3292,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -3358,7 +3358,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -3415,7 +3415,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3473,7 +3473,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3571,7 +3571,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3625,7 +3625,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3681,7 +3681,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3735,7 +3735,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3845,7 +3845,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3956,7 +3956,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4042,7 +4042,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4128,7 +4128,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4254,7 +4254,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4317,7 +4317,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4405,7 +4405,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4525,7 +4525,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4586,7 +4586,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4693,7 +4693,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4749,7 +4749,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4803,7 +4803,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4908,7 +4908,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4964,7 +4964,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5029,13 +5029,13 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
 
                     private:
-                        ResponseParameters(ClientMessage &clientMessage);
+                        ResponseParameters(ClientMessage clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
 
@@ -5090,7 +5090,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5148,7 +5148,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5297,7 +5297,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5360,7 +5360,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -5429,7 +5429,7 @@ namespace hazelcast {
                         std::unique_ptr<map::DataEntryView> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -5486,7 +5486,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5547,7 +5547,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5601,7 +5601,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5657,7 +5657,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5713,7 +5713,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5884,7 +5884,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -5954,7 +5954,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6081,7 +6081,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6196,7 +6196,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6255,7 +6255,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6320,7 +6320,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6376,7 +6376,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6441,7 +6441,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6511,7 +6511,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6635,7 +6635,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6692,7 +6692,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6757,7 +6757,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6829,7 +6829,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6896,7 +6896,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6961,7 +6961,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7068,7 +7068,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7124,7 +7124,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7180,7 +7180,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7243,7 +7243,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7327,7 +7327,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7453,7 +7453,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7516,7 +7516,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7577,7 +7577,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7631,7 +7631,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7740,7 +7740,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7801,7 +7801,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7855,7 +7855,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7975,7 +7975,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8033,7 +8033,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8098,7 +8098,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8154,7 +8154,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8208,7 +8208,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8277,7 +8277,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8393,7 +8393,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8447,7 +8447,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8514,7 +8514,7 @@ namespace hazelcast {
                         int32_t replicaCount;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8577,7 +8577,7 @@ namespace hazelcast {
                         int32_t replicaCount;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8631,7 +8631,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8692,7 +8692,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8755,7 +8755,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8874,7 +8874,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8935,7 +8935,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8996,7 +8996,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9057,7 +9057,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9111,7 +9111,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9167,7 +9167,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9221,7 +9221,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9275,7 +9275,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9338,7 +9338,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9397,7 +9397,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -9461,7 +9461,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -9567,7 +9567,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9628,7 +9628,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9684,7 +9684,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9738,7 +9738,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9799,7 +9799,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9881,7 +9881,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9965,7 +9965,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10047,7 +10047,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10129,7 +10129,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10251,7 +10251,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10312,7 +10312,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10366,7 +10366,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10427,7 +10427,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -10484,7 +10484,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10538,7 +10538,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10652,7 +10652,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -10716,7 +10716,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -10775,7 +10775,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10829,7 +10829,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10883,7 +10883,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10946,7 +10946,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11009,7 +11009,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11063,7 +11063,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11117,7 +11117,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11185,7 +11185,7 @@ namespace hazelcast {
                         int64_t nextSeq;
                         bool nextSeqExist;
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -11249,7 +11249,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -11306,7 +11306,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11360,7 +11360,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11414,7 +11414,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11512,7 +11512,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11566,7 +11566,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11666,7 +11666,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11812,7 +11812,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11873,7 +11873,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11934,7 +11934,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11997,7 +11997,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12116,7 +12116,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12177,7 +12177,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12238,7 +12238,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12299,7 +12299,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12353,7 +12353,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12407,7 +12407,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12468,7 +12468,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12524,7 +12524,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12578,7 +12578,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12639,7 +12639,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12760,7 +12760,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12864,7 +12864,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12973,7 +12973,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13038,7 +13038,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13096,7 +13096,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13161,7 +13161,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13279,7 +13279,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13340,7 +13340,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13398,7 +13398,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13458,7 +13458,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13527,7 +13527,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13597,7 +13597,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13665,7 +13665,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13735,7 +13735,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13802,7 +13802,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13874,7 +13874,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13987,7 +13987,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14045,7 +14045,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14105,7 +14105,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14165,7 +14165,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14232,7 +14232,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14292,7 +14292,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14359,7 +14359,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14417,7 +14417,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14482,7 +14482,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14549,7 +14549,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14614,7 +14614,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -14675,7 +14675,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14740,7 +14740,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14805,7 +14805,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14863,7 +14863,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);

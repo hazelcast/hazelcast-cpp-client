@@ -25,16 +25,12 @@
 #include <sstream>
 #include <mutex>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-// We need to include this header before easylogging++/easylogging++.h
-#include <winsock2.h>
-#endif
 #include <easylogging++.h>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/LoggerConfig.h"
-#include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/LockGuard.h"
+#include <mutex>
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -93,6 +89,7 @@ namespace hazelcast {
             el::Logger *easyLogger;
             client::config::LoggerConfig loggerConfig;
             std::once_flag elOnceflag;
+            std::mutex mutex_;
 
             ILogger(const ILogger &);
 
@@ -113,6 +110,7 @@ namespace hazelcast {
                 }
                 std::ostringstream out;
                 composeMessage(out, value, fargs...);
+                std::lock_guard<std::mutex> lock(mutex_);
                 switch (level) {
                     case el::Level::Debug:
                         easyLogger->debug(out.str());

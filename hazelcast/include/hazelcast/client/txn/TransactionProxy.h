@@ -122,7 +122,7 @@ namespace hazelcast {
 
                 void checkTimeout();
 
-                std::shared_ptr<protocol::ClientMessage> invoke(std::unique_ptr<protocol::ClientMessage> &request);
+                protocol::ClientMessage invoke(std::unique_ptr<protocol::ClientMessage> &request);
             };
         }
     }

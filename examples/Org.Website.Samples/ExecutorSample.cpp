@@ -53,8 +53,7 @@ using namespace hazelcast::client;
 //    }
 //
 //    @Override
-//    public String call()
-//            throws Exception {
+//    public String call() throws Exception {
 //        System.out.println(message);
 //        return message;
 //    }
@@ -91,8 +90,12 @@ public:
                   << std::endl;
     }
 
-    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
-        std::cout << "The execution of the task failed with exception:" << e << std::endl;
+    virtual void onFailure(std::exception_ptr e) {
+        try {
+            std::rethrow_exception(e);
+        } catch (hazelcast::client::exception::IException &e) {
+            std::cout << "The execution of the task failed with exception:" << e << std::endl;
+        }
     }
 };
 
@@ -118,10 +121,9 @@ int main() {
     // Get the Distributed Executor Service
     std::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    std::shared_ptr<ICompletableFuture<std::string> > future = ex->submit<MessagePrinter, std::string>(
-            MessagePrinter("message to any node"));
+    auto future = ex->submit<MessagePrinter, std::string>(MessagePrinter("message to any node"));
     // Wait for the result of the submitted task and print the result
-    std::shared_ptr<std::string> result = future->get();
+    std::shared_ptr<std::string> result = future.get_future().get();
     std::cout << "Server result: " << *result << std::endl;
     // Get the first Hazelcast Cluster Member
     Member firstMember = hz.getCluster().getMembers()[0];

@@ -47,7 +47,7 @@ namespace hazelcast {
          * <ol>
          *    <li>
          *         the ICountDownLatch count can be re-set using trySetCount(int) after a countdown
-         *         has finished but not during an active count. This allows the same latch instance to be reused.
+         *         has finished but not during an active count. This allows the same boost::latch instance to be reused.
          *    </li>
          *    <li>
          *         there is no await() method to do an unbound wait since this is undesirable in a distributed
@@ -64,7 +64,7 @@ namespace hazelcast {
         public:
 
             /**
-             * Causes the current thread to wait until the latch has counted down to
+             * Causes the current thread to wait until the boost::latch has counted down to
              * zero, an exception is thrown, or the specified waiting time elapses.
              *
              * <p>If the current count is zero then this method returns immediately

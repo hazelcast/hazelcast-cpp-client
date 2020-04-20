@@ -20,10 +20,12 @@
 #include <set>
 #include <memory>
 
+#include <boost/thread/latch.hpp>
+#include <boost/smart_ptr/atomic_shared_ptr.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "ClientClusterServiceImpl.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/MembershipEvent.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -54,7 +56,8 @@ namespace hazelcast {
                 class ClientClusterServiceImpl;
 
                 class HAZELCAST_API ClientMembershipListener
-                        : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler {
+                        : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler,
+                          public std::enable_shared_from_this<ClientMembershipListener> {
                 public:
                     ClientMembershipListener(ClientContext &client);
 
@@ -63,22 +66,20 @@ namespace hazelcast {
                     virtual void handleMemberListEventV10(const std::vector<Member> &members);
 
                     virtual void handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
-                                                             const int32_t &operationType,
-                                                             std::unique_ptr<std::string> &value);
+                                                                     const int32_t &operationType,
+                                                                     std::unique_ptr<std::string> &value);
 
-                    void listenMembershipEvents(const std::shared_ptr<ClientMembershipListener> &listener,
-                                                       const std::shared_ptr<connection::Connection> &ownerConnection);
+                    void listenMembershipEvents(const std::shared_ptr<connection::Connection> &ownerConnection);
 
                 private:
                     static int INITIAL_MEMBERS_TIMEOUT_SECONDS;
 
                     ClientContext &client;
-                    util::ILogger &logger;
                     std::set<Member> members;
                     ClientClusterServiceImpl &clusterService;
                     ClientPartitionServiceImpl &partitionService;
                     connection::ClientConnectionManagerImpl &connectionManager;
-                    util::Sync<std::shared_ptr<util::CountDownLatch> > initialListFetchedLatch;
+                    boost::atomic_shared_ptr<boost::latch> initialListFetchedLatch;
 
                     void memberAdded(const Member &member);
 
@@ -86,7 +87,7 @@ namespace hazelcast {
 
                     void memberRemoved(const Member &member);
 
-                    std::shared_ptr<exception::IException> newTargetDisconnectedExceptionCausedByMemberLeftEvent(
+                    std::exception_ptr newTargetDisconnectedExceptionCausedByMemberLeftEvent(
                             const std::shared_ptr<connection::Connection> &connection);
 
                     std::vector<MembershipEvent> detectMembershipEvents(std::map<std::string, Member> &prevMembers);

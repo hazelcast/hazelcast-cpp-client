@@ -22,6 +22,7 @@
 #include <ostream>
 #include <stdint.h>
 #include <atomic>
+#include <unordered_map>
 #include <boost/asio.hpp>
 
 #include "hazelcast/client/Socket.h"
@@ -34,6 +35,7 @@
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -71,9 +73,10 @@ namespace hazelcast {
             public:
                 Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
                            const std::shared_ptr<AuthenticationFuture> &authFuture,
-                           internal::socket::SocketFactory &socketFactory,
-                           boost::asio::io_context &ioContext, bool asOwner,
-                           ClientConnectionManagerImpl &clientConnectionManager, int64_t connectTimeoutInMillis);
+                           internal::socket::SocketFactory &socketFactory, bool asOwner,
+                           ClientConnectionManagerImpl &clientConnectionManager,
+                           std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                           boost::asio::ip::tcp::resolver &resolver);
 
                 virtual ~Connection();
 
@@ -83,13 +86,13 @@ namespace hazelcast {
 
                 void close(const std::string &reason);
 
-                void close(const std::string &reason, const std::shared_ptr<exception::IException> &cause);
+                void close(const std::string &reason, std::exception_ptr cause);
 
-                bool write(const std::shared_ptr<protocol::ClientMessage> &message);
+                void write(const std::shared_ptr<spi::impl::ClientInvocation> &clientInvocation);
 
                 const std::shared_ptr<Address> &getRemoteEndpoint() const;
 
-                void setRemoteEndpoint(const std::shared_ptr<Address> &remoteEndpoint);
+                void setRemoteEndpoint(const std::shared_ptr<Address> &endpoint);
 
                 bool isAuthenticatedAsOwner();
 
@@ -101,7 +104,7 @@ namespace hazelcast {
 
                 bool isAlive();
 
-                int64_t lastReadTimeMillis();
+                const std::chrono::steady_clock::time_point lastReadTime() const;
 
                 const std::string &getCloseReason() const;
 
@@ -113,15 +116,17 @@ namespace hazelcast {
 
                 const std::string &getConnectedServerVersionString() const;
 
-                void setConnectedServerVersion(const std::string &connectedServerVersionString);
+                void setConnectedServerVersion(const std::string &connectedServer);
 
                 std::unique_ptr<Address> getLocalSocketAddress() const;
 
                 int getConnectedServerVersion() const;
 
-                int64_t getStartTimeInMillis() const;
+                std::chrono::steady_clock::time_point getStartTime() const;
 
                 const Socket &getSocket() const;
+
+                void deregisterListenerInvocation(int64_t callId);
 
                 void authenticate();
 
@@ -130,13 +135,14 @@ namespace hazelcast {
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
                 ReadHandler readHandler;
+                std::unordered_map<int64_t, std::shared_ptr<spi::impl::ClientInvocation>> invocations;
             private:
                 void logClose();
 
                 void innerClose();
 
-                int64_t startTimeInMillis;
-                std::atomic<int64_t> closedTimeMillis;
+                std::chrono::steady_clock::time_point startTime;
+                std::atomic<std::chrono::steady_clock::time_point> closedTime;
                 spi::ClientContext &clientContext;
                 protocol::IMessageHandler &invocationService;
                 std::unique_ptr<Socket> socket;
@@ -145,7 +151,7 @@ namespace hazelcast {
 
                 int connectionId;
                 std::string closeReason;
-                std::shared_ptr<exception::IException> closeCause;
+                std::exception_ptr closeCause;
 
                 std::string connectedServerVersionString;
                 int connectedServerVersion;
@@ -155,6 +161,7 @@ namespace hazelcast {
                 util::ILogger &logger;
                 bool asOwner;
                 ClientConnectionManagerImpl &connectionManager;
+                std::atomic_bool alive;
             };
         }
     }

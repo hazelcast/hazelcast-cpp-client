@@ -17,11 +17,12 @@
 #define HAZELCAST_CLIENT_PIPELINING_H_
 
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 
-#include "hazelcast/client/ICompletableFuture.h"
+#include <boost/thread/future.hpp>
+
 #include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/ConditionVariable.h"
-#include "hazelcast/util/concurrent/ConcurrencyUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -105,8 +106,9 @@ namespace hazelcast {
             std::vector<std::shared_ptr<E> > results() {
                 std::vector<std::shared_ptr<E> > result;
                 result.reserve(futures.size());
-                for (typename FuturesVector::const_iterator it = futures.begin(); it != futures.end(); ++it) {
-                    result.push_back((*it)->get());
+                auto result_futures = when_all(futures.begin(), futures.end());
+                for (auto f : result_futures.get()) {
+                    result.push_back(f.get());
                 }
                 return result;
             }
@@ -121,60 +123,45 @@ namespace hazelcast {
              * @return the future added.
              * @throws NullPointerException if future is null.
              */
-            const std::shared_ptr<ICompletableFuture<E> > &
-            add(const std::shared_ptr<ICompletableFuture<E> > &future) {
-                util::Preconditions::checkNotNull<ICompletableFuture<E> >(future, "future can't be null");
-
+            boost::shared_future<std::shared_ptr<E>>
+            add(boost::future<std::shared_ptr<E>> future) {
                 down();
-                futures.push_back(future);
-                future->andThen(std::shared_ptr<ExecutionCallback<E> >(
-                        new PipeliningExecutionCallback(this->shared_from_this())),
-                                util::concurrent::ConcurrencyUtil::CALLER_RUNS());
-                return future;
+
+                auto new_future = future.then(boost::launch::sync, [=](boost::future<std::shared_ptr<E>> f) {
+                    up();
+                    return f.get();
+                });
+
+                auto sharedFuture = new_future.share();
+                futures.push_back(sharedFuture);
+                return sharedFuture;
             }
 
         private:
-            class PipeliningExecutionCallback : public ExecutionCallback<E> {
-            public:
-                PipeliningExecutionCallback(const std::shared_ptr<Pipelining> &pipelining) : pipelining(pipelining) {}
-
-                virtual void onResponse(const std::shared_ptr<E> &response) {
-                    pipelining->up();
-                }
-
-                virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
-                    pipelining->up();
-                }
-
-            private:
-                const std::shared_ptr<Pipelining> pipelining;
-            };
-
             Pipelining(int depth) : permits(util::Preconditions::checkPositive(depth, "depth must be positive")) {
             }
 
             // TODO: Change with lock-free implementation when atomic is integrated into the library
             void down() {
-                util::LockGuard lockGuard(mutex);
+                std::unique_lock<std::mutex> uniqueLock(mutex);
                 while (permits == 0) {
-                    conditionVariable.wait(mutex);
+                    conditionVariable.wait(uniqueLock);
                 }
                 --permits;
             }
 
             void up() {
-                util::LockGuard lockGuard(mutex);
+                std::unique_lock<std::mutex> uniqueLock(mutex);
                 if (permits == 0) {
                     conditionVariable.notify_all();
                 }
                 ++permits;
             }
 
-            typedef std::vector<std::shared_ptr<ICompletableFuture<E> > > FuturesVector;
             int permits;
-            FuturesVector futures;
-            util::ConditionVariable conditionVariable;
-            util::Mutex mutex;
+            std::vector<boost::shared_future<std::shared_ptr<E>>> futures;
+            std::condition_variable conditionVariable;
+            std::mutex mutex;
         };
     }
 }

@@ -220,7 +220,8 @@ namespace hazelcast {
                         const std::string message = "No serializer found for serializerId :" +
                                                     util::IOUtil::to_string(typeId) + ", typename :" +
                                                     typeid(T).name();
-                        throw exception::HazelcastSerializationException("ObjectDataInput::readInternal", message);
+                        BOOST_THROW_EXCEPTION(
+                                exception::HazelcastSerializationException("ObjectDataInput::readInternal", message));
                     }
 
                     return readObjectInternal<T>(typeId, serializer);

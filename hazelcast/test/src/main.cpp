@@ -52,16 +52,16 @@ int main(int argc, char **argv) {
     const char *serverAddress = "127.0.0.1";
     int port = 9701;
 
-    auto transport = make_shared<TBufferedTransport>(make_shared<TSocket>(serverAddress, port));
+    auto transport = std::make_shared<TBufferedTransport>(std::make_shared<TSocket>(serverAddress, port));
     try {
         transport->open();
     } catch (apache::thrift::transport::TTransportException &e) {
-        cerr << "Failed to open connection to remote controller server at address " << serverAddress << ":"
-             << port << ". The exception: " << e.what() << endl;
+        std::cerr << "Failed to open connection to remote controller server at address " << serverAddress << ":"
+                  << port << ". The exception: " << e.what() << std::endl;
         exit(-1);
     }
 
-    remoteController = make_shared<RemoteControllerClient>(make_shared<TBinaryProtocol>(transport));
+    remoteController = std::make_shared<RemoteControllerClient>(std::make_shared<TBinaryProtocol>(transport));
 
     g_srvFactory = new HazelcastServerFactory(serverAddress,"hazelcast/test/resources/hazelcast.xml");
 

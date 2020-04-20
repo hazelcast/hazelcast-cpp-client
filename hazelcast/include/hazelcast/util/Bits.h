@@ -76,45 +76,45 @@ namespace hazelcast {
             /**
             * Byte size in bytes
             */
-            static const unsigned  int BYTE_SIZE_IN_BYTES = 1;
+            static constexpr unsigned int BYTE_SIZE_IN_BYTES = 1;
             /**
             * Boolean size in bytes
             */
-            static const unsigned  int BOOLEAN_SIZE_IN_BYTES = 1;
+            static constexpr unsigned int BOOLEAN_SIZE_IN_BYTES = 1;
             /**
             * Char size in bytes
             */
-            static const unsigned  int CHAR_SIZE_IN_BYTES = 2;
+            static constexpr unsigned int CHAR_SIZE_IN_BYTES = 2;
             /**
             * Short size in bytes
             */
-            static const unsigned int SHORT_SIZE_IN_BYTES = 2;
+            static constexpr unsigned int SHORT_SIZE_IN_BYTES = 2;
             /**
             * Integer size in bytes
             */
-            static const unsigned int INT_SIZE_IN_BYTES = 4;
+            static constexpr unsigned int INT_SIZE_IN_BYTES = 4;
             /**
             * Float size in bytes
             */
-            static const unsigned int FLOAT_SIZE_IN_BYTES = 4;
+            static constexpr unsigned int FLOAT_SIZE_IN_BYTES = 4;
             /**
             * Long size in bytes
             */
-            static const unsigned int LONG_SIZE_IN_BYTES = 8;
+            static constexpr unsigned int LONG_SIZE_IN_BYTES = 8;
             /**
             * Double size in bytes
             */
-            static const unsigned int DOUBLE_SIZE_IN_BYTES = 8;
+            static constexpr unsigned int DOUBLE_SIZE_IN_BYTES = 8;
 
             /**
              * for null arrays, this value writen to stream to represent null array size.
              */
-            static const int NULL_ARRAY = -1;
+            static constexpr int NULL_ARRAY = -1;
 
             /**
              * Length of the data blocks used by the CPU cache sub-system in bytes.
              */
-            static const int CACHE_LINE_LENGTH = 64;
+            static constexpr int CACHE_LINE_LENGTH = 64;
 
             /**
             * Fills the target with 2 bytes in native bytes order

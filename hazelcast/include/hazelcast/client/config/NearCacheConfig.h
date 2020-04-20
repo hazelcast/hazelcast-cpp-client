@@ -368,8 +368,8 @@ namespace hazelcast {
 
                     virtual MixedNearCacheConfig &setInMemoryFormat(const client::config::InMemoryFormat &inMemoryFormat) {
                         if (client::config::OBJECT == inMemoryFormat) {
-                            throw exception::IllegalArgumentException(
-                                    "MixedNearCacheConfig does not allow setting the in memory format different from BINARY.");
+                            BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(
+                                                          "MixedNearCacheConfig does not allow setting the in memory format different from BINARY."));
                         }
 
                         client::config::NearCacheConfig<TypedData, TypedData>::setInMemoryFormat(inMemoryFormat);

@@ -44,11 +44,9 @@
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
-#include <hazelcast/util/CountDownLatch.h>
+
 #include <ClientTestSupportBase.h>
-#include <hazelcast/util/Executor.h>
 #include <hazelcast/util/Util.h>
-#include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <hazelcast/util/ILogger.h>
@@ -86,7 +84,6 @@
 #include "TestHelperFunctions.h"
 #include <cmath>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/util/Thread.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
@@ -133,7 +130,7 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/CountDownLatch.h"
+
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -147,7 +144,6 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
@@ -157,8 +153,6 @@
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
@@ -423,9 +417,9 @@ namespace hazelcast {
                 }
 
                 void
-                assertNearCacheInvalidationRequests(monitor::NearCacheStats &stats, int64_t invalidationRequests) {
+                assertNearCacheInvalidationRequests(monitor::NearCacheStats &stat, int64_t invalidationRequests) {
                     if (nearCacheConfig->isInvalidateOnChange() && invalidationRequests > 0) {
-                        monitor::impl::NearCacheStatsImpl &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stats;
+                        monitor::impl::NearCacheStatsImpl &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stat;
                         ASSERT_EQ_EVENTUALLY(invalidationRequests, nearCacheStatsImpl.getInvalidationRequests());
                         nearCacheStatsImpl.resetInvalidationEvents();
                     }
@@ -444,7 +438,7 @@ namespace hazelcast {
                 void populateNearCache() {
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        std::shared_ptr<string> value = nearCachedMap->get(i);
+                        std::shared_ptr<std::string> value = nearCachedMap->get(i);
                         ASSERT_NOTNULL(value.get(), std::string);
                         hazelcast::util::hz_snprintf(buf, 30, "value-%d", i);
                         ASSERT_EQ(buf, *value);
@@ -789,10 +783,10 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<config::NearCacheConfig<int, int> > newNoInvalidationNearCacheConfig() {
-                    std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(newNearCacheConfig());
-                    nearCacheConfig->setInMemoryFormat(config::OBJECT);
-                    nearCacheConfig->setInvalidateOnChange(false);
-                    return nearCacheConfig;
+                    std::shared_ptr<config::NearCacheConfig<int, int> > config(newNearCacheConfig());
+                    config->setInMemoryFormat(config::OBJECT);
+                    config->setInvalidateOnChange(false);
+                    return config;
                 }
 
                 std::shared_ptr<config::NearCacheConfig<int, int> > newNearCacheConfig() {
@@ -805,21 +799,21 @@ namespace hazelcast {
                 }
 
                 IMap<int, int> &getNearCachedMapFromClient(
-                        std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig) {
+                        std::shared_ptr<config::NearCacheConfig<int, int> > config) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
 
-                    nearCacheConfig->setName(mapName);
+                    config->setName(mapName);
 
                     clientConfig = newClientConfig();
-                    clientConfig->addNearCacheConfig(nearCacheConfig);
+                    clientConfig->addNearCacheConfig(config);
 
                     client = std::unique_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
                     map.reset(new IMap<int, int>(client->getMap<int, int>(mapName)));
                     return *map;
                 }
 
-                monitor::NearCacheStats *getNearCacheStats(IMap<int, int> &map) {
-                    return map.getLocalMapStats().getNearCacheStats();
+                monitor::NearCacheStats *getNearCacheStats(IMap<int, int> &m) {
+                    return m.getLocalMapStats().getNearCacheStats();
                 }
 
                 void assertThatOwnedEntryCountEquals(IMap<int, int> &clientMap, int64_t expected) {
@@ -911,20 +905,20 @@ namespace hazelcast {
         namespace test {
             class MySetItemListener : public ItemListener<std::string> {
             public:
-                MySetItemListener(hazelcast::util::CountDownLatch &latch)
-                        :latch(latch) {
+                MySetItemListener(boost::latch &latch1)
+                        : latch1(latch1) {
 
                 }
 
-                void itemAdded(const ItemEvent<std::string>& itemEvent) {
-                    latch.countDown();
+                void itemAdded(const ItemEvent<std::string> &itemEvent) {
+                    latch1.count_down();
                 }
 
-                void itemRemoved(const ItemEvent<std::string>& item) {
+                void itemRemoved(const ItemEvent<std::string> &item) {
                 }
 
             private:
-                hazelcast::util::CountDownLatch &latch;
+                boost::latch &latch1;
             };
 
             class ClientSetTest : public ClientTestSupport {
@@ -1057,9 +1051,9 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSetTest, testListener) {
-                hazelcast::util::CountDownLatch latch(6);
+                boost::latch latch1(6);
 
-                MySetItemListener listener(latch);
+                MySetItemListener listener(latch1);
                 std::string registrationId = set->addItemListener(listener, true);
 
                 for (int i = 0; i < 5; i++) {
@@ -1067,7 +1061,7 @@ namespace hazelcast {
                 }
                 set->add("done");
 
-                ASSERT_TRUE(latch.await(20));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
 
                 ASSERT_TRUE(set->removeItemListener(registrationId));
             }
@@ -1092,19 +1086,19 @@ namespace hazelcast {
         namespace test {
             class MixedSetItemListener : public MixedItemListener {
             public:
-                MixedSetItemListener(hazelcast::util::CountDownLatch &latch)
-                        :latch(latch) {
+                MixedSetItemListener(boost::latch &latch1)
+                        : latch1(latch1) {
                 }
 
                 virtual void itemAdded(const ItemEvent<TypedData> &item) {
-                    latch.countDown();
+                    latch1.count_down();
                 }
 
                 virtual void itemRemoved(const ItemEvent<TypedData> &item) {
                 }
 
             private:
-                hazelcast::util::CountDownLatch &latch;
+                boost::latch &latch1;
             };
 
             class MixedSetTest : public ClientTestSupport {
@@ -1237,9 +1231,9 @@ namespace hazelcast {
             }
 
             TEST_F(MixedSetTest, testListener) {
-                hazelcast::util::CountDownLatch latch(6);
+                boost::latch latch1(6);
 
-                MixedSetItemListener listener(latch);
+                MixedSetItemListener listener(latch1);
                 std::string registrationId = set->addItemListener(listener, true);
 
                 for (int i = 0; i < 5; i++) {
@@ -1247,67 +1241,13 @@ namespace hazelcast {
                 }
                 set->add<std::string>("done");
 
-                ASSERT_TRUE(latch.await(20));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
 
                 ASSERT_TRUE(set->removeItemListener(registrationId));
             }
         }
     }
 }
-
-
-
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            class ICountDownLatchTest : public ClientTestSupport {
-            public:
-                ICountDownLatchTest();
-
-                ~ICountDownLatchTest();
-            protected:
-                HazelcastServer instance;
-                ClientConfig clientConfig;
-                HazelcastClient client;
-                std::unique_ptr<ICountDownLatch> l;
-            };
-
-            ICountDownLatchTest::ICountDownLatchTest()
-                    : instance(*g_srvFactory), client(getNewClient()),
-                      l(new ICountDownLatch(client.getICountDownLatch("ICountDownLatchTest"))) {
-            }
-
-            ICountDownLatchTest::~ICountDownLatchTest() {
-            }
-
-            void testLatchThread(hazelcast::util::ThreadArgs &args) {
-                ICountDownLatch *l = (ICountDownLatch *) args.arg0;
-                for (int i = 0; i < 20; i++) {
-                    l->countDown();
-                }
-            }
-
-            TEST_F(ICountDownLatchTest, testLatch) {
-                ASSERT_TRUE(l->trySetCount(20));
-                ASSERT_FALSE(l->trySetCount(10));
-                ASSERT_EQ(20, l->getCount());
-
-                hazelcast::util::StartedThread t(testLatchThread, l.get());
-
-                ASSERT_TRUE(l->await(10 * 1000));
-
-                t.join();
-            }
-
-        }
-    }
-}
-
-
-
-
-
 
 namespace hazelcast {
     namespace client {
@@ -1328,17 +1268,17 @@ namespace hazelcast {
                 template <typename T>
                 class GenericListener : public topic::ReliableMessageListener<T> {
                 public:
-                    GenericListener(hazelcast::util::CountDownLatch &countDownLatch) : latch(countDownLatch),
-                                                                                       startSequence(-1),
-                                                                                       numberOfMessagesReceived(0) {
+                    GenericListener(boost::latch &countDownLatch) : latch1(countDownLatch),
+                                                                    startSequence(-1),
+                                                                    numberOfMessagesReceived(0) {
                     }
 
-                    GenericListener(hazelcast::util::CountDownLatch &countDownLatch, int64_t sequence) : latch(
+                    GenericListener(boost::latch &countDownLatch, int64_t sequence) : latch1(
                             countDownLatch),
-                                                                                                         startSequence(
-                                                                                                                 sequence),
-                                                                                                         numberOfMessagesReceived(
-                                                                                                                 0) {
+                                                                                      startSequence(
+                                                                                              sequence),
+                                                                                      numberOfMessagesReceived(
+                                                                                              0) {
                     }
 
                     virtual ~GenericListener() {
@@ -1353,7 +1293,7 @@ namespace hazelcast {
 
                         messages.offer(message.release());
 
-                        latch.countDown();
+                        latch1.count_down();
                     }
 
                     virtual int64_t retrieveInitialSequence() const {
@@ -1380,7 +1320,7 @@ namespace hazelcast {
                         return messages;
                     }
                 private:
-                    hazelcast::util::CountDownLatch &latch;
+                    boost::latch &latch1;
                     int64_t startSequence;
                     hazelcast::util::AtomicInt numberOfMessagesReceived;
                     hazelcast::util::ConcurrentQueue<topic::Message<T> > messages;
@@ -1388,18 +1328,18 @@ namespace hazelcast {
 
                 class IntListener : public GenericListener<int> {
                 public:
-                    IntListener(hazelcast::util::CountDownLatch &countDownLatch) : GenericListener<int>(countDownLatch) { }
+                    IntListener(boost::latch &countDownLatch) : GenericListener<int>(countDownLatch) {}
 
-                    IntListener(hazelcast::util::CountDownLatch &countDownLatch, int64_t sequence) : GenericListener<int>(
+                    IntListener(boost::latch &countDownLatch, int64_t sequence) : GenericListener<int>(
                             countDownLatch, sequence) { }
                 };
 
                 class MyReliableListener : public GenericListener<Employee> {
                 public:
-                    MyReliableListener(hazelcast::util::CountDownLatch &countDownLatch, int64_t sequence) : GenericListener<Employee>(
+                    MyReliableListener(boost::latch &countDownLatch, int64_t sequence) : GenericListener<Employee>(
                             countDownLatch, sequence) { }
 
-                    MyReliableListener(hazelcast::util::CountDownLatch &countDownLatch) : GenericListener<Employee>(countDownLatch) { }
+                    MyReliableListener(boost::latch &countDownLatch) : GenericListener<Employee>(countDownLatch) {}
                 };
 
                 virtual void TearDown() {
@@ -1431,9 +1371,9 @@ namespace hazelcast {
 
                 ASSERT_EQ("testBasics", rt->getName());
 
-                hazelcast::util::CountDownLatch latch(1);
+                boost::latch latch1(1);
 
-                MyReliableListener listener(latch);
+                MyReliableListener listener(latch1);
 
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = rt->addMessageListener(listener));
@@ -1442,7 +1382,7 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(rt->publish(&empl1));
 
-                ASSERT_TRUE(latch.await(2));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(2)));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
                 const Employee *employee = listener.getMessages().poll()->getMessageObject();
                 ASSERT_NE((Employee *) NULL, employee);
@@ -1463,13 +1403,13 @@ namespace hazelcast {
                 ASSERT_NO_THROW(rt->publish(&empl1));
                 ASSERT_NO_THROW(rt->publish(&empl2));
 
-                hazelcast::util::CountDownLatch latch(1);
+                boost::latch latch1(1);
 
-                MyReliableListener listener(latch, 1);
+                MyReliableListener listener(latch1, 1);
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = rt->addMessageListener(listener));
 
-                ASSERT_TRUE(latch.await(1));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(1)));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
                 const Employee *employee = listener.getMessages().poll()->getMessageObject();
                 ASSERT_NE((Employee *) NULL, employee);
@@ -1485,9 +1425,9 @@ namespace hazelcast {
 
                 Employee empl1("first", 10);
 
-                hazelcast::util::CountDownLatch latch(1);
+                boost::latch latch1(1);
 
-                MyReliableListener listener(latch);
+                MyReliableListener listener(latch1);
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = rt->addMessageListener(listener));
 
@@ -1496,7 +1436,7 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(rt->publish(&empl1));
 
-                ASSERT_FALSE(latch.await(2));
+                ASSERT_EQ(boost::cv_status::timeout, latch1.wait_for(boost::chrono::seconds(2)));
                 ASSERT_EQ(0, listener.getNumberOfMessagesReceived());
             }
 
@@ -1512,15 +1452,15 @@ namespace hazelcast {
                 std::shared_ptr<ReliableTopic<int> > intTopic;
                 ASSERT_NO_THROW(intTopic = client->getReliableTopic<int>("publishNull"));
 
-                hazelcast::util::CountDownLatch latch(1);
-                IntListener listener(latch);
+                boost::latch latch1(1);
+                IntListener listener(latch1);
 
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(listener));
 
                 intTopic->publish((int *) NULL);
 
-                ASSERT_TRUE(latch.await(5));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
                 const int *val = listener.getMessages().poll()->getMessageObject();
                 ASSERT_EQ((const int *) NULL, val);
@@ -1530,8 +1470,8 @@ namespace hazelcast {
                 std::shared_ptr<ReliableTopic<std::string> > topic;
                 ASSERT_NO_THROW(topic = client->getReliableTopic<std::string>("publishMultiple"));
 
-                hazelcast::util::CountDownLatch latch(5);
-                GenericListener <std::string> listener(latch);
+                boost::latch latch1(5);
+                GenericListener <std::string> listener(latch1);
 
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = topic->addMessageListener(listener));
@@ -1543,7 +1483,7 @@ namespace hazelcast {
                     items.push_back(item);
                 }
 
-                ASSERT_TRUE(latch.await(5));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
                 ASSERT_EQ(5, listener.getNumberOfMessagesReceived());
                 hazelcast::util::ConcurrentQueue<topic::Message<std::string> > &queue = listener.getMessages();
                 for (int k = 0; k < 5; k++) {
@@ -1564,8 +1504,8 @@ namespace hazelcast {
                 std::shared_ptr<ReliableTopic<std::string> > topic;
                 ASSERT_NO_THROW(topic = configClient.getReliableTopic<std::string>("testConfig"));
 
-                hazelcast::util::CountDownLatch latch(5);
-                GenericListener <std::string> listener(latch);
+                boost::latch latch1(5);
+                GenericListener <std::string> listener(latch1);
 
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = topic->addMessageListener(listener));
@@ -1577,7 +1517,7 @@ namespace hazelcast {
                     items.push_back(item);
                 }
 
-                ASSERT_TRUE(latch.await(5));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
                 ASSERT_EQ(5, listener.getNumberOfMessagesReceived());
                 hazelcast::util::ConcurrentQueue<topic::Message<std::string> > &queue = listener.getMessages();
                 for (int k = 0; k < 5; k++) {
@@ -1591,8 +1531,8 @@ namespace hazelcast {
                 std::shared_ptr<ReliableTopic<int> > intTopic;
                 ASSERT_NO_THROW(intTopic = client->getReliableTopic<int>("testMessageFieldSetCorrectly"));
 
-                hazelcast::util::CountDownLatch latch(1);
-                IntListener listener(latch);
+                boost::latch latch1(1);
+                IntListener listener(latch1);
 
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(listener));
@@ -1602,7 +1542,7 @@ namespace hazelcast {
                 intTopic->publish(&publishedValue);
                 int64_t timeAfterPublish = hazelcast::util::currentTimeMillis();
 
-                ASSERT_TRUE(latch.await(5));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
                 topic::Message<int> *message = listener.getMessages().poll();
                 const int *val = message->getMessageObject();
@@ -1635,13 +1575,13 @@ namespace hazelcast {
 // spawn a thread for publishing new data
                 hazelcast::util::StartedThread t(publishTopics, intTopic.get(), &expectedValues);
 
-                hazelcast::util::CountDownLatch latch(3);
-                IntListener listener(latch);
+                boost::latch latch1(3);
+                IntListener listener(latch1);
 
                 std::string listenerId;
                 ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(listener));
 
-                ASSERT_TRUE(latch.await(10));
+                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
                 ASSERT_EQ((int) expectedValues.size(), listener.getNumberOfMessagesReceived());
                 hazelcast::util::ConcurrentQueue<topic::Message<int> > &objects = listener.getMessages();
 
@@ -1833,28 +1773,21 @@ namespace hazelcast {
                                                             << logger->getInstanceName()).build();
                         }
 
-                        hazelcast::util::Thread monitor(
-                                std::shared_ptr<hazelcast::util::Runnable>(new StatsPrinterTask(stats)),
-                                *logger);
+                        auto monitor = std::async([&]() {
+                            StatsPrinterTask(stats).run();
+                        });
 
                         HazelcastClient hazelcastClient(clientConfig);
 
                         IMap<int, std::vector<char> > map = hazelcastClient.getMap<int, std::vector<char> >(
                                 "cppDefault");
 
-                        std::vector<std::shared_ptr<hazelcast::util::Thread> > threads;
-
+                        std::vector<std::future<void>> futures;
                         for (int i = 0; i < THREAD_COUNT; i++) {
-                            std::shared_ptr<hazelcast::util::Thread> thread = std::shared_ptr<hazelcast::util::Thread>(
-                                    new hazelcast::util::Thread(
-                                            std::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map, logger)),
-                                            *logger));
-                            thread->start();
-                            threads.push_back(thread);
+                            futures.push_back(std::async([&]() { Task(stats, map, logger).run(); }));
                         }
 
-                        monitor.start();
-                        monitor.join();
+                        monitor.wait();
                     }
                 };
 
@@ -1921,22 +1854,24 @@ namespace hazelcast {
             protected:
                 class Issue864MapListener : public hazelcast::client::EntryAdapter<int, int> {
                 public:
-                    Issue864MapListener(hazelcast::util::CountDownLatch &l);
+                    Issue864MapListener(boost::latch &l1, boost::latch &l2);
 
                     virtual void entryAdded(const EntryEvent<int, int> &event);
 
                     virtual void entryUpdated(const EntryEvent<int, int> &event);
 
                 private:
-                    hazelcast::util::CountDownLatch &latch;
+                    boost::latch &latch1;
+                    boost::latch &latch2;
                 };
 
-                hazelcast::util::CountDownLatch latch;
+                boost::latch latch1;
+                boost::latch latch2;
                 Issue864MapListener listener;
             };
 
             IssueTest::IssueTest()
-                    : latch(2), listener(latch) {
+                    : latch1(1), latch2(1), listener(latch1, latch2) {
             }
 
             IssueTest::~IssueTest() {
@@ -1949,7 +1884,7 @@ namespace hazelcast {
 
             void putMapMessage(hazelcast::util::ThreadArgs &args) {
                 IMap<int, int> *map = (IMap<int, int> *) args.arg0;
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg1;
+                boost::latch *latch2 = (boost::latch *) args.arg1;
 
                 do {
                     // 7. Put a 2nd entry to the map
@@ -1959,9 +1894,7 @@ namespace hazelcast {
                         // suppress the error
                         (void) e; // suppress the unused variable warning
                     }
-                    hazelcast::util::sleep(1);
-                } while (latch->get() > 0);
-
+                } while (boost::cv_status::timeout == latch2->wait_for(boost::chrono::milliseconds(100)));
             }
 
             TEST_F(IssueTest, testOperationRedo_smartRoutingDisabled) {
@@ -1975,16 +1908,15 @@ namespace hazelcast {
                 HazelcastClient client(clientConfig);
 
                 client::IMap<int, int> map = client.getMap<int, int>("m");
-                hazelcast::util::StartedThread *thread = NULL;
+                std::unique_ptr<hazelcast::util::StartedThread> thread = NULL;
                 int expected = 1000;
                 for (int i = 0; i < expected; i++) {
                     if (i == 5) {
-                        thread = new hazelcast::util::StartedThread(threadTerminateNode, &hz1);
+                        thread.reset(new hazelcast::util::StartedThread(threadTerminateNode, &hz1));
                     }
                     map.put(i, i);
                 }
                 thread->join();
-                delete thread;
                 ASSERT_EQ(expected, map.size());
             }
 
@@ -2006,25 +1938,21 @@ namespace hazelcast {
 // Put a key, value to the map
                 ASSERT_EQ((int *) NULL, map.put(1, 10).get());
 
-                ASSERT_TRUE(latch.await(20, 1)); // timeout of 20 seconds
+                ASSERT_OPEN_EVENTUALLY(latch1);
 
-// 5. Verify that the listener got the entry added event
-                ASSERT_EQ(1, latch.get());
-
-// 6. Restart the server
+// 5. Restart the server
                 ASSERT_TRUE(server.shutdown());
                 HazelcastServer server2(*g_srvFactory);
 
                 std::string putThreadName("Map Put Thread");
-                hazelcast::util::StartedThread t(putThreadName, putMapMessage, &map, &latch);
+                hazelcast::util::StartedThread t(putThreadName, putMapMessage, &map, &latch2);
 
-// 8. Verify that the 2nd entry is received by the listener
-                ASSERT_TRUE(latch.await(20, 0)); // timeout of 20 seconds
+// 6. Verify that the 2nd entry is received by the listener
+                ASSERT_OPEN_EVENTUALLY(latch2);
 
-                t.cancel();
                 t.join();
 
-// 9. Shut down the server
+// 7. Shut down the server
                 ASSERT_TRUE(server2.shutdown());
             }
 
@@ -2043,28 +1971,27 @@ namespace hazelcast {
             }
 
             void IssueTest::Issue864MapListener::entryAdded(const EntryEvent<int, int> &event) {
-                int count = latch.get();
-                if (2 == count) {
+                auto key = event.getKey();
+                ASSERT_TRUE(1 == key || 2 == key);
+                if (key == 1) {
                     // The received event should be the addition of key value: 1, 10
-                    ASSERT_EQ(1, event.getKey());
                     ASSERT_EQ(10, event.getValue());
-                } else if (1 == count) {
+                    latch1.count_down();
+                } else {
                     // The received event should be the addition of key value: 2, 20
-                    ASSERT_EQ(2, event.getKey());
                     ASSERT_EQ(20, event.getValue());
+                    latch2.count_down();
                 }
-
-                latch.countDown();
             }
 
             void IssueTest::Issue864MapListener::entryUpdated(const EntryEvent<int, int> &event) {
                 ASSERT_EQ(2, event.getKey());
                 ASSERT_EQ(20, event.getValue());
-                latch.countDown();
+                latch1.count_down();
             }
 
-            IssueTest::Issue864MapListener::Issue864MapListener(hazelcast::util::CountDownLatch &l) : latch(l) {
-
+            IssueTest::Issue864MapListener::Issue864MapListener(boost::latch &l1, boost::latch &l2) : latch1(l1),
+                                                                                                      latch2(l2) {
             }
         }
     }
@@ -2172,9 +2099,6 @@ namespace hazelcast {
     }
 }
 
-
-
-
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -2198,6 +2122,32 @@ namespace hazelcast {
             const std::string &ClientTestSupport::getTestName() const {
                 return testName;
             }
+
+            CountDownLatchWaiter &CountDownLatchWaiter::add(boost::latch &latch1) {
+                latches.push_back(&latch1);
+                return *this;
+            }
+
+            boost::cv_status CountDownLatchWaiter::wait_for(boost::chrono::steady_clock::duration duration) {
+                if (latches.empty()) {
+                    return boost::cv_status::no_timeout;
+                }
+
+                auto end = boost::chrono::steady_clock::now() + duration;
+                for (auto &l : latches) {
+                    auto waitDuration = end - boost::chrono::steady_clock::now();
+                    auto status = l->wait_for(waitDuration);
+                    if (boost::cv_status::timeout == status) {
+                        return boost::cv_status::timeout;
+                    }
+                }
+                return boost::cv_status::no_timeout;
+            }
+
+            void CountDownLatchWaiter::reset() {
+                latches.clear();
+            }
+
         }
     }
 }

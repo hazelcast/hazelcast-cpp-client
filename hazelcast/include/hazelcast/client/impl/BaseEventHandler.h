@@ -68,7 +68,7 @@ namespace hazelcast {
                 virtual void onListenerRegister() {
                 }
 
-                void setLogger(util::ILogger *logger);
+                void setLogger(util::ILogger *iLogger);
 
                 util::ILogger *getLogger() const;
 

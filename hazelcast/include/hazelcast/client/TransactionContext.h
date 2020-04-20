@@ -157,7 +157,9 @@ namespace hazelcast {
                 if (transaction.getState() != txn::TxnState::ACTIVE) {
                     std::string message = "No transaction is found while accessing ";
                     message += "transactional object -> [" + name + "]!";
-                    throw exception::IllegalStateException("TransactionContext::getMap(const std::string& name)", message);
+                    BOOST_THROW_EXCEPTION(
+                            exception::IllegalStateException("TransactionContext::getMap(const std::string& name)",
+                                                             message));
                 }
                 T txnObject(name, &transaction);
                 return txnObject;

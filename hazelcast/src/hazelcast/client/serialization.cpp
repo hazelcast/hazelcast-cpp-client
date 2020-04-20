@@ -417,8 +417,9 @@ namespace hazelcast {
                                                                              std::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
-                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
-                                                              "Portable class id cannot be zero!");
+                    BOOST_THROW_EXCEPTION(
+                            exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
+                                                                "Portable class id cannot be zero!"));
                 }
                 FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, def->getFactoryId(),
                                                 def->getClassId(), def->getVersion());
@@ -430,8 +431,9 @@ namespace hazelcast {
                                                                                   std::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
-                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
-                                                              "Portable class id cannot be zero!");
+                    BOOST_THROW_EXCEPTION(
+                            exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
+                                                                "Portable class id cannot be zero!"));
                 }
                 FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY,
                                                 def->getFactoryId(), def->getClassId(), def->getVersion());
@@ -446,7 +448,7 @@ namespace hazelcast {
                     char buf[100];
                     util::hz_snprintf(buf, 100, "Invalid field index. Index in definition:%d, being added at index:%d",
                                       defIndex, index);
-                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addField", buf);
+                    BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ClassDefinitionBuilder::addField", buf));
                 }
                 index++;
                 fieldDefinitions.push_back(fieldDefinition);
@@ -466,9 +468,9 @@ namespace hazelcast {
 
             void ClassDefinitionBuilder::check() {
                 if (done) {
-                    throw exception::HazelcastSerializationException("ClassDefinitionBuilder::check",
-                                                                     "ClassDefinition is already built for " +
-                                                                     util::IOUtil::to_string(classId));
+                    BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("ClassDefinitionBuilder::check",
+                                                                                     "ClassDefinition is already built for " +
+                                                                                     util::IOUtil::to_string(classId)));
                 }
             }
 
@@ -1049,7 +1051,7 @@ namespace hazelcast {
                 }
                 char msg[200];
                 util::hz_snprintf(msg, 200, "Field (%s) does not exist", NULL != name ? name : "");
-                throw exception::IllegalArgumentException("ClassDefinition::getField", msg);
+                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ClassDefinition::getField", msg));
             }
 
             bool ClassDefinition::hasField(const char *fieldName) const {
@@ -1472,8 +1474,8 @@ namespace hazelcast {
                 void DataSerializer::checkIfIdentifiedDataSerializable(ObjectDataInput &in) const {
                     bool identified = in.readBoolean();
                     if (!identified) {
-                        throw exception::HazelcastSerializationException("void DataSerializer::read",
-                                                                         " DataSerializable is not identified");
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("void DataSerializer::read",
+                                                                                         " DataSerializable is not identified"));
                     }
                 }
 
@@ -1754,17 +1756,18 @@ namespace hazelcast {
 
                 FieldDefinition const &DefaultPortableWriter::setPosition(const char *fieldName, FieldType fieldType) {
                     if (raw) {
-                        throw exception::HazelcastSerializationException("PortableWriter::setPosition",
-                                                                         "Cannot write Portable fields after getRawDataOutput() is called!");
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableWriter::setPosition",
+                                                                                         "Cannot write Portable fields after getRawDataOutput() is called!"));
                     }
 
                     try {
                         FieldDefinition const &fd = cd->getField(fieldName);
 
                         if (writtenFields.count(fieldName) != 0) {
-                            throw exception::HazelcastSerializationException("PortableWriter::setPosition",
-                                                                             "Field '" + std::string(fieldName) +
-                                                                             "' has already been written!");
+                            BOOST_THROW_EXCEPTION(
+                                    exception::HazelcastSerializationException("PortableWriter::setPosition",
+                                                                               "Field '" + std::string(fieldName) +
+                                                                               "' has already been written!"));
                         }
 
                         writtenFields.insert(fieldName);
@@ -1786,7 +1789,8 @@ namespace hazelcast {
                         error << ", version: " << util::IOUtil::to_string(cd->getVersion()) << "}. Error:";
                         error << iae.what();
 
-                        throw exception::HazelcastSerializationException("PortableWriter::setPosition", error.str());
+                        BOOST_THROW_EXCEPTION(
+                                exception::HazelcastSerializationException("PortableWriter::setPosition", error.str()));
                     }
 
                 }
@@ -1820,16 +1824,16 @@ namespace hazelcast {
                         errorMessage << "Wrong Portable type! Templated portable types are not supported! "
                                      << " Expected factory-id: " << fd.getFactoryId() << ", Actual factory-id: "
                                      << portable.getFactoryId();
-                        throw exception::HazelcastSerializationException(
-                                "DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                                                      "DefaultPortableWriter::::checkPortableAttributes", errorMessage.str()));
                     }
                     if (fd.getClassId() != portable.getClassId()) {
                         std::stringstream errorMessage;
                         errorMessage << "Wrong Portable type! Templated portable types are not supported! "
                                      << "Expected class-id: " << fd.getClassId() << ", Actual class-id: "
                                      << portable.getClassId();
-                        throw exception::HazelcastSerializationException(
-                                "DefaultPortableWriter::::checkPortableAttributes", errorMessage.str());
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                                                      "DefaultPortableWriter::::checkPortableAttributes", errorMessage.str()));
                     }
                 }
 
@@ -1868,8 +1872,9 @@ namespace hazelcast {
                         if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId) {
                             bool identified = objectDataInput.readBoolean();
                             if (!identified) {
-                                throw exception::HazelcastSerializationException("SerializationService::getObjectType",
-                                                                                 " DataSerializable is not identified");
+                                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                                                              "SerializationService::getObjectType",
+                                                                      " DataSerializable is not identified"));
                             }
                         }
 
@@ -2230,7 +2235,7 @@ namespace hazelcast {
                         util::hz_snprintf(msg, 100,
                                           "Not enough bytes in internal buffer. Available:%lu bytes but needed %lu bytes",
                                           (unsigned long) available, (unsigned long) requestedLength);
-                        throw exception::IOException("DataInput::checkBoundary", msg);
+                        BOOST_THROW_EXCEPTION(exception::IOException("DataInput::checkBoundary", msg));
                     }
                 }
 
@@ -2289,8 +2294,9 @@ namespace hazelcast {
                     if (current != NULL && *current != version) {
                         std::stringstream error;
                         error << "Class-id: " << classId << " is already registered!";
-                        throw exception::IllegalArgumentException("ClassDefinitionContext::setClassVersion",
-                                                                  error.str());
+                        BOOST_THROW_EXCEPTION(
+                                exception::IllegalArgumentException("ClassDefinitionContext::setClassVersion",
+                                                                    error.str()));
                     }
                 }
 
@@ -2351,15 +2357,16 @@ namespace hazelcast {
                         // field count
                         fieldCount = input.readInt();
                     } catch (exception::IException &e) {
-                        throw exception::HazelcastSerializationException(
-                                "[PortableReaderBase::PortableReaderBase]", e.what());
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                                                      "[PortableReaderBase::PortableReaderBase]", e.what()));
                     }
                     if (fieldCount != cd->getFieldCount()) {
                         char msg[50];
                         util::hz_snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount,
                                           cd->getFieldCount());
-                        throw new exception::IllegalStateException("[PortableReaderBase::PortableReaderBase]",
-                                                                   msg);
+                        BOOST_THROW_EXCEPTION(
+                                exception::IllegalStateException("[PortableReaderBase::PortableReaderBase]",
+                                                                 msg));
                     }
                     this->offset = input.position();
                 }
@@ -2459,21 +2466,21 @@ namespace hazelcast {
 
                 int PortableReaderBase::readPosition(const char *fieldName, FieldType const &fieldType) {
                     if (raw) {
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ",
-                                                                         "Cannot read Portable fields after getRawDataInput() is called!");
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
+                                                                                         "Cannot read Portable fields after getRawDataInput() is called!"));
                     }
                     if (!cd->hasField(fieldName)) {
                         // TODO: if no field def found, java client reads nested position:
                         // readNestedPosition(fieldName, type);
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ",
-                                                                         "Don't have a field named " +
-                                                                         std::string(fieldName));
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
+                                                                                         "Don't have a field named " +
+                                                                                         std::string(fieldName)));
                     }
 
                     if (cd->getFieldType(fieldName) != fieldType) {
-                        throw exception::HazelcastSerializationException("PortableReader::getPosition ",
-                                                                         "Field type did not matched for " +
-                                                                         std::string(fieldName));
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
+                                                                                         "Field type did not matched for " +
+                                                                                         std::string(fieldName)));
                     }
 
                     dataInput.position(offset + cd->getField(fieldName).getIndex() * util::Bits::INT_SIZE_IN_BYTES);
@@ -2506,15 +2513,17 @@ namespace hazelcast {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(),
                                           factoryId);
-                        throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ",
-                                                                         std::string(msg));
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                                                      "DefaultPortableReader::checkFactoryAndClass ",
+                                                              std::string(msg)));
                     }
                     if (classId != fd.getClassId()) {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(),
                                           classId);
-                        throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ",
-                                                                         std::string(msg));
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
+                                                      "DefaultPortableReader::checkFactoryAndClass ",
+                                                              std::string(msg)));
                     }
                 }
 
@@ -2778,8 +2787,8 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
-                                                                         "IncompatibleClassChangeError");
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                                         "IncompatibleClassChangeError"));
                     }
                 }
 
@@ -2800,8 +2809,8 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
-                                                                         "IncompatibleClassChangeError");
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                                         "IncompatibleClassChangeError"));
                     }
                 }
 
@@ -2848,8 +2857,8 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
-                                                                         "IncompatibleClassChangeError");
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                                         "IncompatibleClassChangeError"));
                     }
                 }
 
@@ -2870,8 +2879,8 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return (float) PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
-                                                                         "IncompatibleClassChangeError");
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                                         "IncompatibleClassChangeError"));
                     }
                 }
 
@@ -2886,8 +2895,8 @@ namespace hazelcast {
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
                         return PortableReaderBase::readShort(fieldName);
                     } else {
-                        throw exception::HazelcastSerializationException("MorphingPortableReader::*",
-                                                                         "IncompatibleClassChangeError");
+                        BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("MorphingPortableReader::*",
+                                                                                         "IncompatibleClassChangeError"));
                     }
                 }
 
@@ -2952,8 +2961,9 @@ namespace hazelcast {
                     if (const VersionedPortable *versionedPortable = dynamic_cast<const VersionedPortable *>(portable)) {
                         version = versionedPortable->getClassVersion();
                         if (version < 0) {
-                            throw exception::IllegalArgumentException("PortableVersionHelper:getVersion",
-                                                                      "Version cannot be negative!");
+                            BOOST_THROW_EXCEPTION(
+                                    exception::IllegalArgumentException("PortableVersionHelper:getVersion",
+                                                                        "Version cannot be negative!"));
                         }
                     }
                     return version;
@@ -3034,7 +3044,7 @@ namespace hazelcast {
                     const Portable *p = static_cast<const Portable *>(object);
 
                     if (p->getClassId() == 0) {
-                        throw exception::IllegalArgumentException("Portable class ID cannot be zero!");
+                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("Portable class ID cannot be zero!"));
                     }
 
                     out.writeInt(p->getFactoryId());
@@ -3086,10 +3096,12 @@ namespace hazelcast {
                         if (active) {
                             std::ostringstream out;
                             out << "There is no suitable serializer for " << typeId;
-                            throw exception::HazelcastSerializationException("SerializerHolder::registerSerializer",
-                                                                             out.str());
+                            BOOST_THROW_EXCEPTION(
+                                    exception::HazelcastSerializationException("SerializerHolder::registerSerializer",
+                                                                               out.str()));
                         }
-                        throw exception::HazelcastClientNotActiveException("SerializerHolder::registerSerializer");
+                        BOOST_THROW_EXCEPTION(
+                                exception::HazelcastClientNotActiveException("SerializerHolder::registerSerializer"));
                     }
                     return serializer;
                 }

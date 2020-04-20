@@ -54,8 +54,14 @@ namespace hazelcast {
              */
             template<typename T>
             static const std::shared_ptr<T> &checkNotNull(const std::shared_ptr<T> &argument,
-                                                            const std::string &errorMessage) {
-                if (argument == NULL) {
+                                                          const std::string &errorMessage) {
+                checkNotNull<T>(argument.get(), errorMessage);
+                return argument;
+            }
+
+            template<typename T>
+            static const T *checkNotNull(const T *argument, const std::string &errorMessage) {
+                if (!argument) {
                     throw client::exception::NullPointerException(errorMessage);
                 }
                 return argument;
