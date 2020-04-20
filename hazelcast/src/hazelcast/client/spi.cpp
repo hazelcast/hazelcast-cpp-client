@@ -1596,17 +1596,6 @@ namespace hazelcast {
                                                                  std::chrono::duration_cast<std::chrono::milliseconds>(retryPause).count());
                         executionService->schedule(command, std::chrono::milliseconds(delayMillis));
                     }
-
-                    // We need to double check here since the executor service may have stopped already and the execute
-                    // or schedule calls will not fail but the job will not be executed.
-/*
-                    if (!lifecycleService.isRunning()) {
-                        notifyException(std::make_exception_ptr(boost::enable_current_exception(
-                                exception::HazelcastClientNotActiveException(
-                                        "ClientTransactionManagerServiceImpl::connect",
-                                        "Client is shutdown"))));
-                    }
-*/
                 }
 
                 const std::string ClientInvocation::getName() const {

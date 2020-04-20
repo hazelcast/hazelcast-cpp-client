@@ -34,12 +34,7 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
   * **removeAll**: Illustrates how you can use IMap::removeAll with query predicate to remove certain entries based on the query matching.
 
 **distributed primitives** — Examples for basic distributed primitive structures.
-  * **atomiclong**: Illustrates simple IAtomicLong usage.
-  * **countdownlatch**: Illustrates simple ICountdown boost::latch usage in the cluster.
   * **crdt-pncounter**: Illustrates simple conflict free pozitive negtative counter usage.
-  * **idgenerator**: Illustrates IDGenerator usages. Example for Flake Id Generator and deprecated older implementations exist.
-  * **lock**: Illustrates simple ILock usage for eliminating races.
-  * **semaphore**: Illustrates simple ISemaphore usage.
 
 **distributed-topic** — Usage of distributed topic.
   * **basic-pub-sub**: Illustrates basic publish/subcribe for distributed topic usage.

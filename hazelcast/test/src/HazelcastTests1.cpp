@@ -130,7 +130,6 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -162,7 +161,6 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/ILock.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
@@ -197,8 +195,6 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/IAtomicLong.h"
 #include "hazelcast/client/mixedtype/MultiMap.h"
 #include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/IList.h"
@@ -209,9 +205,7 @@
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/mixedtype/ISet.h"
-#include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/IdGenerator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(disable: 4996) //for unsafe getenv
@@ -3197,11 +3191,10 @@ namespace hazelcast {
                 constexpr int n = 10;
                 boost::latch latch1(n);
 
-                std::array<std::future<void>, n> allFutures;
                 for (int i = 0; i < n; i++) {
-                    allFutures[i] = std::async(std::packaged_task<void()>([&]() {
+                    std::thread(std::packaged_task<void()>([&]() {
                         PutGetRemoveTestTask(client, mm, latch1).run();
-                    }));
+                    })).detach();
                 }
 
                 ASSERT_OPEN_EVENTUALLY(latch1);

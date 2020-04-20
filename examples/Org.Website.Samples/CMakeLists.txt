@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(AtomicLongSample ./AtomicLongSample.cpp)
-add_executable(LockSample LockSample.cpp)
 add_executable(MapSample MapSample.cpp)
 add_executable(MultiMapSample MultiMapSample.cpp)
 add_executable(TopicSample TopicSample.cpp)

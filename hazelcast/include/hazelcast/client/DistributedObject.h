@@ -44,11 +44,6 @@ namespace hazelcast {
         * @see IList
         * @see ISet
         * @see ITopic
-        * @see ILock
-        * @see ISemaphore
-        * @see ICountDownLatch
-        * @see IdGenerator
-        * @see IAtomicLong
         * @see TransactionalMap
         * @see TransactionalQueue
         * @see TransactionalMultiMap

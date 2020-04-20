@@ -37,8 +37,6 @@
 #include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
 #include "hazelcast/client/proxy/ClientPNCounterProxy.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
-#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 #include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
 #include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
@@ -49,11 +47,6 @@
 #include "hazelcast/client/map/DataEntryView.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 #include "hazelcast/client/proxy/ClientRingbufferProxy.h"
-#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
-#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
-#include "hazelcast/client/ICountDownLatch.h"
-#include "hazelcast/client/ILock.h"
-#include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/cluster/impl/VectorClock.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/util/Util.h"
@@ -80,20 +73,6 @@ namespace hazelcast {
                                 new proxy::ClientPNCounterProxy(proxy::ClientPNCounterProxy::SERVICE_NAME, id,
                                                                 clientContext));
                     }
-                }
-            }
-        }
-
-        namespace idgen {
-            namespace impl {
-                IdGeneratorProxyFactory::IdGeneratorProxyFactory(spi::ClientContext *clientContext) : clientContext(
-                        clientContext) {}
-
-                std::shared_ptr<spi::ClientProxy> IdGeneratorProxyFactory::create(const std::string &id) {
-                    IAtomicLong atomicLong = clientContext->getHazelcastClientImplementation()->getIAtomicLong(
-                            proxy::ClientIdGeneratorProxy::ATOMIC_LONG_NAME + id);
-                    return std::shared_ptr<spi::ClientProxy>(
-                            new proxy::ClientIdGeneratorProxy(id, clientContext, atomicLong));
                 }
             }
         }
@@ -1007,63 +986,6 @@ namespace hazelcast {
                 return protocol::codec::ListRemoveListenerCodec::ResponseParameters::decode(clientMessage).response;
             }
 
-            const std::string ClientIdGeneratorProxy::SERVICE_NAME = "hz:impl:idGeneratorService";
-            const std::string ClientIdGeneratorProxy::ATOMIC_LONG_NAME = "hz:atomic:idGenerator:";
-
-            ClientIdGeneratorProxy::ClientIdGeneratorProxy(const std::string &instanceName, spi::ClientContext *context,
-                                                           const IAtomicLong &atomicLong)
-                    : proxy::ProxyImpl(ClientIdGeneratorProxy::SERVICE_NAME, instanceName, context),
-                      atomicLong(atomicLong), local(new std::atomic<int64_t>(-1)),
-                      residue(new std::atomic<int32_t>(BLOCK_SIZE)), localLock(new std::mutex) {
-                this->atomicLong.get();
-            }
-
-            bool ClientIdGeneratorProxy::init(int64_t id) {
-                if (id < 0) {
-                    return false;
-                }
-                int64_t step = (id / BLOCK_SIZE);
-
-                std::lock_guard<std::mutex> lg(*localLock);
-                bool init = atomicLong.compareAndSet(0, step + 1);
-                if (init) {
-                    local->store(step);
-                    residue->store((int32_t) (id % BLOCK_SIZE) + 1);
-                }
-                return init;
-            }
-
-            int64_t ClientIdGeneratorProxy::newId() {
-                int64_t block = local->load();
-                int32_t value = (*residue)++;
-
-                if (local->load() != block) {
-                    return newId();
-                }
-
-                if (value < BLOCK_SIZE) {
-                    return block * BLOCK_SIZE + value;
-                }
-
-                {
-                    std::lock_guard<std::mutex> lg(*localLock);
-                    value = *residue;
-                    if (value >= BLOCK_SIZE) {
-                        *local = atomicLong.getAndIncrement();
-                        *residue = 0;
-                    }
-                }
-
-                return newId();
-            }
-
-            void ClientIdGeneratorProxy::destroy() {
-                std::lock_guard<std::mutex> lg(*localLock);
-                atomicLong.destroy();
-                *local = -1;
-                *residue = BLOCK_SIZE;
-            }
-
             const std::string ClientFlakeIdGeneratorProxy::SERVICE_NAME = "hz:impl:flakeIdGeneratorService";
 
             ClientFlakeIdGeneratorProxy::ClientFlakeIdGeneratorProxy(const std::string &objectName,
@@ -1400,124 +1322,6 @@ namespace hazelcast {
                 std::string partitionKey = internal::partition::strategy::StringPartitioningStrategy::getPartitionKey(
                         name);
                 partitionId = getContext().getPartitionService().getPartitionId(toData<std::string>(partitionKey));
-            }
-
-            const std::string ClientAtomicLongProxy::SERVICE_NAME = "hz:impl:atomicLongService";
-
-            ClientAtomicLongProxy::ClientAtomicLongProxy(const std::string &objectName, spi::ClientContext *context)
-                    : PartitionSpecificClientProxy(SERVICE_NAME, objectName, context) {
-            }
-
-            int64_t ClientAtomicLongProxy::addAndGet(int64_t delta) {
-                return *addAndGetAsync(delta).get();
-            }
-
-            bool ClientAtomicLongProxy::compareAndSet(int64_t expect, int64_t update) {
-                return *compareAndSetAsync(expect, update).get();
-            }
-
-            int64_t ClientAtomicLongProxy::decrementAndGet() {
-                return *decrementAndGetAsync().get();
-            }
-
-            int64_t ClientAtomicLongProxy::get() {
-                return *getAsync().get();
-            }
-
-            int64_t ClientAtomicLongProxy::getAndAdd(int64_t delta) {
-                return *getAndAddAsync(delta).get();
-            }
-
-            int64_t ClientAtomicLongProxy::getAndSet(int64_t newValue) {
-                return *getAndSetAsync(newValue).get();
-            }
-
-            int64_t ClientAtomicLongProxy::incrementAndGet() {
-                return *incrementAndGetAsync().get();
-            }
-
-            int64_t ClientAtomicLongProxy::getAndIncrement() {
-                return *getAndIncrementAsync().get();
-            }
-
-            void ClientAtomicLongProxy::set(int64_t newValue) {
-                setAsync(newValue).get();
-            }
-
-            boost::future<std::shared_ptr<int64_t>>
-            ClientAtomicLongProxy::addAndGetAsync(int64_t delta) {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongAddAndGetCodec::encodeRequest(name, delta);
-
-                return invokeOnPartitionAsync<int64_t>(request,
-                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongAddAndGetCodec, int64_t>::instance());
-            }
-
-            boost::future<std::shared_ptr<bool>>
-            ClientAtomicLongProxy::compareAndSetAsync(int64_t expect, int64_t update) {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongCompareAndSetCodec::encodeRequest(name, expect, update);
-
-                return invokeOnPartitionAsync<bool>(request,
-                                                    impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongCompareAndSetCodec, bool>::instance());
-            }
-
-            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::decrementAndGetAsync() {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongDecrementAndGetCodec::encodeRequest(name);
-
-                return invokeOnPartitionAsync<int64_t>(request,
-                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongDecrementAndGetCodec, int64_t>::instance());
-            }
-
-            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::getAsync() {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongGetCodec::encodeRequest(name);
-
-                return invokeOnPartitionAsync<int64_t>(request,
-                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetCodec, int64_t>::instance());
-            }
-
-            boost::future<std::shared_ptr<int64_t>>
-            ClientAtomicLongProxy::getAndAddAsync(int64_t delta) {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongGetAndAddCodec::encodeRequest(name, delta);
-
-                return invokeOnPartitionAsync<int64_t>(request,
-                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndAddCodec, int64_t>::instance());
-            }
-
-            boost::future<std::shared_ptr<int64_t>>
-            ClientAtomicLongProxy::getAndSetAsync(int64_t newValue) {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongGetAndSetCodec::encodeRequest(name, newValue);
-
-                return invokeOnPartitionAsync<int64_t>(request,
-                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndSetCodec, int64_t>::instance());
-            }
-
-            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::incrementAndGetAsync() {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongIncrementAndGetCodec::encodeRequest(name);
-
-                return invokeOnPartitionAsync<int64_t>(request,
-                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongIncrementAndGetCodec, int64_t>::instance());
-            }
-
-            boost::future<std::shared_ptr<int64_t>> ClientAtomicLongProxy::getAndIncrementAsync() {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongGetAndIncrementCodec::encodeRequest(name);
-
-                return invokeOnPartitionAsync<int64_t>(request,
-                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndIncrementCodec, int64_t>::instance());
-            }
-
-            boost::future<void> ClientAtomicLongProxy::setAsync(int64_t newValue) {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongSetCodec::encodeRequest(name, newValue);
-
-                return invokeAndGetFuture(request, partitionId).then(boost::launch::sync,
-                                                                     [](boost::future<protocol::ClientMessage> f) { f.get(); });
             }
 
             IMapImpl::IMapImpl(const std::string &instanceName, spi::ClientContext *context)
@@ -2420,17 +2224,6 @@ namespace hazelcast {
 
         }
 
-        namespace atomiclong {
-            namespace impl {
-                AtomicLongProxyFactory::AtomicLongProxyFactory(spi::ClientContext *clientContext) : clientContext(
-                        clientContext) {}
-
-                std::shared_ptr<spi::ClientProxy> AtomicLongProxyFactory::create(const std::string &id) {
-                    return std::shared_ptr<spi::ClientProxy>(new proxy::ClientAtomicLongProxy(id, clientContext));
-                }
-            }
-        }
-
         namespace topic {
             namespace impl {
                 namespace reliable {
@@ -2545,43 +2338,6 @@ namespace hazelcast {
             }
         }
 
-        ICountDownLatch::ICountDownLatch(const std::string &objectName, spi::ClientContext *context)
-                : proxy::ProxyImpl("hz:impl:atomicLongService", objectName, context) {
-            serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&objectName);
-            partitionId = getPartitionId(keyData);
-        }
-
-        bool ICountDownLatch::await(long timeoutInMillis) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchAwaitCodec::encodeRequest(getName(), timeoutInMillis);
-
-            return invokeAndGetResult<bool, protocol::codec::CountDownLatchAwaitCodec::ResponseParameters>(request,
-                                                                                                           partitionId);
-        }
-
-        void ICountDownLatch::countDown() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchCountDownCodec::encodeRequest(getName());
-
-            invokeOnPartition(request, partitionId);
-        }
-
-        int ICountDownLatch::getCount() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchGetCountCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int, protocol::codec::CountDownLatchGetCountCodec::ResponseParameters>(request,
-                                                                                                             partitionId);
-        }
-
-        bool ICountDownLatch::trySetCount(int count) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchTrySetCountCodec::encodeRequest(getName(), count);
-
-            return invokeAndGetResult<bool, protocol::codec::CountDownLatchTrySetCountCodec::ResponseParameters>(
-                    request, partitionId);
-        }
-
         EntryEventType::EntryEventType() : value(UNDEFINED) {
         }
 
@@ -2670,304 +2426,14 @@ namespace hazelcast {
         ItemEventBase::~ItemEventBase() {
         }
 
-        bool IdGenerator::init(int64_t id) {
-            return impl->init(id);
-        }
-
-        int64_t IdGenerator::newId() {
-            return impl->newId();
-        }
-
-        IdGenerator::IdGenerator(const std::shared_ptr<impl::IdGeneratorInterface> &impl) : impl(impl) {}
-
-        IdGenerator::~IdGenerator() {
-        }
-
-        int64_t IAtomicLong::addAndGet(int64_t delta) {
-            return impl->addAndGet(delta);
-        }
-
-        bool IAtomicLong::compareAndSet(int64_t expect, int64_t update) {
-            return impl->compareAndSet(expect, update);
-        }
-
-        int64_t IAtomicLong::decrementAndGet() {
-            return impl->decrementAndGet();
-        }
-
-        int64_t IAtomicLong::get() {
-            return impl->get();
-        }
-
-        int64_t IAtomicLong::getAndAdd(int64_t delta) {
-            return impl->getAndAdd(delta);
-        }
-
-        int64_t IAtomicLong::getAndSet(int64_t newValue) {
-            return impl->getAndSet(newValue);
-        }
-
-        int64_t IAtomicLong::incrementAndGet() {
-            return impl->incrementAndGet();
-        }
-
-        int64_t IAtomicLong::getAndIncrement() {
-            return impl->getAndIncrement();
-        }
-
-        void IAtomicLong::set(int64_t newValue) {
-            impl->set(newValue);
-        }
-
-        IAtomicLong::IAtomicLong(const std::shared_ptr<impl::AtomicLongInterface> &impl) : impl(impl) {}
-
-        const std::string &IAtomicLong::getServiceName() const {
-            return impl->getServiceName();
-        }
-
-        const std::string &IAtomicLong::getName() const {
-            return impl->getName();
-        }
-
-        void IAtomicLong::destroy() {
-            impl->destroy();
-        }
-
-        boost::future<std::shared_ptr<int64_t>> IAtomicLong::addAndGetAsync(int64_t delta) {
-            return impl->addAndGetAsync(delta);
-        }
-
-        boost::future<std::shared_ptr<bool>> IAtomicLong::compareAndSetAsync(int64_t expect, int64_t update) {
-            return impl->compareAndSetAsync(expect, update);
-        }
-
-        boost::future<std::shared_ptr<int64_t>> IAtomicLong::decrementAndGetAsync() {
-            return impl->decrementAndGetAsync();
-        }
-
-        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAsync() {
-            return impl->getAsync();
-        }
-
-        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndAddAsync(int64_t delta) {
-            return impl->getAndAddAsync(delta);
-        }
-
-        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndSetAsync(int64_t newValue) {
-            return impl->getAndSetAsync(newValue);
-        }
-
-        boost::future<std::shared_ptr<int64_t>> IAtomicLong::incrementAndGetAsync() {
-            return impl->incrementAndGetAsync();
-        }
-
-        boost::future<std::shared_ptr<int64_t>> IAtomicLong::getAndIncrementAsync() {
-            return impl->getAndIncrementAsync();
-        }
-
-        boost::future<void> IAtomicLong::setAsync(int64_t newValue) {
-            return impl->setAsync(newValue);
-        }
-
-        ILock::ILock(const std::string &instanceName, spi::ClientContext *context)
-                : proxy::ProxyImpl("hz:impl:lockService", instanceName, context),
-                  key(toData<std::string>(instanceName)) {
-            partitionId = getPartitionId(key);
-
-            // TODO: remove this line once the client instance getDistributedObject works as expected in Java for this proxy type
-            referenceIdGenerator = context->getLockReferenceIdGenerator();
-        }
-
-        void ILock::lock() {
-            lock(-1);
-        }
-
-        void ILock::lock(long leaseTimeInMillis) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockLockCodec::encodeRequest(getName(), leaseTimeInMillis,
-                                                                  util::getCurrentThreadId(),
-                                                                  referenceIdGenerator->getNextReferenceId());
-
-            invokeOnPartition(request, partitionId);
-        }
-
-        void ILock::unlock() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockUnlockCodec::encodeRequest(getName(), util::getCurrentThreadId(),
-                                                                    referenceIdGenerator->getNextReferenceId());
-
-            invokeOnPartition(request, partitionId);
-        }
-
-        void ILock::forceUnlock() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockForceUnlockCodec::encodeRequest(getName(),
-                                                                         referenceIdGenerator->getNextReferenceId());
-
-            invokeOnPartition(request, partitionId);
-        }
-
-        bool ILock::isLocked() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockIsLockedCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<bool, protocol::codec::LockIsLockedCodec::ResponseParameters>(request,
-                                                                                                    partitionId);
-        }
-
-        bool ILock::isLockedByCurrentThread() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockIsLockedByCurrentThreadCodec::encodeRequest(getName(),
-                                                                                     util::getCurrentThreadId());
-
-            return invokeAndGetResult<bool, protocol::codec::LockIsLockedByCurrentThreadCodec::ResponseParameters>(
-                    request, partitionId);
-        }
-
-        int ILock::getLockCount() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockGetLockCountCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int, protocol::codec::LockGetLockCountCodec::ResponseParameters>(request,
-                                                                                                       partitionId);
-        }
-
-        long ILock::getRemainingLeaseTime() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockGetRemainingLeaseTimeCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<long, protocol::codec::LockGetRemainingLeaseTimeCodec::ResponseParameters>(
-                    request, partitionId);
-        }
-
-        bool ILock::tryLock() {
-            return tryLock(0);
-        }
-
-        bool ILock::tryLock(long timeInMillis) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockTryLockCodec::encodeRequest(getName(), util::getCurrentThreadId(), LONG_MAX,
-                                                                     timeInMillis,
-                                                                     referenceIdGenerator->getNextReferenceId());
-
-            return invokeAndGetResult<bool, protocol::codec::LockTryLockCodec::ResponseParameters>(request,
-                                                                                                   partitionId);
-        }
-
-        void ILock::onInitialize() {
-            ProxyImpl::onInitialize();
-
-            referenceIdGenerator = getContext().getLockReferenceIdGenerator();
-        }
-
-        FlakeIdGenerator::FlakeIdGenerator(const std::shared_ptr<impl::IdGeneratorInterface> &impl) : IdGenerator(
-                impl) {}
+        FlakeIdGenerator::FlakeIdGenerator(const std::shared_ptr<proxy::ClientFlakeIdGeneratorProxy> &impl) : impl_(impl) {}
 
         int64_t FlakeIdGenerator::newId() {
-            return IdGenerator::newId();
+            return impl_->newId();
         }
 
         bool FlakeIdGenerator::init(int64_t id) {
-            return IdGenerator::init(id);
+            return impl_->init(id);
         }
-
-        ISemaphore::ISemaphore(const std::string &name, spi::ClientContext *context)
-                : proxy::ProxyImpl("hz:impl:semaphoreService", name, context) {
-            serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&name);
-            partitionId = getPartitionId(keyData);
-        }
-
-        bool ISemaphore::init(int permits) {
-            checkNegative(permits);
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreInitCodec::encodeRequest(getName(), permits);
-
-            return invokeAndGetResult<bool, protocol::codec::SemaphoreInitCodec::ResponseParameters>(request,
-                                                                                                     partitionId);
-        }
-
-        void ISemaphore::acquire() {
-            acquire(1);
-        }
-
-        void ISemaphore::acquire(int permits) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreAcquireCodec::encodeRequest(getName(), permits);
-
-            invokeOnPartition(request, partitionId);
-        }
-
-        int ISemaphore::availablePermits() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreAvailablePermitsCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int, protocol::codec::SemaphoreAvailablePermitsCodec::ResponseParameters>(request,
-                                                                                                                partitionId);
-        }
-
-        int ISemaphore::drainPermits() {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreDrainPermitsCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int, protocol::codec::SemaphoreDrainPermitsCodec::ResponseParameters>(request,
-                                                                                                            partitionId);
-        }
-
-        void ISemaphore::reducePermits(int reduction) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreReducePermitsCodec::encodeRequest(getName(), reduction);
-
-            invokeOnPartition(request, partitionId);
-        }
-
-        void ISemaphore::release() {
-            release(1);
-        }
-
-        void ISemaphore::release(int permits) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreReleaseCodec::encodeRequest(getName(), permits);
-
-            invokeOnPartition(request, partitionId);
-        }
-
-        bool ISemaphore::tryAcquire() {
-            return tryAcquire(int(1));
-        }
-
-        bool ISemaphore::tryAcquire(int permits) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreTryAcquireCodec::encodeRequest(getName(), permits, 0);
-
-            return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request,
-                                                                                                           partitionId);
-        }
-
-        bool ISemaphore::tryAcquire(long timeoutInMillis) {
-            return tryAcquire(1, timeoutInMillis);
-        }
-
-        bool ISemaphore::tryAcquire(int permits, long timeoutInMillis) {
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreTryAcquireCodec::encodeRequest(getName(), permits, timeoutInMillis);
-
-            return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request,
-                                                                                                           partitionId);
-        }
-
-        void ISemaphore::increasePermits(int32_t increase) {
-            checkNegative(increase);
-            std::unique_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreIncreasePermitsCodec::encodeRequest(getName(), increase);
-            invokeOnPartition(request, partitionId);
-        }
-
-        void ISemaphore::checkNegative(int32_t permits) const {
-            if (permits < 0) {
-                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ISemaphore::checkNegative",
-                                                                          "Permits cannot be negative!"));
-            }
-        }
-
     }
 }

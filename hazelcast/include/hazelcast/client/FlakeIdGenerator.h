@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_FLAKEIDGENERATOR_H_
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/IdGenerator.h"
+#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
 
 namespace hazelcast {
     namespace client {
@@ -50,7 +50,7 @@ namespace hazelcast {
          *
          * @since 3.10.1
          */
-    class HAZELCAST_API FlakeIdGenerator : public IdGenerator {
+    class HAZELCAST_API FlakeIdGenerator {
             friend class impl::HazelcastClientInstanceImpl;
         public:
             /**
@@ -87,7 +87,8 @@ namespace hazelcast {
             virtual bool init(int64_t id);
 
         private:
-            FlakeIdGenerator(const std::shared_ptr<impl::IdGeneratorInterface> &impl);
+            FlakeIdGenerator(const std::shared_ptr<proxy::ClientFlakeIdGeneratorProxy> &impl);
+            std::shared_ptr<proxy::ClientFlakeIdGeneratorProxy> impl_;
         };
     }
 }
