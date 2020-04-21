@@ -13,30 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 31/03/14.
-//
+#pragma once
 
+#include <boost/asio/thread_pool.hpp>
 
-#ifndef HAZELCAST_LockGuard
-#define HAZELCAST_LockGuard
-
-#include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/HazelcastDll.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API LockGuard {
+        class HAZELCAST_API hz_thread_pool {
         public:
-            LockGuard(Mutex &mutex);
+            hz_thread_pool(size_t numThreads);
 
-            ~LockGuard();
+            void shutdown_gracefully();
 
+            boost::asio::thread_pool::executor_type get_executor() const;
         private:
-            Mutex &mutex;
+            std::unique_ptr<boost::asio::thread_pool> pool_;
         };
     }
 }
 
-#endif //HAZELCAST_LockGuard
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 

@@ -13,28 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <boost/thread/latch.hpp>
+
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/LifecycleListener.h>
 
 class ConnectedListener : public hazelcast::client::LifecycleListener {
 public:
-    ConnectedListener() : latch(1) {}
+    ConnectedListener() : l(1) {}
 
     virtual void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) {
         if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
-            latch.countDown();
+            l.count_down();
         }
     }
 
     bool isConnected() {
-        return latch.get() == 0;
+        return l.wait_for(boost::chrono::seconds(0)) == boost::cv_status::no_timeout;
     }
 
     void waitForConnection() {
-        latch.await();
+        l.wait();
     }
 private:
-    hazelcast::util::CountDownLatch latch;
+    boost::latch l;
 };
 
 int main() {

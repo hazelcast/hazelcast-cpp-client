@@ -14,19 +14,6 @@
  * limitations under the License.
  */
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <winsock2.h>
-#include "hazelcast/util/WindowsUtil.inl"
-#else
-#include "hazelcast/util/LinuxUtil.inl"
-#include <unistd.h>
-#include <sys/errno.h>
-#include <sys/time.h>
-#include <pthread.h>
-#endif
-
 #include <cmath>
 #include <cassert>
 #include <cerrno>
@@ -48,6 +35,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <boost/concept_check.hpp>
+
 #ifdef HZ_BUILD_WITH_SSL
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/basic_resolver.hpp>
@@ -56,21 +45,17 @@
 #include <boost/system/system_error.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
-#include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/AddressUtil.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/util/HashUtil.h"
-#include "hazelcast/util/impl/AbstractThread.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/Clearable.h"
-#include "hazelcast/util/ConditionVariable.h"
-#include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/LockGuard.h"
+#include "hazelcast/util/hz_thread_pool.h"
+#include <mutex>
+
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/util/TimeUtil.h"
 #include "hazelcast/util/concurrent/TimeUnit.h"
@@ -78,23 +63,17 @@
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/UUID.h"
 #include "hazelcast/util/UTFUtil.h"
-#include "hazelcast/client/exception/UTFDataFormatException.h"
 #include "hazelcast/util/SyncHttpClient.h"
-#include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
-#include "hazelcast/util/concurrent/ConcurrencyUtil.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/concurrent/CancellationException.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/UuidUtil.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/ExceptionUtil.h"
 
@@ -162,478 +141,6 @@ namespace hazelcast {
 
     }
 }
-
-
-
-
-namespace hazelcast {
-    namespace util {
-        namespace impl {
-            int32_t SimpleExecutorService::DEFAULT_EXECUTOR_QUEUE_CAPACITY = INT32_MAX;
-
-            SimpleExecutorService::SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix,
-                                                         int threadCount,
-                                                         int32_t maximumQueueCapacity)
-                    : logger(logger), threadNamePrefix(threadNamePrefix), threadCount(threadCount), live(true),
-                      threadIdGenerator(0), workers(threadCount), maximumQueueCapacity(maximumQueueCapacity) {
-                // `maximumQueueCapacity` is the given max capacity for this executor. Each worker in this executor should consume
-                // only a portion of that capacity. Otherwise we will have `threadCount * maximumQueueCapacity` instead of
-                // `maximumQueueCapacity`.
-                int32_t perThreadMaxQueueCapacity = static_cast<int32_t>(ceil(
-                        (double) 1.0 * maximumQueueCapacity / threadCount));
-                for (int i = 0; i < threadCount; i++) {
-                    workers[i].reset(new Worker(*this, perThreadMaxQueueCapacity));
-                }
-            }
-
-            SimpleExecutorService::SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix,
-                                                         int threadCount)
-                    : SimpleExecutorService::SimpleExecutorService(logger, threadNamePrefix, threadCount,
-                                                                   DEFAULT_EXECUTOR_QUEUE_CAPACITY) {}
-
-            void SimpleExecutorService::start() {
-                bool expected = false;
-                if (!isStarted.compare_exchange_strong(expected, true)) {
-                    return;
-                }
-
-                for (int i = 0; i < threadCount; i++) {
-                    workers[i]->start();
-                }
-
-                if (logger.isFinestEnabled()) {
-                    logger.finest("ExecutorService ", threadNamePrefix, " started ", threadCount, " workers.");
-                }
-            }
-
-            void SimpleExecutorService::execute(const std::shared_ptr<Runnable> &command) {
-                if (command.get() == NULL) {
-                    throw client::exception::NullPointerException("SimpleExecutor::execute", "command can't be null");
-                }
-
-                if (!live) {
-                    throw client::exception::RejectedExecutionException("SimpleExecutor::execute",
-                                                                        "Executor is terminated!");
-                }
-
-                std::shared_ptr<Worker> worker = getWorker(command);
-                worker->schedule(command);
-            }
-
-            std::shared_ptr<SimpleExecutorService::Worker>
-            SimpleExecutorService::getWorker(const std::shared_ptr<Runnable> &runnable) {
-                int32_t key;
-                if (runnable->isStriped()) {
-                    key = std::static_pointer_cast<StripedRunnable>(runnable)->getKey();
-                } else {
-                    key = (int32_t) rand();
-                }
-                int index = HashUtil::hashToIndex(key, threadCount);
-                return workers[index];
-            }
-
-            void SimpleExecutorService::shutdown() {
-                live.store(false);
-
-                bool expected = true;
-                if (!isStarted.compare_exchange_strong(expected, false)) {
-                    return;
-                }
-
-                size_t numberOfWorkers = workers.size();
-                size_t numberOfDelayedRunners = delayedRunners.size();
-
-                if (logger.isFinestEnabled()) {
-                    logger.finest("ExecutorService ", threadNamePrefix, " has ", numberOfWorkers, " workers and ",
-                                  numberOfDelayedRunners, " delayed runners to shutdown.");
-                }
-
-                for (std::shared_ptr<Worker> &worker : workers) {
-                    worker->shutdown();
-                }
-
-                for (auto &t : delayedRunners.values()) {
-                    std::static_pointer_cast<DelayedRunner>(t->getTarget())->shutdown();
-                    t->wakeup();
-                }
-            }
-
-            bool SimpleExecutorService::awaitTerminationSeconds(int timeoutSeconds) {
-                return awaitTerminationMilliseconds(timeoutSeconds * CountDownLatch::MILLISECONDS_IN_A_SECOND);
-            }
-
-            bool SimpleExecutorService::awaitTerminationMilliseconds(int64_t timeoutMilliseconds) {
-                int64_t endTimeMilliseconds = currentTimeMillis() + timeoutMilliseconds;
-
-                for (std::shared_ptr<Worker> &worker : workers) {
-                    int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
-
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("ExecutorService is waiting worker thread ", worker->getName(),
-                                      " for a maximum of ", waitMilliseconds, " msecs.");
-                    }
-
-                    auto &t = worker->getThread();
-                    if (!t.waitMilliseconds(waitMilliseconds)) {
-                        logger.info("ExecutorService could not stop worker thread ", worker->getName(), " in ",
-                                    timeoutMilliseconds, " msecs. Will retry stopping.");
-
-                        return false;
-                    }
-                    t.join();
-                }
-
-                for (const std::shared_ptr<Thread> &t : delayedRunners.values()) {
-                    int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
-
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("ExecutorService is waiting delayed runner thread ", t->getName(),
-                                      " for a maximum of ", waitMilliseconds, " msecs.");
-                    }
-
-                    if (!t->waitMilliseconds(waitMilliseconds)) {
-                        logger.info("ExecutorService could not stop delayed runner thread ", t->getName(), " in ",
-                                    timeoutMilliseconds, " msecs. Will retry stopping.");
-
-                        return false;
-                    }
-                    t->join();
-                }
-
-                return true;
-            }
-
-            SimpleExecutorService::~SimpleExecutorService() {
-                bool expected = true;
-                if (!live.compare_exchange_weak(expected, false)) {
-                    return;
-                }
-
-                shutdown();
-            }
-
-            void SimpleExecutorService::schedule(const std::shared_ptr<util::Runnable> &command,
-                                                 int64_t initialDelayInMillis) {
-                if (command.get() == NULL) {
-                    throw client::exception::NullPointerException("SimpleExecutor::schedule", "command can't be null");
-                }
-
-                if (!live) {
-                    throw client::exception::RejectedExecutionException("SimpleExecutor::schedule",
-                                                                        "Executor is terminated!");
-                }
-
-                std::shared_ptr<DelayedRunner> delayedRunner(
-                        new DelayedRunner(threadNamePrefix, command, initialDelayInMillis, logger));
-                std::shared_ptr<util::Thread> thread(new util::Thread(delayedRunner, logger));
-                delayedRunner->setStartTimeMillis(thread.get());
-                thread->start();
-                delayedRunners.offer(thread);
-            }
-
-            void SimpleExecutorService::scheduleAtFixedRate(const std::shared_ptr<util::Runnable> &command,
-                                                            int64_t initialDelayInMillis, int64_t periodInMillis) {
-                if (command.get() == NULL) {
-                    throw client::exception::NullPointerException("SimpleExecutor::scheduleAtFixedRate",
-                                                                  "command can't be null");
-                }
-
-                if (!live) {
-                    throw client::exception::RejectedExecutionException("SimpleExecutor::scheduleAtFixedRate",
-                                                                        "Executor is terminated!");
-                }
-
-                std::shared_ptr<DelayedRunner> repeatingRunner(
-                        new DelayedRunner(threadNamePrefix, command, initialDelayInMillis, periodInMillis, logger));
-                std::shared_ptr<util::Thread> thread(new util::Thread(repeatingRunner, logger));
-                repeatingRunner->setStartTimeMillis(thread.get());
-                thread->start();
-                delayedRunners.offer(thread);
-            }
-
-            const std::string &SimpleExecutorService::getThreadNamePrefix() const {
-                return threadNamePrefix;
-            }
-
-            void SimpleExecutorService::Worker::run() {
-                std::shared_ptr<Runnable> task;
-                while (executorService.live) {
-                    try {
-                        task = workQueue.pop();
-                        if (task.get()) {
-                            task->run();
-                        }
-                    } catch (client::exception::InterruptedException &) {
-                        if (executorService.logger.isFinestEnabled()) {
-                            executorService.logger.finest(getName(), " is interrupted.");
-                        }
-                    } catch (client::exception::IException &t) {
-                        executorService.logger.warning(getName(), " caused an exception. ", t);
-                    }
-                }
-            }
-
-            SimpleExecutorService::Worker::~Worker() {
-            }
-
-            void SimpleExecutorService::Worker::schedule(const std::shared_ptr<Runnable> &runnable) {
-                if (!executorService.live) {
-                    throw client::exception::IllegalStateException("SimpleExecutorService::Worker::schedule",
-                                                           "Executor is shudown.");
-                }
-                workQueue.push(runnable);
-            }
-
-            void SimpleExecutorService::Worker::start() {
-                thread.start();
-            }
-
-            const std::string SimpleExecutorService::Worker::getName() const {
-                return name;
-            }
-
-            std::string SimpleExecutorService::Worker::generateThreadName(const std::string &prefix) {
-                std::ostringstream out;
-                out << prefix << (++executorService.threadIdGenerator);
-                return out.str();
-            }
-
-            void SimpleExecutorService::Worker::shutdown() {
-                workQueue.interrupt();
-
-                // process all pending messages instead of dropping silently, the result may be needed by some other
-                // thread which may be blocked.
-                while (!workQueue.isEmpty()) {
-                    try {
-                        auto runnable = workQueue.pop();
-                        runnable->run();
-                    } catch (...) {
-                        // suppress
-                    }
-                }
-            }
-
-            SimpleExecutorService::Worker::Worker(SimpleExecutorService &executorService, int32_t maximumQueueCapacity)
-                    : executorService(executorService), name(generateThreadName(executorService.threadNamePrefix)),
-                      workQueue((size_t) maximumQueueCapacity),
-                      thread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)),
-                             executorService.logger) {
-            }
-
-            Thread &SimpleExecutorService::Worker::getThread() {
-                return thread;
-            }
-
-            SimpleExecutorService::DelayedRunner::DelayedRunner(const std::string &threadNamePrefix,
-                                                                const std::shared_ptr<util::Runnable> &command,
-                                                                int64_t initialDelayInMillis,
-                                                                util::ILogger &logger) : command(command),
-                                                                                         initialDelayInMillis(
-                                                                                                 initialDelayInMillis),
-                                                                                         periodInMillis(-1), live(true),
-                                                                                         startTimeMillis(0),
-                                                                                         runnerThread(NULL),
-                                                                                         logger(logger),
-                                                                                         threadNamePrefix(
-                                                                                                 threadNamePrefix) {
-            }
-
-            SimpleExecutorService::DelayedRunner::DelayedRunner(const std::string &threadNamePrefix,
-                                                                const std::shared_ptr<util::Runnable> &command,
-                                                                int64_t initialDelayInMillis,
-                                                                int64_t periodInMillis, util::ILogger &logger)
-                    : command(command), initialDelayInMillis(initialDelayInMillis),
-                      periodInMillis(periodInMillis), live(true), startTimeMillis(0),
-                      runnerThread(NULL), logger(logger), threadNamePrefix(threadNamePrefix) {}
-
-            void SimpleExecutorService::DelayedRunner::shutdown() {
-                live.store(false);
-                runnerThread->wakeup();
-            }
-
-            void SimpleExecutorService::DelayedRunner::run() {
-                bool isNotRepeating = periodInMillis < 0;
-                while (live) {
-                    int64_t waitTimeMillis = startTimeMillis - util::currentTimeMillis();
-                    if (waitTimeMillis > 0) {
-                        assert(runnerThread != NULL);
-                        runnerThread->interruptibleSleepMillis(waitTimeMillis);
-                    }
-
-                    try {
-                        command->run();
-                    } catch (client::exception::IException &e) {
-                        if (isNotRepeating) {
-                            logger.warning("Runnable ", getName(), " run method caused exception:", e);
-                        } else {
-                            logger.warning("Repeated runnable ", getName(), " run method caused exception:", e);
-                        }
-                    }
-
-                    if (isNotRepeating) {
-                        return;
-                    }
-
-                    startTimeMillis += periodInMillis;
-                }
-            }
-
-            const std::string SimpleExecutorService::DelayedRunner::getName() const {
-                return threadNamePrefix + command->getName();
-            }
-
-            void SimpleExecutorService::DelayedRunner::setStartTimeMillis(Thread *pThread) {
-                runnerThread = pThread;
-                startTimeMillis = util::currentTimeMillis() + initialDelayInMillis;
-            }
-
-        }
-
-        Executor::~Executor() {
-        }
-    }
-}
-
-
-
-namespace hazelcast {
-    namespace util {
-        namespace impl {
-            util::SynchronizedMap<int64_t, AbstractThread::UnmanagedAbstractThreadPointer> AbstractThread::startedThreads;
-
-            /**
-             * @param runnable The runnable to run when this thread is started.
-             */
-            AbstractThread::AbstractThread(const std::shared_ptr<Runnable> &runnable, util::ILogger &logger)
-                    : state(UNSTARTED), target(runnable), finishedLatch(new util::CountDownLatch(1)), logger(logger) {
-            }
-
-            AbstractThread::~AbstractThread() {
-            }
-
-            const std::string AbstractThread::getName() const {
-                if (target.get() == NULL) {
-                    return "";
-                }
-
-                return target->getName();
-            }
-
-            void AbstractThread::start() {
-                ThreadState expected = UNSTARTED;
-                if (!state.compare_exchange_strong(expected, STARTED)) {
-                    return;
-                }
-                if (target.get() == NULL) {
-                    return;
-                }
-
-                RunnableInfo *info = new RunnableInfo(target, finishedLatch, logger.shared_from_this());
-                startInternal(info);
-
-                startedThreads.put(getThreadId(), std::shared_ptr<UnmanagedAbstractThreadPointer>(
-                        new UnmanagedAbstractThreadPointer(this)));
-            }
-
-            void AbstractThread::interruptibleSleep(int seconds) {
-                interruptibleSleepMillis(seconds * 1000);
-            }
-
-            void AbstractThread::interruptibleSleepMillis(int64_t timeInMillis) {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.waitFor(wakeupMutex, timeInMillis);
-            }
-
-            void AbstractThread::wakeup() {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.notify();
-            }
-
-            void AbstractThread::cancel() {
-                ThreadState expected = STARTED;
-                if (!state.compare_exchange_strong(expected, CANCELLED)) {
-                    return;
-                }
-
-                if (isCalledFromSameThread()) {
-                    /**
-                     * do not allow cancelling itself
-                     * at Linux, pthread_cancel may cause cancel by signal
-                     * and calling thread may be terminated.
-                     */
-                    return;
-                }
-
-                int64_t threadId = getThreadId();
-
-                wakeup();
-
-                // Note: Do not force cancel since it may cause unreleased lock objects which causes deadlocks.
-                // Issue reported at: https://github.com/hazelcast/hazelcast-cpp-client/issues/339
-
-                finishedLatch->await();
-
-                innerJoin();
-
-                startedThreads.remove(threadId);
-            }
-
-            bool AbstractThread::join() {
-                ThreadState expected = STARTED;
-                if (!state.compare_exchange_strong(expected, JOINED)) {
-                    return false;
-                }
-
-                if (isCalledFromSameThread()) {
-                    // called from inside the thread, deadlock possibility
-                    return false;
-                }
-
-                int64_t threadId = getThreadId();
-
-                if (!innerJoin()) {
-                    return false;
-                }
-
-                startedThreads.remove(threadId);
-                return true;
-            }
-
-            void AbstractThread::sleep(int64_t timeInMilliseconds) {
-                int64_t currentThreadId = util::getCurrentThreadId();
-                std::shared_ptr<UnmanagedAbstractThreadPointer> currentThread = startedThreads.get(currentThreadId);
-                if (currentThread.get()) {
-                    currentThread->getThread()->interruptibleSleepMillis(timeInMilliseconds);
-                } else {
-                    util::sleepmillis(timeInMilliseconds);
-                }
-            }
-
-            const std::shared_ptr<Runnable> &AbstractThread::getTarget() const {
-                return target;
-            }
-
-            bool AbstractThread::waitMilliseconds(int64_t milliseconds) {
-                return finishedLatch->awaitMillis(milliseconds);
-            }
-
-            AbstractThread::UnmanagedAbstractThreadPointer::UnmanagedAbstractThreadPointer(AbstractThread *thread)
-                    : thread(thread) {}
-
-            AbstractThread *AbstractThread::UnmanagedAbstractThreadPointer::getThread() const {
-                return thread;
-            }
-
-            AbstractThread::RunnableInfo::RunnableInfo(const std::shared_ptr<Runnable> &target,
-                                                       const std::shared_ptr<CountDownLatch> &finishWaitLatch,
-                                                       const std::shared_ptr<ILogger> &logger) : target(target),
-                                                                                                 finishWaitLatch(
-                                                                                                         finishWaitLatch),
-                                                                                                 logger(logger) {}
-        }
-    }
-}
-
 
 namespace hazelcast {
     namespace util {
@@ -876,24 +383,6 @@ namespace hazelcast {
     }
 }
 
-//  Copyright (c) 2015 ihsan demir. All rights reserved.
-//
-
-
-namespace hazelcast {
-    namespace util {
-        LockGuard::LockGuard(Mutex &mutex) : mutex(mutex) {
-            mutex.lock();
-        }
-
-        LockGuard::~LockGuard() {
-            mutex.unlock();
-        }
-    }
-}
-
-
-
 namespace hazelcast {
     namespace util {
         bool Runnable::isStriped() {
@@ -1055,28 +544,16 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-
         int64_t getCurrentThreadId() {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            return (int64_t) GetCurrentThreadId();
-#else
-            int64_t threadId = 0;
-            pthread_t thread = pthread_self();
-            memcpy(&threadId, &thread, std::min(sizeof(threadId), sizeof(thread)));
-            return threadId;
-#endif
+            return std::hash<std::thread::id>{}(std::this_thread::get_id());
         }
 
         void sleep(int seconds) {
-            sleepmillis((unsigned long) (1000 * seconds));
+            std::this_thread::sleep_for(std::chrono::seconds(seconds));
         }
 
         void sleepmillis(uint64_t milliseconds) {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            Sleep((DWORD) milliseconds);
-#else
-            ::usleep((useconds_t) (1000 * milliseconds));
-#endif
+            std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
         }
 
         int localtime(const time_t *clock, struct tm *result) {
@@ -1120,12 +597,12 @@ namespace hazelcast {
 
         int64_t currentTimeMillis() {
             return std::chrono::duration_cast<std::chrono::milliseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count();
+                    std::chrono::steady_clock::now().time_since_epoch()).count();
         }
 
         int64_t currentTimeNanos() {
             return std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    std::chrono::system_clock::now().time_since_epoch()).count();
+                    std::chrono::steady_clock::now().time_since_epoch()).count();
         }
 
         int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
@@ -1167,31 +644,28 @@ namespace hazelcast {
         }
 
         int32_t getAvailableCoreCount() {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            SYSTEM_INFO sysinfo;
-            GetSystemInfo(&sysinfo);
-            return sysinfo.dwNumberOfProcessors;
-#else
-            return (int32_t) sysconf(_SC_NPROCESSORS_ONLN);
-#endif
+            return (int32_t) std::thread::hardware_concurrency();
         }
 
-        std::string StringUtil::timeToString(int64_t timeInMillis) {
+        std::string StringUtil::timeToString(std::chrono::steady_clock::time_point t) {
             using namespace std::chrono;
 
-            auto timePoint = system_clock::time_point() + milliseconds(timeInMillis);
-            auto brokenTime = system_clock::to_time_t(timePoint);
-            auto localBrokenTime = std::localtime(&brokenTime);
+            if (!t.time_since_epoch().count()) {
+                return std::string("never");
+            }
+
+            auto systemDuration = duration_cast<system_clock::duration>(t - steady_clock::now());
+            auto brokenTime = system_clock::to_time_t(system_clock::now() + systemDuration);
+            struct tm localBrokenTime;
+            int result = util::localtime(&brokenTime, &localBrokenTime);
+            assert(!result);
+            boost::ignore_unused_variable_warning(result);
 
             std::ostringstream oss;
-            oss << std::put_time(localBrokenTime, "%Y-%m-%d %H:%M:%S");
-            oss << '.' << std::setfill('0') << std::setw(3) << timeInMillis % 1000;
+            oss << std::put_time(&localBrokenTime, "%Y-%m-%d %H:%M:%S");
+            oss << '.' << std::setfill('0') << std::setw(3) << duration_cast<milliseconds>(systemDuration).count() % 1000;
 
             return oss.str();
-        }
-
-        std::string StringUtil::timeToStringFriendly(int64_t timeInMillis) {
-            return timeInMillis == 0 ? "never" : timeToString(timeInMillis);
         }
 
         std::vector<std::string> StringUtil::tokenizeVersionString(const std::string &version) {
@@ -1371,27 +845,6 @@ namespace hazelcast {
     }
 }
 
-
-
-namespace hazelcast {
-    namespace util {
-        namespace concurrent {
-            const std::shared_ptr<util::Executor> ConcurrencyUtil::callerRunsExecutor(
-                    new ConcurrencyUtil::CallerThreadExecutor);
-
-            const std::shared_ptr<util::Executor> &ConcurrencyUtil::CALLER_RUNS() {
-                return callerRunsExecutor;
-            }
-
-            void ConcurrencyUtil::CallerThreadExecutor::execute(const std::shared_ptr<Runnable> &command) {
-                command->run();
-            }
-        }
-    }
-}
-
-
-
 namespace hazelcast {
     namespace util {
         namespace concurrent {
@@ -1416,7 +869,7 @@ namespace hazelcast {
                     return false;
                 }
                 if (n < parkThreshold) {
-                    Thread::yield();
+                    std::this_thread::yield();
                     return false;
                 }
                 int64_t time = parkTime(n);
@@ -1442,12 +895,8 @@ namespace hazelcast {
     namespace util {
         namespace concurrent {
             CancellationException::CancellationException(const std::string &source, const std::string &message)
-                    : IException("CancellationException", source, message, client::protocol::CANCELLATION, true),
-                      IllegalStateException(source, message) {}
-
-            void CancellationException::raise() const {
-                throw *this;
-            }
+                    : IllegalStateException("CancellationException", client::protocol::CANCELLATION, source, message,
+                                            "", true) {}
         }
     }
 }
@@ -1981,25 +1430,30 @@ namespace hazelcast {
         const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> ExceptionUtil::hazelcastExceptionFactory(
                 new HazelcastExceptionFactory());
 
-        void ExceptionUtil::rethrow(const client::exception::IException &e) {
+        void ExceptionUtil::rethrow(std::exception_ptr e) {
             return rethrow(e, HAZELCAST_EXCEPTION_FACTORY());
         }
 
-        void ExceptionUtil::rethrow(const client::exception::IException &e,
+        void ExceptionUtil::rethrow(std::exception_ptr e,
                                     const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &runtimeExceptionFactory) {
-            if (e.isRuntimeException()) {
-                e.raise();
-            }
-
-            int32_t errorCode = e.getErrorCode();
-            if (errorCode == client::exception::ExecutionException::ERROR_CODE) {
-                std::shared_ptr<client::exception::IException> cause = e.getCause();
-                if (cause.get() != NULL) {
-                    return rethrow(*cause, runtimeExceptionFactory);
+            try {
+                std::rethrow_exception(e);
+            } catch (client::exception::IException &ie) {
+                if (ie.isRuntimeException()) {
+                    std::rethrow_exception(e);
                 }
-            }
 
-            runtimeExceptionFactory->rethrow(e, "");
+                int32_t errorCode = ie.getErrorCode();
+                if (errorCode == client::protocol::EXECUTION) {
+                    try {
+                        std::rethrow_if_nested(std::current_exception());
+                    } catch (...) {
+                        rethrow(std::current_exception(), runtimeExceptionFactory);
+                    }
+                }
+
+                runtimeExceptionFactory->rethrow(e, "");
+            }
         }
 
         const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &ExceptionUtil::HAZELCAST_EXCEPTION_FACTORY() {
@@ -2010,171 +1464,16 @@ namespace hazelcast {
         }
 
         void ExceptionUtil::HazelcastExceptionFactory::rethrow(
-                const client::exception::IException &throwable, const std::string &message) {
-            throw client::exception::HazelcastException("HazelcastExceptionFactory::create", message,
-                                                        std::shared_ptr<client::exception::IException>(
-                                                                throwable.clone()));
+                std::exception_ptr throwable, const std::string &message) {
+            try {
+                std::rethrow_exception(throwable);
+            } catch (...) {
+                std::throw_with_nested(boost::enable_current_exception(
+                        client::exception::HazelcastException("HazelcastExceptionFactory::create", message)));
+            }
         }
     }
 }
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-
-namespace hazelcast {
-    namespace util {
-
-        Mutex::Mutex() {
-            InitializeCriticalSection(&mutex);
-        }
-
-        Mutex::~Mutex() {
-            DeleteCriticalSection(&mutex);
-        }
-
-        void Mutex::lock() {
-            EnterCriticalSection(&mutex);
-        }
-
-        Mutex::status Mutex::tryLock() {
-            BOOL success = TryEnterCriticalSection(&mutex);
-            if (!success) {
-                return Mutex::alreadyLocked;
-            }
-            return Mutex::ok;
-        }
-
-        void Mutex::unlock() {
-            LeaveCriticalSection(&mutex);
-        }
-    }
-}
-
-
-#else
-
-
-namespace hazelcast {
-    namespace util {
-
-        Mutex::Mutex() {
-            pthread_mutex_init(&mutex, NULL);
-        }
-
-        Mutex::~Mutex() {
-            pthread_mutex_destroy(&mutex);
-        }
-
-        void Mutex::lock() {
-            int error = pthread_mutex_lock(&mutex);
-            (void) error;
-            assert (!(error == EINVAL || error == EAGAIN));
-            assert (error != EDEADLK);
-        }
-
-        void Mutex::unlock() {
-            int error = pthread_mutex_unlock(&mutex);
-            (void) error;
-            assert (!(error == EINVAL || error == EAGAIN));
-            assert (error != EPERM);
-        }
-    }
-}
-
-
-#endif
-
-
-//
-// Created by sancar koyunlu on 8/15/13.
-
-
-
-
-namespace hazelcast {
-    namespace util {
-        CountDownLatch::CountDownLatch(int count)
-                : count(count) {
-
-        }
-
-        void CountDownLatch::countDown() {
-            --count;
-        }
-
-        bool CountDownLatch::await(int seconds) {
-            return awaitMillis(seconds * MILLISECONDS_IN_A_SECOND);
-        }
-
-        bool CountDownLatch::awaitMillis(int64_t milliseconds) {
-            int64_t elapsed;
-            return awaitMillis(milliseconds, elapsed);
-        }
-
-        bool CountDownLatch::awaitMillis(int64_t milliseconds, int64_t &elapsed) {
-            // set elapsed to zero in case it returns before sleep
-            elapsed = 0;
-
-            if (count <= 0 || milliseconds <= 0) {
-                return true;
-            }
-
-            do {
-                util::sleepmillis(CHECK_INTERVAL);
-                elapsed += CHECK_INTERVAL;
-                if (count <= 0) {
-                    return true;
-                }
-            } while (elapsed < milliseconds);
-
-            return false;
-        }
-
-        void CountDownLatch::await() {
-            awaitMillis(HZ_INFINITE);
-        }
-
-        int CountDownLatch::get() {
-            return count;
-        }
-
-        bool CountDownLatch::await(int seconds, int expectedCount) {
-            while (seconds > 0 && count > expectedCount) {
-                util::sleep(1);
-                --seconds;
-            }
-            return count <= expectedCount;
-        }
-
-        CountDownLatchWaiter &CountDownLatchWaiter::add(CountDownLatch &latch) {
-            latches.push_back(&latch);
-            return *this;
-        }
-
-        bool CountDownLatchWaiter::awaitMillis(int64_t milliseconds) {
-            if (latches.empty()) {
-                return true;
-            }
-
-            for (std::vector<util::CountDownLatch *>::const_iterator it = latches.begin(); it != latches.end(); ++it) {
-                int64_t elapsed;
-                bool result = (*it)->awaitMillis(milliseconds, elapsed);
-                if (!result) {
-                    return false;
-                }
-                milliseconds -= elapsed;
-                if (milliseconds <= 0) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        void CountDownLatchWaiter::reset() {
-            latches.clear();
-        }
-
-    }
-}
-
 
 namespace hazelcast {
     namespace util {
@@ -2272,6 +1571,22 @@ namespace hazelcast {
             memcpy(target, ix(), numBytesToCopy);
             pos += numBytesToCopy;
             return numBytesToCopy;
+        }
+
+        hz_thread_pool::hz_thread_pool(size_t numThreads) : pool_(new boost::asio::thread_pool(numThreads)) {}
+
+        void hz_thread_pool::shutdown_gracefully() {
+            pool_->join();
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            // needed due to bug https://github.com/chriskohlhoff/asio/issues/431
+            boost::asio::use_service<boost::asio::detail::win_iocp_io_context>(*pool_).stop();
+#endif
+            pool_.reset();
+        }
+
+        boost::asio::thread_pool::executor_type hz_thread_pool::get_executor() const {
+            return pool_->get_executor();
         }
     }
 }

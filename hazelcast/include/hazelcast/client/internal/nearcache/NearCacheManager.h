@@ -23,6 +23,7 @@
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/DefaultNearCache.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,7 +39,8 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API NearCacheManager {
                 public:
-                    NearCacheManager(serialization::pimpl::SerializationService &ss, util::ILogger &logger);
+                    NearCacheManager(const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
+                                     serialization::pimpl::SerializationService &ss, util::ILogger &logger);
 
                     /**
                      * Gets the {@link NearCache} instance associated with given {@code name}.
@@ -72,7 +74,7 @@ namespace hazelcast {
                         std::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
                         if (NULL == nearCache.get()) {
                             {
-                                util::LockGuard guard(mutex);
+                                std::lock_guard<std::mutex> guard(mutex);
                                 nearCache = nearCacheMap.get(name);
                                 if (NULL == nearCache.get()) {
                                     nearCache = createNearCache<K, V, KS>(name, nearCacheConfig);
@@ -124,13 +126,14 @@ namespace hazelcast {
                             const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                         return std::unique_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
-                                        name, nearCacheConfig, serializationService, logger));
+                                        name, nearCacheConfig, executionService, serializationService, logger));
                     }
                 private:
+                    std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
                     serialization::pimpl::SerializationService &serializationService;
                     util::ILogger &logger;
                     util::SynchronizedMap<std::string, BaseNearCache> nearCacheMap;
-                    util::Mutex mutex;
+                    std::mutex mutex;
                 };
             }
         }

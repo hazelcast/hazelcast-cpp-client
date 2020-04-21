@@ -1130,7 +1130,7 @@ namespace hazelcast {
 
             std::unique_ptr<serialization::pimpl::Data>
             ClientMapProxy::submitToKeyDecoder(protocol::ClientMessage &response) {
-                return protocol::codec::MapExecuteOnKeyCodec::ResponseParameters::decode(response).response;
+                return protocol::codec::MapExecuteOnKeyCodec::ResponseParameters::decode(std::move(response)).response;
             }
 
             void

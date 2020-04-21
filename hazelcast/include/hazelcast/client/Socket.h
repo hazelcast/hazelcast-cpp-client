@@ -34,8 +34,10 @@ namespace hazelcast {
             class AuthenticationFuture;
         }
 
-        namespace protocol {
-            class ClientMessage;
+        namespace spi {
+            namespace impl {
+                class ClientInvocation;
+            }
         }
 
         class HAZELCAST_API Socket {
@@ -44,12 +46,12 @@ namespace hazelcast {
             }
 
             virtual void
-            asyncStart(const std::shared_ptr<connection::Connection> &connection,
-                       const std::shared_ptr<connection::AuthenticationFuture> &authFuture) = 0;
+            asyncStart(const std::shared_ptr<connection::Connection> connection,
+                       const std::shared_ptr<connection::AuthenticationFuture> authFuture) = 0;
 
             virtual void
-            asyncWrite(const std::shared_ptr<connection::Connection> &connection,
-                       const std::shared_ptr<protocol::ClientMessage> &message) = 0;
+            asyncWrite(const std::shared_ptr<connection::Connection> connection,
+                       const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
 
             virtual void close() = 0;
 
@@ -64,6 +66,8 @@ namespace hazelcast {
             virtual std::unique_ptr<Address> localSocketAddress() const = 0;
 
             virtual const Address &getRemoteEndpoint() const = 0;
+
+            virtual boost::asio::executor get_executor() const noexcept = 0;
         };
     }
 }

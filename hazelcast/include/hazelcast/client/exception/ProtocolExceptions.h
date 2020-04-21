@@ -32,43 +32,40 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-#define DEFINE_EXCEPTION_CLASS(ClassName, errorNo, runtime) \
-            class HAZELCAST_API ClassName : public virtual IException {\
+#define DEFINE_EXCEPTION_CLASS(ClassName, errorNo, isRuntime) \
+            class HAZELCAST_API ClassName : public IException {\
             public:\
-                static const int32_t ERROR_CODE = errorNo;\
-                ClassName(const std::string& source, const std::string& message, const std::string& details, \
-                        int32_t causeCode) \
-                    : IException(#ClassName, source, message, details, ERROR_CODE, causeCode, runtime) {\
-                }\
-                ClassName(const std::string& source, const std::string& message, int32_t causeCode) \
-                    : IException(#ClassName, source, message, ERROR_CODE, causeCode, runtime) {\
-                }\
-                ClassName(const std::string& source, const std::string& message) \
-                    : IException(#ClassName, source, message, ERROR_CODE, runtime) {\
-                }\
-                ClassName(const std::string& source) : IException(#ClassName, source, "", ERROR_CODE, runtime) {\
-                }\
-                ClassName(const std::string &source, const std::string &message, \
-                            const std::shared_ptr<IException> &cause) \
-                            : IException(#ClassName, source, message, ERROR_CODE, cause, runtime) {}\
-                ClassName(const std::string &source, const std::string &message, const IException &cause) \
-                            : IException(#ClassName, source, message, ERROR_CODE, std::shared_ptr<IException>(cause.clone()), runtime) {}\
-                virtual std::unique_ptr<IException> clone() const {\
-                    return std::unique_ptr<IException>(new ClassName(*this));\
-                } \
-                virtual void raise() const { throw *this; } \
+                ClassName(const std::string& errorName, int32_t errorCode, const std::string& source, const std::string& message, \
+                        const std::string& details = std::string(), bool runtime = false, bool retryable = false) \
+                    : IException(errorName, source, message, details, errorCode, runtime, retryable) {}\
+                ClassName(const std::string& source, const std::string& message, \
+                        const std::string& details = std::string(), bool retryable = false) \
+                    : ClassName(#ClassName, errorNo,  source, message, details, isRuntime, retryable) {}\
+                ClassName(const std::string& message) : ClassName("", message) {}\
+                ClassName() : ClassName("", "") {}\
             };\
 
             // ---------  Non-RuntimeException starts here -------------------------------------------/
+            DEFINE_EXCEPTION_CLASS(UndefinedErrorCodeException, protocol::UNDEFINED, false);
+
             DEFINE_EXCEPTION_CLASS(ExecutionException, protocol::EXECUTION, false);
+
             DEFINE_EXCEPTION_CLASS(ClassNotFoundException, protocol::CLASS_NOT_FOUND, false);
+
             DEFINE_EXCEPTION_CLASS(EOFException, protocol::ENDOFFILE, false);
+
             DEFINE_EXCEPTION_CLASS(IOException, protocol::IO, false);
+
             DEFINE_EXCEPTION_CLASS(IllegalAccessException, protocol::ILLEGAL_ACCESS_EXCEPTION, false);
+
             DEFINE_EXCEPTION_CLASS(IllegalAccessError, protocol::ILLEGAL_ACCESS_ERROR, false);
+
             DEFINE_EXCEPTION_CLASS(InterruptedException, protocol::INTERRUPTED, false);
+
             DEFINE_EXCEPTION_CLASS(NotSerializableException, protocol::NOT_SERIALIZABLE, false);
+
             DEFINE_EXCEPTION_CLASS(SocketException, protocol::SOCKET, false);
+
             DEFINE_EXCEPTION_CLASS(TimeoutException, protocol::TIMEOUT, false);
             DEFINE_EXCEPTION_CLASS(URISyntaxException, protocol::URI_SYNTAX, false);
             DEFINE_EXCEPTION_CLASS(UTFDataFormatException, protocol::UTF_DATA_FORMAT, false);
@@ -152,38 +149,19 @@ namespace hazelcast {
 
             class HAZELCAST_API RetryableHazelcastException : public HazelcastException {
             public:
-                RetryableHazelcastException(const std::string &source, const std::string &message,
-                                            const std::string &details, int32_t causeCode);
+                RetryableHazelcastException(const std::string &errorName, int32_t errorCode, const std::string &source,
+                                            const std::string &message, const std::string &details, bool runtime,
+                                            bool retryable);
 
-                RetryableHazelcastException(const std::string &source, const std::string &message, int32_t causeCode);
-
-                RetryableHazelcastException(const std::string &source, const std::string &message);
-
-                RetryableHazelcastException(const std::string &source, const std::string &message,
-                                            const std::shared_ptr<IException> &cause);
+                RetryableHazelcastException(const std::string &source = "", const std::string &message = "",
+                                            const std::string &details = "");
             };
 
 #define DEFINE_RETRYABLE_EXCEPTION_CLASS(ClassName, errorNo) \
             class HAZELCAST_API ClassName : public RetryableHazelcastException {\
             public:\
-                static const int32_t ERROR_CODE = errorNo;\
-                ClassName(const std::string& source, const std::string& message, const std::string& details, \
-                        int32_t causeCode) \
-                    : IException(#ClassName, source, message, details, ERROR_CODE, causeCode, true, true), RetryableHazelcastException(source, message, details, causeCode) {\
-                }\
-                ClassName(const std::string& source, const std::string& message, int32_t causeCode) \
-                    : IException(#ClassName, source, message, ERROR_CODE, causeCode, true, true), RetryableHazelcastException(source, message, causeCode) {\
-                }\
-                ClassName(const std::string& source, const std::string& message) \
-                    : IException(#ClassName, source, message, ERROR_CODE, true, true), RetryableHazelcastException(source, message) {\
-                }\
-                ClassName(const std::string &source, const std::string &message, \
-                            const std::shared_ptr<IException> &cause) \
-                            : IException(#ClassName, source, message, ERROR_CODE, std::shared_ptr<IException>(cause->clone()), true, true), RetryableHazelcastException(source, message, cause) {}\
-                virtual std::unique_ptr<IException> clone() const {\
-                    return std::unique_ptr<IException>(new ClassName(*this));\
-                } \
-                virtual void raise() const { throw *this; } \
+                ClassName(const std::string& source = "", const std::string& message = "", const std::string& details = "") \
+                    : RetryableHazelcastException(#ClassName, errorNo, source, message, details, false, true) {} \
             };\
 
             /** List of Retryable exceptions **/
@@ -195,52 +173,26 @@ namespace hazelcast {
 
             DEFINE_RETRYABLE_EXCEPTION_CLASS(TargetNotReplicaException, protocol::TARGET_NOT_REPLICA_EXCEPTION);
 
-            class MemberLeftException : public ExecutionException, public RetryableHazelcastException {
+            class MemberLeftException : public ExecutionException {
             public:
-                MemberLeftException(const std::string &source, const std::string &message, const std::string &details,
-                                    int32_t causeCode);
-
-                MemberLeftException(const std::string &source, const std::string &message, int32_t causeCode);
-
-                MemberLeftException(const std::string &source, const std::string &message);
-
-                virtual void raise() const;
-
-                virtual std::unique_ptr<IException> clone() const;
-
+                MemberLeftException(const std::string &source = "", const std::string &message = "",
+                                    const std::string &details = "");
             };
 
             // ---------  RuntimeException ends here -------------------------------------------------/
 
             // -----------------    ONLY Client side exceptions start here ----------------------------------------
             // -----------------    Client side runtime exceptions start here --------------------------------
-            DEFINE_EXCEPTION_CLASS(HazelcastClientNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE, true);
-            DEFINE_EXCEPTION_CLASS(HazelcastClientOfflineException, protocol::HAZELCAST_CLIENT_OFFLINE, true);
-            DEFINE_EXCEPTION_CLASS(ConsistencyLostException, protocol::CONSISTENCY_LOST, true);
-
-            class HAZELCAST_API UndefinedErrorCodeException : public IException {
+            class ConsistencyLostException : public HazelcastException {
             public:
-                UndefinedErrorCodeException(const std::string &source, const std::string &message,
-                                            int32_t errorCode, int64_t correlationId,
-                                            std::string details);
-
-                virtual ~UndefinedErrorCodeException() throw();
-
-                int32_t getUndefinedErrorCode() const;
-
-                int64_t getMessageCallId() const;
-
-                const std::string &getDetailedErrorMessage() const;
-
-                virtual std::unique_ptr<IException> clone() const;
-
-                virtual void raise() const;
-
-            private:
-                int32_t error;
-                int64_t messageCallId;
-                std::string detailedErrorMessage;
+                ConsistencyLostException(const std::string &source = "", const std::string &message = "",
+                                         const std::string &details = "");
             };
+
+            DEFINE_EXCEPTION_CLASS(HazelcastClientNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE, true);
+
+            DEFINE_EXCEPTION_CLASS(HazelcastClientOfflineException, protocol::HAZELCAST_CLIENT_OFFLINE, true);
+
             // -----------------    Client side runtime exceptions finish here --------------------------------
 
             // -----------------    Client side non-runtime exceptions start here -----------------------------

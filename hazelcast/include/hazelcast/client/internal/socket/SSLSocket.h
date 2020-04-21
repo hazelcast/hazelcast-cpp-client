@@ -29,8 +29,6 @@
 #pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
 
-using namespace boost;
-
 namespace hazelcast {
     namespace client {
         namespace internal {
@@ -47,15 +45,16 @@ namespace hazelcast {
 
                     SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &context,
                               const client::Address &address, client::config::SocketOptions &socketOptions,
-                              int64_t connectTimeoutInMillis);
+                              std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                              boost::asio::ip::tcp::resolver &resolver);
 
                     /**
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.
                      */
                     std::vector<SSLSocket::CipherInfo> getCiphers() const;
 
-                    void async_handle_connect(const std::shared_ptr<connection::Connection> &connection,
-                                              const std::shared_ptr<connection::AuthenticationFuture> &authFuture) override;
+                    void async_handle_connect(const std::shared_ptr<connection::Connection> connection,
+                                              const std::shared_ptr<connection::AuthenticationFuture> authFuture) override;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);

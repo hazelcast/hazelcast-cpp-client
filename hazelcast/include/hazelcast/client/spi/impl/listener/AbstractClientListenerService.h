@@ -17,11 +17,13 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_LISTENER_ABSTRACTCLIENTLISTERNERSERVICE_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_LISTENER_ABSTRACTCLIENTLISTERNERSERVICE_H_
 
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/strand.hpp>
+
 #include <stdint.h>
 #include "hazelcast/client/connection/ConnectionListener.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/client/spi/ClientListenerService.h"
 #include "hazelcast/client/spi/impl/listener/ClientEventRegistration.h"
 #include "hazelcast/client/spi/impl/listener/ClientRegistrationKey.h"
@@ -55,118 +57,28 @@ namespace hazelcast {
 
                         virtual void start();
 
-                        void shutdown();
+                        virtual void shutdown();
 
-                        void addEventHandler(int64_t callId,
-                                             const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
-
-                        void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
-                                                 const std::shared_ptr<connection::Connection> &connection);
+                        void handleClientMessage(const std::shared_ptr<ClientInvocation> invocation,
+                                                 const std::shared_ptr<protocol::ClientMessage> response);
 
                         virtual std::string
-                        registerListener(const std::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
-                                         const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+                        registerListener(const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
+                                         const std::shared_ptr<EventHandler<protocol::ClientMessage> > handler);
 
-                        virtual bool deregisterListener(const std::string &registrationId);
+                        virtual bool deregisterListener(const std::string registrationId);
 
-                        virtual void connectionAdded(const std::shared_ptr<connection::Connection> &connection);
+                        virtual void connectionAdded(const std::shared_ptr<connection::Connection> connection);
 
-                        virtual void connectionRemoved(const std::shared_ptr<connection::Connection> &connection);
+                        virtual void connectionRemoved(const std::shared_ptr<connection::Connection> connection);
 
                     protected:
-                        AbstractClientListenerService(ClientContext &clientContext, int32_t eventThreadCount,
-                                                      int32_t eventQueueCapacity);
+                        AbstractClientListenerService(ClientContext &clientContext, int32_t eventThreadCount);
+
+                        void processEventMessage(const std::shared_ptr<ClientInvocation> invocation,
+                                                 const std::shared_ptr<protocol::ClientMessage> response);
 
                         virtual bool registersLocalOnly() const = 0;
-
-                        class ClientEventProcessor : public util::StripedRunnable {
-                            friend class AbstractClientListenerService;
-
-                        public:
-                            virtual ~ClientEventProcessor();
-
-                            virtual void run();
-
-                            virtual const std::string getName() const;
-
-                            virtual int32_t getKey();
-
-                        private:
-                            ClientEventProcessor(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
-                                                 const std::shared_ptr<connection::Connection> &connection,
-                                                 util::SynchronizedMap<int64_t, EventHandler<protocol::ClientMessage> > &eventHandlerMap,
-                                                 util::ILogger &logger);
-
-                            const std::shared_ptr<protocol::ClientMessage> clientMessage;
-                            util::SynchronizedMap<int64_t, EventHandler<protocol::ClientMessage> > &eventHandlerMap;
-                            util::ILogger &logger;
-                        };
-
-                        class RegisterListenerTask : public util::Callable<std::string> {
-                        public:
-                            RegisterListenerTask(const std::string &taskName,
-                                                 const std::shared_ptr<AbstractClientListenerService> &listenerService,
-                                                 const std::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
-                                                 const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
-
-                            virtual std::shared_ptr<std::string> call();
-
-                            virtual const std::string getName() const;
-
-                        private:
-                            std::string taskName;
-                            std::shared_ptr<AbstractClientListenerService> listenerService;
-                            std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec;
-                            std::shared_ptr<EventHandler<protocol::ClientMessage> > handler;
-                        };
-
-                        class DeregisterListenerTask : public util::Callable<bool> {
-                        public:
-                            DeregisterListenerTask(const std::string &taskName,
-                                                   const std::shared_ptr<AbstractClientListenerService> &listenerService,
-                                                   const std::string &registrationId);
-
-                            virtual std::shared_ptr<bool> call();
-
-                            virtual const std::string getName() const;
-
-                        private:
-                            std::string taskName;
-                            std::shared_ptr<AbstractClientListenerService> listenerService;
-                            std::string registrationId;
-                        };
-
-                        class ConnectionAddedTask : public util::Runnable {
-                        public:
-                            ConnectionAddedTask(const std::string &taskName,
-                                                const std::shared_ptr<AbstractClientListenerService> &listenerService,
-                                                const std::shared_ptr<connection::Connection> &connection);
-
-                            virtual const std::string getName() const;
-
-                            virtual void run();
-
-                        private:
-                            std::string taskName;
-                            std::shared_ptr<AbstractClientListenerService> listenerService;
-                            const std::shared_ptr<connection::Connection> connection;
-                        };
-
-                        class ConnectionRemovedTask : public util::Runnable {
-                        public:
-                            ConnectionRemovedTask(const std::string &taskName,
-                                                  const std::shared_ptr<AbstractClientListenerService> &listenerService,
-                                                  const std::shared_ptr<connection::Connection> &connection);
-
-                            virtual const std::string getName() const;
-
-                            virtual void run();
-
-                        private:
-                            std::string taskName;
-                            std::shared_ptr<AbstractClientListenerService> listenerService;
-                            const std::shared_ptr<connection::Connection> connection;
-                        };
 
                         struct ConnectionPointerLessComparator {
                             bool operator()(const std::shared_ptr<connection::Connection> &lhs,
@@ -176,7 +88,7 @@ namespace hazelcast {
                         typedef std::map<std::shared_ptr<connection::Connection>, ClientEventRegistration, ConnectionPointerLessComparator> ConnectionRegistrationsMap;
                         typedef util::SynchronizedMap<ClientRegistrationKey, ConnectionRegistrationsMap> RegistrationsMap;
 
-                        void removeEventHandler(int64_t callId);
+                        void removeEventHandler(const ClientEventRegistration &registration);
 
                         virtual std::string
                         registerListenerInternal(const std::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
@@ -194,16 +106,17 @@ namespace hazelcast {
                         void invoke(const ClientRegistrationKey &registrationKey,
                                     const std::shared_ptr<connection::Connection> &connection);
 
-                        util::SynchronizedMap<int64_t, EventHandler<protocol::ClientMessage> > eventHandlerMap;
                         ClientContext &clientContext;
                         serialization::pimpl::SerializationService &serializationService;
                         util::ILogger &logger;
                         connection::ClientConnectionManagerImpl &clientConnectionManager;
-                        util::impl::SimpleExecutorService eventExecutor;
-                        util::impl::SimpleExecutorService registrationExecutor;
-                        int64_t invocationTimeoutMillis;
-                        int64_t invocationRetryPauseMillis;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> eventExecutor;
+                        std::vector<boost::asio::thread_pool::executor_type> eventStrands;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> registrationExecutor;
+                        std::chrono::steady_clock::duration invocationTimeout;
+                        std::chrono::steady_clock::duration invocationRetryPause;
                         RegistrationsMap registrations;
+                        int numberOfEventThreads;
 
                     private:
                         void invokeFromInternalThread(const ClientRegistrationKey &registrationKey,

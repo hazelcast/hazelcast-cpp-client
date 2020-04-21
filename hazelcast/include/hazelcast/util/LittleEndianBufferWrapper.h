@@ -63,7 +63,7 @@ namespace hazelcast {
                 readOnly = true;
             }
 
-            const std::shared_ptr<std::vector<byte> > &getBuffer() const {
+            const std::vector<byte> &getBuffer() const {
                 return buffer;
             }
 
@@ -78,12 +78,12 @@ namespace hazelcast {
 
             inline uint8_t getUint8() {
                 assert(checkReadAvailable(UINT8_SIZE));
-                return (*buffer)[index++];
+                return buffer[index++];
             }
 
             inline int8_t getInt8() {
                 assert(checkReadAvailable(INT8_SIZE));
-                return (*buffer)[index++];
+                return buffer[index++];
             }
 
             inline bool getBoolean() {
@@ -225,7 +225,7 @@ namespace hazelcast {
             }
 
         protected:
-            LittleEndianBufferWrapper(int32_t size) : buffer(new std::vector<byte>(size, 0)), capacity(-1), index(-1),
+            LittleEndianBufferWrapper(int32_t size) : buffer(size, 0), capacity(-1), index(-1),
                                                       readOnly(true) {}
 
             inline int32_t getIndex() const {
@@ -238,7 +238,7 @@ namespace hazelcast {
 
         protected:
             inline byte *ix() {
-                return &(*buffer)[index];
+                return &buffer[index];
             }
 
             inline bool checkWriteAvailable(int32_t requestedBytes) const {
@@ -261,7 +261,7 @@ namespace hazelcast {
                 return index + requestedBytes <= capacity;
             }
 
-            std::shared_ptr<std::vector<byte> > buffer;
+            std::vector<byte> buffer;
             int32_t capacity;
             int32_t index;
             bool readOnly;

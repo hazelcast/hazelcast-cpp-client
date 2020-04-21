@@ -44,11 +44,9 @@
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
-#include <hazelcast/util/CountDownLatch.h>
+
 #include <ClientTestSupportBase.h>
-#include <hazelcast/util/Executor.h>
 #include <hazelcast/util/Util.h>
-#include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <hazelcast/util/ILogger.h>
@@ -86,7 +84,6 @@
 #include "TestHelperFunctions.h"
 #include <cmath>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/util/Thread.h>
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
@@ -133,7 +130,6 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -147,7 +143,6 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
@@ -157,8 +152,6 @@
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
@@ -168,7 +161,6 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/ILock.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
@@ -203,8 +195,6 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/ISemaphore.h"
-#include "hazelcast/client/IAtomicLong.h"
 #include "hazelcast/client/mixedtype/MultiMap.h"
 #include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/IList.h"
@@ -215,9 +205,7 @@
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/mixedtype/ISet.h"
-#include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/IdGenerator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(disable: 4996) //for unsafe getenv
@@ -596,9 +584,6 @@ namespace hazelcast {
     }
 }
 
-
-
-
 using namespace hazelcast::client::mixedtype;
 
 namespace hazelcast {
@@ -716,26 +701,26 @@ namespace hazelcast {
                     class ReadOneWithLatchTask : public hazelcast::util::Runnable {
                     public:
                         ReadOneWithLatchTask(const std::shared_ptr<Ringbuffer<std::string> > &clientRingbuffer,
-                                             const std::shared_ptr<CountDownLatch> &latch) : clientRingbuffer(
-                                clientRingbuffer), latch(latch) {}
+                                             const std::shared_ptr<boost::latch> &latch1) : clientRingbuffer(
+                                clientRingbuffer), latch1(latch1) {}
 
-                        virtual const string getName() const {
+                        virtual const std::string getName() const {
                             return "ReadOneWithLatchTask";
                         }
 
                         virtual void run() {
                             try {
                                 clientRingbuffer->readOne(0);
-                            } catch (exception::InterruptedException &e) {
-                                std::cerr << e;
                             } catch (exception::StaleSequenceException &) {
-                                latch->countDown();
+                                latch1->count_down();
+                            } catch (std::exception &e) {
+                                std::cerr << e.what();
                             }
                         }
 
                     private:
                         const std::shared_ptr<Ringbuffer<std::string> > clientRingbuffer;
-                        const std::shared_ptr<hazelcast::util::CountDownLatch> latch;
+                        const std::shared_ptr<boost::latch> latch1;
                         static const int CAPACITY;
                     };
 
@@ -833,26 +818,18 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, readManyAsync_whenHitsStale_shouldNotBeBlocked) {
-                    std::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
-                            0, 1, 10, NULL);
+                    auto f = clientRingbuffer->readManyAsync<void>(0, 1, 10, NULL);
                     client2Ringbuffer->addAllAsync(items, Ringbuffer<std::string>::OVERWRITE);
-                    try {
-                        f->get();
-                    } catch (exception::ExecutionException &e) {
-                        std::shared_ptr<exception::IException> cause = e.getCause();
-                        ASSERT_NOTNULL(cause.get(), exception::IException);
-                        ASSERT_THROW(cause->raise(), exception::StaleSequenceException);
-                    }
+                    ASSERT_THROW(f.get(), exception::StaleSequenceException);
                 }
 
                 TEST_F(RingbufferTest, readOne_whenHitsStale_shouldNotBeBlocked) {
-                    std::shared_ptr<hazelcast::util::CountDownLatch> latch = std::make_shared<hazelcast::util::CountDownLatch>(
-                            1);
-                    hazelcast::util::Thread consumer(std::make_shared<ReadOneWithLatchTask>(clientRingbuffer, latch),
-                                                     getLogger());
-                    consumer.start();
+                    std::shared_ptr<boost::latch> latch1 = std::make_shared<boost::latch>(1);
+                    std::thread t(std::packaged_task<void()>([ =] ()
+                    { ReadOneWithLatchTask(clientRingbuffer, latch1).run(); }));
                     client2Ringbuffer->addAllAsync(items, Ringbuffer<std::string>::OVERWRITE);
-                    ASSERT_OPEN_EVENTUALLY(*latch);
+                    ASSERT_OPEN_EVENTUALLY(*latch1);
+                    t.join();
                 }
 
                 TEST_F(RingbufferTest, headSequence) {
@@ -895,9 +872,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, addAsync) {
-                    std::shared_ptr<ICompletableFuture<int64_t> > f = clientRingbuffer->addAsync("foo",
-                                                                                                 Ringbuffer<std::string>::OVERWRITE);
-                    std::shared_ptr<int64_t> result = f->get();
+                    auto f = clientRingbuffer->addAsync("foo", Ringbuffer<std::string>::OVERWRITE);
+                    auto result = f.get();
 
                     ASSERT_EQ_PTR(client2Ringbuffer->headSequence(), result.get(), int64_t);
                     ASSERT_EQ_PTR("foo", client2Ringbuffer->readOne(0).get(), std::string);
@@ -909,9 +885,8 @@ namespace hazelcast {
                     std::vector<std::string> items;
                     items.push_back("foo");
                     items.push_back("bar");
-                    std::shared_ptr<ICompletableFuture<int64_t> > f = clientRingbuffer->addAllAsync(items,
-                                                                                                    Ringbuffer<std::string>::OVERWRITE);
-                    std::shared_ptr<int64_t> result = f->get();
+                    auto f = clientRingbuffer->addAllAsync(items, Ringbuffer<std::string>::OVERWRITE);
+                    auto result = f.get();
 
                     ASSERT_EQ_PTR(client2Ringbuffer->tailSequence(), result.get(), int64_t);
                     ASSERT_EQ_PTR("foo", client2Ringbuffer->readOne(0).get(), std::string);
@@ -930,9 +905,8 @@ namespace hazelcast {
                     client2Ringbuffer->add("2");
                     client2Ringbuffer->add("3");
 
-                    std::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
-                            0, 3, 3, NULL);
-                    std::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
+                    auto f = clientRingbuffer->readManyAsync<void>(0, 3, 3, NULL);
+                    auto rs = f.get();
 
                     ASSERT_EQ(3, rs->readCount());
                     ASSERT_EQ_PTR("1", rs->getItems().get(0), std::string);
@@ -949,12 +923,11 @@ namespace hazelcast {
                     client2Ringbuffer->add("5");
                     client2Ringbuffer->add("6");
 
-                    std::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
-                            0, 3, 3, NULL);
-                    std::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
+                    auto f = clientRingbuffer->readManyAsync<void>(0, 3, 3, NULL);
+                    auto rs = f.get();
 
                     ASSERT_EQ(3, rs->readCount());
-                    DataArray<string> &items1 = rs->getItems();
+                    DataArray <std::string> &items1 = rs->getItems();
                     ASSERT_EQ_PTR("1", items1.get(0), std::string);
                     ASSERT_EQ_PTR("2", items1.get(1), std::string);
                     ASSERT_EQ_PTR("3", items1.get(2), std::string);
@@ -969,13 +942,12 @@ namespace hazelcast {
                     client2Ringbuffer->add("bad3");
 
                     StartsWithStringFilter filter("good");
-                    std::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<StartsWithStringFilter>(
-                            0, 3, 3, &filter);
+                    auto f = clientRingbuffer->readManyAsync<StartsWithStringFilter>(0, 3, 3, &filter);
 
-                    std::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
+                    auto rs = f.get();
 
                     ASSERT_EQ(5, rs->readCount());
-                    DataArray<string> &items = rs->getItems();
+                    DataArray <std::string> &items = rs->getItems();
                     ASSERT_EQ_PTR("good1", items.get(0), std::string);
                     ASSERT_EQ_PTR("good2", items.get(1), std::string);
                     ASSERT_EQ_PTR("good3", items.get(2), std::string);
@@ -1191,10 +1163,7 @@ namespace hazelcast {
                         "StartedThread::init") << "Could not start logger " << logger->getInstanceName()).build();
             }
 
-            thread.reset(
-                    new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(new hazelcast::util::RunnableDelegator(*this)), *logger));
-            threadArgs.currentThread = thread.get();
-            thread->start();
+            thread = std::thread([=]() { func(threadArgs); });
         }
 
         void StartedThread::run() {
@@ -1206,14 +1175,15 @@ namespace hazelcast {
         }
 
         bool StartedThread::join() {
-            return thread->join();
+            if (!thread.joinable()) {
+                return false;
+            }
+            thread.join();
+            return true;
         }
 
         StartedThread::~StartedThread() {
-        }
-
-        void StartedThread::cancel() {
-            thread->cancel();
+            join();
         }
 
     }
@@ -1315,12 +1285,12 @@ namespace hazelcast {
                 class ClientAllStatesListener : public LifecycleListener {
                 public:
 
-                    ClientAllStatesListener(hazelcast::util::CountDownLatch *startingLatch,
-                                            hazelcast::util::CountDownLatch *startedLatch = NULL,
-                                            hazelcast::util::CountDownLatch *connectedLatch = NULL,
-                                            hazelcast::util::CountDownLatch *disconnectedLatch = NULL,
-                                            hazelcast::util::CountDownLatch *shuttingDownLatch = NULL,
-                                            hazelcast::util::CountDownLatch *shutdownLatch = NULL)
+                    ClientAllStatesListener(boost::latch *startingLatch,
+                                            boost::latch *startedLatch = NULL,
+                                            boost::latch *connectedLatch = NULL,
+                                            boost::latch *disconnectedLatch = NULL,
+                                            boost::latch *shuttingDownLatch = NULL,
+                                            boost::latch *shutdownLatch = NULL)
                             : startingLatch(startingLatch), startedLatch(startedLatch), connectedLatch(connectedLatch),
                               disconnectedLatch(disconnectedLatch), shuttingDownLatch(shuttingDownLatch),
                               shutdownLatch(shutdownLatch) {}
@@ -1329,32 +1299,32 @@ namespace hazelcast {
                         switch (lifecycleEvent.getState()) {
                             case LifecycleEvent::STARTING:
                                 if (startingLatch) {
-                                    startingLatch->countDown();
+                                    startingLatch->count_down();
                                 }
                                 break;
                             case LifecycleEvent::STARTED:
                                 if (startedLatch) {
-                                    startedLatch->countDown();
+                                    startedLatch->count_down();
                                 }
                                 break;
                             case LifecycleEvent::CLIENT_CONNECTED:
                                 if (connectedLatch) {
-                                    connectedLatch->countDown();
+                                    connectedLatch->count_down();
                                 }
                                 break;
                             case LifecycleEvent::CLIENT_DISCONNECTED:
                                 if (disconnectedLatch) {
-                                    disconnectedLatch->countDown();
+                                    disconnectedLatch->count_down();
                                 }
                                 break;
                             case LifecycleEvent::SHUTTING_DOWN:
                                 if (shuttingDownLatch) {
-                                    shuttingDownLatch->countDown();
+                                    shuttingDownLatch->count_down();
                                 }
                                 break;
                             case LifecycleEvent::SHUTDOWN:
                                 if (shutdownLatch) {
-                                    shutdownLatch->countDown();
+                                    shutdownLatch->count_down();
                                 }
                                 break;
                             default:
@@ -1363,12 +1333,12 @@ namespace hazelcast {
                     }
 
                 private:
-                    hazelcast::util::CountDownLatch *startingLatch;
-                    hazelcast::util::CountDownLatch *startedLatch;
-                    hazelcast::util::CountDownLatch *connectedLatch;
-                    hazelcast::util::CountDownLatch *disconnectedLatch;
-                    hazelcast::util::CountDownLatch *shuttingDownLatch;
-                    hazelcast::util::CountDownLatch *shutdownLatch;
+                    boost::latch *startingLatch;
+                    boost::latch *startedLatch;
+                    boost::latch *connectedLatch;
+                    boost::latch *disconnectedLatch;
+                    boost::latch *shuttingDownLatch;
+                    boost::latch *shutdownLatch;
                 };
 
                 std::unique_ptr<HazelcastServer> startServer(ClientConfig &clientConfig) {
@@ -1412,21 +1382,21 @@ namespace hazelcast {
 
                 clientConfig.setAttemptPeriod(1000);
                 clientConfig.setConnectionAttemptLimit(1);
-                hazelcast::util::CountDownLatch startingLatch(1);
-                hazelcast::util::CountDownLatch startedLatch(1);
-                hazelcast::util::CountDownLatch connectedLatch(1);
-                hazelcast::util::CountDownLatch disconnectedLatch(1);
-                hazelcast::util::CountDownLatch shuttingDownLatch(1);
-                hazelcast::util::CountDownLatch shutdownLatch(1);
+                boost::latch startingLatch(1);
+                boost::latch startedLatch(1);
+                boost::latch connectedLatch(1);
+                boost::latch disconnectedLatch(1);
+                boost::latch shuttingDownLatch(1);
+                boost::latch shutdownLatch(1);
                 ClientAllStatesListener listener(&startingLatch, &startedLatch, &connectedLatch, &disconnectedLatch,
                                                  &shuttingDownLatch, &shutdownLatch);
                 clientConfig.addListener(&listener);
 
                 HazelcastClient client(clientConfig);
 
-                ASSERT_TRUE(startingLatch.await(0));
-                ASSERT_TRUE(startedLatch.await(0));
-                ASSERT_TRUE(connectedLatch.await(0));
+                ASSERT_EQ(boost::cv_status::no_timeout, startingLatch.wait_for(boost::chrono::seconds(0)));
+                ASSERT_EQ(boost::cv_status::no_timeout, startedLatch.wait_for(boost::chrono::seconds(0)));
+                ASSERT_EQ(boost::cv_status::no_timeout, connectedLatch.wait_for(boost::chrono::seconds(0)));
 
                 instance->shutdown();
 
@@ -1454,21 +1424,21 @@ namespace hazelcast {
                 ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
                 std::unique_ptr<HazelcastServer> instance = startServer(clientConfig);
 
-                hazelcast::util::CountDownLatch startingLatch(1);
-                hazelcast::util::CountDownLatch startedLatch(1);
-                hazelcast::util::CountDownLatch connectedLatch(1);
-                hazelcast::util::CountDownLatch disconnectedLatch(1);
-                hazelcast::util::CountDownLatch shuttingDownLatch(1);
-                hazelcast::util::CountDownLatch shutdownLatch(1);
+                boost::latch startingLatch(1);
+                boost::latch startedLatch(1);
+                boost::latch connectedLatch(1);
+                boost::latch disconnectedLatch(1);
+                boost::latch shuttingDownLatch(1);
+                boost::latch shutdownLatch(1);
                 ClientAllStatesListener listener(&startingLatch, &startedLatch, &connectedLatch, &disconnectedLatch,
                                                  &shuttingDownLatch, &shutdownLatch);
                 clientConfig.addListener(&listener);
 
                 HazelcastClient client(clientConfig);
 
-                ASSERT_TRUE(startingLatch.await(0));
-                ASSERT_TRUE(startedLatch.await(0));
-                ASSERT_TRUE(connectedLatch.await(0));
+                ASSERT_EQ(boost::cv_status::no_timeout, startingLatch.wait_for(boost::chrono::seconds(0)));
+                ASSERT_EQ(boost::cv_status::no_timeout, startedLatch.wait_for(boost::chrono::seconds(0)));
+                ASSERT_EQ(boost::cv_status::no_timeout, connectedLatch.wait_for(boost::chrono::seconds(0)));
 
                 client.shutdown();
 
@@ -1477,14 +1447,13 @@ namespace hazelcast {
             }
 
 #ifdef HZ_BUILD_WITH_SSL
-
             INSTANTIATE_TEST_SUITE_P(All,
                                      ClusterTest,
                                      ::testing::Values(new SmartTcpClientConfig(), new SmartSSLClientConfig()));
 #else
-                                                                                                                                    INSTANTIATE_TEST_SUITE_P(All,
-                                    ClusterTest,
-                                    ::testing::Values(new SmartTcpClientConfig()));
+            INSTANTIATE_TEST_SUITE_P(All,
+                                     ClusterTest,
+                                     ::testing::Values(new SmartTcpClientConfig()));
 #endif
         }
     }
@@ -1524,17 +1493,17 @@ namespace hazelcast {
 
             class MySocketInterceptor : public SocketInterceptor {
             public:
-                MySocketInterceptor(hazelcast::util::CountDownLatch &latch) : interceptorLatch(latch) {
+                MySocketInterceptor(boost::latch &latch1) : interceptorLatch(latch1) {
                 }
 
                 void onConnect(const hazelcast::client::Socket &connectedSocket) {
                     ASSERT_EQ("127.0.0.1", connectedSocket.getAddress().getHost());
                     ASSERT_NE(0, connectedSocket.getAddress().getPort());
-                    interceptorLatch.countDown();
+                    interceptorLatch.count_down();
                 }
 
             private:
-                hazelcast::util::CountDownLatch &interceptorLatch;
+                boost::latch &interceptorLatch;
             };
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -1542,14 +1511,14 @@ namespace hazelcast {
                 HazelcastServerFactory sslFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                 HazelcastServer instance(sslFactory);
                 ClientConfig config = getConfig();
-                hazelcast::util::CountDownLatch interceptorLatch(1);
+                boost::latch interceptorLatch(1);
                 MySocketInterceptor interceptor(interceptorLatch);
                 config.setSocketInterceptor(&interceptor);
                 config::SSLConfig sslConfig;
                 sslConfig.setEnabled(true).addVerifyFile(getCAFilePath());
                 config.getNetworkConfig().setSSLConfig(sslConfig);
                 HazelcastClient client(config);
-                interceptorLatch.await(2);
+                interceptorLatch.wait_for(boost::chrono::seconds(2));
             }
 
 #endif
@@ -1557,11 +1526,11 @@ namespace hazelcast {
             TEST_F(SocketInterceptorTest, interceptBasic) {
                 HazelcastServer instance(*g_srvFactory);
                 ClientConfig config = getConfig();
-                hazelcast::util::CountDownLatch interceptorLatch(1);
+                boost::latch interceptorLatch(1);
                 MySocketInterceptor interceptor(interceptorLatch);
                 config.setSocketInterceptor(&interceptor);
                 HazelcastClient client(config);
-                interceptorLatch.await(2);
+                interceptorLatch.wait_for(boost::chrono::seconds(2));
             }
         }
     }
@@ -1706,7 +1675,7 @@ namespace hazelcast {
 
             class AttributeListener : public MembershipListener {
             public:
-                AttributeListener(hazelcast::util::CountDownLatch &_attributeLatch)
+                AttributeListener(boost::latch &_attributeLatch)
                         : _attributeLatch(_attributeLatch) {
 
                 }
@@ -1726,47 +1695,47 @@ namespace hazelcast {
                     if (key == "intAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
                         if ("211" == value) {
-                            _attributeLatch.countDown();
+                            _attributeLatch.count_down();
                         }
                     } else if (key == "boolAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
                         if ("true" == value) {
-                            _attributeLatch.countDown();
+                            _attributeLatch.count_down();
                         }
                     } else if (key == "byteAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
                         if ("7" == value) {
-                            _attributeLatch.countDown();
+                            _attributeLatch.count_down();
                         }
                     } else if (key == "doubleAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
                         if ("2.0" == value) {
-                            _attributeLatch.countDown();
+                            _attributeLatch.count_down();
                         }
                     } else if (key == "floatAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
                         if ("1.2" == value) {
-                            _attributeLatch.countDown();
+                            _attributeLatch.count_down();
                         }
                     } else if (key == "shortAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
                         if ("3" == value) {
-                            _attributeLatch.countDown();
+                            _attributeLatch.count_down();
                         }
                     } else if (key == "strAttr") {
                         const std::string &value = memberAttributeEvent.getValue();
                         if (std::string("strAttr") == value) {
-                            _attributeLatch.countDown();
+                            _attributeLatch.count_down();
                         }
                     }
                 }
 
             private:
-                hazelcast::util::CountDownLatch &_attributeLatch;
+                boost::latch &_attributeLatch;
             };
 
             TEST_F(MemberAttributeTest, testChangeWithListeners) {
-                hazelcast::util::CountDownLatch attributeLatch(7);
+                boost::latch attributeLatch(7);
                 AttributeListener sampleListener(attributeLatch);
 
                 ClientConfig clientConfig(getConfig());
@@ -1778,7 +1747,7 @@ namespace hazelcast {
                 HazelcastServer instance2(*g_srvFactory);
                 ASSERT_TRUE(instance2.setAttributes(1));
 
-                ASSERT_TRUE(attributeLatch.await(30));
+                ASSERT_EQ(boost::cv_status::no_timeout, attributeLatch.wait_for(boost::chrono::seconds(30)));
 
                 instance2.shutdown();
 
@@ -2010,34 +1979,6 @@ namespace hazelcast {
                         }
 
                     protected:
-                        class IncrementerTask : public hazelcast::util::Runnable {
-                        public:
-                            IncrementerTask(int loopsPerThread, std::atomic<int64_t> &finalValue,
-                                            const std::shared_ptr<client::crdt::pncounter::PNCounter> &counter1,
-                                            const std::shared_ptr<client::crdt::pncounter::PNCounter> &counter2)
-                                    : loopsPerThread(loopsPerThread), finalValue(finalValue), counter1(counter1),
-                                      counter2(counter2) {}
-
-                            virtual const string getName() const {
-                                return "IncrementerTask";
-                            }
-
-                            virtual void run() {
-                                for (int j = 0; j < loopsPerThread; j++) {
-                                    counter1->addAndGet(5);
-                                    finalValue += 5;
-                                    counter2->addAndGet(-2);
-                                    finalValue += -2;
-                                }
-                            }
-
-                        private:
-                            int loopsPerThread;
-                            std::atomic<int64_t> &finalValue;
-                            std::shared_ptr<client::crdt::pncounter::PNCounter> counter1;
-                            std::shared_ptr<client::crdt::pncounter::PNCounter> counter2;
-                        };
-
                         static HazelcastServer *instance;
                         static HazelcastClient *client;
                     };
@@ -2065,25 +2006,24 @@ namespace hazelcast {
                         int loopsPerThread = 100;
                         std::atomic<int64_t> finalValue(0);
 
-                        std::vector<std::shared_ptr<hazelcast::util::Thread> > futures;
+                        std::vector<std::future<void>> futures;
                         for (int i = 0; i < parallelism; i++) {
-                            std::shared_ptr<Thread> thread = std::shared_ptr<hazelcast::util::Thread>(
-                                    new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(
-                                            new IncrementerTask(loopsPerThread, finalValue, counter1, counter2)),
-                                                                getLogger()));
-                            thread->start();
-                            futures.push_back(thread);
+                            futures.push_back(std::async([&]() {
+                                for (int j = 0; j < loopsPerThread; j++) {
+                                    counter1->addAndGet(5);
+                                    finalValue += 5;
+                                    counter2->addAndGet(-2);
+                                    finalValue += -2;
+                                }
+                            }));
                         }
 
-                        for (const std::shared_ptr<hazelcast::util::Thread> &future  : futures) {
-                            future->join();
-                        }
+                        boost::wait_for_all(futures.begin(), futures.end());
 
                         int64_t finalExpectedValue = 3 * (int64_t) loopsPerThread * parallelism;
                         ASSERT_EQ_EVENTUALLY(finalExpectedValue, counter1->get());
                         ASSERT_EQ_EVENTUALLY(finalExpectedValue, counter2->get());
                     }
-
                 }
             }
 
@@ -2134,7 +2074,7 @@ namespace hazelcast {
             protected:
                 class MyEntryListener : public EntryListener<int, int> {
                 public:
-                    MyEntryListener(hazelcast::util::CountDownLatch &mapClearedLatch) : mapClearedLatch(mapClearedLatch) {}
+                    MyEntryListener(boost::latch &mapClearedLatch) : mapClearedLatch(mapClearedLatch) {}
 
                     virtual void entryAdded(const EntryEvent<int, int> &event) {
                     }
@@ -2168,75 +2108,73 @@ namespace hazelcast {
                         assertEquals(5701, event.getMember().getAddress().getPort());
                         assertEquals(1, event.getNumberOfEntriesAffected());
                         std::cout << "Map cleared event received:" << event << std::endl;
-                        mapClearedLatch.countDown();
+                        mapClearedLatch.count_down();
                     }
 
                 private:
-                    hazelcast::util::CountDownLatch &mapClearedLatch;
+                    boost::latch &mapClearedLatch;
                 };
 
                 class SampleInitialListener : public InitialMembershipListener {
                 public:
-                    SampleInitialListener(hazelcast::util::CountDownLatch &_memberAdded, hazelcast::util::CountDownLatch &_attributeLatch,
-                                          hazelcast::util::CountDownLatch &_memberRemoved)
+                    SampleInitialListener(boost::latch &_memberAdded, boost::latch &_attributeLatch,
+                                          boost::latch &_memberRemoved)
                             : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch),
                               _memberRemoved(_memberRemoved) {
-
                     }
 
                     void init(const InitialMembershipEvent &event) {
                         std::vector<Member> const &members = event.getMembers();
                         if (members.size() == 1) {
-                            _memberAdded.countDown();
+                            _memberAdded.count_down();
                         }
                     }
 
                     void memberAdded(const MembershipEvent &event) {
-                        _memberAdded.countDown();
+                        _memberAdded.count_down();
                     }
 
                     void memberRemoved(const MembershipEvent &event) {
-                        _memberRemoved.countDown();
+                        _memberRemoved.count_down();
                     }
 
 
                     void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
-                        _attributeLatch.countDown();
+                        _attributeLatch.count_down();
                     }
 
                 private:
-                    hazelcast::util::CountDownLatch &_memberAdded;
-                    hazelcast::util::CountDownLatch &_attributeLatch;
-                    hazelcast::util::CountDownLatch &_memberRemoved;
+                    boost::latch &_memberAdded;
+                    boost::latch &_attributeLatch;
+                    boost::latch &_memberRemoved;
                 };
 
                 class SampleListenerInSimpleListenerTest : public MembershipListener {
                 public:
-                    SampleListenerInSimpleListenerTest(hazelcast::util::CountDownLatch &_memberAdded,
-                                                       hazelcast::util::CountDownLatch &_attributeLatch,
-                                                       hazelcast::util::CountDownLatch &_memberRemoved)
+                    SampleListenerInSimpleListenerTest(boost::latch &_memberAdded,
+                                                       boost::latch &_attributeLatch,
+                                                       boost::latch &_memberRemoved)
                             : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch),
                               _memberRemoved(_memberRemoved) {
-
                     }
 
                     void memberAdded(const MembershipEvent &event) {
-                        _memberAdded.countDown();
+                        _memberAdded.count_down();
                     }
 
                     void memberRemoved(const MembershipEvent &event) {
-                        _memberRemoved.countDown();
+                        _memberRemoved.count_down();
                     }
 
                     void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
                         memberAttributeEvent.getKey();
-                        _attributeLatch.countDown();
+                        _attributeLatch.count_down();
                     }
 
                 private:
-                    hazelcast::util::CountDownLatch &_memberAdded;
-                    hazelcast::util::CountDownLatch &_attributeLatch;
-                    hazelcast::util::CountDownLatch &_memberRemoved;
+                    boost::latch &_memberAdded;
+                    boost::latch &_attributeLatch;
+                    boost::latch &_memberRemoved;
                 };
             };
 
@@ -2251,12 +2189,12 @@ namespace hazelcast {
                 HazelcastServer instance(*g_srvFactory);
                 HazelcastClient hazelcastClient(*const_cast<ParamType &>(GetParam()));
                 Cluster cluster = hazelcastClient.getCluster();
-                hazelcast::util::CountDownLatch memberAdded(1);
-                hazelcast::util::CountDownLatch memberAddedInit(2);
-                hazelcast::util::CountDownLatch memberRemoved(1);
-                hazelcast::util::CountDownLatch memberRemovedInit(1);
-                hazelcast::util::CountDownLatch attributeLatch(7);
-                hazelcast::util::CountDownLatch attributeLatchInit(7);
+                boost::latch memberAdded(1);
+                boost::latch memberAddedInit(2);
+                boost::latch memberRemoved(1);
+                boost::latch memberRemovedInit(1);
+                boost::latch attributeLatch(7);
+                boost::latch attributeLatchInit(7);
 
                 std::shared_ptr<MembershipListener> sampleInitialListener(
                         new SampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit));
@@ -2268,18 +2206,18 @@ namespace hazelcast {
 
                 HazelcastServer instance2(*g_srvFactory);
 
-                ASSERT_TRUE(memberAdded.await(30));
-                ASSERT_TRUE(memberAddedInit.await(30));
+                ASSERT_EQ(boost::cv_status::no_timeout, memberAdded.wait_for(boost::chrono::seconds(30)));
+                ASSERT_EQ(boost::cv_status::no_timeout, memberAddedInit.wait_for(boost::chrono::seconds(30)));
 
                 ASSERT_TRUE(instance2.setAttributes(1));
 
-                ASSERT_TRUE(attributeLatchInit.await(30));
-                ASSERT_TRUE(attributeLatch.await(30));
+                ASSERT_EQ(boost::cv_status::no_timeout, attributeLatchInit.wait_for(boost::chrono::seconds(30)));
+                ASSERT_EQ(boost::cv_status::no_timeout, attributeLatch.wait_for(boost::chrono::seconds(30)));
 
                 instance2.shutdown();
 
-                ASSERT_TRUE(memberRemoved.await(30));
-                ASSERT_TRUE(memberRemovedInit.await(30));
+                ASSERT_EQ(boost::cv_status::no_timeout, memberRemoved.wait_for(boost::chrono::seconds(30)));
+                ASSERT_EQ(boost::cv_status::no_timeout, memberRemovedInit.wait_for(boost::chrono::seconds(30)));
 
                 instance.shutdown();
 
@@ -2291,12 +2229,12 @@ namespace hazelcast {
                 HazelcastServer instance(*g_srvFactory);
                 HazelcastClient hazelcastClient(*const_cast<ParamType &>(GetParam()));
                 Cluster cluster = hazelcastClient.getCluster();
-                hazelcast::util::CountDownLatch memberAdded(1);
-                hazelcast::util::CountDownLatch memberAddedInit(2);
-                hazelcast::util::CountDownLatch memberRemoved(1);
-                hazelcast::util::CountDownLatch memberRemovedInit(1);
-                hazelcast::util::CountDownLatch attributeLatch(7);
-                hazelcast::util::CountDownLatch attributeLatchInit(7);
+                boost::latch memberAdded(1);
+                boost::latch memberAddedInit(2);
+                boost::latch memberRemoved(1);
+                boost::latch memberRemovedInit(1);
+                boost::latch attributeLatch(7);
+                boost::latch attributeLatchInit(7);
 
                 SampleInitialListener sampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit);
                 SampleListenerInSimpleListenerTest sampleListener(memberAdded, attributeLatch, memberRemoved);
@@ -2306,8 +2244,8 @@ namespace hazelcast {
 
                 HazelcastServer instance2(*g_srvFactory);
 
-                ASSERT_TRUE(memberAdded.await(30));
-                ASSERT_TRUE(memberAddedInit.await(30));
+                ASSERT_EQ(boost::cv_status::no_timeout, memberAdded.wait_for(boost::chrono::seconds(30)));
+                ASSERT_EQ(boost::cv_status::no_timeout, memberAddedInit.wait_for(boost::chrono::seconds(30)));
 
                 ASSERT_TRUE(instance2.setAttributes(1));
 
@@ -2326,12 +2264,12 @@ namespace hazelcast {
             }
 
             TEST_P(SimpleListenerTest, testClusterListenersFromConfig) {
-                hazelcast::util::CountDownLatch memberAdded(1);
-                hazelcast::util::CountDownLatch memberAddedInit(1);
-                hazelcast::util::CountDownLatch memberRemoved(1);
-                hazelcast::util::CountDownLatch memberRemovedInit(1);
-                hazelcast::util::CountDownLatch attributeLatch(7);
-                hazelcast::util::CountDownLatch attributeLatchInit(7);
+                boost::latch memberAdded(1);
+                boost::latch memberAddedInit(2);
+                boost::latch memberRemoved(1);
+                boost::latch memberRemovedInit(1);
+                boost::latch attributeLatch(7);
+                boost::latch attributeLatchInit(7);
                 SampleInitialListener sampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit);
                 SampleListenerInSimpleListenerTest sampleListener(memberAdded, attributeLatch, memberRemoved);
 
@@ -2369,7 +2307,7 @@ namespace hazelcast {
 
                 ASSERT_FALSE(map.removeEntryListener("Unknown"));
 
-                hazelcast::util::CountDownLatch mapClearedLatch(1);
+                boost::latch mapClearedLatch(1);
                 MyEntryListener listener(mapClearedLatch);
                 std::string listenerRegistrationId = map.addEntryListener(listener, true);
 
@@ -2423,33 +2361,6 @@ namespace hazelcast {
                 }
 
             protected:
-                class SmokeRunner : public hazelcast::util::Runnable {
-                public:
-                    SmokeRunner(FlakeIdGenerator &flakeIdGenerator,
-                                hazelcast::util::CountDownLatch &startLatch,
-                                hazelcast::util::Sync<std::shared_ptr<set<int64_t> > > &ids)
-                            : flakeIdGenerator(flakeIdGenerator), startLatch(startLatch), ids(ids) {}
-
-                    virtual const string getName() const {
-                        return "SmokeRunner";
-                    }
-
-                    virtual void run() {
-                        std::shared_ptr<std::set<int64_t> > localIds = ids;
-                        startLatch.await();
-                        for (int j = 0; j < 100000; ++j) {
-                            localIds->insert(flakeIdGenerator.newId());
-                        }
-
-                        ids = localIds;
-                    }
-
-                private:
-                    FlakeIdGenerator &flakeIdGenerator;
-                    hazelcast::util::CountDownLatch &startLatch;
-                    hazelcast::util::Sync<std::shared_ptr<std::set<int64_t> > > &ids;
-                };
-
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
 
@@ -2470,44 +2381,37 @@ namespace hazelcast {
             }
 
             TEST_F (FlakeIdGeneratorApiTest, testSmoke) {
-                hazelcast::util::CountDownLatch startLatch(1);
-                std::vector<std::shared_ptr<hazelcast::util::Thread> > threads(4);
-                hazelcast::util::Sync<std::shared_ptr<std::set<int64_t> > > ids[4];
+                boost::latch startLatch(1);
+                std::array<std::future<std::set<int64_t>>, 4> futures;
+                constexpr size_t NUM_IDS_PER_THREAD = 100000;
+                constexpr int NUM_THREADS = 4;
 
-                for (int i = 0; i < 4; ++i) {
-                    ids[i] = std::shared_ptr<std::set<int64_t> >(new std::set<int64_t>());
-                    std::shared_ptr<hazelcast::util::Thread> t(
-                            new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(
-                                    new SmokeRunner(flakeIdGenerator, startLatch, ids[i])), getLogger()));
-                    t->start();
-                    threads[i] = t;
+                for (int i = 0; i < NUM_THREADS; ++i) {
+                    futures[i] = std::async([&]() {
+                        std::set<int64_t> localIds;
+                        startLatch.wait();
+                        for (size_t j = 0; j < NUM_IDS_PER_THREAD; ++j) {
+                            localIds.insert(flakeIdGenerator.newId());
+                        }
+
+                        return localIds;
+                    });
                 }
 
-                startLatch.countDown();
-
-                for (int i = 0; i < 4; ++i) {
-                    threads[i]->join();
-                }
+                startLatch.count_down();
 
                 std::set<int64_t> allIds;
-                for (int i = 0; i < 4; ++i) {
-                    std::shared_ptr<std::set<int64_t> > threadIdSet = ids[i];
-                    for (const int64_t &value : *threadIdSet) {
-                        allIds.insert(value);
-                    }
+                for (auto &f : futures) {
+                    auto ids = f.get();
+                    allIds.insert(ids.begin(), ids.end());
                 }
 
 // if there were duplicate IDs generated, there will be less items in the set than expected
-                        assertEquals(4 * 100000, (int) allIds.size());
+                ASSERT_EQ(4 * NUM_IDS_PER_THREAD, allIds.size());
             }
         }
     }
 }
-
-//
-// Created by sancar koyunlu on 9/18/13.
-
-
 
 namespace hazelcast {
     namespace client {
@@ -2755,7 +2659,7 @@ namespace hazelcast {
 //                    try {
 //                        latch1.await(100, TimeUnit.SECONDS);
 //                        pass.set(map.tryPut("var", 1, 0, TimeUnit.SECONDS) == false);
-//                        latch2.countDown();
+//                        latch2.count_down();
 //                    } catch (Exception e) {
 //                    }
 //                }
@@ -2766,7 +2670,7 @@ namespace hazelcast {
 //                    try {
 //                        final TransactionalMap<String, Integer> txMap = context.getMap("testTxnGetForUpdate");
 //                        txMap.getForUpdate("var");
-//                        latch1.countDown();
+//                        latch1.count_down();
 //                        latch2.await(100, TimeUnit.SECONDS);
 //                    } catch (Exception e) {
 //                    }
@@ -2934,7 +2838,8 @@ namespace hazelcast {
                     std::vector<Member> members = getMembers();
                     size_t len = members.size();
                     if (len == 0) {
-                        throw exception::IOException("const Member& RoundRobinLB::next()", "No member in member list!!");
+                        BOOST_THROW_EXCEPTION(exception::IOException("const Member& RoundRobinLB::next()",
+                                                                     "No member in member list!!"));
                     }
                     for (size_t i = 0; i < len; i++) {
                         if (members[i].getAddress().getPort() == 5701) {
@@ -2948,7 +2853,7 @@ namespace hazelcast {
 
             class MyMembershipListener : public MembershipListener {
             public:
-                MyMembershipListener(hazelcast::util::CountDownLatch &countDownLatch)
+                MyMembershipListener(boost::latch &countDownLatch)
                         : countDownLatch(countDownLatch) {
 
                 }
@@ -2958,7 +2863,7 @@ namespace hazelcast {
                 }
 
                 void memberRemoved(const MembershipEvent &membershipEvent) {
-                    countDownLatch.countDown();
+                    countDownLatch.count_down();
                 }
 
                 void memberAttributeChanged(const MemberAttributeEvent& memberAttributeEvent) {
@@ -2966,7 +2871,7 @@ namespace hazelcast {
                 }
 
             private:
-                hazelcast::util::CountDownLatch& countDownLatch;
+                boost::latch &countDownLatch;
             };
 
             ClientTxnTest::ClientTxnTest()
@@ -3006,13 +2911,13 @@ namespace hazelcast {
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
                 ASSERT_FALSE(context.getTxnId().empty());
-                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
-                string value = randomString();
+                TransactionalQueue <std::string> queue = context.getQueue<std::string>(queueName);
+                std::string value = randomString();
                 queue.offer(value);
 
                 context.commitTransaction();
 
-                IQueue<string> q = client->getQueue<std::string>(queueName);
+                IQueue<std::string> q = client->getQueue<std::string>(queueName);
                 std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
@@ -3027,13 +2932,13 @@ namespace hazelcast {
                 TransactionContext context = uniSocketClient.newTransactionContext();
                 context.beginTransaction();
                 ASSERT_FALSE(context.getTxnId().empty());
-                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
-                string value = randomString();
+                TransactionalQueue <std::string> queue = context.getQueue<std::string>(queueName);
+                std::string value = randomString();
                 queue.offer(value);
 
                 context.commitTransaction();
 
-                IQueue<string> q = uniSocketClient.getQueue<std::string>(queueName);
+                IQueue<std::string> q = uniSocketClient.getQueue<std::string>(queueName);
                 std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
@@ -3049,13 +2954,13 @@ namespace hazelcast {
 
                 context.beginTransaction();
                 ASSERT_FALSE(context.getTxnId().empty());
-                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
-                string value = randomString();
+                TransactionalQueue <std::string> queue = context.getQueue<std::string>(queueName);
+                std::string value = randomString();
                 queue.offer(value);
 
                 context.commitTransaction();
 
-                IQueue<string> q = client->getQueue<std::string>(queueName);
+                IQueue<std::string> q = client->getQueue<std::string>(queueName);
                 std::shared_ptr<std::string> retrievedElement = q.poll();
                 ASSERT_NOTNULL(retrievedElement.get(), std::string);
                 ASSERT_EQ(value, *retrievedElement);
@@ -3065,8 +2970,8 @@ namespace hazelcast {
                 std::string queueName = randomString();
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
-                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
-                string value = randomString();
+                TransactionalQueue <std::string> queue = context.getQueue<std::string>(queueName);
+                std::string value = randomString();
                 queue.offer(value);
 
                 client->shutdown();
@@ -3078,15 +2983,15 @@ namespace hazelcast {
             TEST_F(ClientTxnTest, testTxnRollback) {
                 std::string queueName = randomString();
                 TransactionContext context = client->newTransactionContext();
-                hazelcast::util::CountDownLatch txnRollbackLatch(1);
-                hazelcast::util::CountDownLatch memberRemovedLatch(1);
+                boost::latch txnRollbackLatch(1);
+                boost::latch memberRemovedLatch(1);
                 MyMembershipListener myLifecycleListener(memberRemovedLatch);
                 client->getCluster().addMembershipListener(&myLifecycleListener);
 
                 try {
                     context.beginTransaction();
                     ASSERT_FALSE(context.getTxnId().empty());
-                    TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                    TransactionalQueue <std::string> queue = context.getQueue<std::string>(queueName);
                     queue.offer(randomString());
 
                     server->shutdown();
@@ -3095,13 +3000,13 @@ namespace hazelcast {
                     FAIL();
                 } catch (exception::TransactionException &) {
                     context.rollbackTransaction();
-                    txnRollbackLatch.countDown();
+                    txnRollbackLatch.count_down();
                 }
 
                 ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
                 ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
-                IQueue<string> q = client->getQueue<std::string>(queueName);
+                IQueue<std::string> q = client->getQueue<std::string>(queueName);
                 ASSERT_NULL("Poll result should be null since it is rolled back", q.poll().get(), std::string);
                 ASSERT_EQ(0, q.size());
             }
@@ -3109,12 +3014,12 @@ namespace hazelcast {
             TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash) {
                 std::string queueName = randomString();
                 TransactionContext context = client->newTransactionContext();
-                hazelcast::util::CountDownLatch txnRollbackLatch(1);
-                hazelcast::util::CountDownLatch memberRemovedLatch(1);
+                boost::latch txnRollbackLatch(1);
+                boost::latch memberRemovedLatch(1);
 
                 context.beginTransaction();
 
-                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                TransactionalQueue <std::string> queue = context.getQueue<std::string>(queueName);
                 queue.offer("str");
 
                 MyMembershipListener myLifecycleListener(memberRemovedLatch);
@@ -3125,7 +3030,7 @@ namespace hazelcast {
                 ASSERT_THROW(context.commitTransaction(), exception::TransactionException);
 
                 context.rollbackTransaction();
-                txnRollbackLatch.countDown();
+                txnRollbackLatch.count_down();
 
                 ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
                 ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
@@ -3207,7 +3112,7 @@ namespace hazelcast {
                 class PutGetRemoveTestTask : public hazelcast::util::Runnable {
                 public:
                     PutGetRemoveTestTask(HazelcastClient &client, MultiMap<std::string, std::string> &mm,
-                                         hazelcast::util::CountDownLatch &latch) : client(client), mm(mm), latch(latch) {}
+                                         boost::latch &latch1) : client(client), mm(mm), latch1(latch1) {}
 
                     virtual void run() {
                         std::string key = hazelcast::util::IOUtil::to_string(hazelcast::util::getCurrentThreadId());
@@ -3224,7 +3129,7 @@ namespace hazelcast {
                         ASSERT_TRUE(multiMap.put(key2, "value22"));
                         ASSERT_EQ(3, (int) multiMap.get(key).size());
                         ASSERT_EQ(3, (int) multiMap.valueCount(key));
-                        vector<std::string> removedValues = multiMap.remove(key2);
+                        std::vector<std::string> removedValues = multiMap.remove(key2);
                         ASSERT_EQ(2U, removedValues.size())  ;
                         ASSERT_TRUE((removedValues[0] == "value21" && removedValues[1] == "value22") ||
                                     (removedValues[1] == "value21" && removedValues[0] == "value22"));
@@ -3232,17 +3137,17 @@ namespace hazelcast {
 
                         ASSERT_EQ(3, (int) mm.get(key).size());
 
-                        latch.countDown();
+                        latch1.count_down();
                     }
 
-                    virtual const string getName() const {
+                    virtual const std::string getName() const {
                         return "PutGetRemoveTestTask";
                     }
 
                 private:
                     HazelcastClient &client;
                     MultiMap<std::string, std::string> &mm;
-                    hazelcast::util::CountDownLatch &latch;
+                    boost::latch &latch1;
                 };
 
                 HazelcastServer instance;
@@ -3283,31 +3188,20 @@ namespace hazelcast {
             TEST_F(ClientTxnMultiMapTest, testPutGetRemove) {
                 MultiMap<std::string, std::string> mm = client.getMultiMap<std::string, std::string>(
                         "testPutGetRemove");
-                int n = 10;
-                hazelcast::util::CountDownLatch latch(n);
+                constexpr int n = 10;
+                boost::latch latch1(n);
 
-                std::vector<std::shared_ptr<hazelcast::util::Thread> > allThreads;
                 for (int i = 0; i < n; i++) {
-                    std::shared_ptr<hazelcast::util::Thread> t(
-                            new hazelcast::util::Thread(
-                                    std::shared_ptr<hazelcast::util::Runnable>(
-                                            new PutGetRemoveTestTask(client, mm, latch)),
-                                    getLogger()));
-                    t->start();
-                    allThreads.push_back(t);
+                    std::thread(std::packaged_task<void()>([&]() {
+                        PutGetRemoveTestTask(client, mm, latch1).run();
+                    })).detach();
                 }
-                ASSERT_OPEN_EVENTUALLY(latch);
+
+                ASSERT_OPEN_EVENTUALLY(latch1);
             }
         }
     }
 }
-
-
-//
-// Created by sancar koyunlu on 9/18/13.
-
-
-
 
 namespace hazelcast {
     namespace client {
@@ -3359,21 +3253,21 @@ namespace hazelcast {
             }
 
             void testTransactionalOfferPoll2Thread(hazelcast::util::ThreadArgs &args) {
-                hazelcast::util::CountDownLatch *latch = (hazelcast::util::CountDownLatch *) args.arg0;
+                boost::latch *latch1 = (boost::latch *) args.arg0;
                 HazelcastClient *client = (HazelcastClient *) args.arg1;
-                latch->await();
+                latch1->wait();
                 client->getQueue<std::string>("defQueue0").offer("item0");
             }
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll2) {
-                hazelcast::util::CountDownLatch latch(1);
-                hazelcast::util::StartedThread t(testTransactionalOfferPoll2Thread, &latch, &client);
+                boost::latch latch1(1);
+                hazelcast::util::StartedThread t(testTransactionalOfferPoll2Thread, &latch1, &client);
                 TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");
                 TransactionalQueue<std::string> q1 = context.getQueue<std::string>("defQueue1");
                 std::shared_ptr<std::string> s;
-                latch.countDown();
+                latch1.count_down();
                 s = q0.poll(10 * 1000);
                 ASSERT_EQ("item0", *s);
                 ASSERT_TRUE(q1.offer(*s));
@@ -3386,144 +3280,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-
-
-
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            namespace faulttolerance {
-                class LoadTest : public ClientTestSupport {
-                public:
-                    hazelcast::client::ClientConfig getLoadTestConfig() {
-                        ClientConfig config = ClientTestSupport::getConfig();
-                        config.setRedoOperation(true);
-                        config.setLogLevel(FINEST);
-                        return config;
-                    }
-
-                    class LoadClientTask : public hazelcast::util::Runnable {
-                    public:
-                        LoadClientTask(IMap<int, int> &map, int numberOfOps, hazelcast::util::CountDownLatch &latch)
-                                : map(map),
-                                  numberOfOps(
-                                          numberOfOps),
-                                  latch(latch) {}
-
-                        virtual void run() {
-                            latch.countDown();
-
-                            latch.await(20);
-
-                            for (int i = 0; i < numberOfOps; ++i) {
-                                int mod = rand() % 3;
-                                switch (mod) {
-                                    case 0:
-                                        ASSERT_NO_THROW(map.put(i, i));
-                                        break;
-                                    case 1:
-                                        ASSERT_NO_THROW(map.remove(i));
-                                    case 2: {
-                                        std::shared_ptr<int> val;
-                                        ASSERT_NO_THROW(val = map.get(i));
-                                        if ((int *) NULL != val.get()) {
-                                            ASSERT_EQ(*val, i);
-                                        }
-                                        break;
-                                    }
-                                    default:
-                                        abort();
-                                }
-                            }
-                        }
-
-                        virtual const string getName() const {
-                            return "LoadClientTask";
-                        }
-
-                    private:
-                        IMap<int, int> &map;
-                        int numberOfOps;
-                        hazelcast::util::CountDownLatch &latch;
-                    };
-
-                    void addThread(IMap<int, int> &map, int numberOfOps, hazelcast::util::CountDownLatch &latch) {
-                        std::shared_ptr<hazelcast::util::Runnable> task(new LoadClientTask(map, numberOfOps, latch));
-                        threads.push_back(std::shared_ptr<hazelcast::util::Thread>(new hazelcast::util::Thread(task, getLogger())));
-                    }
-
-                    void startThreads() {
-                        for (std::shared_ptr<hazelcast::util::Thread> &t : threads) {
-                            t->start();
-                        }
-                    }
-
-                    void waitForThreadsToFinish() {
-                        for (std::shared_ptr<hazelcast::util::Thread> &t : threads) {
-                            t->join();
-                        }
-                    }
-
-                protected:
-                    std::vector<std::shared_ptr<hazelcast::util::Thread> > threads;
-                };
-
-                void loadIntMapTestWithConfig(ClientConfig &config, LoadTest &test) {
-                    HazelcastServer instance1(*g_srvFactory);
-                    HazelcastServer instance2(*g_srvFactory);
-                    HazelcastServer instance3(*g_srvFactory);
-                    HazelcastServer instance4(*g_srvFactory);
-                    HazelcastClient client(config);
-                    IMap<int, int> imap = client.getMap<int, int>("loadtest");
-
-                    int numThreads = 40;
-                    int numOps = 5000;
-
-                    hazelcast::util::CountDownLatch startLatch(numThreads);
-
-                    for (int i = 0; i < numThreads; ++i) {
-                        test.addThread(imap, numOps, startLatch);
-                    }
-
-                    test.startThreads();
-
-                    startLatch.await(20);
-
-                    instance1.shutdown();
-                    instance2.shutdown();
-                    instance3.shutdown();
-
-                    HazelcastServer instance5(*g_srvFactory);
-
-                    /*Note: Could not shutdown instance 5 here, since there may be some incomplete synchronization
-                     * between instance 5 and instance 4. This caused problems in Linux environment. */
-
-                    test.waitForThreadsToFinish();
-
-                }
-
-                TEST_F(LoadTest, DISABLED_testIntMapSmartClientServerRestart) {
-                    ClientConfig config = getLoadTestConfig();
-                    config.setSmart(true);
-
-                    loadIntMapTestWithConfig(config, *this);
-                }
-
-                TEST_F(LoadTest, DISABLED_testIntMapDummyClientServerRestart) {
-                    ClientConfig config = getLoadTestConfig();
-                    config.setSmart(false);
-
-                    loadIntMapTestWithConfig(config, *this);
-                }
-            }
-        }
-    }
-}
-
-
 
 namespace hazelcast {
     namespace client {
@@ -3741,28 +3497,28 @@ namespace hazelcast {
             };
 
             TEST_F(AddressUtilTest, testParsingHostAndPort) {
-                AddressHolder addressHolder = AddressUtil::getAddressHolder(
+                hazelcast::util::AddressHolder addressHolder = hazelcast::util::AddressUtil::getAddressHolder(
                         "[fe80::62c5:*:fe05:480a%en0]:8080");
                 ASSERT_EQ("fe80::62c5:*:fe05:480a", addressHolder.getAddress());
                 ASSERT_EQ(8080, addressHolder.getPort());
                 ASSERT_EQ("en0", addressHolder.getScopeId());
 
-                addressHolder = AddressUtil::getAddressHolder("[::ffff:192.0.2.128]:5700");
+                addressHolder = hazelcast::util::AddressUtil::getAddressHolder("[::ffff:192.0.2.128]:5700");
                 ASSERT_EQ("::ffff:192.0.2.128", addressHolder.getAddress());
                 ASSERT_EQ(5700, addressHolder.getPort());
 
-                addressHolder = AddressUtil::getAddressHolder("192.168.1.1:5700");
+                addressHolder = hazelcast::util::AddressUtil::getAddressHolder("192.168.1.1:5700");
                 ASSERT_EQ("192.168.1.1", addressHolder.getAddress());
                 ASSERT_EQ(5700, addressHolder.getPort());
 
-                addressHolder = AddressUtil::getAddressHolder("hazelcast.com:80");
+                addressHolder = hazelcast::util::AddressUtil::getAddressHolder("hazelcast.com:80");
                 ASSERT_EQ("hazelcast.com", addressHolder.getAddress());
                 ASSERT_EQ(80, addressHolder.getPort());
             }
 
             TEST_F(AddressUtilTest, testGetByNameIpV4) {
                 std::string addrString("127.0.0.1");
-                boost::asio::ip::address address = AddressUtil::getByName(addrString);
+                boost::asio::ip::address address = hazelcast::util::AddressUtil::getByName(addrString);
                 ASSERT_TRUE(address.is_v4());
                 ASSERT_FALSE(address.is_v6());
                 ASSERT_EQ(addrString, address.to_string());

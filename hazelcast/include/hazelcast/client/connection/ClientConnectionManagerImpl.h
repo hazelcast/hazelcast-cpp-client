@@ -29,20 +29,17 @@
 #include <boost/asio.hpp>
 
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/ConcurrentSet.h"
 #include "hazelcast/client/LifecycleEvent.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/protocol/Principal.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/util/Thread.h"
-#include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/client/connection/AddressTranslator.h"
 #include "hazelcast/client/connection/ConnectionListenable.h"
+#include "hazelcast/client/connection/HeartbeatManager.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -51,6 +48,9 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class hz_thread_pool;
+    }
     namespace client {
         class Credentials;
 
@@ -63,8 +63,6 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 class ClientExecutionServiceImpl;
-
-                class ClientInvocationFuture;
             }
         }
 
@@ -83,12 +81,11 @@ namespace hazelcast {
 
             class AddressProvider;
 
-            class HeartbeatManager;
-
             /**
             * Responsible for managing {@link Connection} objects.
             */
-            class HAZELCAST_API ClientConnectionManagerImpl : public ConnectionListenable {
+            class HAZELCAST_API ClientConnectionManagerImpl
+                    : public ConnectionListenable, public std::enable_shared_from_this<ClientConnectionManagerImpl> {
             public:
                 typedef std::tuple<std::shared_ptr<AuthenticationFuture>, std::shared_ptr<Connection>> FutureTuple;
 
@@ -137,7 +134,7 @@ namespace hazelcast {
 
                 std::shared_ptr<Address> getOwnerConnectionAddress();
 
-                void setOwnerConnectionAddress(const std::shared_ptr<Address> &ownerConnectionAddress);
+                void setOwnerConnectionAddress(const std::shared_ptr<Address> &ownerAddress);
 
                 std::shared_ptr<Connection> getActiveConnection(const Address &target);
 
@@ -145,11 +142,11 @@ namespace hazelcast {
 
                 const std::shared_ptr<protocol::Principal> getPrincipal();
 
-                void setPrincipal(const std::shared_ptr<protocol::Principal> &principal);
+                void setPrincipal(const std::shared_ptr<protocol::Principal> &p);
 
                 void connectToCluster();
 
-                std::shared_ptr<util::Future<bool> > connectToClusterAsync();
+                std::future<bool> connectToClusterAsync();
 
                 bool isAlive();
 
@@ -177,7 +174,7 @@ namespace hazelcast {
 
                 std::unique_ptr<protocol::ClientMessage>
                 encodeAuthenticationRequest(bool asOwner, serialization::pimpl::SerializationService &ss,
-                                            const protocol::Principal *principal);
+                                            const protocol::Principal *p);
 
                 void onAuthenticated(const Address &target, const std::shared_ptr<Connection> &connection);
 
@@ -187,7 +184,7 @@ namespace hazelcast {
 
                 void fireConnectionRemovedEvent(const std::shared_ptr<Connection> &connection);
 
-                void disconnectFromCluster(const std::shared_ptr<Connection> &connection);
+                void disconnectFromCluster(const std::shared_ptr<Connection> connection);
 
                 void fireConnectionEvent(const hazelcast::client::LifecycleEvent::LifeCycleState &state);
 
@@ -195,108 +192,72 @@ namespace hazelcast {
 
                 std::set<Address> getPossibleMemberAddresses();
 
-                std::unique_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &client);
+                std::unique_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &context);
 
                 void shuffle(std::vector<Address> &memberAddresses) const;
 
-                class AuthCallback : public ExecutionCallback<protocol::ClientMessage> {
+                class AuthCallback {
                 public:
-                    AuthCallback(std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture,
-                                 const std::shared_ptr<Connection> &connection, bool asOwner, const Address &target,
-                                 std::shared_ptr<AuthenticationFuture> &future,
+                    AuthCallback(const std::shared_ptr<Connection> &connection, bool asOwner, const Address &target,
+                                 std::shared_ptr<AuthenticationFuture> &f,
                                  ClientConnectionManagerImpl &connectionManager);
 
-                    virtual void onResponse(const std::shared_ptr<protocol::ClientMessage> &response);
+                    virtual ~AuthCallback();
 
-                    virtual void onFailure(const std::shared_ptr<exception::IException> &e);
+                    virtual void onResponse(protocol::ClientMessage response);
+
+                    virtual void onFailure(std::exception_ptr e);
 
                 private:
-                    std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture;
                     const std::shared_ptr<Connection> connection;
                     bool asOwner;
                     Address target;
-                    std::shared_ptr<AuthenticationFuture> future;
-                    ClientConnectionManagerImpl &connectionManager;
-                    std::future<void> timeoutTaskFuture;
-                    std::mutex timeoutMutex;
-                    std::condition_variable timeoutCondition;
-                    bool cancelled;
+                    std::shared_ptr<AuthenticationFuture> authFuture;
+                    std::shared_ptr<ClientConnectionManagerImpl> connectionManager;
+                    std::shared_ptr<boost::asio::steady_timer> timeoutTimer;
 
                     void onAuthenticationFailed(const Address &target, const std::shared_ptr<Connection> &connection,
-                                                const std::shared_ptr<exception::IException> &cause);
+                                                std::exception_ptr cause);
 
-                    virtual void handleAuthenticationException(const std::shared_ptr<exception::IException> &e);
+                    virtual void handleAuthenticationException(std::exception_ptr e);
 
                     void cancelTimeoutTask();
 
                     void scheduleTimeoutTask();
                 };
 
-                class DisconnecFromClusterTask : public util::Runnable {
-                public:
-                    DisconnecFromClusterTask(const std::shared_ptr<Connection> &connection,
-                                             ClientConnectionManagerImpl &connectionManager,
-                                             ClientConnectionStrategy &connectionStrategy);
-
-                    virtual void run();
-
-                    virtual const std::string getName() const;
-
-                private:
-                    const std::shared_ptr<Connection> connection;
-                    ClientConnectionManagerImpl &connectionManager;
-                    ClientConnectionStrategy &connectionStrategy;
-                };
-
-                class ConnectToClusterTask : public util::Callable<bool> {
-                public:
-                    ConnectToClusterTask(const spi::ClientContext &clientContext);
-
-                    virtual std::shared_ptr<bool> call();
-
-                    virtual const std::string getName() const;
-
-                private:
-                    spi::ClientContext clientContext;
-                };
-
                 util::AtomicBoolean alive;
 
                 util::ILogger &logger;
-                int64_t connectionTimeoutMillis;
+                std::chrono::steady_clock::duration connectionTimeoutMillis;
 
                 spi::ClientContext &client;
+                std::unique_ptr<boost::asio::io_context> ioContext;
                 SocketInterceptor *socketInterceptor;
-
                 spi::impl::ClientExecutionServiceImpl &executionService;
-
                 std::shared_ptr<AddressTranslator> translator;
                 util::SynchronizedMap<Address, Connection> activeConnections;
                 util::SynchronizedMap<Address, FutureTuple> connectionsInProgress;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
                 const Credentials *credentials;
-
                 util::Sync<std::shared_ptr<Address> > ownerConnectionAddress;
                 util::Sync<std::shared_ptr<Address> > previousOwnerConnectionAddress;
-
                 util::Sync<std::shared_ptr<protocol::Principal> > principal;
                 std::unique_ptr<ClientConnectionStrategy> connectionStrategy;
-                std::shared_ptr<util::impl::SimpleExecutorService> clusterConnectionExecutor;
+                std::unique_ptr<hazelcast::util::hz_thread_pool> clusterConnectionExecutor;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
                 int32_t ioThreadCount;
                 bool shuffleMemberList;
                 std::vector<std::shared_ptr<AddressProvider> > addressProviders;
-
                 std::atomic<int> connectionIdGen;
-                internal::socket::SocketFactory socketFactory;
-
-                util::Mutex lock;
-                std::unique_ptr<HeartbeatManager> heartbeat;
-
-                boost::asio::io_context ioContext;
+                std::unique_ptr<boost::asio::ip::tcp::resolver> ioResolver;
+                std::unique_ptr<internal::socket::SocketFactory> socketFactory;
+                std::mutex lock;
+                HeartbeatManager heartbeat;
                 std::vector<std::thread> ioThreads;
+                std::unique_ptr<boost::asio::io_context::work> ioGuard;
             };
         }
     }

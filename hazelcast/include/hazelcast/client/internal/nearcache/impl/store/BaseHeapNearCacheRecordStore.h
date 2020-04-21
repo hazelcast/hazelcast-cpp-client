@@ -88,9 +88,9 @@ namespace hazelcast {
                                 }
                                 std::ostringstream out;
                                 out << "Invalid max-size policy " << '(' << (int) maxSizePolicy << ") for " <<
-                                nearCacheConfig.getName() << "! Only " <<
-                                        (int) client::config::EvictionConfig<K, V>::ENTRY_COUNT << " is supported.";
-                                throw exception::IllegalArgumentException(out.str());
+                                    nearCacheConfig.getName() << "! Only " <<
+                                    (int) client::config::EvictionConfig<K, V>::ENTRY_COUNT << " is supported.";
+                                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
                             }
 
                             //@Override

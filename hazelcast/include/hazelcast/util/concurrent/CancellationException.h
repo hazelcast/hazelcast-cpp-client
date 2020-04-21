@@ -34,8 +34,6 @@ namespace hazelcast {
             class HAZELCAST_API CancellationException : public client::exception::IllegalStateException {
             public:
                 CancellationException(const std::string &source, const std::string &message);
-
-                virtual void raise() const;
             };
         }
     }

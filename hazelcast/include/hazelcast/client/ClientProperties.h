@@ -83,8 +83,6 @@ namespace hazelcast {
 
             const ClientProperty &getEventThreadCount() const;
 
-            const ClientProperty &getEventQueueCapacity() const;
-
             const ClientProperty &getInternalExecutorPoolSize() const;
 
             const ClientProperty &getShuffleMemberList() const;
@@ -98,6 +96,8 @@ namespace hazelcast {
             const ClientProperty &getStatisticsPeriodSeconds() const;
 
             const ClientProperty &getIOThreadCount() const;
+
+            const ClientProperty &getResponseExecutorThreadCount() const;
 
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
@@ -182,11 +182,6 @@ namespace hazelcast {
             static const std::string EVENT_THREAD_COUNT;
             static const std::string EVENT_THREAD_COUNT_DEFAULT;
 
-            /**
-             * Capacity of the executor that handles the incoming event packets.
-             */
-            static const std::string EVENT_QUEUE_CAPACITY;
-            static const std::string EVENT_QUEUE_CAPACITY_DEFAULT;
 
             static const std::string INTERNAL_EXECUTOR_POOL_SIZE;
             static const std::string INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT;
@@ -246,6 +241,13 @@ namespace hazelcast {
             static const std::string IO_THREAD_COUNT_DEFAULT;
 
             /**
+             * The number of threads for the response executor processing.
+             * Default is no thread usage.
+             */
+            static const std::string RESPONSE_EXECUTOR_THREAD_COUNT;
+            static const std::string RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT;
+
+            /**
              * Returns the configured boolean value of a {@link ClientProperty}.
              *
              * @param property the {@link ClientProperty} to get the value from
@@ -287,7 +289,6 @@ namespace hazelcast {
             ClientProperty invocationRetryPauseMillis;
             ClientProperty invocationTimeoutSeconds;
             ClientProperty eventThreadCount;
-            ClientProperty eventQueueCapacity;
             ClientProperty internalExecutorPoolSize;
             ClientProperty shuffleMemberList;
             ClientProperty maxConcurrentInvocations;
@@ -295,6 +296,7 @@ namespace hazelcast {
             ClientProperty statisticsEnabled;
             ClientProperty statisticsPeriodSeconds;
             ClientProperty ioThreadCount;
+            ClientProperty responseExecutorThreadCount;
 
             std::map<std::string, std::string> propertiesMap;
         };

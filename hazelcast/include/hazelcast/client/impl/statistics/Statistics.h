@@ -21,6 +21,8 @@
 #include <sstream>
 #include <memory>
 
+#include <boost/asio/steady_timer.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/Sync.h"
@@ -51,13 +53,14 @@ namespace hazelcast {
                      */
                     void start();
 
+                    void shutdown();
+
                 private:
                     static const std::string NEAR_CACHE_CATEGORY_PREFIX;
                     static const std::string FEATURE_SUPPORTED_SINCE_VERSION_STRING;
                     static const int FEATURE_SUPPORTED_SINCE_VERSION;
                     static const char STAT_SEPARATOR = ',';
                     static const char KEY_VALUE_SEPARATOR = '=';
-                    static const int MILLIS_IN_A_SECOND = 1000;
 
                     class PeriodicStatistics {
                     public:
@@ -90,18 +93,6 @@ namespace hazelcast {
                         Statistics &statistics;
                     };
 
-                    class CollectStatisticsTask : public util::Runnable {
-                    public:
-                        CollectStatisticsTask(Statistics &statistics);
-
-                        virtual const std::string getName() const;
-
-                        virtual void run();
-
-                    private:
-                        Statistics &statistics;
-                    };
-
                     void schedulePeriodicStatisticsSendTask(int64_t periodSeconds);
 
                     std::shared_ptr<connection::Connection> getOwnerConnection();
@@ -119,6 +110,7 @@ namespace hazelcast {
                     bool enabled;
                     PeriodicStatistics periodicStats;
                     util::Sync<std::shared_ptr<Address> > cachedOwnerAddress;
+                    std::shared_ptr<boost::asio::steady_timer> sendTaskTimer;
                 };
 
                 template<>

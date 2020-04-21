@@ -24,13 +24,13 @@
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/client/internal/executor/CompletedFuture.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -59,40 +59,48 @@ namespace hazelcast {
                           logger(context->getLogger()) {
                 }
 
-                virtual std::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
+                virtual boost::future<std::shared_ptr<V>> getAsync(const K &key) {
                     std::shared_ptr<serialization::pimpl::Data> ncKey = ClientMapProxy<K, V>::toSharedData(key);
                     std::shared_ptr<V> cached = nearCache->get(ncKey);
                     if (cached.get() != NULL) {
-                        std::shared_ptr<ExecutorService> executor = spi::ClientProxy::getContext().getClientExecutionService().getUserExecutor();
                         if (internal::nearcache::NearCache<K, V>::NULL_OBJECT == cached) {
-                            return std::shared_ptr<ICompletableFuture<V> >(
-                                    new internal::executor::CompletedFuture<V>(std::shared_ptr<V>(), executor));
+                            boost::make_ready_future<std::shared_ptr<V>>(nullptr);
                         }
-                        return std::shared_ptr<ICompletableFuture<V> >(
-                                new internal::executor::CompletedFuture<V>(cached, executor));
                     }
 
                     bool marked = keyStateMarker->tryMark(*ncKey);
                     try {
-                        std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture = ClientMapProxy<K, V>::getAsyncInternal(
-                                *ncKey);
+                        auto invocationFuture = ClientMapProxy<K, V>::getAsyncInternal(*ncKey);
                         if (marked) {
                             std::shared_ptr<ExecutionCallback<protocol::ClientMessage> > callback(
                                     new GetAsyncExecutionCallback(ncKey,
                                                                   std::enable_shared_from_this<NearCachedClientMapProxy<K, V> >::shared_from_this()));
-                            invocationFuture->andThen(callback,
-                                                      spi::ClientProxy::getContext().getClientExecutionService().shared_from_this());
+                            return invocationFuture.then(boost::launch::sync,
+                                                         [=](boost::future<protocol::ClientMessage> f) {
+                                                             try {
+                                                                 std::shared_ptr<V> value = ClientMapProxy<K, V>::GET_ASYNC_RESPONSE_DECODER()->decodeClientMessage(
+                                                                         f.get(),
+                                                                         ClientMapProxy<K, V>::getSerializationService());
+                                                                 tryToPutNearCache(ncKey, value);
+                                                                 return value;
+                                                             } catch (...) {
+                                                                 resetToUnmarkedState(ncKey);
+                                                                 throw;
+                                                             }
+                                                         });
                         }
-                        return std::shared_ptr<ICompletableFuture<V> >(
-                                new internal::ClientDelegatingFuture<V>(invocationFuture,
-                                                                        ClientMapProxy<K, V>::getSerializationService(),
-                                                                        ClientMapProxy<K, V>::PUT_ASYNC_RESPONSE_DECODER()));
-                    } catch (exception::IException &e) {
-                        resetToUnmarkedState(ncKey);
-                        util::ExceptionUtil::rethrow(e);
-                    }
 
-                    return std::shared_ptr<ICompletableFuture<V> >();
+                        return invocationFuture.then(boost::launch::sync,
+                                                     [=](boost::future<protocol::ClientMessage> f) {
+                                                         return ClientMapProxy<K, V>::GET_ASYNC_RESPONSE_DECODER()->decodeClientMessage(
+                                                                 f.get(),
+                                                                 ClientMapProxy<K, V>::getSerializationService());
+                                                     });
+                    } catch (exception::IException &) {
+                        resetToUnmarkedState(ncKey);
+                        util::ExceptionUtil::rethrow(std::current_exception());
+                    }
+                    return boost::future<std::shared_ptr<V>>();
                 }
 
                 virtual monitor::LocalMapStats &getLocalMapStats() {
@@ -208,11 +216,10 @@ namespace hazelcast {
                     }
                 }
 
-                virtual std::shared_ptr<ICompletableFuture<V> >
+                virtual boost::future<std::shared_ptr<V>>
                 removeAsyncInternal(const serialization::pimpl::Data &keyData) {
                     try {
-                        std::shared_ptr<ICompletableFuture<V> > future = ClientMapProxy<K, V>::removeAsyncInternal(
-                                keyData);
+                        auto future = ClientMapProxy<K, V>::removeAsyncInternal(keyData);
                         invalidateNearCache(keyData);
                         return future;
                     } catch (exception::IException &) {
@@ -280,17 +287,13 @@ namespace hazelcast {
                     }
                 }
 
-                virtual std::shared_ptr<ICompletableFuture<V> >
+                virtual boost::future<std::shared_ptr<V>>
                 putAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
                                  const util::concurrent::TimeUnit &maxIdleUnit,
                                  const serialization::pimpl::Data &keyData, const V &value) {
                     try {
-                        std::shared_ptr<ICompletableFuture<V> > future = ClientMapProxy<K, V>::putAsyncInternal(ttl,
-                                                                                                                  ttlUnit,
-                                                                                                                  maxIdle,
-                                                                                                                  maxIdleUnit,
-                                                                                                                  keyData,
-                                                                                                                  value);
+                        auto future = ClientMapProxy<K, V>::putAsyncInternal(ttl, ttlUnit, maxIdle, maxIdleUnit,
+                                                                             keyData, value);
                         invalidateNearCache(keyData);
                         return future;
                     } catch (exception::IException &) {
@@ -359,12 +362,12 @@ namespace hazelcast {
                     }
                 }
 
-                virtual std::shared_ptr<ICompletableFuture<void> >
+                virtual boost::future<void>
                 setAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
                                  const util::concurrent::TimeUnit &maxIdleUnit,
                                  const serialization::pimpl::Data &keyData, const V &value) {
                     try {
-                        std::shared_ptr<ICompletableFuture<void> > future = ClientMapProxy<K, V>::setAsyncInternal(
+                        auto future = ClientMapProxy<K, V>::setAsyncInternal(
                                 ttl,
                                 ttlUnit,
                                 maxIdle,
@@ -512,11 +515,11 @@ namespace hazelcast {
 
                     virtual void onResponse(const std::shared_ptr<protocol::ClientMessage> &response) {
                         std::shared_ptr<V> value = ClientMapProxy<K, V>::GET_ASYNC_RESPONSE_DECODER()->decodeClientMessage(
-                                response, proxy->getSerializationService());
+                                std::move(*response), proxy->getSerializationService());
                         proxy->tryToPutNearCache(ncKey, value);
                     }
 
-                    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
+                    virtual void onFailure(std::exception_ptr e) {
                         proxy->resetToUnmarkedState(ncKey);
                     }
 
@@ -595,7 +598,7 @@ namespace hazelcast {
 
                     std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
                         return protocol::codec::MapAddNearCacheEntryListenerCodec::ResponseParameters::decode(
-                                responseMessage).response;
+                                std::move(responseMessage)).response;
                     }
 
                     std::unique_ptr<protocol::ClientMessage>
@@ -605,7 +608,7 @@ namespace hazelcast {
 
                     bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
                         return protocol::codec::MapRemoveEntryListenerCodec::ResponseParameters::decode(
-                                clientMessage).response;
+                                std::move(clientMessage)).response;
                     }
 
                     NearCacheEntryListenerMessageCodec(const std::string &name, int32_t listenerFlags)
@@ -622,7 +625,7 @@ namespace hazelcast {
                             new NearCacheEntryListenerMessageCodec(spi::ClientProxy::getName(), listenerFlags));
                 }
 
-                void resetToUnmarkedState(std::shared_ptr<serialization::pimpl::Data> &key) {
+                void resetToUnmarkedState(const std::shared_ptr<serialization::pimpl::Data> &key) {
                     if (keyStateMarker->tryUnmark(*key)) {
                         return;
                     }
@@ -640,19 +643,19 @@ namespace hazelcast {
                     }
                 }
 
-                void tryToPutNearCache(std::shared_ptr<serialization::pimpl::Data> &keyData,
-                                       std::shared_ptr<V> &response) {
+                void tryToPutNearCache(const std::shared_ptr<serialization::pimpl::Data> &keyData,
+                                       const std::shared_ptr<V> &response) {
                     tryToPutNearCacheInternal<V>(keyData, response);
                 }
 
-                void tryToPutNearCache(std::shared_ptr<serialization::pimpl::Data> &keyData,
-                                       std::shared_ptr<serialization::pimpl::Data> &response) {
+                void tryToPutNearCache(const std::shared_ptr<serialization::pimpl::Data> &keyData,
+                                       const std::shared_ptr<serialization::pimpl::Data> &response) {
                     tryToPutNearCacheInternal<serialization::pimpl::Data>(keyData, response);
                 }
 
                 template<typename VALUETYPE>
-                void tryToPutNearCacheInternal(std::shared_ptr<serialization::pimpl::Data> &keyData,
-                                               std::shared_ptr<VALUETYPE> &response) {
+                void tryToPutNearCacheInternal(const std::shared_ptr<serialization::pimpl::Data> &keyData,
+                                               const std::shared_ptr<VALUETYPE> &response) {
                     try {
                         nearCache->put(keyData, response);
                         resetToUnmarkedState(keyData);

@@ -37,32 +37,6 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                enum HAZELCAST_API AtomicLongMessageType {
-
-                    HZ_ATOMICLONG_APPLY = 0x0a01,
-                    HZ_ATOMICLONG_ALTER = 0x0a02,
-                    HZ_ATOMICLONG_ALTERANDGET = 0x0a03,
-                    HZ_ATOMICLONG_GETANDALTER = 0x0a04,
-                    HZ_ATOMICLONG_ADDANDGET = 0x0a05,
-                    HZ_ATOMICLONG_COMPAREANDSET = 0x0a06,
-                    HZ_ATOMICLONG_DECREMENTANDGET = 0x0a07,
-                    HZ_ATOMICLONG_GET = 0x0a08,
-                    HZ_ATOMICLONG_GETANDADD = 0x0a09,
-                    HZ_ATOMICLONG_GETANDSET = 0x0a0a,
-                    HZ_ATOMICLONG_INCREMENTANDGET = 0x0a0b,
-                    HZ_ATOMICLONG_GETANDINCREMENT = 0x0a0c,
-                    HZ_ATOMICLONG_SET = 0x0a0d
-                };
-            }
-        }
-    }
-}
-
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
                 enum HAZELCAST_API ClientMessageType {
 
                     HZ_CLIENT_AUTHENTICATION = 0x0002,
@@ -87,24 +61,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                enum HAZELCAST_API CountDownLatchMessageType {
-
-                    HZ_COUNTDOWNLATCH_AWAIT = 0x0c01,
-                    HZ_COUNTDOWNLATCH_COUNTDOWN = 0x0c02,
-                    HZ_COUNTDOWNLATCH_GETCOUNT = 0x0c03,
-                    HZ_COUNTDOWNLATCH_TRYSETCOUNT = 0x0c04
-                };
-            }
-        }
-    }
-}
-
 
 namespace hazelcast {
     namespace client {
@@ -173,28 +129,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                enum HAZELCAST_API LockMessageType {
-
-                    HZ_LOCK_ISLOCKED = 0x0701,
-                    HZ_LOCK_ISLOCKEDBYCURRENTTHREAD = 0x0702,
-                    HZ_LOCK_GETLOCKCOUNT = 0x0703,
-                    HZ_LOCK_GETREMAININGLEASETIME = 0x0704,
-                    HZ_LOCK_LOCK = 0x0705,
-                    HZ_LOCK_UNLOCK = 0x0706,
-                    HZ_LOCK_FORCEUNLOCK = 0x0707,
-                    HZ_LOCK_TRYLOCK = 0x0708
-                };
-            }
-        }
-    }
-}
-
 
 namespace hazelcast {
     namespace client {
@@ -419,28 +353,6 @@ namespace hazelcast {
     }
 }
 
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                enum HAZELCAST_API SemaphoreMessageType {
-
-                    HZ_SEMAPHORE_INIT = 0x0d01,
-                    HZ_SEMAPHORE_ACQUIRE = 0x0d02,
-                    HZ_SEMAPHORE_AVAILABLEPERMITS = 0x0d03,
-                    HZ_SEMAPHORE_DRAINPERMITS = 0x0d04,
-                    HZ_SEMAPHORE_REDUCEPERMITS = 0x0d05,
-                    HZ_SEMAPHORE_RELEASE = 0x0d06,
-                    HZ_SEMAPHORE_TRYACQUIRE = 0x0d07,
-                    HZ_SEMAPHORE_INCREASEPERMITS = 0x0d08
-                };
-            }
-        }
-    }
-}
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -604,495 +516,6 @@ namespace hazelcast {
 #pragma warning(disable: 4251) //for dll export
 #endif
 
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongAddAndGetCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t delta);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t delta);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int64_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongAddAndGetCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongCompareAndSetCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t expected,
-                            int64_t updated);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t expected,
-                            int64_t updated);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongCompareAndSetCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongDecrementAndGetCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int64_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongDecrementAndGetCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongGetAndAddCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t delta);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t delta);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int64_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongGetAndAddCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongGetAndIncrementCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int64_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongGetAndIncrementCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongGetAndSetCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t newValue);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t newValue);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int64_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongGetAndSetCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongGetCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int64_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongGetCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongIncrementAndGetCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int64_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongIncrementAndGetCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API AtomicLongSetCodec {
-                public:
-                    static const AtomicLongMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t newValue);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t newValue);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    AtomicLongSetCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
 namespace hazelcast {
     namespace client {
         class Member;
@@ -1119,7 +542,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1282,7 +705,7 @@ namespace hazelcast {
                         std::unique_ptr<std::vector<Member> > clientUnregisteredMembers;
                         bool clientUnregisteredMembersExist;
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -1371,7 +794,7 @@ namespace hazelcast {
                         std::unique_ptr<std::vector<Member> > clientUnregisteredMembers;
                         bool clientUnregisteredMembersExist;
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -1519,7 +942,7 @@ namespace hazelcast {
                         int32_t partitionStateVersion;
                         bool partitionStateVersionExist;
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1621,223 +1044,6 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API CountDownLatchAwaitCodec {
-                public:
-                    static const CountDownLatchMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t timeout);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t timeout);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    CountDownLatchAwaitCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API CountDownLatchCountDownCodec {
-                public:
-                    static const CountDownLatchMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    CountDownLatchCountDownCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API CountDownLatchGetCountCodec {
-                public:
-                    static const CountDownLatchMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int32_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    CountDownLatchGetCountCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API CountDownLatchTrySetCountCodec {
-                public:
-                    static const CountDownLatchMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int32_t count);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int32_t count);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    CountDownLatchTrySetCountCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
 namespace hazelcast {
     namespace client {
         class Address;
@@ -1868,7 +1074,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1926,7 +1132,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -1980,7 +1186,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2088,7 +1294,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -2156,7 +1362,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -2219,7 +1425,7 @@ namespace hazelcast {
                         int32_t batchSize;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2280,7 +1486,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2343,7 +1549,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2404,7 +1610,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2467,7 +1673,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2637,7 +1843,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2698,7 +1904,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2759,7 +1965,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2820,7 +2026,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2874,7 +2080,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -2935,7 +2141,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -2999,7 +2205,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3053,7 +2259,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3114,7 +2320,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3175,7 +2381,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3231,7 +2437,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3292,7 +2498,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -3358,7 +2564,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -3415,7 +2621,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3473,7 +2679,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -3492,431 +2698,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API LockForceUnlockCodec {
-                public:
-                    static const LockMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t referenceId);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t referenceId);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    LockForceUnlockCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API LockGetLockCountCodec {
-                public:
-                    static const LockMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int32_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    LockGetLockCountCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API LockGetRemainingLeaseTimeCodec {
-                public:
-                    static const LockMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int64_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    LockGetRemainingLeaseTimeCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API LockIsLockedByCurrentThreadCodec {
-                public:
-                    static const LockMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t threadId);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t threadId);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    LockIsLockedByCurrentThreadCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API LockIsLockedCodec {
-                public:
-                    static const LockMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    LockIsLockedCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API LockLockCodec {
-                public:
-                    static const LockMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t leaseTime,
-                            int64_t threadId,
-                            int64_t referenceId);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t leaseTime,
-                            int64_t threadId,
-                            int64_t referenceId);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    LockLockCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API LockTryLockCodec {
-                public:
-                    static const LockMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t threadId,
-                            int64_t lease,
-                            int64_t timeout,
-                            int64_t referenceId);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t threadId,
-                            int64_t lease,
-                            int64_t timeout,
-                            int64_t referenceId);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    LockTryLockCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API LockUnlockCodec {
-                public:
-                    static const LockMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int64_t threadId,
-                            int64_t referenceId);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int64_t threadId,
-                            int64_t referenceId);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    LockUnlockCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3956,7 +2737,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4042,7 +2823,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4128,7 +2909,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4254,7 +3035,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4317,7 +3098,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4405,7 +3186,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4525,7 +3306,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4586,7 +3367,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4693,7 +3474,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4749,7 +3530,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4803,7 +3584,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4908,7 +3689,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -4964,7 +3745,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5029,13 +3810,13 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
 
                     private:
-                        ResponseParameters(ClientMessage &clientMessage);
+                        ResponseParameters(ClientMessage clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
 
@@ -5090,7 +3871,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5148,7 +3929,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5297,7 +4078,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5360,7 +4141,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -5429,7 +4210,7 @@ namespace hazelcast {
                         std::unique_ptr<map::DataEntryView> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -5486,7 +4267,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5547,7 +4328,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5601,7 +4382,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5657,7 +4438,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5713,7 +4494,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -5884,7 +4665,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -5954,7 +4735,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6081,7 +4862,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6196,7 +4977,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6255,7 +5036,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6320,7 +5101,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6376,7 +5157,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6441,7 +5222,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6511,7 +5292,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6635,7 +5416,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6692,7 +5473,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6757,7 +5538,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -6829,7 +5610,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6896,7 +5677,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -6961,7 +5742,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7068,7 +5849,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7124,7 +5905,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7180,7 +5961,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7243,7 +6024,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7327,7 +6108,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7453,7 +6234,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7516,7 +6297,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7577,7 +6358,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7631,7 +6412,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7740,7 +6521,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7801,7 +6582,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7855,7 +6636,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -7975,7 +6756,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8033,7 +6814,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8098,7 +6879,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8154,7 +6935,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8208,7 +6989,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8277,7 +7058,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8393,7 +7174,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8447,7 +7228,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8514,7 +7295,7 @@ namespace hazelcast {
                         int32_t replicaCount;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8577,7 +7358,7 @@ namespace hazelcast {
                         int32_t replicaCount;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8631,7 +7412,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8692,7 +7473,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8755,7 +7536,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8874,7 +7655,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8935,7 +7716,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -8996,7 +7777,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9057,7 +7838,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9111,7 +7892,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9167,7 +7948,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9221,7 +8002,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9275,7 +8056,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9338,7 +8119,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9397,7 +8178,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -9461,7 +8242,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -9567,7 +8348,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9628,7 +8409,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9684,7 +8465,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9738,7 +8519,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9799,7 +8580,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9881,7 +8662,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -9965,7 +8746,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10047,7 +8828,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10129,7 +8910,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10251,7 +9032,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10312,7 +9093,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10366,7 +9147,7 @@ namespace hazelcast {
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10427,7 +9208,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -10484,7 +9265,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10538,7 +9319,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10652,7 +9433,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -10716,7 +9497,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -10775,7 +9556,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10829,7 +9610,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10883,7 +9664,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -10946,7 +9727,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11009,7 +9790,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11063,7 +9844,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11117,7 +9898,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11185,7 +9966,7 @@ namespace hazelcast {
                         int64_t nextSeq;
                         bool nextSeqExist;
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -11249,7 +10030,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -11306,7 +10087,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11360,7 +10141,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11414,7 +10195,7 @@ namespace hazelcast {
                         int64_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11433,411 +10214,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API SemaphoreAcquireCodec {
-                public:
-                    static const SemaphoreMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int32_t permits);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int32_t permits);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    SemaphoreAcquireCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API SemaphoreAvailablePermitsCodec {
-                public:
-                    static const SemaphoreMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int32_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    SemaphoreAvailablePermitsCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API SemaphoreDrainPermitsCodec {
-                public:
-                    static const SemaphoreMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        int32_t response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    SemaphoreDrainPermitsCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API SemaphoreIncreasePermitsCodec {
-                public:
-                    static const SemaphoreMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int32_t increase);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int32_t increase);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    SemaphoreIncreasePermitsCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API SemaphoreInitCodec {
-                public:
-                    static const SemaphoreMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int32_t permits);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int32_t permits);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    SemaphoreInitCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API SemaphoreReducePermitsCodec {
-                public:
-                    static const SemaphoreMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int32_t reduction);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int32_t reduction);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    SemaphoreReducePermitsCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API SemaphoreReleaseCodec {
-                public:
-                    static const SemaphoreMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int32_t permits);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int32_t permits);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-
-                private:
-                    // Preventing public access to constructors
-                    SemaphoreReleaseCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
-using namespace hazelcast::client::serialization::pimpl;
-
-namespace hazelcast {
-    namespace client {
-
-        namespace protocol {
-            namespace codec {
-                class HAZELCAST_API SemaphoreTryAcquireCodec {
-                public:
-                    static const SemaphoreMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            int32_t permits,
-                            int64_t timeout);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            int32_t permits,
-                            int64_t timeout);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
-
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-
-                private:
-                    // Preventing public access to constructors
-                    SemaphoreTryAcquireCodec();
-                };
-            }
-        }
-    }
-}
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11873,7 +10249,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11934,7 +10310,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -11997,7 +10373,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12116,7 +10492,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12177,7 +10553,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12238,7 +10614,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12299,7 +10675,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12353,7 +10729,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12407,7 +10783,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12468,7 +10844,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12524,7 +10900,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12578,7 +10954,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12639,7 +11015,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12760,7 +11136,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12864,7 +11240,7 @@ namespace hazelcast {
                         std::string response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -12973,7 +11349,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13038,7 +11414,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13096,7 +11472,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13161,7 +11537,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13279,7 +11655,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13340,7 +11716,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13398,7 +11774,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13458,7 +11834,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13527,7 +11903,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13597,7 +11973,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13665,7 +12041,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13735,7 +12111,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13802,7 +12178,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -13874,7 +12250,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -13987,7 +12363,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14045,7 +12421,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14105,7 +12481,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14165,7 +12541,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14232,7 +12608,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14292,7 +12668,7 @@ namespace hazelcast {
                         std::vector<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14359,7 +12735,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14417,7 +12793,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14482,7 +12858,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14549,7 +12925,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14614,7 +12990,7 @@ namespace hazelcast {
                         std::unique_ptr<serialization::pimpl::Data> response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
@@ -14675,7 +13051,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14740,7 +13116,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14805,7 +13181,7 @@ namespace hazelcast {
                         bool response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
@@ -14863,7 +13239,7 @@ namespace hazelcast {
                         int32_t response;
 
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);

@@ -27,414 +27,6 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const AtomicLongMessageType AtomicLongAddAndGetCodec::REQUEST_TYPE = HZ_ATOMICLONG_ADDANDGET;
-                const bool AtomicLongAddAndGetCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongAddAndGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
-
-                std::unique_ptr<ClientMessage> AtomicLongAddAndGetCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t delta) {
-                    int32_t requiredDataSize = calculateDataSize(name, delta);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongAddAndGetCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(delta);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongAddAndGetCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t delta) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(delta);
-                    return dataSize;
-                }
-
-                AtomicLongAddAndGetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int64_t>();
-
-                }
-
-                AtomicLongAddAndGetCodec::ResponseParameters
-                AtomicLongAddAndGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongAddAndGetCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const AtomicLongMessageType AtomicLongCompareAndSetCodec::REQUEST_TYPE = HZ_ATOMICLONG_COMPAREANDSET;
-                const bool AtomicLongCompareAndSetCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongCompareAndSetCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
-
-                std::unique_ptr<ClientMessage> AtomicLongCompareAndSetCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t expected,
-                        int64_t updated) {
-                    int32_t requiredDataSize = calculateDataSize(name, expected, updated);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongCompareAndSetCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(expected);
-                    clientMessage->set(updated);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongCompareAndSetCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t expected,
-                        int64_t updated) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(expected);
-                    dataSize += ClientMessage::calculateDataSize(updated);
-                    return dataSize;
-                }
-
-                AtomicLongCompareAndSetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<bool>();
-
-                }
-
-                AtomicLongCompareAndSetCodec::ResponseParameters
-                AtomicLongCompareAndSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongCompareAndSetCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const AtomicLongMessageType AtomicLongDecrementAndGetCodec::REQUEST_TYPE = HZ_ATOMICLONG_DECREMENTANDGET;
-                const bool AtomicLongDecrementAndGetCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongDecrementAndGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
-
-                std::unique_ptr<ClientMessage> AtomicLongDecrementAndGetCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongDecrementAndGetCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongDecrementAndGetCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                AtomicLongDecrementAndGetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int64_t>();
-
-                }
-
-                AtomicLongDecrementAndGetCodec::ResponseParameters
-                AtomicLongDecrementAndGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongDecrementAndGetCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const AtomicLongMessageType AtomicLongGetAndAddCodec::REQUEST_TYPE = HZ_ATOMICLONG_GETANDADD;
-                const bool AtomicLongGetAndAddCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongGetAndAddCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
-
-                std::unique_ptr<ClientMessage> AtomicLongGetAndAddCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t delta) {
-                    int32_t requiredDataSize = calculateDataSize(name, delta);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongGetAndAddCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(delta);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongGetAndAddCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t delta) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(delta);
-                    return dataSize;
-                }
-
-                AtomicLongGetAndAddCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int64_t>();
-
-                }
-
-                AtomicLongGetAndAddCodec::ResponseParameters
-                AtomicLongGetAndAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongGetAndAddCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const AtomicLongMessageType AtomicLongGetAndIncrementCodec::REQUEST_TYPE = HZ_ATOMICLONG_GETANDINCREMENT;
-                const bool AtomicLongGetAndIncrementCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongGetAndIncrementCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
-
-                std::unique_ptr<ClientMessage> AtomicLongGetAndIncrementCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongGetAndIncrementCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongGetAndIncrementCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                AtomicLongGetAndIncrementCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int64_t>();
-
-                }
-
-                AtomicLongGetAndIncrementCodec::ResponseParameters
-                AtomicLongGetAndIncrementCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongGetAndIncrementCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const AtomicLongMessageType AtomicLongGetAndSetCodec::REQUEST_TYPE = HZ_ATOMICLONG_GETANDSET;
-                const bool AtomicLongGetAndSetCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongGetAndSetCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
-
-                std::unique_ptr<ClientMessage> AtomicLongGetAndSetCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t newValue) {
-                    int32_t requiredDataSize = calculateDataSize(name, newValue);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongGetAndSetCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(newValue);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongGetAndSetCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t newValue) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(newValue);
-                    return dataSize;
-                }
-
-                AtomicLongGetAndSetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int64_t>();
-
-                }
-
-                AtomicLongGetAndSetCodec::ResponseParameters
-                AtomicLongGetAndSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongGetAndSetCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const AtomicLongMessageType AtomicLongGetCodec::REQUEST_TYPE = HZ_ATOMICLONG_GET;
-                const bool AtomicLongGetCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
-
-                std::unique_ptr<ClientMessage> AtomicLongGetCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongGetCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongGetCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                AtomicLongGetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int64_t>();
-
-                }
-
-                AtomicLongGetCodec::ResponseParameters
-                AtomicLongGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongGetCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const AtomicLongMessageType AtomicLongIncrementAndGetCodec::REQUEST_TYPE = HZ_ATOMICLONG_INCREMENTANDGET;
-                const bool AtomicLongIncrementAndGetCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongIncrementAndGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
-
-                std::unique_ptr<ClientMessage> AtomicLongIncrementAndGetCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongIncrementAndGetCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongIncrementAndGetCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                AtomicLongIncrementAndGetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int64_t>();
-
-                }
-
-                AtomicLongIncrementAndGetCodec::ResponseParameters
-                AtomicLongIncrementAndGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongIncrementAndGetCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const AtomicLongMessageType AtomicLongSetCodec::REQUEST_TYPE = HZ_ATOMICLONG_SET;
-                const bool AtomicLongSetCodec::RETRYABLE = false;
-                const ResponseMessageConst AtomicLongSetCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> AtomicLongSetCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t newValue) {
-                    int32_t requiredDataSize = calculateDataSize(name, newValue);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) AtomicLongSetCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(newValue);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t AtomicLongSetCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t newValue) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(newValue);
-                    return dataSize;
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
                 const ClientMessageType ClientAddMembershipListenerCodec::REQUEST_TYPE = HZ_CLIENT_ADDMEMBERSHIPLISTENER;
                 const bool ClientAddMembershipListenerCodec::RETRYABLE = false;
                 const ResponseMessageConst ClientAddMembershipListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
@@ -465,7 +57,7 @@ namespace hazelcast {
                 }
 
                 ClientAddMembershipListenerCodec::ResponseParameters
-                ClientAddMembershipListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientAddMembershipListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ClientAddMembershipListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -657,7 +249,7 @@ namespace hazelcast {
                 }
 
                 ClientAuthenticationCodec::ResponseParameters
-                ClientAuthenticationCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientAuthenticationCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ClientAuthenticationCodec::ResponseParameters(clientMessage);
                 }
 
@@ -760,7 +352,7 @@ namespace hazelcast {
                 }
 
                 ClientAuthenticationCustomCodec::ResponseParameters
-                ClientAuthenticationCustomCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientAuthenticationCustomCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ClientAuthenticationCustomCodec::ResponseParameters(clientMessage);
                 }
 
@@ -893,7 +485,7 @@ namespace hazelcast {
                 }
 
                 ClientGetPartitionsCodec::ResponseParameters
-                ClientGetPartitionsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientGetPartitionsCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ClientGetPartitionsCodec::ResponseParameters(clientMessage);
                 }
 
@@ -967,178 +559,6 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const CountDownLatchMessageType CountDownLatchAwaitCodec::REQUEST_TYPE = HZ_COUNTDOWNLATCH_AWAIT;
-                const bool CountDownLatchAwaitCodec::RETRYABLE = false;
-                const ResponseMessageConst CountDownLatchAwaitCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
-
-                std::unique_ptr<ClientMessage> CountDownLatchAwaitCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t timeout) {
-                    int32_t requiredDataSize = calculateDataSize(name, timeout);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) CountDownLatchAwaitCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(timeout);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t CountDownLatchAwaitCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t timeout) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(timeout);
-                    return dataSize;
-                }
-
-                CountDownLatchAwaitCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<bool>();
-
-                }
-
-                CountDownLatchAwaitCodec::ResponseParameters
-                CountDownLatchAwaitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return CountDownLatchAwaitCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const CountDownLatchMessageType CountDownLatchCountDownCodec::REQUEST_TYPE = HZ_COUNTDOWNLATCH_COUNTDOWN;
-                const bool CountDownLatchCountDownCodec::RETRYABLE = false;
-                const ResponseMessageConst CountDownLatchCountDownCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> CountDownLatchCountDownCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) CountDownLatchCountDownCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t CountDownLatchCountDownCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const CountDownLatchMessageType CountDownLatchGetCountCodec::REQUEST_TYPE = HZ_COUNTDOWNLATCH_GETCOUNT;
-                const bool CountDownLatchGetCountCodec::RETRYABLE = true;
-                const ResponseMessageConst CountDownLatchGetCountCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
-
-                std::unique_ptr<ClientMessage> CountDownLatchGetCountCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) CountDownLatchGetCountCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t CountDownLatchGetCountCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                CountDownLatchGetCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int32_t>();
-
-                }
-
-                CountDownLatchGetCountCodec::ResponseParameters
-                CountDownLatchGetCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return CountDownLatchGetCountCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const CountDownLatchMessageType CountDownLatchTrySetCountCodec::REQUEST_TYPE = HZ_COUNTDOWNLATCH_TRYSETCOUNT;
-                const bool CountDownLatchTrySetCountCodec::RETRYABLE = false;
-                const ResponseMessageConst CountDownLatchTrySetCountCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
-
-                std::unique_ptr<ClientMessage> CountDownLatchTrySetCountCodec::encodeRequest(
-                        const std::string &name,
-                        int32_t count) {
-                    int32_t requiredDataSize = calculateDataSize(name, count);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) CountDownLatchTrySetCountCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(count);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t CountDownLatchTrySetCountCodec::calculateDataSize(
-                        const std::string &name,
-                        int32_t count) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(count);
-                    return dataSize;
-                }
-
-                CountDownLatchTrySetCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<bool>();
-
-                }
-
-                CountDownLatchTrySetCountCodec::ResponseParameters
-                CountDownLatchTrySetCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return CountDownLatchTrySetCountCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
                 const ExecutorServiceMessageType ExecutorServiceCancelOnAddressCodec::REQUEST_TYPE = HZ_EXECUTORSERVICE_CANCELONADDRESS;
                 const bool ExecutorServiceCancelOnAddressCodec::RETRYABLE = false;
                 const ResponseMessageConst ExecutorServiceCancelOnAddressCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
@@ -1178,7 +598,7 @@ namespace hazelcast {
                 }
 
                 ExecutorServiceCancelOnAddressCodec::ResponseParameters
-                ExecutorServiceCancelOnAddressCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ExecutorServiceCancelOnAddressCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ExecutorServiceCancelOnAddressCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1231,7 +651,7 @@ namespace hazelcast {
                 }
 
                 ExecutorServiceCancelOnPartitionCodec::ResponseParameters
-                ExecutorServiceCancelOnPartitionCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ExecutorServiceCancelOnPartitionCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ExecutorServiceCancelOnPartitionCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1275,7 +695,7 @@ namespace hazelcast {
                 }
 
                 ExecutorServiceIsShutdownCodec::ResponseParameters
-                ExecutorServiceIsShutdownCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ExecutorServiceIsShutdownCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ExecutorServiceIsShutdownCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1364,7 +784,7 @@ namespace hazelcast {
                 }
 
                 ExecutorServiceSubmitToAddressCodec::ResponseParameters
-                ExecutorServiceSubmitToAddressCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ExecutorServiceSubmitToAddressCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ExecutorServiceSubmitToAddressCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1426,7 +846,7 @@ namespace hazelcast {
                 }
 
                 ExecutorServiceSubmitToPartitionCodec::ResponseParameters
-                ExecutorServiceSubmitToPartitionCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ExecutorServiceSubmitToPartitionCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ExecutorServiceSubmitToPartitionCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1485,7 +905,7 @@ namespace hazelcast {
                 }
 
                 FlakeIdGeneratorNewIdBatchCodec::ResponseParameters
-                FlakeIdGeneratorNewIdBatchCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                FlakeIdGeneratorNewIdBatchCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return FlakeIdGeneratorNewIdBatchCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1495,7 +915,6 @@ namespace hazelcast {
     }
 }
 
-/*-- File: AtomicLongAddAndGetCodec.cpp start --*/
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -1534,7 +953,7 @@ namespace hazelcast {
                 }
 
                 ListAddAllCodec::ResponseParameters
-                ListAddAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListAddAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListAddAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1586,7 +1005,7 @@ namespace hazelcast {
                 }
 
                 ListAddAllWithIndexCodec::ResponseParameters
-                ListAddAllWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListAddAllWithIndexCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListAddAllWithIndexCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1634,7 +1053,7 @@ namespace hazelcast {
                 }
 
                 ListAddCodec::ResponseParameters
-                ListAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListAddCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListAddCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1686,7 +1105,7 @@ namespace hazelcast {
                 }
 
                 ListAddListenerCodec::ResponseParameters
-                ListAddListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListAddListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListAddListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1832,7 +1251,7 @@ namespace hazelcast {
                 }
 
                 ListCompareAndRemoveAllCodec::ResponseParameters
-                ListCompareAndRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListCompareAndRemoveAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListCompareAndRemoveAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1880,7 +1299,7 @@ namespace hazelcast {
                 }
 
                 ListCompareAndRetainAllCodec::ResponseParameters
-                ListCompareAndRetainAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListCompareAndRetainAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListCompareAndRetainAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1928,7 +1347,7 @@ namespace hazelcast {
                 }
 
                 ListContainsAllCodec::ResponseParameters
-                ListContainsAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListContainsAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListContainsAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -1976,7 +1395,7 @@ namespace hazelcast {
                 }
 
                 ListContainsCodec::ResponseParameters
-                ListContainsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListContainsCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListContainsCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2020,7 +1439,7 @@ namespace hazelcast {
                 }
 
                 ListGetAllCodec::ResponseParameters
-                ListGetAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListGetAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListGetAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2068,7 +1487,7 @@ namespace hazelcast {
                 }
 
                 ListGetCodec::ResponseParameters
-                ListGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListGetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListGetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2120,7 +1539,7 @@ namespace hazelcast {
                 }
 
                 ListIndexOfCodec::ResponseParameters
-                ListIndexOfCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListIndexOfCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListIndexOfCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2164,7 +1583,7 @@ namespace hazelcast {
                 }
 
                 ListIsEmptyCodec::ResponseParameters
-                ListIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListIsEmptyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2212,7 +1631,7 @@ namespace hazelcast {
                 }
 
                 ListLastIndexOfCodec::ResponseParameters
-                ListLastIndexOfCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListLastIndexOfCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListLastIndexOfCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2260,7 +1679,7 @@ namespace hazelcast {
                 }
 
                 ListRemoveCodec::ResponseParameters
-                ListRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2308,7 +1727,7 @@ namespace hazelcast {
                 }
 
                 ListRemoveListenerCodec::ResponseParameters
-                ListRemoveListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListRemoveListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListRemoveListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2356,7 +1775,7 @@ namespace hazelcast {
                 }
 
                 ListRemoveWithIndexCodec::ResponseParameters
-                ListRemoveWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListRemoveWithIndexCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListRemoveWithIndexCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2413,7 +1832,7 @@ namespace hazelcast {
                 }
 
                 ListSetCodec::ResponseParameters
-                ListSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListSetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListSetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2461,7 +1880,7 @@ namespace hazelcast {
                 }
 
                 ListSizeCodec::ResponseParameters
-                ListSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -2513,368 +1932,8 @@ namespace hazelcast {
                 }
 
                 ListSubCodec::ResponseParameters
-                ListSubCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListSubCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ListSubCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const LockMessageType LockForceUnlockCodec::REQUEST_TYPE = HZ_LOCK_FORCEUNLOCK;
-                const bool LockForceUnlockCodec::RETRYABLE = true;
-                const ResponseMessageConst LockForceUnlockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> LockForceUnlockCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t referenceId) {
-                    int32_t requiredDataSize = calculateDataSize(name, referenceId);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) LockForceUnlockCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(referenceId);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t LockForceUnlockCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t referenceId) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(referenceId);
-                    return dataSize;
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const LockMessageType LockGetLockCountCodec::REQUEST_TYPE = HZ_LOCK_GETLOCKCOUNT;
-                const bool LockGetLockCountCodec::RETRYABLE = true;
-                const ResponseMessageConst LockGetLockCountCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
-
-                std::unique_ptr<ClientMessage> LockGetLockCountCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) LockGetLockCountCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t LockGetLockCountCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                LockGetLockCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int32_t>();
-
-                }
-
-                LockGetLockCountCodec::ResponseParameters
-                LockGetLockCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockGetLockCountCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const LockMessageType LockGetRemainingLeaseTimeCodec::REQUEST_TYPE = HZ_LOCK_GETREMAININGLEASETIME;
-                const bool LockGetRemainingLeaseTimeCodec::RETRYABLE = true;
-                const ResponseMessageConst LockGetRemainingLeaseTimeCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
-
-                std::unique_ptr<ClientMessage> LockGetRemainingLeaseTimeCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) LockGetRemainingLeaseTimeCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t LockGetRemainingLeaseTimeCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                LockGetRemainingLeaseTimeCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int64_t>();
-
-                }
-
-                LockGetRemainingLeaseTimeCodec::ResponseParameters
-                LockGetRemainingLeaseTimeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockGetRemainingLeaseTimeCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const LockMessageType LockIsLockedByCurrentThreadCodec::REQUEST_TYPE = HZ_LOCK_ISLOCKEDBYCURRENTTHREAD;
-                const bool LockIsLockedByCurrentThreadCodec::RETRYABLE = true;
-                const ResponseMessageConst LockIsLockedByCurrentThreadCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
-
-                std::unique_ptr<ClientMessage> LockIsLockedByCurrentThreadCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t threadId) {
-                    int32_t requiredDataSize = calculateDataSize(name, threadId);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) LockIsLockedByCurrentThreadCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(threadId);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t LockIsLockedByCurrentThreadCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t threadId) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(threadId);
-                    return dataSize;
-                }
-
-                LockIsLockedByCurrentThreadCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<bool>();
-
-                }
-
-                LockIsLockedByCurrentThreadCodec::ResponseParameters
-                LockIsLockedByCurrentThreadCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockIsLockedByCurrentThreadCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const LockMessageType LockIsLockedCodec::REQUEST_TYPE = HZ_LOCK_ISLOCKED;
-                const bool LockIsLockedCodec::RETRYABLE = true;
-                const ResponseMessageConst LockIsLockedCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
-
-                std::unique_ptr<ClientMessage> LockIsLockedCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) LockIsLockedCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t LockIsLockedCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                LockIsLockedCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<bool>();
-
-                }
-
-                LockIsLockedCodec::ResponseParameters
-                LockIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockIsLockedCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const LockMessageType LockLockCodec::REQUEST_TYPE = HZ_LOCK_LOCK;
-                const bool LockLockCodec::RETRYABLE = true;
-                const ResponseMessageConst LockLockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> LockLockCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t leaseTime,
-                        int64_t threadId,
-                        int64_t referenceId) {
-                    int32_t requiredDataSize = calculateDataSize(name, leaseTime, threadId, referenceId);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) LockLockCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(leaseTime);
-                    clientMessage->set(threadId);
-                    clientMessage->set(referenceId);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t LockLockCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t leaseTime,
-                        int64_t threadId,
-                        int64_t referenceId) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(leaseTime);
-                    dataSize += ClientMessage::calculateDataSize(threadId);
-                    dataSize += ClientMessage::calculateDataSize(referenceId);
-                    return dataSize;
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const LockMessageType LockTryLockCodec::REQUEST_TYPE = HZ_LOCK_TRYLOCK;
-                const bool LockTryLockCodec::RETRYABLE = true;
-                const ResponseMessageConst LockTryLockCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
-
-                std::unique_ptr<ClientMessage> LockTryLockCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t threadId,
-                        int64_t lease,
-                        int64_t timeout,
-                        int64_t referenceId) {
-                    int32_t requiredDataSize = calculateDataSize(name, threadId, lease, timeout, referenceId);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) LockTryLockCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(threadId);
-                    clientMessage->set(lease);
-                    clientMessage->set(timeout);
-                    clientMessage->set(referenceId);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t LockTryLockCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t threadId,
-                        int64_t lease,
-                        int64_t timeout,
-                        int64_t referenceId) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(threadId);
-                    dataSize += ClientMessage::calculateDataSize(lease);
-                    dataSize += ClientMessage::calculateDataSize(timeout);
-                    dataSize += ClientMessage::calculateDataSize(referenceId);
-                    return dataSize;
-                }
-
-                LockTryLockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<bool>();
-
-                }
-
-                LockTryLockCodec::ResponseParameters
-                LockTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockTryLockCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const LockMessageType LockUnlockCodec::REQUEST_TYPE = HZ_LOCK_UNLOCK;
-                const bool LockUnlockCodec::RETRYABLE = true;
-                const ResponseMessageConst LockUnlockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> LockUnlockCodec::encodeRequest(
-                        const std::string &name,
-                        int64_t threadId,
-                        int64_t referenceId) {
-                    int32_t requiredDataSize = calculateDataSize(name, threadId, referenceId);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) LockUnlockCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(threadId);
-                    clientMessage->set(referenceId);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t LockUnlockCodec::calculateDataSize(
-                        const std::string &name,
-                        int64_t threadId,
-                        int64_t referenceId) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(threadId);
-                    dataSize += ClientMessage::calculateDataSize(referenceId);
-                    return dataSize;
                 }
 
 
@@ -2929,7 +1988,7 @@ namespace hazelcast {
                 }
 
                 MapAddEntryListenerCodec::ResponseParameters
-                MapAddEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapAddEntryListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapAddEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3024,7 +2083,7 @@ namespace hazelcast {
                 }
 
                 MapAddEntryListenerToKeyCodec::ResponseParameters
-                MapAddEntryListenerToKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapAddEntryListenerToKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapAddEntryListenerToKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3121,7 +2180,7 @@ namespace hazelcast {
                 }
 
                 MapAddEntryListenerWithPredicateCodec::ResponseParameters
-                MapAddEntryListenerWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapAddEntryListenerWithPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapAddEntryListenerWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3244,7 +2303,7 @@ namespace hazelcast {
                 }
 
                 MapAddInterceptorCodec::ResponseParameters
-                MapAddInterceptorCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapAddInterceptorCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapAddInterceptorCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3297,7 +2356,7 @@ namespace hazelcast {
                 }
 
                 MapAddNearCacheEntryListenerCodec::ResponseParameters
-                MapAddNearCacheEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapAddNearCacheEntryListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapAddNearCacheEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3430,7 +2489,7 @@ namespace hazelcast {
                 }
 
                 MapContainsKeyCodec::ResponseParameters
-                MapContainsKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapContainsKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3478,7 +2537,7 @@ namespace hazelcast {
                 }
 
                 MapContainsValueCodec::ResponseParameters
-                MapContainsValueCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapContainsValueCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapContainsValueCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3567,7 +2626,7 @@ namespace hazelcast {
                 }
 
                 MapEntriesWithPagingPredicateCodec::ResponseParameters
-                MapEntriesWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapEntriesWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapEntriesWithPagingPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3615,7 +2674,7 @@ namespace hazelcast {
                 }
 
                 MapEntriesWithPredicateCodec::ResponseParameters
-                MapEntriesWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapEntriesWithPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapEntriesWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3659,7 +2718,7 @@ namespace hazelcast {
                 }
 
                 MapEntrySetCodec::ResponseParameters
-                MapEntrySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapEntrySetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapEntrySetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3743,7 +2802,7 @@ namespace hazelcast {
                 }
 
                 MapEvictCodec::ResponseParameters
-                MapEvictCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapEvictCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapEvictCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3791,7 +2850,7 @@ namespace hazelcast {
                 }
 
                 MapExecuteOnAllKeysCodec::ResponseParameters
-                MapExecuteOnAllKeysCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapExecuteOnAllKeysCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapExecuteOnAllKeysCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3839,15 +2898,13 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapExecuteOnKeyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
+                MapExecuteOnKeyCodec::ResponseParameters::ResponseParameters(ClientMessage clientMessage) {
                     response = clientMessage.getNullable<serialization::pimpl::Data>();
 
                 }
 
                 MapExecuteOnKeyCodec::ResponseParameters
-                MapExecuteOnKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapExecuteOnKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapExecuteOnKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3904,7 +2961,7 @@ namespace hazelcast {
                 }
 
                 MapExecuteOnKeysCodec::ResponseParameters
-                MapExecuteOnKeysCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapExecuteOnKeysCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapExecuteOnKeysCodec::ResponseParameters(clientMessage);
                 }
 
@@ -3956,7 +3013,7 @@ namespace hazelcast {
                 }
 
                 MapExecuteWithPredicateCodec::ResponseParameters
-                MapExecuteWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapExecuteWithPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapExecuteWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4076,7 +3133,7 @@ namespace hazelcast {
                 }
 
                 MapGetAllCodec::ResponseParameters
-                MapGetAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapGetAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapGetAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4127,7 +3184,7 @@ namespace hazelcast {
 
                 }
 
-                MapGetCodec::ResponseParameters MapGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapGetCodec::ResponseParameters MapGetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapGetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4183,7 +3240,7 @@ namespace hazelcast {
                 }
 
                 MapGetEntryViewCodec::ResponseParameters
-                MapGetEntryViewCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapGetEntryViewCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapGetEntryViewCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4231,7 +3288,7 @@ namespace hazelcast {
                 }
 
                 MapIsEmptyCodec::ResponseParameters
-                MapIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapIsEmptyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4279,7 +3336,7 @@ namespace hazelcast {
                 }
 
                 MapIsLockedCodec::ResponseParameters
-                MapIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapIsLockedCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapIsLockedCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4323,7 +3380,7 @@ namespace hazelcast {
                 }
 
                 MapKeySetCodec::ResponseParameters
-                MapKeySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapKeySetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapKeySetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4372,7 +3429,7 @@ namespace hazelcast {
                 }
 
                 MapKeySetWithPagingPredicateCodec::ResponseParameters
-                MapKeySetWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapKeySetWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapKeySetWithPagingPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4420,7 +3477,7 @@ namespace hazelcast {
                 }
 
                 MapKeySetWithPredicateCodec::ResponseParameters
-                MapKeySetWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapKeySetWithPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapKeySetWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4565,7 +3622,7 @@ namespace hazelcast {
 
                 }
 
-                MapPutCodec::ResponseParameters MapPutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapPutCodec::ResponseParameters MapPutCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapPutCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4629,7 +3686,7 @@ namespace hazelcast {
                 }
 
                 MapPutIfAbsentCodec::ResponseParameters
-                MapPutIfAbsentCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapPutIfAbsentCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapPutIfAbsentCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4746,7 +3803,7 @@ namespace hazelcast {
                 }
 
                 MapPutWithMaxIdleCodec::ResponseParameters
-                MapPutWithMaxIdleCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapPutWithMaxIdleCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapPutWithMaxIdleCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4839,7 +3896,7 @@ namespace hazelcast {
                 }
 
                 MapRemoveCodec::ResponseParameters
-                MapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4891,7 +3948,7 @@ namespace hazelcast {
                 }
 
                 MapRemoveEntryListenerCodec::ResponseParameters
-                MapRemoveEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapRemoveEntryListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapRemoveEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4947,7 +4004,7 @@ namespace hazelcast {
                 }
 
                 MapRemoveIfSameCodec::ResponseParameters
-                MapRemoveIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapRemoveIfSameCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapRemoveIfSameCodec::ResponseParameters(clientMessage);
                 }
 
@@ -4995,7 +4052,7 @@ namespace hazelcast {
                 }
 
                 MapRemoveInterceptorCodec::ResponseParameters
-                MapRemoveInterceptorCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapRemoveInterceptorCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapRemoveInterceptorCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5051,7 +4108,7 @@ namespace hazelcast {
                 }
 
                 MapReplaceCodec::ResponseParameters
-                MapReplaceCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapReplaceCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapReplaceCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5116,7 +4173,7 @@ namespace hazelcast {
                 }
 
                 MapReplaceIfSameCodec::ResponseParameters
-                MapReplaceIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapReplaceIfSameCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapReplaceIfSameCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5228,7 +4285,7 @@ namespace hazelcast {
                 }
 
                 MapSetWithMaxIdleCodec::ResponseParameters
-                MapSetWithMaxIdleCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapSetWithMaxIdleCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapSetWithMaxIdleCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5277,7 +4334,7 @@ namespace hazelcast {
                 }
 
                 MapSizeCodec::ResponseParameters
-                MapSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5333,7 +4390,7 @@ namespace hazelcast {
                 }
 
                 MapSubmitToKeyCodec::ResponseParameters
-                MapSubmitToKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapSubmitToKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapSubmitToKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5402,7 +4459,7 @@ namespace hazelcast {
                 }
 
                 MapTryLockCodec::ResponseParameters
-                MapTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapTryLockCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapTryLockCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5462,7 +4519,7 @@ namespace hazelcast {
                 }
 
                 MapTryPutCodec::ResponseParameters
-                MapTryPutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapTryPutCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapTryPutCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5518,7 +4575,7 @@ namespace hazelcast {
                 }
 
                 MapTryRemoveCodec::ResponseParameters
-                MapTryRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapTryRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapTryRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5606,7 +4663,7 @@ namespace hazelcast {
                 }
 
                 MapValuesCodec::ResponseParameters
-                MapValuesCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapValuesCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapValuesCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5655,7 +4712,7 @@ namespace hazelcast {
                 }
 
                 MapValuesWithPagingPredicateCodec::ResponseParameters
-                MapValuesWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapValuesWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapValuesWithPagingPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5703,7 +4760,7 @@ namespace hazelcast {
                 }
 
                 MapValuesWithPredicateCodec::ResponseParameters
-                MapValuesWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapValuesWithPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MapValuesWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5755,7 +4812,7 @@ namespace hazelcast {
                 }
 
                 MultiMapAddEntryListenerCodec::ResponseParameters
-                MultiMapAddEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapAddEntryListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapAddEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5847,7 +4904,7 @@ namespace hazelcast {
                 }
 
                 MultiMapAddEntryListenerToKeyCodec::ResponseParameters
-                MultiMapAddEntryListenerToKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapAddEntryListenerToKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapAddEntryListenerToKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -5970,7 +5027,7 @@ namespace hazelcast {
                 }
 
                 MultiMapContainsEntryCodec::ResponseParameters
-                MultiMapContainsEntryCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapContainsEntryCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapContainsEntryCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6022,7 +5079,7 @@ namespace hazelcast {
                 }
 
                 MultiMapContainsKeyCodec::ResponseParameters
-                MultiMapContainsKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapContainsKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6070,7 +5127,7 @@ namespace hazelcast {
                 }
 
                 MultiMapContainsValueCodec::ResponseParameters
-                MultiMapContainsValueCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapContainsValueCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapContainsValueCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6114,7 +5171,7 @@ namespace hazelcast {
                 }
 
                 MultiMapEntrySetCodec::ResponseParameters
-                MultiMapEntrySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapEntrySetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapEntrySetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6206,7 +5263,7 @@ namespace hazelcast {
                 }
 
                 MultiMapGetCodec::ResponseParameters
-                MultiMapGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapGetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapGetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6254,7 +5311,7 @@ namespace hazelcast {
                 }
 
                 MultiMapIsLockedCodec::ResponseParameters
-                MultiMapIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapIsLockedCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapIsLockedCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6298,7 +5355,7 @@ namespace hazelcast {
                 }
 
                 MultiMapKeySetCodec::ResponseParameters
-                MultiMapKeySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapKeySetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapKeySetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6402,7 +5459,7 @@ namespace hazelcast {
                 }
 
                 MultiMapPutCodec::ResponseParameters
-                MultiMapPutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapPutCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapPutCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6454,7 +5511,7 @@ namespace hazelcast {
                 }
 
                 MultiMapRemoveCodec::ResponseParameters
-                MultiMapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6510,7 +5567,7 @@ namespace hazelcast {
                 }
 
                 MultiMapRemoveEntryCodec::ResponseParameters
-                MultiMapRemoveEntryCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapRemoveEntryCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapRemoveEntryCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6558,7 +5615,7 @@ namespace hazelcast {
                 }
 
                 MultiMapRemoveEntryListenerCodec::ResponseParameters
-                MultiMapRemoveEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapRemoveEntryListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapRemoveEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6602,7 +5659,7 @@ namespace hazelcast {
                 }
 
                 MultiMapSizeCodec::ResponseParameters
-                MultiMapSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6666,7 +5723,7 @@ namespace hazelcast {
                 }
 
                 MultiMapTryLockCodec::ResponseParameters
-                MultiMapTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapTryLockCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapTryLockCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6762,7 +5819,7 @@ namespace hazelcast {
                 }
 
                 MultiMapValueCountCodec::ResponseParameters
-                MultiMapValueCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapValueCountCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapValueCountCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6806,7 +5863,7 @@ namespace hazelcast {
                 }
 
                 MultiMapValuesCodec::ResponseParameters
-                MultiMapValuesCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapValuesCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return MultiMapValuesCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6873,7 +5930,7 @@ namespace hazelcast {
                 }
 
                 PNCounterAddCodec::ResponseParameters
-                PNCounterAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                PNCounterAddCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return PNCounterAddCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6931,7 +5988,7 @@ namespace hazelcast {
                 }
 
                 PNCounterGetCodec::ResponseParameters
-                PNCounterGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                PNCounterGetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return PNCounterGetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -6976,7 +6033,7 @@ namespace hazelcast {
                 }
 
                 PNCounterGetConfiguredReplicaCountCodec::ResponseParameters
-                PNCounterGetConfiguredReplicaCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                PNCounterGetConfiguredReplicaCountCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return PNCounterGetConfiguredReplicaCountCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7024,7 +6081,7 @@ namespace hazelcast {
                 }
 
                 QueueAddAllCodec::ResponseParameters
-                QueueAddAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueAddAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueAddAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7076,7 +6133,7 @@ namespace hazelcast {
                 }
 
                 QueueAddListenerCodec::ResponseParameters
-                QueueAddListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueAddListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueAddListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7182,7 +6239,7 @@ namespace hazelcast {
                 }
 
                 QueueCompareAndRemoveAllCodec::ResponseParameters
-                QueueCompareAndRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueCompareAndRemoveAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueCompareAndRemoveAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7230,7 +6287,7 @@ namespace hazelcast {
                 }
 
                 QueueCompareAndRetainAllCodec::ResponseParameters
-                QueueCompareAndRetainAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueCompareAndRetainAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueCompareAndRetainAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7278,7 +6335,7 @@ namespace hazelcast {
                 }
 
                 QueueContainsAllCodec::ResponseParameters
-                QueueContainsAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueContainsAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueContainsAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7326,7 +6383,7 @@ namespace hazelcast {
                 }
 
                 QueueContainsCodec::ResponseParameters
-                QueueContainsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueContainsCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueContainsCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7370,7 +6427,7 @@ namespace hazelcast {
                 }
 
                 QueueDrainToCodec::ResponseParameters
-                QueueDrainToCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueDrainToCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueDrainToCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7418,7 +6475,7 @@ namespace hazelcast {
                 }
 
                 QueueDrainToMaxSizeCodec::ResponseParameters
-                QueueDrainToMaxSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueDrainToMaxSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueDrainToMaxSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7462,7 +6519,7 @@ namespace hazelcast {
                 }
 
                 QueueIsEmptyCodec::ResponseParameters
-                QueueIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueIsEmptyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7506,7 +6563,7 @@ namespace hazelcast {
                 }
 
                 QueueIteratorCodec::ResponseParameters
-                QueueIteratorCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueIteratorCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueIteratorCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7558,7 +6615,7 @@ namespace hazelcast {
                 }
 
                 QueueOfferCodec::ResponseParameters
-                QueueOfferCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueOfferCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueOfferCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7602,7 +6659,7 @@ namespace hazelcast {
                 }
 
                 QueuePeekCodec::ResponseParameters
-                QueuePeekCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueuePeekCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueuePeekCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7654,7 +6711,7 @@ namespace hazelcast {
                 }
 
                 QueuePollCodec::ResponseParameters
-                QueuePollCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueuePollCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueuePollCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7738,7 +6795,7 @@ namespace hazelcast {
                 }
 
                 QueueRemainingCapacityCodec::ResponseParameters
-                QueueRemainingCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueRemainingCapacityCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueRemainingCapacityCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7786,7 +6843,7 @@ namespace hazelcast {
                 }
 
                 QueueRemoveCodec::ResponseParameters
-                QueueRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7834,7 +6891,7 @@ namespace hazelcast {
                 }
 
                 QueueRemoveListenerCodec::ResponseParameters
-                QueueRemoveListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueRemoveListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueRemoveListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7878,7 +6935,7 @@ namespace hazelcast {
                 }
 
                 QueueSizeCodec::ResponseParameters
-                QueueSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return QueueSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -7927,7 +6984,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapAddEntryListenerCodec::ResponseParameters
-                ReplicatedMapAddEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapAddEntryListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapAddEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8015,7 +7072,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapAddEntryListenerToKeyCodec::ResponseParameters
-                ReplicatedMapAddEntryListenerToKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapAddEntryListenerToKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapAddEntryListenerToKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8109,7 +7166,7 @@ namespace hazelcast {
 
                 ReplicatedMapAddEntryListenerToKeyWithPredicateCodec::ResponseParameters
                 ReplicatedMapAddEntryListenerToKeyWithPredicateCodec::ResponseParameters::decode(
-                        ClientMessage &clientMessage) {
+                        ClientMessage clientMessage) {
                     return ReplicatedMapAddEntryListenerToKeyWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8199,7 +7256,7 @@ namespace hazelcast {
 
                 ReplicatedMapAddEntryListenerWithPredicateCodec::ResponseParameters
                 ReplicatedMapAddEntryListenerWithPredicateCodec::ResponseParameters::decode(
-                        ClientMessage &clientMessage) {
+                        ClientMessage clientMessage) {
                     return ReplicatedMapAddEntryListenerWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8287,7 +7344,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapAddNearCacheEntryListenerCodec::ResponseParameters
-                ReplicatedMapAddNearCacheEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapAddNearCacheEntryListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapAddNearCacheEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8402,7 +7459,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapContainsKeyCodec::ResponseParameters
-                ReplicatedMapContainsKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapContainsKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8450,7 +7507,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapContainsValueCodec::ResponseParameters
-                ReplicatedMapContainsValueCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapContainsValueCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapContainsValueCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8494,7 +7551,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapEntrySetCodec::ResponseParameters
-                ReplicatedMapEntrySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapEntrySetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapEntrySetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8542,7 +7599,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapGetCodec::ResponseParameters
-                ReplicatedMapGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapGetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapGetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8591,7 +7648,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapIsEmptyCodec::ResponseParameters
-                ReplicatedMapIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapIsEmptyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8635,7 +7692,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapKeySetCodec::ResponseParameters
-                ReplicatedMapKeySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapKeySetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapKeySetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8729,7 +7786,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapPutCodec::ResponseParameters
-                ReplicatedMapPutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapPutCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapPutCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8782,7 +7839,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapRemoveCodec::ResponseParameters
-                ReplicatedMapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8836,7 +7893,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapRemoveEntryListenerCodec::ResponseParameters
-                ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapRemoveEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8880,7 +7937,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapSizeCodec::ResponseParameters
-                ReplicatedMapSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8924,7 +7981,7 @@ namespace hazelcast {
                 }
 
                 ReplicatedMapValuesCodec::ResponseParameters
-                ReplicatedMapValuesCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ReplicatedMapValuesCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return ReplicatedMapValuesCodec::ResponseParameters(clientMessage);
                 }
 
@@ -8976,7 +8033,7 @@ namespace hazelcast {
                 }
 
                 RingbufferAddAllCodec::ResponseParameters
-                RingbufferAddAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferAddAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferAddAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9028,7 +8085,7 @@ namespace hazelcast {
                 }
 
                 RingbufferAddCodec::ResponseParameters
-                RingbufferAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferAddCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferAddCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9072,7 +8129,7 @@ namespace hazelcast {
                 }
 
                 RingbufferCapacityCodec::ResponseParameters
-                RingbufferCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferCapacityCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferCapacityCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9116,7 +8173,7 @@ namespace hazelcast {
                 }
 
                 RingbufferHeadSequenceCodec::ResponseParameters
-                RingbufferHeadSequenceCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferHeadSequenceCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferHeadSequenceCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9192,7 +8249,7 @@ namespace hazelcast {
                 }
 
                 RingbufferReadManyCodec::ResponseParameters
-                RingbufferReadManyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferReadManyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferReadManyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9247,7 +8304,7 @@ namespace hazelcast {
                 }
 
                 RingbufferReadOneCodec::ResponseParameters
-                RingbufferReadOneCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferReadOneCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferReadOneCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9296,7 +8353,7 @@ namespace hazelcast {
                 }
 
                 RingbufferRemainingCapacityCodec::ResponseParameters
-                RingbufferRemainingCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferRemainingCapacityCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferRemainingCapacityCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9340,7 +8397,7 @@ namespace hazelcast {
                 }
 
                 RingbufferSizeCodec::ResponseParameters
-                RingbufferSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9384,340 +8441,8 @@ namespace hazelcast {
                 }
 
                 RingbufferTailSequenceCodec::ResponseParameters
-                RingbufferTailSequenceCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferTailSequenceCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return RingbufferTailSequenceCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const SemaphoreMessageType SemaphoreAcquireCodec::REQUEST_TYPE = HZ_SEMAPHORE_ACQUIRE;
-                const bool SemaphoreAcquireCodec::RETRYABLE = false;
-                const ResponseMessageConst SemaphoreAcquireCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> SemaphoreAcquireCodec::encodeRequest(
-                        const std::string &name,
-                        int32_t permits) {
-                    int32_t requiredDataSize = calculateDataSize(name, permits);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) SemaphoreAcquireCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(permits);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t SemaphoreAcquireCodec::calculateDataSize(
-                        const std::string &name,
-                        int32_t permits) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(permits);
-                    return dataSize;
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const SemaphoreMessageType SemaphoreAvailablePermitsCodec::REQUEST_TYPE = HZ_SEMAPHORE_AVAILABLEPERMITS;
-                const bool SemaphoreAvailablePermitsCodec::RETRYABLE = true;
-                const ResponseMessageConst SemaphoreAvailablePermitsCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
-
-                std::unique_ptr<ClientMessage> SemaphoreAvailablePermitsCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) SemaphoreAvailablePermitsCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t SemaphoreAvailablePermitsCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                SemaphoreAvailablePermitsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int32_t>();
-
-                }
-
-                SemaphoreAvailablePermitsCodec::ResponseParameters
-                SemaphoreAvailablePermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return SemaphoreAvailablePermitsCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const SemaphoreMessageType SemaphoreDrainPermitsCodec::REQUEST_TYPE = HZ_SEMAPHORE_DRAINPERMITS;
-                const bool SemaphoreDrainPermitsCodec::RETRYABLE = false;
-                const ResponseMessageConst SemaphoreDrainPermitsCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
-
-                std::unique_ptr<ClientMessage> SemaphoreDrainPermitsCodec::encodeRequest(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) SemaphoreDrainPermitsCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t SemaphoreDrainPermitsCodec::calculateDataSize(
-                        const std::string &name) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    return dataSize;
-                }
-
-                SemaphoreDrainPermitsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<int32_t>();
-
-                }
-
-                SemaphoreDrainPermitsCodec::ResponseParameters
-                SemaphoreDrainPermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return SemaphoreDrainPermitsCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const SemaphoreMessageType SemaphoreIncreasePermitsCodec::REQUEST_TYPE = HZ_SEMAPHORE_INCREASEPERMITS;
-                const bool SemaphoreIncreasePermitsCodec::RETRYABLE = false;
-                const ResponseMessageConst SemaphoreIncreasePermitsCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> SemaphoreIncreasePermitsCodec::encodeRequest(
-                        const std::string &name,
-                        int32_t increase) {
-                    int32_t requiredDataSize = calculateDataSize(name, increase);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) SemaphoreIncreasePermitsCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(increase);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t SemaphoreIncreasePermitsCodec::calculateDataSize(
-                        const std::string &name,
-                        int32_t increase) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(increase);
-                    return dataSize;
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const SemaphoreMessageType SemaphoreInitCodec::REQUEST_TYPE = HZ_SEMAPHORE_INIT;
-                const bool SemaphoreInitCodec::RETRYABLE = false;
-                const ResponseMessageConst SemaphoreInitCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
-
-                std::unique_ptr<ClientMessage> SemaphoreInitCodec::encodeRequest(
-                        const std::string &name,
-                        int32_t permits) {
-                    int32_t requiredDataSize = calculateDataSize(name, permits);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) SemaphoreInitCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(permits);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t SemaphoreInitCodec::calculateDataSize(
-                        const std::string &name,
-                        int32_t permits) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(permits);
-                    return dataSize;
-                }
-
-                SemaphoreInitCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<bool>();
-
-                }
-
-                SemaphoreInitCodec::ResponseParameters
-                SemaphoreInitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return SemaphoreInitCodec::ResponseParameters(clientMessage);
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const SemaphoreMessageType SemaphoreReducePermitsCodec::REQUEST_TYPE = HZ_SEMAPHORE_REDUCEPERMITS;
-                const bool SemaphoreReducePermitsCodec::RETRYABLE = false;
-                const ResponseMessageConst SemaphoreReducePermitsCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> SemaphoreReducePermitsCodec::encodeRequest(
-                        const std::string &name,
-                        int32_t reduction) {
-                    int32_t requiredDataSize = calculateDataSize(name, reduction);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) SemaphoreReducePermitsCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(reduction);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t SemaphoreReducePermitsCodec::calculateDataSize(
-                        const std::string &name,
-                        int32_t reduction) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(reduction);
-                    return dataSize;
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const SemaphoreMessageType SemaphoreReleaseCodec::REQUEST_TYPE = HZ_SEMAPHORE_RELEASE;
-                const bool SemaphoreReleaseCodec::RETRYABLE = false;
-                const ResponseMessageConst SemaphoreReleaseCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
-
-                std::unique_ptr<ClientMessage> SemaphoreReleaseCodec::encodeRequest(
-                        const std::string &name,
-                        int32_t permits) {
-                    int32_t requiredDataSize = calculateDataSize(name, permits);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) SemaphoreReleaseCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(permits);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t SemaphoreReleaseCodec::calculateDataSize(
-                        const std::string &name,
-                        int32_t permits) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(permits);
-                    return dataSize;
-                }
-
-
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace protocol {
-            namespace codec {
-                const SemaphoreMessageType SemaphoreTryAcquireCodec::REQUEST_TYPE = HZ_SEMAPHORE_TRYACQUIRE;
-                const bool SemaphoreTryAcquireCodec::RETRYABLE = false;
-                const ResponseMessageConst SemaphoreTryAcquireCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
-
-                std::unique_ptr<ClientMessage> SemaphoreTryAcquireCodec::encodeRequest(
-                        const std::string &name,
-                        int32_t permits,
-                        int64_t timeout) {
-                    int32_t requiredDataSize = calculateDataSize(name, permits, timeout);
-                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t) SemaphoreTryAcquireCodec::REQUEST_TYPE);
-                    clientMessage->setRetryable(RETRYABLE);
-                    clientMessage->set(name);
-                    clientMessage->set(permits);
-                    clientMessage->set(timeout);
-                    clientMessage->updateFrameLength();
-                    return clientMessage;
-                }
-
-                int32_t SemaphoreTryAcquireCodec::calculateDataSize(
-                        const std::string &name,
-                        int32_t permits,
-                        int64_t timeout) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;
-                    dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize(permits);
-                    dataSize += ClientMessage::calculateDataSize(timeout);
-                    return dataSize;
-                }
-
-                SemaphoreTryAcquireCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                    response = clientMessage.get<bool>();
-
-                }
-
-                SemaphoreTryAcquireCodec::ResponseParameters
-                SemaphoreTryAcquireCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return SemaphoreTryAcquireCodec::ResponseParameters(clientMessage);
                 }
 
 
@@ -9764,7 +8489,7 @@ namespace hazelcast {
                 }
 
                 SetAddAllCodec::ResponseParameters
-                SetAddAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetAddAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetAddAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9811,7 +8536,7 @@ namespace hazelcast {
 
                 }
 
-                SetAddCodec::ResponseParameters SetAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetAddCodec::ResponseParameters SetAddCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetAddCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9863,7 +8588,7 @@ namespace hazelcast {
                 }
 
                 SetAddListenerCodec::ResponseParameters
-                SetAddListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetAddListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetAddListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -9969,7 +8694,7 @@ namespace hazelcast {
                 }
 
                 SetCompareAndRemoveAllCodec::ResponseParameters
-                SetCompareAndRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetCompareAndRemoveAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetCompareAndRemoveAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10017,7 +8742,7 @@ namespace hazelcast {
                 }
 
                 SetCompareAndRetainAllCodec::ResponseParameters
-                SetCompareAndRetainAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetCompareAndRetainAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetCompareAndRetainAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10065,7 +8790,7 @@ namespace hazelcast {
                 }
 
                 SetContainsAllCodec::ResponseParameters
-                SetContainsAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetContainsAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetContainsAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10113,7 +8838,7 @@ namespace hazelcast {
                 }
 
                 SetContainsCodec::ResponseParameters
-                SetContainsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetContainsCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetContainsCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10157,7 +8882,7 @@ namespace hazelcast {
                 }
 
                 SetGetAllCodec::ResponseParameters
-                SetGetAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetGetAllCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetGetAllCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10201,7 +8926,7 @@ namespace hazelcast {
                 }
 
                 SetIsEmptyCodec::ResponseParameters
-                SetIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetIsEmptyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10249,7 +8974,7 @@ namespace hazelcast {
                 }
 
                 SetRemoveCodec::ResponseParameters
-                SetRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10297,7 +9022,7 @@ namespace hazelcast {
                 }
 
                 SetRemoveListenerCodec::ResponseParameters
-                SetRemoveListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetRemoveListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetRemoveListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10341,7 +9066,7 @@ namespace hazelcast {
                 }
 
                 SetSizeCodec::ResponseParameters
-                SetSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return SetSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10389,7 +9114,7 @@ namespace hazelcast {
                 }
 
                 TopicAddMessageListenerCodec::ResponseParameters
-                TopicAddMessageListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TopicAddMessageListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TopicAddMessageListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10499,7 +9224,7 @@ namespace hazelcast {
                 }
 
                 TopicRemoveMessageListenerCodec::ResponseParameters
-                TopicRemoveMessageListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TopicRemoveMessageListenerCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TopicRemoveMessageListenerCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10591,7 +9316,7 @@ namespace hazelcast {
                 }
 
                 TransactionCreateCodec::ResponseParameters
-                TransactionCreateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionCreateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionCreateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10683,7 +9408,7 @@ namespace hazelcast {
                 }
 
                 TransactionalListAddCodec::ResponseParameters
-                TransactionalListAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalListAddCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalListAddCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10739,7 +9464,7 @@ namespace hazelcast {
                 }
 
                 TransactionalListRemoveCodec::ResponseParameters
-                TransactionalListRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalListRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalListRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10791,7 +9516,7 @@ namespace hazelcast {
                 }
 
                 TransactionalListSizeCodec::ResponseParameters
-                TransactionalListSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalListSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalListSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10847,7 +9572,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapContainsKeyCodec::ResponseParameters
-                TransactionalMapContainsKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapContainsKeyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -10947,7 +9672,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapGetCodec::ResponseParameters
-                TransactionalMapGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapGetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapGetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11004,7 +9729,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapIsEmptyCodec::ResponseParameters
-                TransactionalMapIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapIsEmptyCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11056,7 +9781,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapKeySetCodec::ResponseParameters
-                TransactionalMapKeySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapKeySetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapKeySetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11113,7 +9838,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapKeySetWithPredicateCodec::ResponseParameters
-                TransactionalMapKeySetWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapKeySetWithPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapKeySetWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11177,7 +9902,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapPutCodec::ResponseParameters
-                TransactionalMapPutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapPutCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapPutCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11242,7 +9967,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapPutIfAbsentCodec::ResponseParameters
-                TransactionalMapPutIfAbsentCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapPutIfAbsentCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapPutIfAbsentCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11303,7 +10028,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapRemoveCodec::ResponseParameters
-                TransactionalMapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11369,7 +10094,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapRemoveIfSameCodec::ResponseParameters
-                TransactionalMapRemoveIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapRemoveIfSameCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapRemoveIfSameCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11429,7 +10154,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapReplaceCodec::ResponseParameters
-                TransactionalMapReplaceCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapReplaceCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapReplaceCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11499,7 +10224,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapReplaceIfSameCodec::ResponseParameters
-                TransactionalMapReplaceIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapReplaceIfSameCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapReplaceIfSameCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11599,7 +10324,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapSizeCodec::ResponseParameters
-                TransactionalMapSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11651,7 +10376,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapValuesCodec::ResponseParameters
-                TransactionalMapValuesCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapValuesCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapValuesCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11708,7 +10433,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMapValuesWithPredicateCodec::ResponseParameters
-                TransactionalMapValuesWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapValuesWithPredicateCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMapValuesWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11764,7 +10489,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMultiMapGetCodec::ResponseParameters
-                TransactionalMultiMapGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapGetCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMultiMapGetCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11824,7 +10549,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMultiMapPutCodec::ResponseParameters
-                TransactionalMultiMapPutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapPutCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMultiMapPutCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11880,7 +10605,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMultiMapRemoveCodec::ResponseParameters
-                TransactionalMultiMapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMultiMapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11941,7 +10666,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMultiMapRemoveEntryCodec::ResponseParameters
-                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMultiMapRemoveEntryCodec::ResponseParameters(clientMessage);
                 }
 
@@ -11993,7 +10718,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMultiMapSizeCodec::ResponseParameters
-                TransactionalMultiMapSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMultiMapSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -12050,7 +10775,7 @@ namespace hazelcast {
                 }
 
                 TransactionalMultiMapValueCountCodec::ResponseParameters
-                TransactionalMultiMapValueCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapValueCountCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalMultiMapValueCountCodec::ResponseParameters(clientMessage);
                 }
 
@@ -12110,7 +10835,7 @@ namespace hazelcast {
                 }
 
                 TransactionalQueueOfferCodec::ResponseParameters
-                TransactionalQueueOfferCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalQueueOfferCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalQueueOfferCodec::ResponseParameters(clientMessage);
                 }
 
@@ -12166,7 +10891,7 @@ namespace hazelcast {
                 }
 
                 TransactionalQueuePollCodec::ResponseParameters
-                TransactionalQueuePollCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalQueuePollCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalQueuePollCodec::ResponseParameters(clientMessage);
                 }
 
@@ -12223,7 +10948,7 @@ namespace hazelcast {
                 }
 
                 TransactionalQueueSizeCodec::ResponseParameters
-                TransactionalQueueSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalQueueSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalQueueSizeCodec::ResponseParameters(clientMessage);
                 }
 
@@ -12279,7 +11004,7 @@ namespace hazelcast {
                 }
 
                 TransactionalSetAddCodec::ResponseParameters
-                TransactionalSetAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalSetAddCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalSetAddCodec::ResponseParameters(clientMessage);
                 }
 
@@ -12335,7 +11060,7 @@ namespace hazelcast {
                 }
 
                 TransactionalSetRemoveCodec::ResponseParameters
-                TransactionalSetRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalSetRemoveCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalSetRemoveCodec::ResponseParameters(clientMessage);
                 }
 
@@ -12387,7 +11112,7 @@ namespace hazelcast {
                 }
 
                 TransactionalSetSizeCodec::ResponseParameters
-                TransactionalSetSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalSetSizeCodec::ResponseParameters::decode(ClientMessage clientMessage) {
                     return TransactionalSetSizeCodec::ResponseParameters(clientMessage);
                 }
 

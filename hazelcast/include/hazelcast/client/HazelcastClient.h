@@ -36,7 +36,6 @@ namespace hazelcast {
  * * Access to transactional distributed data structures like TransactionalMap, TransactionalQueue etc...
  * * Ability to add cluster listeners to a cluster and entry/item listeners to distributed data structures.
  * @see MembershipListener, IMap#addEntryListener , IQueue#addItemListener etc .
- * * Distributed synchronization mechanisms with ILock , ISemaphore and ICountDownLatch.
  * * C++ Client is smart by default, which means that it knows where the data is and asks directly to correct node.
  * Note that you can turn this feature off ( ClientConfig#setSmart), if you don't want your clients to connect every
  * node.
@@ -514,16 +513,6 @@ namespace hazelcast {
             }
 
             /**
-            * Creates cluster-wide unique IDs. Generated IDs are long type primitive values
-            * between <tt>0</tt> and <tt>LONG_MAX</tt> . Generated IDs are unique during the life
-            * cycle of the cluster. If the entire cluster is restarted, IDs start from <tt>0</tt> again.
-            *
-            * @param name name of the IdGenerator
-            * @return IdGenerator for the given name
-            */
-            IdGenerator getIdGenerator(const std::string& name);
-
-            /**
              * Returns a generator that creates a cluster-wide unique IDs. Generated IDs are {@code long}
              * primitive values and are k-ordered (roughly ordered). IDs are in the range from {@code 0} to {@code
              * Long.MAX_VALUE}.
@@ -535,22 +524,11 @@ namespace hazelcast {
              * <p>
              * For more details and caveats, see class documentation for {@link FlakeIdGenerator}.
              * <p>
-             * Note: this implementation doesn't share namespace with {@link #getIdGenerator(String)}.
-             * That is, {@code getIdGenerator("a")} is distinct from {@code getFlakeIdGenerator("a")}.
              *
              * @param name name of the {@link FlakeIdGenerator}
              * @return FlakeIdGenerator for the given name
              */
             FlakeIdGenerator getFlakeIdGenerator(const std::string& name);
-
-            /**
-            * Creates cluster-wide atomic long. Hazelcast IAtomicLong is distributed
-            * implementation of <tt>java.util.concurrent.atomic.AtomicLong</tt>.
-            *
-            * @param name name of the IAtomicLong proxy
-            * @return IAtomicLong proxy for the given name
-            */
-            IAtomicLong getIAtomicLong(const std::string& name);
 
             /**
              * Obtain a {@link com.hazelcast.crdt.pncounter.PNCounter} with the given
@@ -567,42 +545,6 @@ namespace hazelcast {
             std::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
 
             /**
-            * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed
-            * implementation of <tt>java.util.concurrent.CountDownLatch</tt>.
-            *
-            * @param name name of the ICountDownLatch proxy
-            * @return ICountDownLatch proxy for the given name
-            */
-
-            ICountDownLatch getICountDownLatch(const std::string& name);
-
-            /**
-            * Returns the distributed lock instance for the specified key object.
-            * The specified object is considered to be the key for this lock.
-            * So keys are considered equals cluster-wide as long as
-            * they are serialized to the same byte array such as String, long,
-            * Integer.
-            *
-            * Locks are fail-safe. If a member holds a lock and some of the
-            * members go down, cluster will keep your locks safe and available.
-            * Moreover, when a member leaves the cluster, all the locks acquired
-            * by this dead member will be removed so that these locks can be
-            * available for live members immediately.
-            *
-            *      Lock lock = hazelcastInstance.getLock("PROCESS_LOCK");
-            *      lock.lock();
-            *      try {
-            *        // process
-            *      } finally {
-            *        lock.unlock();
-            *      }
-            *
-            * @param name name of the lock instance
-            * @return distributed lock instance for the specified name.
-            */
-            ILock getILock(const std::string& name);
-
-            /**
              * Returns the distributed Ringbuffer instance with the specified name.
              *
              * @param name name of the distributed Ringbuffer
@@ -612,15 +554,6 @@ namespace hazelcast {
             std::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
                 return clientImpl->getRingbuffer<E>(name);
             }
-
-            /**
-            * Creates cluster-wide semaphore. Hazelcast ISemaphore is distributed
-            * implementation of <tt>java.util.concurrent.Semaphore</tt>.
-            *
-            * @param name name of the ISemaphore proxy
-            * @return ISemaphore proxy for the given name
-            */
-            ISemaphore getISemaphore(const std::string& name);
 
             /**
              * Creates or returns the distributed executor service for the given name.

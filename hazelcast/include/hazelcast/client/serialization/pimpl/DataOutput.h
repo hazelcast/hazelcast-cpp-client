@@ -113,7 +113,8 @@ namespace hazelcast {
                     
                     template <typename T>
                     void write(const T &value) {
-                        throw exception::HazelcastSerializationException("DataOutput::write", "Unsupported type");
+                        BOOST_THROW_EXCEPTION(
+                                exception::HazelcastSerializationException("DataOutput::write", "Unsupported type"));
                     }
                     
                     template <typename T>

@@ -106,12 +106,15 @@ namespace hazelcast {
 
                     template <typename T>
                     inline T read() {
-                        throw exception::HazelcastSerializationException("DataInput::read", "Unsupported type");
+                        BOOST_THROW_EXCEPTION(
+                                exception::HazelcastSerializationException("DataInput::read", "Unsupported type"));
                     }
 
                     template <typename T>
                     inline int getSize(T *dummy) {
-                        throw exception::HazelcastSerializationException("DataInput::getSize", "Unsupported type");
+                        BOOST_THROW_EXCEPTION(
+                                exception::HazelcastSerializationException("DataInput::getSize", "Unsupported type"));
+                        return -1;
                     }
 
                     template <typename T>
@@ -128,7 +131,8 @@ namespace hazelcast {
                         if (len < 0) {
                             std::ostringstream out;
                             out << "Incorrect negative array size found in the byte stream. The size is: " << len;
-                            throw exception::HazelcastSerializationException("DataInput::readArray", out.str());
+                            BOOST_THROW_EXCEPTION(
+                                    exception::HazelcastSerializationException("DataInput::readArray", out.str()));
                         }
 
                         std::unique_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));

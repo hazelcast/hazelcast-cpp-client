@@ -13,20 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/IdGenerator.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IdGenerator idGenerator = hz.getIdGenerator("idGenerator");
+    auto flakeIdGenerator = hz.getFlakeIdGenerator("idGenerator");
     std::ostringstream out("somemap");
-    out << idGenerator.newId();
+    out << flakeIdGenerator.newId();
     hazelcast::client::IMap<int, int> map = hz.getMap<int, int>(out.str());
-
 
     std::cout << "Finished" << std::endl;
 

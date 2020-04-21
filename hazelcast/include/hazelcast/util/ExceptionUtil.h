@@ -36,17 +36,17 @@ namespace hazelcast {
             public:
                 virtual ~RuntimeExceptionFactory();
 
-                virtual void rethrow(const client::exception::IException &throwable, const std::string &message) = 0;
+                virtual void rethrow(std::exception_ptr throwable, const std::string &message) = 0;
             };
 
-            static void rethrow(const client::exception::IException &e);
+            static void rethrow(std::exception_ptr e);
 
-            static void rethrow(const client::exception::IException &e,
-                                                          const std::shared_ptr<RuntimeExceptionFactory> &runtimeExceptionFactory);
+            static void
+            rethrow(std::exception_ptr e, const std::shared_ptr<RuntimeExceptionFactory> &runtimeExceptionFactory);
 
         private:
             class HazelcastExceptionFactory : public RuntimeExceptionFactory {
-                virtual void rethrow(const client::exception::IException &throwable, const std::string &message);
+                virtual void rethrow(std::exception_ptr throwable, const std::string &message);
             };
 
             static const std::shared_ptr<RuntimeExceptionFactory> &HAZELCAST_EXCEPTION_FACTORY();

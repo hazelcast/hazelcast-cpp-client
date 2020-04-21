@@ -21,8 +21,10 @@
 #include "hazelcast/util/HazelcastDll.h"
 
 #ifdef HZ_BUILD_WITH_SSL
+
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
+
 #endif // HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -30,11 +32,10 @@
 #pragma warning(disable: 4251) //for dll export	
 #endif
 
-using namespace boost;
-
 namespace hazelcast {
     namespace client {
         class Socket;
+
         class Address;
 
         namespace spi {
@@ -44,17 +45,18 @@ namespace hazelcast {
             namespace socket {
                 class HAZELCAST_API SocketFactory {
                 public:
-                    SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io);
+                    SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io,
+                            boost::asio::ip::tcp::resolver &resolver);
 
                     bool start();
 
-                    std::unique_ptr<Socket> create(const Address &address, int64_t connectTimeoutInMillis);
+                    std::unique_ptr<Socket>
+                    create(const Address &address, std::chrono::steady_clock::duration &connectTimeoutInMillis);
 
                 private:
                     spi::ClientContext &clientContext;
-
                     boost::asio::io_context &io;
-
+                    boost::asio::ip::tcp::resolver &ioResolver;
 #ifdef HZ_BUILD_WITH_SSL
                     std::unique_ptr<boost::asio::ssl::context> sslContext;
 #endif

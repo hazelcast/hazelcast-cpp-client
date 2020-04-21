@@ -13,9 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(atomiclong)
-add_subdirectory(countdownlatch)
-add_subdirectory(idgenerator)
-add_subdirectory(lock)
-add_subdirectory(semaphore)
 add_subdirectory(crdt-pncounter)

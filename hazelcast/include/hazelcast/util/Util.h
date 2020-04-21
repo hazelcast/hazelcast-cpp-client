@@ -23,6 +23,7 @@
 #include <vector>
 #include <assert.h>
 #include <stdint.h>
+#include <chrono>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -84,20 +85,10 @@ namespace hazelcast {
              * Returns a String representation of the time.
              * <p>
              *
-             * @param timeMillis time in millis
+             * @param t time
              * @return the the formatted time string. Format is "%Y-%m-%d %H:%M:%S.%f".
              */
-            static std::string timeToString(int64_t timeInMillis);
-
-            /**
-             * Returns a String representation of the time. If time is 0, then 'never' is returned.
-             * <p>
-             * This method is not particularly efficient since it generates a ton of litter.
-             *
-             * @param timeMillis time in millis
-             * @return the formatted time string or "never" if timeInMillis is 0. Format is "%Y-%m-%d %H:%M:%S.%f".
-             */
-            static std::string timeToStringFriendly(int64_t timeInMillis);
+            static std::string timeToString(std::chrono::steady_clock::time_point t);
 
             /**
              * Tokenizes a version string and returns the tokens with the following grouping:

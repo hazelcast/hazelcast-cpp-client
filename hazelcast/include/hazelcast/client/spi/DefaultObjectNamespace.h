@@ -50,6 +50,9 @@ namespace hazelcast {
                  * @return the object name within the service
                  */
                 const std::string &getObjectName() const;
+
+                bool operator==(const DefaultObjectNamespace &rhs) const;
+
             private:
                 std::string serviceName;
                 std::string objectName;
@@ -58,24 +61,16 @@ namespace hazelcast {
     }
 }
 
-namespace std
-{
-    template<> struct less<hazelcast::client::spi::DefaultObjectNamespace>
-    {
-        bool operator() (const hazelcast::client::spi::DefaultObjectNamespace& lhs,
-                         const hazelcast::client::spi::DefaultObjectNamespace& rhs) const
-        {
-            int result = lhs.getServiceName().compare(rhs.getServiceName());
-            if (result < 0) {
-                return true;
-            }
+namespace std {
+    template<>
+    struct less<hazelcast::client::spi::DefaultObjectNamespace> {
+        bool operator()(const hazelcast::client::spi::DefaultObjectNamespace &lhs,
+                        const hazelcast::client::spi::DefaultObjectNamespace &rhs) const;
+    };
 
-            if (result > 0) {
-                return false;
-            }
-
-            return lhs.getObjectName().compare(rhs.getObjectName()) < 0;
-        }
+    template<>
+    struct hash<hazelcast::client::spi::DefaultObjectNamespace> {
+        std::size_t operator()(const hazelcast::client::spi::DefaultObjectNamespace &k) const;
     };
 }
 

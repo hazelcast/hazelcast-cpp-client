@@ -53,7 +53,7 @@ namespace hazelcast {
              * Called when an execution is completed with an error.
              * @param e the exception that is thrown
              */
-            virtual void onFailure(const std::shared_ptr<exception::IException> &e) = 0;
+            virtual void onFailure(std::exception_ptr e) = 0;
         };
     }
 }

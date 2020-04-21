@@ -66,38 +66,39 @@ int main() {
     for (std::map<std::string, std::shared_ptr<int> >::const_iterator it = result.begin(); it != result.end(); ++it) {
         std::cout << it->first << " salary: " << *it->second << std::endl;
     }
-    
+
     // use submitToKey api
-    hazelcast::client::Future<int> future = employees.submitToKey<int, EmployeeRaiseEntryProcessor>("Mark", processor);
+    boost::future<std::shared_ptr<int>> future = employees.submitToKey<int, EmployeeRaiseEntryProcessor>("Mark",
+                                                                                                         processor);
     // wait for 1 second
-    if (future.wait_for(1000) == hazelcast::client::future_status::ready) {
-        std::unique_ptr<int> result = future.get();
-        std::cout << "Got the result of submitToKey in 1 second for Mark" << " new salary: " << *result << std::endl;
+    if (future.wait_for(boost::chrono::seconds(1)) == boost::future_status::ready) {
+        auto r = future.get();
+        std::cout << "Got the result of submitToKey in 1 second for Mark" << " new salary: " << *r << std::endl;
     } else {
         std::cout << "Could not get the result of submitToKey in 1 second for Mark" << std::endl;
     }
 
     // multiple futures
-    std::vector<hazelcast::client::Future<int> > allFutures;
+    std::vector<boost::future<std::shared_ptr<int>>> allFutures;
 
     // test putting into a vector of futures
     future = employees.submitToKey<int, EmployeeRaiseEntryProcessor>(
             "Mark", processor);
-    allFutures.push_back(future);
+    allFutures.push_back(std::move(future));
 
     allFutures.push_back(employees.submitToKey<int, EmployeeRaiseEntryProcessor>(
             "John", processor));
 
-    for (std::vector<hazelcast::client::Future<int> >::const_iterator it = allFutures.begin();it != allFutures.end();++it) {
-        hazelcast::client::future_status status = (*it).wait_for(1000);
-        if (status == hazelcast::client::future_status::ready) {
+    for (auto &f : allFutures) {
+        boost::future_status status = f.wait_for(boost::chrono::seconds(1));
+        if (status == boost::future_status::ready) {
             std::cout << "Got ready for the future" << std::endl;
         }
     }
 
-    for (std::vector<hazelcast::client::Future<int> >::iterator it = allFutures.begin();it != allFutures.end();++it) {
-        std::unique_ptr<int> result = (*it).get();
-        std::cout << "Result:" << *result << std::endl;
+    for (auto &f : allFutures) {
+        auto r = f.get();
+        std::cout << "Result:" << *r << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

@@ -53,14 +53,14 @@ namespace hazelcast {
 
                 void handle();
 
-                int64_t getLastReadTimeMillis();
+                const std::chrono::steady_clock::time_point getLastReadTime() const;
 
                 char *buffer;
                 util::ByteBuffer byteBuffer;
             private:
 
                 protocol::ClientMessageBuilder builder;
-                std::atomic<int64_t> lastReadTimeMillis;
+                std::atomic<std::chrono::steady_clock::time_point> lastReadTime;
             };
         }
     }

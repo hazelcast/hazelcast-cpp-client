@@ -62,13 +62,9 @@
     * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
         * [7.4.7.1. Using Ringbuffer Non-Blocking Async Methods](#7471-using-ringbuffer-non-blocking-async-methods)
     * [7.4.8. Using Reliable Topic](#748-using-reliable-topic) 
-    * [7.4.9. Using Lock](#749-using-lock)
-    * [7.4.10. Using Atomic Long](#7410-using-atomic-long)
-        * [7.4.10.1. Using Atomic Long Non-Blocking Async Methods](#74101-using-atomic-long-non-blocking-async-methods)
-    * [7.4.11. Using Semaphore](#7411-using-semaphore)
-    * [7.4.12. Using PN Counter](#7412-using-pn-counter)
-    * [7.4.13. Using Flake ID Generator](#7413-using-flake-id-generator)
-    * [7.4.14. Using Transactions](#7414-using-transactions)
+    * [7.4.9. Using PN Counter](#7412-using-pn-counter)
+    * [7.4.10. Using Flake ID Generator](#7413-using-flake-id-generator)
+    * [7.4.11. Using Transactions](#7414-using-transactions)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Cluster Events](#751-cluster-events)
       * [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
@@ -588,9 +584,6 @@ Hazelcast C++ client supports the following data structures and features:
 * Replicated Map
 * Ringbuffer
 * Reliable Topic
-* Lock
-* Semaphore
-* Atomic Long
 * CRDT PN Counter
 * Flake ID Generator
 * Event Listeners
@@ -1670,110 +1663,7 @@ int main() {
 }
 ```
 
-### 7.4.9 Using Lock
-
-Hazelcast Lock (`ILock`) is a distributed lock implementation. You can synchronize Hazelcast members and clients using a Lock. For details, see the [Lock section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#lock) in the Hazelcast IMDG Reference Manual.
-
-A Lock usage example is shown below.
-
-```C++
-    // Get a distributed lock called "my-distributed-lock"
-    ILock lock = hz.getILock("my-distributed-lock");
-    // Now create a lock and execute some guarded code.
-    lock.lock();
-    try {
-        //do something here
-    } catch (...) {
-            lock.unlock();
-            throw;
-    }
-```
-
-### 7.4.10 Using Atomic Long
-
-Hazelcast Atomic Long (`IAtomicLong`) is the distributed long which offers most of the operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. For details, see the [Atomic Long section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#iatomiclong) in the Hazelcast IMDG Reference Manual.
-
-An Atomic Long usage example is shown below.
-
-```C++
-    hazelcast::client::IAtomicLong counter = hz.getIAtomicLong("counter");
-
-    for (int i = 0; i < 1000 * 1000; ++i) {
-        counter.incrementAndGet();
-    }
-
-    std::cout << "Count is:" << counter.get() << std::endl; // Counter is 1000000
-```
-
-#### 7.4.10.1. Using Atomic Long Non-Blocking Async Methods
-Hazelcast IAtomicLong provides asynchronous methods where you can execute a bunch of non-blocking methods and get the response later in your code or just let the atomic long operations complete at the background. You can also use callbacks to be executed upon the completion of the atomic long operations.
-
-Below is a code sample which increments the atomic long counter asynchronously:
-
-```C++
-    // Initiate an increment for the atomic long but do not block
-    boost::shared_ptr<ICompletableFuture<int64_t> > future = counter.incrementAndGetAsync();
-
-    // Do some other work
-
-    // Get the result of the incrementAndGetAsync api using the future
-    boost::shared_ptr<int64_t> result = future->get();
-
-    // It will print the value as 1
-    std::cout << "The counter value is " << *result << std::endl;
-```
-
-Other asynchronous methods provided by the IAtomicLong structure are:
-- `addAndGetAsync`
-- `compareAndSetAsync`
-- `decrementAndGetAsync` 
-- `getAsync` 
-- `setAsync` 
-- `getAndAddAsync` 
-- `getAndSetAsync`  
-- `getAndIncrementAsync`
-
-```C++
-/**
- * This class prints message on receiving the response or prints the exception if exception occurs
- */
-class PrinterCallback : public hazelcast::client::ExecutionCallback<int64_t> {
-public:
-    virtual void onResponse(const boost::shared_ptr<int64_t> &response) {
-        if (response.get()) {
-            std::cout << "Received response is : " << *response << std::endl;
-        } else {
-            std::cout << "Received null response" << std::endl;
-        }
-    }
-
-    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
-        std::cerr << "A failure occured. The exception is:" << e << std::endl;
-    }
-};
-
-/ ----
-
-    boost::shared_ptr<ExecutionCallback<int64_t> > callback(new PrinterCallback);
-    boost::shared_ptr<ICompletableFuture<int64_t> > f = counter.decrementAndGetAsync();
-    // Use a callback to write the result of decrement operation in a non-blocking async way
-    f->andThen(callback);
-```
-
-### 7.4.11 Using Semaphore
-
-Hazelcast Semaphore (`ISemaphore`) is a distributed semaphore implementation. For details, see the [Semaphore section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#isemaphore) in the Hazelcast IMDG Reference Manual.
-
-A Semaphore usage example is shown below.
-
-```C++
-    hazelcast::client::ISemaphore semaphore = hz.getISemaphore("semaphore");
-    semaphore.init(10);
-    semaphore.acquire(5);
-    std::cout << "Number of available permits: " << semaphore.availablePermits() << std::endl; // Number of available permits: 5
-```
-
-### 7.4.12 Using PN Counter
+### 7.4.9 Using PN Counter
 
 Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
 
@@ -1793,7 +1683,7 @@ A PN Counter usage example is shown below.
     std::cout << "Decremented counter by one to: " << pnCounter->decrementAndGet() << std::endl; // Decremented counter by one to: 6
 ```
 
-### 7.4.13 Using Flake ID Generator
+### 7.4.10 Using Flake ID Generator
 
 Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 
@@ -1804,7 +1694,7 @@ A Flake ID Generator usage example is shown below.
     std::cout << "Id : " << generator.newId() << std::endl; // Id : <some unique number>
 ```
 
-### 7.4.14. Using Transactions
+### 7.4.11. Using Transactions
 
 Hazelcast C++ client provides transactional operations like beginning transactions, committing transactions and retrieving transactional data structures like the `TransactionalMap`, `TransactionalSet`, `TransactionalList`, `TransactionalQueue` and `TransactionalMultiMap`.
 
@@ -3019,8 +2909,8 @@ with requests in that situation. See the [Client BackPressure section](#733-clie
 
 You do not need a special configuration, it works out-of-the-box.
 
-The pipelining can be used for any asynchronous call. You can use it for IMap asynchronous get/put methods as well as for
-IAtomicLong, etc. It cannot be used as a transaction mechanism though. So you cannot do some calls and throw away the pipeline and expect that
+The pipelining can be used for any asynchronous call. You can use it for IMap asynchronous get/put methods.
+It cannot be used as a transaction mechanism though. So you cannot do some calls and throw away the pipeline and expect that
 none of the requests are executed. The pipelining is just a performance optimization, not a mechanism for atomic behavior.
 
 The pipelines are cheap and should frequently be replaced because they accumulate results. It is fine to have a few hundred or

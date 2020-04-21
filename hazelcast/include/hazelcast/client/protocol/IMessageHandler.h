@@ -23,20 +23,23 @@
 
 namespace hazelcast {
     namespace client {
+        namespace spi {
+            namespace impl {
+                class ClientInvocation;
+            }
+        }
 
         namespace connection {
             class Connection;
         }
 
         namespace protocol {
-            class ClientMessage;
-
             class HAZELCAST_API IMessageHandler {
             public:
-                virtual ~IMessageHandler() { }
+                virtual ~IMessageHandler() {}
 
-                virtual void handleClientMessage(const std::shared_ptr<connection::Connection> &connection,
-                                                 const std::shared_ptr<ClientMessage> &message) = 0;
+                virtual void handleClientMessage(const std::shared_ptr<spi::impl::ClientInvocation> invocation,
+                                                 const std::shared_ptr<ClientMessage> response) = 0;
             };
         }
     }
