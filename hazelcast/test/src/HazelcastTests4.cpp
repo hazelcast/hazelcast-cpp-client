@@ -708,15 +708,15 @@ namespace hazelcast {
 
                 class LoadListener : public EntryAdapter<std::string, std::string> {
                 public:
-                    LoadListener(hazelcast::util::CountDownLatch &latch) : latch(latch) {
+                    LoadListener(boost::latch &latch1) : latch1(latch1) {
                     }
 
                     void entryLoaded(const EntryEvent<std::string, std::string> &event) {
-                        latch.countDown();
+                        latch1.count_down();
                     }
 
                 private:
-                    hazelcast::util::CountDownLatch &latch;
+                    boost::latch &latch1;
                 };
 
                 class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
@@ -3217,13 +3217,13 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testLoadEvent) {
-                    hazelcast::util::CountDownLatch latch(1);
-                    LoadListener loadListener(latch);
+                    boost::latch latch1(1);
+                    LoadListener loadListener(latch1);
                     std::string listenerId = storeEnabledMap->addEntryListener(loadListener, false);
                     storeEnabledMap->put("key1", "value1");
                     storeEnabledMap->evictAll();
                     storeEnabledMap->get("key1");
-                    ASSERT_TRUE(latch.await(120));
+                    ASSERT_OPEN_EVENTUALLY(latch1);
                     storeEnabledMap->removeEntryListener(listenerId);
                 }
 

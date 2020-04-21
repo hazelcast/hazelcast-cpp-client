@@ -238,7 +238,7 @@ https://hazelcast.org/documentation/.
 
     <map name="StoreEnabledMap">
         <map-store enabled="true">
-            <class-name>com.hazelcast.client.test.com.SampleMapStore</class-name>
+            <class-name>com.hazelcast.client.test.SampleMapStore</class-name>
         </map-store>
     </map>
 
