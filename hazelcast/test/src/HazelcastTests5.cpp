@@ -2391,6 +2391,7 @@ namespace hazelcast {
                 static const char *intMapName;
                 static const char *employeesMapName;
                 static const char *imapName;
+                static const char *storeEnabledMapName;
                 static const std::string ONE_SECOND_MAP_NAME;
 
                 MapClientConfig() {
@@ -2404,6 +2405,7 @@ namespace hazelcast {
             const char *MapClientConfig::intMapName = "IntMap";
             const char *MapClientConfig::employeesMapName = "EmployeesMap";
             const char *MapClientConfig::imapName = "clientMapTest";
+            const char *MapClientConfig::storeEnabledMapName = "StoreEnabledMap";
             const std::string MapClientConfig::ONE_SECOND_MAP_NAME = "OneSecondTtlMap";
 
             class NearCachedDataMapClientConfig : public MapClientConfig {
@@ -2422,6 +2424,10 @@ namespace hazelcast {
                     addNearCacheConfig<std::string, std::string>(
                             std::shared_ptr<config::NearCacheConfig<std::string, std::string> >(
                                     new config::NearCacheConfig<std::string, std::string>(ONE_SECOND_MAP_NAME)));
+
+                    addNearCacheConfig<std::string, std::string>(
+                            std::shared_ptr<config::NearCacheConfig<std::string, std::string> >(
+                                    new config::NearCacheConfig<std::string, std::string>(storeEnabledMapName)));
                 }
             };
 
@@ -2442,6 +2448,11 @@ namespace hazelcast {
                             std::shared_ptr<config::NearCacheConfig<std::string, std::string> >(
                                     new config::NearCacheConfig<std::string, std::string>(ONE_SECOND_MAP_NAME,
                                                                                           config::OBJECT)));
+
+                    addNearCacheConfig<std::string, std::string>(
+                            std::shared_ptr<config::NearCacheConfig<std::string, std::string> >(
+                                    new config::NearCacheConfig<std::string, std::string>(storeEnabledMapName,
+                                                                                          config::OBJECT)));
                 }
             };
 
@@ -2450,7 +2461,8 @@ namespace hazelcast {
                 ClientMapTest() : client(HazelcastClient(GetParam())),
                                   imap(client.getMap<std::string, std::string>(MapClientConfig::imapName)),
                                   intMap(client.getMap<int, int>(MapClientConfig::intMapName)),
-                                  employees(client.getMap<int, Employee>(MapClientConfig::employeesMapName)) {
+                                  employees(client.getMap<int, Employee>(MapClientConfig::employeesMapName)),
+                                  storeEnabledMap(client.getMap<std::string, std::string>(MapClientConfig::storeEnabledMapName)) {
                 }
 
                 static void SetUpTestCase() {
@@ -2497,6 +2509,7 @@ namespace hazelcast {
                     employees.destroy();
                     intMap.destroy();
                     imap.destroy();
+                    storeEnabledMap.destroy();
                     client.getMap<std::string, std::string>(MapClientConfig::ONE_SECOND_MAP_NAME).destroy();
                     client.getMap<Employee, int>("tradeMap").destroy();
                 }
@@ -2674,6 +2687,19 @@ namespace hazelcast {
                     boost::latch &latch1;
                 };
 
+                class LoadListener : public EntryAdapter<std::string, std::string> {
+                public:
+                    LoadListener(boost::latch &latch1) : latch1(latch1) {
+                    }
+
+                    void entryLoaded(const EntryEvent<std::string, std::string> &event) {
+                        latch1.count_down();
+                    }
+
+                private:
+                    boost::latch &latch1;
+                };
+
                 class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
                 public:
                     SampleEntryListenerForPortableKey(boost::latch &latch1,
@@ -2738,6 +2764,7 @@ namespace hazelcast {
                 IMap<std::string, std::string> imap;
                 IMap<int, int> intMap;
                 IMap<int, Employee> employees;
+                IMap<std::string, std::string> storeEnabledMap;
 
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
@@ -4620,6 +4647,21 @@ namespace hazelcast {
                 ASSERT_TRUE(imap.removeEntryListener(listener1ID));
                 ASSERT_TRUE(imap.removeEntryListener(listener2ID));
 
+            }
+
+            TEST_P(ClientMapTest, testLoadListener) {
+                boost::latch latch1(1);
+                LoadListener loadListener(latch1);
+                std::string listenerId = storeEnabledMap.addEntryListener(loadListener, false);
+                storeEnabledMap.put("key1", "value1");
+                ASSERT_EQ(1, storeEnabledMap.size());
+                storeEnabledMap.evictAll();
+                ASSERT_EQ(0, storeEnabledMap.size());
+                storeEnabledMap.get("key1");
+                ASSERT_EQ(1, storeEnabledMap.size());
+                ASSERT_EQ("value1", *(storeEnabledMap.get("key1")));
+                ASSERT_OPEN_EVENTUALLY(latch1);
+                storeEnabledMap.removeEntryListener(listenerId);
             }
 
             TEST_P(ClientMapTest, testListenerWithTruePredicate) {

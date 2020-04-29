@@ -464,8 +464,6 @@ namespace hazelcast {
                         employees = new client::adaptor::RawPointerMap<int, Employee>(*legacyEmployees);
                         legacyIntMap = new IMap<int, int>(client->getMap<int, int>("legacyIntMap"));
                         intMap = new client::adaptor::RawPointerMap<int, int>(*legacyIntMap);
-                        legacyStoreEnabledMap = new IMap<std::string, std::string>(client->getMap<std::string, std::string>("StoreEnabledMap"));
-                        storeEnabledMap = new client::adaptor::RawPointerMap<std::string, std::string>(*legacyStoreEnabledMap);
                     }
 
                     virtual void TearDown() {
@@ -473,7 +471,6 @@ namespace hazelcast {
                         legacyIntMap->destroy();
                         legacyEmployees->destroy();
                         legacyMap->destroy();
-                        legacyStoreEnabledMap->destroy();
                     }
 
                     static void SetUpTestCase() {
@@ -502,8 +499,6 @@ namespace hazelcast {
                         delete legacyEmployees;
                         delete imap;
                         delete legacyMap;
-                        delete storeEnabledMap;
-                        delete legacyStoreEnabledMap;
                         delete client;
                         delete instance2;
                         delete instance;
@@ -515,8 +510,6 @@ namespace hazelcast {
                         legacyEmployees = NULL;
                         imap = NULL;
                         legacyMap = NULL;
-                        storeEnabledMap = NULL;
-                        legacyStoreEnabledMap = NULL;
                         client = NULL;
                         instance2 = NULL;
                         instance = NULL;
@@ -541,8 +534,6 @@ namespace hazelcast {
                     static client::adaptor::RawPointerMap<int, Employee> *employees;
                     static IMap<int, int> *legacyIntMap;
                     static client::adaptor::RawPointerMap<int, int> *intMap;
-                    static IMap<std::string, std::string> *legacyStoreEnabledMap;
-                    static client::adaptor::RawPointerMap<std::string, std::string> *storeEnabledMap;
                     static HazelcastServerFactory *sslFactory;
                 };
 
@@ -555,8 +546,6 @@ namespace hazelcast {
                 client::adaptor::RawPointerMap<int, Employee> *RawPointerMapTest::employees = NULL;
                 IMap<int, int> *RawPointerMapTest::legacyIntMap = NULL;
                 client::adaptor::RawPointerMap<int, int> *RawPointerMapTest::intMap = NULL;
-                IMap<std::string, std::string> *RawPointerMapTest::legacyStoreEnabledMap = NULL;
-                client::adaptor::RawPointerMap<std::string, std::string> *RawPointerMapTest::storeEnabledMap = NULL;
                 HazelcastServerFactory *RawPointerMapTest::sslFactory = NULL;
 
                 void tryPutThread(hazelcast::util::ThreadArgs &args) {
@@ -699,19 +688,6 @@ namespace hazelcast {
                     }
 
                     void mapEvicted(const MapEvent &event) {
-                        latch1.count_down();
-                    }
-
-                private:
-                    boost::latch &latch1;
-                };
-
-                class LoadListener : public EntryAdapter<std::string, std::string> {
-                public:
-                    LoadListener(boost::latch &latch1) : latch1(latch1) {
-                    }
-
-                    void entryLoaded(const EntryEvent<std::string, std::string> &event) {
                         latch1.count_down();
                     }
 
@@ -3214,17 +3190,6 @@ namespace hazelcast {
                     imap->clear();
                     ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(120)));
                     imap->removeEntryListener(listenerId);
-                }
-
-                TEST_F(RawPointerMapTest, testLoadEvent) {
-                    boost::latch latch1(1);
-                    LoadListener loadListener(latch1);
-                    std::string listenerId = storeEnabledMap->addEntryListener(loadListener, false);
-                    storeEnabledMap->put("key1", "value1");
-                    storeEnabledMap->evictAll();
-                    storeEnabledMap->get("key1");
-                    ASSERT_OPEN_EVENTUALLY(latch1);
-                    storeEnabledMap->removeEntryListener(listenerId);
                 }
 
                 TEST_F(RawPointerMapTest, testEvictAllEvent) {

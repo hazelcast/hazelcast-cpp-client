@@ -536,6 +536,9 @@ namespace hazelcast {
                             case EntryEventType::EVICTED:
                                 listener->entryEvicted(entryEvent);
                                 break;
+                            case EntryEventType::LOADED:
+                                listener->entryLoaded(entryEvent);
+                                break;
                             case EntryEventType::CLEAR_ALL:
                                 listener->mapCleared(MapEvent(*member, type, name, numberOfAffectedEntries));
                                 break;
