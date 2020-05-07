@@ -2391,6 +2391,7 @@ namespace hazelcast {
                 static const char *intMapName;
                 static const char *employeesMapName;
                 static const char *imapName;
+                static const char *jsonMapName;
                 static const std::string ONE_SECOND_MAP_NAME;
 
                 MapClientConfig() {
@@ -2403,6 +2404,7 @@ namespace hazelcast {
 
             const char *MapClientConfig::intMapName = "IntMap";
             const char *MapClientConfig::employeesMapName = "EmployeesMap";
+            const char *MapClientConfig::jsonMapName = "jsonMapTest";
             const char *MapClientConfig::imapName = "clientMapTest";
             const std::string MapClientConfig::ONE_SECOND_MAP_NAME = "OneSecondTtlMap";
 
@@ -2450,7 +2452,8 @@ namespace hazelcast {
                 ClientMapTest() : client(HazelcastClient(GetParam())),
                                   imap(client.getMap<std::string, std::string>(MapClientConfig::imapName)),
                                   intMap(client.getMap<int, int>(MapClientConfig::intMapName)),
-                                  employees(client.getMap<int, Employee>(MapClientConfig::employeesMapName)) {
+                                  employees(client.getMap<int, Employee>(MapClientConfig::employeesMapName)),
+                                  jsonMap(client.getMap<std::string, HazelcastJsonValue>(MapClientConfig::jsonMapName)) {
                 }
 
                 static void SetUpTestCase() {
@@ -2738,6 +2741,7 @@ namespace hazelcast {
                 IMap<std::string, std::string> imap;
                 IMap<int, int> intMap;
                 IMap<int, Employee> employees;
+                IMap<std::string, HazelcastJsonValue> jsonMap;
 
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
@@ -3291,6 +3295,26 @@ namespace hazelcast {
                 t2.join();
                 ASSERT_FALSE(imap.isLocked("key1"));
 
+            }
+
+            TEST_P(ClientMapTest, testJsonValues) {
+                const int numItems = 5;
+                for (int i = 0; i < numItems; ++i) {
+                  jsonMap.put("key_" + std::to_string(i), HazelcastJsonValue("{ \"value\"=\"value_" + std::to_string(i) + "\"}"));
+                }
+                std::vector<HazelcastJsonValue> values = jsonMap.values();
+                ASSERT_EQ(numItems, (int) values.size());
+            }
+
+            TEST_P(ClientMapTest, testJsonValuesWithPagingPredicate) {
+              const int numItems = 5;
+              const int predSize = 3;
+              for (int i = 0; i < numItems; ++i) {
+                jsonMap.put("key_" + std::to_string(i), HazelcastJsonValue("{ \"value\"=\"value_" + std::to_string(i) + "\"}"));
+              }
+              query::PagingPredicate<std::string, HazelcastJsonValue> predicate((size_t) predSize);
+              std::vector<HazelcastJsonValue> values = jsonMap.values(predicate);
+              ASSERT_EQ(predSize, (int) values.size());
             }
 
             TEST_P(ClientMapTest, testValues) {
