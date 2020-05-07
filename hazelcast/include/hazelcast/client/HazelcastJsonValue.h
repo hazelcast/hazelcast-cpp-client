@@ -69,6 +69,8 @@ namespace hazelcast {
 
             bool operator!=(const HazelcastJsonValue &rhs) const;
 
+            bool operator<(const HazelcastJsonValue &rhs) const;
+
             friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const HazelcastJsonValue &value);
 
         private:

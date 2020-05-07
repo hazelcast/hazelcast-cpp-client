@@ -654,10 +654,11 @@ namespace hazelcast {
                 std::vector<K> keySet() {
                     std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData();
                     size_t size = dataResult.size();
-                    std::vector<K> keys(size);
+                    std::vector<K> keys;
+                    keys.reserve(size);
                     for (size_t i = 0; i < size; ++i) {
                         std::unique_ptr<K> key = toObject<K>(dataResult[i]);
-                        keys[i] = *key;
+                        keys.push_back(*key);
                     }
                     return keys;
                 }
@@ -693,10 +694,11 @@ namespace hazelcast {
                 std::vector<K> keySet(const query::Predicate &predicate) {
                     std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData(predicate);
                     size_t size = dataResult.size();
-                    std::vector<K> keys(size);
+                    std::vector<K> keys;
+                    keys.reserve(size);
                     for (size_t i = 0; i < size; ++i) {
                         std::unique_ptr<K> key = toObject<K>(dataResult[i]);
-                        keys[i] = *key;
+                        keys.push_back(*key);
                     }
                     return keys;
                 }
@@ -747,10 +749,11 @@ namespace hazelcast {
                 std::vector<V> values() {
                     std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData();
                     size_t size = dataResult.size();
-                    std::vector<V> values(size);
+                    std::vector<V> values;
+                    values.reserve(size);
                     for (size_t i = 0; i < size; ++i) {
                         std::unique_ptr<V> value = toObject<V>(dataResult[i]);
-                        values[i] = *value;
+                        values.push_back(*value);
                     }
                     return values;
                 }
@@ -782,6 +785,7 @@ namespace hazelcast {
                     std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData(predicate);
                     size_t size = dataResult.size();
                     std::vector<V> values;
+                    values.reserve(size);
                     for (size_t i = 0; i < size; ++i) {
                         std::unique_ptr<V> value = toObject<V>(dataResult[i]);
                         values.push_back(*value);
@@ -826,11 +830,12 @@ namespace hazelcast {
                 std::vector<std::pair<K, V> > entrySet() {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData();
                     size_t size = dataResult.size();
-                    std::vector<std::pair<K, V> > entries(size);
+                    std::vector<std::pair<K, V> > entries;
+                    entries.reserve(size);
                     for (size_t i = 0; i < size; ++i) {
                         std::unique_ptr<K> key = toObject<K>(dataResult[i].first);
                         std::unique_ptr<V> value = toObject<V>(dataResult[i].second);
-                        entries[i] = std::make_pair(*key, *value);
+                        entries.emplace_back(*key, *value);
                     }
                     return entries;
                 }
@@ -851,11 +856,12 @@ namespace hazelcast {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
                             predicate);
                     size_t size = dataResult.size();
-                    std::vector<std::pair<K, V> > entries(size);
+                    std::vector<std::pair<K, V> > entries;
+                    entries.reserve(size);
                     for (size_t i = 0; i < size; ++i) {
                         std::unique_ptr<K> key = toObject<K>(dataResult[i].first);
                         std::unique_ptr<V> value = toObject<V>(dataResult[i].second);
-                        entries[i] = std::make_pair(*key, *value);
+                        entries.emplace_back(*key, *value);
                     }
                     return entries;
                 }
@@ -874,11 +880,12 @@ namespace hazelcast {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
                             predicate);
                     size_t size = dataResult.size();
-                    std::vector<std::pair<K, V> > entries(size);
+                    std::vector<std::pair<K, V> > entries;
+                    entries.reserve(size);
                     for (size_t i = 0; i < size; ++i) {
                         std::unique_ptr<K> key = toObject<K>(dataResult[i].first);
                         std::unique_ptr<V> value = toObject<V>(dataResult[i].second);
-                        entries[i] = std::make_pair(*key, *value);
+                        entries.emplace_back(*key, *value);
                     }
                     return entries;
                 }
