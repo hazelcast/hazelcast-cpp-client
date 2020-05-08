@@ -863,7 +863,7 @@ namespace hazelcast {
 
             ReadHandler::ReadHandler(Connection &connection, size_t bufferSize)
                     : buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize), builder(connection),
-                      lastReadTime(std::chrono::steady_clock::now()) {
+                      lastReadTimeDuration(std::chrono::steady_clock::now().time_since_epoch()) {
             }
 
             ReadHandler::~ReadHandler() {
@@ -871,7 +871,7 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                lastReadTime = std::chrono::steady_clock::now();
+                lastReadTimeDuration = std::chrono::steady_clock::now().time_since_epoch();
 
                 if (byteBuffer.position() == 0)
                     return;
@@ -891,7 +891,7 @@ namespace hazelcast {
             }
 
             const std::chrono::steady_clock::time_point ReadHandler::getLastReadTime() const {
-                return lastReadTime;
+                return std::chrono::steady_clock::time_point(lastReadTimeDuration);
             }
 
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
