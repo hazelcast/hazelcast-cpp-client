@@ -902,6 +902,7 @@ namespace hazelcast {
                                    boost::asio::ip::tcp::resolver &resolver)
                     : readHandler(*this, 16 << 10),
                       startTime(std::chrono::steady_clock::now()),
+                      closedTimeDuration(),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       authFuture(authFuture),
@@ -945,7 +946,7 @@ namespace hazelcast {
                     return;
                 }
 
-                closedTime.store(std::chrono::steady_clock::now());
+                closedTimeDuration.store(std::chrono::steady_clock::now().time_since_epoch());
 
                 closeCause = cause;
                 closeReason = reason;
@@ -1112,7 +1113,7 @@ namespace hazelcast {
                     os << "null";
                 }
                 os << ", lastReadTime=" << util::StringUtil::timeToString(conn.lastReadTime())
-                   << ", closedTime=" << util::StringUtil::timeToString(conn.closedTime)
+                   << ", closedTime=" << util::StringUtil::timeToString(std::chrono::steady_clock::time_point(conn.closedTimeDuration))
                    << ", connected server version=" << conn.connectedServerVersionString
                    << '}';
 
