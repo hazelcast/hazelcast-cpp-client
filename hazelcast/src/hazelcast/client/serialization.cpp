@@ -60,6 +60,10 @@ namespace hazelcast {
             return jsonString == rhs.jsonString;
         }
 
+        bool HazelcastJsonValue::operator<(const HazelcastJsonValue &rhs) const {
+          return jsonString < rhs.jsonString;
+        }
+
         bool HazelcastJsonValue::operator!=(const HazelcastJsonValue &rhs) const {
             return !(rhs == *this);
         }
