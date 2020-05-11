@@ -863,7 +863,7 @@ namespace hazelcast {
 
             ReadHandler::ReadHandler(Connection &connection, size_t bufferSize)
                     : buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize), builder(connection),
-                      lastReadTime(std::chrono::steady_clock::now()) {
+                      lastReadTimeDuration(std::chrono::steady_clock::now().time_since_epoch()) {
             }
 
             ReadHandler::~ReadHandler() {
@@ -871,7 +871,7 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                lastReadTime = std::chrono::steady_clock::now();
+                lastReadTimeDuration = std::chrono::steady_clock::now().time_since_epoch();
 
                 if (byteBuffer.position() == 0)
                     return;
@@ -891,7 +891,7 @@ namespace hazelcast {
             }
 
             const std::chrono::steady_clock::time_point ReadHandler::getLastReadTime() const {
-                return lastReadTime;
+                return std::chrono::steady_clock::time_point(lastReadTimeDuration);
             }
 
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
@@ -902,6 +902,7 @@ namespace hazelcast {
                                    boost::asio::ip::tcp::resolver &resolver)
                     : readHandler(*this, 16 << 10),
                       startTime(std::chrono::steady_clock::now()),
+                      closedTimeDuration(),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       authFuture(authFuture),
@@ -945,7 +946,7 @@ namespace hazelcast {
                     return;
                 }
 
-                closedTime.store(std::chrono::steady_clock::now());
+                closedTimeDuration.store(std::chrono::steady_clock::now().time_since_epoch());
 
                 closeCause = cause;
                 closeReason = reason;
@@ -1112,7 +1113,7 @@ namespace hazelcast {
                     os << "null";
                 }
                 os << ", lastReadTime=" << util::StringUtil::timeToString(conn.lastReadTime())
-                   << ", closedTime=" << util::StringUtil::timeToString(conn.closedTime)
+                   << ", closedTime=" << util::StringUtil::timeToString(std::chrono::steady_clock::time_point(conn.closedTimeDuration))
                    << ", connected server version=" << conn.connectedServerVersionString
                    << '}';
 
