@@ -1140,6 +1140,26 @@ namespace hazelcast {
 
                 }
 
+                TEST_F(RawPointerMapTest, testTryLockTtl) {
+
+                    ASSERT_TRUE(imap->tryLock("key1", 2 * 1000, 3 * 1000));
+                    boost::latch latch1(1);
+                    hazelcast::util::StartedThread t1(testMapTryLockThread1, &latch1, imap);
+
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+
+                    ASSERT_TRUE(imap->isLocked("key1"));
+
+                    boost::latch latch2(1);
+                    hazelcast::util::StartedThread t2(testMapTryLockThread2, &latch2, imap);
+
+                    hazelcast::util::sleep(3);
+                    ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
+                    ASSERT_TRUE(imap->isLocked("key1"));
+                    imap->forceUnlock("key1");
+
+                }
+
                 TEST_F(RawPointerMapTest, testForceUnlock) {
                     imap->lock("key1");
                     boost::latch latch1(1);
