@@ -142,7 +142,7 @@ namespace hazelcast {
                 void innerClose();
 
                 std::chrono::steady_clock::time_point startTime;
-                std::atomic<std::chrono::steady_clock::time_point> closedTime;
+                std::atomic<std::chrono::steady_clock::duration> closedTimeDuration;
                 spi::ClientContext &clientContext;
                 protocol::IMessageHandler &invocationService;
                 std::unique_ptr<Socket> socket;
