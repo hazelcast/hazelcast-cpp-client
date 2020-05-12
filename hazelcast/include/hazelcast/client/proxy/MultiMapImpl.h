@@ -69,7 +69,7 @@ namespace hazelcast {
 
                 bool isLocked(const serialization::pimpl::Data& key);
 
-                bool tryLock(const serialization::pimpl::Data& key, long timeoutInMillis = 0, long leaseTimeInMillis = LONG_MAX);
+                bool tryLock(const serialization::pimpl::Data& key, int64_t timeoutInMillis = 0, int64_t leaseTimeInMillis = -1);
 
                 void unlock(const serialization::pimpl::Data& key);
 

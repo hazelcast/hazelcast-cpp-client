@@ -372,7 +372,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
                 *         if the waiting time elapsed before the lock was acquired.
                 */
-                bool tryLock(const K &key, long timeInMillis) {
+                bool tryLock(const K &key, int64_t timeInMillis) {
                     return map.tryLock(key, timeInMillis);
                 }
 
@@ -393,7 +393,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
                 *         if the waiting time elapsed before the lock was acquired.
                 */
-                bool tryLock(const K &key, long timeInMillis, long leaseTimeInMillis) {
+                bool tryLock(const K &key, int64_t timeInMillis, int64_t leaseTimeInMillis) {
                   return map.tryLock(key, timeInMillis, leaseTimeInMillis);
                 }
 

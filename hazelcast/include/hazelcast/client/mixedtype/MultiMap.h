@@ -303,7 +303,7 @@ namespace hazelcast {
                 *         if the waiting time elapsed before the lock was acquired.
                 */
                 template <typename K>
-                bool tryLock(const K &key, long timeoutInMillis) {
+                bool tryLock(const K &key, int64_t timeoutInMillis) {
                     return proxy::MultiMapImpl::tryLock(toData(key), timeoutInMillis);
                 }
 
@@ -326,7 +326,7 @@ namespace hazelcast {
                 *         if the waiting time elapsed before the lock was acquired.
                 */
                 template <typename K>
-                bool tryLock(const K &key, long timeoutInMillis, long leaseTimeInMillis) {
+                bool tryLock(const K &key, int64_t timeoutInMillis, int64_t leaseTimeInMillis) {
                   return proxy::MultiMapImpl::tryLock(toData(key), timeoutInMillis, leaseTimeInMillis);
                 }
 

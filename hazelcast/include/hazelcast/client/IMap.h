@@ -377,7 +377,7 @@ namespace hazelcast {
             * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
             *         if the waiting time elapsed before the lock was acquired.
             */
-            bool tryLock(const K &key, int64_t timeInMillis, long leaseTimeInMillis) {
+            bool tryLock(const K &key, int64_t timeInMillis, int64_t leaseTimeInMillis) {
               return mapImpl->tryLock(key, timeInMillis, leaseTimeInMillis);
             }
 

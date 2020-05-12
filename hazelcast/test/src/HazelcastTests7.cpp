@@ -439,7 +439,7 @@ namespace hazelcast {
                 ASSERT_TRUE(mm->tryLock("key1", 2 * 1000));
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_TRUE(mm->isLocked("key1"));
 
                 boost::latch latch2(1);
@@ -447,23 +447,31 @@ namespace hazelcast {
 
                 hazelcast::util::sleep(1);
                 mm->unlock("key1");
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch2);
                 ASSERT_TRUE(mm->isLocked("key1"));
                 mm->forceUnlock("key1");
             }
 
             TEST_F(ClientMultiMapTest, testTryLockTtl) {
-                ASSERT_TRUE(mm->tryLock("key1", 2 * 1000, 3 * 1000));
+                ASSERT_TRUE(mm->tryLock("key1", 2 * 1000, 1.5 * 1000));
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_TRUE(mm->isLocked("key1"));
 
                 boost::latch latch2(1);
                 hazelcast::util::StartedThread t2(tryLockThread2, mm, &latch2);
 
-                hazelcast::util::sleep(3);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch2);
+                ASSERT_TRUE(mm->isLocked("key1"));
+                mm->forceUnlock("key1");
+            }
+
+            TEST_F(ClientMultiMapTest, testTryLockTtlTimeout) {
+                ASSERT_TRUE(mm->tryLock("key1", 2 * 1000, 200 * 1000));
+                boost::latch latch1(1);
+                hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_TRUE(mm->isLocked("key1"));
                 mm->forceUnlock("key1");
             }
@@ -479,7 +487,7 @@ namespace hazelcast {
                 mm->lock("key1");
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(forceUnlockThread, mm, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_FALSE(mm->isLocked("key1"));
             }
         }

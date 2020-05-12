@@ -341,7 +341,7 @@ namespace hazelcast {
                                                                                                             key);
             }
 
-            bool MultiMapImpl::tryLock(const serialization::pimpl::Data &key, long timeInMillis, long leaseTimeInMills) {
+            bool MultiMapImpl::tryLock(const serialization::pimpl::Data &key, int64_t timeInMillis, int64_t leaseTimeInMills) {
                 std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::MultiMapTryLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
                                                                          leaseTimeInMills, timeInMillis,
