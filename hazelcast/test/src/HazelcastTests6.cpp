@@ -3818,8 +3818,7 @@ namespace hazelcast {
 
                 boost::latch latch2(1);
                 hazelcast::util::StartedThread t2(tryLockThread2, mm, &latch2);
-
-                hazelcast::util::sleep(3);
+                
                 ASSERT_OPEN_EVENTUALLY(latch2);
                 ASSERT_TRUE(mm->isLocked<std::string>("key1"));
                 mm->forceUnlock<std::string>("key1");
