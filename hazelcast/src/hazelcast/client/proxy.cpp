@@ -318,15 +318,15 @@ namespace hazelcast {
             }
 
             void MultiMapImpl::lock(const serialization::pimpl::Data &key) {
-                lock(key, -1);
+                lock(key, std::chrono::milliseconds(-1));
             }
 
-            void MultiMapImpl::lock(const serialization::pimpl::Data &key, long leaseTime) {
+            void MultiMapImpl::lock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration leaseTime) {
                 int partitionId = getPartitionId(key);
 
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::MultiMapLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
-                                                                          leaseTime,
+                                                                          std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
                                                                           lockReferenceIdGenerator->getNextReferenceId());
 
                 invokeOnPartition(request, partitionId);
@@ -341,10 +341,11 @@ namespace hazelcast {
                                                                                                             key);
             }
 
-            bool MultiMapImpl::tryLock(const serialization::pimpl::Data &key, int64_t timeInMillis, int64_t leaseTimeInMills) {
+            bool MultiMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout, std::chrono::steady_clock::duration leaseTime) {
                 std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::MultiMapTryLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
-                                                                         leaseTimeInMills, timeInMillis,
+                                                                         std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
+                                                                         std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
                                                                          lockReferenceIdGenerator->getNextReferenceId());
 
                 return invokeAndGetResult<bool, protocol::codec::MultiMapTryLockCodec::ResponseParameters>(request,
@@ -1469,15 +1470,15 @@ namespace hazelcast {
             }
 
             void IMapImpl::lock(const serialization::pimpl::Data &key) {
-                lock(key, -1);
+                lock(key, std::chrono::milliseconds(-1));
             }
 
-            void IMapImpl::lock(const serialization::pimpl::Data &key, int64_t leaseTime) {
+            void IMapImpl::lock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration leaseTime) {
                 int partitionId = getPartitionId(key);
 
                 std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
-                                                                     leaseTime,
+                                                                     std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
                                                                      lockReferenceIdGenerator->getNextReferenceId());
 
                 invokeOnPartition(request, partitionId);
@@ -1490,10 +1491,11 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::MapIsLockedCodec::ResponseParameters>(request, key);
             }
 
-            bool IMapImpl::tryLock(const serialization::pimpl::Data &key, int64_t timeInMillis, int64_t leaseTimeInMillis) {
+            bool IMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout, std::chrono::steady_clock::duration leaseTime) {
                 std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapTryLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(), leaseTimeInMillis,
-                                                                        timeInMillis,
+                        protocol::codec::MapTryLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
+                                                                        std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
+                                                                        std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
                                                                         lockReferenceIdGenerator->getNextReferenceId());
 
                 return invokeAndGetResult<bool, protocol::codec::MapTryLockCodec::ResponseParameters>(request, key);

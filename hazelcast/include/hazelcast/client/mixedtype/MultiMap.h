@@ -253,11 +253,11 @@ namespace hazelcast {
                 * Locks are re-entrant so if the key is locked N times then
                 * it should be unlocked N times before another thread can acquire it.
                 * @param key key to lock.
-                * @param leaseTimeInMillis time in milliseconds to wait before releasing the lock.
+                * @param leaseTime time to wait before releasing the lock.
                 */
                 template <typename K>
-                void lock(const K &key, long leaseTimeInMillis) {
-                    proxy::MultiMapImpl::lock(toData(key), leaseTimeInMillis);
+                void lock(const K &key, std::chrono::steady_clock::duration leaseTime) {
+                    proxy::MultiMapImpl::lock(toData(key), leaseTime);
                 }
 
                 /**
@@ -298,13 +298,13 @@ namespace hazelcast {
                 *
                 *
                 * @param key to be locked.
-                * @param timeoutInMillis     the maximum time to wait for the lock
+                * @param timeout     the maximum time to wait for the lock
                 * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
                 *         if the waiting time elapsed before the lock was acquired.
                 */
                 template <typename K>
-                bool tryLock(const K &key, int64_t timeoutInMillis) {
-                    return proxy::MultiMapImpl::tryLock(toData(key), timeoutInMillis);
+                bool tryLock(const K &key, std::chrono::steady_clock::duration timeout) {
+                    return proxy::MultiMapImpl::tryLock(toData(key), timeout);
                 }
 
                 /**
@@ -320,14 +320,14 @@ namespace hazelcast {
                 *
                 *
                 * @param key to be locked.
-                * @param timeoutInMillis     the maximum time to wait for the lock
-                * @param leaseTimeInMillis time in milliseconds to wait before releasing the lock.
+                * @param timeout     the maximum time to wait for the lock
+                * @param leaseTime time to wait before releasing the lock.
                 * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
                 *         if the waiting time elapsed before the lock was acquired.
                 */
                 template <typename K>
-                bool tryLock(const K &key, int64_t timeoutInMillis, int64_t leaseTimeInMillis) {
-                  return proxy::MultiMapImpl::tryLock(toData(key), timeoutInMillis, leaseTimeInMillis);
+                bool tryLock(const K &key, std::chrono::steady_clock::duration timeout, std::chrono::steady_clock::duration leaseTime) {
+                  return proxy::MultiMapImpl::tryLock(toData(key), timeout, leaseTime);
                 }
 
                 /**

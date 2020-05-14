@@ -65,11 +65,11 @@ namespace hazelcast {
 
                 void lock(const serialization::pimpl::Data& key);
 
-                void lock(const serialization::pimpl::Data& key, long leaseTimeInMillis);
+                void lock(const serialization::pimpl::Data& key, std::chrono::steady_clock::duration leaseTime);
 
                 bool isLocked(const serialization::pimpl::Data& key);
 
-                bool tryLock(const serialization::pimpl::Data& key, int64_t timeoutInMillis = 0, int64_t leaseTimeInMillis = -1);
+                bool tryLock(const serialization::pimpl::Data& key, std::chrono::steady_clock::duration timeout = std::chrono::milliseconds(0), std::chrono::steady_clock::duration leaseTime = std::chrono::milliseconds(-1));
 
                 void unlock(const serialization::pimpl::Data& key);
 

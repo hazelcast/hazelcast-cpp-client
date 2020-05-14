@@ -397,13 +397,13 @@ namespace hazelcast {
                     latch1->count_down();
                 }
 
-                if (mm->tryLock("key1", 5 * 1000)) {
+                if (mm->tryLock("key1", std::chrono::seconds(5))) {
                     latch1->count_down();
                 }
             }
 
             TEST_F(ClientMultiMapTest, testLockTtl) {
-                mm->lock("key1", 3 * 1000);
+                mm->lock("key1", std::chrono::seconds(3));
                 boost::latch latch1(2);
                 hazelcast::util::StartedThread t(lockTtlThread, mm, &latch1);
                 ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
@@ -415,7 +415,7 @@ namespace hazelcast {
                 MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
                 boost::latch *latch1 = (boost::latch *) args.arg1;
                 try {
-                    if (!mm->tryLock("key1", 2)) {
+                    if (!mm->tryLock("key1", std::chrono::milliseconds(2))) {
                         latch1->count_down();
                     }
                 } catch (...) {
@@ -427,7 +427,7 @@ namespace hazelcast {
                 MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
                 boost::latch *latch1 = (boost::latch *) args.arg1;
                 try {
-                    if (mm->tryLock("key1", 20 * 1000)) {
+                    if (mm->tryLock("key1", std::chrono::seconds(20))) {
                         latch1->count_down();
                     }
                 } catch (...) {
@@ -436,7 +436,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientMultiMapTest, testTryLock) {
-                ASSERT_TRUE(mm->tryLock("key1", 2 * 1000));
+                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2)));
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
                 ASSERT_OPEN_EVENTUALLY(latch1);
@@ -453,7 +453,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientMultiMapTest, testTryLockTtl) {
-                ASSERT_TRUE(mm->tryLock("key1", 2 * 1000, 1.5 * 1000));
+                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2), std::chrono::seconds(1)));
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
                 ASSERT_OPEN_EVENTUALLY(latch1);
@@ -468,7 +468,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientMultiMapTest, testTryLockTtlTimeout) {
-                ASSERT_TRUE(mm->tryLock("key1", 2 * 1000, 200 * 1000));
+                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2), std::chrono::seconds(200)));
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
                 ASSERT_OPEN_EVENTUALLY(latch1);

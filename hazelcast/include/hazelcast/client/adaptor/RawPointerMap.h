@@ -325,9 +325,9 @@ namespace hazelcast {
                 *
                 *
                 * @param key key to lock.
-                * @param leaseTime time in milliseconds to wait before releasing the lock.
+                * @param leaseTime time to wait before releasing the lock.
                 */
-                void lock(const K &key, long leaseTime) {
+                void lock(const K &key, std::chrono::steady_clock::duration leaseTime) {
                     map.lock(key, leaseTime);
                 }
 
@@ -353,7 +353,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
                 */
                 bool tryLock(const K &key) {
-                    return map.tryLock(key, 0);
+                    return map.tryLock(key, std::chrono::milliseconds(0));
                 }
 
                 /**
@@ -368,12 +368,12 @@ namespace hazelcast {
                 *
                 *
                 * @param key      key to lock in this map
-                * @param timeInMillis     maximum time in milliseconds to wait for the lock
+                * @param timeout     maximum time to wait for the lock
                 * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
                 *         if the waiting time elapsed before the lock was acquired.
                 */
-                bool tryLock(const K &key, int64_t timeInMillis) {
-                    return map.tryLock(key, timeInMillis);
+                bool tryLock(const K &key, std::chrono::steady_clock::duration timeout) {
+                    return map.tryLock(key, timeout);
                 }
 
                 /**
@@ -387,14 +387,14 @@ namespace hazelcast {
                 * </ul>
                 *
                 *
-                * @param key      key to lock in this map
-                * @param timeInMillis     maximum time in milliseconds to wait for the lock
-                * @param leaseTimeInMillis time in milliseconds to wait before releasing the lock.
+                * @param key       key to lock in this map
+                * @param timeout      maximum time to wait for the lock
+                * @param leaseTime time to wait before releasing the lock.
                 * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
                 *         if the waiting time elapsed before the lock was acquired.
                 */
-                bool tryLock(const K &key, int64_t timeInMillis, int64_t leaseTimeInMillis) {
-                  return map.tryLock(key, timeInMillis, leaseTimeInMillis);
+                bool tryLock(const K &key, std::chrono::steady_clock::duration timeout, std::chrono::steady_clock::duration leaseTime) {
+                  return map.tryLock(key, timeout, leaseTime);
                 }
 
                 /**
