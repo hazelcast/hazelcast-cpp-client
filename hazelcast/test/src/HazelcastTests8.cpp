@@ -2108,6 +2108,20 @@ namespace hazelcast {
     }
 }
 
+namespace hazelcast {
+    namespace client {
+        namespace test {
+            class ClientMessageTest: public ClientTestSupport {};
+            TEST_F(ClientMessageTest, testOperationNameGetSet) {
+                std::unique_ptr<protocol::ClientMessage> message = protocol::ClientMessage::create(8);
+                constexpr const char* operation_name = "OPERATION_NAME";
+                message->setOperationName(operation_name);
+                ASSERT_EQ(message->getOperationName(), operation_name);
+            }
+        }
+    }
+}
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
