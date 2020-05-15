@@ -2118,6 +2118,12 @@ namespace hazelcast {
                 message->setOperationName(operation_name);
                 ASSERT_EQ(message->getOperationName(), operation_name);
             }
+            TEST_F(ClientMessageTest, testOperationNameAfterRequestEncoding) {
+                std::string expected_operation_name = protocol::codec::MapSizeCodec::OPERATION_NAME;
+                std::unique_ptr<protocol::ClientMessage> request =
+                  protocol::codec::MapSizeCodec::encodeRequest("map_name");
+                ASSERT_EQ(request->getOperationName(), expected_operation_name);
+            }
         }
     }
 }
