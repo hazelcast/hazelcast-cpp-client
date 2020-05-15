@@ -79,6 +79,7 @@ namespace hazelcast {
                 std::vector<int64_t > ll;
                 std::vector<float> ff;
                 std::vector<double> dd;
+                std::vector<std::string> stringVector;
             };
 
             // Compares based on the employee age

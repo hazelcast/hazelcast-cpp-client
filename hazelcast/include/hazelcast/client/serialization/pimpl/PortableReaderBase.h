@@ -76,6 +76,8 @@ namespace hazelcast {
 
                     virtual std::unique_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
+                    virtual std::unique_ptr<std::vector<std::string> > readUTFArray(const char *fieldName);
+
                     virtual std::unique_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
                     virtual std::unique_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
