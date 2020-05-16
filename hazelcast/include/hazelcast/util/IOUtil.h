@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_IOUtil
-#define HAZELCAST_IOUtil
-
+#pragma once
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IException.h"
@@ -56,5 +54,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_IOUtil
 

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_
-#define HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_
-
+#pragma once
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -63,6 +61,5 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
-#endif /* HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_ */

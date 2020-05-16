@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_ItemListener
-#define HAZELCAST_ItemListener
-
+#pragma once
 #include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/TypedData.h"
 
@@ -65,4 +63,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_ItemListener

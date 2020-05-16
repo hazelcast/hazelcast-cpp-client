@@ -20,9 +20,7 @@
 
 
 
-#ifndef HAZELCAST_PortableReader
-#define HAZELCAST_PortableReader
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/serialization/pimpl/MorphingPortableReader.h"
@@ -237,5 +235,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_PortableReader
 

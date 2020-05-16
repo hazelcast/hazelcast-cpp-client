@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SERIALIZATION_DATASERIALIZABLEFACTORY_H_
-#define HAZELCAST_CLIENT_SERIALIZATION_DATASERIALIZABLEFACTORY_H_
-
+#pragma once
 #include <stdint.h>
 #include <memory>
 
@@ -52,4 +50,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_CLIENT_SERIALIZATION_DATASERIALIZABLEFACTORY_H_

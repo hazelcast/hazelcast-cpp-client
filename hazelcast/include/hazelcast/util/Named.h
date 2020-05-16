@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_NAMED_H_
-#define HAZELCAST_UTIL_NAMED_H_
-
+#pragma once
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -34,4 +32,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_NAMED_H_

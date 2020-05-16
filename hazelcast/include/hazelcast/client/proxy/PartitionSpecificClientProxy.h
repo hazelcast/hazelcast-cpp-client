@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_PROXY_PARTITIONSPECIFICPROXY_H_
-#define HAZELCAST_CLIENT_PROXY_PARTITIONSPECIFICPROXY_H_
-
+#pragma once
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/util/ExceptionUtil.h"
 
@@ -53,4 +51,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_PROXY_PARTITIONSPECIFICPROXY_H_

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_CALLABLE_H_
-#define HAZELCAST_UTIL_CALLABLE_H_
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/util/Named.h"
@@ -45,4 +43,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_CALLABLE_H_

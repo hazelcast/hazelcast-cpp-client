@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_RUNNABLE_H_
-#define HAZELCAST_UTIL_RUNNABLE_H_
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/util/Named.h"
@@ -54,4 +52,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_RUNNABLE_H_

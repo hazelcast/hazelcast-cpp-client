@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_CLUSTER_IMPL_VECTORCLOCK_H
-#define HAZELCAST_CLIENT_CLUSTER_IMPL_VECTORCLOCK_H
-
+#pragma once
 #include <string>
 #include <stdint.h>
 #include <map>
@@ -67,5 +65,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_CLUSTER_IMPL_VECTORCLOCK_H
 

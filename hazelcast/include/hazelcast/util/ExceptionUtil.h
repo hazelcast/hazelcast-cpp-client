@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_EXCEPTIONUTIL_H_
-#define HAZELCAST_UTIL_EXCEPTIONUTIL_H_
-
+#pragma once
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -60,4 +58,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_UTIL_EXCEPTIONUTIL_H_

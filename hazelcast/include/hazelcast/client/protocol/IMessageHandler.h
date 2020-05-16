@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_PROTOCOL_IMESSAGEHANDLER_H_
-#define HAZELCAST_CLIENT_PROTOCOL_IMESSAGEHANDLER_H_
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -48,4 +46,3 @@ namespace hazelcast {
 
 
 
-#endif //HAZELCAST_CLIENT_PROTOCOL_IMESSAGEHANDLER_H_

@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 7/31/13.
 
 
-#ifndef HAZELCAST_SerializerHolder
-#define HAZELCAST_SerializerHolder
-
+#pragma once
 #include "hazelcast/util/Disposable.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/SynchronizedMap.h"
@@ -64,5 +62,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_SerializerHolder
 

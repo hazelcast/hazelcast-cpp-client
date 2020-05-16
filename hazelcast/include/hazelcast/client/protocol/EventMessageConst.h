@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_PROTOCOL_EVENTMESSAGECONST_H_
-#define HAZELCAST_CLIENT_PROTOCOL_EVENTMESSAGECONST_H_
-
+#pragma once
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -46,4 +44,3 @@ namespace hazelcast {
     }
 }
 
-#endif // HAZELCAST_CLIENT_PROTOCOL_EVENTMESSAGECONST_H_

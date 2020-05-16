@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_InitialMembershipEvent
-#define HAZELCAST_InitialMembershipEvent
-
+#pragma once
 #include <vector>
 #include <set>
 #include <memory>
@@ -75,5 +73,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_InitialMembershipEvent
 

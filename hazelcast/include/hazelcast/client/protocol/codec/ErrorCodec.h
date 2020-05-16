@@ -21,9 +21,7 @@
  *      Author: ihsan
  */
 
-#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_ERRORCODEC_H_
-#define HAZELCAST_CLIENT_PROTOCOL_CODEC_ERRORCODEC_H_
-
+#pragma once
 #include <string>
 #include <vector>
 #include <memory>
@@ -69,4 +67,3 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_PROTOCOL_CODEC_ERRORCODEC_H_ */

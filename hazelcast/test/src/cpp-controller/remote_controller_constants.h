@@ -4,9 +4,7 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-#ifndef remote_controller_CONSTANTS_H
-#define remote_controller_CONSTANTS_H
-
+#pragma once
 #include "remote_controller_types.h"
 
 namespace hazelcast { namespace client { namespace test { namespace remote {
@@ -21,4 +19,3 @@ extern const remote_controllerConstants g_remote_controller_constants;
 
 }}}} // namespace
 
-#endif

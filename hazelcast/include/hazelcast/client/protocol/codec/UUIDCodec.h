@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_UUIDCODEC_
-#define HAZELCAST_CLIENT_PROTOCOL_CODEC_UUIDCODEC_
-
+#pragma once
 #include "hazelcast/util/UUID.h"
 #include "hazelcast/util/Bits.h"
 
@@ -42,5 +40,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_PROTOCOL_CODEC_UUIDCODEC_
 

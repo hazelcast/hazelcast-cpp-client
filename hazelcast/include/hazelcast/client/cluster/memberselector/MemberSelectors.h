@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_CLUSTER_MEMBERSELECTOR_MEMBERSELECTORS_H_
-#define HAZELCAST_CLIENT_CLUSTER_MEMBERSELECTOR_MEMBERSELECTORS_H_
-
+#pragma once
 #include <memory>
 #include <ostream>
 
@@ -83,5 +81,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_CLUSTER_MEMBERSELECTOR_MEMBERSELECTORS_H_
 

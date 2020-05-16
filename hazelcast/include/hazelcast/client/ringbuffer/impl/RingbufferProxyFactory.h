@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENTRINGBUFFER_IMPL_RINGBUFFERPROXYFACTORY_H
-#define HAZELCAST_CLIENTRINGBUFFER_IMPL_RINGBUFFERPROXYFACTORY_H
-
+#pragma once
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 #include "hazelcast/client/proxy/ClientRingbufferProxy.h"
 
@@ -45,4 +43,3 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENTRINGBUFFER_IMPL_RINGBUFFERPROXYFACTORY_H */

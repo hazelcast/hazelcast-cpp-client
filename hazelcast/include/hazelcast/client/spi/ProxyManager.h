@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_
-#define HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_
-
+#pragma once
 #include <string>
 #include <future>
 #include <unordered_map>
@@ -91,4 +89,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_

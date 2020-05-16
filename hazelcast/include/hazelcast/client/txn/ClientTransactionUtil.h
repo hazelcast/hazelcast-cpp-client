@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TXN_CLIENTTRANSACTIONUTIL_H_
-#define HAZELCAST_CLIENT_TXN_CLIENTTRANSACTIONUTIL_H_
-
+#pragma once
 #include <memory>
 #include <string>
 
@@ -68,5 +66,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_TXN_CLIENTTRANSACTIONUTIL_H_
 

@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 24/12/13.
 //
 
-#ifndef HAZELCAST_ReadHandler
-#define HAZELCAST_ReadHandler
-
+#pragma once
 #include<stdint.h>
 #include<atomic>
 
@@ -70,5 +68,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_ReadHandler
 

@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/6/13.
 
-#ifndef __TestInvalidWritePortable_H_
-#define __TestInvalidWritePortable_H_
-
+#pragma once
 #include "hazelcast/client/serialization/Portable.h"
 #include <string>
 #include <stdint.h>
@@ -49,7 +47,6 @@ namespace hazelcast {
 }
 
 
-#endif //__TestInvalidWritePortable_H_
 
 
 

@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 25 02, 2016.
 //
-#ifndef HAZELCAST_CLIENT_ADAPTOR_IMPL_ENTRYARRAYKEYADAPTOR_H_
-#define HAZELCAST_CLIENT_ADAPTOR_IMPL_ENTRYARRAYKEYADAPTOR_H_
-
+#pragma once
 #include <vector>
 
 #include "hazelcast/util/Util.h"
@@ -96,5 +94,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_ADAPTOR_IMPL_ENTRYARRAYKEYADAPTOR_H_
 

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
-#define HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
-
+#pragma once
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #include <crtdefs.h>
 #endif
@@ -67,5 +65,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 

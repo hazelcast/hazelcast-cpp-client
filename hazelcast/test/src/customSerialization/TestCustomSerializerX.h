@@ -19,9 +19,7 @@
 
 
 
-#ifndef HAZELCAST_XmlSerializer
-#define HAZELCAST_XmlSerializer
-
+#pragma once
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/Serializer.h"
@@ -56,5 +54,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_XmlSerializer
 

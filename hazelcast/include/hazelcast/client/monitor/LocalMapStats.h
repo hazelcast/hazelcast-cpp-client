@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_MONITOR_LOCALMAPSTATS_H_
-#define HAZELCAST_CLIENT_MONITOR_LOCALMAPSTATS_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -48,5 +46,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_MONITOR_LOCALMAPSTATS_H_ */
 

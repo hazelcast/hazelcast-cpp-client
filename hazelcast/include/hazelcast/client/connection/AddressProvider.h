@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_CONNECTION_ADDRESSPROVIDER_H_
-#define HAZELCAST_CLIENT_CONNECTION_ADDRESSPROVIDER_H_
-
+#pragma once
 #include <vector>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -41,5 +39,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_CONNECTION_ADDRESSPROVIDER_H_
 

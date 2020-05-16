@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 25 02, 2016.
 //
-#ifndef HAZELCAST_CLIENT_IMPL_ENTRYARRAYIMPL_H_
-#define HAZELCAST_CLIENT_IMPL_ENTRYARRAYIMPL_H_
-
+#pragma once
 #include "hazelcast/client/impl/LazyEntryArrayImpl.h"
 #include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/EntryArray.h"
@@ -60,5 +58,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_IMPL_ENTRYARRAYIMPL_H_
 

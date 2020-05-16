@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCEWITHBACKPRESSURE_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCEWITHBACKPRESSURE_H_
-
+#pragma once
 #include "hazelcast/client/spi/impl/sequence/AbstractCallIdSequence.h"
 #include "hazelcast/util/concurrent/IdleStrategy.h"
 
@@ -65,4 +63,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCEWITHBACKPRESSURE_H_

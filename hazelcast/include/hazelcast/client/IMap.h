@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_IMAP
-#define HAZELCAST_IMAP
-
+#pragma once
 #include <string>
 #include <map>
 #include <set>
@@ -1074,7 +1072,7 @@ namespace hazelcast {
              * Time resolution for TTL is seconds. The given TTL value is rounded to the next closest second value.
              * <p>
              * <p><b>Note:</b>
-             * Use {@link #setAsync(const K &, const V &, int64_t, const util::concurrent::TimeUnit &)} if you don't 
+             * Use {@link #setAsync(const K &, const V &, int64_t, const util::concurrent::TimeUnit &)} if you don't
              * need the return value, it's slightly more efficient.
              *
              * <p><b>Interactions with the map store</b>
@@ -1419,5 +1417,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_IMAP */
 

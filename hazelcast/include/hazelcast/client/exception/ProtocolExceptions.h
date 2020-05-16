@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 23/07/14.
 //
-#ifndef HAZELCAST_CLIENT_EXCEPTION_PROTOCOLEXCEPTIONS_H_
-#define HAZELCAST_CLIENT_EXCEPTION_PROTOCOLEXCEPTIONS_H_
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/client/exception/IException.h"
@@ -212,4 +210,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_EXCEPTION_PROTOCOLEXCEPTIONS_H_

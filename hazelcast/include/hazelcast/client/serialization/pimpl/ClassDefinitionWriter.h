@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_CLASS_DEFINITION_WRITER
-#define HAZELCAST_CLASS_DEFINITION_WRITER
-
+#pragma once
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/client/serialization/FieldType.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
@@ -149,5 +147,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLASS_DEFINITION_WRITER */
 

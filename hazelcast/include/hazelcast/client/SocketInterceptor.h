@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 8/2/13.
 
-#ifndef HAZELCAST_SocketInterceptor
-#define HAZELCAST_SocketInterceptor
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -42,5 +40,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_SocketInterceptor
 

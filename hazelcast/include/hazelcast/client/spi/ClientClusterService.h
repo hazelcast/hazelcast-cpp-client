@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_SPI_CLIENTCLUSTERSERVICE_H_
-#define HAZELCAST_CLIENT_SPI_CLIENTCLUSTERSERVICE_H_
-
+#pragma once
 #include <vector>
 #include <memory>
 
@@ -110,5 +108,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //__InvocationService_H_
 

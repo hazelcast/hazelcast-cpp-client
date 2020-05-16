@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDFACTORY_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDFACTORY_H_
-
+#pragma once
 #include <stdint.h>
 #include <memory>
 
@@ -49,4 +47,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDFACTORY_H_

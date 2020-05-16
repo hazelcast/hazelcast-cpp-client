@@ -18,10 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_ChildTemplatedPortable2
-#define HAZELCAST_ChildTemplatedPortable2
-
-
+#pragma once
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
@@ -65,4 +62,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_ChildTemplatedPortable2

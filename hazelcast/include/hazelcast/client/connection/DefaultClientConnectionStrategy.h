@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_CONNECTION_DEFAULTCLIENTCONNECTIONSTRATEGY_H_
-#define HAZELCAST_CLIENT_CONNECTION_DEFAULTCLIENTCONNECTIONSTRATEGY_H_
-
+#pragma once
 #include "hazelcast/util/SynchronizedQueue.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
@@ -71,5 +69,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_CONNECTION_DEFAULTCLIENTCONNECTIONSTRATEGY_H_
 

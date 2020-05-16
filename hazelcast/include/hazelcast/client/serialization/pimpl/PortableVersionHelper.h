@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_PortableVersionHelper
-#define HAZELCAST_PortableVersionHelper
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -38,4 +36,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_PortableVersionHelper

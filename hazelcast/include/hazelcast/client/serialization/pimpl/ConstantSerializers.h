@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SERIALIZATION_PIMPL_CANSTANTSERIALIZERS_H_
-#define HAZELCAST_CLIENT_SERIALIZATION_PIMPL_CANSTANTSERIALIZERS_H_
-
+#pragma once
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -219,5 +217,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_SERIALIZATION_PIMPL_CANSTANTSERIALIZERS_H_
 

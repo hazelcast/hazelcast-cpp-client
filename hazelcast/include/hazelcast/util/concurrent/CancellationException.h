@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_UTIL_CONCURRENT_CANCELLATIONEXCEPTION_H_
-#define HAZELCAST_UTIL_CONCURRENT_CANCELLATIONEXCEPTION_H_
-
+#pragma once
 #include "hazelcast/client/exception/IllegalStateException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -43,4 +41,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_UTIL_CONCURRENT_CANCELLATIONEXCEPTION_H_

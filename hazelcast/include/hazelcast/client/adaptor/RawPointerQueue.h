@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERQUEUE_H_
-#define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERQUEUE_H_
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/client/IQueue.h"
@@ -257,5 +255,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERQUEUE_H_ */
 

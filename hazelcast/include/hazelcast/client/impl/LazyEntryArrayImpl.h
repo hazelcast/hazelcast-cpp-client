@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_IMPL_LAZYENTRYARRAYIMPL_H_
-#define HAZELCAST_CLIENT_IMPL_LAZYENTRYARRAYIMPL_H_
-
+#pragma once
 #include <vector>
 
 #include "hazelcast/util/Util.h"
@@ -269,5 +267,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_IMPL_LAZYENTRYARRAYIMPL_H_
 

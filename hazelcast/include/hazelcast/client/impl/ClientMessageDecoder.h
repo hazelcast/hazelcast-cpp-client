@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_IMPL_CLIENTMESSAGEDECODER_H_
-#define HAZELCAST_CLIENT_IMPL_CLIENTMESSAGEDECODER_H_
-
+#pragma once
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
@@ -99,5 +97,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_IMPL_CLIENTMESSAGEDECODER_H_
 

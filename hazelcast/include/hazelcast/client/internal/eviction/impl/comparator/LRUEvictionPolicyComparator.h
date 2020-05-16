@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_IMPL_COMPARATOR_LRUEVICTIONPOLICYCOMPARATOR_H_
-#define HAZELCAST_CLIENT_INTERNAL_EVICTION_IMPL_COMPARATOR_LRUEVICTIONPOLICYCOMPARATOR_H_
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/client/internal/eviction/EvictionPolicyComparator.h"
@@ -70,4 +68,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_EVICTION_IMPL_COMPARATOR_LRUEVICTIONPOLICYCOMPARATOR_H_ */

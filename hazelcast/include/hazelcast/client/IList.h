@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_ILIST
-#define HAZELCAST_ILIST
-
+#pragma once
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/ItemListener.h"
@@ -282,5 +280,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_ILIST */
 

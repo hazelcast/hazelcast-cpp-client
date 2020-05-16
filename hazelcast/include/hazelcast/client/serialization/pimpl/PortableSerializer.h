@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_PORTABLE_SERIALIZER
-#define HAZELCAST_PORTABLE_SERIALIZER
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -114,5 +112,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_PORTABLE_SERIALIZER */
 

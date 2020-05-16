@@ -4,9 +4,7 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-#ifndef RemoteController_H
-#define RemoteController_H
-
+#pragma once
 #include <thrift/TDispatchProcessor.h>
 #include <thrift/async/TConcurrentClientSyncInfo.h>
 #include <memory>
@@ -16,7 +14,7 @@ namespace hazelcast { namespace client { namespace test { namespace remote {
 
 #ifdef _MSC_VER
   #pragma warning( push )
-  #pragma warning (disable : 4250 ) //inheriting methods via dominance 
+  #pragma warning (disable : 4250 ) //inheriting methods via dominance
 #endif
 
 class RemoteControllerIf {
@@ -1970,4 +1968,3 @@ class RemoteControllerConcurrentClient : virtual public RemoteControllerIf {
 
 }}}} // namespace
 
-#endif

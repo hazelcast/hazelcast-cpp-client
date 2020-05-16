@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 12 Jan 2017
 //
-#ifndef HAZELCAST_UTIL_DESTROYABLE_H_
-#define HAZELCAST_UTIL_DESTROYABLE_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -31,4 +29,3 @@ namespace hazelcast {
         };
     }
 }
-#endif //HAZELCAST_UTIL_DESTROYABLE_H_

@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 6/24/13.
 
-#ifndef HAZELCAST_ENTRY_EVENT_HANDLER
-#define HAZELCAST_ENTRY_EVENT_HANDLER
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/client/EntryEvent.h"
@@ -228,5 +226,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //__EntryEventHandler_H_
 

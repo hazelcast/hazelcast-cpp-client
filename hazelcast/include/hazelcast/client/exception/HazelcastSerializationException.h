@@ -17,9 +17,6 @@
 // Created by sancar koyunlu on 23/07/14.
 //
 
-#ifndef HAZELCAST_ISerializationException
-#define HAZELCAST_ISerializationException
-
+#pragma once
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
-#endif //HAZELCAST_ISerializationException

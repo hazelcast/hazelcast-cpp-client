@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H
-#define HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H
-
+#pragma once
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -41,4 +39,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H

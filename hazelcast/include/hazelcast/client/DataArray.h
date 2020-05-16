@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 25 02, 2016.
 //
-#ifndef HAZELCAST_CLIENT_DATAARRAY_H_
-#define HAZELCAST_CLIENT_DATAARRAY_H_
-
+#pragma once
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
@@ -66,5 +64,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_DATAARRAY_H_
 

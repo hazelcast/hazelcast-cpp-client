@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_SERIALIZATION_CONSTANTS
-#define HAZELCAST_SERIALIZATION_CONSTANTS
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include <vector>
@@ -77,5 +75,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_SERIALIZATION_CONSTANTS */
 

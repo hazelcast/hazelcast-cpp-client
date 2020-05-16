@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_LISTENERMESSAGECODEC_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_LISTENERMESSAGECODEC_H_
-
+#pragma once
 #include <memory>
 #include <string>
 
@@ -57,4 +55,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_LISTENERMESSAGECODEC_H_

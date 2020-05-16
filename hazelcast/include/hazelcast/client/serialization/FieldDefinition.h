@@ -21,17 +21,15 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_FIELD_DEFINITION
-#define HAZELCAST_FIELD_DEFINITION
-
+#pragma once
 #include "hazelcast/client/serialization/FieldType.h"
 #include <string>
 #include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -120,7 +118,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
-#endif /* HAZELCAST_FIELD_DEFINITION */
 

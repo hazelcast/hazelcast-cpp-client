@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_ByteBuffer
-#define HAZELCAST_ByteBuffer
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 #include <cstdlib>
@@ -75,5 +73,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_ByteBuffer
 

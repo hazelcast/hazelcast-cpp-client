@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 6/28/13.
 
-#ifndef HAZELCAST_Portable
-#define HAZELCAST_Portable
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -81,5 +79,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_Portable
 

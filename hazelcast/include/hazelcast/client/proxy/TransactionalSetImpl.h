@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_TransactionalSetProxy
-#define HAZELCAST_TransactionalSetProxy
-
+#pragma once
 #include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {
@@ -41,4 +39,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_TransactionalSetProxy

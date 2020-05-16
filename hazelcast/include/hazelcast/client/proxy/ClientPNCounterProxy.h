@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_PROXY_CLIENTPNCOUNTERPROXY_H_
-#define HAZELCAST_CLIENT_PROXY_CLIENTPNCOUNTERPROXY_H_
-
+#pragma once
 #include <ostream>
 #include <set>
 #include <memory>
@@ -210,4 +208,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_PROXY_CLIENTPNCOUNTERPROXY_H_

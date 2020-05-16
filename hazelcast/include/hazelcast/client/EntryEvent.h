@@ -17,9 +17,7 @@
 // Created by ihsan demir on 9/9/15.
 // Copyright (c) 2015 hazelcast. All rights reserved.
 
-#ifndef HAZELCAST_ENTRY_EVENT
-#define HAZELCAST_ENTRY_EVENT
-
+#pragma once
 #include <memory>
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/TypedData.h"
@@ -433,5 +431,4 @@ std::ostream &operator<<(std::ostream &out, const hazelcast::client::EntryEvent<
 #pragma warning(pop)
 #endif
 
-#endif //__EntryEvent_H_
 

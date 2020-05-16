@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 20/02/14.
 //
 
-#ifndef HAZELCAST_ILogger
-#define HAZELCAST_ILogger
-
+#pragma once
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -139,4 +137,3 @@ namespace hazelcast {
 #endif
 
 
-#endif //HAZELCAST_ILogger

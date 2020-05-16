@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_SERIALIZATION_SERVICE
-#define HAZELCAST_SERIALIZATION_SERVICE
-
+#pragma once
 #include <boost/optional.hpp>
 
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
@@ -134,7 +132,7 @@ namespace hazelcast {
                         }
 
                         int32_t typeId = data.getType();
-                        
+
                         // Constant 8 is Data::DATA_OFFSET. Windows DLL export does not
                         // let usage of static member.
                         DataInput dataInput(data.toByteArray(), 8);
@@ -214,5 +212,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_SERIALIZATION_SERVICE */
 

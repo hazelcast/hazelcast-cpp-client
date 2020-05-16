@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
-#define HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
-
-
+#pragma once
 #include <string>
 #include <boost/asio.hpp>
 
@@ -61,5 +58,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
 

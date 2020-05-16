@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_LISTENER_CLIENTREGISTRATIONKEY_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_LISTENER_CLIENTREGISTRATIONKEY_H_
-
+#pragma once
 #include <string>
 #include <memory>
 #include <ostream>
@@ -78,4 +76,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif // HAZELCAST_CLIENT_SPI_IMPL_LISTENER_CLIENTREGISTRATIONKEY_H_

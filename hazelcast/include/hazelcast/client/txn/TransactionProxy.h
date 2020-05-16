@@ -20,9 +20,7 @@
 
 
 
-#ifndef HAZELCAST_TransactionProxy
-#define HAZELCAST_TransactionProxy
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 #include "hazelcast/client/spi/ClientContext.h"
@@ -132,5 +130,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_TransactionProxy
 

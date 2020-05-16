@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CONFIG_CLIENTAWSCONFIG_H_
-#define HAZELCAST_CLIENT_CONFIG_CLIENTAWSCONFIG_H_
-
+#pragma once
 #include <string>
 #include <ostream>
 #include <stdint.h>
@@ -24,7 +22,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable: 4251) //for dll export
 #endif
 
 namespace hazelcast {
@@ -240,4 +238,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_CONFIG_CLIENTAWSCONFIG_H_ */

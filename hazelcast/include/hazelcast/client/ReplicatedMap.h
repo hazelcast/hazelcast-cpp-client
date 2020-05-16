@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_REPLICATED_MAP_H_
-#define HAZELCAST_CLIENT_REPLICATED_MAP_H_
-
+#pragma once
 #include <stdint.h>
 #include <string>
 
@@ -235,5 +233,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_REPLICATED_MAP_H_
 

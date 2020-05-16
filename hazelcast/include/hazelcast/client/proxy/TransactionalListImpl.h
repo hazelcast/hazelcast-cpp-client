@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_TransactionalListProxy
-#define HAZELCAST_TransactionalListProxy
-
+#pragma once
 #include "hazelcast/client/proxy/TransactionalObject.h"
 
 
@@ -42,4 +40,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_TransactionalListProxy

@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 01/10/14.
 //
-#ifndef HAZELCAST_ITopicImpl
-#define HAZELCAST_ITopicImpl
-
+#pragma once
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <string>
 
@@ -61,4 +59,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_ITopicImpl

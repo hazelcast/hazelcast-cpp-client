@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 23/01/14.
 //
 
-#ifndef HAZELCAST_MembershipEvent
-#define HAZELCAST_MembershipEvent
-
+#pragma once
 #include <vector>
 #include "hazelcast/client/Member.h"
 
@@ -115,5 +113,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_MembershipEvent
 

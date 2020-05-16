@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_DATA_INPUT
-#define HAZELCAST_DATA_INPUT
-
+#pragma once
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/serialization/pimpl/DataSerializer.h"
@@ -307,5 +305,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_DATA_INPUT */
 

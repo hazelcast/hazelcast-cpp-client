@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_IMPL_STATISTICS_STATISTICS_H_
-#define HAZELCAST_CLIENT_IMPL_STATISTICS_STATISTICS_H_
-
+#pragma once
 #include <stdint.h>
 #include <sstream>
 #include <memory>
@@ -121,5 +119,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_IMPL_STATISTICS_STATISTICS_H_
 

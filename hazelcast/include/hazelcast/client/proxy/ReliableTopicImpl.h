@@ -17,9 +17,7 @@
 // Created by ihsan demir on 01/10/14.
 //
 
-#ifndef HAZELCAST_CLIENT_PROXY_RELIBALETOPICIMPL_H_
-#define HAZELCAST_CLIENT_PROXY_RELIBALETOPICIMPL_H_
-
+#pragma once
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 #include "hazelcast/client/Ringbuffer.h"
@@ -63,4 +61,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_PROXY_RELIBALETOPICIMPL_H_

@@ -17,9 +17,7 @@
 // Created by ihsan demir on 13 Jan 2017.
 //
 
-#ifndef HAZELCASTCLIENT_NEARCACHESUPPORT_H
-#define HAZELCASTCLIENT_NEARCACHESUPPORT_H
-
+#pragma once
 #include <stdio.h>
 #include <stdint.h>
 
@@ -60,4 +58,3 @@ public:
     }
 };
 
-#endif //HAZELCASTCLIENT_NEARCACHESUPPORT_H

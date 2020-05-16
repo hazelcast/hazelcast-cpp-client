@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 7/1/13.
 
 
-#ifndef HAZELCAST_TestSimpleXML
-#define HAZELCAST_TestSimpleXML
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include "hazelcast/client/serialization/Serializer.h"
@@ -66,6 +64,5 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_TestSimpleXML
 
 
