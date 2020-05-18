@@ -389,12 +389,21 @@ namespace hazelcast {
                 retryable = shouldRetry;
             }
 
+            std::string ClientMessage::getOperationName() const {
+                return operationName;
+            }
+
+            void ClientMessage::setOperationName(const std::string &operationName) {
+                this->operationName = operationName;
+            }
+
             bool ClientMessage::isComplete() const {
                 return (index >= HEADER_SIZE) && (index == getFrameLength());
             }
 
             std::ostream &operator<<(std::ostream &os, const ClientMessage &message) {
                 os << "ClientMessage{length=" << message.getIndex()
+                   << ", operation=" << message.getOperationName()
                    << ", correlationId=" << message.getCorrelationId()
                    << ", messageType=0x" << std::hex << message.getMessageType() << std::dec
                    << ", partitionId=" << message.getPartitionId()
