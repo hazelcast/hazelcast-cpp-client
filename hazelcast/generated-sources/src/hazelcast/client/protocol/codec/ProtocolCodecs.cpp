@@ -36,6 +36,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientAddMembershipListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(localOnly);
                     clientMessage->updateFrameLength();
@@ -123,6 +124,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize();
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientAddPartitionListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();
                     return clientMessage;
@@ -185,6 +187,7 @@ namespace hazelcast {
                                                                  clientHazelcastVersion);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientAuthenticationCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(username);
                     clientMessage->set(password);
@@ -291,6 +294,7 @@ namespace hazelcast {
                                                                  clientHazelcastVersion);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientAuthenticationCustomCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(credentials);
                     clientMessage->set(uuid);
@@ -388,6 +392,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, serviceName, target);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientCreateProxyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(serviceName);
@@ -427,6 +432,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, serviceName);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientDestroyProxyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(serviceName);
@@ -461,6 +467,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize();
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientGetPartitionsCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();
                     return clientMessage;
@@ -507,6 +514,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize();
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientPingCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();
                     return clientMessage;
@@ -536,6 +544,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(stats);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientStatisticsCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(stats);
                     clientMessage->updateFrameLength();
@@ -570,6 +579,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(uuid, address, interrupt);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ExecutorServiceCancelOnAddressCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(uuid);
                     clientMessage->set(address);
@@ -623,6 +633,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(uuid, partitionId, interrupt);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ExecutorServiceCancelOnPartitionCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(uuid);
                     clientMessage->set(partitionId);
@@ -674,6 +685,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ExecutorServiceIsShutdownCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -718,6 +730,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ExecutorServiceShutdownCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -753,6 +766,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, uuid, callable, address);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ExecutorServiceSubmitToAddressCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(uuid);
@@ -815,6 +829,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, uuid, callable, partitionId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ExecutorServiceSubmitToPartitionCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(uuid);
@@ -875,6 +890,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, batchSize);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) FlakeIdGeneratorNewIdBatchCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(batchSize);
@@ -929,6 +945,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, valueList);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListAddAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(valueList);
@@ -978,6 +995,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, index, valueList);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListAddAllWithIndexCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
@@ -1029,6 +1047,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListAddCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -1078,6 +1097,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListAddListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(includeValue);
@@ -1156,6 +1176,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, index, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListAddWithIndexCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
@@ -1194,6 +1215,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListClearCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -1227,6 +1249,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, values);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListCompareAndRemoveAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(values);
@@ -1275,6 +1298,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, values);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListCompareAndRetainAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(values);
@@ -1323,6 +1347,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, values);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListContainsAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(values);
@@ -1371,6 +1396,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListContainsCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -1418,6 +1444,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListGetAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -1463,6 +1490,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, index);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListGetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
@@ -1515,6 +1543,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListIndexOfCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -1562,6 +1591,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListIsEmptyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -1607,6 +1637,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListLastIndexOfCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -1655,6 +1686,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -1703,6 +1735,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListRemoveListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -1751,6 +1784,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, index);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListRemoveWithIndexCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
@@ -1805,6 +1839,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, index, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListSetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
@@ -1859,6 +1894,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -1905,6 +1941,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, from, to);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListSubCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(from);
@@ -1958,6 +1995,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, listenerFlags, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddEntryListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(includeValue);
@@ -2050,6 +2088,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, includeValue, listenerFlags, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddEntryListenerToKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -2146,6 +2185,7 @@ namespace hazelcast {
                                                                  localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddEntryListenerWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -2240,6 +2280,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, attribute, ordered);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddIndexCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(attribute);
@@ -2279,6 +2320,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, interceptor);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddInterceptorCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(interceptor);
@@ -2328,6 +2370,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, listenerFlags, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddNearCacheEntryListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(listenerFlags);
@@ -2428,6 +2471,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapClearCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -2462,6 +2506,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapContainsKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -2513,6 +2558,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapContainsValueCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -2562,6 +2608,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapDeleteCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -2601,6 +2648,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapEntriesWithPagingPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -2650,6 +2698,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapEntriesWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -2697,6 +2746,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapEntrySetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -2741,6 +2791,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapEvictAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -2775,6 +2826,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapEvictCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -2826,6 +2878,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapExecuteOnAllKeysCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(entryProcessor);
@@ -2876,6 +2929,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapExecuteOnKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(entryProcessor);
@@ -2934,6 +2988,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor, keys);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapExecuteOnKeysCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(entryProcessor);
@@ -2986,6 +3041,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapExecuteWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(entryProcessor);
@@ -3036,6 +3092,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapFlushCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -3070,6 +3127,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, referenceId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapForceUnlockCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3109,6 +3167,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, keys);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapGetAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(keys);
@@ -3158,6 +3217,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapGetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3213,6 +3273,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapGetEntryViewCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3267,6 +3328,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapIsEmptyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -3312,6 +3374,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapIsLockedCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3359,6 +3422,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapKeySetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -3404,6 +3468,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapKeySetWithPagingPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -3453,6 +3518,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapKeySetWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -3504,6 +3570,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, ttl, referenceId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapLockCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3549,6 +3616,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, entries);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapPutAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >(
@@ -3590,6 +3658,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapPutCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3653,6 +3722,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapPutIfAbsentCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3718,6 +3788,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapPutTransientCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3767,6 +3838,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl, maxIdle);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapPutWithMaxIdleCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3832,6 +3904,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapRemoveAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -3869,6 +3942,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -3924,6 +3998,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapRemoveEntryListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -3974,6 +4049,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapRemoveIfSameCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4028,6 +4104,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, id);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapRemoveInterceptorCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(id);
@@ -4078,6 +4155,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapReplaceCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4140,6 +4218,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, testValue, value, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapReplaceIfSameCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4200,6 +4279,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapSetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4249,6 +4329,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl, maxIdle);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapSetWithMaxIdleCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4313,6 +4394,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -4360,6 +4442,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapSubmitToKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(entryProcessor);
@@ -4423,6 +4506,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, lease, timeout, referenceId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapTryLockCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4486,6 +4570,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, timeout);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapTryPutCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4545,6 +4630,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, timeout);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapTryRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4601,6 +4687,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, referenceId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapUnlockCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4642,6 +4729,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapValuesCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -4687,6 +4775,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapValuesWithPagingPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -4736,6 +4825,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapValuesWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -4785,6 +4875,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapAddEntryListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(includeValue);
@@ -4873,6 +4964,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, includeValue, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapAddEntryListenerToKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -4962,6 +5054,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapClearCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -4997,6 +5090,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapContainsEntryCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5052,6 +5146,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapContainsKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5103,6 +5198,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapContainsValueCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -5150,6 +5246,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapEntrySetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -5196,6 +5293,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, referenceId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapForceUnlockCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5236,6 +5334,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapGetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5287,6 +5386,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapIsLockedCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5334,6 +5434,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapKeySetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -5382,6 +5483,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, ttl, referenceId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapLockCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5429,6 +5531,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapPutCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5484,6 +5587,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5537,6 +5641,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapRemoveEntryCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5591,6 +5696,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapRemoveEntryListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -5638,6 +5744,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -5687,6 +5794,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, lease, timeout, referenceId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapTryLockCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5749,6 +5857,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, referenceId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapUnlockCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5792,6 +5901,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapValueCountCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -5842,6 +5952,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapValuesCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -5891,6 +6002,7 @@ namespace hazelcast {
                                                                  targetReplica);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) PNCounterAddCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(delta);
@@ -5955,6 +6067,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, replicaTimestamps, targetReplica);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) PNCounterGetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<std::pair<std::string, int64_t> >(replicaTimestamps);
@@ -6011,6 +6124,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) PNCounterGetConfiguredReplicaCountCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -6057,6 +6171,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, dataList);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueAddAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(dataList);
@@ -6106,6 +6221,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueAddListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(includeValue);
@@ -6182,6 +6298,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueClearCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -6215,6 +6332,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, dataList);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueCompareAndRemoveAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(dataList);
@@ -6263,6 +6381,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, dataList);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueCompareAndRetainAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(dataList);
@@ -6311,6 +6430,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, dataList);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueContainsAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(dataList);
@@ -6359,6 +6479,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueContainsCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -6406,6 +6527,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueDrainToCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -6451,6 +6573,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, maxSize);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueDrainToMaxSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(maxSize);
@@ -6498,6 +6621,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueIsEmptyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -6542,6 +6666,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueIteratorCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -6588,6 +6713,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value, timeoutMillis);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueOfferCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -6638,6 +6764,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueuePeekCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -6687,6 +6814,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, timeoutMillis);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueuePollCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(timeoutMillis);
@@ -6739,6 +6867,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueuePutCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -6774,6 +6903,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueRemainingCapacityCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -6819,6 +6949,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -6867,6 +6998,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueRemoveListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -6914,6 +7046,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -6959,6 +7092,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapAddEntryListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(localOnly);
@@ -7044,6 +7178,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapAddEntryListenerToKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -7134,6 +7269,7 @@ namespace hazelcast {
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType(
                             (uint16_t) ReplicatedMapAddEntryListenerToKeyWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -7227,6 +7363,7 @@ namespace hazelcast {
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType(
                             (uint16_t) ReplicatedMapAddEntryListenerWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -7316,6 +7453,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapAddNearCacheEntryListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(includeValue);
@@ -7402,6 +7540,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapClearCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -7435,6 +7574,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapContainsKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -7483,6 +7623,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapContainsValueCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -7530,6 +7671,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapEntrySetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -7575,6 +7717,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapGetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -7627,6 +7770,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapIsEmptyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -7671,6 +7815,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapKeySetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -7716,6 +7861,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, entries);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapPutAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >(
@@ -7756,6 +7902,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, ttl);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapPutCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -7815,6 +7962,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -7868,6 +8016,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapRemoveEntryListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -7916,6 +8065,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -7960,6 +8110,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ReplicatedMapValuesCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8006,6 +8157,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, valueList, overflowPolicy);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferAddAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(valueList);
@@ -8058,6 +8210,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, overflowPolicy, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferAddCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(overflowPolicy);
@@ -8108,6 +8261,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferCapacityCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8152,6 +8306,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferHeadSequenceCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8200,6 +8355,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, startSequence, minCount, maxCount, filter);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferReadManyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(startSequence);
@@ -8280,6 +8436,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, sequence);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferReadOneCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(sequence);
@@ -8332,6 +8489,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferRemainingCapacityCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8376,6 +8534,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8420,6 +8579,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferTailSequenceCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8465,6 +8625,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, valueList);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetAddAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(valueList);
@@ -8513,6 +8674,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetAddCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -8561,6 +8723,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetAddListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(includeValue);
@@ -8637,6 +8800,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetClearCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8670,6 +8834,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, values);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetCompareAndRemoveAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(values);
@@ -8718,6 +8883,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, values);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetCompareAndRetainAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(values);
@@ -8766,6 +8932,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, items);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetContainsAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->setArray<serialization::pimpl::Data>(items);
@@ -8814,6 +8981,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetContainsCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -8861,6 +9029,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetGetAllCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8905,6 +9074,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetIsEmptyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -8950,6 +9120,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -8998,6 +9169,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetRemoveListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -9045,6 +9217,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SetSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
@@ -9090,6 +9263,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, localOnly);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TopicAddMessageListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(localOnly);
@@ -9164,6 +9338,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, message);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TopicPublishCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(message);
@@ -9200,6 +9375,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TopicRemoveMessageListenerCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -9248,6 +9424,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(transactionId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionCommitCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(transactionId);
                     clientMessage->set(threadId);
@@ -9286,6 +9463,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(timeout, durability, transactionType, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionCreateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(timeout);
                     clientMessage->set(durability);
@@ -9340,6 +9518,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(transactionId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionRollbackCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(transactionId);
                     clientMessage->set(threadId);
@@ -9378,6 +9557,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, item);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalListAddCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9434,6 +9614,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, item);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalListRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9489,6 +9670,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalListSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9542,6 +9724,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapContainsKeyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9598,6 +9781,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapDeleteCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9642,6 +9826,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapGetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9702,6 +9887,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapIsEmptyCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9754,6 +9940,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapKeySetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9807,6 +9994,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapKeySetWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9866,6 +10054,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value, ttl);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapPutCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9934,6 +10123,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapPutIfAbsentCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -9998,6 +10188,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10060,6 +10251,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapRemoveIfSameCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10121,6 +10313,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapReplaceCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10187,6 +10380,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, oldValue, newValue);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapReplaceIfSameCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10251,6 +10445,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapSetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10297,6 +10492,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10349,6 +10545,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapValuesCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10402,6 +10599,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, predicate);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapValuesWithPredicateCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10459,6 +10657,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMultiMapGetCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10516,6 +10715,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMultiMapPutCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10575,6 +10775,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMultiMapRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10632,6 +10833,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMultiMapRemoveEntryCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10691,6 +10893,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMultiMapSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10744,6 +10947,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMultiMapValueCountCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10802,6 +11006,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, item, timeout);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalQueueOfferCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10861,6 +11066,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, timeout);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalQueuePollCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10921,6 +11127,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalQueueSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -10974,6 +11181,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, item);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalSetAddCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -11030,6 +11238,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, item);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalSetRemoveCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -11085,6 +11294,7 @@ namespace hazelcast {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalSetSizeCodec::REQUEST_TYPE);
+                    clientMessage->setOperationName(OPERATION_NAME);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
