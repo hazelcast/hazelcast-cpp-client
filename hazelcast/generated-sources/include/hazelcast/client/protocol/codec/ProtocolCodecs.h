@@ -526,6 +526,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.AddMembershipListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -604,6 +605,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.AddPartitionListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -663,6 +665,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.Authentication";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -754,6 +757,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.AuthenticationCustom";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -836,6 +840,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.CreateProxy";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -882,6 +887,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.DestroyProxy";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -926,6 +932,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.GetPartitions";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -980,6 +987,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.Ping";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1020,6 +1028,7 @@ namespace hazelcast {
                 public:
                     static const ClientMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Client.Statistics";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1054,6 +1063,7 @@ namespace hazelcast {
                 public:
                     static const ExecutorServiceMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ExecutorService.CancelOnAddress";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1112,6 +1122,7 @@ namespace hazelcast {
                 public:
                     static const ExecutorServiceMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ExecutorService.CancelOnPartition";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1170,6 +1181,7 @@ namespace hazelcast {
                 public:
                     static const ExecutorServiceMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ExecutorService.IsShutdown";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1224,6 +1236,7 @@ namespace hazelcast {
                 public:
                     static const ExecutorServiceMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ExecutorService.Shutdown";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1272,6 +1285,7 @@ namespace hazelcast {
                 public:
                     static const ExecutorServiceMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ExecutorService.SubmitToAddress";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1340,6 +1354,7 @@ namespace hazelcast {
                 public:
                     static const ExecutorServiceMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ExecutorService.SubmitToPartition";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1403,6 +1418,7 @@ namespace hazelcast {
                 public:
                     static const FlakeIdGeneratorMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "FlakeIdGenerator.NewIdBatch";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1468,6 +1484,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.AddAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1529,6 +1546,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.AddAllWithIndex";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1592,6 +1610,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.Add";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1653,6 +1672,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.AddListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1732,6 +1752,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.AddWithIndex";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1778,6 +1799,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.Clear";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1825,6 +1847,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.CompareAndRemoveAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1886,6 +1909,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.CompareAndRetainAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -1947,6 +1971,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.ContainsAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2008,6 +2033,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.Contains";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2064,6 +2090,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.GetAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2123,6 +2150,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.Get";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2187,6 +2215,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.IndexOf";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2243,6 +2272,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.IsEmpty";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2302,6 +2332,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.LastIndexOf";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2363,6 +2394,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2419,6 +2451,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.RemoveListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2480,6 +2513,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.RemoveWithIndex";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2544,6 +2578,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.Set";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2605,6 +2640,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2659,6 +2695,7 @@ namespace hazelcast {
                 public:
                     static const ListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "List.Sub";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2715,6 +2752,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.AddEntryListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2799,6 +2837,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.AddEntryListenerToKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2885,6 +2924,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.AddEntryListenerWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -2966,6 +3006,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.AddIndex";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3017,6 +3058,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.AddInterceptor";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3078,6 +3120,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.AddNearCacheEntryListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3168,6 +3211,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.AddPartitionLostListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3239,6 +3283,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Clear";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3286,6 +3331,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ContainsKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3349,6 +3395,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ContainsValue";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3410,6 +3457,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Delete";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3456,6 +3504,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.EntriesWithPagingPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3512,6 +3561,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.EntriesWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3568,6 +3618,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.EntrySet";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3622,6 +3673,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.EvictAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3669,6 +3721,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Evict";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3727,6 +3780,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ExecuteOnAllKeys";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3788,6 +3842,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ExecuteOnKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3851,6 +3906,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ExecuteOnKeys";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3909,6 +3965,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ExecuteWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -3967,6 +4024,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Flush";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4014,6 +4072,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ForceUnlock";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4060,6 +4119,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.GetAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4121,6 +4181,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Get";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4190,6 +4251,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.GetEntryView";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4251,6 +4313,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.IsEmpty";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4310,6 +4373,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.IsLocked";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4366,6 +4430,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.KeySet";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4420,6 +4485,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.KeySetWithPagingPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4476,6 +4542,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.KeySetWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4537,6 +4604,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Lock";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4592,6 +4660,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.PutAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4641,6 +4710,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Put";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4711,6 +4781,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.PutIfAbsent";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4781,6 +4852,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.PutTransient";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4836,6 +4908,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.PutWithMaxIdle";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4908,6 +4981,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.RemoveAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -4957,6 +5031,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5018,6 +5093,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.RemoveEntryListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5079,6 +5155,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.RemoveIfSame";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5139,6 +5216,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.RemoveInterceptor";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5200,6 +5278,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Replace";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5268,6 +5347,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ReplaceIfSame";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5335,6 +5415,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Set";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5390,6 +5471,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.SetWithMaxIdle";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5457,6 +5539,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5516,6 +5599,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.SubmitToKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5584,6 +5668,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.TryLock";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5653,6 +5738,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.TryPut";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5720,6 +5806,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.TryRemove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5785,6 +5872,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Unlock";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5833,6 +5921,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.Values";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5887,6 +5976,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ValuesWithPagingPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -5943,6 +6033,7 @@ namespace hazelcast {
                 public:
                     static const MapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Map.ValuesWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6004,6 +6095,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.AddEntryListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6086,6 +6178,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.AddEntryListenerToKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6165,6 +6258,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.Clear";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6212,6 +6306,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.ContainsEntry";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6277,6 +6372,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.ContainsKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6340,6 +6436,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.ContainsValue";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6396,6 +6493,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.EntrySet";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6455,6 +6553,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.ForceUnlock";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6501,6 +6600,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.Get";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6564,6 +6664,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.IsLocked";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6620,6 +6721,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.KeySet";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6679,6 +6781,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.Lock";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6734,6 +6837,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.Put";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6794,6 +6898,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6857,6 +6962,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.RemoveEntry";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6917,6 +7023,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.RemoveEntryListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -6973,6 +7080,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7032,6 +7140,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.TryLock";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7101,6 +7210,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.Unlock";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7154,6 +7264,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.ValueCount";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7212,6 +7323,7 @@ namespace hazelcast {
                 public:
                     static const MultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "MultiMap.Values";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7267,6 +7379,7 @@ namespace hazelcast {
                 public:
                     static const PNCounterMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "PNCounter.Add";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7334,6 +7447,7 @@ namespace hazelcast {
                 public:
                     static const PNCounterMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "PNCounter.Get";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7396,6 +7510,7 @@ namespace hazelcast {
                 public:
                     static const PNCounterMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "PNCounter.GetConfiguredReplicaCount";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7455,6 +7570,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.AddAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7516,6 +7632,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.AddListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7590,6 +7707,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Clear";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7637,6 +7755,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.CompareAndRemoveAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7698,6 +7817,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.CompareAndRetainAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7759,6 +7879,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.ContainsAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7820,6 +7941,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Contains";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7876,6 +7998,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.DrainTo";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7930,6 +8053,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.DrainToMaxSize";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -7986,6 +8110,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.IsEmpty";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8040,6 +8165,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Iterator";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8099,6 +8225,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Offer";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8162,6 +8289,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Peek";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8224,6 +8352,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Poll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8288,6 +8417,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Put";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8332,6 +8462,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.RemainingCapacity";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8391,6 +8522,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8447,6 +8579,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.RemoveListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8503,6 +8636,7 @@ namespace hazelcast {
                 public:
                     static const QueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Queue.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8562,6 +8696,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.AddEntryListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8642,6 +8777,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.AddEntryListenerToKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8724,6 +8860,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.AddEntryListenerToKeyWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8808,6 +8945,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.AddEntryListenerWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8890,6 +9028,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.AddNearCacheEntryListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -8967,6 +9106,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.Clear";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9014,6 +9154,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.ContainsKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9075,6 +9216,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.ContainsValue";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9131,6 +9273,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.EntrySet";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9190,6 +9333,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.Get";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9249,6 +9393,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.IsEmpty";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9303,6 +9448,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.KeySet";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9362,6 +9508,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.PutAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9411,6 +9558,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.Put";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9479,6 +9627,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9538,6 +9687,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.RemoveEntryListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9594,6 +9744,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9648,6 +9799,7 @@ namespace hazelcast {
                 public:
                     static const ReplicatedMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "ReplicatedMap.Values";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9707,6 +9859,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.AddAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9770,6 +9923,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.Add";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9828,6 +9982,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.Capacity";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9882,6 +10037,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.HeadSequence";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -9936,6 +10092,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.ReadMany";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10012,6 +10169,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.ReadOne";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10071,6 +10229,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.RemainingCapacity";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10125,6 +10284,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10179,6 +10339,7 @@ namespace hazelcast {
                 public:
                     static const RingbufferMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Ringbuffer.TailSequence";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10231,6 +10392,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.AddAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10292,6 +10454,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.Add";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10353,6 +10516,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.AddListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10427,6 +10591,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.Clear";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10474,6 +10639,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.CompareAndRemoveAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10535,6 +10701,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.CompareAndRetainAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10596,6 +10763,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.ContainsAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10657,6 +10825,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.Contains";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10713,6 +10882,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.GetAll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10767,6 +10937,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.IsEmpty";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10826,6 +10997,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10882,6 +11054,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.RemoveListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10938,6 +11111,7 @@ namespace hazelcast {
                 public:
                     static const SetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Set.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -10997,6 +11171,7 @@ namespace hazelcast {
                 public:
                     static const TopicMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Topic.AddMessageListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11074,6 +11249,7 @@ namespace hazelcast {
                 public:
                     static const TopicMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Topic.Publish";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11118,6 +11294,7 @@ namespace hazelcast {
                 public:
                     static const TopicMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Topic.RemoveMessageListener";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11174,6 +11351,7 @@ namespace hazelcast {
                 public:
                     static const TransactionMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Transaction.Commit";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11218,6 +11396,7 @@ namespace hazelcast {
                 public:
                     static const TransactionMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Transaction.Create";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11278,6 +11457,7 @@ namespace hazelcast {
                 public:
                     static const TransactionMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "Transaction.Rollback";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11327,6 +11507,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalList.Add";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11392,6 +11573,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalList.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11452,6 +11634,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalListMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalList.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11515,6 +11698,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.ContainsKey";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11580,6 +11764,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.Delete";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11633,6 +11818,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.Get";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11696,6 +11882,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.IsEmpty";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11754,6 +11941,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.KeySet";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11812,6 +12000,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.KeySetWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11877,6 +12066,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.Put";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -11949,6 +12139,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.PutIfAbsent";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12019,6 +12210,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12087,6 +12279,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.RemoveIfSame";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12154,6 +12347,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.Replace";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12224,6 +12418,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.ReplaceIfSame";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12293,6 +12488,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.Set";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12343,6 +12539,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12401,6 +12598,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.Values";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12459,6 +12657,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMap.ValuesWithPredicate";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12519,6 +12718,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMultiMap.Get";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12584,6 +12784,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMultiMap.Put";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12646,6 +12847,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMultiMap.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12711,6 +12913,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMultiMap.RemoveEntry";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12773,6 +12976,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMultiMap.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12836,6 +13040,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalMultiMapMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalMultiMap.ValueCount";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12901,6 +13106,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalQueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalQueue.Offer";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -12968,6 +13174,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalQueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalQueue.Poll";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -13031,6 +13238,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalQueueMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalQueue.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -13094,6 +13302,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalSetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalSet.Add";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -13159,6 +13368,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalSetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalSet.Remove";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
@@ -13219,6 +13429,7 @@ namespace hazelcast {
                 public:
                     static const TransactionalSetMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
+                    static constexpr const char* OPERATION_NAME = "TransactionalSet.Size";
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
