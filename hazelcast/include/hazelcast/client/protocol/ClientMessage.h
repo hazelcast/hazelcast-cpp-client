@@ -382,6 +382,10 @@ namespace hazelcast {
 
                 void setRetryable(bool shouldRetry);
 
+                std::string getOperationName() const;
+
+                void setOperationName(const std::string &operationName);
+
 
                 /**
                  * Checks the frame size and total data size to validate the message size.
@@ -402,6 +406,8 @@ namespace hazelcast {
                 int32_t findSuitableCapacity(int32_t requiredCapacity, int32_t existingCapacity) const;
 
                 bool retryable;
+
+                std::string operationName;
             };
 
             template<>
