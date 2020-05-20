@@ -15,9 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 8/7/13.
-#ifndef HAZELCAST_DataInput
-#define HAZELCAST_DataInput
-
+#pragma once
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
@@ -197,5 +195,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_DataInput
 

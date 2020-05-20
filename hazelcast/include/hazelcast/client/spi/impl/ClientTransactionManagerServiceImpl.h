@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTTRANSACTIONMANAGERIMPL_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_CLIENTTRANSACTIONMANAGERIMPL_H_
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -71,4 +69,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_CLIENTTRANSACTIONMANAGERIMPL_H_

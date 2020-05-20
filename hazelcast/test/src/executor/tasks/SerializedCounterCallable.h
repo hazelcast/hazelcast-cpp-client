@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_SERIALIZEDCOUNTERCALLABLE_H
-#define HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_SERIALIZEDCOUNTERCALLABLE_H
-
+#pragma once
 #include <stdint.h>
 
 #include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
@@ -48,4 +46,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_SERIALIZEDCOUNTERCALLABLE_H

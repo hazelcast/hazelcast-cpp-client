@@ -15,9 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 8/6/13.
-#ifndef HAZELCAST_TransactionalList
-#define HAZELCAST_TransactionalList
-
+#pragma once
 #include "hazelcast/client/proxy/TransactionalListImpl.h"
 
 namespace hazelcast {
@@ -67,5 +65,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_TransactionalList
 

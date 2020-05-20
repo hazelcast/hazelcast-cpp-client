@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SERIALIZATION_TYPEIDS_H
-#define HAZELCAST_CLIENT_SERIALIZATION_TYPEIDS_H
-
+#pragma once
 #include <string>
 #include <vector>
 #include <stdint.h>
@@ -80,4 +78,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_SERIALIZATION_TYPEIDS_H

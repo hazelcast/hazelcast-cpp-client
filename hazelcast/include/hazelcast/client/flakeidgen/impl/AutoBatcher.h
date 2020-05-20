@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_FLAKEIDGEN_IMPL_AUTOBATCHER_H
-#define HAZELCAST_CLIENT_FLAKEIDGEN_IMPL_AUTOBATCHER_H
-
+#pragma once
 #include <stdint.h>
 #include <memory>
 #include <atomic>
@@ -77,4 +75,3 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_FLAKEIDGEN_IMPL_AUTOBATCHER_H */

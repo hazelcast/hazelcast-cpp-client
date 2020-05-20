@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 8/5/13.
 
-#ifndef HAZELCAST_TransactionalQueue
-#define HAZELCAST_TransactionalQueue
-
+#pragma once
 #include "hazelcast/client/proxy/TransactionalQueueImpl.h"
 
 namespace hazelcast {
@@ -94,5 +92,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_TransactionalQueue
 

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZElCAST_CLIENT_ENDPOINT_H_
-#define HAZElCAST_CLIENT_ENDPOINT_H_
-
+#pragma once
 #include <string>
 #include <memory>
 
@@ -61,5 +59,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZElCAST_CLIENT_ENDPOINT_H_
 

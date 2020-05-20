@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 6/21/13.
 
 
-#ifndef HAZELCAST_ITEM_EVENT
-#define HAZELCAST_ITEM_EVENT
-
+#pragma once
 #include "hazelcast/client/Member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -137,5 +135,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_ITEM_EVENT
 

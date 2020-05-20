@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_MAP_IMPL_REPLICATEDMAPPROXYFACTORY_H_
-#define HAZELCAST_CLIENT_MAP_IMPL_REPLICATEDMAPPROXYFACTORY_H_
-
+#pragma once
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/proxy/ClientReplicatedMapProxy.h"
@@ -44,5 +42,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_MAP_IMPL_REPLICATEDMAPPROXYFACTORY_H_ */
 

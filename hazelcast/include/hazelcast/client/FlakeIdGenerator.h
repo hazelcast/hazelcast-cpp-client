@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_FLAKEIDGENERATOR_H_
-#define HAZELCAST_CLIENT_FLAKEIDGENERATOR_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
 
@@ -93,4 +91,3 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_FLAKEIDGENERATOR_H_ */

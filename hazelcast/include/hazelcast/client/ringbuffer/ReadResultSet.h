@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_RINGBUFFER_READRESULTSET_H_
-#define HAZELCAST_CLIENT_RINGBUFFER_READRESULTSET_H_
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/client/impl/DataArrayImpl.h"
@@ -127,4 +125,3 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_RINGBUFFER_READRESULTSET_H_ */

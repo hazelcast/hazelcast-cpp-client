@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_
-#define HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_
-
+#pragma once
 #include "hazelcast/client/mixedtype/NearCachedClientMapProxy.h"
 #include "hazelcast/client/mixedtype/ClientMapProxy.h"
 #include "hazelcast/client/spi/ClientProxyFactory.h"
@@ -63,5 +61,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_ */
 

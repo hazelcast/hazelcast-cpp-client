@@ -17,10 +17,7 @@
 // Created by sancar koyunlu on 20/02/14.
 //
 
-#ifndef HAZELCAST_ICastException
-#define HAZELCAST_ICastException
-
+#pragma once
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
-#endif //HAZELCAST_ICastException
 

@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_DEFAULT_PORTABLE_WRITER
-#define HAZELCAST_DEFAULT_PORTABLE_WRITER
-
+#pragma once
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/util/Bits.h"
@@ -91,6 +89,8 @@ namespace hazelcast {
                     void writeFloatArray(const char *fieldName, const std::vector<float> *data);
 
                     void writeDoubleArray(const char *fieldName, const std::vector<double> *data);
+
+                    void writeUTFArray(const char *fieldName, const std::vector<std::string> *data);
 
                     void end();
 
@@ -171,5 +171,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_DEFAULT_PORTABLE_WRITER */
 

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_TIMEUTIL_H_
-#define HAZELCAST_UTIL_TIMEUTIL_H_
-
+#pragma once
 #include <cstdint>
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -42,4 +40,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_UTIL_TIMEUTIL_H_

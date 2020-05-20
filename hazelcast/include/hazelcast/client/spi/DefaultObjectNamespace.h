@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 30 Nov 2016.
 
-#ifndef HAZELCAST_CLIENT_SPI_DEFAULTOBJECTNAMESPACE_H_
-#define HAZELCAST_CLIENT_SPI_DEFAULTOBJECTNAMESPACE_H_
-
+#pragma once
 #include <string>
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -78,5 +76,4 @@ namespace std {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_DEFAULTOBJECTNAMESPACE_H_
 

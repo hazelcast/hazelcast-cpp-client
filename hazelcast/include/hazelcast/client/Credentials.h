@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_Credentials
-#define HAZELCAST_Credentials
-
+#pragma once
 #include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
@@ -67,5 +65,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_Credentials
 

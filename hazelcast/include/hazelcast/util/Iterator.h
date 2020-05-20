@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 9 Dec 2016.
 
-#ifndef HAZELCAST_UTIL_ITERATOR_H_
-#define HAZELCAST_UTIL_ITERATOR_H_
-
+#pragma once
 #include <assert.h>
 #include <memory>
 
@@ -73,5 +71,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_UTIL_ITERATOR_H_
 

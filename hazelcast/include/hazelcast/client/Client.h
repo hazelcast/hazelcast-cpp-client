@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZElCAST_CLIENT_CLIENT_H_
-#define HAZElCAST_CLIENT_CLIENT_H_
-
+#pragma once
 #include "hazelcast/client/Endpoint.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -47,5 +45,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZElCAST_CLIENT_CLIENT_H_
 

@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 27 May 2016.
 
-#ifndef HAZELCAST_CLIENT_TOPIC_IMPL_RELIABLE_RELIABLETOPICMESSAGE_H_
-#define HAZELCAST_CLIENT_TOPIC_IMPL_RELIABLE_RELIABLETOPICMESSAGE_H_
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
@@ -70,5 +68,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_TOPIC_IMPL_RELIABLE_RELIABLETOPICMESSAGE_H_
 

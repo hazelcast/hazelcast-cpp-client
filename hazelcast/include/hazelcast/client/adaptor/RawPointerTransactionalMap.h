@@ -15,9 +15,7 @@
  */
 //
 // Created by ihsan demir on 24/03/16.
-#ifndef HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERRawPointerTransactionalMap_H_
-#define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERRawPointerTransactionalMap_H_
-
+#pragma once
 #include "hazelcast/client/TransactionalMap.h"
 #include "hazelcast/client/impl/DataArrayImpl.h"
 
@@ -216,5 +214,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERRawPointerTransactionalMap_H_
 

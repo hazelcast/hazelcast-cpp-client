@@ -17,10 +17,7 @@
 // Created by sancar koyunlu on 30/09/14.
 //
 
-#ifndef HAZELCAST_IListImpl
-#define HAZELCAST_IListImpl
-
-
+#pragma once
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
 
@@ -99,4 +96,3 @@ namespace hazelcast {
         }
     }
 }
-#endif //HAZELCAST_IListImpl

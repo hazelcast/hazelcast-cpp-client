@@ -17,10 +17,7 @@
 // Created by ihsan demir on 10/11/15.
 
 
-#ifndef HAZELCAST_CLIENT_EXECEPTION_AUTHENTICATIONEXCEPTION_H_
-#define HAZELCAST_CLIENT_EXECEPTION_AUTHENTICATIONEXCEPTION_H_
-
+#pragma once
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
-#endif //HAZELCAST_CLIENT_EXECEPTION_AUTHENTICATIONEXCEPTION_H_
 

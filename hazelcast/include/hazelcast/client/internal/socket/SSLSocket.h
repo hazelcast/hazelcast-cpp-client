@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_SOCKET_SSLSOCKET_H_
-#define HAZELCAST_CLIENT_INTERNAL_SOCKET_SSLSOCKET_H_
-
+#pragma once
 #ifdef HZ_BUILD_WITH_SSL
 
 #include <boost/asio.hpp>
@@ -69,4 +67,3 @@ namespace hazelcast {
 
 #endif /* HZ_BUILD_WITH_SSL */
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_SOCKET_SSLSOCKET_H_ */

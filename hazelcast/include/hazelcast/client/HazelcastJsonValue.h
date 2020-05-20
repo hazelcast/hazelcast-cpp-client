@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SERIALIZATION_JSON_HAZELCASTJSONVALUE_H
-#define HAZELCAST_CLIENT_SERIALIZATION_JSON_HAZELCASTJSONVALUE_H
-
+#pragma once
 #include <string>
 #include <ostream>
 
@@ -83,5 +81,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SERIALIZATION_JSON_HAZELCASTJSONVALUE_H
 

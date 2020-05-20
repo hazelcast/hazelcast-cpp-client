@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 27/11/15.
 
-#ifndef HAZELCAST_CLIENT_QUERY_IMPL_PREDICATES_PREDICATEDATASERIALIZERHOOK_H_
-#define HAZELCAST_CLIENT_QUERY_IMPL_PREDICATES_PREDICATEDATASERIALIZERHOOK_H_
-
+#pragma once
 namespace hazelcast {
     namespace client {
         namespace query {
@@ -66,5 +64,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST__MAP_REQUEST_ID
 

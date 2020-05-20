@@ -21,10 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_CLASS_DEFINITION
-#define HAZELCAST_CLASS_DEFINITION
-
-
+#pragma once
 #include "hazelcast/client/serialization/FieldDefinition.h"
 #include <map>
 #include <vector>
@@ -34,8 +31,8 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -160,8 +157,7 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 
-#endif /* HAZELCAST_CLASS_DEFINITION */
 

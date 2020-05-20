@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_GETMEMBERUUIDTASK_H
-#define HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_GETMEMBERUUIDTASK_H
-
+#pragma once
 #include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
 
 namespace hazelcast {
@@ -43,4 +41,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_GETMEMBERUUIDTASK_H

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_IMAP_IMPL
-#define HAZELCAST_IMAP_IMPL
-
+#pragma once
 #include "hazelcast/client/EntryArray.h"
 #include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/query/Predicate.h"
@@ -330,5 +328,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_IMAP_IMPL */
 

@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 9 Dec 2016.
 
-#ifndef HAZELCAST_UTIL_PRECONDITIONS_H_
-#define HAZELCAST_UTIL_PRECONDITIONS_H_
-
+#pragma once
 #include <string>
 #include <memory>
 #include "hazelcast/util/HazelcastDll.h"
@@ -177,5 +175,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_PRECONDITIONS_H_
 

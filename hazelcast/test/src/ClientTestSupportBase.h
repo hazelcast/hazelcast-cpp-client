@@ -17,9 +17,7 @@
 // Created by İhsan Demir on 26/05/15.
 //
 
-#ifndef HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H
-#define HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H
-
+#pragma once
 #include <memory>
 #include <thread>
 #include <string>
@@ -109,4 +107,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H

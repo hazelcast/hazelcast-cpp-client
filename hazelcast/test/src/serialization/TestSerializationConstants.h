@@ -18,10 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_TestSerializationConstants
-#define HAZELCAST_TestSerializationConstants
-
-
+#pragma once
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -51,4 +48,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_TestSerializationConstants

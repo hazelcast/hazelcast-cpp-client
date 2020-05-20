@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Server_TestNamedPortable_h
-#define Server_TestNamedPortable_h
-
+#pragma once
 #include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
@@ -56,5 +54,4 @@ namespace hazelcast {
 }
 
 
-#endif
 

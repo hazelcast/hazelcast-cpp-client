@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_AWSADDRESSPROVIDER_H
-#define HAZELCAST_CLIENT_SPI_IMPL_AWSADDRESSPROVIDER_H
-
+#pragma once
 #include <map>
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/aws/AWSClient.h"
@@ -63,4 +61,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_AWSADDRESSPROVIDER_H

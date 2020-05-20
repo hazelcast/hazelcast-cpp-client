@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 24/3/16.
 
-#ifndef HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERTRANSACTIONALQUEUE_H_
-#define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERTRANSACTIONALQUEUE_H_
-
+#pragma once
 #include "hazelcast/client/TransactionalQueue.h"
 
 namespace hazelcast {
@@ -90,5 +88,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERTRANSACTIONALQUEUE_H_
 

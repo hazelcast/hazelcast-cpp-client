@@ -20,9 +20,7 @@
 
 
 
-#ifndef HAZELCAST_LIFECYCLE_LISTENER
-#define HAZELCAST_LIFECYCLE_LISTENER
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/LifecycleEvent.h"
 
@@ -56,5 +54,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_LIFECYCLE_LISTENER
 

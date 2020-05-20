@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 6/7/13.
 
-#ifndef HAZELCAST_TYPE_SERIALIZER
-#define HAZELCAST_TYPE_SERIALIZER
-
+#pragma once
 #include <stdint.h>
 #include <memory>
 
@@ -133,5 +131,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_TYPE_SERIALIZER
 

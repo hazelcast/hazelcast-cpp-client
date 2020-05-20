@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_MapEvent
-#define HAZELCAST_MapEvent
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/EntryEvent.h"
@@ -87,4 +85,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_MapEvent

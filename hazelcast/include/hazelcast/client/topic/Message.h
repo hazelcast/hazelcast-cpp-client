@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 6/27/13.
 
-#ifndef HAZELCAST_CLIENT_TOPIC_MESSAGE_H_
-#define HAZELCAST_CLIENT_TOPIC_MESSAGE_H_
-
+#pragma once
 #include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -93,5 +91,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_TOPIC_MESSAGE_H_
 

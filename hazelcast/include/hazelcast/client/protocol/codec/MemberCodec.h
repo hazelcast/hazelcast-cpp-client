@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 5/11/15.
 //
-#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_MEMBERCODEC_
-#define HAZELCAST_CLIENT_PROTOCOL_CODEC_MEMBERCODEC_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -38,5 +36,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_PROTOCOL_CODEC_MEMBERCODEC_
 

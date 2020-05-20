@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTCLUSTERSERVICEIMPL_H
-#define HAZELCAST_CLIENT_SPI_IMPL_CLIENTCLUSTERSERVICEIMPL_H
-
+#pragma once
 #include <map>
 #include <vector>
 
@@ -107,4 +105,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif 

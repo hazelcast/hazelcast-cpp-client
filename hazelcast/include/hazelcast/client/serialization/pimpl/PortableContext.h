@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_SERIALIZATION_CONTEXT
-#define HAZELCAST_SERIALIZATION_CONTEXT
-
+#pragma once
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
@@ -100,5 +98,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_SERIALIZATION_CONTEXT */
 

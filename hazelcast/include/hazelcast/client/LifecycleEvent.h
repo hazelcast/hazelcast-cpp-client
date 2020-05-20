@@ -19,9 +19,7 @@
 
 
 
-#ifndef HAZELCAST_LIFECYCLE_EVENT
-#define HAZELCAST_LIFECYCLE_EVENT
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -72,5 +70,4 @@ namespace hazelcast {
 }
 
 
-#endif //__LifecycleEvent_H_
 

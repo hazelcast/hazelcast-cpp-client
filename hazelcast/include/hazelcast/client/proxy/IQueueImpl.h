@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_IQUEUE_IMPL
-#define HAZELCAST_IQUEUE_IMPL
-
+#pragma once
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
 #include <memory>
@@ -96,5 +94,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_IQUEUE */
 

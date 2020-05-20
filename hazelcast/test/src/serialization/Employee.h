@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 11/11/13.
 
-#ifndef HAZELCAST_Employee
-#define HAZELCAST_Employee
-
+#pragma once
 #include <string>
 #include <stdint.h>
 #include "hazelcast/client/query/EntryComparator.h"
@@ -79,6 +77,7 @@ namespace hazelcast {
                 std::vector<int64_t > ll;
                 std::vector<float> ff;
                 std::vector<double> dd;
+                std::vector<std::string> stringVector;
             };
 
             // Compares based on the employee age
@@ -113,5 +112,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_Employee
 

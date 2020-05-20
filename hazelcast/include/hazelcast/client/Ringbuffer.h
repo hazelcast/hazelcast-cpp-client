@@ -15,9 +15,7 @@
  */
 //
 // Created by ihsan demir on 16/20/13.
-#ifndef HZELCAST_CLIENT_RINGBUFFER_H_
-#define HZELCAST_CLIENT_RINGBUFFER_H_
-
+#pragma once
 #include <memory>
 #include <stdint.h>
 
@@ -330,5 +328,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HZELCAST_CLIENT_RINGBUFFER_H_
 

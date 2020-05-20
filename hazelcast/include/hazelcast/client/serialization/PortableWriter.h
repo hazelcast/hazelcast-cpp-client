@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 8/10/13.
 
-#ifndef HAZELCAST_PortableWriter
-#define HAZELCAST_PortableWriter
-
+#pragma once
 #include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 
@@ -167,6 +165,14 @@ namespace hazelcast {
                 void writeDoubleArray(const char *fieldName, const std::vector<double> *values);
 
                 /**
+                * @param fieldName name of the field
+                * @param values    utf string array to be written
+                * @throws IOException
+                */
+                void writeUTFArray(const char *fieldName, const std::vector<std::string> *values);
+
+
+              /**
                 * Internal api , should not be called by end user.
                 */
                 void end();
@@ -236,5 +242,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_PortableWriter
 

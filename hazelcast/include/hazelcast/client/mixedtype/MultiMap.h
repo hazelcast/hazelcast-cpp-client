@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_MIXEDTYPE_MULTIMAP_H_
-#define HAZELCAST_CLIENT_MIXEDTYPE_MULTIMAP_H_
-
+#pragma once
 #include "hazelcast/client/proxy/MultiMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
@@ -360,5 +358,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_MIXEDTYPE_MULTIMAP_H_ */
 

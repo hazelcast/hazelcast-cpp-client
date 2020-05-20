@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_VersionedPortable
-#define HAZELCAST_VersionedPortable
-
+#pragma once
 #include "hazelcast/client/serialization/Portable.h"
 
 namespace hazelcast {
@@ -46,4 +44,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_VersionedPortable

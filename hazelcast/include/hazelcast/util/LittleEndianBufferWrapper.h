@@ -17,9 +17,7 @@
 // Created by İhsan Demir on 14/05/15.
 //
 
-#ifndef HAZELCAST_CLIENT_COMMON_CONTAINERS_LITTLEENDIANBUFFERWRAPPER_H
-#define HAZELCAST_CLIENT_COMMON_CONTAINERS_LITTLEENDIANBUFFERWRAPPER_H
-
+#pragma once
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
@@ -273,4 +271,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_COMMON_CONTAINERS_LITTLEENDIANBUFFERWRAPPER_H

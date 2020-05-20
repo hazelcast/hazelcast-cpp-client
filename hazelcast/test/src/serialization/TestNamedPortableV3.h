@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_TestNamedPortableV3
-#define HAZELCAST_TestNamedPortableV3
-
+#pragma once
 #include "hazelcast/client/serialization/Portable.h"
 #include <string>
 
@@ -53,4 +51,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_TestNamedPortableV3

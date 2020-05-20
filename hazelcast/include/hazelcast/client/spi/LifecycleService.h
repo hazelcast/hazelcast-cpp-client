@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 6/17/13.
 
-#ifndef HAZELCAST_LIFECYCLE_SERVICE
-#define HAZELCAST_LIFECYCLE_SERVICE
-
+#pragma once
 #include <mutex>
 #include <boost/thread/latch.hpp>
 
@@ -85,5 +83,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //__LifecycleService_H_
 

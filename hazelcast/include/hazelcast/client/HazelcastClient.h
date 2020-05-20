@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT
-#define HAZELCAST_CLIENT
-
+#pragma once
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -396,7 +394,7 @@ namespace hazelcast {
             * Constructs a hazelcastClient with default configurations.
             */
             HazelcastClient();
-            
+
             /**
             * Constructs a hazelcastClient with given ClientConfig.
             * Note: ClientConfig will be copied.
@@ -657,4 +655,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT */

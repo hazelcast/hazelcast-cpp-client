@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 18 Apr 2016.
 
-#ifndef HAZELCAST_Employee
-#define HAZELCAST_Employee
-
+#pragma once
 #include <string>
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/util/Comparator.h"
@@ -78,5 +76,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_Employee
 

@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_ClassDefinitionBuilder
-#define HAZELCAST_ClassDefinitionBuilder
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include <vector>
@@ -76,6 +74,8 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder& addDoubleArrayField(const std::string& fieldName);
 
+                ClassDefinitionBuilder& addUTFArrayField(const std::string& fieldName);
+
                 ClassDefinitionBuilder& addFloatArrayField(const std::string& fieldName);
 
                 ClassDefinitionBuilder& addShortArrayField(const std::string& fieldName);
@@ -114,4 +114,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_ClassDefinitionBuilder

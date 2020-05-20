@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 20/02/14.
 //
 
-#ifndef HAZELCAST_DataEntryView
-#define HAZELCAST_DataEntryView
-
+#pragma once
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 #include <stdint.h>
@@ -85,5 +83,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_DataEntryView
 

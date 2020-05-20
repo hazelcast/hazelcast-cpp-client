@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_AtomicBoolean
-#define HAZELCAST_AtomicBoolean
-
+#pragma once
 #include <atomic>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -37,5 +35,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_AtomicBoolean
 

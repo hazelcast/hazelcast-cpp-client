@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_HAZELCASTDLL
-#define HAZELCAST_HAZELCASTDLL
-
+#pragma once
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #if !(defined(HAZELCAST_USE_STATIC) || defined(HAZELCAST_USE_SHARED))
         #ifndef HAZELCAST_EXPORTS
@@ -42,4 +40,3 @@ namespace hazelcast{
     typedef unsigned char byte;
 }
 
-#endif // HAZELCAST_HAZELCASTDLL

@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 8/7/13.
 
-#ifndef HAZELCAST_DataOutput
-#define HAZELCAST_DataOutput
-
+#pragma once
 #include <memory>
 #include <vector>
 #include <string>
@@ -110,13 +108,13 @@ namespace hazelcast {
                     DataOutput &operator = (const DataOutput &rhs);
 
                     int getUTF8CharCount(const std::string &str);
-                    
+
                     template <typename T>
                     void write(const T &value) {
                         BOOST_THROW_EXCEPTION(
                                 exception::HazelcastSerializationException("DataOutput::write", "Unsupported type"));
                     }
-                    
+
                     template <typename T>
                     void writeArray(const std::vector<T> *data) {
                         int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
@@ -165,5 +163,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_DataOutput
 

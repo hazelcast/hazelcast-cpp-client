@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 12/11/13.
 
-#ifndef HAZELCAST_DistributedObject
-#define HAZELCAST_DistributedObject
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 #include <string>
@@ -85,5 +83,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_DistributedObject
 

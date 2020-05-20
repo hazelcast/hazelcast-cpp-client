@@ -19,10 +19,7 @@
 
 
 
-#ifndef HAZELCAST_TransactionalSet
-#define HAZELCAST_TransactionalSet
-
-
+#pragma once
 #include "hazelcast/client/proxy/TransactionalSetImpl.h"
 
 namespace hazelcast {
@@ -72,5 +69,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_TransactionalSet
 

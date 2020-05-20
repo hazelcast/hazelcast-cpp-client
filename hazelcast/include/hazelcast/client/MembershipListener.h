@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 hazelcast. All rights reserved.
 //
 
-#ifndef HAZELCAST_MEMBERSHIP_LISTENER
-#define HAZELCAST_MEMBERSHIP_LISTENER
-
+#pragma once
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -126,5 +124,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_MEMBERSHIP_LISTENER */
 

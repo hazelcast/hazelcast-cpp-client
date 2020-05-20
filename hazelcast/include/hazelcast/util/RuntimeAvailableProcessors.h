@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_UTIL_RUNTIMEAVAILABLEPROCESSORS_H_
-#define HAZELCAST_UTIL_RUNTIMEAVAILABLEPROCESSORS_H_
-
+#pragma once
 #include "hazelcast/util/AtomicInt.h"
 
 namespace hazelcast {
@@ -69,4 +67,3 @@ namespace hazelcast {
         };
     }
 }
-#endif //HAZELCAST_UTIL_RUNTIMEAVAILABLEPROCESSORS_H_

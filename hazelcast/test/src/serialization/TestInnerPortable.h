@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Hazelcast_TestInnerPortable_h
-#define Hazelcast_TestInnerPortable_h
-
+#pragma once
 #include "TestNamedPortable.h"
 #include <vector>
 #include <stdint.h>
@@ -39,7 +37,7 @@ namespace hazelcast {
 
                 TestInnerPortable(std::vector<byte> b, std::vector<bool> ba, std::vector<char> c, std::vector<int16_t> s,
                                   std::vector<int32_t> i, std::vector<int64_t> l, std::vector<float> f, std::vector<double> d,
-                                  std::vector<TestNamedPortable> n);
+                                  std::vector<std::string> stringVector, std::vector<TestNamedPortable> n);
 
                 TestInnerPortable& operator = (const TestInnerPortable& rhs);
 
@@ -66,6 +64,7 @@ namespace hazelcast {
                 std::vector<int64_t> ll;
                 std::vector<float> ff;
                 std::vector<double> dd;
+                std::vector<std::string> stringVector;
                 std::vector< TestNamedPortable > nn;
 
             };
@@ -74,5 +73,4 @@ namespace hazelcast {
 }
 
 
-#endif
 

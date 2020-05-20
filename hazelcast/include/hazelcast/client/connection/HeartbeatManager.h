@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_CONNECTION_HEARBEATMANAGER_H_
-#define HAZELCAST_CLIENT_CONNECTION_HEARBEATMANAGER_H_
-
+#pragma once
 #include <chrono>
 
 namespace hazelcast {
@@ -61,5 +59,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_CONNECTION_HEARBEATMANAGER_H_
 

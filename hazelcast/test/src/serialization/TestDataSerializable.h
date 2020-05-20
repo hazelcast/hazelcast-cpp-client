@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TEST_TESTDATASERIALIZABLE_H_
-#define HAZELCAST_CLIENT_TEST_TESTDATASERIALIZABLE_H_
-
+#pragma once
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/serialization/DataSerializableFactory.h"
 
@@ -27,7 +25,7 @@ namespace hazelcast {
             public:
                 virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId);
             };
-            
+
             class TestDataSerializable : public serialization::IdentifiedDataSerializable {
             public:
                 TestDataSerializable();
@@ -52,5 +50,4 @@ namespace hazelcast {
         }
     }
 }
-#endif //HAZELCAST_CLIENT_TEST_TESTDATASERIALIZABLE_H_
 

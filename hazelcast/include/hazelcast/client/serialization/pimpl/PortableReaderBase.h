@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_PortableReaderBase_H_
-#define HAZELCAST_PortableReaderBase_H_
-
+#pragma once
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -75,6 +73,8 @@ namespace hazelcast {
                     virtual std::unique_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
 
                     virtual std::unique_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
+
+                    virtual std::unique_ptr<std::vector<std::string> > readUTFArray(const char *fieldName);
 
                     virtual std::unique_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
@@ -134,4 +134,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_PortableReaderBase_H_

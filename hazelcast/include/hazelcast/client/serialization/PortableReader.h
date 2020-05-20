@@ -20,9 +20,7 @@
 
 
 
-#ifndef HAZELCAST_PortableReader
-#define HAZELCAST_PortableReader
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/serialization/pimpl/MorphingPortableReader.h"
@@ -167,6 +165,14 @@ namespace hazelcast {
                 */
                 std::unique_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
+
+                /**
+                * @param fieldName name of the field
+                * @return the utf string array value read
+                * @throws IOException
+                */
+                std::unique_ptr<std::vector<std::string> > readUTFArray(const char *fieldName);
+
                 /**
                 * @param fieldName name of the field
                 * @return the float array value read
@@ -237,5 +243,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_PortableReader
 

@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __Server__TestNamedPortableV2__
-#define __Server__TestNamedPortableV2__
-
-
+#pragma once
 #include "TestNamedPortable.h"
 
 namespace hazelcast {
@@ -47,5 +44,4 @@ namespace hazelcast {
 }
 
 
-#endif
 

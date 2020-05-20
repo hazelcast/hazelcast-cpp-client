@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/31/13.
 
-#ifndef HAZELCAST_LOAD_BALANCER
-#define HAZELCAST_LOAD_BALANCER
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -57,5 +55,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_LOAD_BALANCER
 

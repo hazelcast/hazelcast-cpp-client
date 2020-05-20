@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_DISPOSABLE_H_
-#define HAZELCAST_UTIL_DISPOSABLE_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -41,4 +39,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_DISPOSABLE_H_

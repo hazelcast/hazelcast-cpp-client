@@ -1411,6 +1411,10 @@ namespace hazelcast {
                 ff = std::vector<float>(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
                 dd = std::vector<double>(doubleArray, doubleArray + 3);
+                std::string stringArray[] = {"イロハニホヘト", "チリヌルヲ", "ワカヨタレソ"};
+                for (int j = 0; j < 3; ++j) {
+                    stringVector.push_back(stringArray[j]);
+                }
             }
 
             bool Employee::operator==(const Employee &rhs) const {
@@ -1451,6 +1455,7 @@ namespace hazelcast {
                 writer.writeIntArray("ii", &ii);
                 writer.writeFloatArray("ff", &ff);
                 writer.writeDoubleArray("dd", &dd);
+                writer.writeUTFArray("stringVector", &stringVector);
 
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 out.writeObject<byte>(&by);
@@ -1486,6 +1491,7 @@ namespace hazelcast {
                 ii = *reader.readIntArray("ii");;
                 ff = *reader.readFloatArray("ff");;
                 dd = *reader.readDoubleArray("dd");;
+                stringVector = *reader.readUTFArray("stringVector");
 
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 by = *in.readObject<byte>();
@@ -1953,8 +1959,10 @@ namespace hazelcast {
                                                  std::vector<int64_t> l,
                                                  std::vector<float> f,
                                                  std::vector<double> d,
+                                                 std::vector<std::string> stringVector,
                                                  std::vector<TestNamedPortable> n) : ii(i), bb(b), ba(ba), cc(c), ss(s),
-                                                                                     ll(l), ff(f), dd(d), nn(n) {
+                                                                                     ll(l), ff(f), dd(d),
+                                                                                     stringVector(std::move(stringVector)), nn(n) {
             }
 
             TestInnerPortable::~TestInnerPortable() {
@@ -1969,6 +1977,7 @@ namespace hazelcast {
                 ll = rhs.ll;
                 ff = rhs.ff;
                 dd = rhs.dd;
+                stringVector = rhs.stringVector;
                 nn = rhs.nn;
                 return (*this);
             }
@@ -1990,6 +1999,7 @@ namespace hazelcast {
                 if (ll != m.ll) return false;
                 if (ff != m.ff) return false;
                 if (dd != m.dd) return false;
+                if (stringVector != m.stringVector) return false;
                 size_t size = nn.size();
                 for (size_t i = 0; i < size; i++)
                     if (nn[i] != m.nn[i])
@@ -2010,6 +2020,7 @@ namespace hazelcast {
                 writer.writeLongArray("l", &ll);
                 writer.writeFloatArray("f", &ff);
                 writer.writeDoubleArray("d", &dd);
+                writer.writeUTFArray("stringVector", &stringVector);
                 writer.writePortableArray("nn", &nn);
             }
 
@@ -2022,6 +2033,7 @@ namespace hazelcast {
                 ll = *reader.readLongArray("l");
                 ff = *reader.readFloatArray("f");
                 dd = *reader.readDoubleArray("d");
+                stringVector = *reader.readUTFArray("stringVector");
                 nn = reader.readPortableArray<TestNamedPortable>("nn");
             }
 
@@ -2458,6 +2470,10 @@ namespace hazelcast {
                 std::vector<float> ff(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
                 std::vector<double> dd(doubleArray, doubleArray + 3);
+                std::string stringArray[] = {"イロハニホヘト", "チリヌルヲ", "ワカヨタレソ"};
+                std::vector<std::string> stringVector;
+                for (int i = 0; i < 3; i++)
+                    stringVector.push_back(stringArray[i]);
                 TestNamedPortable portableArray[5];
                 for (int i = 0; i < 5; i++) {
                     portableArray[i].name = "named-portable-" + hazelcast::util::IOUtil::to_string(i);
@@ -2465,7 +2481,7 @@ namespace hazelcast {
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
-                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, nn);
+                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, stringVector, nn);
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 
@@ -2517,6 +2533,7 @@ namespace hazelcast {
                 double *doubleArray;
                 doubleArray = new double[LARGE_ARRAY_SIZE];
                 std::vector<double> dd(doubleArray, doubleArray + LARGE_ARRAY_SIZE);
+                std::vector<std::string> stringVector(LARGE_ARRAY_SIZE);
 
                 TestNamedPortable portableArray[5];
 
@@ -2526,7 +2543,7 @@ namespace hazelcast {
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
-                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, nn);
+                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, stringVector, nn);
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 
@@ -2589,6 +2606,11 @@ namespace hazelcast {
                 std::vector<float> ff(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
                 std::vector<double> dd(doubleArray, doubleArray + 3);
+                std::string stringArray[] = {"イロハニホヘト", "チリヌルヲ", "ワカヨタレソ"};
+                std::vector<std::string> stringVector;
+                for (int i = 0; i < 3; ++i) {
+                    stringVector.push_back(stringArray[i]);
+                }
                 TestNamedPortable portableArray[5];
                 for (int i = 0; i < 5; i++) {
                     portableArray[i].name = "named-portable-" + hazelcast::util::IOUtil::to_string(i);
@@ -2596,7 +2618,7 @@ namespace hazelcast {
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
-                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, nn);
+                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, stringVector, nn);
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 

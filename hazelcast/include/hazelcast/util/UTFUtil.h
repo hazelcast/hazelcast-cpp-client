@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_UTFUTIL_H_
-#define HAZELCAST_UTIL_UTFUTIL_H_
-
+#pragma once
 #include <string>
 #include <vector>
 #include <stdint.h>
@@ -61,4 +59,3 @@ namespace hazelcast {
         };
     }
 }
-#endif //HAZELCAST_UTIL_UTFUTIL_H_
