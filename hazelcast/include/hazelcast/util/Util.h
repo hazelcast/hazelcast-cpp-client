@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_UTIL_H_
-#define HAZELCAST_UTIL_UTIL_H_
-
+#pragma once
 #include <time.h>
 #include <algorithm>
 #include <string>
@@ -132,5 +130,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_UTIL_H_
 

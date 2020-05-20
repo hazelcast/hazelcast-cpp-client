@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_ObjectCarryingPortable
-#define HAZELCAST_ObjectCarryingPortable
-
+#pragma once
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
@@ -77,4 +75,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_ObjectCarryingPortable

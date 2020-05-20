@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCE_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCE_H_
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -95,4 +93,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCE_H_

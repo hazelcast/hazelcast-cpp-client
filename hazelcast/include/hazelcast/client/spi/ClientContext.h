@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 
-#ifndef HAZELCAST_CLIENT_CONTEXT
-#define HAZELCAST_CLIENT_CONTEXT
-
+#pragma once
 #include <string>
 #include <memory>
 
@@ -156,4 +154,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif // HAZELCAST_CLIENT_CONTEXT

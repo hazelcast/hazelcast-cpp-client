@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/6/13.
 
-#ifndef __RawDataPortable_H_
-#define __RawDataPortable_H_
-
+#pragma once
 #include "TestNamedPortable.h"
 #include "TestDataSerializable.h"
 #include "hazelcast/client/serialization/PortableFactory.h"
@@ -67,6 +65,5 @@ namespace hazelcast {
 }
 
 
-#endif //__RawDataPortable_H_
 
 

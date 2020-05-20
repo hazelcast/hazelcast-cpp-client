@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLESTORE_H_
-#define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLESTORE_H_
-
+#pragma once
 #include <assert.h>
 #include <vector>
 #include <memory>
@@ -72,4 +70,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLESTORE_H_ */

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_SAMPLEABLENEARCACHERECORDMAP_H_
-#define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_SAMPLEABLENEARCACHERECORDMAP_H_
-
+#pragma once
 #include "hazelcast/client/internal/nearcache/impl/NearCacheRecordMap.h"
 #include "hazelcast/client/internal/eviction/impl/strategy/sampling/SampleableEvictableStore.h"
 
@@ -53,5 +51,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_SAMPLEABLENEARCACHERECORDMAP_H_ */
 

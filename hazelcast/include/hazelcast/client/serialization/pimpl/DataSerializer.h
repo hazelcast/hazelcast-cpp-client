@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 5/15/13.
 
 
-#ifndef HAZELCAST_DATA_SERIALIZER
-#define HAZELCAST_DATA_SERIALIZER
-
+#pragma once
 #include <memory>
 #include <stdint.h>
 
@@ -96,5 +94,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_DATA_SERIALIZER
 

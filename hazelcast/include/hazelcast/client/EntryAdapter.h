@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 04/09/14.
 //
-#ifndef HAZELCAST_EntryAdapter
-#define HAZELCAST_EntryAdapter
-
+#pragma once
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/EntryListener.h"
 
@@ -77,4 +75,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_EntryAdapter

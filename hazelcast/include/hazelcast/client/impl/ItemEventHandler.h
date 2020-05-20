@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 6/24/13.
 
-#ifndef HAZELCAST_ITEM_EVENT_HANDLER
-#define HAZELCAST_ITEM_EVENT_HANDLER
-
+#pragma once
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/ItemListener.h"
@@ -101,5 +99,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_ITEM_EVENT_HANDLER
 

@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 29/01/14.
 //
 
-#ifndef HAZELCAST_HazelcastAll
-#define HAZELCAST_HazelcastAll
-
+#pragma once
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
@@ -65,5 +63,4 @@
 #include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include <hazelcast/client/cluster/memberselector/MemberSelectors.h>
 
-#endif //HAZELCAST_HazelcastAll
 

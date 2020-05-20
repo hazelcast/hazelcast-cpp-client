@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_MIXEDTYPE_IQUEUE_H_
-#define HAZELCAST_CLIENT_MIXEDTYPE_IQUEUE_H_
-
+#pragma once
 #include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/ItemListener.h"
 
@@ -250,5 +248,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_MIXEDTYPE_IQUEUE_H_ */
 

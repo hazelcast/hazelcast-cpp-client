@@ -17,10 +17,7 @@
 // Created by sancar koyunlu on 7/1/13.
 
 
-#ifndef HAZELCAST_TestCustomSerializableWithBase
-#define HAZELCAST_TestCustomSerializableWithBase
-
-
+#pragma once
 #include "hazelcast/client/serialization/Serializer.h"
 #include "customSerialization/TestCustomXSerializable.h"
 
@@ -42,6 +39,5 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_TestCustomSerializableWithBase
 
 

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_DEFAULTADDRESSPROVIDER_H
-#define HAZELCAST_CLIENT_SPI_IMPL_DEFAULTADDRESSPROVIDER_H
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 
@@ -53,4 +51,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_DEFAULTADDRESSPROVIDER_H

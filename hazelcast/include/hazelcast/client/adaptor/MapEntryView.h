@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 29 Feb 2016.
 
-#ifndef HAZELCAST_CLIENT_ADAPTOR_ENTRYVIEW_H_
-#define HAZELCAST_CLIENT_ADAPTOR_ENTRYVIEW_H_
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/client/map/DataEntryView.h"
@@ -126,5 +124,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_ADAPTOR_ENTRYVIEW_H_
 

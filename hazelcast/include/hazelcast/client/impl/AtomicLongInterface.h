@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_IMPL_ATOMICLONGINTERFACE_H_
-#define HAZELCAST_CLIENT_IMPL_ATOMICLONGINTERFACE_H_
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/client/DistributedObject.h"
@@ -220,5 +218,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_IMPL_ATOMICLONGINTERFACE_H_
 

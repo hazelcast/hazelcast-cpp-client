@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SERIALIZATION_PORTABLEFACTORY_H_
-#define HAZELCAST_CLIENT_SERIALIZATION_PORTABLEFACTORY_H_
-
+#pragma once
 #include <stdint.h>
 #include <memory>
 
@@ -51,4 +49,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_CLIENT_SERIALIZATION_PORTABLEFACTORY_H_

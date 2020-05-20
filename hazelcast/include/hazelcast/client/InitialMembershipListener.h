@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_InitialMembershipListener
-#define HAZELCAST_InitialMembershipListener
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/MembershipListener.h"
 
@@ -96,5 +94,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_InitialMembershipListener
 

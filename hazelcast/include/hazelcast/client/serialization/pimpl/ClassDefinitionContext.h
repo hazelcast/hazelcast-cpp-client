@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/2/13.
 
-#ifndef HAZELCAST_PORTABLE_CONTEXT
-#define HAZELCAST_PORTABLE_CONTEXT
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/util/SynchronizedMap.h"
@@ -59,5 +57,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_PORTABLE_CONTEXT
 

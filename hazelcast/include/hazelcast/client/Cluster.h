@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/31/13.
 
-#ifndef HAZElCAST_CLUSTER
-#define HAZElCAST_CLUSTER
-
+#pragma once
 #include <vector>
 #include <memory>
 
@@ -151,5 +149,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZElCAST_CLUSTER
 

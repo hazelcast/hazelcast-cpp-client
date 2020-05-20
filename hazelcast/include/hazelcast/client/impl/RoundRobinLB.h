@@ -16,16 +16,14 @@
 //
 // Created by sancar koyunlu on 5/31/13.
 
-#ifndef HAZELCAST_ROUND_ROBIN_LB
-#define HAZELCAST_ROUND_ROBIN_LB
-
+#pragma once
 #include "hazelcast/client/impl/AbstractLoadBalancer.h"
 #include "hazelcast/util/AtomicInt.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -57,7 +55,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
-#endif //HAZELCAST_ROUND_ROBIN_LB
 

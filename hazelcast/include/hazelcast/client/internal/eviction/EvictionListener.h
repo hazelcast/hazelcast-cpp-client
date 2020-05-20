@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONLISTENER_H_
-#define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONLISTENER_H_
-
+#pragma once
 #include <assert.h>
 #include <memory>
 
@@ -62,6 +60,5 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONLISTENER_H_ */

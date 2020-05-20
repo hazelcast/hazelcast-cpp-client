@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTMEMBERSHIPLISTENER_H
-#define HAZELCAST_CLIENT_SPI_IMPL_CLIENTMEMBERSHIPLISTENER_H
-
+#pragma once
 #include <set>
 #include <memory>
 
@@ -106,4 +104,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif 

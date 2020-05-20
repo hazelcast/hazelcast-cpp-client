@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_FILFASTCALLIDSEQUENCE_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_FILFASTCALLIDSEQUENCE_H_
-
+#pragma once
 #include "hazelcast/client/spi/impl/sequence/AbstractCallIdSequence.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -58,4 +56,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_FILFASTCALLIDSEQUENCE_H_

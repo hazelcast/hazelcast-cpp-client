@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_PNCOUNTER_PNCOUNTER_H_
-#define HAZELCAST_CLIENT_PNCOUNTER_PNCOUNTER_H_
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/client/spi/ClientProxy.h"
@@ -219,4 +217,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_PNCOUNTER_PNCOUNTER_H_

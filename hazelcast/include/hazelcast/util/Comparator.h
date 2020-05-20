@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 14 Apr 2016.
 
-#ifndef HAZELCAST_UTIL_COMPARATOR_
-#define HAZELCAST_UTIL_COMPARATOR_
-
+#pragma once
 namespace hazelcast {
     namespace util {
         template <typename T>
@@ -37,5 +35,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_COMPARATOR_
 

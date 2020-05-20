@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_MULTI_MAP
-#define HAZELCAST_MULTI_MAP
-
+#pragma once
 #include <string>
 #include <vector>
 
@@ -348,5 +346,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_MULTI_MAP */
 

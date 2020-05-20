@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Server_TestMainPortable_h
-#define Server_TestMainPortable_h
-
+#pragma once
 #include "TestInnerPortable.h"
 #include <string>
 #include <stdint.h>
@@ -67,5 +65,4 @@ namespace hazelcast {
         }
     }
 }
-#endif
 

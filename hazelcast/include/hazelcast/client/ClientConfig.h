@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CONFIG
-#define HAZELCAST_CLIENT_CONFIG
-
+#pragma once
 #include <vector>
 #include <set>
 #include <memory>
@@ -40,7 +38,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable: 4251) //for dll export
 #endif
 
 namespace hazelcast {
@@ -400,7 +398,7 @@ namespace hazelcast {
              * @param nearCacheConfig {@link com.hazelcast.config.NearCacheConfig} to be added
              * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
              * @see com.hazelcast.config.NearCacheConfig
-             * 
+             *
              * Memory ownership of the config is passed to the client config
              */
             template <typename K, typename V>
@@ -597,4 +595,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_CONFIG */

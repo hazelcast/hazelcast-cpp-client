@@ -15,9 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 12/11/13.
-#ifndef HAZELCAST_TransactionalObject
-#define HAZELCAST_TransactionalObject
-
+#pragma once
 #include "hazelcast/client/txn/TransactionProxy.h"
 
 #include <string>
@@ -118,5 +116,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_TransactionalObject
 

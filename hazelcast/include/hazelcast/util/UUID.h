@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 9 Dec 2016.
 
-#ifndef HAZELCAST_UTIL_UUID_H_
-#define HAZELCAST_UTIL_UUID_H_
-
+#pragma once
 #include <stdint.h>
 #include <string>
 #include <ostream>
@@ -109,5 +107,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_UUID_H_
 

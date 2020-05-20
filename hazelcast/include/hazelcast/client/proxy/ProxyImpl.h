@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 01/10/14.
 //
-#ifndef HAZELCAST_ProxyImpl
-#define HAZELCAST_ProxyImpl
-
+#pragma once
 #include <memory>
 #include <hazelcast/util/ExceptionUtil.h>
 
@@ -212,4 +210,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_ProxyImpl

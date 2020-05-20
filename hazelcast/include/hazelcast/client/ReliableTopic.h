@@ -15,9 +15,7 @@
  */
 //
 // Created by ihsan demir on 31 May 2016.
-#ifndef HAZELCAST_CLIENT_RELIABLETOPIC_H_
-#define HAZELCAST_CLIENT_RELIABLETOPIC_H_
-
+#pragma once
 #include <boost/utility/string_view.hpp>
 
 #include "hazelcast/client/proxy/ReliableTopicImpl.h"
@@ -343,5 +341,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_RELIABLETOPIC_H_
 

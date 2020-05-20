@@ -15,9 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 5/21/13.
-#ifndef HAZELCAST_CONNECTION
-#define HAZELCAST_CONNECTION
-
+#pragma once
 #include <memory>
 #include <ostream>
 #include <stdint.h>
@@ -171,5 +169,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CONNECTION
 

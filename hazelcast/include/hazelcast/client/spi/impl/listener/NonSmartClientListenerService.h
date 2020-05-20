@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_LISTENER_NONSMARTCLIENTLISTERNERSERVICE_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_LISTENER_NONSMARTCLIENTLISTERNERSERVICE_H_
-
+#pragma once
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
 
 namespace hazelcast {
@@ -38,4 +36,3 @@ namespace hazelcast {
     }
 }
 
-#endif // HAZELCAST_CLIENT_SPI_IMPL_LISTENER_NONSMARTCLIENTLISTERNERSERVICE_H_

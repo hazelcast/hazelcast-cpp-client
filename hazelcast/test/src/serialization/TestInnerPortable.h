@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef Hazelcast_TestInnerPortable_h
-#define Hazelcast_TestInnerPortable_h
-
+#pragma once
 #include "TestNamedPortable.h"
 #include <vector>
 #include <stdint.h>
@@ -75,5 +73,4 @@ namespace hazelcast {
 }
 
 
-#endif
 

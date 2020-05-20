@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_EntryListener
-#define HAZELCAST_EntryListener
-
+#pragma once
 #include "hazelcast/client/EntryEvent.h"
 
 namespace hazelcast {
@@ -171,4 +169,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_EntryListener

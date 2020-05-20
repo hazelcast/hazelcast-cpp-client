@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 6/27/13.
 
-#ifndef HAZELCAST_CLIENT_TOPIC_IMPL_TOPICEVENTHANDLERIMPL_H_
-#define HAZELCAST_CLIENT_TOPIC_IMPL_TOPICEVENTHANDLERIMPL_H_
-
+#pragma once
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/topic/impl/MessageImpl.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -108,5 +106,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_TOPIC_IMPL_TOPICEVENTHANDLERIMPL_H_
 

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_ISET
-#define HAZELCAST_ISET
-
+#pragma once
 #include "hazelcast/client/proxy/ISetImpl.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
@@ -181,5 +179,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_ISET */
 

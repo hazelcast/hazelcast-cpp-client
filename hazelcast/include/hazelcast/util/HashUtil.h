@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 9 Dec 2016.
 
-#ifndef HAZELCAST_UTIL_HASHUTIL_H_
-#define HAZELCAST_UTIL_HASHUTIL_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 namespace hazelcast {
     namespace util {
@@ -41,5 +39,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_HASHUTIL_H_
 

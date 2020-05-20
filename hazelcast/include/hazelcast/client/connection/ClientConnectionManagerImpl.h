@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/21/13.
 
-#ifndef HAZELCAST_CONNECTION_MANAGER
-#define HAZELCAST_CONNECTION_MANAGER
-
+#pragma once
 #include <atomic>
 #include <stdint.h>
 #include <memory>
@@ -267,5 +265,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CONNECTION_MANAGER
 

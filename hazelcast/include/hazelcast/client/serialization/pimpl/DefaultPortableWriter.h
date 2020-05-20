@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_DEFAULT_PORTABLE_WRITER
-#define HAZELCAST_DEFAULT_PORTABLE_WRITER
-
+#pragma once
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/util/Bits.h"
@@ -173,5 +171,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_DEFAULT_PORTABLE_WRITER */
 

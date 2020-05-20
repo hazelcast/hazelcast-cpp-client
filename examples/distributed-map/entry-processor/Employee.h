@@ -17,9 +17,7 @@
 // Created by İhsan Demir on 28/12/15.
 //
 
-#ifndef HAZELCAST_EXAMPLES_DISTRIBUTED_MAP_ENTRYPROCESSOR_EMPLOYEE_H
-#define HAZELCAST_EXAMPLES_DISTRIBUTED_MAP_ENTRYPROCESSOR_EMPLOYEE_H
-
+#pragma once
 #include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
 
 class Employee : public hazelcast::client::serialization::IdentifiedDataSerializable {
@@ -45,4 +43,3 @@ private:
 };
 
 
-#endif //HAZELCAST_EXAMPLES_DISTRIBUTED_MAP_ENTRYPROCESSOR_EMPLOYEE_H

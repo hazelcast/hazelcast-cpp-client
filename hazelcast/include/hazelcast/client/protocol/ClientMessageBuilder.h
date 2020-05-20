@@ -21,9 +21,7 @@
  *      Author: ihsan
  */
 
-#ifndef HAZELCAST_CLIENT_MESSAGE_BUILDER
-#define HAZELCAST_CLIENT_MESSAGE_BUILDER
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
@@ -88,5 +86,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_MESSAGE_BUILDER
 

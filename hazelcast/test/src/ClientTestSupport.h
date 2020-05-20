@@ -17,9 +17,7 @@
 // Created by İhsan Demir on 26/05/15.
 //
 
-#ifndef HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
-#define HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
-
+#pragma once
 #include <memory>
 #include <boost/thread/latch.hpp>
 
@@ -74,4 +72,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCASTCLIENT_CLIENTTESTSUPPORT_H

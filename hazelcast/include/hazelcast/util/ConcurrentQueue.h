@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 5/21/13.
 
 
-#ifndef HAZELCAST_CONCURRENT_QUEUE
-#define HAZELCAST_CONCURRENT_QUEUE
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 #include <mutex>
@@ -28,7 +26,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable: 4251) //for dll export
 #endif
 
 namespace hazelcast {
@@ -94,7 +92,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
-#endif //HAZELCAST_CONCURRENT_QUEUE
 

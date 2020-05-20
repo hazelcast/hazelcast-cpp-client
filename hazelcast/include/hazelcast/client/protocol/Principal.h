@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/20/13.
 
-#ifndef HAZELCAST_PRINCIPAL
-#define HAZELCAST_PRINCIPAL
-
+#pragma once
 #include <string>
 #include <memory>
 #include <ostream>
@@ -57,5 +55,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_PRINCIPAL
 

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTINVOCATION_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_CLIENTINVOCATION_H_
-
+#pragma once
 #include <ostream>
 #include <memory>
 #include <atomic>
@@ -181,4 +179,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_CLIENTINVOCATION_H_

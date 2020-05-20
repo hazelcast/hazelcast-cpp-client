@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_MORPHING_PORTABLE_READER
-#define HAZELCAST_MORPHING_PORTABLE_READER
-
+#pragma once
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -128,6 +126,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_MORPHING_PORTABLE_READER */
 
 

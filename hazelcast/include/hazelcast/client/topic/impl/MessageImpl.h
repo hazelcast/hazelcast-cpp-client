@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 27 May 2016.
 
-#ifndef HAZELCAST_CLIENT_TOPIC_IMPL_MESSAGEIMPL_H_
-#define HAZELCAST_CLIENT_TOPIC_IMPL_MESSAGEIMPL_H_
-
+#pragma once
 #include <memory>
 #include <memory>
 
@@ -134,5 +132,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_TOPIC_IMPL_MESSAGEIMPL_H_
 

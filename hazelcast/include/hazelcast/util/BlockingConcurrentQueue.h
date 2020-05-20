@@ -17,9 +17,7 @@
 // Created by ihsan demir on 02 June 2016.
 
 
-#ifndef HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
-#define HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
-
+#pragma once
 #include <list>
 #include <iostream>
 #include <mutex>
@@ -30,7 +28,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable: 4251) //for dll export
 #endif
 
 namespace hazelcast {
@@ -114,7 +112,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
-#endif //HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
 

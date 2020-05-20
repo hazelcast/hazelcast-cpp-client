@@ -16,10 +16,7 @@
 //
 // Created by sancar koyunlu on 7/11/13.
 
-#ifndef HAZELCAST_UTFDATAFORMATEXCEPTION
-#define HAZELCAST_UTFDATAFORMATEXCEPTION
-
+#pragma once
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
-#endif //HAZELCAST_UTFDATAFORMATEXCEPTION
 

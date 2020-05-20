@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_SMARTCLIENTINVOCATIONSERVICE_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_SMARTCLIENTINVOCATIONSERVICE_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
 
@@ -66,4 +64,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_SMARTCLIENTINVOCATIONSERVICE_H_

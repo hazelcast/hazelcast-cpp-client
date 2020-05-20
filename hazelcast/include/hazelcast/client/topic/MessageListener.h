@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 26 May 2016.
 
-#ifndef HAZELCAST_CLIENT_TOPIC_MESSAGELISTENER_H_
-#define HAZELCAST_CLIENT_TOPIC_MESSAGELISTENER_H_
-
+#pragma once
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/TypedData.h"
 
@@ -86,5 +84,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_TOPIC_MESSAGELISTENER_H_
 

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_QUERY_IILikePredicate_H
-#define HAZELCAST_CLIENT_QUERY_IILikePredicate_H
-
+#pragma once
 #include <string>
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/query/Predicate.h"
@@ -68,4 +66,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_QUERY_IILikePredicate_H */

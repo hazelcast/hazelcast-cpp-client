@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_PROXY_FLAKEIDGENERATORPROXY_H_
-#define HAZELCAST_CLIENT_PROXY_FLAKEIDGENERATORPROXY_H_
-
+#pragma once
 #include <memory>
 
 #include "hazelcast/client/flakeidgen/impl/AutoBatcher.h"
@@ -60,4 +58,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_PROXY_FLAKEIDGENERATORPROXY_H_

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_IMPL_HAZELCASTCLIENTIMPL_H_
-#define HAZELCAST_CLIENT_IMPL_HAZELCASTCLIENTIMPL_H_
-
+#pragma once
 #include <atomic>
 #include <memory>
 #include <stdint.h>
@@ -420,4 +418,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_IMPL_HAZELCASTCLIENTIMPL_H_ */

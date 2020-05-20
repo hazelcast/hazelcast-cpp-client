@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_PROTOCOL_CLIENTEXCEPTIONFACTORY_H_
-#define HAZELCAST_CLIENT_PROTOCOL_CLIENTEXCEPTIONFACTORY_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include <memory>
 #include <map>
@@ -98,4 +96,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif // HAZELCAST_CLIENT_PROTOCOL_CLIENTEXCEPTIONFACTORY_H_

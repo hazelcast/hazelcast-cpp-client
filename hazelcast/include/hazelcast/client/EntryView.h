@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 
-#ifndef HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
-#define HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
-
+#pragma once
 #include <stdint.h>
 
 #include "hazelcast/client/map/DataEntryView.h"
@@ -105,5 +103,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
 

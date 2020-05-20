@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_MULTIEXECUTIONCALLBACK_H_
-#define HAZELCAST_CLIENT_MULTIEXECUTIONCALLBACK_H_
-
+#pragma once
 #include <unordered_map>
 #include <memory>
 
@@ -75,5 +73,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_MULTIEXECUTIONCALLBACK_H_
 

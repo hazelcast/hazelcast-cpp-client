@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 23/01/14.
 //
 
-#ifndef HAZELCAST_MemberAttributeChange
-#define HAZELCAST_MemberAttributeChange
-
+#pragma once
 #include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/util/IOUtil.h"
 #include <string>
@@ -54,5 +52,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_MemberAttributeChange
 

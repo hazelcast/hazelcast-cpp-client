@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 04/08/14.
 //
-#ifndef HAZELCAST_UTIL_CLOSABLE_H_
-#define HAZELCAST_UTIL_CLOSABLE_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -31,4 +29,3 @@ namespace hazelcast {
         };
     }
 }
-#endif //HAZELCAST_UTIL_CLOSABLE_H_

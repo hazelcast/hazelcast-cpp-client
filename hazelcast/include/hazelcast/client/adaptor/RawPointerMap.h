@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMAP_H_
-#define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMAP_H_
-
+#pragma once
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/adaptor/MapEntryView.h"
 #include "hazelcast/client/impl/DataArrayImpl.h"
@@ -926,5 +924,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMAP_H_ */
 

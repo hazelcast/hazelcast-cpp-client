@@ -18,9 +18,7 @@
 //
 
 
-#ifndef HAZELCAST_ClassDefinitionBuilder
-#define HAZELCAST_ClassDefinitionBuilder
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include <vector>
@@ -116,4 +114,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_ClassDefinitionBuilder

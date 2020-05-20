@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_IMPL_ABSTRACTCLIENTINVOCATIONSERVICE_H_
-#define HAZELCAST_CLIENT_SPI_IMPL_ABSTRACTCLIENTINVOCATIONSERVICE_H_
-
+#pragma once
 #include <ostream>
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -108,4 +106,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_SPI_IMPL_ABSTRACTCLIENTINVOCATIONSERVICE_H_

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_FIELD_TYPE
-#define HAZELCAST_FIELD_TYPE
-
+#pragma once
 #include <ostream>
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -68,5 +66,4 @@ namespace hazelcast {
         }
     }
 }
-#endif /* HAZELCAST_FIELD_TYPE */
 

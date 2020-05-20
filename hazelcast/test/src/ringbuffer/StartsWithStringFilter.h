@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TEST_RINGBUFFER_STARTSWITHSTRINGFILTER_H
-#define HAZELCAST_CLIENT_TEST_RINGBUFFER_STARTSWITHSTRINGFILTER_H
-
+#pragma once
 #include <string>
 
 #include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
@@ -46,4 +44,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_TEST_RINGBUFFER_STARTSWITHSTRINGFILTER_H

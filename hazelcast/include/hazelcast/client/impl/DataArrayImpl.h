@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 25 02, 2016.
 //
-#ifndef HAZELCAST_CLIENT_IMPL_DATAARRAYIMPL_H_
-#define HAZELCAST_CLIENT_IMPL_DATAARRAYIMPL_H_
-
+#pragma once
 #include <vector>
 
 #include "hazelcast/util/Util.h"
@@ -163,5 +161,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_IMPL_DATAARRAYIMPL_H_
 

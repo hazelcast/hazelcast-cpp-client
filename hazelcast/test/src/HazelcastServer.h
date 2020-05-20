@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
-#ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
-#define HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
-
+#pragma once
 #include <atomic>
 
 #include "HazelcastServerFactory.h"
@@ -65,5 +63,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* defined(HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_) */
 

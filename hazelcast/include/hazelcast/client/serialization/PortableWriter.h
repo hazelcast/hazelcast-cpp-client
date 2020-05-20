@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 8/10/13.
 
-#ifndef HAZELCAST_PortableWriter
-#define HAZELCAST_PortableWriter
-
+#pragma once
 #include "hazelcast/client/serialization/pimpl/DefaultPortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 
@@ -244,5 +242,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_PortableWriter
 

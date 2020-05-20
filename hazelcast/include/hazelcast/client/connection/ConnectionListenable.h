@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_CONNECTION_CONNECTIONLISTENABLE_H_
-#define HAZELCAST_CLIENT_CONNECTION_CONNECTIONLISTENABLE_H_
-
+#pragma once
 #include "hazelcast/client/connection/ConnectionListener.h"
 
 namespace hazelcast {
@@ -41,5 +39,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_CONNECTION_CONNECTIONLISTENABLE_H_
 

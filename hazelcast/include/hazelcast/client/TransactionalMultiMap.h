@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 8/6/13.
 
-#ifndef HAZELCAST_TransactionalMultiMap
-#define HAZELCAST_TransactionalMultiMap
-
+#pragma once
 #include "hazelcast/client/proxy/TransactionalMultiMapImpl.h"
 
 namespace hazelcast {
@@ -107,5 +105,4 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_TransactionalMultiMap
 

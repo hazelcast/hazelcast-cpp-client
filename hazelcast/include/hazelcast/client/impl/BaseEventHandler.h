@@ -17,9 +17,7 @@
 // Created by sancar koyunlu on 14/01/14.
 //
 
-#ifndef HAZELCAST_BaseEventHandler
-#define HAZELCAST_BaseEventHandler
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include <memory>
@@ -42,7 +40,7 @@ namespace hazelcast {
                 BaseEventHandler();
 
                 virtual ~BaseEventHandler();
-                
+
                 virtual void handle(std::unique_ptr<protocol::ClientMessage> message) = 0;
 
                 // TODO: Remove the above method after changing and regenerating the codecs
@@ -83,5 +81,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_BaseEventHandler
 

@@ -16,9 +16,7 @@
 //
 // Created by ihsan demir on 19/11/15.
 
-#ifndef HAZELCAST_CLIENT_DISTRIBUTEDOBJECTINFO_H_
-#define HAZELCAST_CLIENT_DISTRIBUTEDOBJECTINFO_H_
-
+#pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
 
@@ -52,5 +50,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_DISTRIBUTEDOBJECTINFO_H_
 

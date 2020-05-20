@@ -16,9 +16,7 @@
 //
 // Created by sancar koyunlu on 11/11/13.
 
-#ifndef HAZELCAST_Employee
-#define HAZELCAST_Employee
-
+#pragma once
 #include <string>
 #include <stdint.h>
 #include "hazelcast/client/query/EntryComparator.h"
@@ -114,5 +112,4 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_Employee
 

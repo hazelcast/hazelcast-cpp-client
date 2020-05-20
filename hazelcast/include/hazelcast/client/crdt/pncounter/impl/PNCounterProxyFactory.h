@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CRDT_PNCOUNTER_IMPL_PNCOUNTERPROXYFACTORY_H_
-#define HAZELCAST_CLIENT_CRDT_PNCOUNTER_IMPL_PNCOUNTERPROXYFACTORY_H_
-
+#pragma once
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 
 namespace hazelcast {
@@ -41,4 +39,3 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_CRDT_PNCOUNTER_IMPL_PNCOUNTERPROXYFACTORY_H_ */

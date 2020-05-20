@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMULTIMAP_H_
-#define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMULTIMAP_H_
-
+#pragma once
 #include "hazelcast/client/MultiMap.h"
 #include "hazelcast/client/impl/DataArrayImpl.h"
 #include "hazelcast/client/impl/EntryArrayImpl.h"
@@ -334,5 +332,4 @@ namespace hazelcast {
     }
 }
 
-#endif /* HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMULTIMAP_H_ */
 

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_PIPELINING_H_
-#define HAZELCAST_CLIENT_PIPELINING_H_
-
+#pragma once
 #include <vector>
 #include <mutex>
 #include <condition_variable>
@@ -166,4 +164,3 @@ namespace hazelcast {
     }
 }
 
-#endif //HAZELCAST_CLIENT_PIPELINING_H_

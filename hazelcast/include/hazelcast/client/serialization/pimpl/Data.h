@@ -21,9 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#ifndef HAZELCAST_DATA
-#define HAZELCAST_DATA
-
+#pragma once
 #include <vector>
 #include <memory>
 #include <stdint.h>
@@ -36,7 +34,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable: 4251) //for dll export
 #endif
 
 namespace hazelcast {
@@ -105,5 +103,4 @@ namespace std {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_DATA */
 

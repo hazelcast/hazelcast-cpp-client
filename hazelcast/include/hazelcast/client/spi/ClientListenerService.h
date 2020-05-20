@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_SPI_CLIENTLISTENERSERVICE_H_
-#define HAZELCAST_CLIENT_SPI_CLIENTLISTENERSERVICE_H_
-
+#pragma once
 #include <string>
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/EventHandler.h"
@@ -45,5 +43,4 @@ namespace hazelcast {
     }
 }
 
-#endif
 

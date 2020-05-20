@@ -21,9 +21,7 @@
  *      Author: ihsan
  */
 
-#ifndef HAZELCAST_CLIENT_PROTOCOL_STACKTRACEELEMENT_H_
-#define HAZELCAST_CLIENT_PROTOCOL_STACKTRACEELEMENT_H_
-
+#pragma once
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -74,4 +72,3 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_PROTOCOL_STACKTRACEELEMENT_H_ */

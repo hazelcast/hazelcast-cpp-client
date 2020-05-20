@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_TASKWITHUNSERIALIZABLERESPONSE_H
-#define HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_TASKWITHUNSERIALIZABLERESPONSE_H
-
+#pragma once
 #include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
 #include <hazelcast/client/cluster/memberselector/MemberSelectors.h>
 
@@ -44,4 +42,3 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_TASKWITHUNSERIALIZABLERESPONSE_H
