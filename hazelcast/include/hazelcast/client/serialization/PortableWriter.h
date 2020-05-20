@@ -165,6 +165,14 @@ namespace hazelcast {
                 void writeDoubleArray(const char *fieldName, const std::vector<double> *values);
 
                 /**
+                * @param fieldName name of the field
+                * @param values    utf string array to be written
+                * @throws IOException
+                */
+                void writeUTFArray(const char *fieldName, const std::vector<std::string> *values);
+
+
+              /**
                 * Internal api , should not be called by end user.
                 */
                 void end();

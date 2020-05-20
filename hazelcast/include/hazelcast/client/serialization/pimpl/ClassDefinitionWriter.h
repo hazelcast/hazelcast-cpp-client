@@ -86,6 +86,8 @@ namespace hazelcast {
 
                     void writeDoubleArray(const char *fieldName, const std::vector<double> *data);
 
+                    void writeUTFArray(const char *fieldName, const std::vector<std::string> *data);
+
                     template<typename T>
                     void writeNullPortable(const char *fieldName) {
 

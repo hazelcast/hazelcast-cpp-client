@@ -74,6 +74,8 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder& addDoubleArrayField(const std::string& fieldName);
 
+                ClassDefinitionBuilder& addUTFArrayField(const std::string& fieldName);
+
                 ClassDefinitionBuilder& addFloatArrayField(const std::string& fieldName);
 
                 ClassDefinitionBuilder& addShortArrayField(const std::string& fieldName);

@@ -165,6 +165,14 @@ namespace hazelcast {
                 */
                 std::unique_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
+
+                /**
+                * @param fieldName name of the field
+                * @return the utf string array value read
+                * @throws IOException
+                */
+                std::unique_ptr<std::vector<std::string> > readUTFArray(const char *fieldName);
+
                 /**
                 * @param fieldName name of the field
                 * @return the float array value read

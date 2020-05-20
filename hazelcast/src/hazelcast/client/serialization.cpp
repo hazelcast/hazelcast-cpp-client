@@ -225,6 +225,12 @@ namespace hazelcast {
                 return classDefinitionWriter->writeDoubleArray(fieldName, data);
             }
 
+            void PortableWriter::writeUTFArray(const char *fieldName, const std::vector<std::string> *data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeUTFArray(fieldName, data);
+                return classDefinitionWriter->writeUTFArray(fieldName, data);
+            }
+
             void PortableWriter::end() {
                 if (isDefaultWriter)
                     return defaultPortableWriter->end();
@@ -406,6 +412,11 @@ namespace hazelcast {
 
             ClassDefinitionBuilder &ClassDefinitionBuilder::addDoubleArrayField(const std::string &fieldName) {
                 addField(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
+                return *this;
+            }
+
+            ClassDefinitionBuilder &ClassDefinitionBuilder::addUTFArrayField(const std::string &fieldName) {
+                addField(fieldName, FieldTypes::TYPE_UTF_ARRAY);
                 return *this;
             }
 
@@ -1012,6 +1023,12 @@ namespace hazelcast {
                 return morphingPortableReader->readDoubleArray(fieldName);
             }
 
+            std::unique_ptr<std::vector<std::string> > PortableReader::readUTFArray(const char *fieldName) {
+                if (isDefaultReader)
+                    return defaultPortableReader->readUTFArray(fieldName);
+                return morphingPortableReader->readUTFArray(fieldName);
+            }
+
             std::unique_ptr<std::vector<float> > PortableReader::readFloatArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readFloatArray(fieldName);
@@ -1211,6 +1228,10 @@ namespace hazelcast {
 
                 void ClassDefinitionWriter::writeDoubleArray(const char *fieldName, const std::vector<double> *values) {
                     builder.addDoubleArrayField(fieldName);
+                }
+
+                void ClassDefinitionWriter::writeUTFArray(const char *fieldName, const std::vector<std::string> *values) {
+                    builder.addUTFArrayField(fieldName);
                 }
 
                 void ClassDefinitionWriter::writeFloatArray(const char *fieldName, const std::vector<float> *values) {
@@ -1753,6 +1774,11 @@ namespace hazelcast {
                 void DefaultPortableWriter::writeFloatArray(const char *fieldName, const std::vector<float> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_FLOAT_ARRAY);
                     dataOutput.writeFloatArray(data);
+                }
+
+                void DefaultPortableWriter::writeUTFArray(const char *fieldName, const std::vector<std::string> *data) {
+                    setPosition(fieldName, FieldTypes::TYPE_UTF_ARRAY);
+                    dataOutput.writeUTFArray(data);
                 }
 
                 void DefaultPortableWriter::writeDoubleArray(const char *fieldName, const std::vector<double> *data) {
@@ -2455,6 +2481,11 @@ namespace hazelcast {
                 std::unique_ptr<std::vector<double> > PortableReaderBase::readDoubleArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
                     return dataInput.readDoubleArray();
+                }
+
+                std::unique_ptr<std::vector<std::string> > PortableReaderBase::readUTFArray(const char *fieldName) {
+                    setPosition(fieldName, FieldTypes::TYPE_UTF_ARRAY);
+                    return dataInput.readUTFArray();
                 }
 
                 std::unique_ptr<std::vector<float> > PortableReaderBase::readFloatArray(const char *fieldName) {
