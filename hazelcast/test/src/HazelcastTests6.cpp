@@ -389,7 +389,7 @@ namespace hazelcast {
                     if (!imap->tryLock<std::string>("key1")) {
                         latch1->count_down();
                     }
-                    if (imap->tryLock<std::string>("key1", 5 * 1000)) {
+                    if (imap->tryLock<std::string>("key1", std::chrono::seconds(5))) {
                         latch1->count_down();
                     }
                 }
@@ -397,7 +397,7 @@ namespace hazelcast {
                 void testMapTryLockThread1(hazelcast::util::ThreadArgs &args) {
                     boost::latch *latch1 = (boost::latch *) args.arg0;
                     mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
-                    if (!imap->tryLock<std::string>("key1", 2)) {
+                    if (!imap->tryLock<std::string>("key1", std::chrono::milliseconds(2))) {
                         latch1->count_down();
                     }
                 }
@@ -405,7 +405,7 @@ namespace hazelcast {
                 void testMapTryLockThread2(hazelcast::util::ThreadArgs &args) {
                     boost::latch *latch1 = (boost::latch *) args.arg0;
                     mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
-                    if (imap->tryLock<std::string>("key1", 20 * 1000)) {
+                    if (imap->tryLock<std::string>("key1", std::chrono::seconds(20))) {
                         latch1->count_down();
                     }
                 }
@@ -1075,7 +1075,7 @@ namespace hazelcast {
                 TEST_P(MixedMapAPITest, testLockTtl) {
                     imap->put<std::string, std::string>("key1", "value1");
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
-                    imap->lock<std::string>("key1", 2 * 1000);
+                    imap->lock<std::string>("key1", std::chrono::seconds(2));
                     boost::latch latch1(1);
                     hazelcast::util::StartedThread t1(testLockTTLThread, &latch1, imap);
                     ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
@@ -1086,7 +1086,7 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testLockTtl2) {
-                    imap->lock<std::string>("key1", 3 * 1000);
+                    imap->lock<std::string>("key1", std::chrono::seconds(3));
                     boost::latch latch1(2);
                     hazelcast::util::StartedThread t1(testLockTTL2Thread, &latch1, imap);
                     ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
@@ -1096,11 +1096,11 @@ namespace hazelcast {
 
                 TEST_P(MixedMapAPITest, testTryLock) {
 
-                    ASSERT_TRUE(imap->tryLock<std::string>("key1", 2 * 1000));
+                    ASSERT_TRUE(imap->tryLock<std::string>("key1", std::chrono::seconds(2)));
                     boost::latch latch1(1);
                     hazelcast::util::StartedThread t1(testMapTryLockThread1, &latch1, imap);
 
-                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                    ASSERT_OPEN_EVENTUALLY(latch1);
 
                     ASSERT_TRUE(imap->isLocked<std::string>("key1"));
 
@@ -1109,9 +1109,28 @@ namespace hazelcast {
 
                     hazelcast::util::sleep(1);
                     imap->unlock<std::string>("key1");
-                    ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
+                    ASSERT_OPEN_EVENTUALLY(latch2);
                     ASSERT_TRUE(imap->isLocked<std::string>("key1"));
                     imap->forceUnlock<std::string>("key1");
+
+                }
+
+                TEST_P(MixedMapAPITest, testTryLockTtl) {
+
+                  ASSERT_TRUE(imap->tryLock<std::string>("key1", std::chrono::seconds(2), std::chrono::seconds(1)));
+                  boost::latch latch1(1);
+                  hazelcast::util::StartedThread t1(testMapTryLockThread1, &latch1, imap);
+
+                  ASSERT_OPEN_EVENTUALLY(latch1);
+
+                  ASSERT_TRUE(imap->isLocked<std::string>("key1"));
+
+                  boost::latch latch2(1);
+                  hazelcast::util::StartedThread t2(testMapTryLockThread2, &latch2, imap);
+
+                  ASSERT_OPEN_EVENTUALLY(latch2);
+                  ASSERT_TRUE(imap->isLocked<std::string>("key1"));
+                  imap->forceUnlock<std::string>("key1");
 
                 }
 
@@ -1119,7 +1138,7 @@ namespace hazelcast {
                     imap->lock<std::string>("key1");
                     boost::latch latch1(1);
                     hazelcast::util::StartedThread t2(testMapForceUnlockThread, &latch1, imap);
-                    ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                    ASSERT_OPEN_EVENTUALLY(latch1);
                     t2.join();
                     ASSERT_FALSE(imap->isLocked<std::string>("key1"));
 
@@ -3575,7 +3594,7 @@ namespace hazelcast {
                         latch1->count_down();
                     }
 
-                    if (map->tryLock<std::string>("key1", 5 * 1000)) {
+                    if (map->tryLock<std::string>("key1", std::chrono::seconds(5))) {
                         latch1->count_down();
                     }
                 }
@@ -3599,7 +3618,7 @@ namespace hazelcast {
                     mixedtype::MultiMap *mm = (mixedtype::MultiMap *) args.arg0;
                     boost::latch *latch1 = (boost::latch *) args.arg1;
                     try {
-                        if (!mm->tryLock<std::string>("key1", 2)) {
+                        if (!mm->tryLock<std::string>("key1", std::chrono::milliseconds(2))) {
                             latch1->count_down();
                         }
                     } catch (...) {
@@ -3611,7 +3630,7 @@ namespace hazelcast {
                     mixedtype::MultiMap *mm = (mixedtype::MultiMap *) args.arg0;
                     boost::latch *latch1 = (boost::latch *) args.arg1;
                     try {
-                        if (mm->tryLock<std::string>("key1", 20 * 1000)) {
+                        if (mm->tryLock<std::string>("key1", std::chrono::seconds(20))) {
                             latch1->count_down();
                         }
                     } catch (...) {
@@ -3765,7 +3784,7 @@ namespace hazelcast {
             }
 
             TEST_F(MixedMultiMapTest, testLockTtl) {
-                mm->lock<std::string>("key1", 3 * 1000);
+                mm->lock<std::string>("key1", std::chrono::seconds(3));
                 boost::latch latch1(2);
                 hazelcast::util::StartedThread t(lockTtlThread, mm, &latch1);
                 ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
@@ -3774,10 +3793,10 @@ namespace hazelcast {
             }
 
             TEST_F(MixedMultiMapTest, testTryLock) {
-                ASSERT_TRUE(mm->tryLock<std::string>("key1", 2 * 1000));
+                ASSERT_TRUE(mm->tryLock<std::string>("key1", std::chrono::seconds(2)));
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_TRUE(mm->isLocked<std::string>("key1"));
 
                 boost::latch latch2(1);
@@ -3785,7 +3804,31 @@ namespace hazelcast {
 
                 hazelcast::util::sleep(1);
                 mm->unlock<std::string>("key1");
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch2);
+                ASSERT_TRUE(mm->isLocked<std::string>("key1"));
+                mm->forceUnlock<std::string>("key1");
+            }
+
+            TEST_F(MixedMultiMapTest, testTryLockTtl) {
+                ASSERT_TRUE(mm->tryLock<std::string>("key1", std::chrono::seconds(2), std::chrono::seconds(1)));
+                boost::latch latch1(1);
+                hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
+                ASSERT_OPEN_EVENTUALLY(latch1);
+                ASSERT_TRUE(mm->isLocked<std::string>("key1"));
+
+                boost::latch latch2(1);
+                hazelcast::util::StartedThread t2(tryLockThread2, mm, &latch2);
+                
+                ASSERT_OPEN_EVENTUALLY(latch2);
+                ASSERT_TRUE(mm->isLocked<std::string>("key1"));
+                mm->forceUnlock<std::string>("key1");
+            }
+
+            TEST_F(MixedMultiMapTest, testTryLockTtlTimeout) {
+                ASSERT_TRUE(mm->tryLock<std::string>("key1", std::chrono::seconds(2), std::chrono::seconds(200)));
+                boost::latch latch1(1);
+                hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_TRUE(mm->isLocked<std::string>("key1"));
                 mm->forceUnlock<std::string>("key1");
             }
@@ -3794,7 +3837,7 @@ namespace hazelcast {
                 mm->lock<std::string>("key1");
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(forceUnlockThread, mm, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_FALSE(mm->isLocked<std::string>("key1"));
             }
         }
