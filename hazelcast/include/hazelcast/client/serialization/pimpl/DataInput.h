@@ -39,153 +39,197 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class HAZELCAST_API DataInput : public util::UTFUtil::ByteReadable {
+                template<typename Container>
+                class DataInput {
                 public:
-                    static const int MAX_UTF_CHAR_SIZE = 4;
+                    static constexpr const int MAX_UTF_CHAR_SIZE = 4;
 
-                    DataInput(const std::vector<byte> &buffer);
+                    explicit DataInput(Container buf) : buffer(std::move(buf)), pos(0) {}
 
-                    DataInput(const std::vector<byte> &buffer, int offset);
+                    DataInput(Container buf, int offset) : buffer(std::move(buf)), pos(offset) {}
 
-                    virtual ~DataInput();
+                    inline void readFully(std::vector<byte> &bytes) {
+                        size_t length = bytes.size();
+                        checkAvailable(length);
+                        memcpy(&(bytes[0]), &(buffer[pos]), length);
+                        pos += length;
+                    }
 
-                    void readFully(std::vector<byte> &);
+                    inline int skipBytes(int i) {
+                        checkAvailable(i);
+                        pos += i;
+                        return i;
+                    }
 
-                    int skipBytes(int i);
+                    template<typename T>
+                    typename std::enable_if<std::is_same<byte, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        checkAvailable(1);
+                        return buffer[pos++];
+                    }
 
-                    bool readBoolean();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<char, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        checkAvailable(util::Bits::CHAR_SIZE_IN_BYTES);
+                        // skip the first byte
+                        byte b = buffer[pos + 1];
+                        pos += util::Bits::CHAR_SIZE_IN_BYTES;
+                        return b;
+                    }
 
-                    byte readByte();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<bool, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        return static_cast<bool>(read<byte>());
+                    }
 
-                    int16_t readShort();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<int16_t, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        checkAvailable(util::Bits::SHORT_SIZE_IN_BYTES);
+                        int16_t result;
+                        util::Bits::bigEndianToNative2(&buffer[pos], &result);
+                        pos += util::Bits::SHORT_SIZE_IN_BYTES;
+                        return result;
+                    }
 
-                    // TODO: change to return 2 bytes char as in java
-                    char readChar();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<int32_t, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        checkAvailable(util::Bits::INT_SIZE_IN_BYTES);
+                        int32_t result;
+                        util::Bits::bigEndianToNative4(&buffer[pos], &result);
+                        pos += util::Bits::INT_SIZE_IN_BYTES;
+                        return result;
+                    }
 
-                    int32_t readInt();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<int64_t, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        checkAvailable(util::Bits::LONG_SIZE_IN_BYTES);
+                        int64_t result;
+                        util::Bits::bigEndianToNative8(&buffer[pos], &result);
+                        pos += util::Bits::LONG_SIZE_IN_BYTES;
+                        return result;
+                    }
 
-                    int64_t readLong();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<float, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        union {
+                            int32_t i;
+                            float f;
+                        } u;
+                        u.i = read<int32_t>();
+                        return u.f;
+                    }
 
-                    float readFloat();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<double, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        union {
+                            double d;
+                            int64_t l;
+                        } u;
+                        u.l = read<int64_t>();
+                        return u.d;
+                    }
 
-                    double readDouble();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::string, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        int32_t charCount = read<int32_t>();
+                        if (util::Bits::NULL_ARRAY == charCount) {
+                            BOOST_THROW_EXCEPTION(exception::IOException("DataInput::read()", "Null string!!!"));
+                        }
 
-                    std::unique_ptr<std::string> readUTF();
+                        return readUTF(charCount);
+                    }
 
-                    std::unique_ptr<std::vector<byte> > readByteArray();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<HazelcastJsonValue, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        return HazelcastJsonValue(read<std::string>());
+                    }
 
-                    std::unique_ptr<std::vector<bool> > readBooleanArray();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<boost::optional<std::string>, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        int32_t charCount = read<int32_t>();
+                        if (util::Bits::NULL_ARRAY == charCount) {
+                            return boost::none;
+                        }
 
-                    std::unique_ptr<std::vector<char> > readCharArray();
+                        return boost::make_optional(readUTF(charCount));
+                    }
 
-                    std::unique_ptr<std::vector<int32_t> > readIntArray();
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<byte>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<char>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<int16_t>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<int32_t>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<int64_t>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<float>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<double>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value ||
+                                            std::is_same<std::vector<boost::optional<std::string>>, typename std::remove_cv<T>::type>::value, typename boost::optional<T>>::type
+                    inline read() {
+                        int32_t len = read<int32_t>();
+                        if (util::Bits::NULL_ARRAY == len) {
+                            return boost::none;
+                        }
 
-                    std::unique_ptr<std::vector<int64_t> > readLongArray();
+                        if (len == 0) {
+                            return boost::none;
+                        }
 
-                    std::unique_ptr<std::vector<double> > readDoubleArray();
+                        if (len < 0) {
+                            BOOST_THROW_EXCEPTION(
+                                    exception::HazelcastSerializationException("DataInput::readArray", (boost::format(
+                                            "Incorrect negative array size found in the byte stream. The size is: %1%") %
+                                                                                                        len).str()));
+                        }
 
-                    std::unique_ptr<std::vector<float> > readFloatArray();
-
-                    std::unique_ptr<std::vector<int16_t> > readShortArray();
-
-                    std::unique_ptr<std::vector<std::string> > readUTFArray();
-
-                    std::unique_ptr<std::vector<std::string *> > readUTFPointerArray();
+                        T values;
+                        values.reserve(len);
+                        for (int32_t i = 0; i < len; i++) {
+                            values.push_back(read<typename T::value_type>());
+                        }
+                        return boost::make_optional(values);
+                    }
 
                     int position();
 
                     void position(int position);
 
                 private:
-                    const std::vector<byte> &buffer;
-                    std::vector<char> utfBuffer;
-
+                    Container buffer;
                     int pos;
 
-                    template <typename T>
-                    inline T read() {
-                        BOOST_THROW_EXCEPTION(
-                                exception::HazelcastSerializationException("DataInput::read", "Unsupported type"));
+                    void inline checkAvailable(size_t requestedLength) {
+                        size_t available = buffer.size() - pos;
+                        if (requestedLength > available) {
+                            BOOST_THROW_EXCEPTION(exception::IOException("DataInput::checkAvailable", (boost::format(
+                                    "Not enough bytes in internal buffer. Available:%1% bytes but needed %2% bytes") %
+                                                                                                       available %
+                                                                                                       requestedLength).str()));
+                        }
                     }
 
-                    template <typename T>
-                    inline int getSize(T *dummy) {
-                        BOOST_THROW_EXCEPTION(
-                                exception::HazelcastSerializationException("DataInput::getSize", "Unsupported type"));
-                        return -1;
+                    inline std::string readUTF(int charCount) {
+                        std::string result;
+                        result.reserve((size_t) MAX_UTF_CHAR_SIZE * charCount);
+                        byte b;
+                        for (int i = 0; i < charCount; ++i) {
+                            b = read<byte>();
+                            util::UTFUtil::readUTF8Char(*this, b, result);
+                        }
+                        return result;
                     }
 
-                    template <typename T>
-                    inline std::unique_ptr<std::vector<T> > readArray() {
-                        int32_t len = readInt();
-                        if (util::Bits::NULL_ARRAY == len) {
-                            return nullptr;
-                        }
-
-                        if (len == 0) {
-                            return std::unique_ptr<std::vector<T> > (new std::vector<T>(0));
-                        }
-
-                        if (len < 0) {
-                            std::ostringstream out;
-                            out << "Incorrect negative array size found in the byte stream. The size is: " << len;
-                            BOOST_THROW_EXCEPTION(
-                                    exception::HazelcastSerializationException("DataInput::readArray", out.str()));
-                        }
-
-                        std::unique_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
-                        for (int32_t i = 0; i < len; i++) {
-                            (*values)[i] = read<T>();
-                        }
-                        return values;
-                    }
-
-                    DataInput(const DataInput &);
-
-                    DataInput &operator = (const DataInput &);
-
-                    void checkAvailable(size_t requestedLength);
-
-                    char readCharUnchecked();
-
-                    int16_t readShortUnchecked();
-
-                    int32_t readIntUnchecked();
-
-                    int64_t readLongUnchecked();
-
-                    byte readByteUnchecked();
-
-                    bool readBooleanUnchecked();
-
-                    float readFloatUnchecked();
-
-                    double readDoubleUnchecked();
                 };
-
-                template <>
-                HAZELCAST_API byte DataInput::read();
-
-                template <>
-                HAZELCAST_API char DataInput::read();
-
-                template <>
-                HAZELCAST_API bool DataInput::read();
-
-                template <>
-                HAZELCAST_API int16_t DataInput::read();
-
-                template <>
-                HAZELCAST_API int32_t DataInput::read();
-
-                template <>
-                HAZELCAST_API int64_t DataInput::read();
-
-                template <>
-                HAZELCAST_API float DataInput::read();
-
-                template <>
-                HAZELCAST_API double DataInput::read();
             }
         }
     }

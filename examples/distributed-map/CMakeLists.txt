@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 add_subdirectory(basic)
-add_subdirectory(mixed-map)
 add_subdirectory(near-cache)
 add_subdirectory(query)
 add_subdirectory(custom-attributes)

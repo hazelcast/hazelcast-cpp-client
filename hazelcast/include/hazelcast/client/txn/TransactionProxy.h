@@ -22,9 +22,9 @@
 
 #pragma once
 #include "hazelcast/util/HazelcastDll.h"
-
+#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include <memory>
 #include <vector>
 
@@ -80,7 +80,6 @@ namespace hazelcast {
 
             class HAZELCAST_API TransactionProxy {
             public:
-
                 TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, std::shared_ptr<connection::Connection> connection);
 
                 TransactionProxy(const TransactionProxy &rhs);
@@ -89,13 +88,13 @@ namespace hazelcast {
 
                 TxnState getState() const;
 
-                int getTimeoutSeconds() const;
+                std::chrono::steady_clock::duration getTimeout() const;
 
-                void begin();
+                boost::future<void> begin();
 
-                void commit();
+                boost::future<void> commit();
 
-                void rollback();
+                boost::future<void> rollback();
 
                 serialization::pimpl::SerializationService& getSerializationService();
 
@@ -114,13 +113,13 @@ namespace hazelcast {
                 std::string txnId;
 
                 TxnState state;
-                int64_t startTime;
+                std::chrono::steady_clock::time_point startTime;
 
                 void checkThread();
 
                 void checkTimeout();
 
-                protocol::ClientMessage invoke(std::unique_ptr<protocol::ClientMessage> &request);
+                boost::future<protocol::ClientMessage> invoke(std::unique_ptr<protocol::ClientMessage> &request);
             };
         }
     }

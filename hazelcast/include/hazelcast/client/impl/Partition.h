@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-#pragma once
-#include <memory>
+#ifndef HAZELCAST_CLIENT_IMPL_PARTITION_H_
+#define HAZELCAST_CLIENT_IMPL_PARTITION_H_
+
+#include <boost/optional.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -48,7 +50,7 @@ namespace hazelcast {
                  *
                  * @return the owner member of the partition
                  */
-                virtual std::shared_ptr<Member> getOwner() const = 0;
+                virtual boost::optional<Member> getOwner() const = 0;
 
                 virtual ~Partition(){};
             };
@@ -60,4 +62,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
+#endif //HAZELCAST_CLIENT_IMPL_PARTITION_H_
 

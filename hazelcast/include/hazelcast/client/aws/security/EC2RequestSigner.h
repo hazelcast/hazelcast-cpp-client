@@ -15,7 +15,7 @@
  */
 #pragma once
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -39,23 +39,23 @@ namespace hazelcast {
 
                     virtual ~EC2RequestSigner();
 
-                    std::string sign(const std::map<std::string, std::string> &attributes);
+                    std::string sign(const std::unordered_map<std::string, std::string> &attributes);
 
                     std::string createFormattedCredential() const;
 
-                    std::string getCanonicalizedQueryString(const std::map<std::string, std::string> &attributes) const;
+                    std::string getCanonicalizedQueryString(const std::unordered_map<std::string, std::string> &attributes) const;
                 private:
                     /* Task 1 */
-                    std::string getCanonicalizedRequest(const std::map<std::string, std::string> &attributes) const;
+                    std::string getCanonicalizedRequest(const std::unordered_map<std::string, std::string> &attributes) const;
 
                     std::string getCanonicalHeaders() const;
 
                     std::string getCanonicalizedQueryString(const std::vector<std::string> &list) const;
 
-                    std::vector<std::string> getListOfEntries(const std::map<std::string, std::string> &entries) const;
+                    std::vector<std::string> getListOfEntries(const std::unordered_map<std::string, std::string> &entries) const;
 
                     void addComponents(std::vector<std::string> &components,
-                                       const std::map<std::string, std::string> &attributes,
+                                       const std::unordered_map<std::string, std::string> &attributes,
                                        const std::string &key) const;
 
                     /* Task 2 */

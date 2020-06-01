@@ -85,7 +85,7 @@ namespace hazelcast {
 
                         virtual int getPartitionId() const;
 
-                        virtual std::shared_ptr<Member> getOwner() const;
+                        virtual boost::optional<Member> getOwner() const;
 
                     private:
                         int partitionId;

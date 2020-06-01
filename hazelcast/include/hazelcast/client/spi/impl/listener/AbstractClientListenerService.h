@@ -28,6 +28,9 @@
 
 namespace hazelcast {
     namespace client {
+        namespace impl {
+            class BaseEventHandler;
+        }
         namespace serialization {
             namespace pimpl {
                 class SerializationService;
@@ -60,11 +63,11 @@ namespace hazelcast {
                         void handleClientMessage(const std::shared_ptr<ClientInvocation> invocation,
                                                  const std::shared_ptr<protocol::ClientMessage> response);
 
-                        virtual std::string
-                        registerListener(const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
-                                         const std::shared_ptr<EventHandler<protocol::ClientMessage> > handler);
+                        virtual boost::future<std::string>
+                        registerListener(std::unique_ptr<ListenerMessageCodec> &&listenerMessageCodec,
+                                         std::unique_ptr<client::impl::BaseEventHandler> &&handler);
 
-                        virtual bool deregisterListener(const std::string registrationId);
+                        virtual boost::future<bool> deregisterListener(const std::string registrationId);
 
                         virtual void connectionAdded(const std::shared_ptr<connection::Connection> connection);
 
@@ -78,19 +81,14 @@ namespace hazelcast {
 
                         virtual bool registersLocalOnly() const = 0;
 
-                        struct ConnectionPointerLessComparator {
-                            bool operator()(const std::shared_ptr<connection::Connection> &lhs,
-                                            const std::shared_ptr<connection::Connection> &rhs) const;
-                        };
-
-                        typedef std::map<std::shared_ptr<connection::Connection>, ClientEventRegistration, ConnectionPointerLessComparator> ConnectionRegistrationsMap;
+                        typedef std::unordered_map<std::shared_ptr<connection::Connection>, ClientEventRegistration> ConnectionRegistrationsMap;
                         typedef util::SynchronizedMap<ClientRegistrationKey, ConnectionRegistrationsMap> RegistrationsMap;
 
                         void removeEventHandler(const ClientEventRegistration &registration);
 
                         virtual std::string
-                        registerListenerInternal(const std::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
-                                                 const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+                        registerListenerInternal(std::unique_ptr<impl::ListenerMessageCodec> &&listenerMessageCodec,
+                                                 std::unique_ptr<client::impl::BaseEventHandler> &&handler);
 
                         virtual bool deregisterListenerInternal(const std::string &userRegistrationId);
 

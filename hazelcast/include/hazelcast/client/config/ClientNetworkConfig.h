@@ -53,11 +53,11 @@ namespace hazelcast {
                 /**
                  * Sets the {@link SSLConfig}.
                  *
-                 * @param sslConfig the SSLConfig.
+                 * @param config the SSLConfig.
                  * @return the updated ClientNetworkConfig.
                  * @see #getSSLConfig()
                  */
-                ClientNetworkConfig &setSSLConfig(const config::SSLConfig &sslConfig);
+                ClientNetworkConfig &setSSLConfig(const config::SSLConfig &config);
 
                 /**
                 * @param connectionTimeout Timeout value in millis for nodes to accept client connection requests.

@@ -49,7 +49,7 @@ namespace test1 {
     }
 }
 
-class CustomSerializer : public hazelcast::client::serialization::Serializer<test1::test2::Person> {
+class CustomSerializer : public hazelcast::client::serialization::hz_serializer<test1::test2::Person> {
 public:
 
     void write(hazelcast::client::serialization::ObjectDataOutput & out, const test1::test2::Person& object) {

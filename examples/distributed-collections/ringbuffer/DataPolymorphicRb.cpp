@@ -17,7 +17,6 @@
 // Created by İhsan Demir on 21/12/15.
 //
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/adaptor/RawPointerMap.h>
 
 using namespace hazelcast::client;
 

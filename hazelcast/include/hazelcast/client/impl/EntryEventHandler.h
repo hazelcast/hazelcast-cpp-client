@@ -18,13 +18,14 @@
 
 #pragma once
 #include <memory>
+#include <assert.h>
 
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/MapEvent.h"
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -35,19 +36,14 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-
-            template<typename K, typename V, typename BaseType>
+            template<typename Listener, typename BaseType>
             class EntryEventHandler : public BaseType {
             public:
                 EntryEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,
-                                  EntryListener<K, V> &listener, bool includeValue)
-                : instanceName(instanceName)
-                , clusterService(clusterService)
-                , serializationService(serializationService)
-                , listener(listener)
-                , includeValue(includeValue) {
-                }
+                                  Listener &&listener, bool includeValue, util::ILogger &log)
+                : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
+                , listener(listener), includeValue(includeValue), logger(log) {}
 
                 virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                          std::unique_ptr<serialization::pimpl::Data> &value,
@@ -55,7 +51,7 @@ namespace hazelcast {
                                          std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                          const int32_t &eventType, const std::string &uuid,
                                          const int32_t &numberOfAffectedEntries) {
-                    if (eventType == EntryEventType::EVICT_ALL || eventType == EntryEventType::CLEAR_ALL) {
+                    if (eventType == static_cast<int32_t>(EntryEvent::type::EVICT_ALL) || eventType == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
                         fireMapWideEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
@@ -70,13 +66,13 @@ namespace hazelcast {
                                       std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                       const int32_t &eventType, const std::string &uuid,
                                       const int32_t &numberOfAffectedEntries) {
-                    std::shared_ptr<Member> member = clusterService.getMember(uuid);
+                    auto member = clusterService.getMember(uuid);
+                    auto mapEventType = static_cast<EntryEvent::type>(eventType);
+                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName, numberOfAffectedEntries);
 
-                    MapEvent mapEvent(*member, (EntryEventType::Type)eventType, instanceName, numberOfAffectedEntries);
-
-                    if (eventType == EntryEventType::CLEAR_ALL) {
+                    if (mapEventType == EntryEvent::type::CLEAR_ALL) {
                         listener.mapCleared(mapEvent);
-                    } else if (eventType == EntryEventType::EVICT_ALL) {
+                    } else if (mapEventType == EntryEvent::type::EVICT_ALL) {
                         listener.mapEvicted(mapEvent);
                     }
                 }
@@ -87,138 +83,61 @@ namespace hazelcast {
                                     std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                     const int32_t &eventType, const std::string &uuid,
                                     const int32_t &numberOfAffectedEntries) {
-                    EntryEventType type((EntryEventType::Type)eventType);
-                    std::unique_ptr<V> val;
-                    std::unique_ptr<V> oldVal;
-                    std::unique_ptr<V> mergingVal;
+                    TypedData eventKey, val, oldVal, mergingVal;
                     if (includeValue) {
-                        if (NULL != value.get()) {
-                            val = serializationService.toObject<V>(*value);
+                        if (value) {
+                            val = TypedData(std::move(*value), serializationService);
                         }
-                        if (NULL != oldValue.get()) {
-                            oldVal = serializationService.toObject<V>(*oldValue);
+                        if (oldValue) {
+                            oldVal = TypedData(std::move(*oldValue), serializationService);
                         }
-                        if (NULL != mergingValue.get()) {
-                            mergingVal = serializationService.toObject<V>(*mergingValue);
+                        if (mergingValue) {
+                            mergingVal = TypedData(std::move(*mergingValue), serializationService);
                         }
                     }
-                    std::unique_ptr<K> eventKey;
-                    if (NULL != key.get()) {
-                        eventKey = serializationService.toObject<K>(*key);
+                    if (key) {
+                        eventKey = TypedData(std::move(*key), serializationService);
                     }
-                    std::shared_ptr<Member> member = clusterService.getMember(uuid);
-                    if (member.get() == NULL) {
-                        member.reset(new Member(uuid));
+                    auto member = clusterService.getMember(uuid);
+                    if (!member.has_value()) {
+                        member = Member(uuid);
                     }
-                    EntryEvent<K, V> entryEvent(instanceName, *member, type, eventKey, val, oldVal, mergingVal);
-                    if (type == EntryEventType::ADDED) {
-                        listener.entryAdded(entryEvent);
-                    } else if (type == EntryEventType::REMOVED) {
-                        listener.entryRemoved(entryEvent);
-                    } else if (type == EntryEventType::UPDATED) {
-                        listener.entryUpdated(entryEvent);
-                    } else if (type == EntryEventType::EVICTED) {
-                        listener.entryEvicted(entryEvent);
-                    } else if (type == EntryEventType::EXPIRED) {
-                        listener.entryExpired(entryEvent);
-                    } else if (type == EntryEventType::MERGED) {
-                        listener.entryMerged(entryEvent);
+                    auto type = static_cast<EntryEvent::type>(eventType);
+                    EntryEvent entryEvent(instanceName, member.value(), type, std::move(eventKey), std::move(val),
+                                          std::move(oldVal), std::move(mergingVal));
+                    switch(type) {
+                        case EntryEvent::type::ADDED:
+                            listener.entryAdded(entryEvent);
+                            break;
+                        case EntryEvent::type::REMOVED:
+                            listener.entryRemoved(entryEvent);
+                            break;
+                        case EntryEvent::type::UPDATED:
+                            listener.entryUpdated(entryEvent);
+                            break;
+                        case EntryEvent::type::EVICTED:
+                            listener.entryEvicted(entryEvent);
+                            break;
+                        case EntryEvent::type::EXPIRED:
+                            listener.entryExpired(entryEvent);
+                            break;
+                        case EntryEvent::type::MERGED:
+                            listener.entryMerged(entryEvent);
+                            break;
+                        default:
+                            logger.warning("Received unrecognized event with type: ", static_cast<int32_t>(type),
+                                           " Dropping the event!!!");
                     }
                 }
-
             private:
                 const std::string& instanceName;
                 spi::ClientClusterService &clusterService;
                 serialization::pimpl::SerializationService& serializationService;
-                EntryListener<K, V>& listener;
+                Listener listener;
                 bool includeValue;
+                util::ILogger &logger;
             };
         }
-
-        namespace mixedtype {
-            namespace impl {
-                template<typename BaseType>
-                class MixedEntryEventHandler : public BaseType {
-                public:
-                    MixedEntryEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
-                                           serialization::pimpl::SerializationService &serializationService,
-                                           MixedEntryListener &listener, bool includeValue)
-                            : instanceName(instanceName)
-                            , clusterService(clusterService)
-                            , serializationService(serializationService)
-                            , listener(listener)
-                            , includeValue(includeValue) {
-                    }
-
-                    virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
-                                             std::unique_ptr<serialization::pimpl::Data> &value,
-                                             std::unique_ptr<serialization::pimpl::Data> &oldValue,
-                                             std::unique_ptr<serialization::pimpl::Data> &mergingValue,
-                                             const int32_t &eventType, const std::string &uuid,
-                                             const int32_t &numberOfAffectedEntries) {
-                        if (eventType == EntryEventType::EVICT_ALL || eventType == EntryEventType::CLEAR_ALL) {
-                            fireMapWideEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
-                            return;
-                        }
-
-                        fireEntryEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
-                    }
-
-                private:
-                    void fireMapWideEvent(std::unique_ptr<serialization::pimpl::Data> &key,
-                                          std::unique_ptr<serialization::pimpl::Data> &value,
-                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
-                                          std::unique_ptr<serialization::pimpl::Data> &mergingValue,
-                                          const int32_t &eventType, const std::string &uuid,
-                                          const int32_t &numberOfAffectedEntries) {
-                        std::shared_ptr<Member> member = clusterService.getMember(uuid);
-
-                        MapEvent mapEvent(*member, (EntryEventType::Type)eventType, instanceName, numberOfAffectedEntries);
-
-                        if (eventType == EntryEventType::CLEAR_ALL) {
-                            listener.mapCleared(mapEvent);
-                        } else if (eventType == EntryEventType::EVICT_ALL) {
-                            listener.mapEvicted(mapEvent);
-                        }
-                    }
-
-                    void fireEntryEvent(std::unique_ptr<serialization::pimpl::Data> &key,
-                                        std::unique_ptr<serialization::pimpl::Data> &value,
-                                        std::unique_ptr<serialization::pimpl::Data> &oldValue,
-                                        std::unique_ptr<serialization::pimpl::Data> &mergingValue,
-                                        const int32_t &eventType, const std::string &uuid,
-                                        const int32_t &numberOfAffectedEntries) {
-                        EntryEventType type((EntryEventType::Type)eventType);
-                        std::shared_ptr<Member> member = clusterService.getMember(uuid);
-                        MixedEntryEvent entryEvent(instanceName, *member, type, TypedData(key, serializationService),
-                                                   TypedData(value, serializationService),
-                                                   TypedData(oldValue, serializationService),
-                                                   TypedData(mergingValue, serializationService));
-                        if (type == EntryEventType::ADDED) {
-                            listener.entryAdded(entryEvent);
-                        } else if (type == EntryEventType::REMOVED) {
-                            listener.entryRemoved(entryEvent);
-                        } else if (type == EntryEventType::UPDATED) {
-                            listener.entryUpdated(entryEvent);
-                        } else if (type == EntryEventType::EVICTED) {
-                            listener.entryEvicted(entryEvent);
-                        } else if (type == EntryEventType::EXPIRED) {
-                            listener.entryExpired(entryEvent);
-                        } else if (type == EntryEventType::MERGED) {
-                            listener.entryMerged(entryEvent);
-                        }
-                    }
-
-                private:
-                    const std::string& instanceName;
-                    spi::ClientClusterService& clusterService;
-                    serialization::pimpl::SerializationService& serializationService;
-                    MixedEntryListener& listener;
-                    bool includeValue;
-                };
-            }
-        }
-
     }
 }
 

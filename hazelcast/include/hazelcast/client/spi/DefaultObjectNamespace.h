@@ -68,7 +68,7 @@ namespace std {
 
     template<>
     struct hash<hazelcast::client::spi::DefaultObjectNamespace> {
-        std::size_t operator()(const hazelcast::client::spi::DefaultObjectNamespace &k) const;
+        std::size_t operator()(const hazelcast::client::spi::DefaultObjectNamespace &k) const noexcept;
     };
 }
 

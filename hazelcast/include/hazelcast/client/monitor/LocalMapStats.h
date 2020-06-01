@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 #pragma once
+
+#include <memory>
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -36,7 +38,7 @@ namespace hazelcast {
                  *
                  * @return statistics object for the Near Cache
                  */
-                virtual monitor::NearCacheStats *getNearCacheStats() = 0;
+                virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const = 0;
             };
         }
     }
@@ -45,5 +47,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 

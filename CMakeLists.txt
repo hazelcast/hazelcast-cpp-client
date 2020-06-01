@@ -97,6 +97,30 @@ FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h
 
 include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include ${PROJECT_SOURCE_DIR}/external/release_include)
 
+if (HZ_COMPILE_WITH_SSL)
+	message(STATUS "Building the library with SSL support.")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
+
+	If(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+		# This is a bug in CMake that causes it to prefer the system version over
+		# the one in the specified ROOT folder. see
+		# https://stackoverflow.com/questions/58446253/xcode-11-ld-error-your-binary-is-not-an-allowed-client-of-usr-lib-libcrypto-dy
+		set(OPENSSL_ROOT_DIR ${OPENSSL_ROOT_DIR} /usr/local/Cellar/openssl@1.1/1.1.1g/)
+		set(OPENSSL_INCLUDE_DIR /usr/local/Cellar/openssl@1.1/1.1.1g/include CACHE FILEPATH "" FORCE)
+		set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
+		set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
+	endif()
+
+	find_package(OpenSSL REQUIRED)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	link_libraries(${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES})
+	message(STATUS "Using Open SSL include directory ${OPENSSL_INCLUDE_DIR}")
+	message(STATUS "Using Open SSL link libraries ${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES}")
+ELSE ()
+	message(STATUS "Building the library without SSL.")
+ENDIF()
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(BOOST_HINTS "C:\\\\Boost")
 endif ()
@@ -136,18 +160,6 @@ IF(HZ_VALGRIND)
 	set(HZ_VALGRIND_COMPILE_FLAGS " -O0 ")
 	set(HZ_VALGRIND_LINK_FLAGS " -O0 ")
 ENDIF(HZ_VALGRIND)
-
-if (HZ_COMPILE_WITH_SSL)
-	message(STATUS "Building the library with SSL support.")
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
-
-	find_package(OpenSSL REQUIRED)
-	include_directories(${OPENSSL_INCLUDE_DIR})
-	link_libraries(${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES})
-ELSE ()
-	message(STATUS "Building the library without SSL.")
-ENDIF()
 
 message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

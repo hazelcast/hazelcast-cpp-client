@@ -196,7 +196,7 @@ namespace hazelcast {
             #endif
             }
 
-            inline static int32_t readIntB(std::vector<byte> &buffer, unsigned long pos) {
+            inline static int32_t readIntB(const std::vector<byte> &buffer, unsigned long pos) {
                 #ifdef HZ_BIG_ENDIAN
                     return *((int32_t *) (&buffer[0] + pos));
                 #else

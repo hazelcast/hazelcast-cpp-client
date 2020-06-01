@@ -85,7 +85,7 @@ private:
 
 class PrinterCallback : public ExecutionCallback<std::string> {
 public:
-    virtual void onResponse(const std::shared_ptr<std::string> &response) {
+    virtual void onResponse(const boost::optional<std::string> &response) {
         std::cout << "The execution of the task is completed successfully and server returned:" << *response
                   << std::endl;
     }

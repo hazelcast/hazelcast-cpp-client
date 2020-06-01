@@ -38,7 +38,6 @@ namespace hazelcast {
              */
             class HAZELCAST_API UsernamePasswordCredentials {
             public:
-
                 UsernamePasswordCredentials(const std::string &principal, const std::string &password);
 
                 const std::string &getPrincipal() const;

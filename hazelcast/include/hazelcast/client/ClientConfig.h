@@ -15,13 +15,14 @@
  */
 #pragma once
 #include <vector>
-#include <set>
+#include <unordered_set>
+#include <unordered_map>
 #include <memory>
+#include <boost/optional.hpp>
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/SerializationConfig.h"
-#include "hazelcast/client/Credentials.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
@@ -35,6 +36,7 @@
 #include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
 #include "hazelcast/client/internal/config/ConfigUtils.h"
 #include "hazelcast/client/config/LoggerConfig.h"
+#include "hazelcast/client/serialization/serialization.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -51,11 +53,16 @@ namespace hazelcast {
 
         class InitialMembershipEvent;
 
+        namespace connection {
+             class ClientConnectionManagerImpl;
+        };
+
         /**
         * HazelcastClient configuration class.
         */
         class HAZELCAST_API ClientConfig {
             friend class spi::impl::ClientClusterServiceImpl;
+            friend class connection::ClientConnectionManagerImpl;
         public:
 
             /**
@@ -98,7 +105,7 @@ namespace hazelcast {
             *
             * @return vector of addresses
             */
-            std::set<Address> getAddresses();
+            std::unordered_set<Address> getAddresses();
 
             /**
             * The Group Configuration properties like:
@@ -120,12 +127,18 @@ namespace hazelcast {
             *
             *  @return itself ClientConfig
             */
-            ClientConfig &setCredentials(Credentials *credentials);
+            template<typename T>
+            ClientConfig &setCredentials(const T &credential) {
+                serialization::pimpl::SerializationService ss(serializationConfig);
+                credentials = ss.toData<T>(credential);
+                principal = credential.getPrincipal();
+                return *this;
+            }
 
             /**
-            * Can be used instead of GroupConfig in Hazelcast Extensions.
+            * Gets the principal if set by the credentials
             */
-            const Credentials *getCredentials();
+            const boost::optional<std::string> &getPrincipal() const;
 
             /**
             * @deprecated Please use {@link ClientNetworkConfig#setConnectionAttemptLimit(int32_t)}
@@ -228,7 +241,7 @@ namespace hazelcast {
             *
             * @return itself ClientConfig
             */
-            ClientConfig &setSocketInterceptor(SocketInterceptor *socketInterceptor);
+            ClientConfig &setSocketInterceptor(SocketInterceptor *interceptor);
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
@@ -251,7 +264,7 @@ namespace hazelcast {
             *
             * @return registered lifecycleListeners
             */
-            const std::set<LifecycleListener *> &getLifecycleListeners() const;
+            const std::unordered_set<LifecycleListener *> &getLifecycleListeners() const;
 
             /**
             * @deprecated Please use addListener(const std::shared_ptr<MembershipListener> &listener) instead.
@@ -284,7 +297,7 @@ namespace hazelcast {
             *
             * @return registered membershipListeners
             */
-            const std::set<MembershipListener *> &getMembershipListeners() const;
+            const std::unordered_set<MembershipListener *> &getMembershipListeners() const;
 
             /**
              * Returns registered membershipListeners
@@ -292,7 +305,7 @@ namespace hazelcast {
              * @return registered membership listeners. This method returns the same list as the
              * getMembershipListeners method but as a set of shared_ptr.
              */
-            const std::set<std::shared_ptr<MembershipListener> > &getManagedMembershipListeners() const;
+            const std::unordered_set<std::shared_ptr<MembershipListener> > &getManagedMembershipListeners() const;
 
             /**
             * @deprecated Please use addListener(const std::shared_ptr<InitialMembershipListener> &listener)
@@ -363,7 +376,7 @@ namespace hazelcast {
             *
             * @return properties map
             */
-            std::map<std::string, std::string> &getProperties();
+            std::unordered_map<std::string, std::string> &getProperties();
 
             /**
             * Sets the value of a named property
@@ -408,20 +421,6 @@ namespace hazelcast {
             }
 
             /**
-             * Helper method to add a new NearCacheConfig
-             *
-             * @param nearCacheConfig {@link com.hazelcast.config.NearCacheConfig} to be added
-             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
-             * @see com.hazelcast.config.NearCacheConfig
-             *
-             * Memory ownership of the config is passed to the client config
-             */
-            ClientConfig &addMixedNearCacheConfig(const std::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig) {
-                nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
-                return *this;
-            }
-
-            /**
              * Gets the {@link NearCacheConfig} configured for the map / cache with name
              *
              * @param name name of the map / cache
@@ -439,8 +438,6 @@ namespace hazelcast {
                 //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
                 return std::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig);
             }
-
-            const std::shared_ptr<mixedtype::config::MixedNearCacheConfig> getMixedNearCacheConfig(const std::string &name);
 
             /**
              * Gets {@link com.hazelcast.client.config.ClientNetworkConfig}
@@ -555,20 +552,21 @@ namespace hazelcast {
 
             impl::RoundRobinLB defaultLoadBalancer;
 
-            std::set<MembershipListener *> membershipListeners;
-            std::set<std::shared_ptr<MembershipListener> > managedMembershipListeners;
+            std::unordered_set<MembershipListener *> membershipListeners;
+            std::unordered_set<std::shared_ptr<MembershipListener> > managedMembershipListeners;
 
-            std::set<LifecycleListener *> lifecycleListeners;
+            std::unordered_set<LifecycleListener *> lifecycleListeners;
 
-            std::map<std::string, std::string> properties;
+            std::unordered_map<std::string, std::string> properties;
 
             bool redoOperation;
 
             SocketInterceptor *socketInterceptor;
 
-            Credentials *credentials;
+            boost::optional<serialization::pimpl::Data> credentials;
+            boost::optional<std::string> principal;
 
-            std::map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
+            std::unordered_map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
 
             util::SynchronizedMap<std::string, config::NearCacheConfigBase> nearCacheConfigMap;
 

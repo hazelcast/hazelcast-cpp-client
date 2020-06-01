@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastAll.h>
-#include <hazelcast/client/serialization/PortableReader.h>
+#include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/serialization/PortableWriter.h>
 
 using namespace hazelcast::client;

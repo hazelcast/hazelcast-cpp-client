@@ -18,7 +18,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 
 #include <mutex>
-#include <set>
+#include <unordered_set>
 #include <vector>
 
 
@@ -92,7 +92,7 @@ namespace hazelcast {
             std::vector<T> toArray() {
                 std::lock_guard<std::mutex> lg(m);
                 std::vector<T> result;
-                for (const typename std::set<T>::value_type &value  : internalSet) {
+                for (const typename std::unordered_set<T>::value_type &value  : internalSet) {
                                 result.push_back(value);
                             }
                 return result;
@@ -104,7 +104,7 @@ namespace hazelcast {
             }
         private:
             std::mutex m;
-            std::set<T> internalSet;
+            std::unordered_set<T> internalSet;
         };
     }
 }

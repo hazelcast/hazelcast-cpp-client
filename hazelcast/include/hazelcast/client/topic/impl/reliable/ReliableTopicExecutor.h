@@ -21,7 +21,6 @@
 #include <stdint.h>
 
 #include "hazelcast/client/Ringbuffer.h"
-#include "hazelcast/client/DataArray.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
@@ -47,10 +46,10 @@ namespace hazelcast {
                             MessageType type;
                             int64_t sequence;
                             int32_t maxCount;
-                            client::ExecutionCallback<DataArray<topic::impl::reliable::ReliableTopicMessage> > *callback;
+                            std::shared_ptr<ExecutionCallback<ringbuffer::ReadResultSet>> callback;
                         };
 
-                        ReliableTopicExecutor(Ringbuffer <ReliableTopicMessage> &rb, util::ILogger &logger);
+                        ReliableTopicExecutor(std::shared_ptr<Ringbuffer> rb, util::ILogger &logger);
 
                         virtual ~ReliableTopicExecutor();
 
@@ -59,27 +58,27 @@ namespace hazelcast {
                          */
                         void start();
 
-                        void stop();
+                        bool stop();
 
-                        void execute(const Message &m);
+                        void execute(Message m);
 
                     private:
                         class Task {
                         public:
-                            Task(Ringbuffer <ReliableTopicMessage> &rb, util::BlockingConcurrentQueue<Message> &q,
+                            Task(std::shared_ptr<Ringbuffer> rb, util::BlockingConcurrentQueue<Message> &q,
                                  util::AtomicBoolean &shutdown);
 
                             virtual void run();
 
-                            virtual const std::string getName() const;
+                            virtual std::string getName() const;
 
                         private:
-                            Ringbuffer <ReliableTopicMessage> &rb;
+                            std::shared_ptr<Ringbuffer> rb;
                             util::BlockingConcurrentQueue<Message> &q;
                             util::AtomicBoolean &shutdown;
                         };
 
-                        Ringbuffer <ReliableTopicMessage> &ringbuffer;
+                        std::shared_ptr<Ringbuffer> ringbuffer;
                         std::thread runnerThread;
                         util::BlockingConcurrentQueue<Message> q;
                         util::AtomicBoolean shutdown;

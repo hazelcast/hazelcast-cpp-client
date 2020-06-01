@@ -20,7 +20,7 @@
 
 #pragma once
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <memory>
 
 #include "hazelcast/client/Member.h"
@@ -44,7 +44,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API InitialMembershipEvent {
         public:
-            InitialMembershipEvent(Cluster &cluster, const std::set<Member> &members);
+            InitialMembershipEvent(Cluster &cluster, const std::unordered_set<Member> &members);
 
             /**
              * Returns an immutable set of ordered members at the moment this InitialMembershipListener is

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <stdint.h>
 #include <memory>
 #include <cassert>
@@ -25,14 +26,13 @@
 #include "hazelcast/client/internal/eviction/EvictionChecker.h"
 #include "hazelcast/client/internal/eviction/EvictionStrategy.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyEvaluatorProvider.h"
 #include "hazelcast/client/internal/eviction/EvictionStrategyProvider.h"
 #include "hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h"
 #include "hazelcast/client/internal/eviction/EvictionListener.h"
 #include "hazelcast/client/internal/nearcache/impl/store/BaseHeapNearCacheRecordStore.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/monitor/NearCacheStats.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -54,7 +54,7 @@ namespace hazelcast {
                                     : nearCacheConfig(cacheConfig),
                                       timeToLiveMillis(cacheConfig.getTimeToLiveSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       maxIdleMillis(cacheConfig.getMaxIdleSeconds() * MILLI_SECONDS_IN_A_SECOND),
-                                      serializationService(ss) {
+                                      serializationService(ss), nearCacheStats(new monitor::impl::NearCacheStatsImpl) {
                                 const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = cacheConfig.getEvictionConfig();
                                 if (NULL != evictionConfig.get()) {
                                     evictionPolicyType = evictionConfig->getEvictionPolicyType();
@@ -92,11 +92,11 @@ namespace hazelcast {
                             virtual void onEvict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
                                                  bool wasExpired) {
                                 if (wasExpired) {
-                                    nearCacheStats.incrementExpirations();
+                                    nearCacheStats->incrementExpirations();
                                 } else {
-                                    nearCacheStats.incrementEvictions();
+                                    nearCacheStats->incrementEvictions();
                                 }
-                                nearCacheStats.decrementOwnedEntryCount();
+                                nearCacheStats->decrementOwnedEntryCount();
                             }
 
                             //@Override
@@ -114,12 +114,12 @@ namespace hazelcast {
                                             return std::shared_ptr<V>();
                                         }
                                         onRecordAccess(record);
-                                        nearCacheStats.incrementHits();
+                                        nearCacheStats->incrementHits();
                                         value = recordToValue(record.get());
                                         onGet(key, value, record);
                                         return value;
                                     } else {
-                                        nearCacheStats.incrementMisses();
+                                        nearCacheStats->incrementMisses();
                                         return std::shared_ptr<V>();
                                     }
                                 } catch (exception::IException &error) {
@@ -134,11 +134,13 @@ namespace hazelcast {
                                 putInternal<V>(key, value);
                             }
 
+/*
                             //@Override
                             void put(const std::shared_ptr<KS> &key,
                                      const std::shared_ptr<serialization::pimpl::Data> &value) {
                                 putInternal<serialization::pimpl::Data>(key, value);
                             }
+*/
 
                             //@Override
                             bool invalidate(const std::shared_ptr<KS> &key) {
@@ -150,12 +152,12 @@ namespace hazelcast {
                                     record = removeRecord(key);
                                     if (record.get() != NULL) {
                                         removed = true;
-                                        nearCacheStats.decrementOwnedEntryCount();
-                                        nearCacheStats.decrementOwnedEntryMemoryCost(
+                                        nearCacheStats->decrementOwnedEntryCount();
+                                        nearCacheStats->decrementOwnedEntryMemoryCost(
                                                 getTotalStorageMemoryCost(key.get(), record.get()));
-                                        nearCacheStats.incrementInvalidations();
+                                        nearCacheStats->incrementInvalidations();
                                     }
-                                    nearCacheStats.incrementInvalidationRequests();
+                                    nearCacheStats->incrementInvalidationRequests();
                                     onRemove(key, record, removed);
                                     return record.get() != NULL;
                                 } catch (exception::IException &error) {
@@ -169,8 +171,8 @@ namespace hazelcast {
                                 checkAvailable();
 
                                 clearRecords();
-                                nearCacheStats.setOwnedEntryCount(0);
-                                nearCacheStats.setOwnedEntryMemoryCost(0L);
+                                nearCacheStats->setOwnedEntryCount(0);
+                                nearCacheStats->setOwnedEntryMemoryCost(0L);
                             }
 
                             //@Override
@@ -178,28 +180,25 @@ namespace hazelcast {
                                 checkAvailable();
 
                                 destroyStore();
-                                nearCacheStats.setOwnedEntryCount(0);
-                                nearCacheStats.setOwnedEntryMemoryCost(0L);
+                                nearCacheStats->setOwnedEntryCount(0);
+                                nearCacheStats->setOwnedEntryMemoryCost(0L);
                             }
 
                             //@Override
                             int size() const {
                                 checkAvailable();
-
                                 return (int) records->size();
                             }
 
                             //@Override
-                            virtual monitor::NearCacheStats &getNearCacheStats() {
+                            virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const {
                                 checkAvailable();
-
                                 return nearCacheStats;
                             }
 
                             //@Override
                             void doEvictionIfRequired() {
                                 checkAvailable();
-
                                 if (isEvictionEnabled()) {
                                     evictionStrategy->evict(records.get(), evictionPolicyEvaluator.get(),
                                                             evictionChecker.get(), this);
@@ -217,13 +216,13 @@ namespace hazelcast {
                         protected:
                             virtual std::unique_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
                                     const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
-                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const client::config::NearCacheConfig<K, V> &) {
                                 assert(0);
                                 return std::unique_ptr<eviction::MaxSizeChecker>();
                             }
 
                             virtual std::unique_ptr<NCRM> createNearCacheRecordMap(
-                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const client::config::NearCacheConfig<K, V> &) {
                                 assert(0);
                                 return std::unique_ptr<NCRM>();
                             }
@@ -241,11 +240,13 @@ namespace hazelcast {
                                 return std::unique_ptr<R>();
                             }
 
+/*
                             virtual std::unique_ptr<R> valueToRecord(
                                     const std::shared_ptr<serialization::pimpl::Data> &value) {
                                 assert(0);
                                 return std::unique_ptr<R>();
                             }
+*/
 
                             virtual std::shared_ptr<V> recordToValue(const R *record) {
                                 assert(0);
@@ -293,7 +294,7 @@ namespace hazelcast {
                             }
 
                             std::unique_ptr<eviction::EvictionChecker> createEvictionChecker(
-                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const client::config::NearCacheConfig<K, V> &cacheConfig) {
                                 return std::unique_ptr<eviction::EvictionChecker>(
                                         new MaxSizeEvictionChecker(maxSizeChecker.get()));
                             }
@@ -312,30 +313,34 @@ namespace hazelcast {
                                 }
                             }
 
+/*
                             std::shared_ptr<serialization::pimpl::Data> valueToData(
                                     std::shared_ptr<serialization::pimpl::Data> &value) {
                                 return value;
                             }
+*/
 
                             std::shared_ptr<V> dataToValue(
                                     const std::shared_ptr<serialization::pimpl::Data> &data, const TypedData *dummy) {
-                                return std::shared_ptr<V>(new TypedData(data, serializationService));
+                                return std::shared_ptr<V>(new TypedData(*data, serializationService));
                             }
 
                             std::shared_ptr<V> dataToValue(
                                     const std::shared_ptr<serialization::pimpl::Data> &data, void *dummy) {
                                 if (data.get() != NULL) {
-                                    std::unique_ptr<V> value = serializationService.toObject<V>(data.get());
-                                    return std::shared_ptr<V>(std::move(value));
+                                    auto value = serializationService.toObject<V>(data.get());
+                                    return std::shared_ptr<V>(new V(std::move(value).value()));
                                 } else {
                                     return std::shared_ptr<V>();
                                 }
                             }
 
+/*
                             const std::shared_ptr<serialization::pimpl::Data> toData(
                                     const std::shared_ptr<serialization::pimpl::Data> &obj) {
                                 return obj;
                             }
+*/
 
                             const std::shared_ptr<serialization::pimpl::Data> toData(
                                     const std::shared_ptr<V> &obj) {
@@ -346,6 +351,7 @@ namespace hazelcast {
                                 }
                             }
 
+/*
                             std::shared_ptr<V> toValue(std::shared_ptr<serialization::pimpl::Data> &obj) {
                                 if (obj.get() == NULL) {
                                     return std::shared_ptr<V>();
@@ -353,6 +359,7 @@ namespace hazelcast {
                                     return dataToValue(obj, (V *)NULL);
                                 }
                             }
+*/
 
                             std::shared_ptr<V> toValue(std::shared_ptr<V> &obj) {
                                 return obj;
@@ -393,21 +400,25 @@ namespace hazelcast {
                                        const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord) {
                             }
 
+/*
                             void onPut(const std::shared_ptr<KS> &key,
                                        const std::shared_ptr<serialization::pimpl::Data> &value,
                                        const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord) {
                             }
+*/
 
                             void onPutError(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
                                             const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord,
                                             const exception::IException &error) {
                             }
 
+/*
                             void onPutError(const std::shared_ptr<KS> &key,
                                             const std::shared_ptr<serialization::pimpl::Data> &value,
                                             const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord,
                                             const exception::IException &error) {
                             }
+*/
 
                             void onRemove(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
                                           bool removed) {
@@ -418,7 +429,7 @@ namespace hazelcast {
                             }
 
                             void onExpire(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record) {
-                                nearCacheStats.incrementExpirations();
+                                nearCacheStats->incrementExpirations();
                             }
 
                             bool isEvictionEnabled() {
@@ -442,7 +453,7 @@ namespace hazelcast {
                             const int64_t timeToLiveMillis;
                             const int64_t maxIdleMillis;
                             serialization::pimpl::SerializationService &serializationService;
-                            monitor::impl::NearCacheStatsImpl nearCacheStats;
+                            std::shared_ptr<monitor::impl::NearCacheStatsImpl> nearCacheStats;
 
                             std::unique_ptr<eviction::MaxSizeChecker> maxSizeChecker;
                             std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > evictionPolicyEvaluator;
@@ -488,7 +499,7 @@ namespace hazelcast {
                                     onRecordCreate(key, record);
                                     oldRecord = putRecord(key, record);
                                     if (oldRecord.get() == NULL) {
-                                        nearCacheStats.incrementOwnedEntryCount();
+                                        nearCacheStats->incrementOwnedEntryCount();
                                     }
                                     onPut(key, value, record, oldRecord);
                                 } catch (exception::IException &error) {
@@ -509,5 +520,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 

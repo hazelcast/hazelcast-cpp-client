@@ -23,7 +23,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/AtomicBoolean.h"
 
-#include <set>
+#include <unordered_set>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -49,7 +49,7 @@ namespace hazelcast {
             class HAZELCAST_API LifecycleService {
             public:
 
-                LifecycleService(ClientContext &clientContext, const std::set<LifecycleListener *> &lifecycleListeners,
+                LifecycleService(ClientContext &clientContext, const std::unordered_set<LifecycleListener *> &lifecycleListeners,
                                  LoadBalancer *const loadBalancer, Cluster &cluster);
 
                 virtual ~LifecycleService();
@@ -68,7 +68,7 @@ namespace hazelcast {
 
             private:
                 ClientContext &clientContext;
-                std::set<LifecycleListener *> listeners;
+                std::unordered_set<LifecycleListener *> listeners;
                 std::mutex listenerLock;
                 util::AtomicBoolean active;
                 LoadBalancer *loadBalancer;

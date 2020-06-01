@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 30/09/14.
-//
 
 #pragma once
+
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
 
@@ -25,55 +23,77 @@ namespace hazelcast {
     namespace client {
         namespace proxy {
             class HAZELCAST_API IListImpl : public ProxyImpl {
+            public:
+                /**
+                * Removes the specified item listener.
+                * Returns false if the specified listener is not added before.
+                *
+                * @param registrationId Id of listener registration.
+                *
+                * @return true if registration is removed, false otherwise
+                */
+                boost::future<bool> removeItemListener(const std::string& registrationId);
+
+                /**
+                *
+                * @return size of the distributed list
+                */
+                boost::future<int32_t> size();
+
+                /**
+                *
+                * @return true if empty
+                */
+                boost::future<bool> isEmpty();
+
+                /**
+                * Removes all elements from list.
+                */
+                boost::future<void> clear();
             protected:
                 IListImpl(const std::string& instanceName, spi::ClientContext *context);
 
-                std::string addItemListener(impl::BaseEventHandler *entryEventHandler, bool includeValue);
+                template<typename Listener>
+                boost::future<std::string>
+                addItemListener(std::unique_ptr<impl::ItemEventHandler<Listener, protocol::codec::ListAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
+                    return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
+                }
 
-                bool removeItemListener(const std::string& registrationId);
+                boost::future<bool> contains(const serialization::pimpl::Data& element);
 
-                int size();
+                boost::future<std::vector<serialization::pimpl::Data>> toArrayData();
 
-                bool isEmpty();
+                boost::future<bool> add(const serialization::pimpl::Data& element);
 
-                bool contains(const serialization::pimpl::Data& element);
+                boost::future<bool> remove(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data> toArrayData();
+                boost::future<bool> containsAllData(const std::vector<serialization::pimpl::Data>& elements);
 
-                bool add(const serialization::pimpl::Data& element);
+                boost::future<bool> addAllData(const std::vector<serialization::pimpl::Data>& elements);
 
-                bool remove(const serialization::pimpl::Data& element);
+                boost::future<bool> addAllData(int32_t index, const std::vector<serialization::pimpl::Data>& elements);
 
-                bool containsAll(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> removeAllData(const std::vector<serialization::pimpl::Data>& elements);
 
-                bool addAll(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> retainAllData(const std::vector<serialization::pimpl::Data>& elements);
+                
+                boost::future<std::unique_ptr<serialization::pimpl::Data>> getData(int32_t index);
 
-                bool addAll(int index, const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<std::unique_ptr<serialization::pimpl::Data>> setData(int32_t index, const serialization::pimpl::Data& element);
 
-                bool removeAll(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<void> add(int32_t index, const serialization::pimpl::Data& element);
 
-                bool retainAll(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<std::unique_ptr<serialization::pimpl::Data>> removeData(int32_t index);
 
-                void clear();
+                boost::future<int32_t> indexOf(const serialization::pimpl::Data& element);
 
-                std::unique_ptr<serialization::pimpl::Data> getData(int index);
+                boost::future<int32_t> lastIndexOf(const serialization::pimpl::Data& element);
 
-                std::unique_ptr<serialization::pimpl::Data> setData(int index, const serialization::pimpl::Data& element);
-
-                void add(int index, const serialization::pimpl::Data& element);
-
-                std::unique_ptr<serialization::pimpl::Data> removeData(int index);
-
-                int indexOf(const serialization::pimpl::Data& element);
-
-                int lastIndexOf(const serialization::pimpl::Data& element);
-
-                std::vector<serialization::pimpl::Data> subListData(int fromIndex, int toIndex);
-
+                boost::future<std::vector<serialization::pimpl::Data>> subListData(int32_t fromIndex, int32_t toIndex);
             private:
                 class ListListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    ListListenerMessageCodec(const std::string &name, bool includeValue);
+                    ListListenerMessageCodec(std::string name, bool includeValue);
 
                     virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 
@@ -91,7 +111,7 @@ namespace hazelcast {
 
                 int partitionId;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
+                std::unique_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
         }
     }

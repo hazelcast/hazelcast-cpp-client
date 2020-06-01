@@ -18,7 +18,7 @@
 //
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/PortableWriter.h>
-#include <hazelcast/client/serialization/PortableReader.h>
+#include <hazelcast/client/serialization/serialization.h>
 
 class Person : public hazelcast::client::serialization::Portable {
 public:

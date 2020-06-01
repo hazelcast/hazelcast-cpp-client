@@ -72,7 +72,7 @@ public:
                     map.put(key, out.str());
                     ++putCount;
                 } else if (operation < 80) {
-                    map.values(query::BetweenPredicate<int>(query::QueryConstants::getValueAttributeName(), 1, 10));
+                    map.values(query::BetweenPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1, 10));
                     ++valuesCount;
                 } else {
                     UpdateEntryProcessor processor(out.str());

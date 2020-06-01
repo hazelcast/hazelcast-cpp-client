@@ -13,41 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 6/24/13.
-
 #pragma once
+
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/ItemEvent.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-
-            template<typename E, typename BaseType>
+            template<typename Listener, typename BaseType>
             class ItemEventHandler : public BaseType {
             public:
                 ItemEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                  serialization::pimpl::SerializationService &serializationService,
-                                 ItemListener<E> &listener, bool includeValue)
+                                 Listener &&listener, bool includeValue)
                         : instanceName(instanceName), clusterService(clusterService),
-                          serializationService(serializationService), listener(listener), includeValue(includeValue) {
-
-                };
+                          serializationService(serializationService), listener(listener), includeValue(includeValue) {};
 
                 virtual void handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
                                         const int32_t &eventType) {
-                    std::shared_ptr<E> obj;
+                    TypedData val;
                     if (includeValue) {
-                        obj = serializationService.toObject<E>(*item);
+                        val = TypedData(std::move(*item), serializationService);
                     }
-                    std::shared_ptr<Member> member = clusterService.getMember(uuid);
-                    ItemEventType type((ItemEventType::Type) eventType);
-                    ItemEvent<E> itemEvent(instanceName, type, *obj, *member);
+                    auto member = clusterService.getMember(uuid);
+                    ItemEventType type(static_cast<ItemEventType>(eventType));
+                    ItemEvent itemEvent(instanceName, type, std::move(val), std::move(member).value());
                     if (type == ItemEventType::ADDED) {
                         listener.itemAdded(itemEvent);
                     } else if (type == ItemEventType::REMOVED) {
@@ -59,44 +54,10 @@ namespace hazelcast {
                 const std::string &instanceName;
                 spi::ClientClusterService &clusterService;
                 serialization::pimpl::SerializationService &serializationService;
-                ItemListener<E> &listener;
+                Listener listener;
                 bool includeValue;
             };
         }
-
-        namespace mixedtype {
-            namespace impl {
-                template<typename BaseType>
-                class MixedItemEventHandler : public BaseType {
-                public:
-                    MixedItemEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
-                                          serialization::pimpl::SerializationService &serializationService,
-                                          MixedItemListener &listener)
-                            : instanceName(instanceName), clusterService(clusterService),
-                              serializationService(serializationService), listener(listener) {
-                    }
-
-                    virtual void handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
-                                            const int32_t &eventType) {
-                        std::shared_ptr<Member> member = clusterService.getMember(uuid);
-                        ItemEventType type((ItemEventType::Type) eventType);
-                        ItemEvent<TypedData> itemEvent(instanceName, type, TypedData(item, serializationService), *member);
-                        if (type == ItemEventType::ADDED) {
-                            listener.itemAdded(itemEvent);
-                        } else if (type == ItemEventType::REMOVED) {
-                            listener.itemRemoved(itemEvent);
-                        }
-                    }
-
-                private:
-                    const std::string &instanceName;
-                    spi::ClientClusterService &clusterService;
-                    serialization::pimpl::SerializationService &serializationService;
-                    MixedItemListener &listener;
-                };
-            }
-        }
     }
 }
-
 

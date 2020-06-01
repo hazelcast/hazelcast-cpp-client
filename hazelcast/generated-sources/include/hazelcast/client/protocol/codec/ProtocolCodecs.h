@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/protocol/ResponseMessageConst.h"
@@ -11207,7 +11207,7 @@ namespace hazelcast {
 
 
                         virtual void
-                        handleTopicEventV10(const serialization::pimpl::Data &item, const int64_t &publishTime,
+                        handleTopicEventV10(serialization::pimpl::Data &&item, const int64_t &publishTime,
                                             const std::string &uuid) = 0;
 
                     };

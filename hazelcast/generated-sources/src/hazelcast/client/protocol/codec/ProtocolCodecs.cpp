@@ -9308,8 +9308,7 @@ namespace hazelcast {
 
                             std::string uuid = clientMessage->get<std::string>();
 
-
-                            handleTopicEventV10(item, publishTime, uuid);
+                            handleTopicEventV10(std::move(item), publishTime, uuid);
                             break;
                         }
                         default:

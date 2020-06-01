@@ -258,9 +258,5 @@ https://hazelcast.org/documentation/.
         <capacity>10</capacity>
     </ringbuffer>
 
-    <ringbuffer name="MixedRingbufferTest*">
-        <capacity>10</capacity>
-    </ringbuffer>
-
     <services enable-defaults="true"/>
 </hazelcast>

@@ -16,7 +16,7 @@
 #pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include <memory>
-#include <map>
+#include <unordered_map>
 
 namespace hazelcast {
     namespace client {

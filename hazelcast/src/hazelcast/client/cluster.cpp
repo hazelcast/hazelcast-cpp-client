@@ -29,13 +29,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <functional>
 
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/Member.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/MembershipEvent.h"
 #include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
@@ -85,7 +86,7 @@ namespace hazelcast {
         }
 
         Member::Member(const Address &address, const std::string &uuid, bool lite,
-                       const std::map<std::string, std::string> &attr) :
+                       const std::unordered_map<std::string, std::string> &attr) :
                 address(address), uuid(uuid), liteMember(lite), attributes(attr) {
         }
 
@@ -111,7 +112,7 @@ namespace hazelcast {
             return liteMember;
         }
 
-        const std::map<std::string, std::string> &Member::getAttributes() const {
+        const std::unordered_map<std::string, std::string> &Member::getAttributes() const {
             return attributes;
         }
 
@@ -127,7 +128,7 @@ namespace hazelcast {
         }
 
         const std::string *Member::getAttribute(const std::string &key) const {
-            std::map<std::string, std::string>::const_iterator it = attributes.find(key);
+            std::unordered_map<std::string, std::string>::const_iterator it = attributes.find(key);
             if (attributes.end() != it) {
                 return &(it->second);
             } else {
@@ -491,7 +492,7 @@ namespace hazelcast {
 }
 
 namespace std {
-    std::size_t hash<hazelcast::client::Member>::operator()(const hazelcast::client::Member &k) const {
+    std::size_t hash<hazelcast::client::Member>::operator()(const hazelcast::client::Member &k) const noexcept {
         return std::hash<std::string>()(k.getUuid());
     }
 }

@@ -30,6 +30,8 @@
  * limitations under the License.
  */
 
+#include <cstdlib>
+
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
@@ -38,18 +40,15 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/AuthenticationStatus.h"
 #include "hazelcast/client/exception/AuthenticationException.h"
-#include "hazelcast/client/exception/AuthenticationException.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/connection/ConnectionListener.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/SocketInterceptor.h"
@@ -58,27 +57,17 @@
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/config/SSLConfig.h"
-#include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
     namespace client {
-        SocketInterceptor::~SocketInterceptor() {
-        }
+        SocketInterceptor::~SocketInterceptor() {}
 
         namespace connection {
             int ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC = 2;
@@ -98,7 +87,7 @@ namespace hazelcast {
                     connectionTimeoutMillis = std::chrono::milliseconds(connTimeout);
                 }
 
-                credentials = client.getClientConfig().getCredentials();
+                credentials = client.getClientConfig().credentials;
 
                 connectionStrategy = initializeStrategy(client);
 
@@ -391,14 +380,14 @@ namespace hazelcast {
                                                                      serialization::pimpl::SerializationService &ss,
                                                                      const protocol::Principal *p) {
                 byte serializationVersion = ss.getVersion();
-                const std::string *uuid = NULL;
-                const std::string *ownerUuid = NULL;
+                const std::string *uuid = nullptr;
+                const std::string *ownerUuid = nullptr;
                 if (p != NULL) {
                     uuid = p->getUuid();
                     ownerUuid = p->getOwnerUuid();
                 }
                 std::unique_ptr<protocol::ClientMessage> clientMessage;
-                if (credentials == NULL) {
+                if (!credentials) {
                     // TODO: Change UsernamePasswordCredentials to implement Credentials interface so that we can just
                     // upcast the credentials as done at Java
                     GroupConfig &groupConfig = client.getClientConfig().getGroupConfig();
@@ -407,8 +396,7 @@ namespace hazelcast {
                             cr.getPrincipal(), cr.getPassword(), uuid, ownerUuid, asOwner, protocol::ClientTypes::CPP,
                             serializationVersion, HAZELCAST_VERSION);
                 } else {
-                    serialization::pimpl::Data data = ss.toData<Credentials>(credentials);
-                    clientMessage = protocol::codec::ClientAuthenticationCustomCodec::encodeRequest(data,
+                    clientMessage = protocol::codec::ClientAuthenticationCustomCodec::encodeRequest(credentials.value(),
                                                                                                     uuid,
                                                                                                     ownerUuid,
                                                                                                     asOwner,
@@ -570,13 +558,13 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::connectToClusterInternal() {
                 int attempt = 0;
-                std::set<Address> triedAddresses;
+                std::unordered_set<Address> triedAddresses;
 
                 while (attempt < connectionAttemptLimit) {
                     attempt++;
                     int64_t nextTry = util::currentTimeMillis() + connectionAttemptPeriod;
 
-                    std::set<Address> addresses = getPossibleMemberAddresses();
+                    std::unordered_set<Address> addresses = getPossibleMemberAddresses();
                     for (const Address &address : addresses) {
                         if (!client.getLifecycleService().isRunning()) {
                             BOOST_THROW_EXCEPTION(exception::IllegalStateException(
@@ -612,7 +600,7 @@ namespace hazelcast {
                 }
                 std::ostringstream out;
                 out << "Unable to connect to any address! The following addresses were tried: { ";
-                for (const std::set<Address>::value_type &address : triedAddresses) {
+                for (const std::unordered_set<Address>::value_type &address : triedAddresses) {
                     out << address << " , ";
                 }
                 out << "}";
@@ -620,8 +608,8 @@ namespace hazelcast {
                         exception::IllegalStateException("ConnectionManager::connectToClusterInternal", out.str()));
             }
 
-            std::set<Address> ClientConnectionManagerImpl::getPossibleMemberAddresses() {
-                std::set<Address> addresses;
+            std::unordered_set<Address> ClientConnectionManagerImpl::getPossibleMemberAddresses() {
+                std::unordered_set<Address> addresses;
 
                 std::vector<Member> memberList = client.getClientClusterService().getMemberList();
                 std::vector<Address> memberAddresses;
@@ -635,7 +623,7 @@ namespace hazelcast {
 
                 addresses.insert(memberAddresses.begin(), memberAddresses.end());
 
-                std::set<Address> providerAddressesSet;
+                std::unordered_set<Address> providerAddressesSet;
                 for (std::shared_ptr<AddressProvider> &addressProvider : addressProviders) {
                     std::vector<Address> addrList = addressProvider->loadAddresses();
                     providerAddressesSet.insert(addrList.begin(), addrList.end());
@@ -751,14 +739,14 @@ namespace hazelcast {
                         connection->setRemoteEndpoint(std::shared_ptr<Address>(std::move(result->address)));
                         if (asOwner) {
                             connection->setIsAuthenticatedAsOwner();
-                            std::shared_ptr<protocol::Principal> principal(
+                            std::shared_ptr<protocol::Principal> p(
                                     new protocol::Principal(result->uuid, result->ownerUuid));
-                            connectionManager->setPrincipal(principal);
+                            connectionManager->setPrincipal(p);
                             //setting owner connection is moved to here(before onAuthenticated/before connected event)
                             //so that invocations that requires owner connection on this connection go through
                             connectionManager->setOwnerConnectionAddress(connection->getRemoteEndpoint());
                             connectionManager->logger.info("Setting ", *connection, " as owner with principal ",
-                                                           *principal);
+                                                           *p);
                         }
                         connectionManager->onAuthenticated(target, connection);
                         authFuture->onSuccess(connection);
@@ -801,17 +789,17 @@ namespace hazelcast {
                 this->authFuture->onFailure(e);
             }
 
-            void ClientConnectionManagerImpl::AuthCallback::onAuthenticationFailed(const Address &target,
-                                                                                   const std::shared_ptr<Connection> &connection,
+            void ClientConnectionManagerImpl::AuthCallback::onAuthenticationFailed(const Address &targetAddress,
+                                                                                   const std::shared_ptr<Connection> &conn,
                                                                                    std::exception_ptr cause) {
                 try {
                     std::rethrow_exception(cause);
                 } catch (exception::IException &ie) {
                     if (connectionManager->logger.isFinestEnabled()) {
-                        connectionManager->logger.finest("Authentication of ", connection, " failed.", ie);
+                        connectionManager->logger.finest("Authentication of ", conn, " failed.", ie);
                     }
-                    connection->close("", std::current_exception());
-                    connectionManager->connectionsInProgress.remove(target);
+                    conn->close("", std::current_exception());
+                    connectionManager->connectionsInProgress.remove(targetAddress);
                 }
             }
 
@@ -824,12 +812,12 @@ namespace hazelcast {
                       connectionsInProgress(connectionsInProgress), isSet(false) {
             }
 
-            void AuthenticationFuture::onSuccess(const std::shared_ptr<Connection> &connection) {
+            void AuthenticationFuture::onSuccess(const std::shared_ptr<Connection> &conn) {
                 bool expected = false;
                 if (!isSet.compare_exchange_strong(expected, true)) {
                     return;
                 }
-                this->connection = connection;
+                this->connection = conn;
                 countDownLatch->count_down();
             }
 
@@ -1095,7 +1083,7 @@ namespace hazelcast {
 
             void Connection::innerClose() {
                 if (!socket.get()) {
-                    return;;
+                    return;
                 }
 
                 socket->close();
@@ -1188,7 +1176,7 @@ namespace hazelcast {
                 }
 
                 if (now - connection->lastReadTime() > heartbeatIntervalSeconds) {
-                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::encodeRequest();
+                    auto request = protocol::codec::ClientPingCodec::encodeRequest();
                     std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                             client, request, "", connection);
                     clientInvocation->invokeUrgent();
@@ -1467,4 +1455,15 @@ namespace hazelcast {
         }
     }
 }
+
+namespace std {
+    std::size_t hash<std::shared_ptr<hazelcast::client::connection::Connection>>::operator()(
+            const std::shared_ptr<hazelcast::client::connection::Connection> &conn) const noexcept {
+        if (!conn) {
+            return 0;
+        }
+        return std::abs(conn->getConnectionId());
+    }
+}
+
 

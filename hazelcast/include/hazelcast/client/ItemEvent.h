@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 6/21/13.
-
-
 #pragma once
+
 #include "hazelcast/client/Member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -30,40 +27,8 @@ namespace hazelcast {
         /**
         * Type of item event.
         */
-        class HAZELCAST_API ItemEventType {
-        public:
-            /**
-             * Type enum.
-             */
-            enum Type {
-                ADDED = 1, REMOVED = 2
-            };
-
-            /**
-             * type value.
-             */
-            Type value;
-
-            /**
-             * Constructor.
-             */
-            ItemEventType();
-
-            /**
-             * Constructor.
-             */
-            ItemEventType(Type value);
-
-            /**
-             * cast to int.
-             */
-            operator int() const;
-
-            /**
-             * copy function.
-             */
-            void operator = (int i);
-
+        enum struct HAZELCAST_API ItemEventType {
+            ADDED = 1, REMOVED = 2
         };
 
         class HAZELCAST_API ItemEventBase {
@@ -77,7 +42,7 @@ namespace hazelcast {
              *
              * @return the member fired this event.
              */
-            Member getMember() const;
+            const Member &getMember() const;
 
             /**
              * Return the event type
@@ -91,7 +56,7 @@ namespace hazelcast {
              *
              * @return name of the collection.
              */
-            std::string getName() const;
+            const std::string &getName() const;
 
         private:
             std::string name;
@@ -101,32 +66,24 @@ namespace hazelcast {
 
         /**
          *
-         *
-         * @param E type of item.
          * @see Queue#addItemListener
          * @see List#addItemListener
          * @see Set#addItemListener
          */
-        template <typename E>
-        class ItemEvent : public ItemEventBase {
+        class HAZELCAST_API ItemEvent : public ItemEventBase {
         public:
-            /**
-             * constructor
-             */
-            ItemEvent(const std::string &name, ItemEventType eventType, const E &item, const Member &member)
-            : ItemEventBase(name, member, eventType)
-            , item(item) {
-            };
+            ItemEvent(const std::string &name, ItemEventType eventType, TypedData &&item, const Member &member)
+            : ItemEventBase(name, member, eventType), item_(item) {}
 
             /**
              * @returns the item.
              */
-            const E &getItem() const {
-                return item;
-            };
+            const TypedData &getItem() const {
+                return item_;
+            }
 
         private:
-            E item;
+            TypedData item_;
         };
     }
 }
@@ -134,5 +91,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 

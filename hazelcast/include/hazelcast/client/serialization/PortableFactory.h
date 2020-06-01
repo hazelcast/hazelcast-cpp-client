@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/client/serialization/serialization.h"
 
 namespace hazelcast {
     namespace client {

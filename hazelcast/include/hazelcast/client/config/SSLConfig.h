@@ -69,9 +69,9 @@ namespace hazelcast {
                 /**
                  * Enables and disables this configuration.
                  *
-                 * @param enabled true to enable, false to disable
+                 * @param isEnabled true to enable, false to disable
                  */
-                SSLConfig &setEnabled(bool enabled);
+                SSLConfig &setEnabled(bool isEnabled);
 
                 /**
                  * Sets the ssl protocol to be used for this SSL socket.

@@ -165,6 +165,13 @@ namespace hazelcast {
     }
 }
 
+namespace std {
+    template<>
+    struct hash<std::shared_ptr<hazelcast::client::connection::Connection>> {
+        std::size_t operator()(const std::shared_ptr<hazelcast::client::connection::Connection> &conn) const noexcept;
+    };
+}
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif

@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 20/02/14.
-//
-
 #pragma once
+
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 #include <stdint.h>
@@ -32,7 +29,7 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API DataEntryView {
             public:
-                DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, int64_t cost,
+                DataEntryView(serialization::pimpl::Data key, const serialization::pimpl::Data &value, int64_t cost,
                               int64_t creationTime, int64_t expirationTime, int64_t hits, int64_t lastAccessTime,
                               int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version, int64_t evictionCriteriaNumber,
                               int64_t ttl);
@@ -60,7 +57,6 @@ namespace hazelcast {
                 int64_t getEvictionCriteriaNumber() const;
 
                 int64_t getTtl() const;
-
             private:
                 serialization::pimpl::Data key;
                 serialization::pimpl::Data value;

@@ -17,7 +17,6 @@
 #include <string>
 #include <sstream>
 #include <stdint.h>
-
 #include <memory>
 
 #include "hazelcast/client/config/InMemoryFormat.h"
@@ -38,7 +37,7 @@ namespace hazelcast {
              * Contains the configuration for a Near Cache.
              * @BinaryInterface
              */
-            template <typename K, typename V>
+            template<typename K = serialization::pimpl::Data, typename V = serialization::pimpl::Data>
             class NearCacheConfig : public NearCacheConfigBase {
             public:
                 /**
@@ -354,27 +353,6 @@ namespace hazelcast {
             template<typename K, typename V>
             const InMemoryFormat NearCacheConfig<K, V>::DEFAULT_MEMORY_FORMAT = BINARY;
 
-        }
-
-        namespace mixedtype {
-            namespace config {
-                class HAZELCAST_API MixedNearCacheConfig : public client::config::NearCacheConfig<TypedData, TypedData> {
-                public:
-                    MixedNearCacheConfig(const char *cacheName)
-                            : client::config::NearCacheConfig<TypedData, TypedData>(cacheName) {
-                    }
-
-                    virtual MixedNearCacheConfig &setInMemoryFormat(const client::config::InMemoryFormat &inMemoryFormat) {
-                        if (client::config::OBJECT == inMemoryFormat) {
-                            BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(
-                                                          "MixedNearCacheConfig does not allow setting the in memory format different from BINARY."));
-                        }
-
-                        client::config::NearCacheConfig<TypedData, TypedData>::setInMemoryFormat(inMemoryFormat);
-                        return *this;
-                    }
-                };
-            }
         }
     }
 }

@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/7/13.
 
 #pragma once
+
 #include <memory>
 #include <vector>
 #include <string>
@@ -38,122 +37,195 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API DataOutput {
                 public:
-                    DataOutput();
+                    static constexpr const size_t DEFAULT_SIZE = 4 * 1024;
 
-                    virtual ~DataOutput();
+                    DataOutput(bool dontWrite = false);
 
                     /**
                      *
-                     * @return a deep copy of the bytes by constructing a new byte array.
+                     * @return reference to the internal byte buffer.
                      */
-                    std::unique_ptr<std::vector<byte> > toByteArray();
-
-                    void write(const std::vector<byte> &bytes);
-
-                    void writeBoolean(bool b);
-
-                    void writeByte(int32_t i);
-
-                    void writeShort(int32_t i);
-
-                    void writeChar(int32_t i);
-
-                    void writeInt(int32_t i);
-
-                    void writeLong(int64_t l);
-
-                    void writeFloat(float v);
-
-                    void writeDouble(double v);
-
-                    void writeUTF(const std::string *s);
-
-                    void writeBytes(const byte *bytes, size_t len);
-
-                    void writeByteArray(const std::vector<byte> *data);
-
-                    void writeCharArray(const std::vector<char> *bytes);
-
-                    void writeBooleanArray(const std::vector<bool> *bytes);
-
-                    void writeShortArray(const std::vector<int16_t> *data);
-
-                    void writeIntArray(const std::vector<int32_t> *data);
-
-                    void writeLongArray(const std::vector<int64_t> *data);
-
-                    void writeFloatArray(const std::vector<float> *data);
-
-                    void writeDoubleArray(const std::vector<double> *data);
-
-                    void writeUTFArray(const std::vector<std::string> *data);
-
-                    void writeByte(int index, int32_t i);
-
-                    void writeInt(int index, int32_t v);
-
-                    void writeZeroBytes(int numberOfBytes);
-
-                    size_t position();
-
-                    void position(size_t newPos);
-
-                    static size_t const DEFAULT_SIZE;
-
-                private:
-                    std::unique_ptr< std::vector<byte> > outputStream;
-
-                    DataOutput(const DataOutput &rhs);
-
-                    DataOutput &operator = (const DataOutput &rhs);
-
-                    int getUTF8CharCount(const std::string &str);
-
-                    template <typename T>
-                    void write(const T &value) {
-                        BOOST_THROW_EXCEPTION(
-                                exception::HazelcastSerializationException("DataOutput::write", "Unsupported type"));
+                    inline const std::vector<byte> &toByteArray() const {
+                        return outputStream;
                     }
 
-                    template <typename T>
-                    void writeArray(const std::vector<T> *data) {
-                        int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                        writeInt(len);
+                    /**
+                     *
+                     * @param bytes The bytes to be appended to the current buffer
+                     */
+                    inline void appendBytes(const std::vector<byte> &bytes) {
+                        outputStream.insert(outputStream.end(), bytes.begin(), bytes.end());
+                    }
 
-                        if (len > 0) {
-                            for (int32_t i = 0; i < len; ++i) {
-                                write<T>((*data)[i]);
-                            }
+                    inline void writeZeroBytes(size_t numberOfBytes) {
+                        outputStream.insert(outputStream.end(), numberOfBytes, 0);
+                    }
+
+                    inline size_t position() {
+                        return outputStream.size();
+                    }
+
+                    inline void position(size_t newPos) {
+                        if (isNoWrite) { return; }
+                        if (outputStream.size() < newPos) {
+                            outputStream.resize(newPos, 0);
                         }
                     }
+
+                    /**
+                    * @param value to be written
+                    */
+                    template <typename T>
+                    typename std::enable_if<std::is_same<byte, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<char, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<bool, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<float, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<double, typename std::remove_cv<T>::type>::value, void>::type
+                    inline write(T) { if (isNoWrite) { return; } }
+
+                    template <typename T>
+                    typename std::enable_if<std::is_same<std::string, T>::value, void>::type
+                    inline write(const T *value);
+
+                    template <typename T>
+                    typename std::enable_if<std::is_same<char, T>::value, void>::type
+                    inline write(const T *value);
+
+                    template <typename T>
+                    typename std::enable_if<std::is_same<std::string, T>::value ||
+                                   std::is_same<HazelcastJsonValue, T>::value>::type
+                    inline write(const T &) { if (isNoWrite) { return; }}
+
+                    /**
+                    * @param value to vector of values to be written. Only supported built-in values can be written.
+                    */
+                    template <typename T>
+                    typename std::enable_if<std::is_same<std::vector<byte>, T>::value ||
+                                            std::is_same<std::vector<char>, T>::value ||
+                                            std::is_same<std::vector<bool>, T>::value ||
+                                            std::is_same<std::vector<int16_t>, T>::value ||
+                                            std::is_same<std::vector<int32_t>, T>::value ||
+                                            std::is_same<std::vector<int64_t>, T>::value ||
+                                            std::is_same<std::vector<float>, T>::value ||
+                                            std::is_same<std::vector<double>, T>::value ||
+                                            std::is_same<std::vector<std::string>, T>::value, void>::type
+                    inline write(const T &value);
+
+                    template <typename T>
+                    typename std::enable_if<std::is_same<std::vector<byte>, T>::value ||
+                                            std::is_same<std::vector<char>, T>::value ||
+                                            std::is_same<std::vector<bool>, T>::value ||
+                                            std::is_same<std::vector<int16_t>, T>::value ||
+                                            std::is_same<std::vector<int32_t>, T>::value ||
+                                            std::is_same<std::vector<int64_t>, T>::value ||
+                                            std::is_same<std::vector<float>, T>::value ||
+                                            std::is_same<std::vector<double>, T>::value ||
+                                            std::is_same<std::vector<std::string>, T>::value, void>::type
+                    inline write(const T *value);
+
+                protected:
+                    bool isNoWrite;
+                    std::vector<byte> outputStream;
+
+                    int getUTF8CharCount(const std::string &str);
                 };
 
                 template <>
-                HAZELCAST_API void DataOutput::write(const byte &value);
+                HAZELCAST_API void DataOutput::write(byte value);
 
                 template <>
-                HAZELCAST_API void DataOutput::write(const char &value);
+                HAZELCAST_API void DataOutput::write(char value);
 
                 template <>
-                HAZELCAST_API void DataOutput::write(const bool &value);
+                HAZELCAST_API void DataOutput::write(bool value);
 
                 template <>
-                HAZELCAST_API void DataOutput::write(const int16_t &value);
+                HAZELCAST_API void DataOutput::write(int16_t value);
 
                 template <>
-                HAZELCAST_API void DataOutput::write(const int32_t &value);
+                HAZELCAST_API void DataOutput::write(int32_t value);
 
                 template <>
-                HAZELCAST_API void DataOutput::write(const int64_t &value);
+                HAZELCAST_API void DataOutput::write(int64_t value);
 
                 template <>
-                HAZELCAST_API void DataOutput::write(const float &value);
+                HAZELCAST_API void DataOutput::write(float value);
 
                 template <>
-                HAZELCAST_API void DataOutput::write(const double &value);
+                HAZELCAST_API void DataOutput::write(double value);
 
                 template <>
                 HAZELCAST_API void DataOutput::write(const std::string &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const HazelcastJsonValue &value);
+
+                template <typename T>
+                typename std::enable_if<std::is_same<std::string, T>::value, void>::type
+                DataOutput::write(const T *value) {
+                    if (isNoWrite) { return; }
+                    if (!value) {
+                        write<int32_t>(util::Bits::NULL_ARRAY);
+                        return;
+                    }
+
+                    write(*value);
+                }
+
+                template <typename T>
+                typename std::enable_if<std::is_same<char, T>::value, void>::type
+                DataOutput::write(const T *value) {
+                    if (isNoWrite) { return; }
+                    if (!value) {
+                        write<int32_t>(util::Bits::NULL_ARRAY);
+                        return;
+                    }
+                    write(std::string(value));
+                }
+
+                template<typename T>
+                typename std::enable_if<std::is_same<std::vector<byte>, T>::value ||
+                                        std::is_same<std::vector<char>, T>::value ||
+                                        std::is_same<std::vector<bool>, T>::value ||
+                                        std::is_same<std::vector<int16_t>, T>::value ||
+                                        std::is_same<std::vector<int32_t>, T>::value ||
+                                        std::is_same<std::vector<int64_t>, T>::value ||
+                                        std::is_same<std::vector<float>, T>::value ||
+                                        std::is_same<std::vector<double>, T>::value ||
+                                        std::is_same<std::vector<std::string>, T>::value, void>::type
+                DataOutput::write(const T &value) {
+                    if (isNoWrite) { return; }
+                    int32_t len = (int32_t) value.size();
+                    write<int32_t>(len);
+                    if (len > 0) {
+                        for (auto const &item : value) {
+                            write<typename T::value_type>(item);
+                        }
+                    }
+                }
+
+                template<typename T>
+                typename std::enable_if<std::is_same<std::vector<byte>, T>::value ||
+                                        std::is_same<std::vector<char>, T>::value ||
+                                        std::is_same<std::vector<bool>, T>::value ||
+                                        std::is_same<std::vector<int16_t>, T>::value ||
+                                        std::is_same<std::vector<int32_t>, T>::value ||
+                                        std::is_same<std::vector<int64_t>, T>::value ||
+                                        std::is_same<std::vector<float>, T>::value ||
+                                        std::is_same<std::vector<double>, T>::value ||
+                                        std::is_same<std::vector<std::string>, T>::value, void>::type
+                DataOutput::write(const T *value) {
+                    if (isNoWrite) { return; }
+                    if (!value) {
+                        write<int32_t>(util::Bits::NULL_ARRAY);
+                        return;
+                    }
+
+                    write(*value);
+                }
             }
         }
     }
@@ -162,5 +234,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 

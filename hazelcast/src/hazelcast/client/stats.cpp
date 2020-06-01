@@ -33,7 +33,6 @@
 #include <regex>
 #include <iomanip>
 
-#include "hazelcast/client/Credentials.h"
 #include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -157,7 +156,7 @@ namespace hazelcast {
 
                 void Statistics::sendStats(const std::string &newStats,
                                            const std::shared_ptr<connection::Connection> &ownerConnection) {
-                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ClientStatisticsCodec::encodeRequest(
+                    auto request = protocol::codec::ClientStatisticsCodec::encodeRequest(
                             newStats);
                     try {
                         spi::impl::ClientInvocation::create(clientContext, request, "", ownerConnection)->invoke();
@@ -185,11 +184,10 @@ namespace hazelcast {
 
                     addStat(stats, "clientName", statistics.clientContext.getName());
 
-                    const Credentials *credentials = statistics.clientContext.getClientConfig().getCredentials();
-                    if (credentials != NULL) {
-                        addStat(stats, "credentials.principal", credentials->getPrincipal());
+                    auto principal = statistics.clientContext.getClientConfig().getPrincipal();
+                    if (principal) {
+                        addStat(stats, "credentials.principal", principal.value());
                     }
-
                 }
 
                 void Statistics::PeriodicStatistics::addNearCacheStats(std::ostringstream &stats) {
@@ -200,30 +198,30 @@ namespace hazelcast {
 
                         nearCacheNameWithPrefix << '.';
 
-                        monitor::impl::NearCacheStatsImpl &nearCacheStats = static_cast<monitor::impl::NearCacheStatsImpl &>(nearCache->getNearCacheStats());
+                        auto nearCacheStats = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(nearCache->getNearCacheStats());
 
                         std::string prefix = nearCacheNameWithPrefix.str();
 
-                        addStat(stats, prefix, "creationTime", nearCacheStats.getCreationTime());
-                        addStat(stats, prefix, "evictions", nearCacheStats.getEvictions());
-                        addStat(stats, prefix, "hits", nearCacheStats.getHits());
+                        addStat(stats, prefix, "creationTime", nearCacheStats->getCreationTime());
+                        addStat(stats, prefix, "evictions", nearCacheStats->getEvictions());
+                        addStat(stats, prefix, "hits", nearCacheStats->getHits());
                         addStat(stats, prefix, "lastPersistenceDuration",
-                                nearCacheStats.getLastPersistenceDuration());
+                                nearCacheStats->getLastPersistenceDuration());
                         addStat(stats, prefix, "lastPersistenceKeyCount",
-                                nearCacheStats.getLastPersistenceKeyCount());
+                                nearCacheStats->getLastPersistenceKeyCount());
                         addStat(stats, prefix, "lastPersistenceTime",
-                                nearCacheStats.getLastPersistenceTime());
+                                nearCacheStats->getLastPersistenceTime());
                         addStat(stats, prefix, "lastPersistenceWrittenBytes",
-                                nearCacheStats.getLastPersistenceWrittenBytes());
-                        addStat(stats, prefix, "misses", nearCacheStats.getMisses());
-                        addStat(stats, prefix, "ownedEntryCount", nearCacheStats.getOwnedEntryCount());
-                        addStat(stats, prefix, "expirations", nearCacheStats.getExpirations());
-                        addStat(stats, prefix, "invalidations", nearCacheStats.getInvalidations());
+                                nearCacheStats->getLastPersistenceWrittenBytes());
+                        addStat(stats, prefix, "misses", nearCacheStats->getMisses());
+                        addStat(stats, prefix, "ownedEntryCount", nearCacheStats->getOwnedEntryCount());
+                        addStat(stats, prefix, "expirations", nearCacheStats->getExpirations());
+                        addStat(stats, prefix, "invalidations", nearCacheStats->getInvalidations());
                         addStat(stats, prefix, "invalidationRequests",
-                                nearCacheStats.getInvalidationRequests());
+                                nearCacheStats->getInvalidationRequests());
                         addStat(stats, prefix, "ownedEntryMemoryCost",
-                                nearCacheStats.getOwnedEntryMemoryCost());
-                        std::string persistenceFailure = nearCacheStats.getLastPersistenceFailure();
+                                nearCacheStats->getOwnedEntryMemoryCost());
+                        std::string persistenceFailure = nearCacheStats->getLastPersistenceFailure();
                         if (!persistenceFailure.empty()) {
                             addStat(stats, prefix, "lastPersistenceFailure", persistenceFailure);
                         }
@@ -262,14 +260,12 @@ namespace hazelcast {
             const int64_t LocalInstanceStats::STAT_NOT_AVAILABLE = -99L;
 
             namespace impl {
-                LocalMapStatsImpl::LocalMapStatsImpl() : nearCacheStats(NULL) {}
+                LocalMapStatsImpl::LocalMapStatsImpl() {}
 
-                NearCacheStats *LocalMapStatsImpl::getNearCacheStats() {
+                LocalMapStatsImpl::LocalMapStatsImpl(const std::shared_ptr<monitor::NearCacheStats> &s) : nearCacheStats(s) {}
+
+                std::shared_ptr<monitor::NearCacheStats> LocalMapStatsImpl::getNearCacheStats() const {
                     return nearCacheStats;
-                }
-
-                void LocalMapStatsImpl::setNearCacheStats(NearCacheStats &stats) {
-                    this->nearCacheStats = &stats;
                 }
 
                 NearCacheStatsImpl::NearCacheStatsImpl() : creationTime(util::currentTimeMillis()),

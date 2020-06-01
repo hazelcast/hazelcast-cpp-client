@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/adaptor/RawPointerMap.h>
 
 using namespace hazelcast::client;
 
@@ -66,7 +65,7 @@ int32_t getHazelcastTypeId(const Derived2Custom *) {
     return 5;
 }
 
-class BaseCustomSerializer : public serialization::Serializer<BaseCustom> {
+class BaseCustomSerializer : public serialization::hz_serializer<BaseCustom> {
 public:
     virtual int32_t getHazelcastTypeId() const {
         return 3;

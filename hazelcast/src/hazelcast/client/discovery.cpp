@@ -72,7 +72,7 @@ namespace hazelcast {
                 EC2RequestSigner::~EC2RequestSigner() {
                 }
 
-                std::string EC2RequestSigner::sign(const std::map<std::string, std::string> &attributes) {
+                std::string EC2RequestSigner::sign(const std::unordered_map<std::string, std::string> &attributes) {
                     std::string canonicalRequest = getCanonicalizedRequest(attributes);
                     std::string stringToSign = createStringToSign(canonicalRequest);
                     std::vector<unsigned char> signingKey = deriveSigningKey();
@@ -88,7 +88,7 @@ namespace hazelcast {
                 }
 
                 std::string EC2RequestSigner::getCanonicalizedQueryString(
-                        const std::map<std::string, std::string> &attributes) const {
+                        const std::unordered_map<std::string, std::string> &attributes) const {
                     std::vector<std::string> components = getListOfEntries(attributes);
                     std::sort(components.begin(), components.end());
                     return getCanonicalizedQueryString(components);
@@ -96,7 +96,7 @@ namespace hazelcast {
 
                 /* Task 1 */
                 std::string EC2RequestSigner::getCanonicalizedRequest(
-                        const std::map<std::string, std::string> &attributes) const {
+                        const std::unordered_map<std::string, std::string> &attributes) const {
                     std::ostringstream out;
                     out << impl::Constants::GET << NEW_LINE
                         << '/' << NEW_LINE
@@ -125,9 +125,9 @@ namespace hazelcast {
                 }
 
                 std::vector<std::string> EC2RequestSigner::getListOfEntries(
-                        const std::map<std::string, std::string> &entries) const {
+                        const std::unordered_map<std::string, std::string> &entries) const {
                     std::vector<std::string> components;
-                    for (std::map<std::string, std::string>::const_iterator it = entries.begin();
+                    for (std::unordered_map<std::string, std::string>::const_iterator it = entries.begin();
                          it != entries.end(); ++it) {
                         addComponents(components, entries, it->first);
                     }
@@ -135,11 +135,11 @@ namespace hazelcast {
                 }
 
                 void EC2RequestSigner::addComponents(std::vector<std::string> &components,
-                                                     const std::map<std::string, std::string> &attributes,
+                                                     const std::unordered_map<std::string, std::string> &attributes,
                                                      const std::string &key) const {
                     std::ostringstream out;
                     out << utility::AwsURLEncoder::urlEncode(key) << '=' << utility::AwsURLEncoder::urlEncode(
-                            (const_cast<std::map<std::string, std::string> &>(attributes))[key]);
+                            (const_cast<std::unordered_map<std::string, std::string> &>(attributes))[key]);
                     components.push_back(out.str());
                 }
 
@@ -316,7 +316,7 @@ namespace hazelcast {
                     filters[out.str()] = value;
                 }
 
-                const std::map<std::string, std::string> &Filter::getFilters() {
+                const std::unordered_map<std::string, std::string> &Filter::getFilters() {
                     return filters;
                 }
 
@@ -352,20 +352,20 @@ namespace hazelcast {
 
                 void AwsAddressTranslator::refresh() {
                     try {
-                        privateToPublic = std::shared_ptr<std::map<std::string, std::string> >(
-                                new std::map<std::string, std::string>(awsClient->getAddresses()));
+                        privateToPublic = std::shared_ptr<std::unordered_map<std::string, std::string> >(
+                                new std::unordered_map<std::string, std::string>(awsClient->getAddresses()));
                     } catch (exception::IException &e) {
                         logger.warning(std::string("AWS addresses failed to load: ") + e.what());
                     }
                 }
 
                 bool AwsAddressTranslator::findFromCache(const Address &address, Address &translatedAddress) {
-                    std::shared_ptr<std::map<std::string, std::string> > mapping = privateToPublic;
+                    std::shared_ptr<std::unordered_map<std::string, std::string> > mapping = privateToPublic;
                     if (mapping.get() == NULL) {
                         return false;
                     }
 
-                    std::map<std::string, std::string>::const_iterator publicAddressIt = mapping->find(
+                    std::unordered_map<std::string, std::string>::const_iterator publicAddressIt = mapping->find(
                             address.getHost());
                     if (publicAddressIt != mapping->end()) {
                         const std::string &publicIp = (*publicAddressIt).second;
@@ -404,7 +404,7 @@ namespace hazelcast {
                 DescribeInstances::~DescribeInstances() {
                 }
 
-                std::map<std::string, std::string> DescribeInstances::execute() {
+                std::unordered_map<std::string, std::string> DescribeInstances::execute() {
                     std::string signature = rs->sign(attributes);
                     attributes["X-Amz-Signature"] = signature;
 
@@ -524,7 +524,7 @@ namespace hazelcast {
                     }
 
                     filter.addFilter("instance-state-name", "running");
-                    const std::map<std::string, std::string> &filters = filter.getFilters();
+                    const std::unordered_map<std::string, std::string> &filters = filter.getFilters();
                     attributes.insert(filters.begin(), filters.end());
                 }
 
@@ -560,9 +560,9 @@ namespace hazelcast {
                     return escaped.str();
                 }
 
-                std::map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream,
+                std::unordered_map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream,
                                                                                       util::ILogger &logger) {
-                    std::map<std::string, std::string> privatePublicPairs;
+                    std::unordered_map<std::string, std::string> privatePublicPairs;
 
                     pt::ptree tree;
                     try {
@@ -600,7 +600,7 @@ namespace hazelcast {
                 }
 
                 void CloudUtility::unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
-                                                         std::map<std::string, std::string> &attributes) {
+                                                         std::unordered_map<std::string, std::string> &attributes) {
                     pt::ptree json;
                     pt::read_json(stream, json);
                     awsConfig.setAccessKey(json.get_optional<std::string>("AccessKeyId").get_value_or(""));
@@ -622,7 +622,7 @@ namespace hazelcast {
                 }
             }
 
-            std::map<std::string, std::string> AWSClient::getAddresses() {
+            std::unordered_map<std::string, std::string> AWSClient::getAddresses() {
                 return impl::DescribeInstances(awsConfig, endpoint, logger).execute();
             }
 

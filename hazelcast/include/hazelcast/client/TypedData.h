@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,19 +40,14 @@ namespace hazelcast {
         public:
             TypedData();
 
-            TypedData(std::unique_ptr<serialization::pimpl::Data> &data,
+            TypedData(serialization::pimpl::Data d,
                       serialization::pimpl::SerializationService &serializationService);
-
-            TypedData(const std::shared_ptr<serialization::pimpl::Data> &data,
-                      serialization::pimpl::SerializationService &serializationService);
-
-            virtual ~TypedData();
 
             /**
              *
              * @return The type of the underlying object for this binary.
              */
-            const serialization::pimpl::ObjectType getType() const;
+            serialization::pimpl::ObjectType getType() const;
 
             /**
              * Deserializes the underlying binary data and produces the object of type T.
@@ -63,18 +59,18 @@ namespace hazelcast {
              * @return The object instance of type T.
              */
             template <typename T>
-            std::unique_ptr<T> get() const {
-                return ss->toObject<T>(data.get());
+            boost::optional<T> get() const {
+                return ss->toObject<T>(data);
             }
 
             /**
              * Internal API
              * @return The pointer to the internal binary data.
              */
-            const std::shared_ptr<serialization::pimpl::Data> getData() const;
+            const serialization::pimpl::Data &getData() const;
 
         private:
-            std::shared_ptr<serialization::pimpl::Data> data;
+            serialization::pimpl::Data data;
             serialization::pimpl::SerializationService *ss;
         };
 
@@ -85,5 +81,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 

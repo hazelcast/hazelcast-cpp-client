@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #pragma once
+
 #include <memory>
 #include <string>
 
-#include <memory>
+#include <boost/thread/future.hpp>
 
 #include "hazelcast/util/ExceptionUtil.h"
 
@@ -47,7 +47,7 @@ namespace hazelcast {
                  * More specifically IOException, because in case of a IO problem in ClientInvocation that send to a connection
                  * sends IOException to user. This wraps that exception into a TransactionException.
                  */
-                static protocol::ClientMessage
+                static boost::future<protocol::ClientMessage>
                 invoke(std::unique_ptr<protocol::ClientMessage> &request, const std::string &objectName,
                        spi::ClientContext &client, const std::shared_ptr<connection::Connection> &connection);
 

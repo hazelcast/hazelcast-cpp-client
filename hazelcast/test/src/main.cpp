@@ -29,7 +29,7 @@ using namespace hazelcast::client::test;
 namespace hazelcast {
     namespace client {
         namespace test {
-            HazelcastServerFactory *g_srvFactory = NULL;
+            HazelcastServerFactory *g_srvFactory = nullptr;
             std::shared_ptr<RemoteControllerClient> remoteController;
         }
     }

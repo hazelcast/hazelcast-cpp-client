@@ -57,7 +57,7 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                      */
-                    virtual monitor::NearCacheStats &getNearCacheStats() = 0;
+                    virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const = 0;
 
                     /**
                      * Gets the name of this {@link NearCache} instance.
@@ -128,10 +128,12 @@ namespace hazelcast {
                      * @param key   the key of the value will be stored
                      * @param value the value as Data which will be stored
                      */
+/*
                     virtual void put(const std::shared_ptr<K> &key,
                                      const std::shared_ptr<serialization::pimpl::Data> &value) {
                         assert(0);
                     }
+*/
 
                     /**
                      * Removes the value associated with the given {@code key}

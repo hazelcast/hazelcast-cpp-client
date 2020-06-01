@@ -19,7 +19,7 @@
 #include <hazelcast/client/query/EqualPredicate.h>
 #include <hazelcast/client/query/BetweenPredicate.h>
 #include <hazelcast/client/serialization/PortableWriter.h>
-#include <hazelcast/client/serialization/PortableReader.h>
+#include <hazelcast/client/serialization/serialization.h>
 #include <ostream>
 
 using namespace hazelcast::client;

@@ -33,8 +33,8 @@ namespace hazelcast {
          * @param <K> Type of the key
          * @param <V> Type of the value
          */
-        template<typename K, typename V, typename KS, typename VS, typename Comparator  = std::less<std::shared_ptr<KS> > >
-        class SampleableConcurrentHashMap : public SynchronizedMap<std::shared_ptr<KS>, VS, Comparator> {
+        template<typename K, typename V, typename KS, typename VS>
+        class SampleableConcurrentHashMap : public SynchronizedMap<std::shared_ptr<KS>, VS> {
         public:
             SampleableConcurrentHashMap(int32_t initialCapacity) {
             }

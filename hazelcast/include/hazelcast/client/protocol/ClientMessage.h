@@ -59,7 +59,7 @@
 #include <memory>
 #include <vector>
 #include <assert.h>
-#include <map>
+#include <unordered_map>
 #include <ostream>
 
 #include "hazelcast/util/LittleEndianBufferWrapper.h"

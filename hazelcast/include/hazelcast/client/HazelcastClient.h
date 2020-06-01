@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 #pragma once
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+
+ #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -146,20 +147,12 @@ namespace hazelcast {
  *                  //process the item
  *              }
  *
- *              // You can work with raw pointer maps if you want to get memory ownership of returned objects
- *              hazelcast::client::adaptor::RawPointerMap<int, int> rawMap(myMap);
- *              myMap.put(2, 6);
- *              std::unique_ptr<int> value = myMap.get(1);
- *              if (NULL != value.get()) {
- *                  // do something with the value
- *              }
- *
  *              // query values with predicate
  *              // EqualPredicate
  *              // key == 5
- *              std::vector<int> values = myMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+ *              std::vector<int> values = myMap.values(query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5));
  *              // Same query with raw Map
- *              std::unique_ptr<DataArray<int> > valuesArray = rawMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+ *              std::unique_ptr<DataArray<int> > valuesArray = rawMap.values(query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5));
  *              size_t numberOfValues = valuesArray->size();
  *              if (numberOfValues > 0) {
  *                  const int *firstValue = valuesArray->get(0);
@@ -172,12 +165,12 @@ namespace hazelcast {
  *              MyEntryListener listener;
  *              std::string listenerId = map.addEntryListener(listener,
  *                                   hazelcast::client::query::GreaterLessPredicate<int>(
- *                                   hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
+ *                                   hazelcast::client::query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, true, false), true);
  *
  *              // same listener using the raw map
  *              std::string secondListener = rawMap.addEntryListener(listener,
  *                                   hazelcast::client::query::GreaterLessPredicate<int>(
- *                                   hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
+ *                                   hazelcast::client::query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, true, false), true);
  *
  *              // listen for entries
  *              sleep(10);
@@ -394,13 +387,13 @@ namespace hazelcast {
             * Constructs a hazelcastClient with default configurations.
             */
             HazelcastClient();
-
+            
             /**
             * Constructs a hazelcastClient with given ClientConfig.
             * Note: ClientConfig will be copied.
             * @param config client configuration to start the client with
             */
-            HazelcastClient(const ClientConfig &config);
+            explicit HazelcastClient(const ClientConfig &config);
 
             virtual ~HazelcastClient();
 
@@ -431,9 +424,8 @@ namespace hazelcast {
             * @param name name of the distributed map
             * @return distributed map instance with the specified name
             */
-            template<typename K, typename V>
-            IMap<K, V> getMap(const std::string &name) {
-                return clientImpl->getMap<K, V>(name);
+            std::shared_ptr<IMap> getMap(const std::string &name) {
+                return clientImpl->getDistributedObject<IMap>(name);
             }
 
             /**
@@ -442,14 +434,12 @@ namespace hazelcast {
             * @param name name of the distributed multimap
             * @return distributed multimap instance with the specified name
             */
-            template<typename K, typename V>
-            MultiMap<K, V> getMultiMap(const std::string& name) {
-                return clientImpl->getMultiMap<K, V>(name);
+            std::shared_ptr<MultiMap> getMultiMap(const std::string& name) {
+                return clientImpl->getDistributedObject<MultiMap>(name);
             }
 
-            template<typename K, typename V>
-            std::shared_ptr<ReplicatedMap<K, V> > getReplicatedMap(const std::string &name) {
-                return clientImpl->getReplicatedMap<K, V>(name);
+            std::shared_ptr<ReplicatedMap> getReplicatedMap(const std::string &name) {
+                return clientImpl->getDistributedObject<ReplicatedMap>(name);
             }
 
             /**
@@ -458,22 +448,19 @@ namespace hazelcast {
             * @param name name of the distributed queue
             * @return distributed queue instance with the specified name
             */
-            template<typename E>
-            IQueue<E> getQueue(const std::string& name) {
-                return clientImpl->getQueue<E>(name);
+            std::shared_ptr<IQueue> getQueue(const std::string& name) {
+                return clientImpl->getDistributedObject<IQueue>(name);
             }
 
             /**
             * Returns the distributed set instance with the specified name and entry type E.
-            * Set is ordered unique set of entries. similar to std::set
+            * Set is ordered unique set of entries. similar to std::unordered_set
             *
             * @param name name of the distributed set
             * @return distributed set instance with the specified name
             */
-
-            template<typename E>
-            ISet<E> getSet(const std::string& name) {
-                return clientImpl->getSet<E>(name);
+            std::shared_ptr<ISet> getSet(const std::string& name) {
+                return clientImpl->getDistributedObject<ISet>(name);
             }
 
             /**
@@ -483,9 +470,8 @@ namespace hazelcast {
             * @param name name of the distributed list
             * @return distributed list instance with the specified name
             */
-            template<typename E>
-            IList<E> getList(const std::string& name) {
-                return clientImpl->getList<E>(name);
+            std::shared_ptr<IList> getList(const std::string& name) {
+                return clientImpl->getDistributedObject<IList>(name);
             }
 
             /**
@@ -494,9 +480,8 @@ namespace hazelcast {
             * @param name name of the distributed topic
             * @return distributed topic instance with the specified name
             */
-            template<typename E>
-            ITopic<E> getTopic(const std::string& name) {
-                return clientImpl->getTopic<E>(name);
+            std::shared_ptr<ITopic> getTopic(const std::string& name) {
+                return clientImpl->getDistributedObject<ITopic>(name);
             };
 
             /**
@@ -505,9 +490,8 @@ namespace hazelcast {
             * @param name name of the distributed topic
             * @return distributed topic instance with the specified name
             */
-            template<typename E>
-            std::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
-                return clientImpl->getReliableTopic<E>(name);
+            std::shared_ptr<ReliableTopic> getReliableTopic(const std::string& name) {
+                return clientImpl->getDistributedObject<ReliableTopic>(name);
             }
 
             /**
@@ -526,7 +510,9 @@ namespace hazelcast {
              * @param name name of the {@link FlakeIdGenerator}
              * @return FlakeIdGenerator for the given name
              */
-            FlakeIdGenerator getFlakeIdGenerator(const std::string& name);
+            std::shared_ptr<FlakeIdGenerator> getFlakeIdGenerator(const std::string& name) {
+                return clientImpl->getDistributedObject<FlakeIdGenerator>(name);
+            }
 
             /**
              * Obtain a {@link com.hazelcast.crdt.pncounter.PNCounter} with the given
@@ -538,9 +524,11 @@ namespace hazelcast {
              * converge to the same value.
              *
              * @param name the name of the PN counter
-             * @return a {@link com.hazelcast.crdt.pncounter.PNCounter}
+             * @return a {@link PNCounter}
              */
-            std::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
+            std::shared_ptr<PNCounter> getPNCounter(const std::string& name) {
+                return clientImpl->getDistributedObject<PNCounter>(name);
+            }
 
             /**
              * Returns the distributed Ringbuffer instance with the specified name.
@@ -548,9 +536,8 @@ namespace hazelcast {
              * @param name name of the distributed Ringbuffer
              * @return distributed RingBuffer instance with the specified name
              */
-            template <typename E>
-            std::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
-                return clientImpl->getRingbuffer<E>(name);
+            std::shared_ptr<Ringbuffer> getRingbuffer(const std::string& name) {
+                return clientImpl->getDistributedObject<Ringbuffer>(name);
             }
 
             /**
@@ -564,7 +551,9 @@ namespace hazelcast {
              * @param name name of the executor service
              * @return the distributed executor service for the given name
              */
-            std::shared_ptr<IExecutorService> getExecutorService(const std::string &name);
+            std::shared_ptr<IExecutorService> getExecutorService(const std::string &name) {
+                return clientImpl->getDistributedObject<IExecutorService>(name);
+            }
 
             /**
             *
@@ -630,13 +619,6 @@ namespace hazelcast {
             void shutdown();
 
             /**
-             * Adopts the current map to the mixed type support interface. You can use the mixedtype::HazelcastClient
-             * interface to get data structures that support manipulating unrelated mixed data types.
-             * @return The mixed type supporting HazelcastClient.
-             */
-            mixedtype::HazelcastClient &toMixedType() const;
-
-            /**
              * Returns the lifecycle service for this instance.
              * <p>
              * LifecycleService allows you to shutdown this HazelcastInstance and listen for the lifecycle events.
@@ -654,4 +636,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

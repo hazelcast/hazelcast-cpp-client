@@ -36,8 +36,8 @@
             }                                                   \
       }while(0)                                                 \
 
-#define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, timeoutSeconds) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG("", expected, actual, timeoutSeconds)
-#define ASSERT_EQ_EVENTUALLY(expected, actual) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, 120)
+#define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, timeoutSeconds) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG("", (expected), (actual), timeoutSeconds)
+#define ASSERT_EQ_EVENTUALLY(expected, actual) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT((expected), (actual), 120)
 
 #define ASSERT_TRUE_ALL_THE_TIME(expression, seconds) do{       \
             for(int i = 0; i < seconds ; i++ ) {                \
@@ -56,13 +56,14 @@ ASSERT_EQ((expected), (*actual));                 \
 
 #define ASSERT_NULL(msg, value, type) ASSERT_EQ((type *) NULL, value) << msg
 #define ASSERT_NOTNULL(value, type) ASSERT_NE((type *) NULL, value)
-#define ASSERT_TRUE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(value, true)
+#define ASSERT_TRUE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(true, (value))
+#define ASSERT_FALSE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(false, (value))
 #define ASSERT_TRUE_EVENTUALLY_WITH_TIMEOUT(value, timeout) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(value, true, timeout)
 #define ASSERT_NULL_EVENTUALLY(value, type) ASSERT_EQ_EVENTUALLY((type *) NULL, value)
 #define ASSERT_OPEN_EVENTUALLY(latch1) ASSERT_EQ(boost::cv_status::no_timeout, (latch1).wait_for(boost::chrono::seconds(120)))
 
 #define assertSizeEventually(expectedSize, container) assertSizeEventuallyWithTimeout(expectedSize, container, 120)
 #define assertSizeEventuallyWithTimeout(expectedSize, container, timeoutSeconds) do{  \
-    ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG("the size of the map is not correct", expectedSize, (container).size(), timeoutSeconds);  \
+    ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG("the size of the map is not correct", expectedSize, ((container)->size().get()), timeoutSeconds);  \
     } while(0)                                                                                                                      \
 

@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
-
-
 #pragma once
+
 #include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {
@@ -26,16 +22,19 @@ namespace hazelcast {
         namespace proxy {
             class HAZELCAST_API TransactionalSetImpl : public TransactionalObject {
             public:
-                TransactionalSetImpl(const std::string& name, txn::TransactionProxy *transactionProxy);
+                /**
+                * Returns the size of the set
+                * @return size
+                */
+                boost::future<int> size();
 
-                bool add(const serialization::pimpl::Data& e);
+            public:
+                TransactionalSetImpl(const std::string& name, txn::TransactionProxy &transactionProxy);
 
-                bool remove(const serialization::pimpl::Data& e);
+                boost::future<bool> addData(const serialization::pimpl::Data& e);
 
-                int size();
+                boost::future<bool> removeData(const serialization::pimpl::Data& e);
             };
         }
     }
 }
-
-

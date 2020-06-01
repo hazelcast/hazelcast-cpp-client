@@ -18,15 +18,18 @@
 
 
 
-#pragma once
-#include <map>
+#ifndef HAZELCAST_MEMBER
+#define HAZELCAST_MEMBER
+
+#include <unordered_map>
+#include <functional>
 #include <memory>
 
 #include "hazelcast/client/Address.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -52,7 +55,7 @@ namespace hazelcast {
             Member();
 
             Member(const Address &address, const std::string &uuid, bool lite,
-                   const std::map<std::string, std::string> &attr);
+                   const std::unordered_map<std::string, std::string> &attr);
 
             Member(const Address &memberAddress);
 
@@ -84,7 +87,7 @@ namespace hazelcast {
              */
             const std::string &getUuid() const;
 
-            const std::map<std::string, std::string> &getAttributes() const;
+            const std::unordered_map<std::string, std::string> &getAttributes() const;
 
             /**
              * Returns the value of the specified key for this member or
@@ -113,7 +116,7 @@ namespace hazelcast {
             Address address;
             std::string uuid;
             bool liteMember;
-            std::map<std::string, std::string> attributes;
+            std::unordered_map<std::string, std::string> attributes;
         };
 
         std::ostream HAZELCAST_API &operator<<(std::ostream &out, const Member &member);
@@ -123,7 +126,7 @@ namespace hazelcast {
 namespace std {
     template<>
     struct hash<hazelcast::client::Member> {
-        std::size_t operator()(const hazelcast::client::Member &k) const;
+        std::size_t operator()(const hazelcast::client::Member &k) const noexcept;
     };
 }
 
@@ -132,4 +135,5 @@ namespace std {
 #endif
 
 
+#endif //HAZELCAST_MEMBER
 

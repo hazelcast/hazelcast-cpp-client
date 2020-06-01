@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
-
-
 #pragma once
+
 #include "hazelcast/client/proxy/TransactionalObject.h"
 
 namespace hazelcast {
@@ -30,23 +26,30 @@ namespace hazelcast {
         }
         namespace proxy {
             class HAZELCAST_API TransactionalMultiMapImpl : public TransactionalObject {
+            public:
+                /**
+                * Transactional implementation of Multimap#size().
+                *
+                * @see Multimap#size()
+                */
+                boost::future<int> size();
+
             protected:
-                TransactionalMultiMapImpl(const std::string& name, txn::TransactionProxy *transactionProxy);
+                TransactionalMultiMapImpl(const std::string &name, txn::TransactionProxy &transactionProxy);
 
-                bool put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                boost::future<bool>
+                putData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
-                std::vector<serialization::pimpl::Data> getData(const serialization::pimpl::Data& key);
+                boost::future<std::vector<serialization::pimpl::Data>> getData(const serialization::pimpl::Data &key);
 
-                bool remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                boost::future<bool>
+                remove(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
-                std::vector<serialization::pimpl::Data> removeData(const serialization::pimpl::Data& key);
+                boost::future<std::vector<serialization::pimpl::Data>>
+                removeData(const serialization::pimpl::Data &key);
 
-                int valueCount(const serialization::pimpl::Data& key);
-
-                int size();
+                boost::future<int> valueCount(const serialization::pimpl::Data &key);
             };
         }
     }
 }
-
-

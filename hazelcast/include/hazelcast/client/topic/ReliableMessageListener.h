@@ -59,12 +59,10 @@ namespace hazelcast {
              * sequence, then an at-least-once delivery is implemented since the same item is now being processed twice. To implement
              * an at-most-once delivery guarantee, add 1 to the stored sequence when the {@link #retrieveInitialSequence()} is called.
              *
-             * @param <E>
              *
              * @Beta
              */
-            template<typename E>
-            class ReliableMessageListener : public MessageListener<E> {
+            class HAZELCAST_API ReliableMessageListener : public MessageListener {
             public:
                 /**
                  * Retrieves the initial sequence from which this ReliableMessageListener should start.

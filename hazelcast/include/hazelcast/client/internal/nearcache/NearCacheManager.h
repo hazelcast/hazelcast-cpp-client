@@ -20,7 +20,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/DefaultNearCache.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

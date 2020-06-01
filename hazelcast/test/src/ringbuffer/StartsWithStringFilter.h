@@ -17,29 +17,32 @@
 #pragma once
 #include <string>
 
-#include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
+#include <hazelcast/client/serialization/serialization.h>
 
 namespace hazelcast {
     namespace client {
         namespace test {
             namespace ringbuffer {
-                class StartsWithStringFilter : public serialization::IdentifiedDataSerializable {
+                class StartsWithStringFilter {
+                    friend serialization::hz_serializer<StartsWithStringFilter>;
                 public:
                     StartsWithStringFilter(const std::string &startString);
-
-                    virtual int getFactoryId() const;
-
-                    virtual int getClassId() const;
-
-                    virtual void writeData(serialization::ObjectDataOutput &writer) const;
-
-                    virtual void readData(serialization::ObjectDataInput &reader);
-
                 private:
                     std::string startString;
                 };
-
             }
+        }
+        namespace serialization {
+            template<>
+            struct hz_serializer<test::ringbuffer::StartsWithStringFilter> : public identified_data_serializer {
+                static int32_t getFactoryId();
+
+                static int32_t getClassId();
+
+                static void writeData(const test::ringbuffer::StartsWithStringFilter &object, ObjectDataOutput &out);
+
+                static test::ringbuffer::StartsWithStringFilter readData(ObjectDataInput &in);
+            };
         }
     }
 }

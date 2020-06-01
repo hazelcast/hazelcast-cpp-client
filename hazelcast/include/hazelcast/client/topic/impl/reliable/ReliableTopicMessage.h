@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 27 May 2016.
 
 #pragma once
+
 #include <memory>
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
@@ -34,32 +33,40 @@ namespace hazelcast {
         namespace topic {
             namespace impl {
                 namespace reliable {
-                    class HAZELCAST_API ReliableTopicMessage : public serialization::IdentifiedDataSerializable {
+                    class HAZELCAST_API ReliableTopicMessage {
+                        friend struct serialization::hz_serializer<topic::impl::reliable::ReliableTopicMessage>;
                     public:
                         ReliableTopicMessage();
 
-                        ReliableTopicMessage(serialization::pimpl::Data payloadData, std::unique_ptr<Address> &address);
+                        ReliableTopicMessage(serialization::pimpl::Data &&payloadData, std::unique_ptr<Address> address);
 
-                        int64_t getPublishTime() const;
+                        std::chrono::system_clock::time_point getPublishTime() const;
 
-                        const Address *getPublisherAddress() const;
+                        const boost::optional<Address> &getPublisherAddress() const;
 
-                        const serialization::pimpl::Data &getPayload() const;
-
-                        virtual int getFactoryId() const;
-
-                        virtual int getClassId() const;
-
-                        virtual void writeData(serialization::ObjectDataOutput &writer) const;
-
-                        virtual void readData(serialization::ObjectDataInput &reader);
+                        serialization::pimpl::Data &getPayload();
                     private:
-                        int64_t publishTime;
-                        std::unique_ptr<Address> publisherAddress;
+                        std::chrono::system_clock::time_point publishTime;
+                        boost::optional<Address> publisherAddress;
                         serialization::pimpl::Data payload;
                     };
                 }
             }
+        }
+        namespace serialization {
+            template<>
+            struct hz_serializer<topic::impl::reliable::ReliableTopicMessage> : public identified_data_serializer {
+                static constexpr int32_t F_ID = -18;
+                static constexpr int32_t RELIABLE_TOPIC_MESSAGE = 2;
+
+                static int32_t getFactoryId();
+
+                static int32_t getClassId();
+
+                static void writeData(const topic::impl::reliable::ReliableTopicMessage &object, ObjectDataOutput &out);
+
+                static topic::impl::reliable::ReliableTopicMessage readData(ObjectDataInput &in);
+            };
         }
     }
 }

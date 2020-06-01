@@ -16,7 +16,7 @@
 #pragma once
 #include "hazelcast/util/HazelcastDll.h"
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include <stdint.h>
 #include <string>
 
@@ -50,7 +50,7 @@ namespace hazelcast {
             private:
                 void registerException(int32_t errorCode, ExceptionFactory *factory);
 
-                std::map<int32_t, ExceptionFactory *> errorCodeToFactory;
+                std::unordered_map<int32_t, ExceptionFactory *> errorCodeToFactory;
             };
 
             class HAZELCAST_API ExceptionFactory {

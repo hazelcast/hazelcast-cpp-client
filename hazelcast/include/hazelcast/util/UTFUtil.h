@@ -25,12 +25,6 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API UTFUtil {
         public:
-            class HAZELCAST_API ByteReadable {
-            public:
-                virtual ~ByteReadable();
-
-                virtual byte readByte() = 0;
-            };
 
             /**  UTF-8 Encoding
             Number      Bits for        First           Last        Byte 1	    Byte 2	    Byte 3	    Byte 4
@@ -50,7 +44,36 @@ namespace hazelcast {
              */
             static int32_t isValidUTF8(const std::string &str);
 
-            static void readUTF8Char(ByteReadable &in, byte firstByte, std::vector<char> &utfBuffer);
+            template<typename Readable>
+            static void readUTF8Char(Readable &in, byte firstByte, std::string &utfBuffer) {
+                size_t n = 0;
+                // ascii
+                if (firstByte <= 0x7f) {
+                    n = 0; // 0bbbbbbb
+                } else if ((firstByte & 0xE0) == 0xC0) {
+                    n = 1; // 110bbbbb
+                } else if ((firstByte & 0xF0) == 0xE0) {
+                    n = 2; // 1110bbbb
+                } else if ((firstByte & 0xF8) == 0xF0) {
+                    n = 3; // 11110bbb
+                } else {
+                    throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
+                }
+
+                utfBuffer.push_back((char) firstByte);
+                for (size_t j = 0; j < n; j++) {
+                    byte b = in.template read<byte>();
+                    if (firstByte == 0xed && (b & 0xa0) == 0xa0) {
+                        throw client::exception::UTFDataFormatException("Bits::readUTF8Char",
+                                                                        "Malformed byte sequence U+d800 to U+dfff"); //U+d800 to U+dfff
+                    }
+
+                    if ((b & 0xC0) != 0x80) { // n bytes matching 10bbbbbb follow ?
+                        throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
+                    }
+                    utfBuffer.push_back((char) b);
+                }
+            }
 
         private:
             UTFUtil();

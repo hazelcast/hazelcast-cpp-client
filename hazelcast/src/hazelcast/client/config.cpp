@@ -31,7 +31,7 @@
  */
 
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/serialization/Serializer.h"
+
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/client/config/SSLConfig.h"
 #include "hazelcast/util/Preconditions.h"
@@ -56,58 +56,18 @@ namespace hazelcast {
             return version;
         }
 
-        SerializationConfig &SerializationConfig::setPortableVersion(int version) {
-            this->version = version;
+        SerializationConfig &SerializationConfig::setPortableVersion(int v) {
+            this->version = v;
             return *this;
         }
 
-        std::vector<std::shared_ptr<serialization::SerializerBase> > const &
-        SerializationConfig::getSerializers() const {
-            return serializers;
+        const std::shared_ptr<serialization::global_serializer> &SerializationConfig::getGlobalSerializer() const {
+            return globalSerializer_;
         }
 
-        SerializationConfig &
-        SerializationConfig::registerSerializer(std::shared_ptr<serialization::SerializerBase> serializer) {
-            serializers.push_back(serializer);
-            return *this;
-        }
-
-        SerializationConfig &
-        SerializationConfig::registerSerializer(std::shared_ptr<serialization::StreamSerializer> serializer) {
-            serializers.push_back(serializer);
-            return *this;
-        }
-
-        SerializationConfig &SerializationConfig::addDataSerializableFactory(int32_t factoryId,
-                                                                             std::shared_ptr<serialization::DataSerializableFactory> dataSerializableFactory) {
-            dataSerializableFactories[factoryId] = dataSerializableFactory;
-            return *this;
-        }
-
-        SerializationConfig &SerializationConfig::addPortableFactory(int32_t factoryId,
-                                                                     std::shared_ptr<serialization::PortableFactory> portableFactory) {
-            portableFactories[factoryId] = portableFactory;
-            return *this;
-        }
-
-        const std::map<int32_t, std::shared_ptr<serialization::DataSerializableFactory> > &
-        SerializationConfig::getDataSerializableFactories() const {
-            return dataSerializableFactories;
-        }
-
-        const std::map<int32_t, std::shared_ptr<serialization::PortableFactory> > &
-        SerializationConfig::getPortableFactories() const {
-            return portableFactories;
-        }
-
-        SerializationConfig &
-        SerializationConfig::setGlobalSerializer(const std::shared_ptr<serialization::StreamSerializer> &serializer) {
-            globalSerializer = serializer;
-            return *this;
-        }
-
-        const std::shared_ptr<serialization::StreamSerializer> &SerializationConfig::getGlobalSerializer() const {
-            return globalSerializer;
+        void SerializationConfig::setGlobalSerializer(
+                const std::shared_ptr<serialization::global_serializer> &globalSerializer) {
+            globalSerializer_ = globalSerializer;
         }
 
         namespace config {
@@ -118,9 +78,9 @@ namespace hazelcast {
                 return enabled;
             }
 
-            SSLConfig &SSLConfig::setEnabled(bool enabled) {
+            SSLConfig &SSLConfig::setEnabled(bool isEnabled) {
                 util::Preconditions::checkSSL("getAwsConfig");
-                this->enabled = enabled;
+                this->enabled = isEnabled;
                 return *this;
             }
 
@@ -151,16 +111,18 @@ namespace hazelcast {
                 return *this;
             }
 
+            constexpr int64_t ClientFlakeIdGeneratorConfig::DEFAULT_PREFETCH_VALIDITY_MILLIS;
+
             ClientFlakeIdGeneratorConfig::ClientFlakeIdGeneratorConfig(const std::string &name)
-                    : name(name), prefetchCount(DEFAULT_PREFETCH_COUNT),
-                      prefetchValidityMillis(DEFAULT_PREFETCH_VALIDITY_MILLIS) {}
+                    : name(name), prefetchCount(ClientFlakeIdGeneratorConfig::DEFAULT_PREFETCH_COUNT),
+                      prefetchValidityDuration(ClientFlakeIdGeneratorConfig::DEFAULT_PREFETCH_VALIDITY_MILLIS) {}
 
             const std::string &ClientFlakeIdGeneratorConfig::getName() const {
                 return name;
             }
 
-            ClientFlakeIdGeneratorConfig &ClientFlakeIdGeneratorConfig::setName(const std::string &name) {
-                ClientFlakeIdGeneratorConfig::name = name;
+            ClientFlakeIdGeneratorConfig &ClientFlakeIdGeneratorConfig::setName(const std::string &n) {
+                ClientFlakeIdGeneratorConfig::name = n;
                 return *this;
             }
 
@@ -168,23 +130,23 @@ namespace hazelcast {
                 return prefetchCount;
             }
 
-            ClientFlakeIdGeneratorConfig &ClientFlakeIdGeneratorConfig::setPrefetchCount(int32_t prefetchCount) {
+            ClientFlakeIdGeneratorConfig &ClientFlakeIdGeneratorConfig::setPrefetchCount(int32_t count) {
                 std::ostringstream out;
-                out << "prefetch-count must be 1.." << MAXIMUM_PREFETCH_COUNT << ", not " << prefetchCount;
-                util::Preconditions::checkTrue(prefetchCount > 0 && prefetchCount <= MAXIMUM_PREFETCH_COUNT, out.str());
-                ClientFlakeIdGeneratorConfig::prefetchCount = prefetchCount;
+                out << "prefetch-count must be 1.." << MAXIMUM_PREFETCH_COUNT << ", not " << count;
+                util::Preconditions::checkTrue(count > 0 && count <= MAXIMUM_PREFETCH_COUNT, out.str());
+                prefetchCount = count;
                 return *this;
             }
 
-            int64_t ClientFlakeIdGeneratorConfig::getPrefetchValidityMillis() const {
-                return prefetchValidityMillis;
+            std::chrono::steady_clock::duration ClientFlakeIdGeneratorConfig::getPrefetchValidityDuration() const {
+                return prefetchValidityDuration;
             }
 
             ClientFlakeIdGeneratorConfig &
-            ClientFlakeIdGeneratorConfig::setPrefetchValidityMillis(int64_t prefetchValidityMillis) {
-                util::Preconditions::checkNotNegative(prefetchValidityMillis,
+            ClientFlakeIdGeneratorConfig::setPrefetchValidityDuration(std::chrono::steady_clock::duration duration) {
+                util::Preconditions::checkNotNegative(duration.count(),
                                                       "prefetchValidityMs must be non negative");
-                ClientFlakeIdGeneratorConfig::prefetchValidityMillis = prefetchValidityMillis;
+                prefetchValidityDuration = duration;
                 return *this;
             }
 
@@ -192,15 +154,14 @@ namespace hazelcast {
 
             ClientNetworkConfig::ClientNetworkConfig()
                     : connectionTimeout(5000), smartRouting(true), connectionAttemptLimit(-1),
-                      connectionAttemptPeriod(CONNECTION_ATTEMPT_PERIOD) {
-            }
+                      connectionAttemptPeriod(CONNECTION_ATTEMPT_PERIOD) {}
 
             SSLConfig &ClientNetworkConfig::getSSLConfig() {
                 return sslConfig;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(const config::SSLConfig &sslConfig) {
-                this->sslConfig = sslConfig;
+            ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(const config::SSLConfig &config) {
+                sslConfig = config;
                 return *this;
             }
 
@@ -591,9 +552,7 @@ namespace hazelcast {
         }
 
         ClientConfig::ClientConfig()
-                : loadBalancer(NULL), redoOperation(false), socketInterceptor(NULL), credentials(NULL),
-                  executorPoolSize(-1) {
-        }
+                : loadBalancer(NULL), redoOperation(false), socketInterceptor(NULL), executorPoolSize(-1) {}
 
         ClientConfig &ClientConfig::addAddress(const Address &address) {
             networkConfig.addAddress(address);
@@ -606,8 +565,8 @@ namespace hazelcast {
         }
 
 
-        std::set<Address> ClientConfig::getAddresses() {
-            std::set<Address> result;
+        std::unordered_set<Address> ClientConfig::getAddresses() {
+            std::unordered_set<Address> result;
             for (const Address &address : networkConfig.getAddresses()) {
                 result.insert(address);
             }
@@ -618,8 +577,7 @@ namespace hazelcast {
             this->groupConfig = groupConfig;
             return *this;
         }
-
-
+        
         GroupConfig &ClientConfig::getGroupConfig() {
             return groupConfig;
         }
@@ -723,25 +681,21 @@ namespace hazelcast {
             return *this;
         }
 
-        const std::set<LifecycleListener *> &ClientConfig::getLifecycleListeners() const {
+        const std::unordered_set<LifecycleListener *> &ClientConfig::getLifecycleListeners() const {
             return lifecycleListeners;
         }
 
-        const std::set<MembershipListener *> &ClientConfig::getMembershipListeners() const {
+        const std::unordered_set<MembershipListener *> &ClientConfig::getMembershipListeners() const {
             return membershipListeners;
         }
 
-        ClientConfig &ClientConfig::setCredentials(Credentials *credentials) {
-            this->credentials = credentials;
-            return *this;
+
+        const boost::optional<std::string> &ClientConfig::getPrincipal() const {
+            return principal;
         }
 
-        const Credentials *ClientConfig::getCredentials() {
-            return credentials;
-        }
-
-        ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
-            this->socketInterceptor = socketInterceptor;
+        ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor *interceptor) {
+            this->socketInterceptor = interceptor;
             return *this;
         }
 
@@ -768,7 +722,7 @@ namespace hazelcast {
         }
 
 
-        std::map<std::string, std::string> &ClientConfig::getProperties() {
+        std::unordered_map<std::string, std::string> &ClientConfig::getProperties() {
             return properties;
         }
 
@@ -783,7 +737,7 @@ namespace hazelcast {
         }
 
         const config::ReliableTopicConfig *ClientConfig::getReliableTopicConfig(const std::string &name) {
-            std::map<std::string, config::ReliableTopicConfig>::const_iterator it = reliableTopicConfigMap.find(name);
+            std::unordered_map<std::string, config::ReliableTopicConfig>::const_iterator it = reliableTopicConfigMap.find(name);
             if (reliableTopicConfigMap.end() == it) {
                 reliableTopicConfigMap[name] = config::ReliableTopicConfig(name.c_str());
             }
@@ -797,12 +751,6 @@ namespace hazelcast {
         ClientConfig &ClientConfig::setNetworkConfig(const config::ClientNetworkConfig &networkConfig) {
             this->networkConfig = networkConfig;
             return *this;
-        }
-
-        const std::shared_ptr<mixedtype::config::MixedNearCacheConfig>
-        ClientConfig::getMixedNearCacheConfig(const std::string &name) {
-            return std::static_pointer_cast<mixedtype::config::MixedNearCacheConfig>(
-                    getNearCacheConfig<TypedData, TypedData>(name));
         }
 
         const std::shared_ptr<std::string> &ClientConfig::getInstanceName() const {
@@ -868,7 +816,7 @@ namespace hazelcast {
             return *this;
         }
 
-        const std::set<std::shared_ptr<MembershipListener> > &ClientConfig::getManagedMembershipListeners() const {
+        const std::unordered_set<std::shared_ptr<MembershipListener> > &ClientConfig::getManagedMembershipListeners() const {
             return managedMembershipListeners;
         }
     }

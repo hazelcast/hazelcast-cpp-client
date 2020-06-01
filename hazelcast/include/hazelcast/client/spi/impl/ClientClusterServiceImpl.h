@@ -15,7 +15,8 @@
  */
 
 #pragma once
-#include <map>
+
+#include <unordered_map>
 #include <vector>
 
 #include "hazelcast/client/ClientConfig.h"
@@ -54,9 +55,9 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    virtual std::shared_ptr<Member> getMember(const Address &address);
+                    virtual boost::optional<Member> getMember(const Address &address);
 
-                    virtual std::shared_ptr<Member> getMember(const std::string &uuid);
+                    virtual boost::optional<Member> getMember(const std::string &uuid);
 
                     virtual std::vector<Member> getMemberList();
 
@@ -82,7 +83,7 @@ namespace hazelcast {
                 private:
                     ClientContext &client;
                     std::shared_ptr<ClientMembershipListener> clientMembershipListener;
-                    util::Sync<std::map<Address, std::shared_ptr<Member> > > members;
+                    util::Sync<std::unordered_map<Address, std::shared_ptr<Member> > > members;
                     util::SynchronizedMap<std::string, MembershipListener> listeners;
 
                     std::mutex initialMembershipListenerMutex;

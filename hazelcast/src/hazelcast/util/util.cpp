@@ -465,8 +465,6 @@ namespace hazelcast {
     }
 }
 
-
-
 namespace hazelcast {
     namespace util {
         int32_t UTFUtil::isValidUTF8(const std::string &str) {
@@ -500,47 +498,8 @@ namespace hazelcast {
 
             return numberOfUtf8Chars;
         }
-
-        void UTFUtil::readUTF8Char(UTFUtil::ByteReadable &in, byte firstByte, std::vector<char> &utfBuffer) {
-            size_t n = 0;
-            // ascii
-            if (firstByte <= 0x7f) {
-                n = 0; // 0bbbbbbb
-            } else if ((firstByte & 0xE0) == 0xC0) {
-                n = 1; // 110bbbbb
-            } else if ((firstByte & 0xF0) == 0xE0) {
-                n = 2; // 1110bbbb
-            } else if ((firstByte & 0xF8) == 0xF0) {
-                n = 3; // 11110bbb
-            } else {
-                throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
-            }
-
-            utfBuffer.push_back((char) firstByte);
-            for (size_t j = 0; j < n; j++) {
-                byte b = in.readByte();
-                if (firstByte == 0xed && (b & 0xa0) == 0xa0) {
-                    throw client::exception::UTFDataFormatException("Bits::readUTF8Char",
-                                                                    "Malformed byte sequence U+d800 to U+dfff"); //U+d800 to U+dfff
-                }
-
-                if ((b & 0xC0) != 0x80) { // n bytes matching 10bbbbbb follow ?
-                    throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
-                }
-                utfBuffer.push_back((char) b);
-            }
-        }
-
-        UTFUtil::ByteReadable::~ByteReadable() {
-        }
     }
 }
-
-//
-// Created by sancar koyunlu on 5/3/13.
-
-
-
 
 namespace hazelcast {
     namespace util {

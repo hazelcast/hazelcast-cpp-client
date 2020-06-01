@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 12/11/13.
 #pragma once
-#include "hazelcast/client/txn/TransactionProxy.h"
 
-#include <string>
-#include <vector>
+#include "hazelcast/client/txn/TransactionProxy.h"
+#include "hazelcast/client/proxy/SerializingProxy.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -32,81 +29,30 @@ namespace hazelcast {
             class Connection;
         }
 
-        namespace txn {
-            class BaseTxnRequest;
-        }
-        namespace serialization {
-            namespace pimpl {
-                class Data;
-            }
-        }
-        namespace protocol {
-            class ClientMessage;
-        }
         namespace proxy {
-
-            class HAZELCAST_API TransactionalObject {
+            class HAZELCAST_API TransactionalObject : public proxy::SerializingProxy {
             public:
-                TransactionalObject(const std::string& serviceName, const std::string& objectName, txn::TransactionProxy *context);
+                TransactionalObject(const std::string &serviceName, const std::string &objectName,
+                                    txn::TransactionProxy &context);
 
                 virtual ~TransactionalObject();
 
-                const std::string& getServiceName();
+                const std::string &getServiceName();
 
-                const std::string& getName();
+                const std::string &getName();
 
-                void destroy();
+                boost::future<void> destroy();
 
             protected:
                 virtual void onDestroy();
 
-                template<typename T>
-                serialization::pimpl::Data toData(const T *object) {
-                    return context->getSerializationService().template toData<T>(object);
-                }
-
-                template<typename T>
-                std::unique_ptr<T> toObject(const serialization::pimpl::Data& data) {
-                    return context->getSerializationService().template toObject<T>(data);
-                }
-
-                template<typename T>
-                std::unique_ptr<T> toObject(const serialization::pimpl::Data *data) {
-                    return context->getSerializationService().template toObject<T>(data);
-                }
-
-                template<typename T>
-                std::unique_ptr<T> toObject(std::unique_ptr<serialization::pimpl::Data> data) {
-                    return context->getSerializationService().template toObject<T>(data.get());
-                }
-
-                template<typename K>
-                std::vector<K> toObjectCollection(const std::vector<serialization::pimpl::Data> &keyDataSet) {
-                    size_t size = keyDataSet.size();
-                    std::vector<K> keys(size);
-                    for (size_t i = 0; i < size; i++) {
-                        std::shared_ptr<K> v(toObject<K>(keyDataSet[i]));
-                        keys[i] = *v;
-                    }
-                    return keys;
-                }
-
                 std::string getTransactionId() const;
 
-                int getTimeoutInMilliseconds() const;
-
-                protocol::ClientMessage invoke(std::unique_ptr<protocol::ClientMessage> &request);
-
-                template<typename T, typename CODEC>
-                T invokeAndGetResult(std::unique_ptr<protocol::ClientMessage> &request) {
-                    auto response = invoke(request);
-
-                    return CODEC::decode(response).response;
-                }
+                std::chrono::steady_clock::duration getTimeout() const;
 
                 const std::string serviceName;
                 const std::string name;
-                txn::TransactionProxy *context;
+                txn::TransactionProxy &context;
             };
         }
     }
@@ -115,5 +61,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 

@@ -75,7 +75,7 @@ int main() {
     MyMemberListener memberListener;
     MyInitialMemberListener initialMemberListener;
 
-    hazelcast::client::Cluster *clusterPtr = NULL;
+    hazelcast::client::Cluster *clusterPtr = nullptr;
     try {
         hazelcast::client::HazelcastClient hz;
 

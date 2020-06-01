@@ -19,7 +19,6 @@
 #include <memory>
 #include <ostream>
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/spi/EventHandler.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -28,11 +27,13 @@
 
 namespace hazelcast {
     namespace client {
+        namespace impl {
+            class BaseEventHandler;
+        }
         namespace protocol {
             class ClientMessage;
         }
         namespace spi {
-
             namespace impl {
                 class ListenerMessageCodec;
 
@@ -42,34 +43,41 @@ namespace hazelcast {
                         ClientRegistrationKey();
 
                         ClientRegistrationKey(const std::string &userRegistrationId,
-                                              const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler,
-                                              const std::shared_ptr<ListenerMessageCodec> &codec);
+                                              std::unique_ptr<client::impl::BaseEventHandler> &&handler,
+                                              std::unique_ptr<ListenerMessageCodec> &&codec);
 
                         ClientRegistrationKey(const std::string &userRegistrationId);
 
                         const std::string &getUserRegistrationId() const;
 
-                        const std::shared_ptr<EventHandler<protocol::ClientMessage> > &getHandler() const;
+                        const std::shared_ptr<client::impl::BaseEventHandler> &getHandler() const;
 
                         const std::shared_ptr<ListenerMessageCodec> &getCodec() const;
 
-                        bool operator==(const ClientRegistrationKey &rhs) const;
+                        friend bool operator==(const ClientRegistrationKey &lhs, const ClientRegistrationKey &rhs);
 
-                        bool operator!=(const ClientRegistrationKey &rhs) const;
-
-                        bool operator<(const ClientRegistrationKey &rhs) const;
+                        friend bool operator!=(const ClientRegistrationKey &lhs, const ClientRegistrationKey &rhs);
 
                         friend std::ostream &operator<<(std::ostream &os, const ClientRegistrationKey &key);
 
                     private:
                         std::string userRegistrationId;
-                        std::shared_ptr<EventHandler<protocol::ClientMessage> > handler;
+                        std::shared_ptr<client::impl::BaseEventHandler> handler;
                         std::shared_ptr<ListenerMessageCodec> codec;
                     };
                 }
             }
         }
     }
+}
+
+namespace std {
+    template<>
+    class hash<hazelcast::client::spi::impl::listener::ClientRegistrationKey> {
+    public:
+        std::size_t HAZELCAST_API
+        operator()(const hazelcast::client::spi::impl::listener::ClientRegistrationKey &val) const noexcept;
+    };
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

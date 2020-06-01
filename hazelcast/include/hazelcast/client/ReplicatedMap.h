@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #pragma once
-#include <stdint.h>
-#include <string>
 
+#include <string>
 #include <memory>
 
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/proxy/ReplicatedMapImpl.h"
 #include "hazelcast/client/EntryListener.h"
-#include "hazelcast/client/query/Predicate.h"
-#include "hazelcast/client/DataArray.h"
-#include "hazelcast/client/LazyEntryArray.h"
+#include "hazelcast/client/query/Predicates.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -33,7 +29,6 @@
 
 namespace hazelcast {
     namespace client {
-
         /**
          * <p>A ReplicatedMap is a map-like data structure with weak consistency
          * and values locally stored on every node of the cluster. </p>
@@ -44,12 +39,11 @@ namespace hazelcast {
          * values from older nodes and replicate them locally.</p>
          *
          *
-         * @param <K> the type of keys maintained by this map
-         * @param <V> the type of mapped values
          */
-        template <typename K, typename V>
-        class ReplicatedMap : public virtual DistributedObject {
+        class HAZELCAST_API ReplicatedMap : public proxy::ReplicatedMapImpl {
+            friend class spi::ProxyManager;
         public:
+            static constexpr const char *SERVICE_NAME = "hz:impl:replicatedMapService";
             /**
              * <p>Associates a given value to the specified key and replicates it to the
              * cluster. If there is an old value, it will be replaced by the specified
@@ -60,9 +54,12 @@ namespace hazelcast {
              *
              * @param key      key with which the specified value is to be associated.
              * @param value    value to be associated with the specified key.
-             * @param ttl      ttl in milliseconds to be associated with the specified key-value pair.
+             * @param ttl      ttl to be associated with the specified key-value pair.
              */
-            virtual std::shared_ptr<V> put(const K &key, const V &value, int64_t ttl) = 0;
+            template<typename K, typename V>
+            boost::future<boost::optional<V>> put(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
+                return toObject<V>(putData(toData(key), toData(value), ttl));
+            }
 
             /**
             * Copies all of the mappings from the specified map to this map
@@ -74,23 +71,10 @@ namespace hazelcast {
             *
             * @param entries mappings to be stored in this map
             */
-            virtual void putAll(const std::map<K, V> &entries) = 0;
-
-            /**
-             * <p>The clear operation wipes data out of the replicated maps.
-             * <p>If some node fails on executing the operation, it is retried for at most
-             * 5 times (on the failing nodes only).
-             */
-            virtual void clear() = 0;
-
-            /**
-             * Removes the specified entry listener.
-             * Returns silently if there was no such listener added before.
-             *
-             * @param registrationId ID of the registered entry listener.
-             * @return true if registration is removed, false otherwise.
-             */
-            virtual bool removeEntryListener(const std::string &registrationId) = 0;
+            template<typename K, typename V>
+            boost::future<void> putAll(const std::unordered_map<K, V> &entries) {
+                return putAllData(toDataEntries(entries));
+            }
 
             /**
              * Adds an entry listener for this map. The listener will be notified
@@ -98,7 +82,13 @@ namespace hazelcast {
              *
              * @param listener entry listener
              */
-            virtual std::string addEntryListener(const std::shared_ptr<EntryListener<K, V> > &listener) = 0;
+            template<typename Listener>
+            boost::future<std::string> addEntryListener(Listener &&listener) {
+                return proxy::ReplicatedMapImpl::addEntryListener(
+                        std::unique_ptr<impl::BaseEventHandler>(
+                                new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
+                                        getContext().getSerializationService(), std::forward<Listener>(listener), getContext().getLogger())));
+            }
 
             /**
              * Adds the specified entry listener for the specified key.
@@ -112,7 +102,14 @@ namespace hazelcast {
              * @param listener the entry listener to add
              * @param key      the key to listen to
              */
-            virtual std::string addEntryListener(const std::shared_ptr<EntryListener<K, V> > &listener, const K &key) = 0;
+            template<typename Listener, typename K>
+            boost::future<std::string> addEntryListenerForKey(Listener &&listener, const K &key) {
+                return proxy::ReplicatedMapImpl::addEntryListenerToKey(
+                        std::unique_ptr<impl::BaseEventHandler>(
+                                new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
+                                                                getContext().getSerializationService(), std::forward<Listener>(listener),
+                                                                getContext().getLogger())), toData(key));
+            }
 
             /**
              * Adds an continuous entry listener for this map. The listener will be notified
@@ -121,8 +118,14 @@ namespace hazelcast {
              * @param listener  the entry listener to add
              * @param predicate the predicate for filtering entries
              */
-            virtual const std::string addEntryListener(const std::shared_ptr<EntryListener<K, V> > &listener,
-                    const query::Predicate &predicate) = 0;
+            template<typename Listener, typename P>
+            boost::future<std::string> addEntryListener(Listener &&listener, const P &predicate) {
+                return proxy::ReplicatedMapImpl::addEntryListener(
+                        std::unique_ptr<impl::BaseEventHandler>(
+                                new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
+                                                                getContext().getSerializationService(), std::forward<Listener>(listener),
+                                                                getContext().getLogger())), toData(predicate));
+            }
 
             /**
              * Adds an continuous entry listener for this map. The listener will be notified
@@ -132,8 +135,14 @@ namespace hazelcast {
              * @param predicate the predicate for filtering entries
              * @param key       the key to listen to
              */
-            virtual std::string addEntryListener(const std::shared_ptr<EntryListener<K, V> > &listener,
-                    const query::Predicate &predicate, const K &key) = 0;
+            template<typename Listener, typename K, typename P>
+            boost::future<std::string> addEntryListener(Listener &&listener, const P &predicate, const K &key) {
+                return proxy::ReplicatedMapImpl::addEntryListener(
+                        std::unique_ptr<impl::BaseEventHandler>(
+                                new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
+                                                                getContext().getSerializationService(), std::forward<Listener>(listener),
+                                                                getContext().getLogger())), toData(key), toData(predicate));
+            }
 
             /**
              * Due to the lazy nature of the returned array, changes to the map (addition,
@@ -148,10 +157,13 @@ namespace hazelcast {
              *
              * @return A collection view of the values contained in this map.
              */
-            virtual std::shared_ptr<DataArray<V> > values() = 0;
+            template<typename V>
+            boost::future<std::vector<V>> values() {
+                return toObjectVector<V>(valuesData());
+            }
 
             /**
-             * Returns a lazy {@link LazyEntryArray} view of the mappings contained in this map.<br/>
+             * Returns a view of the mappings contained in this map.<br/>
              * Due to the lazy nature of the returned array, changes to the map (addition,
              * removal, update) might be reflected on the array.<br/>
              * Changes on the map are <b>NOT</b> reflected on the set on the <b>CLIENT</b> or vice versa.
@@ -160,12 +172,15 @@ namespace hazelcast {
              * Changes to any returned object are <b>NOT</b> replicated back to other
              * members.
              *
-             * @return A lazy set view of the mappings contained in this map.
+             * @return view of the mappings contained in this map.
              */
-            virtual std::shared_ptr<LazyEntryArray<K, V> > entrySet() = 0;
+            template<typename K, typename V>
+            boost::future<std::vector<std::pair<K, V>>> entrySet() {
+                return toEntryObjectVector<K,V>(entrySetData());
+            }
 
             /**
-             * Returns a lazy {@link DataArray} view of the key contained in this map.<br/>
+             * Returns a view of the keys contained in this map.<br/>
              * Due to the lazy nature of the returned array, changes to the map (addition,
              * removal, update) might be reflected on the array.<br/>
              * Changes on the map are <b>NOT</b> reflected on the set on the <b>CLIENT</b> or vice versa.
@@ -174,42 +189,42 @@ namespace hazelcast {
              * Changes to any returned object are <b>NOT</b> replicated back to other
              * members.
              *
-             * @return A lazy {@link Set} view of the keys contained in this map.
+             * @return The keys contained in this map.
              */
-            virtual std::shared_ptr<DataArray<K> > keySet() = 0;
-
-            /**
-             *
-             * @return The number of the replicated map entries in the cluster.
-             */
-            virtual int32_t size() = 0;
-
-            /**
-             *
-             * @return true if the replicated map is empty, false otherwise
-             */
-            virtual bool isEmpty() = 0;
-
+            template<typename K>
+            boost::future<std::vector<K>> keySet() {
+                return toObjectVector<K>(keySetData());
+            }
+            
             /**
              *
              * @param key The key to be checked for existence
              * @return true if the entry with the key exist in the replicated map.
              */
-            virtual bool containsKey(const K &key) = 0;
+            template<typename K>
+            boost::future<bool> containsKey(const K &key) {
+                return containsKeyData(toData(key));
+            }
 
             /**
              *
              * @param value The value to check in the replicated map for existence.
              * @return true if the value exist in the replicated map.
              */
-            virtual bool containsValue(const V &value) = 0;
+            template<typename V>
+            boost::future<bool> containsValue(const V &value) {
+                return containsValueData(toData(value));
+            }
 
             /**
              *
              * @param key The key to be used to query from replicated map.
              * @return The value of the key if the key exist, null pointer otherwise.
              */
-            virtual std::shared_ptr<V> get(const K &key) = 0;
+            template<typename K, typename V>
+            boost::future<boost::optional<V>> get(const K &key) {
+                return toObject<V>(getData(toData(key)));
+            }
 
             /**
              *
@@ -217,14 +232,112 @@ namespace hazelcast {
              * @param value The value of the key
              * @return The previous value if the key existed in the map or null pointer otherwise.
              */
-            virtual std::shared_ptr<V> put(const K &key, const V &value) = 0;
+            template<typename K, typename V>
+            boost::future<boost::optional<V>> put(const K &key, const V &value) {
+                return put(key, value, std::chrono::milliseconds(0));
+            }
 
             /**
              *
              * @param key The key of the entry to be removed.
              * @return The value associated with the removed key.
              */
-            virtual std::shared_ptr<V> remove(const K &key) = 0;
+            template<typename K, typename V>
+            boost::future<boost::optional<V>> remove(const K &key) {
+                return toObject<V>(removeData(toData(key)));
+            }
+        private:
+            ReplicatedMap(const std::string &objectName, spi::ClientContext *context) : proxy::ReplicatedMapImpl(
+                    SERVICE_NAME, objectName, context) {
+            }
+
+            template<typename Listener>
+            class EntryEventHandler : public protocol::codec::ReplicatedMapAddEntryListenerCodec::AbstractEventHandler {
+            public:
+                EntryEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
+                                  serialization::pimpl::SerializationService &serializationService,
+                                  Listener &&listener, util::ILogger &log)
+                        : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
+                        , listener(listener), logger(log) {}
+
+                virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
+                                                 std::unique_ptr<serialization::pimpl::Data> &value,
+                                                 std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                                 std::unique_ptr<serialization::pimpl::Data> &mergingValue,
+                                                 const int32_t &eventType, const std::string &uuid,
+                                                 const int32_t &numberOfAffectedEntries) {
+                    if (eventType == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
+                        fireMapWideEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        return;
+                    }
+
+                    fireEntryEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                }
+
+            private:
+                void fireMapWideEvent(std::unique_ptr<serialization::pimpl::Data> &key,
+                                      std::unique_ptr<serialization::pimpl::Data> &value,
+                                      std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                      std::unique_ptr<serialization::pimpl::Data> &mergingValue,
+                                      const int32_t &eventType, const std::string &uuid,
+                                      const int32_t &numberOfAffectedEntries) {
+                    auto member = clusterService.getMember(uuid);
+                    auto mapEventType = static_cast<EntryEvent::type>(eventType);
+                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName, numberOfAffectedEntries);
+                    listener.mapCleared(mapEvent);
+                }
+
+                void fireEntryEvent(std::unique_ptr<serialization::pimpl::Data> &key,
+                                    std::unique_ptr<serialization::pimpl::Data> &value,
+                                    std::unique_ptr<serialization::pimpl::Data> &oldValue,
+                                    std::unique_ptr<serialization::pimpl::Data> &mergingValue,
+                                    const int32_t &eventType, const std::string &uuid,
+                                    const int32_t &numberOfAffectedEntries) {
+                    TypedData eventKey, val, oldVal, mergingVal;
+                    if (value) {
+                        val = TypedData(std::move(*value), serializationService);
+                    }
+                    if (oldValue) {
+                        oldVal = TypedData(std::move(*oldValue), serializationService);
+                    }
+                    if (mergingValue) {
+                        mergingVal = TypedData(std::move(*mergingValue), serializationService);
+                    }
+                    if (key) {
+                        eventKey = TypedData(std::move(*key), serializationService);
+                    }
+                    auto member = clusterService.getMember(uuid);
+                    if (!member.has_value()) {
+                        member = Member(uuid);
+                    }
+                    auto type = static_cast<EntryEvent::type>(eventType);
+                    EntryEvent entryEvent(instanceName, member.value(), type, std::move(eventKey), std::move(val),
+                                          std::move(oldVal), std::move(mergingVal));
+                    switch(type) {
+                        case EntryEvent::type::ADDED:
+                            listener.entryAdded(entryEvent);
+                            break;
+                        case EntryEvent::type::REMOVED:
+                            listener.entryRemoved(entryEvent);
+                            break;
+                        case EntryEvent::type::UPDATED:
+                            listener.entryUpdated(entryEvent);
+                            break;
+                        case EntryEvent::type::EVICTED:
+                            listener.entryEvicted(entryEvent);
+                            break;
+                        default:
+                            logger.warning("Received unrecognized event with type: ", static_cast<int>(type),
+                                           " Dropping the event!!!");
+                    }
+                }
+            private:
+                const std::string& instanceName;
+                spi::ClientClusterService &clusterService;
+                serialization::pimpl::SerializationService& serializationService;
+                Listener listener;
+                util::ILogger &logger;
+            };
         };
     }
 }
@@ -232,5 +345,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-

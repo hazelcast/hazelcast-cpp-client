@@ -31,6 +31,7 @@
  */
 
 #include <vector>
+#include <functional>
 #include <easylogging++.h>
 #include <boost/format.hpp>
 
@@ -43,12 +44,9 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/LifecycleListener.h"
-#include <hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h>
 #include <hazelcast/client/cluster/impl/ClusterDataSerializerHook.h>
 #include <hazelcast/client/exception/ProtocolExceptions.h>
-
-#include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
-#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
+#include "hazelcast/client/proxy/PNCounterImpl.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
@@ -64,9 +62,7 @@
 #include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
-#include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
-#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
+#include "hazelcast/client/proxy/FlakeIdGeneratorImpl.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -87,14 +83,6 @@ namespace hazelcast {
 
         const std::string &HazelcastClient::getName() const {
             return clientImpl->getName();
-        }
-
-        FlakeIdGenerator HazelcastClient::getFlakeIdGenerator(const std::string &name) {
-            return clientImpl->getFlakeIdGenerator(name);
-        }
-
-        std::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
-            return clientImpl->getPNCounter(name);
         }
 
         ClientConfig &HazelcastClient::getClientConfig() {
@@ -125,16 +113,8 @@ namespace hazelcast {
             clientImpl->shutdown();
         }
 
-        mixedtype::HazelcastClient &HazelcastClient::toMixedType() const {
-            return clientImpl->toMixedType();
-        }
-
         spi::LifecycleService &HazelcastClient::getLifecycleService() {
             return clientImpl->getLifecycleService();
-        }
-
-        std::shared_ptr<IExecutorService> HazelcastClient::getExecutorService(const std::string &name) {
-            return clientImpl->getExecutorService(name);
         }
 
         Client HazelcastClient::getLocalEndpoint() const {
@@ -155,7 +135,7 @@ namespace hazelcast {
                       transactionManager(clientContext, *clientConfig.getLoadBalancer()), cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(),
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
-                      id(++CLIENT_ID), TOPIC_RB_PREFIX("_hz_rb_") {
+                      id(++CLIENT_ID) {
                 const std::shared_ptr<std::string> &name = clientConfig.getInstanceName();
                 if (name.get() != NULL) {
                     instanceName = *name;
@@ -215,8 +195,6 @@ namespace hazelcast {
                     lifecycleService.shutdown();
                     throw;
                 }
-
-                mixedTypeSupportAdaptor.reset(new mixedtype::impl::HazelcastClientImpl(*this));
             }
 
             void HazelcastClientInstanceImpl::startLogger() {
@@ -252,14 +230,6 @@ namespace hazelcast {
                 lifecycleService.shutdown();
             }
 
-            FlakeIdGenerator HazelcastClientInstanceImpl::getFlakeIdGenerator(const std::string &name) {
-                flakeidgen::impl::FlakeIdGeneratorProxyFactory factory(&clientContext);
-                std::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService(proxy::ClientFlakeIdGeneratorProxy::SERVICE_NAME, name, factory);
-
-                return FlakeIdGenerator(std::static_pointer_cast<proxy::ClientFlakeIdGeneratorProxy>(proxy));
-            }
-
             TransactionContext HazelcastClientInstanceImpl::newTransactionContext() {
                 TransactionOptions defaultOptions;
                 return newTransactionContext(defaultOptions);
@@ -275,17 +245,6 @@ namespace hazelcast {
 
             serialization::pimpl::SerializationService &HazelcastClientInstanceImpl::getSerializationService() {
                 return serializationService;
-            }
-
-            std::shared_ptr<spi::ClientProxy> HazelcastClientInstanceImpl::getDistributedObjectForService(
-                    const std::string &serviceName,
-                    const std::string &name,
-                    spi::ClientProxyFactory &factory) {
-                return proxyManager.getOrCreateProxy(serviceName, name, factory);
-            }
-
-            mixedtype::HazelcastClient &HazelcastClientInstanceImpl::toMixedType() const {
-                return *mixedTypeSupportAdaptor;
             }
 
             const protocol::ClientExceptionFactory &HazelcastClientInstanceImpl::getExceptionFactory() const {
@@ -384,15 +343,6 @@ namespace hazelcast {
                 return lockReferenceIdGenerator;
             }
 
-            std::shared_ptr<crdt::pncounter::PNCounter>
-            HazelcastClientInstanceImpl::getPNCounter(const std::string &name) {
-                crdt::pncounter::impl::PNCounterProxyFactory factory(&clientContext);
-                std::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService(proxy::ClientPNCounterProxy::SERVICE_NAME, name, factory);
-
-                return std::static_pointer_cast<proxy::ClientPNCounterProxy>(proxy);
-            }
-
             spi::ProxyManager &HazelcastClientInstanceImpl::getProxyManager() {
                 return proxyManager;
             }
@@ -400,15 +350,6 @@ namespace hazelcast {
             void HazelcastClientInstanceImpl::initalizeNearCacheManager() {
                 nearCacheManager.reset(
                         new internal::nearcache::NearCacheManager(executionService, serializationService, *logger));
-            }
-
-            std::shared_ptr<IExecutorService>
-            HazelcastClientInstanceImpl::getExecutorService(const std::string &name) {
-                executor::impl::ExecutorServiceProxyFactory factory(&clientContext);
-                std::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService(IExecutorService::SERVICE_NAME, name, factory);
-
-                return std::static_pointer_cast<IExecutorService>(proxy);
             }
 
             Client HazelcastClientInstanceImpl::getLocalEndpoint() const {
@@ -496,34 +437,6 @@ namespace hazelcast {
             return host;
         }
 
-        int Address::getFactoryId() const {
-            return cluster::impl::F_ID;
-        }
-
-        int Address::getClassId() const {
-            return ID;
-        }
-
-        void Address::writeData(serialization::ObjectDataOutput &out) const {
-            out.writeInt(port);
-            out.writeByte(type);
-            int len = (int) host.size();
-            out.writeInt(len);
-            out.writeBytes((const byte *) host.c_str(), len);
-        }
-
-        void Address::readData(serialization::ObjectDataInput &in) {
-            port = in.readInt();
-            type = in.readByte();
-            int len = in.readInt();
-            if (len > 0) {
-                std::vector<byte> bytes;
-                in.readFully(bytes);
-                host.clear();
-                host.append(bytes.begin(), bytes.end());
-            }
-        }
-
         bool Address::operator<(const Address &rhs) const {
             if (host < rhs.host) {
                 return true;
@@ -556,6 +469,30 @@ namespace hazelcast {
 
         std::ostream &operator<<(std::ostream &stream, const Address &address) {
             return stream << address.toString();
+        }
+
+        namespace serialization {
+            int32_t hz_serializer<Address>::getFactoryId() {
+                return F_ID;
+            }
+
+            int32_t hz_serializer<Address>::getClassId() {
+                return ADDRESS;
+            }
+
+            void hz_serializer<Address>::writeData(const Address &object, ObjectDataOutput &out) {
+                out.write<int32_t>(object.port);
+                out.write<byte>(object.type);
+                out.write(object.host);
+            }
+
+            Address hz_serializer<Address>::readData(ObjectDataInput &in) {
+                Address object;
+                object.port = in.read<int32_t>();
+                object.type = in.read<byte>();
+                object.host = in.read<std::string>();
+                return object;
+            }
         }
 
         LifecycleListener::~LifecycleListener() {
@@ -623,8 +560,8 @@ namespace hazelcast {
         }
 
         Address IExecutorService::getMemberAddress(const Member &member) {
-            std::shared_ptr<Member> m = getContext().getClientClusterService().getMember(member.getUuid());
-            if (m.get() == NULL) {
+            auto m = getContext().getClientClusterService().getMember(member.getUuid());
+            if (!m) {
                 throw (exception::ExceptionBuilder<exception::HazelcastException>(
                         "IExecutorService::getMemberAddress(Member)") << member << " is not available!").build();
             }
@@ -637,19 +574,19 @@ namespace hazelcast {
         }
 
         void IExecutorService::shutdown() {
-            std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceShutdownCodec::encodeRequest(
+            auto request = protocol::codec::ExecutorServiceShutdownCodec::encodeRequest(
                     getName());
             invoke(request);
         }
 
-        bool IExecutorService::isShutdown() {
-            std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceIsShutdownCodec::encodeRequest(
+        boost::future<bool> IExecutorService::isShutdown() {
+            auto request = protocol::codec::ExecutorServiceIsShutdownCodec::encodeRequest(
                     getName());
-            return invokeAndGetResult<bool, protocol::codec::ExecutorServiceIsShutdownCodec::ResponseParameters>(
+            return invokeAndGetFuture<bool, protocol::codec::ExecutorServiceIsShutdownCodec::ResponseParameters>(
                     request);
         }
 
-        bool IExecutorService::isTerminated() {
+        boost::future<bool> IExecutorService::isTerminated() {
             return isShutdown();
         }
 
@@ -718,7 +655,7 @@ namespace hazelcast {
             return ::getenv(name.c_str());
         }
 
-        ClientProperties::ClientProperties(const std::map<std::string, std::string> &properties)
+        ClientProperties::ClientProperties(const std::unordered_map<std::string, std::string> &properties)
                 : heartbeatTimeout(PROP_HEARTBEAT_TIMEOUT, PROP_HEARTBEAT_TIMEOUT_DEFAULT),
                   heartbeatInterval(PROP_HEARTBEAT_INTERVAL, PROP_HEARTBEAT_INTERVAL_DEFAULT),
                   retryCount(PROP_REQUEST_RETRY_COUNT, PROP_REQUEST_RETRY_COUNT_DEFAULT),
@@ -802,7 +739,7 @@ namespace hazelcast {
         }
 
         std::string ClientProperties::getString(const ClientProperty &property) const {
-            std::map<std::string, std::string>::const_iterator valueIt = propertiesMap.find(property.getName());
+            std::unordered_map<std::string, std::string>::const_iterator valueIt = propertiesMap.find(property.getName());
             if (valueIt != propertiesMap.end()) {
                 return valueIt->second;
             }
@@ -909,18 +846,12 @@ namespace hazelcast {
                                          details, true,
                                          false) {}
         }
+    }
+}
 
-        namespace executor {
-            namespace impl {
-                ExecutorServiceProxyFactory::ExecutorServiceProxyFactory(spi::ClientContext *clientContext)
-                        : clientContext(
-                        clientContext) {}
-
-                std::shared_ptr<spi::ClientProxy> ExecutorServiceProxyFactory::create(const std::string &id) {
-                    return std::shared_ptr<spi::ClientProxy>(
-                            new IExecutorService(id, clientContext));
-                }
-            }
-        }
+namespace std {
+    std::size_t hash<hazelcast::client::Address>::operator()(const hazelcast::client::Address &address) const noexcept {
+        return std::hash<std::string>()(address.getHost()) + std::hash<int>()(address.getPort()) +
+               std::hash<unsigned long>()(address.type);
     }
 }
