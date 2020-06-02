@@ -310,9 +310,9 @@ namespace hazelcast {
                 if (it != fieldDefinitionsMap.end()) {
                     return it->second;
                 }
-                BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ClassDefinition::getField",
-                                                                          (boost::format("Field (%1%) does not exist") %
-                                                                           name).str()));
+                BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("ClassDefinition::getField",
+                        (boost::format("Invalid field name: '%1%' for ClassDefinition {id: %2%, version: %3%}")
+                        %name %classId %version).str()));
             }
 
             bool ClassDefinition::hasField(const std::string &fieldName) const {
@@ -664,7 +664,7 @@ namespace hazelcast {
                     try {
                         FieldDefinition const &fd = cd->getField(fieldName);
 
-                        if (writtenFields.count(fieldName) != 0) {
+                        if (writtenFields.find(fieldName) != writtenFields.end()) {
                             BOOST_THROW_EXCEPTION(
                                     exception::HazelcastSerializationException("PortableWriter::setPosition",
                                                                                "Field '" + std::string(fieldName) +
@@ -674,11 +674,10 @@ namespace hazelcast {
                         writtenFields.insert(fieldName);
                         size_t pos = objectDataOutput.position();
                         int32_t index = fd.getIndex();
-                        objectDataOutput.position(offset + index * util::Bits::INT_SIZE_IN_BYTES);
-                        objectDataOutput.write<int32_t>(static_cast<int32_t>(pos));
-                        objectDataOutput.position(pos);
-                        objectDataOutput.write(fieldName);
-                        objectDataOutput.write(static_cast<int32_t>(fieldType));
+                        objectDataOutput.writeAt(offset + index * util::Bits::INT_SIZE_IN_BYTES, static_cast<int32_t>(pos));
+                        objectDataOutput.write(static_cast<int16_t>(fieldName.size()));
+                        objectDataOutput.writeBytes(fieldName);
+                        objectDataOutput.write<byte>(static_cast<byte>(fieldType));
 
                         return fd;
 
