@@ -78,6 +78,7 @@ namespace hazelcast {
                     template <typename T>
                     typename std::enable_if<std::is_same<byte, typename std::remove_cv<T>::type>::value ||
                             std::is_same<char, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<char16_t, typename std::remove_cv<T>::type>::value ||
                             std::is_same<bool, typename std::remove_cv<T>::type>::value ||
                             std::is_same<int16_t, typename std::remove_cv<T>::type>::value ||
                             std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
@@ -130,7 +131,30 @@ namespace hazelcast {
                     bool isNoWrite;
                     std::vector<byte> outputStream;
 
-                    int getUTF8CharCount(const std::string &str);
+                    void inline checkAvailable(int index, int requestedLength) {
+                        if (index < 0) {
+                            BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
+                                                                                      (boost::format("Negative pos! -> %1%") % index).str()));
+                        }
+
+                        size_t available = outputStream.size() - index;
+
+                        if (requestedLength > available) {
+                            BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
+                                                                                      (boost::format("Cannot write %1% bytes!") % requestedLength).str()));
+                        }
+                    }
+
+                    /**
+                     * Write integer at the provided index. Bounds check is performed.
+                     * @param index The index to write the integer
+                     * @param value The integer value to be written
+                     */
+                    inline void writeAt(int index, int32_t value) {
+                        if (isNoWrite) { return; }
+                        checkAvailable(index, util::Bits::INT_SIZE_IN_BYTES);
+                        util::Bits::nativeToBigEndian4(&value, &outputStream[index]);
+                    }
                 };
 
                 template <>
@@ -138,6 +162,9 @@ namespace hazelcast {
 
                 template <>
                 HAZELCAST_API void DataOutput::write(char value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(char16_t value);
 
                 template <>
                 HAZELCAST_API void DataOutput::write(bool value);

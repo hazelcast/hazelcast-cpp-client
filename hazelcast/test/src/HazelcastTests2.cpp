@@ -1324,16 +1324,23 @@ namespace hazelcast {
                     return TestInnerPortable{bb, ba, cc, ss, ii, ll, ff, dd, nn};
                 }
 
-                class NonSerializableObject {};
+                struct NonSerializableObject {
+                    std::string s;
+
+                    friend bool operator==(const NonSerializableObject &lhs, const NonSerializableObject &rhs) {
+                        return lhs.s == rhs.s;
+                    }
+                };
 
                 class DummyGlobalSerializer : public serialization::global_serializer {
                 public:
                     void write(const boost::any &object, serialization::ObjectDataOutput &out) override {
-                        out.write<std::string>("Dummy string");
+                        auto const &obj = boost::any_cast<NonSerializableObject>(object);
+                        out.write<std::string>(obj.s);
                     }
 
                     boost::any read(serialization::ObjectDataInput &in) override {
-                        return boost::any(in.read<std::string>());
+                        return boost::any(NonSerializableObject{in.read<std::string>()});
                     }
                 };
 
@@ -1507,7 +1514,7 @@ namespace hazelcast {
                 ASSERT_TRUE(tip2);
                 ASSERT_EQ(inner, *tip2);
 
-                TestMainPortable main{true, (byte) 113, false, 'x', -500, 56789, -50992225, 900.5678f, -897543.3678909,
+                TestMainPortable main{(byte) 113, false, 'x', -500, 56789, -50992225, 900.5678f, -897543.3678909,
                                       "this is main portable object created for testing!", inner};
                 data = serializationService.toData<TestMainPortable>(&main);
 
@@ -1590,7 +1597,7 @@ namespace hazelcast {
                 ASSERT_EQ(inner, *tip1);
                 ASSERT_EQ(inner, *tip2);
 
-                TestMainPortable main{false, (byte) 113, true, 'x', -500, 56789, -50992225, 900.5678f, -897543.3678909,
+                TestMainPortable main{(byte) 113, true, 'x', -500, 56789, -50992225, 900.5678f, -897543.3678909,
                                       "this is main portable object created for testing!", inner};
                 data = serializationService.toData<TestMainPortable>(&main);
 
@@ -1903,13 +1910,13 @@ namespace hazelcast {
                 serializationConfig.setGlobalSerializer(std::make_shared<DummyGlobalSerializer>());
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                NonSerializableObject obj;
+                NonSerializableObject obj{"My class with no serializer"};
 
-                serialization::pimpl::Data data = serializationService.toData<NonSerializableObject>(&obj);
+                serialization::pimpl::Data data = serializationService.toData(obj);
 
-                auto deserializedValue = serializationService.toObject<std::string>(data);
+                auto deserializedValue = serializationService.toObject<NonSerializableObject>(data);
                 ASSERT_TRUE(deserializedValue.has_value());
-                ASSERT_EQ("Dummy string", *deserializedValue);
+                ASSERT_EQ(obj, deserializedValue);
             }
         }
     }

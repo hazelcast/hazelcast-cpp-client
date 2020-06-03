@@ -191,8 +191,7 @@ namespace hazelcast {
             }
 
             bool operator==(const TestMainPortable &lhs, const TestMainPortable &rhs) {
-                return lhs.null == rhs.null &&
-                       lhs.b == rhs.b &&
+                return lhs.b == rhs.b &&
                        lhs.boolean == rhs.boolean &&
                        lhs.c == rhs.c &&
                        lhs.s == rhs.s &&
@@ -353,7 +352,6 @@ namespace hazelcast {
             test::TestMainPortable
             hz_serializer<test::TestMainPortable>::readPortable(serialization::PortableReader &reader) {
                 test::TestMainPortable object;
-                object.null = false;
                 object.b = reader.read<byte>("b");
                 object.boolean = reader.read<bool>("bool");
                 object.c = reader.read<char>("c");
@@ -459,6 +457,7 @@ namespace hazelcast {
                 writer.write("i", object.ii);
                 writer.write("l", object.ll);
                 writer.write("f", object.ff);
+                writer.write("d", object.dd);
                 writer.writePortableArray("nn", &object.nn);
             }
 

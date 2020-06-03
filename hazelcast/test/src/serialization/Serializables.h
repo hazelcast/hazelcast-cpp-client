@@ -147,7 +147,6 @@ namespace hazelcast {
             };
 
             struct TestMainPortable {
-                bool null;
                 byte b;
                 bool boolean;
                 char c;

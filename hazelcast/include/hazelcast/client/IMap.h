@@ -219,7 +219,7 @@ namespace hazelcast {
             * @return the previous value, if there is no mapping for key
             * then returns boost::none.
             */
-            template<typename K, typename V>
+            template<typename K, typename V, typename R=V>
             boost::future<boost::optional<V>> putIfAbsent(const K &key, const V &value) {
                 return putIfAbsent(key, value, UNSET);
             }
@@ -235,9 +235,9 @@ namespace hazelcast {
             * @return the previous value of the entry, if there is no mapping for key
             * then returns boost::none.
             */
-            template<typename K, typename V>
+            template<typename K, typename V, typename R=V>
             boost::future<boost::optional<V>> putIfAbsent(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
-                return toObject<V>(putIfAbsentInternal(toData(key), toData(value), ttl));
+                return toObject<R>(putIfAbsentInternal(toData(key), toData(value), ttl));
             }
 
             /**

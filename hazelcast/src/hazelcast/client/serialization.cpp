@@ -71,8 +71,7 @@ namespace hazelcast {
 
         TypedData::TypedData(serialization::pimpl::Data d,
                              serialization::pimpl::SerializationService &serializationService) : data(std::move(d)),
-                                                                                                 ss(&serializationService) {
-        }
+                                                                                                 ss(&serializationService) {}
 
         serialization::pimpl::ObjectType TypedData::getType() const {
             return ss->getObjectType(&data);
@@ -260,18 +259,18 @@ namespace hazelcast {
                 return os;
             }
 
-            ObjectDataInput::ObjectDataInput(std::vector<byte> buffer, int offset,
+            ObjectDataInput::ObjectDataInput(const std::vector<byte> &buffer, int offset,
                     pimpl::PortableSerializer &portableSer, pimpl::DataSerializer &dataSer,
-                    const std::shared_ptr<serialization::global_serializer> &globalSerializer)
-                    : pimpl::DataInput<std::vector<byte>>(std::move(buffer), offset), portableSerializer(portableSer), dataSerializer(dataSer),
-                      globalSerializer_(globalSerializer) {}
+                    std::shared_ptr<serialization::global_serializer> globalSerializer)
+                    : pimpl::DataInput<std::vector<byte>>(buffer, offset), portableSerializer(portableSer), dataSerializer(dataSer),
+                      globalSerializer_(std::move(globalSerializer)) {}
 
             ObjectDataOutput::ObjectDataOutput(bool dontWrite, pimpl::PortableSerializer *portableSer,
                                                std::shared_ptr<serialization::global_serializer> globalSerializer)
-                    : DataOutput(dontWrite), portableSerializer(portableSer), globalSerializer_(globalSerializer) {}
+                    : DataOutput(dontWrite), portableSerializer(portableSer), globalSerializer_(std::move(globalSerializer)) {}
 
             PortableReader::PortableReader(pimpl::PortableSerializer &portableSer, ObjectDataInput &input,
-                                           std::shared_ptr<ClassDefinition> cd, bool isDefaultReader)
+                                           const std::shared_ptr<ClassDefinition> &cd, bool isDefaultReader)
                     : isDefaultReader(isDefaultReader) {
                 if (isDefaultReader) {
                     defaultPortableReader = boost::make_optional(pimpl::DefaultPortableReader(portableSer, input, cd));
@@ -425,6 +424,15 @@ namespace hazelcast {
                 template<>
                 void DataOutput::write(char i) {
                     if (isNoWrite) { return; }
+                    // C++ `char` is one byte only, `char16_t` is two bytes
+                    write<byte>(0);
+                    write<byte>(i);
+                }
+
+                template<>
+                void DataOutput::write(char16_t i) {
+                    if (isNoWrite) { return; }
+                    write<byte>(static_cast<byte>(i >> 8));
                     write<byte>(i);
                 }
 
@@ -503,16 +511,6 @@ namespace hazelcast {
                 void DataOutput::write(const HazelcastJsonValue &value) {
                     if (isNoWrite) { return; }
                     write<std::string>(value.toString());
-                }
-
-                int DataOutput::getUTF8CharCount(const std::string &str) {
-                    int size = 0;
-                    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
-                        // Any additional byte for an UTF character has a bit mask of 10xxxxxx
-                        size += (*it & 0xC0) != 0x80;
-                    }
-
-                    return size;
                 }
 
                 ObjectType::ObjectType() : typeId(SerializationConstants::CONSTANT_TYPE_NULL), factoryId(-1), classId(-1) {}
@@ -708,9 +706,7 @@ namespace hazelcast {
                 }
 
                 void DefaultPortableWriter::end() {
-                    size_t pos = objectDataOutput.position();
-                    objectDataOutput.position(static_cast<int32_t>(begin));
-                    objectDataOutput.write(static_cast<int32_t>(pos)); // write final offset
+                    objectDataOutput.writeAt(begin, static_cast<int32_t>(objectDataOutput.position()));
                 }
 
                 bool SerializationService::isNullData(const Data &data) {
@@ -743,23 +739,15 @@ namespace hazelcast {
 
                     if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId ||
                         SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
-                        // Constant 4 is Data::TYPE_OFFSET. Windows DLL export does not
-                        // let usage of static member.
-                        const std::vector<byte> &bytes = data->toByteArray();
-                        auto start = bytes.begin() + 4;
-                        DataInput<std::vector<byte>> dataInput(std::vector<byte>(start, start + 3 * util::Bits::INT_SIZE_IN_BYTES +
-                                                                     util::Bits::BOOLEAN_SIZE_IN_BYTES));
-
-                        auto objectTypeId = SerializationConstants(dataInput.read<int32_t>());
-                        assert(type.typeId == objectTypeId);
-                        boost::ignore_unused_variable_warning(objectTypeId);
+                        // 8 (Data Header) = Hash(4-bytes) + Data TypeId(4 bytes)
+                        DataInput<std::vector<byte>> dataInput(data->toByteArray(), 8);
 
                         if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId) {
                             bool identified = dataInput.read<bool>();
                             if (!identified) {
                                 BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
                                                               "SerializationService::getObjectType",
-                                                                      " DataSerializable is not identified"));
+                                                              " DataSerializable is not 'identified data'"));
                             }
                         }
 
@@ -969,10 +957,6 @@ namespace hazelcast {
                 }
                 
                 void PortableReaderBase::setPosition(const std::string &fieldName, FieldType const &fieldType) {
-                    dataInput->position(readPosition(fieldName, fieldType));
-                }
-
-                int PortableReaderBase::readPosition(const std::string &fieldName, FieldType const &fieldType) {
                     if (raw) {
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
                                                                                          "Cannot read Portable fields after getRawDataInput() is called!"));
@@ -998,7 +982,7 @@ namespace hazelcast {
                     int16_t len = dataInput->read<int16_t>();
 
                     // name + len + type
-                    return pos + util::Bits::SHORT_SIZE_IN_BYTES + len + 1;
+                    dataInput->position(pos + util::Bits::SHORT_SIZE_IN_BYTES + len + 1);
                 }
 
                 hazelcast::client::serialization::ObjectDataInput &PortableReaderBase::getRawDataInput() {

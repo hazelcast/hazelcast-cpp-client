@@ -44,9 +44,9 @@ namespace hazelcast {
                 public:
                     static constexpr const int MAX_UTF_CHAR_SIZE = 4;
 
-                    explicit DataInput(Container buf) : buffer(std::move(buf)), pos(0) {}
+                    explicit DataInput(const Container &buf) : buffer(buf), pos(0) {}
 
-                    DataInput(Container buf, int offset) : buffer(std::move(buf)), pos(offset) {}
+                    DataInput(const Container &buf, int offset) : buffer(buf), pos(offset) {}
 
                     inline void readFully(std::vector<byte> &bytes) {
                         size_t length = bytes.size();
@@ -76,6 +76,14 @@ namespace hazelcast {
                         byte b = buffer[pos + 1];
                         pos += util::Bits::CHAR_SIZE_IN_BYTES;
                         return b;
+                    }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<char16_t, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        checkAvailable(util::Bits::CHAR_SIZE_IN_BYTES);
+                        pos += util::Bits::CHAR_SIZE_IN_BYTES;
+                        return static_cast<char16_t>(buffer[pos] << 8 | buffer[pos+1]);
                     }
 
                     template<typename T>
@@ -205,7 +213,7 @@ namespace hazelcast {
                     void position(int position);
 
                 private:
-                    Container buffer;
+                    const Container &buffer;
                     int pos;
 
                     void inline checkAvailable(size_t requestedLength) {
