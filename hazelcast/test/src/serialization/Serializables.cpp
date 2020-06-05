@@ -252,7 +252,7 @@ namespace hazelcast {
 
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
                 out.writeObject<byte>(&object.by);
-                out.writeObject<char>(&object.c);
+                out.writeObject<char>(object.c);
                 out.writeObject<bool>(&object.boolean);
                 out.writeObject<int16_t>(&object.s);
                 out.writeObject<int32_t>(&object.i);
@@ -554,8 +554,12 @@ namespace hazelcast {
 
             test::TestInvalidReadPortable
             hz_serializer<test::TestInvalidReadPortable>::readPortable(PortableReader &reader) {
-                return test::TestInvalidReadPortable{reader.read<int64_t>("l"), reader.read<int32_t>("i"),
-                                                      reader.read<std::string>("s")};
+                test::TestInvalidReadPortable obj;
+                obj.l = reader.read<int64_t>("l");
+                serialization::ObjectDataInput &in = reader.getRawDataInput();
+                obj.i = in.read<int32_t>();
+                obj.s = reader.read<std::string>("s");
+                return obj;
             }
 
             void hz_serializer<test::TestCustomPerson>::write(const test::TestCustomPerson &object, ObjectDataOutput &out) {

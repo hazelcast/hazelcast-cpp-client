@@ -153,7 +153,7 @@ namespace hazelcast {
                         auto entries = f.get();
                         std::unordered_map<K, boost::optional<V>> result;
                         std::for_each(entries.begin(), entries.end(), [&](std::pair<serialization::pimpl::Data, serialization::pimpl::Data> entry) {
-                            result[std::move((toObject<K>(entry.first)).value())] = toObject<V>(entry.second);
+                            result.insert({std::move(toObject<K>(entry.first)).value(), toObject<V>(entry.second)});
                         });
                         return result;
                     });
@@ -169,8 +169,8 @@ namespace hazelcast {
                         std::for_each(dataEntryVector.begin(), dataEntryVector.end(),
                                       [&](const std::pair<serialization::pimpl::Data, serialization::pimpl::Data> &entryData) {
                                           // please note that the key and value will never be null
-                                          result.emplace_back(std::move(toObject<K>(entryData.first).value()),
-                                                                 std::move(toObject<V>(entryData.second).value()));
+                                          result.emplace_back(std::move(toObject<K>(entryData.first)).value(),
+                                                                 std::move(toObject<V>(entryData.second)).value());
                                       });
                         return result;
                     });
@@ -179,11 +179,6 @@ namespace hazelcast {
                 template<typename T>
                 boost::future<void> toVoidFuture(boost::future<T> messageFuture) {
                     return messageFuture.then(boost::launch::deferred, [](boost::future<T> f) { f.get(); });
-                }
-
-                template <typename T>
-                std::shared_ptr<T> toSharedObject(std::unique_ptr<serialization::pimpl::Data> &&data) {
-                    return std::shared_ptr<T>(toObject<T>(data).release());
                 }
 
                 template<typename T>

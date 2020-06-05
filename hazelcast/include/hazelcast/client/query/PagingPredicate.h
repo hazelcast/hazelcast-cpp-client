@@ -18,12 +18,10 @@
 #include <memory>
 #include <cassert>
 
-#include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/query/Predicates.h"
-#include "hazelcast/client/exception/IException.h"
 #include "hazelcast/client/query/EntryComparator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -33,7 +31,10 @@
 
 namespace hazelcast {
     namespace client {
+        class IMap;
         namespace query {
+            class PagingPredicateMarker {};
+
             /**
              * To differentiate users selection on result collection on map-wide operations
              * like values , keySet , query etc.
@@ -51,33 +52,6 @@ namespace hazelcast {
                  * Iterate over whole entry (so key and value)
                  */
                         ENTRY = 2
-            };
-
-            template<typename K, typename V>
-            class InvalidComparator :  public query::EntryComparator<K, V> {
-            public:
-                int compare(const std::pair<const K *, const V *> &lhs, const std::pair<const K *, const V *> &rhs) const {
-                    assert(0);
-                    return -1;
-                }
-
-                int getFactoryId() const {
-                    assert(0);
-                    return -1;
-                }
-
-                int getClassId() const {
-                    assert(0);
-                    return -1;
-                }
-
-                void writeData(serialization::ObjectDataOutput &writer) const {
-                    assert(0);
-                }
-
-                void readData(serialization::ObjectDataInput &reader) {
-                    assert(0);
-                }
             };
 
             static const std::string IterationNames[] = {"KEY", "VALUE", "ENTRY"};
@@ -118,65 +92,10 @@ namespace hazelcast {
              * System.out.println("values = " + values) // will print 'values = [0, 1]'
              * </pre>
              */
-
-            template<typename K, typename V, typename INNER_PREDICATE = char, typename COMPARATOR = query::EntryComparator<K, V>>
-            class PagingPredicate : public Predicate {
+            template<typename K, typename V>
+            class PagingPredicate : public Predicate, public PagingPredicateMarker {
+                friend IMap;
             public:
-                /**
-                 * Construct with a pageSize
-                 * results will not be filtered
-                 * results will be natural ordered
-                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
-                 *
-                 * @param predicatePageSize size of the page
-                 */
-                PagingPredicate(size_t predicatePageSize) : pageSize(predicatePageSize), page(0),iterationType(IterationType::VALUE) {
-                }
-
-                /**
-                 * Construct with an inner predicate and pageSize
-                 * results will be filtered via inner predicate
-                 * results will be natural ordered
-                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
-                 * throws IllegalArgumentException {@link IllegalArgumentException} if inner predicate is also {@link PagingPredicate}
-                 *
-                 * @param predicate the inner predicate through which results will be filtered
-                 * @param predicatePageSize  the page size
-                 */
-                PagingPredicate(INNER_PREDICATE predicate, size_t predicatePageSize) : innerPredicate(std::move(predicate)),
-                                                                                             pageSize(predicatePageSize),
-                                                                                             page(0),
-                                                                                             iterationType(IterationType::VALUE) {
-                }
-
-                /**
-                 * Construct with a comparator and pageSize
-                 * results will not be filtered
-                 * results will be ordered via comparator
-                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
-                 *
-                 * @param comparatorObj the comparator through which results will be ordered
-                 * @param predicatePageSize   the page size
-                 */
-                PagingPredicate(COMPARATOR comparatorObj, size_t predicatePageSize) : comparator(
-                        std::move(comparatorObj)), pageSize(predicatePageSize), page(0), iterationType(IterationType::VALUE) {
-                }
-
-                /**
-                 * Construct with an inner predicate, comparator and pageSize
-                 * results will be filtered via inner predicate
-                 * results will be ordered via comparator
-                 * throws {@link IllegalArgumentException} if pageSize is not greater than 0
-                 * throws {@link IllegalArgumentException} if inner predicate is also {@link PagingPredicate}
-                 *
-                 * @param predicate  the inner predicate through which results will be filtered
-                 * @param comparatorObj the comparator through which results will be ordered
-                 * @param predicatePageSize   the page size
-                 */
-                PagingPredicate(INNER_PREDICATE predicate, COMPARATOR comparatorObj,
-                                size_t predicatePageSize) : innerPredicate(std::move(predicate)), comparator(std::move(comparatorObj)),
-                                                         pageSize(predicatePageSize), page(0), iterationType(IterationType::VALUE) {}
-
                 ~PagingPredicate() {
                     for (typename std::vector<std::pair<size_t, std::pair<K *, V *> > >::const_iterator it = anchorList.begin();
                          it != anchorList.end(); ++it) {
@@ -235,20 +154,9 @@ namespace hazelcast {
                     return pageSize;
                 }
 
-                const Predicate *getPredicate() const {
-                    if (!innerPredicate) {
-                        return nullptr;
-                    }
-                    return &innerPredicate.value();
-                }
-
                 const query::EntryComparator<K, V> *getComparator() const {
-                    if (!comparator) {
-                        return nullptr;
-                    }
-                    return comparator.get_ptr();
+                    return comparator.get();
                 }
-
 
                 /**
                  * Retrieve the anchor object which is the last value object on the previous page.
@@ -293,8 +201,7 @@ namespace hazelcast {
                  * @param writer ObjectDataOutput
                  */
                 void writeData(serialization::ObjectDataOutput &out) const {
-                    out.writeObject<INNER_PREDICATE>(innerPredicate);
-                    out.writeObject<COMPARATOR>(comparator);
+                    out.writeBytes(outStream.toByteArray());
                     out.write<int32_t>((int)page);
                     out.write<int32_t>((int)pageSize);
                     out.write<std::string>(IterationNames[static_cast<int32_t>(iterationType)]);
@@ -325,13 +232,87 @@ namespace hazelcast {
                 }
 
             private:
-                boost::optional<INNER_PREDICATE> innerPredicate;
                 // key is the page number, the value is the map entry as the anchor
                 std::vector<std::pair<size_t, std::pair<K *, V *> > > anchorList;
-                boost::optional<COMPARATOR> comparator;
+                std::shared_ptr<query::EntryComparator<K, V>> comparator;
+                serialization::ObjectDataOutput outStream;
                 size_t pageSize;
                 size_t page;
                 IterationType iterationType;
+
+                /**
+ * Construct with a pageSize
+ * results will not be filtered
+ * results will be natural ordered
+ * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
+ *
+ * @param predicatePageSize size of the page
+ */
+                PagingPredicate(serialization::pimpl::SerializationService &serializationService,
+                        size_t predicatePageSize) : outStream(serializationService.newOutputStream()),
+                        pageSize(predicatePageSize), page(0), iterationType(IterationType::VALUE) {
+                    outStream.writeObject<bool>(nullptr);
+                    outStream.writeObject<bool>(nullptr);
+                }
+
+                /**
+                 * Construct with an inner predicate and pageSize
+                 * results will be filtered via inner predicate
+                 * results will be natural ordered
+                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
+                 * throws IllegalArgumentException {@link IllegalArgumentException} if inner predicate is also {@link PagingPredicate}
+                 *
+                 * @param predicate the inner predicate through which results will be filtered
+                 * @param predicatePageSize  the page size
+                 */
+                template<typename INNER_PREDICATE>
+                PagingPredicate(serialization::pimpl::SerializationService &serializationService,
+                        size_t predicatePageSize, const INNER_PREDICATE &predicate)
+                        : outStream(serializationService.newOutputStream()), pageSize(predicatePageSize), page(0),
+                        iterationType(IterationType::VALUE) {
+                    outStream.writeObject(predicate);
+                    outStream.writeObject<bool>(nullptr);
+                }
+
+                /**
+                 * Construct with a comparator and pageSize
+                 * results will not be filtered
+                 * results will be ordered via comparator
+                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
+                 *
+                 * @param comparatorObj the comparator through which results will be ordered
+                 * @param predicatePageSize   the page size
+                 */
+                template<typename COMPARATOR>
+                PagingPredicate(serialization::pimpl::SerializationService &serializationService,
+                        const COMPARATOR &comp, size_t predicatePageSize)
+                        : outStream(serializationService.newOutputStream()), pageSize(predicatePageSize), page(0),
+                        iterationType(IterationType::VALUE) {
+                    outStream.writeObject<bool>(nullptr);
+                    outStream.writeObject(comp);
+                    comparator = std::make_shared<COMPARATOR>(std::move(comp));
+                }
+
+                /**
+                 * Construct with an inner predicate, comparator and pageSize
+                 * results will be filtered via inner predicate
+                 * results will be ordered via comparator
+                 * throws {@link IllegalArgumentException} if pageSize is not greater than 0
+                 * throws {@link IllegalArgumentException} if inner predicate is also {@link PagingPredicate}
+                 *
+                 * @param predicate  the inner predicate through which results will be filtered
+                 * @param comparatorObj the comparator through which results will be ordered
+                 * @param predicatePageSize   the page size
+                 */
+                template<typename INNER_PREDICATE, typename COMPARATOR>
+                PagingPredicate(serialization::pimpl::SerializationService &serializationService,
+                        const INNER_PREDICATE &predicate, COMPARATOR &&comp, size_t predicatePageSize)
+                        : outStream(serializationService.newOutputStream()), pageSize(predicatePageSize), page(0),
+                        iterationType(IterationType::VALUE) {
+                    outStream.writeObject(predicate);
+                    outStream.writeObject(comp);
+                    comparator = std::make_shared<COMPARATOR>(std::move(comp));
+                }
             };
         }
 

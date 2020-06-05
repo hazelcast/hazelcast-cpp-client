@@ -36,8 +36,8 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            BasePredicate::BasePredicate(HazelcastClient &client) : outStream(false, &spi::ClientContext(
-                    client).getSerializationService().getPortableSerializer()) {}
+            BasePredicate::BasePredicate(HazelcastClient &client) : outStream(spi::ClientContext(
+                    client).getSerializationService().newOutputStream()) {}
 
             NamedPredicate::NamedPredicate(HazelcastClient &client, const std::string &attributeName) : BasePredicate(
                     client) {

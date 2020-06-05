@@ -41,6 +41,8 @@
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/MurmurHash3.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -283,6 +285,15 @@ namespace hazelcast {
                 if (isDefaultReader)
                     return defaultPortableReader->getRawDataInput();
                 return morphingPortableReader->getRawDataInput();
+            }
+
+            template<>
+            void ObjectDataOutput::writeObject(const char *object) {
+                if (!object) {
+                    write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_NULL));
+                    return;
+                }
+                writeObject<std::string>(std::string(object));
             }
 
             void PortableReader::end() {
@@ -633,8 +644,8 @@ namespace hazelcast {
                     return serializationConfig;
                 }
 
-                SerializationService::SerializationService(const SerializationConfig &serializationConfig)
-                        : portableContext(serializationConfig), serializationConfig(serializationConfig),
+                SerializationService::SerializationService(SerializationConfig serializationConfig)
+                        : portableContext(serializationConfig), serializationConfig(std::move(serializationConfig)),
                           portableSerializer(portableContext) {}
 
                 DefaultPortableWriter::DefaultPortableWriter(PortableSerializer &portableSer,
@@ -697,9 +708,7 @@ namespace hazelcast {
                     if (!raw) {
                         size_t pos = objectDataOutput.position();
                         int32_t index = cd->getFieldCount(); // last index
-                        objectDataOutput.position(offset + index * util::Bits::INT_SIZE_IN_BYTES);
-                        objectDataOutput.write(static_cast<int32_t>(pos));
-                        objectDataOutput.position(pos);
+                        objectDataOutput.writeAt(offset + index * util::Bits::INT_SIZE_IN_BYTES, static_cast<int32_t>(pos));
                     }
                     raw = true;
                     return objectDataOutput;
@@ -767,6 +776,10 @@ namespace hazelcast {
 
                 DataSerializer &SerializationService::getDataSerializer() {
                     return dataSerializer;
+                }
+
+                ObjectDataOutput SerializationService::newOutputStream() {
+                    return ObjectDataOutput(false, &portableSerializer, serializationConfig.getGlobalSerializer());
                 }
 
                 template<>

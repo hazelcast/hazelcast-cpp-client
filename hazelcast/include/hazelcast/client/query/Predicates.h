@@ -372,7 +372,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t getClassId() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::BETWEEN_PREDICATE);
+                    return static_cast<int32_t>(query::PredicateDataSerializerHook::SQL_PREDICATE);
                 }
             };
 
@@ -423,6 +423,16 @@ namespace hazelcast {
                  */
                 static constexpr int32_t getClassId() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::OR_PREDICATE);
+                }
+            };
+
+            template<>
+            struct hz_serializer<query::NotPredicate> : public BasePredicateSerializer<query::NotPredicate> {
+                /**
+                 * @return class id
+                 */
+                static constexpr int32_t getClassId() noexcept {
+                    return static_cast<int32_t>(query::PredicateDataSerializerHook::NOT_PREDICATE);
                 }
             };
         };

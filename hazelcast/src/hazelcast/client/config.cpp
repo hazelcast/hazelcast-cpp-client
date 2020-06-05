@@ -61,7 +61,7 @@ namespace hazelcast {
             return *this;
         }
 
-        const std::shared_ptr<serialization::global_serializer> &SerializationConfig::getGlobalSerializer() const {
+        std::shared_ptr<serialization::global_serializer> SerializationConfig::getGlobalSerializer() const {
             return globalSerializer_;
         }
 

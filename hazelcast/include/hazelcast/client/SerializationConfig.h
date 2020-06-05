@@ -58,7 +58,7 @@ namespace hazelcast {
              */
             SerializationConfig& setPortableVersion(int v);
 
-            const std::shared_ptr<serialization::global_serializer> &getGlobalSerializer() const;
+            std::shared_ptr<serialization::global_serializer> getGlobalSerializer() const;
 
             void setGlobalSerializer(const std::shared_ptr<serialization::global_serializer> &globalSerializer);
         private:

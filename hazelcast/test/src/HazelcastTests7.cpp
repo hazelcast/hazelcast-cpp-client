@@ -406,13 +406,13 @@ namespace hazelcast {
                 ASSERT_EQ("item1", item.value());
                 item = list->get<std::string>(1).get();
                 ASSERT_TRUE(item.has_value());
-                ASSERT_EQ("item2", item.value());
+                ASSERT_EQ("item1", item.value());
                 item = list->get<std::string>(2).get();
                 ASSERT_TRUE(item.has_value());
                 ASSERT_EQ("item2", item.value());
                 item = list->get<std::string>(3).get();
                 ASSERT_TRUE(item.has_value());
-                ASSERT_EQ("item3", item.value());
+                ASSERT_EQ("item2", item.value());
             }
 
             TEST_F(ClientListTest, testAddSetRemove) {

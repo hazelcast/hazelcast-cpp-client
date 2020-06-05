@@ -1293,7 +1293,7 @@ namespace hazelcast {
 
             TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue) {
                 HazelcastJsonValue jsonValue("{ \"key\": \"value\" }");
-                serialization::pimpl::Data jsonData = serializationService.toData(&jsonValue);
+                serialization::pimpl::Data jsonData = serializationService.toData<HazelcastJsonValue>(&jsonValue);
                 auto jsonDeserialized = serializationService.toObject<HazelcastJsonValue>(jsonData);
                 ASSERT_TRUE(jsonDeserialized.has_value());
                 ASSERT_EQ(jsonValue, jsonDeserialized.value());
@@ -1457,7 +1457,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 SerializationConfig serializationConfig2;
-                serializationConfig.setPortableVersion(2);
+                serializationConfig2.setPortableVersion(2);
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
                 serialization::pimpl::Data data = serializationService.toData<TestNamedPortable>(
@@ -1475,7 +1475,7 @@ namespace hazelcast {
                 auto t1 = serializationService.toObject<TestNamedPortable>(data2);
                 ASSERT_TRUE(t1);
                 ASSERT_EQ(std::string("portable-v2"), t1->name);
-                ASSERT_EQ(123 * 10, t1->k);
+                ASSERT_EQ(123, t1->k);
 
             }
 
@@ -1524,6 +1524,15 @@ namespace hazelcast {
                 ASSERT_TRUE(tmp2);
                 ASSERT_EQ(main, *tmp1);
                 ASSERT_EQ(main, *tmp2);
+            }
+
+            TEST_F(ClientSerializationTest, testStringLiterals) {
+                auto literal = R"delimeter(My example string literal)delimeter";
+                serialization::pimpl::SerializationService serializationService(SerializationConfig{});
+                auto data = serializationService.toData(literal);
+                auto obj = serializationService.toObject<decltype(literal)>(data);
+                ASSERT_TRUE(obj);
+                ASSERT_EQ(obj.value(), literal);
             }
 
             TEST_F(ClientSerializationTest, testBasicFunctionalityWithLargeData) {
@@ -1607,19 +1616,6 @@ namespace hazelcast {
                 ASSERT_TRUE(tmp2);
                 ASSERT_EQ(main, *tmp1);
                 ASSERT_EQ(main, *tmp2);
-            }
-
-            TEST_F(ClientSerializationTest, testTemplatedPortable_whenMultipleTypesAreUsed) {
-                SerializationConfig serializationConfig;
-                serialization::pimpl::SerializationService ss(serializationConfig);
-
-                auto child1 = boost::make_optional(ChildTemplatedPortable1{"aaa", "bbb"});
-                ParentTemplatedPortable <ChildTemplatedPortable1> parent1{child1};
-                ss.toData(parent1);
-
-                auto child2 = boost::make_optional(ChildTemplatedPortable2{"ccc"});
-                ParentTemplatedPortable <ChildTemplatedPortable2> parent2{child2};
-                ASSERT_THROW(ss.toData(parent2), exception::HazelcastSerializationException);
             }
 
             TEST_F(ClientSerializationTest, testDataHash) {

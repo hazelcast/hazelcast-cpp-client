@@ -40,6 +40,8 @@
 namespace hazelcast {
     namespace client {
         class TypedData;
+        class HazelcastClient;
+
         namespace serialization {
             class ObjectDataInput;
             class ObjectDataOutput;
@@ -94,7 +96,7 @@ namespace hazelcast {
             struct custom_serializer {};
 
             struct global_serializer {
-                virtual ~global_serializer() {}
+                virtual ~global_serializer() = default;
 
                 static pimpl::SerializationConstants getTypeId() {
                     return pimpl::SerializationConstants::CONSTANT_TYPE_GLOBAL;
@@ -109,8 +111,8 @@ namespace hazelcast {
              * Classes derived from this class should implement the following static methods:
              *      static int32_t getClassId() noexcept;
              *      static int32_t getFactoryId() noexcept;
-             *      static int32_t writeData(ObjectDataOutput &out);
-             *      static int32_t readData(ObjectDataInput &in);
+             *      static int32_t writeData(const T &object, ObjectDataOutput &out);
+             *      static T readData(ObjectDataInput &in);
              */
             struct identified_data_serializer {
             };
@@ -119,8 +121,8 @@ namespace hazelcast {
              * Classes derived from this class should implement the following static methods:
              *      static int32_t getClassId() noexcept;
              *      static int32_t getFactoryId() noexcept;
-             *      static int32_t writePortable(PortableWriter &out);
-             *      static int32_t readPortable(PortableReader &in);
+             *      static int32_t writePortable(const T &object, PortableWriter &out);
+             *      static T readPortable(PortableReader &in);
              */
             struct portable_serializer {
             };
@@ -613,7 +615,7 @@ namespace hazelcast {
                 /**
                 * Internal API Constructor
                 */
-                ObjectDataOutput(bool dontWrite = false, pimpl::PortableSerializer *portableSer = nullptr,
+                explicit ObjectDataOutput(bool dontWrite = false, pimpl::PortableSerializer *portableSer = nullptr,
                                  std::shared_ptr<serialization::global_serializer> globalSerializer = nullptr);
 
                 template<typename T>
@@ -662,7 +664,8 @@ namespace hazelcast {
                     writeObjects(objects...);
                 }
 
-                inline void writeBytes(const std::string &s) {
+                template<typename T>
+                inline void writeBytes(const T &s) {
                     for (auto c : s) {
                         outputStream.push_back(c);
                     }
@@ -672,6 +675,9 @@ namespace hazelcast {
                 pimpl::PortableSerializer *portableSerializer;
                 std::shared_ptr<serialization::global_serializer> globalSerializer_;
             };
+
+            template<>
+            void ObjectDataOutput::writeObject(const char *object);
 
             namespace pimpl {
                 class HAZELCAST_API PortableContext {
@@ -1224,7 +1230,7 @@ namespace hazelcast {
 
                 class HAZELCAST_API SerializationService : public util::Disposable {
                 public:
-                    SerializationService(const SerializationConfig &serializationConfig);
+                    SerializationService(SerializationConfig serializationConfig);
 
                     PortableSerializer &getPortableSerializer();
 
@@ -1263,7 +1269,8 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    inline boost::optional<T> toObject(const Data &data) {
+                    typename std::enable_if<!(std::is_same<T, const char *>::value || std::is_same<T, const char *>::value), boost::optional<T>>::type
+                    inline toObject(const Data &data) {
                         if (isNullData(data)) {
                             return boost::none;
                         }
@@ -1304,13 +1311,14 @@ namespace hazelcast {
                      */
                     void dispose() override;
 
+                    ObjectDataOutput newOutputStream();
                 private:
                     SerializationService(const SerializationService &);
 
                     SerializationService &operator=(const SerializationService &);
 
                     PortableContext portableContext;
-                    const SerializationConfig &serializationConfig;
+                    const SerializationConfig serializationConfig;
                     serialization::pimpl::PortableSerializer portableSerializer;
                     serialization::pimpl::DataSerializer dataSerializer;
 
@@ -1629,7 +1637,7 @@ namespace hazelcast {
             inline ObjectDataOutput::writeObject(const T object) {
                 if (!globalSerializer_) {
                     throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject",
-                                                                     "No serializer found for the type");
+                            (boost::format("No serializer found for type(%1%).") %typeid(T).name()).str());
                 }
                 if (isNoWrite) { return; }
                 write<int32_t>(static_cast<int32_t>(global_serializer::getTypeId()));
@@ -1713,9 +1721,7 @@ namespace hazelcast {
             inline ObjectDataInput::readObject(int32_t typeId) {
                 if (!globalSerializer_) {
                     throw exception::HazelcastSerializationException("ObjectDataInput::readObject",
-                                                                     (boost::format(
-                                                                             "No serializer found for the type %1%.") %
-                                                                      typeid(T).name()).str());
+                            (boost::format("No serializer found for type %1%.") %typeid(T).name()).str());
                 }
 
                 if (typeId != static_cast<int32_t>(globalSerializer_->getTypeId())) {

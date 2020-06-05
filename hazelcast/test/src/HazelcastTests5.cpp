@@ -1253,7 +1253,7 @@ namespace hazelcast {
                 fillMap();
 
                 imap->removeAll(
-                        query::EqualPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, "key5"));
+                        query::EqualPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, "key5")).get();
 
                 boost::optional<std::string> value = imap->get<std::string, std::string>("key5").get();
 
@@ -1266,7 +1266,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testGetAllPutAll) {
-                std::unordered_map<std::string, boost::optional<std::string>> mapTemp;
+                std::unordered_map<std::string, std::string> mapTemp;
 
                 for (int i = 0; i < 100; i++) {
                     mapTemp[std::to_string(i)] = std::to_string(i);
@@ -1285,7 +1285,6 @@ namespace hazelcast {
                 std::unordered_set<std::string> tempSet;
                 tempSet.insert(std::to_string(1));
                 tempSet.insert(std::to_string(3));
-
                 std::unordered_map<std::string, std::string> m2 = imap->getAll<std::string, std::string>(tempSet).get();
 
                 ASSERT_EQ(2U, m2.size());
@@ -1683,12 +1682,8 @@ namespace hazelcast {
 
                 // InPredicate
                 // key in {4, 10, 19}
-                std::vector<int> inVals(3);
-                inVals[0] = 4;
-                inVals[1] = 10;
-                inVals[2] = 19;
                 values = intMap->values<int>(
-                        query::InPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, inVals)).get();
+                        query::InPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 4, 10, 19)).get();
                 ASSERT_EQ(3, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(2 * 4, values[0]);
@@ -1697,7 +1692,7 @@ namespace hazelcast {
 
                 // value in {4, 10, 19}
                 values = intMap->values<int>(
-                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals)).get();
+                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 4, 10, 19)).get();
                 ASSERT_EQ(2, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(4, values[0]);
@@ -1738,7 +1733,7 @@ namespace hazelcast {
                                                                                                  5, 10),
                                                                  query::InPredicate(client,
                                                                                     query::QueryConstants::THIS_ATTRIBUTE_NAME,
-                                                                                    inVals))).get();
+                                                                                    4, 10, 19))).get();
                 ASSERT_EQ(1, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(10, values[0]);
@@ -1750,7 +1745,7 @@ namespace hazelcast {
                                                                                                 5, 10),
                                                                 query::InPredicate(client,
                                                                                    query::QueryConstants::THIS_ATTRIBUTE_NAME,
-                                                                                   inVals))).get();
+                                                                                   4, 10, 19))).get();
                 ASSERT_EQ(7, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(4, values[0]);
@@ -1827,7 +1822,7 @@ namespace hazelcast {
                     intMap->put(i, i).get();
                 }
 
-                query::PagingPredicate<int, int> predicate((size_t) predSize);
+                auto predicate = intMap->newPagingPredicate<int, int>((size_t) predSize);
 
                 std::vector<int> values = intMap->values<int>(predicate).get();
                 ASSERT_EQ(predSize, (int) values.size());
@@ -1916,7 +1911,7 @@ namespace hazelcast {
 
                 // test PagingPredicate with inner predicate (value < 10)
                 query::GreaterLessPredicate lessThanTenPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true);
-                query::PagingPredicate<int, int, query::GreaterLessPredicate> predicate2(lessThanTenPredicate, 5);
+                auto predicate2 = intMap->newPagingPredicate<int, int>(5, lessThanTenPredicate);
                 values = intMap->values<int>(predicate2).get();
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
@@ -1951,14 +1946,14 @@ namespace hazelcast {
                 employees->put(8, empl6).get();
 
                 predSize = 2;
-                query::PagingPredicate<int, Employee, int, EmployeeEntryComparator> predicate3(EmployeeEntryComparator(), (size_t) predSize);
-                std::vector<Employee> result = employees->values<Employee>(predicate3).get();
+                auto predicate3 = intMap->newPagingPredicate<int, Employee>(EmployeeEntryComparator(), (size_t) predSize);
+                std::vector<Employee> result = employees->values<int, Employee>(predicate3).get();
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(empl6, result[0]);
                 ASSERT_EQ(empl2, result[1]);
 
                 predicate3.nextPage();
-                result = employees->values<Employee>(predicate3).get();
+                result = employees->values<int, Employee>(predicate3).get();
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(empl3, result[0]);
                 ASSERT_EQ(empl4, result[1]);
@@ -2091,12 +2086,8 @@ namespace hazelcast {
 
 // InPredicate
 // key in {4, 10, 19}
-                std::vector<int> inVals(3);
-                inVals[0] = 4;
-                inVals[1] = 10;
-                inVals[2] = 19;
                 keys = intMap->keySet<int>(
-                        query::InPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, inVals)).get();
+                        query::InPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 4, 10, 19)).get();
                 ASSERT_EQ(3, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(4, keys[0]);
@@ -2105,7 +2096,7 @@ namespace hazelcast {
 
 // value in {4, 10, 19}
                 keys = intMap->keySet<int>(
-                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals)).get();
+                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 4, 10, 19)).get();
                 ASSERT_EQ(2, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(2, keys[0]);
@@ -2141,14 +2132,14 @@ namespace hazelcast {
 // 5 <= key <= 10 AND Values in {4, 10, 19} = keys {4, 10}
                 keys = intMap->keySet<int>(query::AndPredicate(client,
                         query::BetweenPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10),
-                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals))).get();
+                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 4, 10, 19))).get();
                 ASSERT_EQ(1, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(5, keys[0]);
 
 // OrPredicate
 // 5 <= key <= 10 OR Values in {4, 10, 19} = keys {2, 5, 6, 7, 8, 9, 10}
-                keys = intMap->keySet<int>(query::OrPredicate(client, query::BetweenPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10), query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals))).get();
+                keys = intMap->keySet<int>(query::OrPredicate(client, query::BetweenPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10), query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 4, 10, 19))).get();
                 ASSERT_EQ(7, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(2, keys[0]);
@@ -2225,7 +2216,7 @@ namespace hazelcast {
                     intMap->put(i, i).get();
                 }
 
-                query::PagingPredicate<int, int> predicate((size_t) predSize);
+                auto predicate = intMap->newPagingPredicate<int, int>((size_t) predSize);
 
                 std::vector<int> values = intMap->keySet<int>(predicate).get();
                 ASSERT_EQ(predSize, (int) values.size());
@@ -2308,7 +2299,7 @@ namespace hazelcast {
 
 // test PagingPredicate with inner predicate (value < 10)
                 query::GreaterLessPredicate lessThanTenPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true);
-                query::PagingPredicate<int, int, query::GreaterLessPredicate> predicate2(lessThanTenPredicate, 5);
+                auto predicate2 = intMap->newPagingPredicate<int, int>(5, lessThanTenPredicate);
                 values = intMap->keySet<int>(predicate2).get();
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
@@ -2343,7 +2334,7 @@ namespace hazelcast {
                 employees->put(8, empl6).get();
 
                 predSize = 2;
-                query::PagingPredicate<int, Employee, int, EmployeeEntryKeyComparator> predicate3(EmployeeEntryKeyComparator(), (size_t) predSize);
+                auto predicate3 = intMap->newPagingPredicate<int, Employee>(EmployeeEntryKeyComparator(), (size_t) predSize);
                 std::vector<int> result = employees->keySet<int>(predicate3).get();
                 // since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
                 ASSERT_EQ(2, (int) result.size());
@@ -2484,14 +2475,10 @@ namespace hazelcast {
                     ASSERT_EQ(expected[i + 6], entries[i]);
                 }
 
-// InPredicate
-// key in {4, 10, 19}
-                std::vector<int> inVals(3);
-                inVals[0] = 4;
-                inVals[1] = 10;
-                inVals[2] = 19;
+                // InPredicate
+                // key in {4, 10, 19}
                 entries = intMap->entrySet<int, int>(
-                        query::InPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, inVals)).get();
+                        query::InPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 4, 10, 19)).get();
                 ASSERT_EQ(3, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[4], entries[0]);
@@ -2500,7 +2487,7 @@ namespace hazelcast {
 
 // value in {4, 10, 19}
                 entries = intMap->entrySet<int, int>(
-                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals)).get();
+                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 4, 10, 19)).get();
                 ASSERT_EQ(2, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[2], entries[0]);
@@ -2536,7 +2523,7 @@ namespace hazelcast {
 // 5 <= key <= 10 AND Values in {4, 10, 19} = entries {4, 10}
                 entries = intMap->entrySet<int, int>(query::AndPredicate(client, query::BetweenPredicate(client,
                         query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10),
-                                query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals))).get();
+                                query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 4, 10, 19))).get();
                 ASSERT_EQ(1, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[5], entries[0]);
@@ -2545,7 +2532,7 @@ namespace hazelcast {
 // 5 <= key <= 10 OR Values in {4, 10, 19} = entries {2, 5, 6, 7, 8, 9, 10}
                 entries = intMap->entrySet<int, int>(query::OrPredicate(client,
                         query::BetweenPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10),
-                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals))).get();
+                        query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 4, 10, 19))).get();
                 ASSERT_EQ(7, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[2], entries[0]);
@@ -2626,7 +2613,7 @@ namespace hazelcast {
                     intMap->put(i, i).get();
                 }
 
-                query::PagingPredicate<int, int> predicate((size_t) predSize);
+                auto predicate = intMap->newPagingPredicate<int, int>((size_t) predSize);
 
                 std::vector<std::pair<int, int> > values = intMap->entrySet<int, int>(predicate).get();
                 ASSERT_EQ(predSize, (int) values.size());
@@ -2721,7 +2708,7 @@ namespace hazelcast {
 
 // test PagingPredicate with inner predicate (value < 10)
                 query::GreaterLessPredicate lessThanTenPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true);
-                query::PagingPredicate<int, int, query::GreaterLessPredicate> predicate2(lessThanTenPredicate, 5);
+                auto predicate2 = intMap->newPagingPredicate<int, int>(5, lessThanTenPredicate);
                 values = intMap->entrySet<int, int>(predicate2).get();
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
@@ -2758,7 +2745,7 @@ namespace hazelcast {
                 employees->put(8, empl6).get();
 
                 predSize = 2;
-                query::PagingPredicate<int, Employee, int, EmployeeEntryComparator> predicate3(EmployeeEntryComparator(), (size_t) predSize);
+                auto predicate3 = intMap->newPagingPredicate<int, Employee>(EmployeeEntryComparator(), (size_t) predSize);
                 std::vector<std::pair<int, Employee> > result = employees->entrySet<int, Employee>(
                         predicate3).get();
                 ASSERT_EQ(2, (int) result.size());
@@ -3274,9 +3261,9 @@ namespace hazelcast {
                                                      latchEvict);
 
                 // key < 3
-                query::GreaterLessPredicate greaterLessPred(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 3, false, true);
+                query::GreaterLessPredicate greaterLessPred(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 3, true, false);
                 // value == 1
-                query::EqualPredicate equalPred(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 1);
+                query::EqualPredicate equalPred(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 2);
                 // key >= 3 OR value == 2 --> (1, 1), (2, 2)
                 query::OrPredicate predicate(client, greaterLessPred, equalPred);
                 std::string listenerId = intMap->addEntryListener(listener, predicate, true).get();
@@ -3373,11 +3360,7 @@ namespace hazelcast {
 
                 EntryMultiplier processor(4);
 
-                auto future = employees->submitToKey<int, int, EntryMultiplier>(4, processor);
-
-                boost::future_status status = future.wait_for(boost::chrono::seconds(2));
-                ASSERT_EQ(boost::future_status::ready, status);
-                auto result = future.get();
+                auto result = employees->submitToKey<int, int, EntryMultiplier>(4, processor).get();
                 ASSERT_TRUE(result.has_value());
                 ASSERT_EQ(4 * processor.getMultiplier(), result.value());
             }

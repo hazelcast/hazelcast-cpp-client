@@ -23,6 +23,8 @@
 #include <climits>
 #include <assert.h>
 
+#include <boost/concept/requires.hpp>
+
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
@@ -103,7 +105,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename R=V>
             boost::future<boost::optional<R>> put(const K &key, const V &value) {
-                return put(key, value, UNSET);
+                return put<K, V, R>(key, value, UNSET);
             }
 
             /**
@@ -564,7 +566,6 @@ namespace hazelcast {
                     futures.push_back(getAllInternal(entry.first, std::move(entry.second)));
                 }
 
-                auto val = boost::when_all(futures.begin(), futures.end());
                 return boost::when_all(futures.begin(), futures.end()).then(boost::launch::deferred,
                                                                             [=](boost::future<std::vector<boost::future<EntryVector>>> resultsData) {
                                                                                 std::unordered_map<K, V> result;
@@ -603,22 +604,22 @@ namespace hazelcast {
               * @param predicate query criteria
               * @return result key set of the query
               */
-            template<typename K, typename P>
+            template<typename K, typename P, class = typename std::enable_if<!std::is_base_of<query::PagingPredicateMarker, P>::value>::type>
             boost::future<std::vector<K>> keySet(const P &predicate) {
                 return toObjectVector<K>(proxy::IMapImpl::keySetData(toData(predicate)));
             }
 
             /**
-*
-* Queries the map based on the specified predicate and
-* returns the keys of matching entries.
-*
-* Specified predicate runs on all members in parallel.
-*
-*
-* @param predicate query criteria
-* @return result key set of the query
-*/
+            *
+            * Queries the map based on the specified predicate and
+            * returns the keys of matching entries.
+            *
+            * Specified predicate runs on all members in parallel.
+            *
+            *
+            * @param predicate query criteria
+            * @return result key set of the query
+            */
             template<typename K, typename V>
             boost::future<std::vector<K>> keySet(query::PagingPredicate<K, V> &predicate) {
                 predicate.setIterationType(query::IterationType::KEY);
@@ -658,7 +659,7 @@ namespace hazelcast {
             * @param predicate the criteria for values to match
             * @return a vector clone of the values contained in this map
             */
-            template<typename V, typename P>
+            template<typename V, typename P, class = typename std::enable_if<!std::is_base_of<query::PagingPredicateMarker, P>::value>::type>
             boost::future<std::vector<V>> values(const P &predicate) {
                 return toObjectVector<V>(proxy::IMapImpl::valuesData(toData(predicate)));
             }
@@ -709,7 +710,7 @@ namespace hazelcast {
             * @param predicate query criteria
             * @return result entry vector of the query
             */
-            template<typename K, typename V, typename P>
+            template<typename K, typename V, typename P, class = typename std::enable_if<!std::is_base_of<query::PagingPredicateMarker, P>::value>::type>
             boost::future<std::vector<std::pair<K, V>>> entrySet(const P &predicate) {
                 return toEntryObjectVector<K,V>(proxy::IMapImpl::entrySetData(toData(predicate)));
             }
@@ -908,6 +909,27 @@ namespace hazelcast {
             monitor::LocalMapStats &getLocalMapStats() {
                 return localMapStats;
             }
+
+            template<typename K, typename V>
+            query::PagingPredicate<K, V> newPagingPredicate(size_t predicatePageSize) {
+                return query::PagingPredicate<K, V>(getSerializationService(), predicatePageSize);
+            }
+
+            template<typename K, typename V, typename INNER_PREDICATE>
+            query::PagingPredicate<K, V> newPagingPredicate(size_t predicatePageSize, const INNER_PREDICATE &predicate) {
+                return query::PagingPredicate<K, V>(getSerializationService(), predicatePageSize, predicate);
+            }
+
+            template<typename K, typename V, typename COMPARATOR>
+            query::PagingPredicate<K, V> newPagingPredicate(COMPARATOR &&comparator, size_t predicatePageSize) {
+                return query::PagingPredicate<K, V>(getSerializationService(), std::move(comparator), predicatePageSize);
+            }
+
+            template<typename K, typename V, typename INNER_PREDICATE, typename COMPARATOR>
+            query::PagingPredicate<K, V> newPagingPredicate(const INNER_PREDICATE &predicate, COMPARATOR &&comparator, size_t predicatePageSize) {
+                return query::PagingPredicate<K, V>(getSerializationService(), predicate, std::move(comparator), predicatePageSize);
+            }
+
         protected:
             /**
              * Default TTL value of a record.
