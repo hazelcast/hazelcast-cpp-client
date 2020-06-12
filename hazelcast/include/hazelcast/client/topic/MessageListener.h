@@ -18,7 +18,7 @@
 
 #pragma once
 #include "hazelcast/client/topic/Message.h"
-#include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/serialization/serialization.h"
 
 #include <memory>
 

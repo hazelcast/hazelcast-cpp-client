@@ -773,14 +773,14 @@ namespace hazelcast {
 
             TEST_F(ClientConfigTest, testAddresseses) {
                 ClientConfig clientConfig;
-                std::vector<Address> addresses;
-                addresses.push_back(Address("localhost", 5555));
-                addresses.push_back(Address("localhost", 6666));
+                std::vector<Address> addresses{Address("localhost", 5555), Address("localhost", 6666)};
+                std::sort(addresses.begin(), addresses.end());
                 clientConfig.getNetworkConfig().addAddresses(addresses);
 
                 std::unordered_set<Address> configuredAddresses = clientConfig.getAddresses();
                 ASSERT_EQ(2U, addresses.size());
                 std::vector<Address> configuredAddressVector(configuredAddresses.begin(), configuredAddresses.end());
+                std::sort(configuredAddressVector.begin(), configuredAddressVector.end());
                 ASSERT_EQ(addresses, configuredAddressVector);
             }
 
@@ -893,7 +893,7 @@ namespace hazelcast {
                     hazelcastInstance.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::HazelcastClientNotActiveException);
 
                     client.shutdown();
                 }
@@ -916,7 +916,7 @@ namespace hazelcast {
                     ownerServer.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::HazelcastClientNotActiveException);
 
                     client.shutdown();
                 }
@@ -938,7 +938,7 @@ namespace hazelcast {
                     hazelcastInstance.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::HazelcastClientNotActiveException);
 
                     client.shutdown();
                 }
@@ -953,9 +953,7 @@ namespace hazelcast {
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
                     HazelcastClient client(clientConfig);
-
-                            ASSERT_TRUE(client.getLifecycleService().isRunning());
-
+                    ASSERT_TRUE(client.getLifecycleService().isRunning());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
                     auto map = client.getMap(randomMapName());
@@ -1346,7 +1344,7 @@ namespace hazelcast {
 
                 template<typename T>
                 T toDataAndBackToObject(serialization::pimpl::SerializationService &ss, T &value) {
-                    serialization::pimpl::Data data = ss.toData<T>(&value);
+                    serialization::pimpl::Data data = ss.toData<T>(value);
                     return *(ss.toObject<T>(data));
                 }
 
@@ -1811,7 +1809,7 @@ namespace hazelcast {
                 out.write(&stringVector);
 
                 out.writeObject<byte>(&by);
-                out.writeObject<char>(&c);
+                out.writeObject<char>(c);
                 out.writeObject<bool>(&boolean);
                 out.writeObject<int16_t>(&s);
                 out.writeObject<int32_t>(&i);

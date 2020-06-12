@@ -157,7 +157,7 @@ namespace hazelcast {
                     }
                 }
 
-                void verifyEntriesInMap(const std::shared_ptr<ReplicatedMap> &map) {
+                void verifyEntriesInMap(const std::shared_ptr<ReplicatedMap>& map) {
                     auto entries = map->entrySet<TypedData, TypedData>().get();
                     ASSERT_EQ(OPERATION_COUNT, entries.size());
                     for (auto &entry : entries) {
@@ -175,40 +175,40 @@ namespace hazelcast {
                 }
 
                 void
-                getAndVerifyEntriesInMap(const std::shared_ptr<ReplicatedMap> &map, const std::string &expectedValue) {
+                getAndVerifyEntriesInMap(const std::shared_ptr<ReplicatedMap>& map, const std::string &expectedValue) {
                     executeForEach([=] (size_t i) {
                         auto key = std::string("foo-") + std::to_string(i);
                         boost::optional<std::string> val = map->get<std::string, std::string>(key).get();
-                        ASSERT_TRUE((val.has_value()));
+                        ASSERT_TRUE((val));
                         ASSERT_EQ(expectedValue, (val.value()));
                     });
                 }
 
-                void putAllEntriesIntoMap(const std::shared_ptr<ReplicatedMap> &map) {
+                void putAllEntriesIntoMap(std::shared_ptr<ReplicatedMap> map) {
                     std::unordered_map<std::string, std::string> mapTest;
-                    executeForEach([&] (size_t i) {
+                    executeForEach([=, &mapTest] (size_t i) {
                         mapTest[std::string("foo-") + std::to_string(i)] = "bar";
                     });
                     map->putAll(mapTest).get();
                     ASSERT_EQ((int) OPERATION_COUNT, map->size().get());
                 }
 
-                void putEntriesIntoMap(const std::shared_ptr<ReplicatedMap> &map) {
-                    executeForEach([&] (size_t i) {
+                void putEntriesIntoMap(const std::shared_ptr<ReplicatedMap>& map) {
+                    executeForEach([=] (size_t i) {
                         auto oldEntry = map->put<std::string, std::string>(std::string("foo-") + std::to_string(i),
                                                                            "bar").get();
-                        ASSERT_FALSE(oldEntry.has_value());
+                        ASSERT_FALSE(oldEntry);
                     });
                 }
 
                 void putEntriesIntoMap(const std::shared_ptr<ReplicatedMap> &map, const std::string value) {
                     executeForEach([&] (size_t i) {
                         map->put<std::string, std::string>(std::string("foo-") + std::to_string(i),
-                                                                           "bar").get();
+                                                                           value).get();
                     });
                 }
 
-                bool findValueForKey(int key, TEST_VALUES_TYPE &testValues, int &value) {
+                static bool findValueForKey(int key, TEST_VALUES_TYPE &testValues, int &value) {
                     for (const TEST_VALUES_TYPE::value_type &entry : testValues) {
                         if (key == entry.first) {
                             value = entry.second;
@@ -363,12 +363,6 @@ namespace hazelcast {
 
                 verifyEntriesInMap(map2);
                 verifyEntriesInMap(map1);
-
-                executeForEach([=] (size_t index) {
-                    auto val = map2->remove<std::string, std::string>(std::string("foo-") + std::to_string(index)).get();
-                    ASSERT_TRUE(val.has_value());
-                    ASSERT_EQ("bar", val.value());
-                });
 
                 executeForEach([=] (size_t index) {
                     auto val = map2->remove<std::string, std::string>(std::string("foo-") + std::to_string(index)).get();
@@ -582,7 +576,7 @@ namespace hazelcast {
                 };
                 
                 struct EventCountingListener {
-                    EventCountingListener(ListenerState &state) : state_(state) {}
+                    explicit EventCountingListener(ListenerState &state) : state_(state) {}
                               
                     void entryAdded(const EntryEvent &event) {
                         state_.keys.push(event.getKey().get<int>().value());
@@ -652,14 +646,14 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryAdded) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state));
+                replicatedMap->addEntryListener(EventCountingListener(state)).get();
                 replicatedMap->put(1, 1).get();
                 ASSERT_EQ_EVENTUALLY(1, state.addCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryUpdated) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state));
+                replicatedMap->addEntryListener(EventCountingListener(state)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->put(1, 2).get();
                 ASSERT_EQ_EVENTUALLY(1, state.updateCount.load());
@@ -667,7 +661,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryRemoved) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state));
+                replicatedMap->addEntryListener(EventCountingListener(state)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->remove<int, int>(1).get();
                 ASSERT_EQ_EVENTUALLY(1, state.removeCount.load());
@@ -675,7 +669,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testMapClear) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state));
+                replicatedMap->addEntryListener(EventCountingListener(state)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->clear().get();
                 ASSERT_EQ_EVENTUALLY(1, state.mapClearCount.load());
@@ -683,7 +677,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testListenToKeyForEntryAdded) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state), 1);
+                replicatedMap->addEntryListener(EventCountingListener(state), 1).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->put(2, 2).get();
                 ASSERT_TRUE_EVENTUALLY(
@@ -692,16 +686,13 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state), query::FalsePredicate(*client));
+                replicatedMap->addEntryListener(EventCountingListener(state), query::FalsePredicate(*client)).get();
                 replicatedMap->put(2, 2).get();
                 ASSERT_TRUE_ALL_THE_TIME((state.addCount.load() == 0), 1);
             }
         }
     }
 }
-
-
-
 
 namespace hazelcast {
     namespace client {

@@ -39,24 +39,27 @@
 
 namespace hazelcast {
     namespace client {
-        class TypedData;
         class HazelcastClient;
 
         namespace serialization {
-            class ObjectDataInput;
-            class ObjectDataOutput;
-            class PortableReader;
-
             namespace pimpl {
                 // forward declarations
                 class PortableContext;
+
                 class ClassDefinitionContext;
+
                 class ClassDefinitionWriter;
+
                 class DefaultPortableWriter;
+
                 class DefaultPortableReader;
+
                 class MorphingPortableReader;
+
                 class PortableSerializer;
+
                 class DataSerializer;
+
                 class SerializationService;
 
                 enum struct HAZELCAST_API SerializationConstants {
@@ -86,6 +89,92 @@ namespace hazelcast {
                     CONSTANT_TYPE_GLOBAL = INT32_MIN
                     // ------------------------------------------------------------
                 };
+
+                /**
+                 * This class represents the type of a Hazelcast serializable object. The fields can take the following
+                 * values:
+                 * 1. Primitive types: factoryId=-1, classId=-1, typeId is the type id for that primitive as listed in
+                 * @link SerializationConstants
+                 * 2. Array of primitives: factoryId=-1, classId=-1, typeId is the type id for that array as listed in
+                 * @link SerializationConstants
+                 * 3. IdentifiedDataSerializable: factory, class and type ids are non-negative values as registered by
+                 * the DataSerializableFactory.
+                 * 4. Portable: factory, class and type ids are non-negative values as registered by the PortableFactory.
+                 * 5. Custom serialized objects: factoryId=-1, classId=-1, typeId is the non-negative type id as
+                 * registered for the custom object.
+                 *
+                 */
+                struct HAZELCAST_API ObjectType {
+                    ObjectType();
+
+                    SerializationConstants typeId;
+                    int32_t factoryId;
+                    int32_t classId;
+
+                };
+
+                std::ostream HAZELCAST_API &operator<<(std::ostream &os, const ObjectType &type);
+            }
+        }
+
+        /**
+         * TypedData class is a wrapper class for the serialized binary data. It does late deserialization of the data
+         * only when the get method is called.
+         */
+        class HAZELCAST_API TypedData {
+        public:
+            TypedData();
+
+            TypedData(serialization::pimpl::Data d,
+                      serialization::pimpl::SerializationService &serializationService);
+
+            /**
+             *
+             * @return The type of the underlying object for this binary.
+             */
+            serialization::pimpl::ObjectType getType() const;
+
+            /**
+             * Deserializes the underlying binary data and produces the object of type T.
+             *
+             * <b>CAUTION</b>: The type that you provide should be compatible with what object type is returned with
+             * the getType API, otherwise you will either get an exception of incorrectly try deserialize the binary data.
+             *
+             * @tparam T The type to be used for deserialization
+             * @return The object instance of type T.
+             */
+            template <typename T>
+            boost::optional<T> get() const;
+
+            /**
+             * Internal API
+             * @return The pointer to the internal binary data.
+             */
+            const serialization::pimpl::Data &getData() const;
+
+        private:
+            serialization::pimpl::Data data;
+            serialization::pimpl::SerializationService *ss;
+        };
+
+        bool HAZELCAST_API operator<(const TypedData &lhs, const TypedData &rhs);
+
+        namespace serialization {
+            class ObjectDataInput;
+            class ObjectDataOutput;
+            class PortableReader;
+
+            namespace pimpl {
+                // forward declarations
+                class PortableContext;
+                class ClassDefinitionContext;
+                class ClassDefinitionWriter;
+                class DefaultPortableWriter;
+                class DefaultPortableReader;
+                class MorphingPortableReader;
+                class PortableSerializer;
+                class DataSerializer;
+                class SerializationService;
             }
 
             template<typename T>
@@ -1203,31 +1292,6 @@ namespace hazelcast {
                     std::shared_ptr<ClassDefinition> cd;
                 };
 
-                /**
-                 * This class represents the type of a Hazelcast serializable object. The fields can take the following
-                 * values:
-                 * 1. Primitive types: factoryId=-1, classId=-1, typeId is the type id for that primitive as listed in
-                 * @link SerializationConstants
-                 * 2. Array of primitives: factoryId=-1, classId=-1, typeId is the type id for that array as listed in
-                 * @link SerializationConstants
-                 * 3. IdentifiedDataSerializable: factory, class and type ids are non-negative values as registered by
-                 * the DataSerializableFactory.
-                 * 4. Portable: factory, class and type ids are non-negative values as registered by the PortableFactory.
-                 * 5. Custom serialized objects: factoryId=-1, classId=-1, typeId is the non-negative type id as
-                 * registered for the custom object.
-                 *
-                 */
-                struct HAZELCAST_API ObjectType {
-                    ObjectType();
-
-                    SerializationConstants typeId;
-                    int32_t factoryId;
-                    int32_t classId;
-
-                };
-
-                std::ostream HAZELCAST_API &operator<<(std::ostream &os, const ObjectType &type);
-
                 class HAZELCAST_API SerializationService : public util::Disposable {
                 public:
                     SerializationService(SerializationConfig serializationConfig);
@@ -1269,7 +1333,9 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    typename std::enable_if<!(std::is_same<T, const char *>::value || std::is_same<T, const char *>::value), boost::optional<T>>::type
+                    typename std::enable_if<!(std::is_same<T, const char *>::value ||
+                                              std::is_same<T, const char *>::value ||
+                                              std::is_same<T, TypedData>::value), boost::optional<T>>::type
                     inline toObject(const Data &data) {
                         if (isNullData(data)) {
                             return boost::none;
@@ -1282,6 +1348,12 @@ namespace hazelcast {
                         ObjectDataInput objectDataInput(data.toByteArray(), 8, portableSerializer, dataSerializer,
                                                         serializationConfig.getGlobalSerializer());
                         return objectDataInput.readObject<T>(typeId);
+                    }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<T, TypedData>::value, boost::optional<T>>::type
+                    inline toObject(const Data &data) {
+                        return boost::make_optional(TypedData(Data(data), *this));
                     }
 
                     template<typename T>
@@ -1997,6 +2069,11 @@ namespace hazelcast {
                     return context.registerClassDefinition(definitionBuilder.build());
                 }
             }
+        }
+
+        template <typename T>
+        boost::optional<T> TypedData::get() const {
+            return ss->toObject<T>(data);
         }
     }
 }

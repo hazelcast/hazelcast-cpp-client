@@ -148,7 +148,7 @@ namespace hazelcast {
                 
                 void TearDown() override {
                     // clear mm
-                    mm->clear();
+                    mm->clear().get();
                 }
 
                 static void SetUpTestCase() {
@@ -256,26 +256,26 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testLock) {
                 mm->lock("key1").get();
                 boost::latch latch1(1);
-                std::thread t([&]() {
+                std::thread([&]() {
                     if (!mm->tryLock("key1").get()) {
                         latch1.count_down();
                     }
-                });
+                }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
                 mm->forceUnlock("key1").get();
             }
 
             TEST_F(ClientMultiMapTest, testLockTtl) {
-                mm->lock("key1", std::chrono::seconds(3)).get();
+                mm->lock("key1", std::chrono::seconds(2)).get();
                 boost::latch latch1(2);
-                std::thread t([&]() {
+                std::thread([&]() {
                     if (!mm->tryLock("key1").get()) {
                         latch1.count_down();
                     }
                     if (mm->tryLock("key1", std::chrono::seconds(5)).get()) {
                         latch1.count_down();
                     }
-                });
+                }).detach();
 
                 ASSERT_OPEN_EVENTUALLY(latch1);
                 mm->forceUnlock("key1").get();
@@ -284,24 +284,23 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testTryLock) {
                 ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2)).get());
                 boost::latch latch1(1);
-                std::thread t([&]() {
-                    if (!mm->tryLock("key1", std::chrono::seconds(2)).get()) {
+                std::thread([&]() {
+                    if (!mm->tryLock("key1", std::chrono::milliseconds(500)).get()) {
                         latch1.count_down();
                     }
-                });
+                }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_TRUE(mm->isLocked("key1").get());
 
                 boost::latch latch2(1);
                 boost::barrier b(2);
-                std::thread t2([&]() {
+                std::thread([&]() {
                     b.count_down_and_wait();
-                    if (!mm->tryLock("key1", std::chrono::seconds(20)).get()) {
+                    if (mm->tryLock("key1", std::chrono::seconds(20)).get()) {
                         latch2.count_down();
                     }
-                });
+                }).detach();
                 b.count_down_and_wait();
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 mm->unlock("key1").get();
                 ASSERT_OPEN_EVENTUALLY(latch2);
                 ASSERT_TRUE(mm->isLocked("key1").get());
@@ -311,9 +310,10 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testForceUnlock) {
                 mm->lock("key1").get();
                 boost::latch latch1(1);
-                std::thread t2([&]() {
+                std::thread([&]() {
                     mm->forceUnlock("key1").get();
-                });
+                    latch1.count_down();
+                }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_FALSE(mm->isLocked("key1").get());
             }

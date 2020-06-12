@@ -3241,8 +3241,6 @@ namespace hazelcast {
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
-                        virtual ~AbstractEventHandler();
-
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
 
 

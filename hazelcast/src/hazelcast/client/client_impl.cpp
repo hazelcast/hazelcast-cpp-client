@@ -356,6 +356,18 @@ namespace hazelcast {
                 return clusterService.getLocalClient();
             }
 
+            template<>
+            std::shared_ptr<IMap> HazelcastClientInstanceImpl::getDistributedObject(const std::string& name) {
+                auto nearCacheConfig = clientConfig.getNearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>(
+                        name);
+                if (nearCacheConfig) {
+                    return proxyManager.getOrCreateProxy<map::NearCachedClientMapProxy<serialization::pimpl::Data, serialization::pimpl::Data>>(
+                            IMap::SERVICE_NAME, name);
+                } else {
+                    return proxyManager.getOrCreateProxy<IMap>(IMap::SERVICE_NAME, name);
+                }
+            }
+
             const std::shared_ptr<util::ILogger> &HazelcastClientInstanceImpl::getLogger() const {
                 return logger;
             }

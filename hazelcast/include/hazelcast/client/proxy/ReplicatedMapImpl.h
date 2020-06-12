@@ -190,7 +190,7 @@ namespace hazelcast {
                     if (cachedValue) {
                         return boost::make_ready_future(boost::make_optional(*cachedValue));
                     }
-                    auto request = protocol::codec::MapGetCodec::encodeRequest(getName(), *sharedKey, util::getCurrentThreadId());
+                    auto request = protocol::codec::ReplicatedMapGetCodec::encodeRequest(getName(), *sharedKey);
                     return invokeAndGetFuture<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::ReplicatedMapGetCodec::ResponseParameters>(
                             request, key).then([=] (boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
                                 try {

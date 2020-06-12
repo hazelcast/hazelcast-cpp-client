@@ -319,7 +319,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::get() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::get",
                                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
@@ -328,7 +328,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::getAndAdd(int64_t delta) {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndAdd",
                                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
@@ -337,7 +337,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::addAndGet(int64_t delta) {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(exception::NoDataMemberInClusterException("ClientPNCounterProxy::addAndGet",
                                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
                 }
@@ -346,7 +346,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::getAndSubtract(int64_t delta) {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(
                             exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndSubtract",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
@@ -357,7 +357,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::subtractAndGet(int64_t delta) {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(
                             exception::NoDataMemberInClusterException("ClientPNCounterProxy::subtractAndGet",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
@@ -367,7 +367,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::decrementAndGet() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(
                             exception::NoDataMemberInClusterException("ClientPNCounterProxy::decrementAndGet",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
@@ -377,7 +377,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::incrementAndGet() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(
                             exception::NoDataMemberInClusterException("ClientPNCounterProxy::incrementAndGet",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
@@ -387,7 +387,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::getAndDecrement() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(
                             exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndDecrement",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
@@ -397,7 +397,7 @@ namespace hazelcast {
 
             boost::future<int64_t> PNCounterImpl::getAndIncrement() {
                 std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
-                if (target) {
+                if (!target) {
                     BOOST_THROW_EXCEPTION(
                             exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndIncrement",
                                                                       "Cannot invoke operations on a CRDT because the cluster does not contain any data members"));
@@ -497,7 +497,7 @@ namespace hazelcast {
                 try {
                     auto request = protocol::codec::PNCounterGetCodec::encodeRequest(
                             getName(), observedClock.get()->entrySet(), *target);
-                    return invokeOnAddress(request, *target).then(boost::launch::async, [=] (boost::future<protocol::ClientMessage> f) {
+                    return invokeOnAddress(request, *target).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             auto resultParameters = protocol::codec::PNCounterGetCodec::ResponseParameters::decode(
                                     f.get());
@@ -532,7 +532,7 @@ namespace hazelcast {
                 try {
                     auto request = protocol::codec::PNCounterAddCodec::encodeRequest(
                             getName(), delta, getBeforeUpdate, observedClock.get()->entrySet(), *target);
-                    return invokeOnAddress(request, *target).then(boost::launch::async, [=] (boost::future<protocol::ClientMessage> f) {
+                    return invokeOnAddress(request, *target).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             auto resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
                                     f.get());
@@ -806,38 +806,30 @@ namespace hazelcast {
                 validity = config->getPrefetchValidityDuration();
             }
 
-            FlakeIdGeneratorImpl::~FlakeIdGeneratorImpl() {
-                delete block.load();
+            int64_t FlakeIdGeneratorImpl::newIdInternal() {
+                auto b = block.load();
+                if (b) {
+                    int64_t res = b->next();
+                    if (res != INT64_MIN) {
+                        return res;
+                    }
+                }
+
+                throw std::overflow_error("");
             }
 
             boost::future<int64_t> FlakeIdGeneratorImpl::newId() {
-                for (;;) {
-                    auto b = block.load();
-                    if (b) {
-                        int64_t res = b->next();
-                        if (res != INT64_MIN) {
-                            return boost::make_ready_future(res);
-                        }
-                    }
-
-                    {
-                        std::lock_guard<std::mutex> guard(lock);
-                        if (b != block.load()) {
-                            // new block was assigned in the meantime
-                            continue;
-                        }
-                    }
-
+                try {
+                    return boost::make_ready_future(newIdInternal());
+                } catch (std::overflow_error &) {
                     return newIdBatch(batchSize).then(boost::launch::deferred,
                                                       [=](boost::future<FlakeIdGeneratorImpl::IdBatch> f) {
-                                                          std::lock_guard<std::mutex> guard(lock);
-                                                          if (b != block) {
-                                                              block = new Block(f.get(), validity);
-                                                          }
-                                                          auto newBlock = block.load();
-                                                          return newBlock->next();
+                                                          auto newBlock = boost::make_shared<Block>(f.get(), validity);
+                                                          auto value = newBlock->next();
+                                                          auto b = block.load();
+                                                          block.compare_exchange_strong(b, newBlock);
+                                                          return value;
                                                       });
-
                 }
             }
 
@@ -1281,7 +1273,7 @@ namespace hazelcast {
             }
 
             boost::future<EntryVector>
-            IMapImpl::getAllData(int partitionId, std::vector<serialization::pimpl::Data> &&keys) {
+            IMapImpl::getAllData(int partitionId, const std::vector<serialization::pimpl::Data> &keys) {
                 auto request = protocol::codec::MapGetAllCodec::encodeRequest(getName(), keys);
                 return invokeAndGetFuture<EntryVector, protocol::codec::MapGetAllCodec::ResponseParameters>(request, partitionId);
             }

@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <atomic>
+#include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
 
@@ -25,8 +26,6 @@ namespace hazelcast {
         namespace proxy {
             class HAZELCAST_API FlakeIdGeneratorImpl : public ProxyImpl {
             public:
-                virtual ~FlakeIdGeneratorImpl();
-
                 /**
                  * Generates and returns a cluster-wide unique ID.
                  * <p>
@@ -129,9 +128,11 @@ namespace hazelcast {
 
                 boost::future<FlakeIdGeneratorImpl::IdBatch> newIdBatch(int32_t size);
 
+                int64_t newIdInternal();
+
                 int32_t batchSize;
                 std::chrono::steady_clock::duration validity;
-                std::atomic<Block*> block;
+                boost::atomic_shared_ptr<Block> block;
                 std::mutex lock;
             };
 

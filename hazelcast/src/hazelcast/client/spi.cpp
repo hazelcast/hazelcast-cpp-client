@@ -1375,7 +1375,7 @@ namespace hazelcast {
                     }
 
                     if (address.get() != NULL && exception.getErrorCode() == protocol::TARGET_NOT_MEMBER &&
-                        clientClusterService.getMember(*address)) {
+                        !clientClusterService.getMember(*address)) {
                         //when invocation send over address
                         //if exception is target not member and
                         //address is not available in member list , don't retry

@@ -101,7 +101,7 @@ namespace hazelcast {
                     auto request = protocol::codec::TransactionCreateCodec::encodeRequest(
                             std::chrono::duration_cast<std::chrono::milliseconds>(getTimeout()).count(), options.getDurability(),
                             static_cast<int32_t>(options.getTransactionType()), threadId);
-                    return invoke(request).then(boost::launch::sync, [=] (boost::future<protocol::ClientMessage> f) {
+                    return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             protocol::codec::TransactionCreateCodec::ResponseParameters result =
                                     protocol::codec::TransactionCreateCodec::ResponseParameters::decode(f.get());
@@ -129,13 +129,14 @@ namespace hazelcast {
                     checkTimeout();
 
                     auto request = protocol::codec::TransactionCommitCodec::encodeRequest(txnId, threadId);
-                    return invoke(request).then(boost::launch::sync, [=] (boost::future<protocol::ClientMessage> f) {
+                    return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             f.get();
                             state = TxnState::COMMITTED;
                         } catch (exception::IException &) {
                             TRANSACTION_EXISTS.store(false);
-                            throw;
+                            ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
+                                                                                            "TransactionProxy::commit() failed");
                         }
                     });
                 } catch (...) {
@@ -157,7 +158,7 @@ namespace hazelcast {
                     checkThread();
                     try {
                         auto request = protocol::codec::TransactionRollbackCodec::encodeRequest(txnId, threadId);
-                        return invoke(request).then(boost::launch::sync, [=] (boost::future<protocol::ClientMessage> f) {
+                        return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                             try {
                                 state = TxnState::ROLLED_BACK;
                                 TRANSACTION_EXISTS.store(false);
@@ -165,7 +166,6 @@ namespace hazelcast {
                             } catch (exception::IException &e) {
                                 clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:",
                                                                   e);
-                                throw;
                             }
                         });
                     } catch (exception::IException &exception) {
@@ -174,11 +174,12 @@ namespace hazelcast {
                     }
                     state = TxnState::ROLLED_BACK;
                     TRANSACTION_EXISTS.store(false);
-                    return boost::make_ready_future();
                 } catch (exception::IException &) {
                     TRANSACTION_EXISTS.store(false);
-                    throw;
+                    ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
+                                                                                    "TransactionProxy::rollback() failed");
                 }
+                return boost::make_ready_future();
             }
 
             serialization::pimpl::SerializationService &TransactionProxy::getSerializationService() {

@@ -69,8 +69,8 @@ namespace hazelcast {
 
                     try {
                         auto clientProxy = std::shared_ptr<T>(new T(id, &client));
-                        initializeWithRetry(clientProxy);
-                        promise.set_value(clientProxy);
+                        initializeWithRetry(std::static_pointer_cast<ClientProxy>(clientProxy));
+                        promise.set_value(std::static_pointer_cast<ClientProxy>(clientProxy));
                         return clientProxy;
                     } catch (exception::IException &e) {
                         promise.set_exception(std::current_exception());

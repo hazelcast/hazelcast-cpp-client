@@ -56,56 +56,58 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        void initialize() {
+                        void initialize() override {
                             nearCache->initialize();
                         }
 
                         //@Override
-                        const std::string &getName() const {
+                        const std::string &getName() const override {
                             return nearCache->getName();
                         }
 
                         //@Override
-                        std::shared_ptr<V> get(const std::shared_ptr<K> &key) {
+                        std::shared_ptr<V> get(const std::shared_ptr<K> &key) override {
                             return nearCache->get(key);
                         }
 
                         //@Override
-                        void put(const std::shared_ptr<K> &key, const std::shared_ptr<V> &value) {
+                        void put(const std::shared_ptr<K> &key, const std::shared_ptr<V> &value) override {
                             nearCache->put(key, value);
                         }
 
+/*
                         //@Override
                         void put(const std::shared_ptr<K> &key,
                                  const std::shared_ptr<serialization::pimpl::Data> &value) {
                             nearCache->put(key, value);
                         }
+*/
 
                         //@Override
-                        bool invalidate(const std::shared_ptr<K> &key) {
+                        bool invalidate(const std::shared_ptr<K> &key) override {
                             keyStateMarker->tryRemove(*key);
                             return nearCache->invalidate(key);
                         }
 
                         //@Override
-                        bool isInvalidatedOnChange() const {
+                        bool isInvalidatedOnChange() const override {
                             return nearCache->isInvalidatedOnChange();
                         }
 
                         //@Override
-                        void clear() {
+                        void clear() override {
                             keyStateMarker->init();
                             nearCache->clear();
                         }
 
                         //@Override
-                        void destroy() {
+                        void destroy() override {
                             keyStateMarker->init();
                             nearCache->destroy();
                         }
 
                         //@Override
-                        const config::InMemoryFormat getInMemoryFormat() const {
+                        const config::InMemoryFormat getInMemoryFormat() const override {
                             return nearCache->getInMemoryFormat();
                         }
 
@@ -114,7 +116,7 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        int size() const {
+                        int size() const override {
                             return nearCache->size();
                         }
 

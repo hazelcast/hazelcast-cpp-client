@@ -1207,11 +1207,11 @@ namespace hazelcast {
 
                 std::vector<int> expectedValues = {4, 5, 6};
                 // spawn a thread for publishing new data
-                std::thread t([=]() {
+                std::thread([=]() {
                     for (auto val : expectedValues) {
                         intTopic->publish(val).get();
                     }
-                });
+                }).detach();
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
                 ASSERT_EQ((int) expectedValues.size(), state->numberOfMessagesReceived);

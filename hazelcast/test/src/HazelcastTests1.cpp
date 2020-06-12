@@ -618,19 +618,20 @@ namespace hazelcast {
 
                 TEST_F(RingbufferTest, readManyAsync_whenHitsStale_shouldNotBeBlocked) {
                     auto f = clientRingbuffer->readMany<std::string>(0, 1, 10);
-                    client2Ringbuffer->addAll(items, client::ringbuffer::OverflowPolicy::OVERWRITE);
+                    client2Ringbuffer->addAll(items, client::ringbuffer::OverflowPolicy::OVERWRITE).get();
                     ASSERT_THROW(f.get(), exception::StaleSequenceException);
                 }
 
                 TEST_F(RingbufferTest, readOne_whenHitsStale_shouldNotBeBlocked) {
                     std::shared_ptr<boost::latch> latch1 = std::make_shared<boost::latch>(1);
-                    std::thread t(std::packaged_task<void()>([=] () {
+                    std::thread([=] () {
                         try {
-                            clientRingbuffer->readOne<std::string>(0);
+                            clientRingbuffer->readOne<std::string>(0).get();
+                            latch1->count_down();
                         } catch (exception::StaleSequenceException &) {
                             latch1->count_down();
-                        } 
-                    }));
+                        }
+                    }).detach();
                     client2Ringbuffer->addAll(items, client::ringbuffer::OverflowPolicy::OVERWRITE);
                     ASSERT_OPEN_EVENTUALLY(*latch1);
                 }
@@ -685,7 +686,7 @@ namespace hazelcast {
                     auto val1 = client2Ringbuffer->readOne<std::string>(1).get();
                     ASSERT_TRUE(val0);
                     ASSERT_TRUE(val1);
-                    ASSERT_EQ(val1.value(), "foo");
+                    ASSERT_EQ(val0.value(), "foo");
                     ASSERT_EQ(val1.value(), "bar");
                     ASSERT_EQ(0, client2Ringbuffer->headSequence().get());
                     ASSERT_EQ(1, client2Ringbuffer->tailSequence().get());
@@ -739,8 +740,7 @@ namespace hazelcast {
                     client2Ringbuffer->add<std::string>("bad3").get();
 
                     StartsWithStringFilter filter("good");
-                    auto f = clientRingbuffer->readMany<StartsWithStringFilter>(0, 3, 3, &filter);
-                    auto rs = f.get();
+                    auto rs = clientRingbuffer->readMany<StartsWithStringFilter>(0, 3, 3, &filter).get();
 
                     ASSERT_EQ(5, rs.readCount());
                     auto const &items = rs.getItems();
@@ -1651,6 +1651,11 @@ namespace hazelcast {
 
                         terminateMember(*currentTarget, instance, instance2);
 
+                        try {
+                            pnCounter->addAndGet(5).get();
+                        } catch(std::exception &e) {
+                            std::cout << e.what() << '\n';
+                        }
                         ASSERT_THROW(pnCounter->addAndGet(5).get(), exception::ConsistencyLostException);
                     }
 
@@ -2040,7 +2045,6 @@ namespace hazelcast {
                 auto map = context.getMap(name);
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
-                ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
                 auto val = client.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
@@ -2302,18 +2306,18 @@ namespace hazelcast {
                 ASSERT_FALSE((txMap->put<Employee, Employee>(emp2, emp2).get().has_value()));
 
                 ASSERT_EQ(2, (int) txMap->size().get());
-                ASSERT_EQ(2, (int) txMap->keySet<std::string>().get().size());
+                ASSERT_EQ(2, (int) txMap->keySet<Employee>().get().size());
                 query::SqlPredicate predicate(client, "a = 10");
-                ASSERT_EQ(0, (int) txMap->keySet<std::string>(predicate).get().size());
-                ASSERT_EQ(0, (int) txMap->values<std::string>(predicate).get().size());
+                ASSERT_EQ(0, (int) txMap->keySet<Employee>(predicate).get().size());
+                ASSERT_EQ(0, (int) txMap->values<Employee>(predicate).get().size());
                 query::SqlPredicate predicate2(client, "a >= 10");
-                ASSERT_EQ(2, (int) txMap->keySet<std::string>(predicate2).get().size());
-                ASSERT_EQ(2, (int) txMap->values<std::string>(predicate2).get().size());
+                ASSERT_EQ(2, (int) txMap->keySet<Employee>(predicate2).get().size());
+                ASSERT_EQ(2, (int) txMap->values<Employee>(predicate2).get().size());
 
                 context.commitTransaction().get();
 
                 ASSERT_EQ(2, (int) map->size().get());
-                ASSERT_EQ(2, (int) map->values<std::string>().get().size());
+                ASSERT_EQ(2, (int) map->values<Employee>().get().size());
             }
 
             TEST_F(ClientTxnMapTest, testIsEmpty) {
@@ -3113,8 +3117,6 @@ namespace hazelcast {
 
                 TEST_F(DataOutputTest, testWriteByte) {
                     std::vector<byte> bytes{0x01, 0x12};
-                    bytes.push_back(0x01);
-                    bytes.push_back(0x12);
                     serialization::pimpl::DataOutput dataOutput;
                     dataOutput.write<byte>((byte) 0x01);
                     dataOutput.write<byte>(0x12);
@@ -3147,10 +3149,6 @@ namespace hazelcast {
 
                 TEST_F(DataOutputTest, testWriteInteger) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78};
-                    bytes.push_back(0x12);
-                    bytes.push_back(0x34);
-                    bytes.push_back(0x56);
-                    bytes.push_back(0x78);
                     serialization::pimpl::DataOutput dataOutput;
                     dataOutput.write<int32_t>(INT32_C(0x12345678));
                     ASSERT_EQ(bytes, dataOutput.toByteArray());
@@ -3207,11 +3205,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(DataOutputTest, testWriteIntegerArray) {
-                    std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02};
-                    std::vector<int32_t> actualValues{0x12, 0x34, 0x56, 0x78};
-                    actualValues.push_back(INT32_C(0x12345678));
-                    bytes.insert(bytes.end(), {0x9A, 0xBC, 0xDE, 0xEF});
-                    actualValues.push_back(INT32_C(0x9ABCDEEF));
+                    std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x1A, 0xBC, 0xDE, 0xEF};
+                    std::vector<int32_t> actualValues{INT32_C(0x12345678), INT32_C(0x1ABCDEEF)};
                     serialization::pimpl::DataOutput dataOutput;
                     dataOutput.write<std::vector<int32_t>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.toByteArray());

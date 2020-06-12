@@ -168,7 +168,7 @@ namespace hazelcast {
 
                 boost::future<bool> evict(const serialization::pimpl::Data &key);
 
-                boost::future<EntryVector> getAllData(int partitionId, std::vector<serialization::pimpl::Data> &&keys);
+                boost::future<EntryVector> getAllData(int partitionId, const std::vector<serialization::pimpl::Data> &keys);
 
                 boost::future<std::vector<serialization::pimpl::Data>> keySetData();
 

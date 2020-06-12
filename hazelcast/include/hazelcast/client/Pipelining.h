@@ -106,7 +106,7 @@ namespace hazelcast {
                 std::vector<boost::optional<E>> result;
                 result.reserve(futures.size());
                 auto result_futures = when_all(futures.begin(), futures.end());
-                for (auto f : result_futures.get()) {
+                for (auto &f : result_futures.get()) {
                     result.emplace_back(f.get());
                 }
                 return result;
@@ -119,48 +119,41 @@ namespace hazelcast {
              * returned the ICompletableFuture got blocked.
              *
              * @param future the future to add.
-             * @return the future added.
              * @throws NullPointerException if future is null.
              */
-            boost::shared_future<boost::optional<E>>
-            add(boost::future<boost::optional<E>> future) {
+            void add(boost::future<boost::optional<E>> future) {
                 down();
 
-                auto new_future = future.then(boost::launch::sync, [=](boost::future<boost::optional<E>> f) {
-                    up();
-                    return f.get();
-                });
-
-                auto sharedFuture = new_future.share();
-                futures.push_back(sharedFuture);
-                return sharedFuture;
+                futures.push_back(future.share());
             }
 
         private:
             Pipelining(int depth) : permits(util::Preconditions::checkPositive(depth, "depth must be positive")) {
             }
 
-            // TODO: Change with lock-free implementation when atomic is integrated into the library
             void down() {
-                std::unique_lock<std::mutex> uniqueLock(mutex);
-                while (permits == 0) {
-                    conditionVariable.wait(uniqueLock);
+                int usedPermits = 0;
+                for (auto &f : futures) {
+                    if (!f.is_ready()) {
+                        ++usedPermits;
+                    }
                 }
-                --permits;
-            }
+                if (usedPermits >= permits) {
+                    decltype(futures) outStandingFutures;
+                    for (auto &f : futures) {
+                        if (!f.is_ready()) {
+                            outStandingFutures.push_back(f);
+                        }
+                    }
 
-            void up() {
-                std::unique_lock<std::mutex> uniqueLock(mutex);
-                if (permits == 0) {
-                    conditionVariable.notify_all();
+                    if (!outStandingFutures.empty()) {
+                        boost::when_any(outStandingFutures.begin(), outStandingFutures.end()).get();
+                    }
                 }
-                ++permits;
             }
 
             int permits;
             std::vector<boost::shared_future<boost::optional<E>>> futures;
-            std::condition_variable conditionVariable;
-            std::mutex mutex;
         };
     }
 }

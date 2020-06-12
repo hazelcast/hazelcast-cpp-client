@@ -208,9 +208,16 @@ namespace hazelcast {
                         return boost::make_optional(values);
                     }
 
-                    int position();
+                    int position() {
+                        return pos;
+                    }
 
-                    void position(int position);
+                    void position(int position) {
+                        if (position > pos) {
+                            checkAvailable((size_t) (position - pos));
+                        }
+                        pos = position;
+                    }
 
                 private:
                     const Container &buffer;

@@ -103,7 +103,8 @@ namespace hazelcast {
              * @param key      the key to listen to
              */
             template<typename Listener, typename K>
-            boost::future<std::string> addEntryListenerForKey(Listener &&listener, const K &key) {
+            typename std::enable_if<!std::is_base_of<query::Predicate, K>::value, boost::future<std::string>>::type
+            addEntryListener(Listener &&listener, const K &key) {
                 return proxy::ReplicatedMapImpl::addEntryListenerToKey(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
@@ -119,7 +120,8 @@ namespace hazelcast {
              * @param predicate the predicate for filtering entries
              */
             template<typename Listener, typename P>
-            boost::future<std::string> addEntryListener(Listener &&listener, const P &predicate) {
+            typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<std::string>>::type
+            addEntryListener(Listener &&listener, const P &predicate) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
@@ -136,7 +138,8 @@ namespace hazelcast {
              * @param key       the key to listen to
              */
             template<typename Listener, typename K, typename P>
-            boost::future<std::string> addEntryListener(Listener &&listener, const P &predicate, const K &key) {
+            typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<std::string>>::type
+            addEntryListener(Listener &&listener, const P &predicate, const K &key) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),

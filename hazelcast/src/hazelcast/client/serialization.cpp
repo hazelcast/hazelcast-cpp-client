@@ -35,7 +35,6 @@
 
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/IOUtil.h"
@@ -867,19 +866,6 @@ namespace hazelcast {
                     return lhs.data == rhs.data;
                 }
 
-                template<typename T>
-                int DataInput<T>::position() {
-                    return pos;
-                }
-
-                template<typename T>
-                void DataInput<T>::position(int position) {
-                    if (position > pos) {
-                        checkAvailable((size_t) (position - pos));
-                    }
-                    pos = position;
-                }
-
                 ClassDefinitionContext::ClassDefinitionContext(int factoryId, PortableContext *portableContext)
                         : factoryId(factoryId), portableContext(portableContext) {}
 
@@ -1066,24 +1052,53 @@ namespace hazelcast {
     }
 }
 
-bool std::less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator()(
-        const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
-        const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept {
-    const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
-    const hazelcast::client::serialization::pimpl::Data *rightPtr = rhs.get();
-    if (leftPtr == rightPtr) {
-        return false;
+namespace std {
+    std::size_t hash<hazelcast::client::serialization::pimpl::Data>::operator()
+            (const hazelcast::client::serialization::pimpl::Data &val) const noexcept {
+        return std::hash<int>{}(val.hash());
     }
 
-    if (leftPtr == NULL) {
-        return true;
+    std::size_t hash<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator()
+        (const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &val) const noexcept {
+        if (!val) {
+            return std::hash<int>{}(-1);
+        }
+        return std::hash<int>{}(val->hash());
     }
 
-    if (rightPtr == NULL) {
-        return false;
+    bool equal_to<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator()
+            (std::shared_ptr<hazelcast::client::serialization::pimpl::Data> const &lhs,
+            std::shared_ptr<hazelcast::client::serialization::pimpl::Data> const &rhs) const noexcept {
+        if (lhs == rhs) {
+            return true;
+        }
+
+        if (!lhs || !rhs) {
+            return false;
+        }
+
+        return lhs->toByteArray() == rhs->toByteArray();
     }
 
-    return lhs->hash() < rhs->hash();
+    bool less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator()(
+            const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
+            const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept {
+        const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
+        const hazelcast::client::serialization::pimpl::Data *rightPtr = rhs.get();
+        if (leftPtr == rightPtr) {
+            return false;
+        }
+
+        if (leftPtr == NULL) {
+            return true;
+        }
+
+        if (rightPtr == NULL) {
+            return false;
+        }
+
+        return lhs->hash() < rhs->hash();
+    }
 }
 
 

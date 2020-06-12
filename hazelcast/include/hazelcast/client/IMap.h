@@ -38,6 +38,8 @@
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 
+class NearCachedClientMapProxy;
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -66,6 +68,9 @@ namespace hazelcast {
             friend class spi::ProxyManager;
         public:
             static constexpr const char *SERVICE_NAME = "hz:impl:mapService";
+
+            IMap(const std::string &instanceName, spi::ClientContext *context) : proxy::IMapImpl(instanceName,
+                                                                                                 context) {}
 
             /**
             * check if this map contains key.
@@ -553,9 +558,10 @@ namespace hazelcast {
                 }
 
                 std::unordered_map<int, std::vector<serialization::pimpl::Data>> partitionToKeyData;
-                // group the request per parition id
+                // group the request per server
                 for (auto &key : keys) {
                     auto keyData = toData<K>(key);
+
                     auto partitionId = getPartitionId(keyData);
                     partitionToKeyData[partitionId].push_back(std::move(keyData));
                 }
@@ -563,7 +569,7 @@ namespace hazelcast {
                 std::vector<boost::future<EntryVector>> futures;
                 futures.reserve(partitionToKeyData.size());
                 for (auto &entry : partitionToKeyData) {
-                    futures.push_back(getAllInternal(entry.first, std::move(entry.second)));
+                    futures.push_back(getAllInternal(entry.first, entry.second));
                 }
 
                 return boost::when_all(futures.begin(), futures.end()).then(boost::launch::deferred,
@@ -938,21 +944,21 @@ namespace hazelcast {
 
             monitor::impl::LocalMapStatsImpl localMapStats;
 
-            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>> getInternal(serialization::pimpl::Data &&keyData) {
+            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>> getInternal(const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::getData(keyData);
             }
 
-            virtual boost::future<bool> containsKeyInternal(serialization::pimpl::Data &&keyData) {
+            virtual boost::future<bool> containsKeyInternal(const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::containsKey(keyData);
             }
 
             virtual boost::future<std::unique_ptr<serialization::pimpl::Data>> removeInternal(
-                    serialization::pimpl::Data &&keyData) {
+                    const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::removeData(keyData);
             }
 
             virtual boost::future<bool> removeInternal(
-                    serialization::pimpl::Data &&keyData, const serialization::pimpl::Data &valueData) {
+                    const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData) {
                 return proxy::IMapImpl::remove(keyData, valueData);
             }
 
@@ -960,68 +966,67 @@ namespace hazelcast {
                 return proxy::IMapImpl::removeAll(predicateData);
             }
 
-            virtual boost::future<protocol::ClientMessage> deleteInternal(serialization::pimpl::Data &&keyData) {
+            virtual boost::future<protocol::ClientMessage> deleteInternal(const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::deleteEntry(keyData);
             }
 
-            virtual boost::future<bool> tryRemoveInternal(serialization::pimpl::Data &&keyData, std::chrono::steady_clock::duration timeout) {
+            virtual boost::future<bool> tryRemoveInternal(const serialization::pimpl::Data &keyData, std::chrono::steady_clock::duration timeout) {
                 return proxy::IMapImpl::tryRemove(keyData, timeout);
             }
 
-            virtual boost::future<bool> tryPutInternal(serialization::pimpl::Data &&keyData,
+            virtual boost::future<bool> tryPutInternal(const serialization::pimpl::Data &keyData,
                                                        const serialization::pimpl::Data &valueData, std::chrono::steady_clock::duration timeout) {
                 return proxy::IMapImpl::tryPut(keyData, valueData, timeout);
             }
 
-            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>> putInternal(serialization::pimpl::Data &&keyData,
+            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>> putInternal(const serialization::pimpl::Data &keyData,
                                                                           const serialization::pimpl::Data &valueData,
                                                                           std::chrono::steady_clock::duration ttl) {
                 return proxy::IMapImpl::putData(keyData, valueData, ttl);
             }
 
-            virtual boost::future<protocol::ClientMessage> tryPutTransientInternal(serialization::pimpl::Data &&keyData,
+            virtual boost::future<protocol::ClientMessage> tryPutTransientInternal(const serialization::pimpl::Data &keyData,
                                                                                    const serialization::pimpl::Data &valueData, std::chrono::steady_clock::duration ttl) {
                 return proxy::IMapImpl::putTransient(keyData, valueData, ttl);
             }
 
             virtual boost::future<std::unique_ptr<serialization::pimpl::Data>>
-            putIfAbsentInternal(serialization::pimpl::Data &&keyData,
+            putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                 const serialization::pimpl::Data &valueData,
                                 std::chrono::steady_clock::duration ttl) {
                 return proxy::IMapImpl::putIfAbsentData(keyData, valueData, ttl);
             }
 
-            virtual boost::future<bool> replaceIfSameInternal(serialization::pimpl::Data &&keyData,
+            virtual boost::future<bool> replaceIfSameInternal(const serialization::pimpl::Data &keyData,
                                                               const serialization::pimpl::Data &valueData,
                                                               const serialization::pimpl::Data &newValueData) {
                 return proxy::IMapImpl::replace(keyData, valueData, newValueData);
             }
 
             virtual boost::future<std::unique_ptr<serialization::pimpl::Data>>
-            replaceInternal(serialization::pimpl::Data &&keyData,
+            replaceInternal(const serialization::pimpl::Data &keyData,
                             const serialization::pimpl::Data &valueData) {
                 return proxy::IMapImpl::replaceData(keyData, valueData);
 
             }
 
             virtual boost::future<protocol::ClientMessage>
-            setInternal(serialization::pimpl::Data &&keyData, const serialization::pimpl::Data &valueData,
+            setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
                         std::chrono::steady_clock::duration ttl) {
                 return proxy::IMapImpl::set(keyData, valueData, ttl);
             }
 
-            virtual boost::future<bool> evictInternal(serialization::pimpl::Data &&keyData) {
+            virtual boost::future<bool> evictInternal(const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::evict(keyData);
             }
 
             virtual boost::future<EntryVector>
-            getAllInternal(int partitionId, std::vector<serialization::pimpl::Data> &&partitionKeys) {
-                return proxy::IMapImpl::getAllData(partitionId,
-                                                   std::forward<std::vector<serialization::pimpl::Data>>(partitionKeys));
+            getAllInternal(int partitionId, const std::vector<serialization::pimpl::Data> &partitionKeys) {
+                return proxy::IMapImpl::getAllData(partitionId, partitionKeys);
             }
 
             virtual boost::future<std::unique_ptr<serialization::pimpl::Data>>
-            executeOnKeyInternal(serialization::pimpl::Data &&keyData,
+            executeOnKeyInternal(const serialization::pimpl::Data &keyData,
                                  const serialization::pimpl::Data &processor) {
                 return proxy::IMapImpl::executeOnKeyData(keyData, processor);
             }
@@ -1043,14 +1048,11 @@ namespace hazelcast {
             }
 
             virtual boost::future<protocol::ClientMessage>
-            putAllInternal(int partitionId, EntryVector &&entries) {
+            putAllInternal(int partitionId, const EntryVector &entries) {
                 return proxy::IMapImpl::putAllData(partitionId, entries);
             }
 
         private:
-            IMap(const std::string &instanceName, spi::ClientContext *context) : proxy::IMapImpl(instanceName,
-                                                                                                 context) {}
-
             template<typename K, typename V>
             boost::future<std::vector<std::pair<K, V>>> toSortedEntryObjectVector(query::PagingPredicate<K, V> &predicate, query::IterationType iterationType) {
                 return toEntryObjectVector<K, V>(proxy::IMapImpl::entrySetForPagingPredicateData(toData(predicate))).then(

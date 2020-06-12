@@ -311,7 +311,7 @@ namespace hazelcast {
                  * @param replicaLogicalTimestamps the logical timestamps
                  * @return a vector clock instance
                  */
-                std::shared_ptr<cluster::impl::VectorClock>
+                static std::shared_ptr<cluster::impl::VectorClock>
                 toVectorClock(const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps);
 
                 util::Sync<std::shared_ptr<Address> > currentTargetReplicaAddress;

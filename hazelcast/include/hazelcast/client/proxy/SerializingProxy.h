@@ -222,7 +222,7 @@ namespace hazelcast {
                     });
                 }
 
-            private:
+            protected:
                 serialization::pimpl::SerializationService &serializationService_;
                 spi::ClientPartitionService &partitionService_;
                 std::string name_;
