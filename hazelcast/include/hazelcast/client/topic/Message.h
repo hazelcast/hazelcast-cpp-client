@@ -49,7 +49,7 @@ namespace hazelcast {
                 }
 
                 const Member *getPublishingMember() const {
-                    return publishingMember.operator->();
+                    return publishingMember.get_ptr();
                 }
 
                 const std::string &getSource() const {

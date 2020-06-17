@@ -192,7 +192,7 @@ namespace hazelcast {
                     }
                     auto request = protocol::codec::ReplicatedMapGetCodec::encodeRequest(getName(), *sharedKey);
                     return invokeAndGetFuture<std::unique_ptr<serialization::pimpl::Data>, protocol::codec::ReplicatedMapGetCodec::ResponseParameters>(
-                            request, key).then([=] (boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
+                            request, key).then(boost::launch::deferred, [=] (boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
                                 try {
                                     auto response = f.get();
                                     if (!response) {
@@ -203,7 +203,7 @@ namespace hazelcast {
                                     if (nearCache) {
                                         nearCache->put(sharedKey, sharedValue);
                                     }
-                                    return boost::make_optional(std::move(*sharedValue));
+                                    return boost::make_optional(*sharedValue);
                                 } catch (...) {
                                     invalidate(sharedKey);
                                     throw;
@@ -246,7 +246,7 @@ namespace hazelcast {
             private:
                 int targetPartitionId;
                 std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> nearCache;
-                boost::future<std::string> invalidationListenerId;
+                std::string invalidationListenerId;
                 
                 class NearCacheInvalidationListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
@@ -479,7 +479,7 @@ namespace hazelcast {
                 void registerInvalidationListener() {
                     try {
                         invalidationListenerId = registerListener(createNearCacheInvalidationListenerCodec(),
-                                                                  std::unique_ptr<impl::BaseEventHandler>(new ReplicatedMapAddNearCacheEventHandler(nearCache)));
+                                                                  std::unique_ptr<impl::BaseEventHandler>(new ReplicatedMapAddNearCacheEventHandler(nearCache))).get();
                     } catch (exception::IException &e) {
                         getContext().getLogger().severe("-----------------\nNear Cache is not initialized!\n-----------------" , e);
                     }
@@ -499,7 +499,7 @@ namespace hazelcast {
 
                 void removeNearCacheInvalidationListener() {
                     if (nearCache) {
-                        deregisterListener(invalidationListenerId.get());
+                        deregisterListener(invalidationListenerId);
                     }
                 }
 

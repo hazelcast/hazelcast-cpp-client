@@ -104,7 +104,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename N>
             boost::future<bool> replace(const K &key, const V &oldValue, const N &newValue) {
-                return replace(toData(key), toData(&oldValue), toData(newValue));
+                return replaceData(toData(key), toData(oldValue), toData(newValue));
             }
 
             /**

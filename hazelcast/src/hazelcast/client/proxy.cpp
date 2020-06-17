@@ -1813,10 +1813,12 @@ namespace hazelcast {
                                 return;
                             }
                             try {
-                                rb->readMany(m.sequence, 1, m.maxCount).then([=] (boost::future<ringbuffer::ReadResultSet> f) {
+                                auto f = rb->readMany(m.sequence, 1, m.maxCount);
+                                while (!shutdown && f.wait_for(boost::chrono::seconds(1)) != boost::future_status::ready) {}
+                                if (f.is_ready()) {
                                     m.callback->onResponse(boost::make_optional<ringbuffer::ReadResultSet>(f.get()));
-                                }).get();
-                            } catch (exception::IException &e) {
+                                }
+                            } catch (exception::IException &) {
                                 m.callback->onFailure(std::current_exception());
                             }
                         }
@@ -1869,7 +1871,7 @@ namespace hazelcast {
             void hz_serializer<topic::impl::reliable::ReliableTopicMessage>::writeData(
                     const topic::impl::reliable::ReliableTopicMessage &object, ObjectDataOutput &out) {
                 out.write<int64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(object.publishTime.time_since_epoch()).count());
-                out.writeObject<Address>(object.publisherAddress.value());
+                out.writeObject(object.publisherAddress);
                 out.write(object.payload.toByteArray());
             }
 

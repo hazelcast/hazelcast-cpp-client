@@ -755,16 +755,14 @@ namespace hazelcast {
 
             TEST_F(ClientQueueTest, testRemoveRetain) {
                 offer(5);
-                std::vector<std::string> list;
-                list.emplace_back("item8");
-                list.emplace_back("item9");
+                std::vector<std::string> list{"item8", "item9"};
                 ASSERT_FALSE(q->removeAll(list).get());
                 ASSERT_EQ(5, q->size().get());
 
                 list.emplace_back("item3");
                 list.emplace_back("item4");
                 list.emplace_back("item1");
-                ASSERT_TRUE(q->addAll(list).get());
+                ASSERT_TRUE(q->removeAll(list).get());
                 ASSERT_EQ(2, q->size().get());
 
                 list.clear();
@@ -1115,7 +1113,7 @@ namespace hazelcast {
 
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(name);
 
-                executor::tasks::SerializedCounterCallable counterCallable;
+                executor::tasks::SerializedCounterCallable counterCallable{0};
 
                 auto future = service->submitToKeyOwner<executor::tasks::SerializedCounterCallable, int, std::string>(
                         counterCallable, name).get_future();
@@ -1129,7 +1127,7 @@ namespace hazelcast {
 
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(name);
 
-                executor::tasks::SerializedCounterCallable counterCallable;
+                executor::tasks::SerializedCounterCallable counterCallable{0};
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_FALSE(members.empty());

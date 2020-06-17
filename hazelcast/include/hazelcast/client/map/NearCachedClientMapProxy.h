@@ -130,7 +130,9 @@ namespace hazelcast {
                         if (marked) {
                             return future.then(boost::launch::deferred, [=](boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
                                 auto data = f.get();
-                                tryToPutNearCache(key, std::make_shared<serialization::pimpl::Data>(*data));
+                                auto cachedValue = data ? std::make_shared<serialization::pimpl::Data>(*data)
+                                                        : internal::nearcache::NearCache<K, V>::NULL_OBJECT;
+                                tryToPutNearCache(key, cachedValue);
                                 return data;
                             });
                         }
@@ -321,9 +323,13 @@ namespace hazelcast {
                             }
                         }
 
+                        if (remainingKeys.empty()) {
+                            return boost::make_ready_future(result);
+                        }
+
                         return IMap::getAllInternal(partitionId, remainingKeys).then(
                                 boost::launch::deferred, [=](boost::future<EntryVector> f) {
-                                            EntryVector result;
+                            EntryVector allEntries(result);
                             for (auto &entry : f.get()) {
                                 auto key = std::make_shared<serialization::pimpl::Data>(std::move(entry.first));
                                 auto value = std::make_shared<serialization::pimpl::Data>(std::move(entry.second));
@@ -339,11 +345,11 @@ namespace hazelcast {
                                 } else {
                                     nearCache->put(key, value);
                                 }
-                                result.push_back(std::make_pair(std::move(*key), std::move(*value)));
+                                allEntries.push_back(std::make_pair(std::move(*key), std::move(*value)));
                             }
 
                             unmarkRemainingMarkedKeys(*markers);
-                            return result;
+                            return allEntries;
                         });
                     } catch (exception::IException &) {
                         unmarkRemainingMarkedKeys(*markers);
@@ -407,7 +413,7 @@ namespace hazelcast {
                         return;
                     }
 
-                    proxy::ProxyImpl::deregisterListener(listenerId);
+                    proxy::ProxyImpl::deregisterListener(listenerId).get();
                 }
 
                 class ClientMapAddNearCacheEventHandler

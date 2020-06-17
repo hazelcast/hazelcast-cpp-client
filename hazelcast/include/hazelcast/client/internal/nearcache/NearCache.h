@@ -82,7 +82,7 @@ namespace hazelcast {
                     /**
                      * NULL Object
                      */
-                    static std::shared_ptr<void> NULL_OBJECT;
+                    static std::shared_ptr<V> NULL_OBJECT;
 
                     virtual ~NearCache() {
                     }
@@ -176,7 +176,7 @@ namespace hazelcast {
                 };
 
                 template<typename K, typename V>
-                std::shared_ptr<void> NearCache<K, V>::NULL_OBJECT(new char);
+                std::shared_ptr<V> NearCache<K, V>::NULL_OBJECT(new V);
 
                 template<typename K, typename V>
                 const int NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS = 5;

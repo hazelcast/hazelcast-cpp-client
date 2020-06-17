@@ -62,14 +62,10 @@
 #include <HazelcastServer.h>
 #include "TestHelperFunctions.h"
 #include <cmath>
-#include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h>
-#include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
-#include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
 #include <string>
-#include <stdlib.h>
-#include <fstream>
 #include <boost/asio.hpp>
+#include <boost/thread/future.hpp>
 #include <cassert>
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -2654,46 +2650,6 @@ namespace hazelcast {
                 ClientTxnMultiMapTest();
                 ~ClientTxnMultiMapTest();
             protected:
-                class PutGetRemoveTestTask : public hazelcast::util::Runnable {
-                public:
-                    PutGetRemoveTestTask(HazelcastClient &client, std::shared_ptr<MultiMap> mm,
-                                         boost::latch &latch1) : client(client), mm(mm), latch1(latch1) {}
-
-                    virtual void run() {
-                        std::string key = std::to_string(hazelcast::util::getCurrentThreadId());
-                        std::string key2 = key + "2";
-                        client.getMultiMap("testPutGetRemove")->put(key, "value").get();
-                        TransactionContext context = client.newTransactionContext();
-                        context.beginTransaction().get();
-                        auto multiMap = context.getMultiMap("testPutGetRemove");
-                        ASSERT_FALSE(multiMap->put(key, "value").get());
-                        ASSERT_TRUE(multiMap->put(key, "value1").get());
-                        ASSERT_TRUE(multiMap->put(key, "value2").get());
-                        ASSERT_TRUE(multiMap->put(key2, "value21").get());
-                        ASSERT_TRUE(multiMap->put(key2, "value22").get());
-                        ASSERT_EQ(3, (int) (multiMap->get<std::string, std::string>(key).get().size()));
-                        ASSERT_EQ(3, (int) (multiMap->valueCount<std::string>(key).get()));
-                        auto removedValues = multiMap->remove<std::string, std::string>(key2).get();
-                        ASSERT_EQ(2U, removedValues.size());
-                        ASSERT_TRUE((removedValues[0] == "value21" && removedValues[1] == "value22") ||
-                                    (removedValues[1] == "value21" && removedValues[0] == "value22"));
-                        context.commitTransaction().get();
-
-                        ASSERT_EQ(3, (int) (mm->get<std::string, std::string>(key).get().size()));
-
-                        latch1.count_down();
-                    }
-
-                    virtual const std::string getName() const {
-                        return "PutGetRemoveTestTask";
-                    }
-
-                private:
-                    HazelcastClient &client;
-                    std::shared_ptr<MultiMap> mm;
-                    boost::latch &latch1;
-                };
-
                 HazelcastServer instance;
                 HazelcastClient client;
             };
@@ -2728,15 +2684,34 @@ namespace hazelcast {
             TEST_F(ClientTxnMultiMapTest, testPutGetRemove) {
                 auto mm = client.getMultiMap("testPutGetRemove");
                 constexpr int n = 10;
-                boost::latch latch1(n);
 
+                std::array<boost::future<void>, n> futures;
                 for (int i = 0; i < n; i++) {
-                    std::thread(std::packaged_task<void()>([&]() { 
-                        PutGetRemoveTestTask(client, mm, latch1).run();
-                    })).detach();
+                    futures[i] = boost::async(std::packaged_task<void()>([&]() {
+                        std::string key = std::to_string(hazelcast::util::getCurrentThreadId());
+                        std::string key2 = key + "2";
+                        client.getMultiMap("testPutGetRemove")->put(key, "value").get();
+                        TransactionContext context = client.newTransactionContext();
+                        context.beginTransaction().get();
+                        auto multiMap = context.getMultiMap("testPutGetRemove");
+                        ASSERT_FALSE(multiMap->put(key, "value").get());
+                        ASSERT_TRUE(multiMap->put(key, "value1").get());
+                        ASSERT_TRUE(multiMap->put(key, "value2").get());
+                        ASSERT_TRUE(multiMap->put(key2, "value21").get());
+                        ASSERT_TRUE(multiMap->put(key2, "value22").get());
+                        ASSERT_EQ(3, (int) (multiMap->get<std::string, std::string>(key).get().size()));
+                        ASSERT_EQ(3, (int) (multiMap->valueCount<std::string>(key).get()));
+                        auto removedValues = multiMap->remove<std::string, std::string>(key2).get();
+                        ASSERT_EQ(2U, removedValues.size());
+                        ASSERT_TRUE((removedValues[0] == "value21" && removedValues[1] == "value22") ||
+                                    (removedValues[1] == "value21" && removedValues[0] == "value22"));
+                        context.commitTransaction().get();
+
+                        ASSERT_EQ(3, (int) (mm->get<std::string, std::string>(key).get().size()));
+                    }));
                 }
 
-                ASSERT_OPEN_EVENTUALLY(latch1);
+                boost::wait_for_all(futures.begin(), futures.end());
             }
         }
     }

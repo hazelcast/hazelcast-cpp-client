@@ -643,8 +643,8 @@ namespace hazelcast {
                     return serializationConfig;
                 }
 
-                SerializationService::SerializationService(SerializationConfig serializationConfig)
-                        : portableContext(serializationConfig), serializationConfig(std::move(serializationConfig)),
+                SerializationService::SerializationService(const SerializationConfig &config)
+                        : serializationConfig(config), portableContext(serializationConfig),
                           portableSerializer(portableContext) {}
 
                 DefaultPortableWriter::DefaultPortableWriter(PortableSerializer &portableSer,

@@ -1244,7 +1244,7 @@ namespace hazelcast {
 
                 void TearDown() override {
                     if (map) {
-                        map->destroy();
+                        map->destroy().get();
                     }
                 }
 

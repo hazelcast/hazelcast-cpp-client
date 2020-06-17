@@ -1357,30 +1357,28 @@ namespace hazelcast {
                 std::string id = map->addEntryListener(sampleEntryListener, false).get();
 
                 auto nearCacheStatsImpl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(
-                        imap->getLocalMapStats().getNearCacheStats());
+                        map->getLocalMapStats().getNearCacheStats());
 
                 int64_t initialInvalidationRequests = 0;
                 if (nearCacheStatsImpl) {
                     initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                 }
 
-// put will cause an invalidation event sent from the server to the client
+                // put will cause an invalidation event sent from the server to the client
                 map->put<std::string, std::string>("key1", "value1").get();
 
-// if near cache is enabled
+                // if near cache is enabled
                 if (nearCacheStatsImpl) {
                     ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
                                          nearCacheStatsImpl->getInvalidationRequests());
 
-// populate near cache
-                    imap->get<std::string, std::string>("key1").get();
+                    // populate near cache
+                    map->get<std::string, std::string>("key1").get();
 
-// When ttl expires at server, the server does not send near cache invalidation.
-                    ASSERT_TRUE_ALL_THE_TIME((map->get<std::string, std::string>("key1").get().has_value() &&
-                                              nearCacheStatsImpl->getInvalidationRequests() ==
-                                              initialInvalidationRequests + 1), 2);
+                    // When ttl expires at server, the server does not send near cache invalidation.
+                    ASSERT_EQ_ALL_THE_TIME(initialInvalidationRequests + 1, nearCacheStatsImpl->getInvalidationRequests(), 2);
                 } else {
-// trigger eviction
+                    // trigger eviction
                     ASSERT_FALSE_EVENTUALLY((map->get<std::string, std::string>("key1").get().has_value()));
                 }
 
@@ -1457,29 +1455,28 @@ namespace hazelcast {
                 std::string id = map->addEntryListener(sampleEntryListener, false).get();
 
                 auto nearCacheStatsImpl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(
-                        imap->getLocalMapStats().getNearCacheStats());
+                        map->getLocalMapStats().getNearCacheStats());
 
                 int64_t initialInvalidationRequests = 0;
                 if (nearCacheStatsImpl) {
                     initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                 }
 
-// put will cause an invalidation event sent from the server to the client
+                // put will cause an invalidation event sent from the server to the client
                 map->set("key1", "value1").get();
 
-// if near cache is enabled
+                // if near cache is enabled
                 if (nearCacheStatsImpl) {
                     ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,
                                          nearCacheStatsImpl->getInvalidationRequests());
 
-// populate near cache
-                    imap->get<std::string, std::string>("key1").get();
+                    // populate near cache
+                    map->get<std::string, std::string>("key1").get();
 
-// When ttl expires at server, the server does not send near cache invalidation.
-                    ASSERT_TRUE_ALL_THE_TIME((map->get<std::string, std::string>("key1").get() && nearCacheStatsImpl->getInvalidationRequests() ==
-                                                                       initialInvalidationRequests + 1), 2);
+                    // When ttl expires at server, the server does not send near cache invalidation.
+                    ASSERT_EQ_ALL_THE_TIME(initialInvalidationRequests + 1, nearCacheStatsImpl->getInvalidationRequests(), 2);
                 } else {
-// trigger eviction
+                    // trigger eviction
                     ASSERT_FALSE_EVENTUALLY((map->get<std::string, std::string>("key1").get().has_value()));
                 }
 

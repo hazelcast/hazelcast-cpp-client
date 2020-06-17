@@ -35,6 +35,8 @@
 #include <boost/asio/detail/win_iocp_io_context.hpp>
 #endif
 
+#include <boost/range/algorithm/find_if.hpp>
+
 #include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/LifecycleEvent.h"
@@ -211,24 +213,25 @@ namespace hazelcast {
 
             boost::future<void> ProxyManager::destroyProxy(ClientProxy &proxy) {
                 DefaultObjectNamespace objectNamespace(proxy.getServiceName(), proxy.getName());
-                std::lock_guard<std::mutex> guard(lock);
-                auto it = proxies.find(objectNamespace);
-                if (it == proxies.end()) {
-                    return boost::make_ready_future();
+                {
+                    std::lock_guard<std::mutex> guard(lock);
+                    auto it = proxies.find(objectNamespace);
+                    if (it == proxies.end()) {
+                        return boost::make_ready_future();
+                    }
+                    proxies.erase(it);
                 }
-
-                auto clientProxy = it->second.get();
 
                 try {
                     try {
-                        clientProxy->destroyLocally();
-                        return clientProxy->destroyRemotely();
+                        proxy.destroyLocally();
+                        return proxy.destroyRemotely();
                     } catch (exception::IException &e) {
-                        clientProxy->destroyRemotely();
+                        proxy.destroyRemotely();
                         throw;
                     }
                 } catch (...) {
-                    clientProxy->destroyLocally();
+                    proxy.destroyLocally();
                     throw;
                 }
             }
@@ -1089,8 +1092,7 @@ namespace hazelcast {
 
                     std::vector<Member> newMembers;
                     for (const Member &member : members) {
-                        std::unordered_map<std::string, Member>::iterator formerEntry = prevMembers.find(
-                                member.getUuid());
+                        auto formerEntry = prevMembers.find(member.getUuid());
                         if (formerEntry != prevMembers.end()) {
                             prevMembers.erase(formerEntry);
                         } else {
@@ -1101,15 +1103,18 @@ namespace hazelcast {
                     // removal events should be added before added events
                     typedef const std::unordered_map<std::string, Member> MemberMap;
                     for (const MemberMap::value_type &member : prevMembers) {
-                        events.push_back(MembershipEvent(client.getCluster(), member.second,
-                                                         MembershipEvent::MEMBER_REMOVED,
-                                                         std::vector<Member>(eventMembers.begin(),
-                                                                             eventMembers.end())));
+                        events.emplace_back(client.getCluster(), member.second,
+                                            MembershipEvent::MEMBER_REMOVED,
+                                            std::vector<Member>(eventMembers.begin(),
+                                                                eventMembers.end()));
                         const Address &address = member.second.getAddress();
-                        if (clusterService.getMember(address)) {
-                            std::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
-                                    address);
-                            if (connection) {
+                        std::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
+                                address);
+                        if (connection) {
+                            auto foundIt = boost::find_if(members, [&](const Member &m) {
+                                return m.getAddress() == address;
+                            });
+                            if (foundIt == members.end()) {
                                 connection->close("",
                                                   newTargetDisconnectedExceptionCausedByMemberLeftEvent(
                                                           connection));
@@ -1150,7 +1155,9 @@ namespace hazelcast {
                     auto status = initialListFetchedLatch.load()->wait_for(
                             boost::chrono::seconds(INITIAL_MEMBERS_TIMEOUT_SECONDS));
                     if (status == boost::cv_status::timeout) {
-                        logger->warning("Error while getting initial member list from cluster!");
+                        BOOST_THROW_EXCEPTION(exception::IllegalStateException(
+                                "ClientMembershipListener::waitInitialMemberListFetched",
+                                "Could not get initial member list from cluster!"));
                     }
                 }
 
@@ -2160,9 +2167,9 @@ namespace hazelcast {
                             } catch (exception::IException &e) {
                                 if (connection->isAlive()) {
                                     deregisterListenerInternal(userRegistrationId);
-                                    throw (exception::ExceptionBuilder<exception::HazelcastException>(
+                                    BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::HazelcastException>(
                                             "AbstractClientListenerService::RegisterListenerTask::call")
-                                            << "Listener can not be added " << e).build();
+                                            << "Listener can not be added " << e).build());
                                 }
                             }
                         }
@@ -2173,15 +2180,14 @@ namespace hazelcast {
                     AbstractClientListenerService::deregisterListenerInternal(const std::string &userRegistrationId) {
                         ClientRegistrationKey key(userRegistrationId);
                         std::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrations.get(key);
-                        if (registrationMap.get() == NULL) {
+                        if (!registrationMap) {
                             return false;
                         }
                         bool successful = true;
 
-                        for (ConnectionRegistrationsMap::iterator it = registrationMap->begin();
-                             it != registrationMap->end();) {
-                            ClientEventRegistration &registration = (*it).second;
-                            std::shared_ptr<connection::Connection> subscriber = registration.getSubscriber();
+                        for (auto &registrationEntry : *registrationMap) {
+                            ClientEventRegistration &registration = registrationEntry.second;
+                            const std::shared_ptr<connection::Connection>& subscriber = registration.getSubscriber();
                             try {
                                 const std::shared_ptr<ListenerMessageCodec> &listenerMessageCodec = registration.getCodec();
                                 const std::string &serverRegistrationId = registration.getServerRegistrationId();
@@ -2193,17 +2199,11 @@ namespace hazelcast {
                                 invocation->invoke().get();
 
                                 removeEventHandler(registration);
-
-                                ConnectionRegistrationsMap::iterator oldEntry = it;
-                                ++it;
-                                registrationMap->erase(oldEntry);
                             } catch (exception::IException &e) {
-                                ++it;
-
                                 if (subscriber->isAlive()) {
                                     successful = false;
                                     std::ostringstream endpoint;
-                                    if (subscriber->getRemoteEndpoint().get()) {
+                                    if (subscriber->getRemoteEndpoint()) {
                                         endpoint << *subscriber->getRemoteEndpoint();
                                     } else {
                                         endpoint << "null";
@@ -2232,8 +2232,7 @@ namespace hazelcast {
                         typedef std::vector<std::pair<ClientRegistrationKey, std::shared_ptr<ConnectionRegistrationsMap> > > ENTRY_VECTOR;
                         for (const ENTRY_VECTOR::value_type &registrationMapEntry : registrations.entrySet()) {
                             std::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrationMapEntry.second;
-                            ConnectionRegistrationsMap::iterator foundRegistration = registrationMap->find(
-                                    connection);
+                            auto foundRegistration = registrationMap->find(connection);
                             if (foundRegistration != registrationMap->end()) {
                                 removeEventHandler(foundRegistration->second);
                                 registrationMap->erase(foundRegistration);

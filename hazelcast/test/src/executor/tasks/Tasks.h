@@ -92,14 +92,14 @@ namespace hazelcast {
         namespace serialization {
             struct TaskSerializerFactory : public identified_data_serializer {
                 static int32_t getFactoryId() {
-                    return 1;
+                    return 66;
                 }
             };
 
             template<typename T>
             struct TaskSerializerNoOpRead : public TaskSerializerFactory {
                 static int32_t getFactoryId() {
-                    return 1;
+                    return 66;
                 }
 
                 static T readData(ObjectDataInput &in) {
@@ -114,9 +114,13 @@ namespace hazelcast {
 
             template<>
             struct hz_serializer<test::executor::tasks::AppendCallable>
-                    : public TaskSerializerBase<test::executor::tasks::AppendCallable> {
+                    : public TaskSerializerNoOpRead<test::executor::tasks::AppendCallable> {
                 static int32_t getClassId() {
                     return static_cast<int32_t>(test::executor::tasks::TASK_IDS::APPEND_CALLABLE);
+                }
+
+                static void writeData(const test::executor::tasks::AppendCallable &object, ObjectDataOutput &out) {
+                    out.write(object.msg);
                 }
             };
 

@@ -270,7 +270,7 @@ namespace hazelcast {
                     spi::ClientContext clientContext(*nearCachedClient);
                     nearCacheManager = &clientContext.getNearCacheManager();
                     nearCache = nearCacheManager->
-                            getNearCache<int, std::string, serialization::pimpl::Data>(getTestName());
+                            getNearCache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(getTestName());
                     this->stats = nearCache ? nearCache->getNearCacheStats() : nullptr;
                 }
 
@@ -413,7 +413,7 @@ namespace hazelcast {
                 std::shared_ptr<IMap> noNearCacheMap;
                 std::shared_ptr<IMap> nearCachedMap;
                 hazelcast::client::internal::nearcache::NearCacheManager *nearCacheManager;
-                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, std::string> > nearCache;
+                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data> > nearCache;
                 std::shared_ptr<monitor::NearCacheStats> stats;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
@@ -459,17 +459,15 @@ namespace hazelcast {
 
                     // fetch internal value directly from Near Cache
                     std::shared_ptr<serialization::pimpl::Data> key = getNearCacheKey(i);
-                    std::shared_ptr<std::string> value = nearCache->get(key);
+                    auto value = nearCache->get(key);
                     if (value) {
                         // the internal value should either be `null` or `NULL_OBJECT`
-                        std::shared_ptr<std::string> nullObj = std::static_pointer_cast<std::string>(
-                                hazelcast::client::internal::nearcache::NearCache<int, std::string>::NULL_OBJECT);
-                        ASSERT_EQ(nullObj, nearCache->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
+                        ASSERT_EQ(nearCache->NULL_OBJECT, nearCache->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
                     }
                 }
             }
 
-/**
+            /**
              * Checks that the Near Cache updates value for keys which are already in the Near Cache,
              * even if the Near Cache is full an the eviction is disabled (via {@link com.hazelcast.config.EvictionPolicy#NONE}.
              *
@@ -947,26 +945,13 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class ReliableTopicTest : public ClientTestSupport {
-            public:
-                static void publishTopics(hazelcast::util::ThreadArgs &args) {
-                    ReliableTopic *topic = (ReliableTopic *) args.arg0;
-                    std::vector<int> *publishValues = (std::vector<int> *) args.arg1;
-
-                    hazelcast::util::sleep(5);
-
-                    for (std::vector<int>::const_iterator it = publishValues->begin();
-                         it != publishValues->end(); ++it) {
-                        topic->publish(&(*it));
-                    }
-                }
-
             protected:
                 struct ListenerState {
                     ListenerState(int latchCount, int64_t startSequence) : latch1(latchCount),
                                                                            startSequence(startSequence),
                                                                            numberOfMessagesReceived(0) {}
 
-                    ListenerState(int latchCount) : ListenerState(latchCount, -1) {}
+                    explicit ListenerState(int latchCount) : ListenerState(latchCount, -1) {}
 
                     boost::latch latch1;
                     int64_t startSequence;
@@ -1019,6 +1004,13 @@ namespace hazelcast {
                     std::shared_ptr<ListenerState> state_;
                 };
 
+            protected:
+                virtual void TearDown() {
+                    if (topic) {
+                        topic->destroy();
+                    }
+                }
+
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new HazelcastClient(getConfig());
@@ -1034,22 +1026,22 @@ namespace hazelcast {
 
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
+                std::shared_ptr<ReliableTopic> topic;
+                std::string listenerId;
             };
 
             HazelcastServer *ReliableTopicTest::instance = nullptr;
             HazelcastClient *ReliableTopicTest::client = nullptr;
 
             TEST_F(ReliableTopicTest, testBasics) {
-                std::shared_ptr<ReliableTopic> rt;
-                ASSERT_NO_THROW(rt = client->getReliableTopic("testBasics"));
-                ASSERT_EQ("testBasics", rt->getName());
+                ASSERT_NO_THROW(topic = client->getReliableTopic("testBasics"));
+                ASSERT_EQ("testBasics", topic->getName());
 
-                std::string listenerId;
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = rt->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
 
                 Employee empl1("first", 20);
-                ASSERT_NO_THROW(rt->publish(empl1).get());
+                ASSERT_NO_THROW(topic->publish(empl1).get());
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
                 ASSERT_EQ(1, state->numberOfMessagesReceived);
@@ -1058,23 +1050,21 @@ namespace hazelcast {
                 ASSERT_EQ(empl1, employee.value());
 
                 // remove listener
-                ASSERT_TRUE(rt->removeMessageListener(listenerId));
-                ASSERT_FALSE(rt->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic->removeMessageListener(listenerId));
+                ASSERT_FALSE(topic->removeMessageListener(listenerId));
             }
 
             TEST_F(ReliableTopicTest, testListenerSequence) {
-                std::shared_ptr<ReliableTopic> rt;
-                ASSERT_NO_THROW(rt = client->getReliableTopic("testListenerSequence"));
+                ASSERT_NO_THROW(topic = client->getReliableTopic("testListenerSequence"));
 
                 Employee empl1("first", 10);
                 Employee empl2("second", 20);
 
-                ASSERT_NO_THROW(rt->publish(empl1).get());
-                ASSERT_NO_THROW(rt->publish(empl2).get());
+                ASSERT_NO_THROW(topic->publish(empl1).get());
+                ASSERT_NO_THROW(topic->publish(empl2).get());
 
-                std::string listenerId;
                 auto state = std::make_shared<ListenerState>(1, 1);
-                ASSERT_NO_THROW(listenerId = rt->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
                 ASSERT_EQ(1, state->numberOfMessagesReceived);
@@ -1083,41 +1073,36 @@ namespace hazelcast {
                 ASSERT_EQ(empl2, employee.value());
 
                 // remove listener
-                ASSERT_TRUE(rt->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic->removeMessageListener(listenerId));
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenExisting) {
-                std::shared_ptr<ReliableTopic> rt;
-                ASSERT_NO_THROW(rt = client->getReliableTopic("removeMessageListener_whenExisting"));
+                ASSERT_NO_THROW(topic = client->getReliableTopic("removeMessageListener_whenExisting"));
 
                 Employee empl1("first", 10);
 
-                std::string listenerId;
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = rt->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
 
                 // remove listener
-                ASSERT_TRUE(rt->removeMessageListener(listenerId));
+                ASSERT_TRUE(topic->removeMessageListener(listenerId));
 
-                ASSERT_NO_THROW(rt->publish(empl1).get());
+                ASSERT_NO_THROW(topic->publish(empl1).get());
 
-                ASSERT_OPEN_EVENTUALLY(state->latch1);
+                ASSERT_EQ(boost::cv_status::timeout, state->latch1.wait_for(boost::chrono::seconds(2)));
                 ASSERT_EQ(0, state->numberOfMessagesReceived);
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenNonExisting) {
-                std::shared_ptr<ReliableTopic> rt;
-                ASSERT_NO_THROW(rt = client->getReliableTopic("removeMessageListener_whenNonExisting"));
+                ASSERT_NO_THROW(topic = client->getReliableTopic("removeMessageListener_whenNonExisting"));
 
                 // remove listener
-                ASSERT_FALSE(rt->removeMessageListener("abc"));
+                ASSERT_FALSE(topic->removeMessageListener("abc"));
             }
 
             TEST_F(ReliableTopicTest, publishMultiple) {
-                std::shared_ptr<ReliableTopic> topic;
                 ASSERT_NO_THROW(topic = client->getReliableTopic("publishMultiple"));
 
-                std::string listenerId;
                 auto state = std::make_shared<ListenerState>(5);
                 ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
 
@@ -1136,6 +1121,8 @@ namespace hazelcast {
                     ASSERT_TRUE(val.has_value());
                     ASSERT_EQ(items[k], val.value());
                 }
+
+                ASSERT_TRUE(topic->removeMessageListener(listenerId));
             }
 
             TEST_F(ReliableTopicTest, testConfig) {
@@ -1146,10 +1133,8 @@ namespace hazelcast {
                 clientConfig.addReliableTopicConfig(relConfig);
                 HazelcastClient configClient(clientConfig);
 
-                std::shared_ptr<ReliableTopic> topic;
                 ASSERT_NO_THROW(topic = configClient.getReliableTopic("testConfig"));
 
-                std::string listenerId;
                 auto state = std::make_shared<ListenerState>(5);
                 ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
 
@@ -1168,18 +1153,19 @@ namespace hazelcast {
                     ASSERT_TRUE(val.has_value());
                     ASSERT_EQ(items[k], val.value());
                 }
+                ASSERT_TRUE(topic->removeMessageListener(listenerId));
+                topic.reset();
             }
 
             TEST_F(ReliableTopicTest, testMessageFieldSetCorrectly) {
-                std::shared_ptr<ReliableTopic> intTopic;
-                ASSERT_NO_THROW(intTopic = client->getReliableTopic("testMessageFieldSetCorrectly"));
+                ASSERT_NO_THROW(topic = client->getReliableTopic("testMessageFieldSetCorrectly"));
 
-                std::string listenerId;
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
 
                 auto timeBeforePublish = std::chrono::system_clock::now();
-                intTopic->publish<int>(3).get();
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                topic->publish<int>(3).get();
                 auto timeAfterPublish = std::chrono::system_clock::now();
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
                 ASSERT_EQ(1, state->numberOfMessagesReceived);
@@ -1190,26 +1176,26 @@ namespace hazelcast {
 
                 ASSERT_LE(timeBeforePublish, message->getPublishTime());
                 ASSERT_GE(timeAfterPublish, message->getPublishTime());
-                ASSERT_EQ(intTopic->getName(), message->getSource());
+                ASSERT_EQ(topic->getName(), message->getSource());
                 ASSERT_EQ(nullptr, message->getPublishingMember());
+
+                ASSERT_TRUE(topic->removeMessageListener(listenerId));
             }
 
             TEST_F(ReliableTopicTest, testAlwaysStartAfterTail) {
-                std::shared_ptr<ReliableTopic> intTopic;
-                ASSERT_NO_THROW(intTopic = client->getReliableTopic("testAlwaysStartAfterTail"));
-                ASSERT_NO_THROW(intTopic->publish(1).get());
-                ASSERT_NO_THROW(intTopic->publish(2).get());
-                ASSERT_NO_THROW(intTopic->publish(3).get());
+                ASSERT_NO_THROW(topic = client->getReliableTopic("testAlwaysStartAfterTail"));
+                ASSERT_NO_THROW(topic->publish(1).get());
+                ASSERT_NO_THROW(topic->publish(2).get());
+                ASSERT_NO_THROW(topic->publish(3).get());
 
-                std::string listenerId;
                 auto state = std::make_shared<ListenerState>(3);
-                ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
 
                 std::vector<int> expectedValues = {4, 5, 6};
                 // spawn a thread for publishing new data
                 std::thread([=]() {
                     for (auto val : expectedValues) {
-                        intTopic->publish(val).get();
+                        topic->publish(val).get();
                     }
                 }).detach();
 
@@ -1222,6 +1208,8 @@ namespace hazelcast {
                     ASSERT_TRUE(receivedValue.has_value());
                     ASSERT_EQ(val, receivedValue.value());
                 }
+
+                ASSERT_TRUE(topic->removeMessageListener(listenerId));
             }
         }
     }
@@ -1434,12 +1422,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class IssueTest : public ClientTestSupport {
-
             public:
                 IssueTest();
-
-                ~IssueTest() override;
-
             protected:
                 class Issue864MapListener : public hazelcast::client::EntryAdapter {
                 public:
@@ -1459,31 +1443,7 @@ namespace hazelcast {
                 Issue864MapListener listener;
             };
 
-            IssueTest::IssueTest()
-                    : latch1(1), latch2(1), listener(latch1, latch2) {
-            }
-
-            IssueTest::~IssueTest() = default;
-
-            void threadTerminateNode(hazelcast::util::ThreadArgs &args) {
-                auto *node = (HazelcastServer *) args.arg0;
-                node->shutdown();
-            }
-
-            void putMapMessage(hazelcast::util::ThreadArgs &args) {
-                IMap *map = (IMap *) args.arg0;
-                auto *latch2 = (boost::latch *) args.arg1;
-
-                do {
-                    // 7. Put a 2nd entry to the map
-                    try {
-                        map->put(2, 20);
-                    } catch (std::exception &e) {
-                        // suppress the error
-                        (void) e; // suppress the unused variable warning
-                    }
-                } while (boost::cv_status::timeout == latch2->wait_for(boost::chrono::milliseconds(100)));
-            }
+            IssueTest::IssueTest() : latch1(1), latch2(1), listener(latch1, latch2) {}
 
             TEST_F(IssueTest, testOperationRedo_smartRoutingDisabled) {
                 HazelcastServer hz1(*g_srvFactory);
@@ -1496,15 +1456,17 @@ namespace hazelcast {
                 HazelcastClient client(clientConfig);
 
                 auto map = client.getMap("m");
-                std::unique_ptr<hazelcast::util::StartedThread> thread = nullptr;
                 int expected = 1000;
+                std::thread t;
                 for (int i = 0; i < expected; i++) {
                     if (i == 5) {
-                        thread.reset(new hazelcast::util::StartedThread(threadTerminateNode, &hz1));
+                        t = std::thread([&] () {
+                            hz1.shutdown();
+                        });
                     }
                     map->put(i, i).get();
                 }
-                thread->join();
+                t.join();
                 ASSERT_EQ(expected, map->size().get());
             }
 
@@ -1532,13 +1494,19 @@ namespace hazelcast {
                 ASSERT_TRUE(server.shutdown());
                 HazelcastServer server2(*g_srvFactory);
 
-                std::string putThreadName("Map Put Thread");
-                hazelcast::util::StartedThread t(putThreadName, putMapMessage, &map, &latch2);
+                std::thread([=] () {
+                    do {
+                        // 7. Put a 2nd entry to the map
+                        try {
+                            map->put(2, 20).get();
+                        } catch (std::exception &) {
+                            // suppress the error
+                        }
+                    } while (boost::cv_status::timeout == latch2.wait_for(boost::chrono::milliseconds(100)));
+                }).detach();
 
                 // 6. Verify that the 2nd entry is received by the listener
                 ASSERT_OPEN_EVENTUALLY(latch2);
-
-                t.join();
 
                 // 7. Shut down the server
                 ASSERT_TRUE(server2.shutdown());

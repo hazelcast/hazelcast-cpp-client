@@ -48,6 +48,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include <boost/asio.hpp>
+#include <boost/thread/barrier.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
 #include <openssl/crypto.h>
@@ -162,11 +163,6 @@ namespace hazelcast {
                         val->store(q->pop());
                     }
 
-                    static void Interrupt(hazelcast::util::ThreadArgs &args) {
-                        hazelcast::util::BlockingConcurrentQueue<int> *q = (hazelcast::util::BlockingConcurrentQueue<int> *)args.arg0;
-                        hazelcast::util::sleep(1);
-                        q->interrupt();
-                    }
                 };
 
                 TEST_F(BlockingConcurrentQueueTest, testPushDelyaed) {
@@ -219,13 +215,20 @@ namespace hazelcast {
 
                 TEST_F(BlockingConcurrentQueueTest, testInterrupt) {
                     size_t capacity = 3;
-
                     hazelcast::util::BlockingConcurrentQueue<int> q(capacity);
 
-                    hazelcast::util::StartedThread t(Interrupt, &q);
-// Note that this test is time sensitive, this thread shoulc be waiting at blocking pop when the
-// other thread executes the interrup call.
+                    std::atomic<bool> finished{false};
+                    std::thread t([&] () {
+                        while (!finished) {
+                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                            q.interrupt();
+                        }
+                    });
+                    // Note that this test is time sensitive, this thread shoulc be waiting at blocking pop when the
+                    // other thread executes the interrup call.
                     ASSERT_THROW(q.pop(), client::exception::InterruptedException);
+                    finished = true;
+                    t.join();
                 }
             }
         }
@@ -966,7 +969,7 @@ namespace hazelcast {
                     boost::latch initialConnectionLatch(1);
                     boost::latch reconnectedLatch(1);
 
-                    clientConfig.getNetworkConfig().setConnectionAttemptLimit(10);
+                    clientConfig.getNetworkConfig().setConnectionAttemptLimit(INT32_MAX);
                     LifecycleStateListener listener(initialConnectionLatch, LifecycleEvent::CLIENT_CONNECTED);
                     clientConfig.addListener(&listener);
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
@@ -1283,10 +1286,11 @@ namespace hazelcast {
         namespace test {
             class JsonValueSerializationTest : public ClientTestSupport {
             public:
-                JsonValueSerializationTest() : serializationService(SerializationConfig()) {}
+                JsonValueSerializationTest() : serializationService(config) {}
 
             protected:
                 serialization::pimpl::SerializationService serializationService;
+                SerializationConfig config;
             };
 
             TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue) {

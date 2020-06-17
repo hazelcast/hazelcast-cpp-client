@@ -327,7 +327,15 @@ namespace hazelcast {
                                         "Client is being shutdown.")));
                         return nullptr;
                     }
-                    connection = firstCallback->get();
+                    try {
+                        connection = firstCallback->get();
+                    } catch (exception::IException &e) {
+                        firstCallback->onFailure(
+                                std::make_exception_ptr(exception::IllegalStateException(
+                                        "ClientConnectionManagerImpl::getOrConnect",
+                                        (boost::format("Exception during connecting. %1%") %e).str())));
+                        return nullptr;
+                    }
 
                     // call the interceptor from user thread
                     if (socketInterceptor != NULL) {
@@ -496,7 +504,10 @@ namespace hazelcast {
                 for (const std::shared_ptr<ConnectionListener> &listener : connectionListeners.toArray()) {
                     listener->connectionRemoved(connection);
                 }
-                connectionStrategy->onDisconnect(connection);
+                try {
+                    connectionStrategy->onDisconnect(connection);
+                } catch (exception::IException &) {
+                }
             }
 
             void ClientConnectionManagerImpl::disconnectFromCluster(const std::shared_ptr<Connection> connection) {
@@ -518,8 +529,10 @@ namespace hazelcast {
                             fireConnectionEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
                     } catch (exception::IException &e) {
-                        logger.info("ClientConnectionManagerImpl::disconnectFromCluster. Exception occured: ",
-                                    e.what());
+                        if (client.getLifecycleService().isRunning()) {
+                            logger.warning("ClientConnectionManagerImpl::disconnectFromCluster. Exception occured: ",
+                                        e.what());
+                        }
                     }
                 });
             }
@@ -996,7 +1009,7 @@ namespace hazelcast {
                 return connectionId;
             }
 
-            bool Connection::isAlive() {
+            bool Connection::isAlive() const {
                 return alive;
             }
 

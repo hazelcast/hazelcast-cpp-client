@@ -100,7 +100,7 @@ namespace hazelcast {
 
                 int getConnectionId() const;
 
-                bool isAlive();
+                bool isAlive() const;
 
                 const std::chrono::steady_clock::time_point lastReadTime() const;
 

@@ -51,15 +51,16 @@ namespace hazelcast {
 
                     std::shared_future<std::shared_ptr<ClientProxy>> proxyFuture;
                     std::promise<std::shared_ptr<ClientProxy>> promise;
-                    std::pair<proxy_map::iterator, bool> insertedEntry;
+                    bool insertedEntry = false;
                     {
                         std::lock_guard<std::mutex> guard(lock);
                         auto it = proxies.find(ns);
                         if (it != proxies.end()) {
                             proxyFuture = it->second;
                         } else {
-                            insertedEntry = proxies.insert({ns, promise.get_future().share()});
-                            assert(insertedEntry.second);
+                            auto result = proxies.insert({ns, promise.get_future().share()});
+                            assert(result.second);
+                            insertedEntry = true;
                         }
                     }
 
@@ -75,7 +76,9 @@ namespace hazelcast {
                     } catch (exception::IException &e) {
                         promise.set_exception(std::current_exception());
                         std::lock_guard<std::mutex> guard(lock);
-                        proxies.erase(insertedEntry.first);
+                        if (insertedEntry) {
+                            proxies.erase(ns);
+                        }
                         throw;
                     }
                 }

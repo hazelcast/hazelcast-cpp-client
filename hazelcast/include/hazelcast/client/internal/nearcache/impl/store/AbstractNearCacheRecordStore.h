@@ -327,12 +327,15 @@ namespace hazelcast {
 
                             std::shared_ptr<V> dataToValue(
                                     const std::shared_ptr<serialization::pimpl::Data> &data, void *dummy) {
+                                return data;
+/*
                                 if (data.get() != NULL) {
                                     auto value = serializationService.toObject<V>(data.get());
                                     return std::shared_ptr<V>(new V(std::move(value).value()));
                                 } else {
                                     return std::shared_ptr<V>();
                                 }
+*/
                             }
 
 /*

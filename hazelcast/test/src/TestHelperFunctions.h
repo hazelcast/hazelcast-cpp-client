@@ -40,9 +40,16 @@
 #define ASSERT_EQ_EVENTUALLY(expected, actual) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT((expected), (actual), 120)
 
 #define ASSERT_TRUE_ALL_THE_TIME(expression, seconds) do{       \
-            for(int i = 0; i < seconds ; i++ ) {                \
+            for(int i = 0; i < 10 * seconds ; i++ ) {                \
                 ASSERT_TRUE(expression);                        \
-                hazelcast::util::sleepmillis(1000);                        \
+                hazelcast::util::sleepmillis(100);                        \
+            }                                                   \
+      } while(0)                                                \
+
+#define ASSERT_EQ_ALL_THE_TIME(expected, expression, seconds) do{       \
+            for(int i = 0; i < 10 * seconds ; i++ ) {                \
+                ASSERT_EQ((expected), (expression));                        \
+                hazelcast::util::sleepmillis(100);                        \
             }                                                   \
       } while(0)                                                \
 

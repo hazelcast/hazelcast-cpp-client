@@ -1294,7 +1294,7 @@ namespace hazelcast {
 
                 class HAZELCAST_API SerializationService : public util::Disposable {
                 public:
-                    SerializationService(SerializationConfig serializationConfig);
+                    SerializationService(const SerializationConfig &config);
 
                     PortableSerializer &getPortableSerializer();
 
@@ -1313,7 +1313,13 @@ namespace hazelcast {
 
                     template<typename T>
                     inline Data toData(const T &object) {
-                        return toData<T>(&object);
+                        ObjectDataOutput output(false, &portableSerializer, serializationConfig.getGlobalSerializer());
+
+                        writeHash<T>(&object, output);
+
+                        output.writeObject<T>(object);
+
+                        return {std::move(output).toByteArray()};
                     }
 
                     template<typename T>
@@ -1389,8 +1395,8 @@ namespace hazelcast {
 
                     SerializationService &operator=(const SerializationService &);
 
+                    const SerializationConfig &serializationConfig;
                     PortableContext portableContext;
-                    const SerializationConfig serializationConfig;
                     serialization::pimpl::PortableSerializer portableSerializer;
                     serialization::pimpl::DataSerializer dataSerializer;
 
