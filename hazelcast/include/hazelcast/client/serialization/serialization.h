@@ -1419,6 +1419,9 @@ namespace hazelcast {
                         out.write<int32_t>(0);
                     }
                 };
+
+                template<>
+                Data SerializationService::toData(const char *object);
             }
 
             /**

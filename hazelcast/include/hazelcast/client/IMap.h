@@ -23,7 +23,7 @@
 #include <climits>
 #include <assert.h>
 
-#include <boost/concept/requires.hpp>
+#include <boost/container/vector.hpp>
 
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
@@ -573,7 +573,7 @@ namespace hazelcast {
                 }
 
                 return boost::when_all(futures.begin(), futures.end()).then(boost::launch::deferred,
-                                                                            [=](boost::future<std::vector<boost::future<EntryVector>>> resultsData) {
+                                                                            [=](boost::future<boost::csbl::vector<boost::future<EntryVector>>> resultsData) {
                                                                                 std::unordered_map<K, V> result;
                                                                                 for (auto &entryVectorFuture : resultsData.get()) {
                                                                                     for(auto &entry : entryVectorFuture.get()) {
@@ -893,7 +893,7 @@ namespace hazelcast {
                     resultFutures.push_back(putAllInternal(partitionId, std::move(partitionEntry.second)));
                 }
                 return boost::when_all(resultFutures.begin(), resultFutures.end()).then(boost::launch::deferred,
-                                                                                        [](boost::future<std::vector<boost::future<protocol::ClientMessage>>> futures) {
+                                                                                        [](boost::future<boost::csbl::vector<boost::future<protocol::ClientMessage>>> futures) {
                                                                                             for (auto &f : futures.get()) {
                                                                                                 f.get();
                                                                                             }

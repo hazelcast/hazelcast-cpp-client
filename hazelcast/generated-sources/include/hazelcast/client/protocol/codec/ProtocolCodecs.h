@@ -33,6 +33,11 @@
 #include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
 #include "hazelcast/client/protocol/codec/UUIDCodec.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -79,8 +84,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -93,8 +96,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -215,8 +216,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -250,8 +249,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -266,8 +263,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -299,8 +294,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -330,8 +323,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -377,8 +368,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -393,8 +382,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -409,8 +396,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -425,8 +410,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -456,8 +439,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -475,8 +456,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -493,8 +472,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -509,13 +486,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 namespace hazelcast {
     namespace client {
         class Member;
@@ -541,30 +511,20 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleMemberEventV10(const Member &member, const int32_t &eventType) = 0;
-
-
                         virtual void handleMemberListEventV10(const std::vector<Member> &members) = 0;
-
-
                         virtual void
                         handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
                                                             const int32_t &operationType,
@@ -581,17 +541,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -614,16 +563,12 @@ namespace hazelcast {
                     static int32_t calculateDataSize();
                     //************************ REQUEST ENDS ********************************************************************//
 
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handlePartitionsEventV15(
                                 const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
                                 const int32_t &partitionStateVersion) = 0;
@@ -639,17 +584,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -726,17 +660,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -817,17 +740,6 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
 using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
@@ -854,8 +766,6 @@ namespace hazelcast {
                             const std::string &serviceName,
                             const Address &target);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ClientCreateProxyCodec();
@@ -864,17 +774,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -899,8 +798,6 @@ namespace hazelcast {
                             const std::string &name,
                             const std::string &serviceName);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ClientDestroyProxyCodec();
@@ -909,17 +806,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -965,17 +851,6 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
 using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
@@ -995,8 +870,6 @@ namespace hazelcast {
 
                     static int32_t calculateDataSize();
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ClientPingCodec();
@@ -1005,17 +878,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1038,8 +900,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &stats);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ClientStatisticsCodec();
@@ -1048,10 +908,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 namespace hazelcast {
     namespace client {
@@ -1082,8 +938,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1099,17 +953,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1141,8 +984,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1158,17 +999,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1196,8 +1026,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1213,17 +1041,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1246,8 +1063,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ExecutorServiceShutdownCodec();
@@ -1256,17 +1071,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1306,8 +1110,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -1326,17 +1128,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1375,8 +1166,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -1395,17 +1184,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1439,8 +1217,6 @@ namespace hazelcast {
                         int64_t increment;
 
                         int32_t batchSize;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1456,17 +1232,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1501,8 +1266,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1518,17 +1281,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1565,8 +1317,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1582,17 +1332,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1627,8 +1366,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1644,17 +1381,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1691,24 +1417,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void
                         handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
                                            const int32_t &eventType) = 0;
@@ -1724,17 +1444,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1766,8 +1475,6 @@ namespace hazelcast {
                             int32_t index,
                             const serialization::pimpl::Data &value);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ListAddWithIndexCodec();
@@ -1776,17 +1483,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1809,8 +1505,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ListClearCodec();
@@ -1819,17 +1513,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1864,8 +1547,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1881,17 +1562,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1926,8 +1596,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -1943,17 +1611,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -1988,8 +1645,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2005,17 +1660,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2050,8 +1694,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2067,17 +1709,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2105,8 +1736,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2122,17 +1751,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2167,8 +1785,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -2187,17 +1803,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2232,8 +1837,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2249,17 +1852,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2287,8 +1879,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2304,17 +1894,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2349,8 +1928,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2366,17 +1943,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2411,8 +1977,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2428,17 +1992,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2468,8 +2021,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2485,17 +2036,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2530,8 +2070,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -2550,17 +2088,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2597,8 +2124,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -2617,17 +2142,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2655,8 +2169,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2672,17 +2184,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2714,8 +2215,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -2731,10 +2230,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2773,24 +2268,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -2809,17 +2298,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2860,24 +2338,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -2896,17 +2368,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -2947,24 +2408,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -2983,17 +2438,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3020,8 +2464,6 @@ namespace hazelcast {
                             const std::string &attribute,
                             bool ordered);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapAddIndexCodec();
@@ -3030,17 +2472,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3075,8 +2506,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3092,17 +2521,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3139,38 +2557,26 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void
                         handleIMapInvalidationEventV10(std::unique_ptr<serialization::pimpl::Data> &key) = 0;
-
-
                         virtual void handleIMapInvalidationEventV14(std::unique_ptr<serialization::pimpl::Data> &key,
                                                                     const std::string &sourceUuid,
                                                                     const util::UUID &partitionUuid,
                                                                     const int64_t &sequence) = 0;
-
-
                         virtual void
                         handleIMapBatchInvalidationEventV10(const std::vector<serialization::pimpl::Data> &keys) = 0;
-
-
                         virtual void
                         handleIMapBatchInvalidationEventV14(const std::vector<serialization::pimpl::Data> &keys,
                                                             const std::vector<std::string> &sourceUuids,
@@ -3188,17 +2594,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3228,22 +2623,16 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void
                         handleMapPartitionLostEventV10(const int32_t &partitionId, const std::string &uuid) = 0;
 
@@ -3258,17 +2647,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3291,8 +2669,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapClearCodec();
@@ -3301,17 +2677,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3348,8 +2713,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3365,17 +2728,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3410,8 +2762,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3427,17 +2777,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3469,8 +2808,6 @@ namespace hazelcast {
                             const serialization::pimpl::Data &key,
                             int64_t threadId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapDeleteCodec();
@@ -3479,17 +2816,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3519,8 +2845,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3536,17 +2860,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3576,8 +2889,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3593,17 +2904,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3631,8 +2931,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3648,17 +2946,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3681,8 +2968,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapEvictAllCodec();
@@ -3691,17 +2976,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3738,8 +3012,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3755,17 +3027,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3795,8 +3056,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3812,17 +3071,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3861,8 +3109,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -3881,17 +3127,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3923,8 +3158,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3940,17 +3173,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -3982,8 +3204,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -3999,17 +3219,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4032,8 +3241,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapFlushCodec();
@@ -4042,17 +3249,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4084,8 +3280,6 @@ namespace hazelcast {
                             const serialization::pimpl::Data &key,
                             int64_t referenceId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapForceUnlockCodec();
@@ -4094,17 +3288,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4134,8 +3317,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -4151,17 +3332,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4198,8 +3368,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -4218,17 +3386,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4268,8 +3425,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<map::DataEntryView> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -4288,17 +3443,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4326,8 +3470,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -4343,17 +3485,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4388,8 +3519,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -4405,17 +3534,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4443,8 +3561,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -4460,17 +3576,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4500,8 +3605,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -4517,17 +3620,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4557,8 +3649,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -4574,17 +3664,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4620,8 +3699,6 @@ namespace hazelcast {
                             int64_t ttl,
                             int64_t referenceId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapLockCodec();
@@ -4630,17 +3707,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4670,8 +3736,6 @@ namespace hazelcast {
                             const std::string &name,
                             const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &entries);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapPutAllCodec();
@@ -4680,17 +3744,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4731,8 +3784,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -4751,17 +3802,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4802,8 +3842,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -4822,17 +3860,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4868,8 +3895,6 @@ namespace hazelcast {
                             int64_t threadId,
                             int64_t ttl);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapPutTransientCodec();
@@ -4878,17 +3903,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4931,8 +3945,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -4951,17 +3963,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -4991,8 +3992,6 @@ namespace hazelcast {
                             const std::string &name,
                             const serialization::pimpl::Data &predicate);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapRemoveAllCodec();
@@ -5001,17 +4000,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5048,8 +4036,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -5068,17 +4054,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5108,8 +4083,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5125,17 +4098,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5174,8 +4136,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5191,17 +4151,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5231,8 +4180,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5248,17 +4195,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5297,8 +4233,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -5317,17 +4251,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5368,8 +4291,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5385,17 +4306,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5431,8 +4341,6 @@ namespace hazelcast {
                             int64_t threadId,
                             int64_t ttl);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapSetCodec();
@@ -5441,17 +4349,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5494,8 +4391,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -5514,17 +4409,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5552,8 +4436,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5569,17 +4451,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5618,8 +4489,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -5638,17 +4507,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5691,8 +4549,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5708,17 +4564,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5759,8 +4604,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5776,17 +4619,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5825,8 +4657,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5842,17 +4672,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5886,8 +4705,6 @@ namespace hazelcast {
                             int64_t threadId,
                             int64_t referenceId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MapUnlockCodec();
@@ -5896,17 +4713,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5934,8 +4740,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -5951,17 +4755,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -5991,8 +4784,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6008,17 +4799,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6048,8 +4828,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6065,17 +4843,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6112,24 +4879,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -6148,17 +4909,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6197,24 +4947,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -6233,17 +4977,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6266,8 +4999,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MultiMapClearCodec();
@@ -6276,17 +5007,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6325,8 +5045,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6342,17 +5060,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6389,8 +5096,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6406,17 +5111,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6451,8 +5145,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6468,17 +5160,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6506,8 +5187,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6523,17 +5202,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6565,8 +5233,6 @@ namespace hazelcast {
                             const serialization::pimpl::Data &key,
                             int64_t referenceId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MultiMapForceUnlockCodec();
@@ -6575,17 +5241,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6617,8 +5272,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6634,17 +5287,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6679,8 +5321,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6696,17 +5336,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6734,8 +5363,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6751,17 +5378,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6797,8 +5413,6 @@ namespace hazelcast {
                             int64_t ttl,
                             int64_t referenceId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MultiMapLockCodec();
@@ -6807,17 +5421,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6856,8 +5459,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6873,17 +5474,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6915,8 +5505,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6932,17 +5520,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -6981,8 +5558,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -6998,17 +5573,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7038,8 +5602,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7055,17 +5617,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7093,8 +5644,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7110,17 +5659,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7163,8 +5701,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7180,17 +5716,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7224,8 +5749,6 @@ namespace hazelcast {
                             int64_t threadId,
                             int64_t referenceId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     MultiMapUnlockCodec();
@@ -7234,17 +5757,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7281,8 +5793,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7298,17 +5808,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7336,8 +5835,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7353,17 +5850,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7404,8 +5890,6 @@ namespace hazelcast {
                         std::vector<std::pair<std::string, int64_t> > replicaTimestamps;
 
                         int32_t replicaCount;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7421,17 +5905,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7468,8 +5941,6 @@ namespace hazelcast {
                         std::vector<std::pair<std::string, int64_t> > replicaTimestamps;
 
                         int32_t replicaCount;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7485,17 +5956,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7523,8 +5983,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7540,17 +5998,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7585,8 +6032,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7602,17 +6047,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7649,24 +6083,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void
                         handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
                                            const int32_t &eventType) = 0;
@@ -7682,17 +6110,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7715,8 +6132,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     QueueClearCodec();
@@ -7725,17 +6140,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7770,8 +6174,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7787,17 +6189,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7832,8 +6223,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7849,17 +6238,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7894,8 +6272,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7911,17 +6287,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -7956,8 +6321,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -7973,17 +6336,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8011,8 +6363,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8028,17 +6378,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8068,8 +6407,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8085,17 +6422,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8123,8 +6449,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8140,17 +6464,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8178,8 +6491,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8195,17 +6506,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8242,8 +6542,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8259,17 +6557,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8302,8 +6589,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -8322,17 +6607,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8367,8 +6641,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -8387,17 +6659,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8427,8 +6688,6 @@ namespace hazelcast {
                             const std::string &name,
                             const serialization::pimpl::Data &value);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     QueuePutCodec();
@@ -8437,17 +6696,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8475,8 +6723,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8492,17 +6738,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8537,8 +6772,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8554,17 +6787,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8594,8 +6816,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8611,17 +6831,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8649,8 +6858,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -8666,17 +6873,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8711,24 +6907,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -8747,17 +6937,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8794,24 +6973,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -8830,17 +7003,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8879,24 +7041,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -8915,17 +7071,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -8962,24 +7107,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -8998,17 +7137,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9045,24 +7173,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                          std::unique_ptr<serialization::pimpl::Data> &value,
                                                          std::unique_ptr<serialization::pimpl::Data> &oldValue,
@@ -9081,17 +7203,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9114,8 +7225,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ReplicatedMapClearCodec();
@@ -9124,17 +7233,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9169,8 +7267,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9186,17 +7282,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9231,8 +7316,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9248,17 +7331,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9286,8 +7358,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9303,17 +7373,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9348,8 +7407,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -9368,17 +7425,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9406,8 +7452,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9423,17 +7467,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9461,8 +7494,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9478,17 +7509,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9518,8 +7538,6 @@ namespace hazelcast {
                             const std::string &name,
                             const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &entries);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     ReplicatedMapPutAllCodec();
@@ -9528,17 +7546,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9577,8 +7584,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -9597,17 +7602,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9642,8 +7636,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -9662,17 +7654,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9702,8 +7683,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9719,17 +7698,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9757,8 +7725,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9774,17 +7740,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9812,8 +7767,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9829,17 +7782,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9876,8 +7818,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int64_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9893,17 +7833,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9940,8 +7869,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int64_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -9957,17 +7884,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -9995,8 +7911,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int64_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10012,17 +7926,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10050,8 +7953,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int64_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10067,17 +7968,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10140,17 +8030,6 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
-
 using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
@@ -10184,8 +8063,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -10204,17 +8081,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10242,8 +8108,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int64_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10259,17 +8123,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10297,8 +8150,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int64_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10314,17 +8165,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10352,8 +8192,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int64_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10369,10 +8207,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10407,8 +8241,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10424,17 +8256,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10469,8 +8290,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10486,17 +8305,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10533,24 +8341,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void
                         handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
                                            const int32_t &eventType) = 0;
@@ -10566,17 +8368,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10599,8 +8390,6 @@ namespace hazelcast {
                     static int32_t calculateDataSize(
                             const std::string &name);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     SetClearCodec();
@@ -10609,17 +8398,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10654,8 +8432,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10671,17 +8447,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10716,8 +8481,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10733,17 +8496,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10778,8 +8530,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10795,17 +8545,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10840,8 +8579,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10857,17 +8594,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10895,8 +8621,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10912,17 +8636,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -10950,8 +8663,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -10967,17 +8678,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11012,8 +8712,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11029,17 +8727,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11069,8 +8756,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11086,17 +8771,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11124,8 +8798,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11141,17 +8813,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11186,24 +8847,18 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
                     public:
                         virtual ~AbstractEventHandler();
 
                         void handle(std::unique_ptr<protocol::ClientMessage> message);
-
-
                         virtual void
                         handleTopicEventV10(serialization::pimpl::Data &&item, const int64_t &publishTime,
                                             const std::string &uuid) = 0;
@@ -11219,17 +8874,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11259,8 +8903,6 @@ namespace hazelcast {
                             const std::string &name,
                             const serialization::pimpl::Data &message);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     TopicPublishCodec();
@@ -11269,17 +8911,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11309,8 +8940,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11326,17 +8955,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11361,8 +8979,6 @@ namespace hazelcast {
                             const std::string &transactionId,
                             int64_t threadId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     TransactionCommitCodec();
@@ -11371,17 +8987,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11415,8 +9020,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::string response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11432,17 +9035,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11467,8 +9059,6 @@ namespace hazelcast {
                             const std::string &transactionId,
                             int64_t threadId);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     TransactionRollbackCodec();
@@ -11477,17 +9067,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11526,8 +9105,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11543,17 +9120,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11592,8 +9158,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11609,17 +9173,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11651,8 +9204,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11668,17 +9219,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11717,8 +9257,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11734,17 +9272,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11778,8 +9305,6 @@ namespace hazelcast {
                             int64_t threadId,
                             const serialization::pimpl::Data &key);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     TransactionalMapDeleteCodec();
@@ -11788,17 +9313,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11837,8 +9351,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -11857,17 +9369,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11899,8 +9400,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11916,17 +9415,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -11958,8 +9446,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -11975,17 +9461,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12019,8 +9494,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12036,17 +9509,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12089,8 +9551,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -12109,17 +9569,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12160,8 +9609,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -12180,17 +9627,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12229,8 +9665,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -12249,17 +9683,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12300,8 +9723,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12317,17 +9738,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12368,8 +9778,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -12388,17 +9796,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12441,8 +9838,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12458,17 +9853,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12504,8 +9888,6 @@ namespace hazelcast {
                             const serialization::pimpl::Data &key,
                             const serialization::pimpl::Data &value);
                     //************************ REQUEST ENDS ********************************************************************//
-
-
                 private:
                     // Preventing public access to constructors
                     TransactionalMapSetCodec();
@@ -12514,17 +9896,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12556,8 +9927,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12573,17 +9942,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12615,8 +9973,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12632,17 +9988,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12676,8 +10021,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12693,17 +10036,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12737,8 +10069,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12754,17 +10084,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12805,8 +10124,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12822,17 +10139,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12866,8 +10172,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::vector<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12883,17 +10187,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12934,8 +10227,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -12951,17 +10242,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -12993,8 +10273,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -13010,17 +10288,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -13059,8 +10326,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -13076,17 +10341,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -13127,8 +10381,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -13144,17 +10396,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -13193,8 +10434,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         std::unique_ptr<serialization::pimpl::Data> response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                         // define copy constructor (needed for unique_ptr variables)
@@ -13213,17 +10452,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -13255,8 +10483,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -13272,17 +10498,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -13321,8 +10536,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -13338,17 +10551,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -13387,8 +10589,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         bool response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -13404,17 +10604,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 
 using namespace hazelcast::client::serialization::pimpl;
 
@@ -13446,8 +10635,6 @@ namespace hazelcast {
                     class HAZELCAST_API ResponseParameters {
                     public:
                         int32_t response;
-
-
                         static ResponseParameters decode(ClientMessage clientMessage);
 
                     private:
@@ -13467,6 +10654,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-
-
