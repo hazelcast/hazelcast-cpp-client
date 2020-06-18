@@ -13,31 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::MultiMap<std::string, std::string> map =
-            hz.getMultiMap<std::string, std::string>("map");
+    auto map = hz.getMultiMap("map");
 
-    std::vector<std::string> keys = map.keySet();
-
-    for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
-        std::vector<std::string> values = map.get(*it);
-        std::cout << *it << " -> (";
-        for (std::vector<std::string>::const_iterator valIt = values.begin(); valIt != values.end();) {
-            std::cout << *valIt << std::endl;
-            ++valIt;
-            if (valIt != values.end()) {
-                std::cout << ", ";
-            }
+    for (auto &key : map->keySet<std::string>().get()) {
+        std::cout << key << " -> (";
+        for (auto &value : map->get<std::string, std::string>(key).get()) {
+            std::cout << value << ", \n";
         }
-        std::cout << ")" << std::endl;
+        std::cout << ")" << "\n";
     }
 
     std::cout << "Finished" << std::endl;

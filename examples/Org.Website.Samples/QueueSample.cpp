@@ -20,17 +20,17 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get a Blocking Queue called "my-distributed-queue"
-    IQueue<std::string> queue = hz.getQueue<std::string>("my-distributed-queue");
+    auto queue = hz.getQueue("my-distributed-queue");
     // Offer a String into the Distributed Queue
-    queue.offer("item");
+    queue->offer("item").get();
     // Poll the Distributed Queue and return the String
-    std::shared_ptr<std::string> item = queue.poll();
+    auto item = queue->poll<std::string>().get();
     //Timed blocking Operations
-    queue.offer("anotheritem", 500);
-    std::shared_ptr<std::string> anotherItem = queue.poll(5 * 1000);
+    queue->offer("anotheritem", std::chrono::milliseconds(500)).get();
+    auto anotherItem = queue->poll<std::string>(std::chrono::seconds(5)).get();
     //Indefinitely blocking Operations
-    queue.put("yetanotheritem");
-    std::cout << *queue.take() << std::endl;
+    queue->put("yetanotheritem");
+    std::cout << *queue->take<std::string>().get() << std::endl;
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

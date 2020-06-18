@@ -17,65 +17,47 @@
 
 using namespace hazelcast::client;
 
-class CustomSerializable {
-public:
-    CustomSerializable() {}
+struct Person {
+    friend std::ostream &operator<<(std::ostream &os, const Person &person);
 
-    CustomSerializable(const std::string &value) : value(value) {}
-
-    virtual ~CustomSerializable() {
-    }
-
-    const std::string &getValue() const {
-        return value;
-    }
-
-    void setValue(const std::string &value) {
-        CustomSerializable::value = value;
-    }
-
-private:
-    std::string value;
+    std::string name;
+    bool male;
+    int32_t age;
 };
 
-class CustomSerializer : public serialization::StreamSerializer {
-public:
-    virtual int32_t getHazelcastTypeId() const {
-        return 10;
-    }
+std::ostream &operator<<(std::ostream &os, const Person &person) {
+    os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
+    return os;
+}
 
-    virtual void write(serialization::ObjectDataOutput &out, const void *object) {
-        const CustomSerializable *csObject = static_cast<const CustomSerializable *>(object);
-        const std::string &value = csObject->getValue();
-        int length = (int) value.length();
-        std::vector<hazelcast::byte> bytes;
-        for (int i = 0; i < length; ++i) {
-            bytes.push_back((hazelcast::byte) value[i]);
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Person> : custom_serializer {
+                static constexpr int32_t getTypeId() noexcept {
+                    return 3;
+                }
+
+                static void write(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.name);
+                    out.write(object.male);
+                    out.write(object.age);
+                }
+
+                static Person read(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+                }
+            };
         }
-        out.writeInt((int) length);
-        out.write(bytes);
     }
-
-    virtual void *read(serialization::ObjectDataInput &in) {
-        int32_t len = in.readInt();
-        std::ostringstream value;
-        for (int i = 0; i < len; ++i) {
-            value << (char) in.readByte();
-        }
-
-        return new CustomSerializable(value.str());
-    }
-};
+}
 
 int main() {
-    ClientConfig clientConfig;
-    clientConfig.getSerializationConfig().registerSerializer(
-            std::shared_ptr<serialization::StreamSerializer>(new CustomSerializer()));
+    HazelcastClient hz;
 
-    HazelcastClient hz(clientConfig);
-
-    IMap<long, CustomSerializable> map = hz.getMap<long, CustomSerializable>("customMap");
-    map.put(1L, CustomSerializable("fooooo"));
+    auto map = hz.getMap("customMap");
+    map->put(1L, Person{"My Person", false, 57}).get();
 
     return 0;
 }

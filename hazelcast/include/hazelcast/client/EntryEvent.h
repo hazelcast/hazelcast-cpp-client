@@ -16,6 +16,7 @@
 #pragma once
 
 #include <memory>
+#include <ostream>
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/serialization/serialization.h"
 
@@ -38,7 +39,6 @@ namespace hazelcast {
         class HAZELCAST_API EntryEvent {
         public:
             enum struct type {
-                UNDEFINED = 0 ,
                 ADDED =  1,
                 REMOVED = 1 << 1,
                 UPDATED = 1 << 2,
@@ -52,17 +52,12 @@ namespace hazelcast {
             };
 
             EntryEvent(const std::string &name, const Member &member, type eventType,
-                       TypedData &&key, TypedData &&value)
-            : name(name), member(member), eventType(eventType), key(key), value(value) {
-            }
+                       TypedData &&key, TypedData &&value);
 
             EntryEvent(const std::string &name, const Member &member, type eventType,
-                       TypedData &&key, TypedData &&value, TypedData &&oldValue, TypedData &&mergingValue)
-                    : name(name), member(member), eventType(eventType), key(key), value(value), oldValue(oldValue),
-                      mergingValue(mergingValue) {}
+                       TypedData &&key, TypedData &&value, TypedData &&oldValue, TypedData &&mergingValue);
 
-            EntryEvent(const std::string &name, const Member &member, type eventType)
-                    : name(name), member(member), eventType(eventType) {}
+            EntryEvent(const std::string &name, const Member &member, type eventType);
 
             /**
              *
@@ -70,18 +65,14 @@ namespace hazelcast {
              *
              * @return the key
              */
-            const TypedData &getKey() const {
-                return key;
-            }
+            const TypedData &getKey() const;
 
             /**
              * Returns the old value of the entry event
              *
              * @return The older value for the entry
              */
-            const TypedData &getOldValue() const {
-                return oldValue;
-            }
+            const TypedData &getOldValue() const;
 
             /**
              *
@@ -89,9 +80,7 @@ namespace hazelcast {
              *
              * @return The value of for the entry
              */
-            const TypedData &getValue() const {
-                return value;
-            }
+            const TypedData &getValue() const;
 
             /**
             *
@@ -99,36 +88,31 @@ namespace hazelcast {
             *
             * @return merging value
             */
-            const TypedData &getMergingValue() const {
-                return mergingValue;
-            }
+            const TypedData &getMergingValue() const;
 
             /**
              * Returns the member fired this event.
              *
              * @return the member fired this event.
              */
-            const Member &getMember() const {
-                return member;
-            }
+            const Member &getMember() const;
 
             /**
              * Return the event type
              *
              * @return event type
              */
-            type getEventType() const {
-                return eventType;
-            }
+            type getEventType() const;
 
             /**
              * Returns the name of the map for this event.
              *
              * @return name of the map.
              */
-            const std::string &getName() const {
-                return name;
-            }
+            const std::string &getName() const;
+
+            friend std::ostream &operator<<(std::ostream &os, const EntryEvent &event);
+
         protected:
             std::string name;
             Member member;

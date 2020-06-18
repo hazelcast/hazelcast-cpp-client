@@ -19,16 +19,16 @@ using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
-    std::shared_ptr<Ringbuffer<long> > rb = hz.getRingbuffer<long>("rb");
+    auto rb = hz.getRingbuffer("rb");
     // add two items into ring buffer
-    rb->add(100);
-    rb->add(200);
+    rb->add(100).get();
+    rb->add(200).get();
     // we start from the oldest item.
     // if you want to start from the next item, call rb.tailSequence()+1
-    int64_t sequence = rb->headSequence();
-    std::cout << *rb->readOne(sequence) << std::endl;
+    int64_t sequence = rb->headSequence().get();
+    std::cout << *rb->readOne<int>(sequence).get() << std::endl;
     sequence++;
-    std::cout << *rb->readOne(sequence) << std::endl;
+    std::cout << *rb->readOne<int>(sequence).get() << std::endl;
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

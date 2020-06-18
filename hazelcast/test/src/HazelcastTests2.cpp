@@ -207,9 +207,9 @@ namespace hazelcast {
                     unsigned long sleepTime = 3000U;
                     hazelcast::util::StartedThread t(Pop, &q, &val, &sleepTime);
 
-                    hazelcast::util::sleepmillis(2000);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
                     ASSERT_NO_THROW(q.push(testValue));
-                    hazelcast::util::sleepmillis(1000);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                     ASSERT_EQ(testValue, (int) val);
                 }
 
@@ -1914,7 +1914,7 @@ namespace hazelcast {
 
                 auto deserializedValue = serializationService.toObject<NonSerializableObject>(data);
                 ASSERT_TRUE(deserializedValue.has_value());
-                ASSERT_EQ(obj, deserializedValue);
+                ASSERT_EQ(obj, deserializedValue.value());
             }
         }
     }

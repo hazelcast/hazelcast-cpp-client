@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::ITopic<std::string> topic = hz.getTopic<std::string>("testtopic");
-    topic.publish("first message");
+    auto topic = hz.getTopic("testtopic");
+    topic->publish("first message").get();
     std::cout << "Published: Published the message." << std::endl;
 
     std::cout << "Finished" << std::endl;

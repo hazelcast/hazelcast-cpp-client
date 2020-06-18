@@ -59,9 +59,9 @@ int main() {
 
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
+    auto map = hz.getMap("MyMap");
 
-    map.put(1, 100);
+    map->put(1, 100);
 
     DisconnectedListener listener;
     hz.addLifecycleListener(&listener);

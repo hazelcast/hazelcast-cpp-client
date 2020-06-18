@@ -14,65 +14,44 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
 
-class Person {
-public:
-    Person() {
-    }
+struct Person {
+    friend std::ostream &operator<<(std::ostream &os, const Person &person);
 
-    Person(const std::string& n) : name(n) {
-    }
-
-    void setName(const std::string& n) {
-        name = n;
-    }
-
-    const std::string& getName() const {
-        return name;
-    }
-
-private:
     std::string name;
+    bool male;
+    int32_t age;
 };
 
-class GlobalSerializer : public hazelcast::client::serialization::StreamSerializer {
-public:
-
-    virtual void write(hazelcast::client::serialization::ObjectDataOutput &out, const void *object) {
-        const Person *p = static_cast<const Person *>(object);
-        out.writeUTF(&p->getName());
-    }
-
-    virtual void *read(hazelcast::client::serialization::ObjectDataInput &in) {
-        return new Person(*(in.readUTF()));
-    }
-
-    int getHazelcastTypeId() const {
-        // type id for the global serializer
-        return 345;
-    };
-};
-
-std::ostream &operator<<(std::ostream &out, const Person &p) {
-    const std::string & str = p.getName();
-    out << str;
-    return out;
+std::ostream &operator<<(std::ostream &os, const Person &person) {
+    os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
+    return os;
 }
+
+class MyGlobalSerializer : public hazelcast::client::serialization::global_serializer {
+public:
+    void write(const boost::any &obj, hazelcast::client::serialization::ObjectDataOutput &out) override {
+        auto const &object = boost::any_cast<Person>(obj);
+        out.write(object.name);
+        out.write(object.male);
+        out.write(object.age);
+    }
+
+    boost::any read(hazelcast::client::serialization::ObjectDataInput &in) override {
+        return boost::any(Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()});
+    }
+};
 
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::SerializationConfig serializationConfig;
-    serializationConfig.setGlobalSerializer(std::shared_ptr<hazelcast::client::serialization::StreamSerializer>(
-            new GlobalSerializer()));
+    serializationConfig.setGlobalSerializer(std::make_shared<MyGlobalSerializer>());
     config.setSerializationConfig(serializationConfig);
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<std::string, Person> map = hz.getMap<std::string, Person>("map");
-    Person testPerson("bar");
-    map.put("foo", testPerson);
-    std::cout << "Got value \"" << *(map.get("foo")) << "\" from the map." << std::endl;
+    auto map = hz.getMap("map");
+    map->put("foo", Person{"first last name", false, 19}).get();
+    std::cout << "Got value \"" << *(map->get<std::string, Person>("foo").get()) << "\" from the map->" << std::endl;
     std::cout << "Finished" << std::endl;
 
     return 0;

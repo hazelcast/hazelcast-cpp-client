@@ -790,7 +790,7 @@ namespace hazelcast {
                 }
 
                 // wait expiration of entries.
-                hazelcast::util::sleep(1);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
 
                 // trigger immediate fire of expiration events by touching them.
                 for (int i = 0; i < numberOfPutOperations; ++i) {
@@ -836,7 +836,7 @@ namespace hazelcast {
                 }
 
 // wait expiration of entries.
-                hazelcast::util::sleep(1);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
 
 // trigger immediate fire of expiration events by touching them.
                 for (int i = 0; i < numberOfPutOperations; i++) {
@@ -1528,7 +1528,7 @@ namespace hazelcast {
                 boost::latch latch2(1);
                 hazelcast::util::StartedThread t2(testMapTryLockThread2, &latch2, imap.get());
 
-                hazelcast::util::sleep(1);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
                 imap->unlock("key1").get();
                 ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
                 ASSERT_TRUE(imap->isLocked("key1").get());
@@ -2809,7 +2809,7 @@ namespace hazelcast {
                 std::string listener1ID = imap->addEntryListener(listener1, false).get();
                 std::string listener2ID = imap->addEntryListener(listener2, true, "key3").get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 imap->put<std::string, std::string>("key1", "value1").get();
                 imap->put<std::string, std::string>("key2", "value2").get();
@@ -2845,7 +2845,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -2879,7 +2879,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -2916,7 +2916,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -2957,7 +2957,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -3000,7 +3000,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -3038,7 +3038,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -3073,7 +3073,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -3115,7 +3115,7 @@ namespace hazelcast {
                 imap->put<std::string, std::string>("hasan", "can").get();
                 imap->remove<std::string, std::string>("mehmet").get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((imap->get<std::string, std::string>("metin").get().has_value())); // trigger eviction
 
@@ -3151,7 +3151,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -3185,7 +3185,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -3226,7 +3226,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 
@@ -3270,7 +3270,7 @@ namespace hazelcast {
                 intMap->put(3, 3, std::chrono::seconds(1)).get(); // evict after 1 second
                 intMap->remove<int, int>(2).get();
 
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
 
                 ASSERT_FALSE((intMap->get<int, int>(3).get().has_value())); // trigger eviction
 

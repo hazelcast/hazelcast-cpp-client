@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IQueue<int> queue = hz.getQueue<int>("queue");
+    auto queue = hz.getQueue("queue");
 
     for (int k = 1; k < 100; k++) {
-        queue.put(k);
+        queue->put(k).get();
         std::cout << "Producing: " << k << std::endl;
-        hazelcast::util::sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    queue.put(-1);
+    queue->put(-1).get();
     std::cout << "Producer Finished!" << std::endl;
 
     std::cout << "Finished" << std::endl;

@@ -610,7 +610,7 @@ namespace hazelcast {
 
             void testOfferPollThread2(hazelcast::util::ThreadArgs &args) {
                 auto *q = (IQueue *) args.arg0;
-                hazelcast::util::sleep(2);
+                std::this_thread::sleep_for(std::chrono::seconds(2));
                 q->offer("item1");
             }
 

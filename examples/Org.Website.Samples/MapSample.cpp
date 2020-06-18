@@ -20,13 +20,25 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get the Distributed Map from Cluster.
-    IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("my-distributed-map");
+    auto map = hz.getMap("my-distributed-map");
     //Standard Put and Get.
-    map.put("key", "value");
-    map.get("key");
+    map->put<std::string, std::string>("key", "value").get();
+    map->get<std::string, std::string>("key").get();
     //Concurrent Map methods, optimistic updating
-    map.putIfAbsent("somekey", "somevalue");
-    map.replace("key", "value", "newvalue");
+    map->putIfAbsent<std::string, std::string>("somekey", "somevalue").get();
+    // use deferred future continuation
+    auto future = map->replace<std::string, std::string>("key", "value", "newvalue").then(
+            boost::launch::deferred, [] (boost::future<bool> f) {
+        if (f.get()) {
+            std::cout << "Replaced successfully\n";
+            return;
+        }
+        std::cerr << "Failed to replace\n";
+    });
+
+    // Wait until replace is completed
+    future.get();
+
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

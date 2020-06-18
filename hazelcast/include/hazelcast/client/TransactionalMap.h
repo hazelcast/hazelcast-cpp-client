@@ -78,9 +78,9 @@ namespace hazelcast {
             *
             * @see IMap#putIfAbsent(key, value)
             */
-            template<typename K, typename V>
-            boost::future<boost::optional<V>> putIfAbsent(const K &key, const V &value) {
-                return toObject<V>(putIfAbsentData(toData(key), toData(value)));
+            template<typename K, typename V, typename R=V>
+            boost::future<boost::optional<R>> putIfAbsent(const K &key, const V &value) {
+                return toObject<R>(putIfAbsentData(toData(key), toData(value)));
             }
 
             /**

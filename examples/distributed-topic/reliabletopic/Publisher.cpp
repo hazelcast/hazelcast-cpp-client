@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 10 June 2016.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 void publishWithDefaultConfig() {
     hazelcast::client::HazelcastClient client;
 
-    std::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>("MyReliableTopic");
-    std::string message("My first message");
-    topic->publish(&message);
+    auto topic = client.getReliableTopic("MyReliableTopic");
+    topic->publish(std::string("My first message")).get();
 }
 
 void publishWithNonDefaultConfig() {
@@ -34,11 +30,9 @@ void publishWithNonDefaultConfig() {
     clientConfig.addReliableTopicConfig(reliableTopicConfig);
     hazelcast::client::HazelcastClient client(clientConfig);
 
-    std::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+    auto topic = client.getReliableTopic(topicName);
 
-    std::string message("My first message");
-
-    topic->publish(&message);
+    topic->publish(std::string("My first message")).get();
 }
 
 

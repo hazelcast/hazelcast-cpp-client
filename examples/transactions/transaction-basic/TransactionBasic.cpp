@@ -13,31 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::TransactionOptions txOptions;
-    txOptions.setTimeout(10);
+    txOptions.setTimeout(std::chrono::seconds(10));
 
     hazelcast::client::TransactionContext txCxt = hz.newTransactionContext(txOptions);
 
     try {
-        txCxt.beginTransaction();
+        txCxt.beginTransaction().get();
 
-        hazelcast::client::TransactionalMap<std::string, std::string> map = txCxt.getMap<std::string, std::string>(
-                "transaction map");
+        auto map = txCxt.getMap("transaction map");
 
-        map.put("1", "1");
-        hazelcast::util::sleepmillis(20);
-        map.put("2", "2");
-        txCxt.commitTransaction();
+        map->put<std::string, std::string>("1", "1").get();
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        map->put<std::string, std::string>("2", "2").get();
+        txCxt.commitTransaction().get();
     } catch (hazelcast::client::exception::IException &e) {
-        txCxt.rollbackTransaction();
+        txCxt.rollbackTransaction().get();
         std::cerr << "Transaction failed !!! " << e.what() << std::endl;
         exit(-1);
     }

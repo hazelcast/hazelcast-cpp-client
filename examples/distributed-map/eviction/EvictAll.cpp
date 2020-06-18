@@ -13,35 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("evictiontestmap");
+    auto map = hz.getMap("evictiontestmap");
 
     int numberOfKeysToLock = 4;
     int numberOfEntriesToAdd = 1000;
 
     for (int i = 0; i < numberOfEntriesToAdd; i++) {
-        map.put(i, i);
+        map->put(i, i).get();
     }
 
     for (int i = 0; i < numberOfKeysToLock; i++) {
-        map.lock(i);
+        map->lock(i).get();
     }
 
-    std::cout << "# Map size before evictAll\t:" << map.size() << std::endl;
+    std::cout << "# Map size before evictAll\t:" << map->size().get() << std::endl;
 
     // should keep locked keys and evict all others.
-    map.evictAll();
+    map->evictAll().get();
 
     std::cout << "# After calling evictAll..." << std::endl;
     std::cout << "# Expected map size\t: " << numberOfKeysToLock << std::endl;
-    std::cout << "# Actual map size\t: " << map.size() << std::endl;
+    std::cout << "# Actual map size\t: " << map->size().get() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

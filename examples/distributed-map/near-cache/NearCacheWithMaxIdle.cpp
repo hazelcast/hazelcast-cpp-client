@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 13 Jan 2017.
-//
 #include <stdio.h>
 
 #include "NearCacheSupport.h"
@@ -36,25 +33,25 @@ int main() {
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);
 
-    IMap<int, std::string> map = client.getMap<int, std::string>(mapName);
+    auto map = client.getMap(mapName);
 
-    map.put(1, "foo");
+    map->put<int, std::string>(1, "foo").get();
     NearCacheSupport::printNearCacheStats(map, "The put(1, article) call has no effect on the empty Near Cache");
 
-    map.get(1);
+    map->get<int, std::string>(1).get();
     NearCacheSupport::printNearCacheStats(map, "The first get(1) call populates the Near Cache");
 
     // with this short sleep time, the Near Cache entry should not expire
     for (int i = 0; i < 20; i++) {
-        map.get(1);
-        hazelcast::util::sleepmillis(100);
+        map->get<int, std::string>(1).get();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     NearCacheSupport::printNearCacheStats(map, "We have called get(1) every 100 ms, so the Near cache entry could not expire");
 
-    hazelcast::util::sleep(2);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     printf("We've waited for max-idle-seconds, so the Near Cache entry is expired.\n");
 
-    map.get(1);
+    map->get<int, std::string>(1).get();
     NearCacheSupport::printNearCacheStats(map, "The next get(1) call is fetching the value again from the map");
 
     std::cout << "Finished" << std::endl;

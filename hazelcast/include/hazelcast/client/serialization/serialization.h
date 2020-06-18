@@ -21,6 +21,7 @@
 
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
+#include<boost/optional/optional_io.hpp>
 
 #include "hazelcast/client/HazelcastJsonValue.h"
 #include "hazelcast/client/serialization/Portable.h"

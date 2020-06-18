@@ -17,35 +17,47 @@
 
 using namespace hazelcast::client;
 
-class IncEntryProcessor : public serialization::IdentifiedDataSerializable {
-public:
-    virtual int getFactoryId() const {
-        return 66;
-    }
-
-    virtual int getClassId() const {
-        return 1;
-    }
-
-    virtual void writeData(serialization::ObjectDataOutput &writer) const {
-    }
-
-    virtual void readData(serialization::ObjectDataInput &reader) {
-    }
+class IncEntryProcessor {
 };
+
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<IncEntryProcessor> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 66;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 1;
+                }
+
+                static void
+                writeData(const IncEntryProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                }
+
+                static IncEntryProcessor readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return IncEntryProcessor{};
+                }
+            };
+        }
+    }
+}
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get the Distributed Map from Cluster.
-    IMap<std::string, int> map = hz.getMap<std::string, int>("my-distributed-map");
+    auto map = hz.getMap("my-distributed-map");
     // Put the integer value of 0 into the Distributed Map
-    std::shared_ptr<int> replacedValue = map.put("key", 0);
-    // Run the IncEntryProcessor class on the Hazelcast Cluster Member holding the key called "key"
-    std::shared_ptr<std::string> returnValueFromIncEntryProcessor = map.executeOnKey<std::string, IncEntryProcessor>(
+    map->put("key", 0).get();
+    // Run the IncEntryProcessor class on the Hazelcast Cluster Member holding the key called "key",
+    // The entry processor returns in32_t.
+    auto returnValueFromIncEntryProcessor = map->executeOnKey<std::string, int32_t, IncEntryProcessor>(
             "key", IncEntryProcessor());
     // Show that the IncEntryProcessor updated the value.
-    std::cout << "new value:" << map.get("key");
+    std::cout << "new value:" << map->get<std::string, int32_t>("key").get();
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

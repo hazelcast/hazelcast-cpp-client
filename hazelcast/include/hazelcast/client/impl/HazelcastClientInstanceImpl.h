@@ -19,8 +19,8 @@
 #include <memory>
 #include <stdint.h>
 #include <vector>
-#include <hazelcast/client/map/NearCachedClientMapProxy.h>
 
+#include "hazelcast/client/map/NearCachedClientMapProxy.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"

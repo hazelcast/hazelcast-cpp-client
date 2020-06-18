@@ -254,7 +254,7 @@ namespace hazelcast {
             * @param newValue
             * @return <tt>true</tt> if the value was replaced
             */
-            template<typename K, typename V, typename N>
+            template<typename K, typename V, typename N = V>
             boost::future<bool> replace(const K &key, const V &oldValue, const N &newValue) {
                 return replaceIfSameInternal(toData(key), toData(oldValue), toData(newValue));
             }
@@ -430,7 +430,7 @@ namespace hazelcast {
             * @return id of registered interceptor
             */
             template<typename MapInterceptor>
-            boost::future<std::string> addInterceptor(MapInterceptor &interceptor) {
+            boost::future<std::string> addInterceptor(const MapInterceptor &interceptor) {
                 return proxy::IMapImpl::addInterceptor(toData(interceptor));
             }
 

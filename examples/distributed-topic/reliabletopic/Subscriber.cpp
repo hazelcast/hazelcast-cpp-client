@@ -13,59 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 10 June 2016.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
-class MyListener : public hazelcast::client::topic::ReliableMessageListener<std::string> {
+class MyListener : public hazelcast::client::topic::ReliableMessageListener {
 public:
-    MyListener() : startSequence(-1), numberOfMessagesReceived(0), lastReceivedSequence(-1) {
-    }
+    MyListener(std::atomic<int> &numberOfMessagesReceived, int64_t sequence) : numberOfMessagesReceived(
+            numberOfMessagesReceived), startSequence(sequence), lastReceivedSequence(-1) {}
 
-    MyListener(int64_t sequence) : startSequence(sequence), numberOfMessagesReceived(0), lastReceivedSequence(-1) {
-    }
+    MyListener(std::atomic<int> &numberOfMessagesReceived) : numberOfMessagesReceived(
+            numberOfMessagesReceived), startSequence(-1), lastReceivedSequence(-1) {}
 
-    virtual ~MyListener() {
-    }
-
-    virtual void onMessage(std::unique_ptr<hazelcast::client::topic::Message<std::string> > &&message) {
+    void onMessage(hazelcast::client::topic::Message &&message) override {
         ++numberOfMessagesReceived;
 
-        const std::string *object = message->getMessageObject();
-        if (NULL != object) {
-            std::cout << "[GenericListener::onMessage] Received message: " << *message->getMessageObject() <<
-            " for topic:" << message->getName();
+        auto object = message.getMessageObject().get<std::string>();
+        if (object) {
+            std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.getName();
         } else {
             std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
-            message->getName();
+            message.getName();
         }
     }
 
-    virtual int64_t retrieveInitialSequence() const {
+    int64_t retrieveInitialSequence() const override {
         return startSequence;
     }
 
-    virtual void storeSequence(int64_t sequence) {
+    void storeSequence(int64_t sequence) override {
         lastReceivedSequence = sequence;
     }
 
-    virtual bool isLossTolerant() const {
+    bool isLossTolerant() const override {
         return false;
     }
 
-    virtual bool isTerminal(const hazelcast::client::exception::IException &failure) const {
+    bool isTerminal(const hazelcast::client::exception::IException &failure) const override {
         return false;
-    }
-
-    int getNumberOfMessagesReceived() {
-        int value = numberOfMessagesReceived;
-        return value;
     }
 
 private:
+    std::atomic<int> &numberOfMessagesReceived;
     int64_t startSequence;
-    hazelcast::util::AtomicInt numberOfMessagesReceived;
     int64_t lastReceivedSequence;
 };
 
@@ -73,15 +61,15 @@ void listenWithDefaultConfig() {
     hazelcast::client::HazelcastClient client;
 
     std::string topicName("MyReliableTopic");
-    std::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
-    
-    MyListener listener;
-    const std::string &listenerId = topic->addMessageListener(listener);
+    auto topic = client.getReliableTopic(topicName);
+
+    std::atomic<int> numberOfMessagesReceived{0};
+    std::string listenerId = topic->addMessageListener(MyListener(numberOfMessagesReceived));
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
-    while (listener.getNumberOfMessagesReceived() < 1) {
-        hazelcast::util::sleep(1);
+    while (numberOfMessagesReceived < 1) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     if (topic->removeMessageListener(listenerId)) {
@@ -99,15 +87,15 @@ void listenWithConfig() {
     clientConfig.addReliableTopicConfig(reliableTopicConfig);
     hazelcast::client::HazelcastClient client(clientConfig);
 
-    std::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+    auto topic = client.getReliableTopic(topicName);
 
-    MyListener listener;
-    const std::string &listenerId = topic->addMessageListener(listener);
+    std::atomic<int> numberOfMessagesReceived{0};
+    const std::string &listenerId = topic->addMessageListener(MyListener(numberOfMessagesReceived));
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
-    while (listener.getNumberOfMessagesReceived() < 1) {
-        hazelcast::util::sleep(1);
+    while (numberOfMessagesReceived < 1) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     if (topic->removeMessageListener(listenerId)) {

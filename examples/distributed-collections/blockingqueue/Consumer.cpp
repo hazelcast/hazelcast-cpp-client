@@ -13,29 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IQueue<int> queue = hz.getQueue<int>("queue");
+    auto queue = hz.getQueue("queue");
 
     while (true) {
-        std::shared_ptr<int> item = queue.take();
-        if (item.get()) {
-            std::cout << "Consumed: " << *item << std::endl;
+        auto item = queue->take<int32_t>().get();
+        if (item) {
+            std::cout << "Consumed: " << item.value() << std::endl;
 
-            if (*item == -1) {
-                queue.put(-1);
+            if (item.value() == -1) {
+                queue->put(-1).get();
                 break;
             }
         } else {
             std::cout << "Retrieved item is null." << std::endl;
         }
-        hazelcast::util::sleep(5);
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
     std::cout << "Consumer Finished!" << std::endl;
 

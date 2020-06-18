@@ -20,16 +20,16 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get a Replicated Map called "my-replicated-map"
-    std::shared_ptr<ReplicatedMap<std::string, std::string> > map = hz.getReplicatedMap<std::string, std::string>("my-replicated-map");
+    auto map = hz.getReplicatedMap("my-replicated-map");
     // Add items to the set with duplicates
     // Put and Get a value from the Replicated Map
-    std::shared_ptr<std::string> replacedValue = map->put("key", "value");
+    auto replacedValue = map->put<std::string, std::string>("key", "value").get();
     // key/value replicated to all members
-    std::cout << "replacedValue = " << (replacedValue.get() ? *replacedValue : "null");
+    std::cout << "replacedValue = " << replacedValue.value_or("null");
     // Will be null as its first update
-    std::shared_ptr<std::string> value = map->get("key");
+    auto value = map->get<std::string, std::string>("key").get();
     // the value is retrieved from a random member in the cluster
-    std::cout << "value for key = " << (value.get() ? *value : "null");
+    std::cout << "value for key = " << value.value_or("null");
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

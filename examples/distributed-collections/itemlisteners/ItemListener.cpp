@@ -13,59 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
-class ItemListenerImpl : public hazelcast::client::ItemListener<std::string> {
+class ItemListenerImpl {
 public:
+    ItemListenerImpl(std::atomic<int> &numAdded, std::atomic<int> &numRemoved) : numAdded(numAdded),
+                                                                                 numRemoved(numRemoved) {}
 
-    ItemListenerImpl() : numAdded(0), numRemoved(0) {
-    }
-
-    void itemAdded(const hazelcast::client::ItemEvent<std::string> &item) {
-        std::cout << "Item added:" << item.getItem() << std::endl;
+    void itemAdded(const hazelcast::client::ItemEvent &item) {
+        std::cout << "Item added:" << item.getItem().get<std::string>().value() << std::endl;
         ++numAdded;
     }
 
-    void itemRemoved(const hazelcast::client::ItemEvent<std::string> &item) {
-        std::cout << "Item removed:" << item.getItem() << std::endl;
+    void itemRemoved(const hazelcast::client::ItemEvent &item) {
+        std::cout << "Item removed:" << item.getItem().get<std::string>().value() << std::endl;
         ++numRemoved;
     }
 
-
-    int getNumAdded() const {
-        return numAdded;
-    }
-
-    int getNumRemoved() const {
-        return numRemoved;
-    }
-
 private:
-    int numAdded;
-    int numRemoved;
+    std::atomic<int> &numAdded;
+    std::atomic<int> &numRemoved;
 };
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IQueue<std::string> queue = hz.getQueue<std::string>("queue");
+    auto queue = hz.getQueue("queue");
 
-    ItemListenerImpl listener;
-    std::string registrationId = queue.addItemListener(listener, true);
+    std::atomic<int> numAdded(0);
+    std::atomic<int> numRemoved(0);
+
+    std::string registrationId = queue->addItemListener(ItemListenerImpl(numAdded, numRemoved), true).get();
 
     std::cout << "Registered the listener with registration id:" << registrationId <<
     "Waiting for the listener events!" << std::endl;
 
-    hazelcast::util::sleep(5);
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
-    std::cout << "Received " << listener.getNumAdded() << " items addition and " << listener.getNumRemoved() <<
-    " items removal events." << std::endl;
+    std::cout << "Received " << numAdded << " items addition and " << numRemoved << " items removal events." << std::endl;
 
     // unregister the listener
-    if (queue.removeItemListener(registrationId)) {
+    if (queue->removeItemListener(registrationId).get()) {
         std::cout << "Removed the item listener with registration id " << registrationId << std::endl;
     } else {
         std::cout << "Failed to remove the item listener with registration id " << registrationId << std::endl;

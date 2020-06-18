@@ -13,29 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    std::shared_ptr<hazelcast::client::Ringbuffer<std::string> > rb = hz.getRingbuffer<std::string>("myringbuffer");
+    auto rb = hz.getRingbuffer("myringbuffer");
 
-    std::cout << "Capacity of the ringbuffer is:" << rb->capacity() << std::endl;
+    std::cout << "Capacity of the ringbuffer is:" << rb->capacity().get() << std::endl;
 
-    int64_t sequenceNumber = rb->add("First Item");
+    int64_t sequenceNumber = rb->add("First Item").get();
 
     std::cout << "Added the first item at sequence " << sequenceNumber << std::endl;
 
-    rb->add("Second item");
+    rb->add("Second item").get();
 
-    std::cout << "There are " << rb->size() << " items in the ring buffer " << std::endl;
+    std::cout << "There are " << rb->size().get() << " items in the ring buffer " << std::endl;
 
-    std::unique_ptr<std::string> val = rb->readOne(sequenceNumber);
+    auto val = rb->readOne<std::string>(sequenceNumber).get();
 
-    if ((std::string *)NULL != val.get()) {
+    if (val) {
         std::cout << "The item at read at sequence " << sequenceNumber << " is " << *val << std::endl;
     }
 

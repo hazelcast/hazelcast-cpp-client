@@ -13,33 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 28/12/15.
-//
-
 #pragma once
-#include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
 
-class Employee : public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    Employee();
+#include <hazelcast/client/serialization/serialization.h>
 
-    Employee(int s);
-
-    int getFactoryId() const;
-
-    int getClassId() const;
-
-    void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const;
-
-    void readData(hazelcast::client::serialization::ObjectDataInput &in);
-
-    void incSalary(int amount);
-
-    int getSalary() const;
-
-private:
-    int salary;
+struct Employee {
+    int32_t salary;
 };
 
+struct EmployeeRaiseEntryProcessor {};
+
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Employee> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 5;
+                }
+
+                static void writeData(const Employee &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.salary);
+                }
+
+                static Employee readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Employee{in.read<int32_t>()};
+                }
+            };
+
+            template<>
+            struct hz_serializer<EmployeeRaiseEntryProcessor> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 6;
+                }
+
+                static void writeData(const EmployeeRaiseEntryProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                }
+
+                EmployeeRaiseEntryProcessor readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return EmployeeRaiseEntryProcessor{};
+                }
+            };
+        }
+    }
+}
 

@@ -1145,7 +1145,7 @@ namespace hazelcast {
                 HazelcastClient client(config);
 
                 // sleep enough time so that the client ping is sent to the server
-                hazelcast::util::sleep(3);
+                std::this_thread::sleep_for(std::chrono::seconds(3));
             }
         }
     }

@@ -17,10 +17,10 @@
 
 using namespace hazelcast::client;
 
-class TopicSample : public topic::MessageListener<std::string> {
+class TopicSample {
 public:
-    virtual void onMessage(std::unique_ptr<topic::Message<std::string> > &&message) {
-        std::cout << "Got message " << message->getMessageObject() << std::endl;
+    void operator()(topic::Message &&message) {
+        std::cout << "Got message " << message.getMessageObject().get<std::string>().value_or("null") << std::endl;
     }
 };
 
@@ -28,12 +28,11 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get a Topic called "my-distributed-topic"
-    ITopic<std::string> topic = hz.getTopic<std::string>("my-distributed-topic");
+    auto topic = hz.getTopic("my-distributed-topic");
     // Add a Listener to the Topic
-    TopicSample listener;
-    topic.addMessageListener<TopicSample>(listener);
+    topic->addMessageListener(TopicSample{}).get();
     // Publish a message to the Topic
-    topic.publish("Hello to distributed world");
+    topic->publish("Hello to distributed world").get();
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

@@ -241,13 +241,13 @@ namespace hazelcast {
                 IterationType iterationType;
 
                 /**
- * Construct with a pageSize
- * results will not be filtered
- * results will be natural ordered
- * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
- *
- * @param predicatePageSize size of the page
- */
+                 * Construct with a pageSize
+                 * results will not be filtered
+                 * results will be natural ordered
+                 * throws IllegalArgumentException {@link IllegalArgumentException} if pageSize is not greater than 0
+                 *
+                 * @param predicatePageSize size of the page
+                 */
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
                         size_t predicatePageSize) : outStream(serializationService.newOutputStream()),
                         pageSize(predicatePageSize), page(0), iterationType(IterationType::VALUE) {
@@ -285,7 +285,7 @@ namespace hazelcast {
                  */
                 template<typename COMPARATOR>
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
-                        const COMPARATOR &comp, size_t predicatePageSize)
+                        COMPARATOR &&comp, size_t predicatePageSize)
                         : outStream(serializationService.newOutputStream()), pageSize(predicatePageSize), page(0),
                         iterationType(IterationType::VALUE) {
                     outStream.writeObject<bool>(nullptr);

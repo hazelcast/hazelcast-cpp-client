@@ -1886,6 +1886,54 @@ namespace hazelcast {
             }
         }
 
+        EntryEvent::EntryEvent(const std::string &name, const Member &member, type eventType,
+                   TypedData &&key, TypedData &&value)
+                : name(name), member(member), eventType(eventType), key(key), value(value) {
+        }
+
+        EntryEvent::EntryEvent(const std::string &name, const Member &member, type eventType,
+                   TypedData &&key, TypedData &&value, TypedData &&oldValue, TypedData &&mergingValue)
+                : name(name), member(member), eventType(eventType), key(key), value(value), oldValue(oldValue),
+                  mergingValue(mergingValue) {}
+
+        EntryEvent::EntryEvent(const std::string &name, const Member &member, type eventType)
+                : name(name), member(member), eventType(eventType) {}
+
+        const TypedData &EntryEvent::getKey() const {
+            return key;
+        }
+
+        const TypedData &EntryEvent::getOldValue() const {
+            return oldValue;
+        }
+
+        const TypedData &EntryEvent::getValue() const {
+            return value;
+        }
+
+        const TypedData &EntryEvent::getMergingValue() const {
+            return mergingValue;
+        }
+
+        const Member &EntryEvent::getMember() const {
+            return member;
+        }
+
+        EntryEvent::type EntryEvent::getEventType() const {
+            return eventType;
+        }
+
+        const std::string &EntryEvent::getName() const {
+            return name;
+        }
+
+        std::ostream &operator<<(std::ostream &os, const EntryEvent &event) {
+            os << "name: " << event.name << " member: " << event.member << " eventType: " <<
+               static_cast<int>(event.eventType) << " key: " << event.key.getType() << " value: " << event.value.getType() <<
+               " oldValue: " << event.oldValue.getType() << " mergingValue: " << event.mergingValue.getType();
+            return os;
+        }
+
         MapEvent::MapEvent(Member &&member, EntryEvent::type eventType, const std::string &name,
                            int numberOfEntriesAffected)
                 : member(member), eventType(eventType), name(name), numberOfEntriesAffected(numberOfEntriesAffected) {}

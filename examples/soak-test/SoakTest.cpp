@@ -3,8 +3,7 @@
 #include <signal.h>
 
 #include <hazelcast/client/HazelcastAll.h>
-#include <hazelcast/client/query/BetweenPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
+#include <hazelcast/client/query/Predicates.h>
 #include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/spi/ClientContext.h>
 
@@ -64,19 +63,19 @@ public:
             string key(out.str());
             try {
                 if (operation < 30) {
-                    map.get(key);
+                    map->get(key);
                     ++getCount;
                 } else if (operation < 60) {
                     out.clear();
                     out << rand();
-                    map.put(key, out.str());
+                    map->put(key, out.str());
                     ++putCount;
                 } else if (operation < 80) {
-                    map.values(query::BetweenPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1, 10));
+                    map->values(query::BetweenPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1, 10));
                     ++valuesCount;
                 } else {
                     UpdateEntryProcessor processor(out.str());
-                    map.executeOnKey<string, UpdateEntryProcessor>(key, processor);
+                    map->executeOnKey<string, UpdateEntryProcessor>(key, processor);
                     ++executeOnKeyCount;
                 }
 

@@ -20,17 +20,28 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get the Distributed List from Cluster.
-    IList<std::string> list = hz.getList<std::string>("my-distributed-list");
+    auto list = hz.getList("my-distributed-list");
     // Add elements to the list
-    list.add("item1");
-    list.add("item2");
+    list->add("item1").get();
+    // Using future continuation here so that the calls are not blocking
+    auto f = list->add("item2").then(boost::launch::deferred, [=] (boost::future<bool> f) {
+       if (!f.get()) {
+           std::cerr << "Element 2 could not be added !!!\n";
+           return;
+       }
 
-    // Remove the first element
-    std::cout << "Removed: " << *list.remove(0);
-    // There is only one element left
-    std::cout << "Current size is " << list.size() << std::endl;
-    // Clear the list
-    list.clear();
+        std::cout << std::boolalpha;
+        // Remove the first element
+        std::cout << "Removed: " << list->remove(0).get();
+        // There is only one element left
+        std::cout << "Current size is " << list->size().get() << '\n';
+        // Clear the list
+        list->clear().get();
+    });
+
+    // make the deferred future execute
+    f.get();
+
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

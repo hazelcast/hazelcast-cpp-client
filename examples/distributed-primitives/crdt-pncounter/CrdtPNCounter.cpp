@@ -18,17 +18,17 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    std::shared_ptr<hazelcast::client::crdt::pncounter::PNCounter> pnCounter = hz.getPNCounter("pncounterexample");
+    auto pnCounter = hz.getPNCounter("pncounterexample");
 
-    std::cout << "Counter started with value:" << pnCounter->get() << std::endl;
+    std::cout << "Counter started with value:" << pnCounter->get().get() << std::endl;
 
-    std::cout << "Counter new value after adding is: " << pnCounter->addAndGet(5) << std::endl;
+    std::cout << "Counter new value after adding is: " << pnCounter->addAndGet(5).get() << std::endl;
 
-    std::cout << "Counter new value before adding is: " << pnCounter->getAndAdd(2) << std::endl;
+    std::cout << "Counter new value before adding is: " << pnCounter->getAndAdd(2).get() << std::endl;
 
-    std::cout << "Counter new value is: " << pnCounter->get() << std::endl;
+    std::cout << "Counter new value is: " << pnCounter->get().get() << std::endl;
 
-    std::cout << "Decremented counter by one to: " << pnCounter->decrementAndGet() << std::endl;
+    std::cout << "Decremented counter by one to: " << pnCounter->decrementAndGet().get() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

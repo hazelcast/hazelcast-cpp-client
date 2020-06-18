@@ -174,9 +174,9 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
-            template<typename E>
-            boost::future<boost::optional<E>> set(int32_t index, const E &element) {
-                return toObject<E>(proxy::IListImpl::setData(index, toData(element)));
+            template<typename E, typename R = E>
+            boost::future<boost::optional<R>> set(int32_t index, const E &element) {
+                return toObject<R>(proxy::IListImpl::setData(index, toData(element)));
             }
 
             /**

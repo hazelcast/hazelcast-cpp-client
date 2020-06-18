@@ -139,7 +139,7 @@ namespace hazelcast {
 
                         size_t available = outputStream.size() - index;
 
-                        if (requestedLength > available) {
+                        if (requestedLength > (int) available) {
                             BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
                                                                                       (boost::format("Cannot write %1% bytes!") % requestedLength).str()));
                         }

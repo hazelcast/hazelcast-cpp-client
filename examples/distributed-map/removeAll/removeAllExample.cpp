@@ -13,124 +13,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/query/LikePredicate.h>
 
 using namespace hazelcast::client;
 
-class Person : public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    Person() { }
+struct Person {
+    friend std::ostream &operator<<(std::ostream &os, const Person &person);
 
-    Person(const Person &p) : male(p.male), age(p.age) {
-        if (NULL != p.name.get()) {
-            name = std::unique_ptr<std::string>(new std::string(*p.name));
-        }
-    }
-
-    Person &operator=(const Person &p) {
-        if (NULL != p.name.get()) {
-            name = std::unique_ptr<std::string>(new std::string(*p.name));
-        }
-        male = p.male;
-        age = p.age;
-
-        return *this;
-    }
-
-    Person(const char *n, bool male, int age)
-            : name(std::unique_ptr<std::string>(new std::string(n))), male(male), age(age) { }
-
-    int getFactoryId() const {
-        return 666;
-    }
-
-    int getClassId() const {
-        return 10;
-    }
-
-    void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
-        out.writeUTF(name.get());
-        out.writeBoolean(male);
-        out.writeInt(age);
-    }
-
-    void readData(hazelcast::client::serialization::ObjectDataInput &in) {
-        name = in.readUTF();
-        male = in.readBoolean();
-        age = in.readInt();
-    }
-
-
-    const std::string *getName() const {
-        return name.get();
-    }
-
-    bool isMale() const {
-        return male;
-    }
-
-    int getAge() const {
-        return age;
-    }
-
-private:
-    std::unique_ptr<std::string> name;
+    std::string name;
     bool male;
-    int age;
+    int32_t age;
 };
 
-std::ostream &operator<<(std::ostream &out, const Person &p) {
-    const std::string *n = p.getName();
-    out << "Person{"
-    << "male=" << p.isMale()
-    << ", name='" << (NULL == n ? "No name" : n->c_str()) << "\'"
-    << ", age=" << p.getAge()
-    << '}';
-    return out;
+std::ostream &operator<<(std::ostream &os, const Person &person) {
+    os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
+    return os;
+}
+
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Person> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 3;
+                }
+
+                static void writeData(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.name);
+                    out.write(object.male);
+                    out.write(object.age);
+                }
+
+                static Person readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+                }
+            };
+        }
+    }
 }
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, Person> personMap = hz.getMap<std::string, Person>("personMap");
-
-    Person p1("Peter", true, 36);
-    Person p2("John", true, 50);
-    Person p3("Marry", false, 20);
-    Person p4("Mike", true, 35);
-    Person p5("Rob", true, 60);
-    Person p6("Jane", false, 43);
-    personMap.put("1", p1);
-    personMap.put("2", p2);
-    personMap.put("3", p3);
-    personMap.put("4", p4);
-    personMap.put("5", p5);
-    personMap.put("6", p6);
+    auto personMap = hz.getMap("personMap");
+    personMap->putAll<std::string, Person>({{"1", Person{"Peter", true, 36}},
+                       {"2", Person{"John", true, 50}},
+                       {"3", Person{"Marry", false, 20}},
+                       {"4", Person{"Mike", true, 35}},
+                       {"5", Person{"Rob", true, 60}},
+                       {"6", Person{"Jane", false, 43}}}).get();
 
     // Remove entries that whose name start with 'M'
-    personMap.removeAll(query::LikePredicate("name", "M%"));
+    personMap->removeAll(query::LikePredicate(hz, "name", "M%")).get();
 
-    if (personMap.get("3").get() != NULL) {
+    if (personMap->get<std::string, Person>("3").get()) {
         std::cerr << "Entry 3 is not deleted. This is unexpected!!!" << std::endl;
     } else {
         std::cout << "Entry 3 is deleted." << std::endl;
     }
     
-    if (personMap.get("4").get() != NULL) {
+    if (personMap->get<std::string, Person>("4").get()) {
         std::cerr << "Entry 4 is not deleted. This is unexpected!!!" << std::endl;
     } else {
         std::cout << "Entry 4 is deleted." << std::endl;
     }
 
-    int mapSize = personMap.size();
+    auto mapSize = personMap->size().get();
     if (4 == mapSize) {
         std::cout << "There are only 4 entries as expected." << std::endl;
     } else {
-        std::cerr << "There are " << mapSize << "entries in the map. This is unexpected!!!" << std::endl;
+        std::cerr << "There are " << mapSize << "entries in the map-> This is unexpected!!!" << std::endl;
     }
     
     std::cout << "Finished" << std::endl;

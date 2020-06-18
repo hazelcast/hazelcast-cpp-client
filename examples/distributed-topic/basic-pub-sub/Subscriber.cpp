@@ -18,21 +18,20 @@
 //
 #include <hazelcast/client/HazelcastClient.h>
 
-class MyTopicListener : public hazelcast::client::topic::MessageListener<std::string> {
-public:
-    void onMessage(std::unique_ptr<hazelcast::client::topic::Message<std::string> > &&msg) {
-        std::cout << "[MyTopicListener::onMessage] Message received:" << msg->getMessageObject() << std::endl;
+struct MyTopicListener {
+    void operator()(hazelcast::client::topic::Message &&msg) {
+        std::cout << "[MyTopicListener::onMessage] Message received:"
+                  << msg.getMessageObject().get<std::string>().value() << std::endl;
     }
 };
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::ITopic<std::string> topic = hz.getTopic<std::string>("testtopic");
-    MyTopicListener listener;
-    topic.addMessageListener(listener);
+    auto topic = hz.getTopic("testtopic");
+    topic->addMessageListener(MyTopicListener()).get();
     std::cout << "Subscriber: Added topic listener. Waiting 5 seconds for the published topic." << std::endl;
-    hazelcast::util::sleep(5);
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
     std::cout << "Finished" << std::endl;
 

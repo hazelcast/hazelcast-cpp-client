@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 /**
  * You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling.
  */
@@ -34,15 +31,15 @@ int main() {
     
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
+    auto map = hz.getMap("MyMap");
     
-    map.put(1, 100);
-    map.put(2, 200);
+    map->put(1, 100).get();
+    map->put(2, 200).get();
 
-    std::shared_ptr<int> value = map.get(1);
+    auto value = map->get<int, int>(1).get();
 
-    if (value.get()) {
-        std::cout << "Value for key 1 is " << *value << std::endl;
+    if (value) {
+        std::cout << "Value for key 1 is " << value.value() << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

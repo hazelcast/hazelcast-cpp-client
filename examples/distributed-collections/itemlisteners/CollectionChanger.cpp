@@ -21,12 +21,15 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IQueue<std::string> queue = hz.getQueue<std::string>("queue");
+    auto queue = hz.getQueue("queue");
 
-    queue.put("foo");
-    queue.put("bar");
-    queue.take();
-    queue.take();
+    queue->put("foo").then([=] (boost::future<void> f) {
+       f.get();
+        queue->put("bar").get();
+    }).get();
+
+    queue->take<std::string>().get();
+    queue->take<std::string>().get();
 
     std::cout << "Changer Finished!" << std::endl;
 

@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 29/01/14.
-//
-
 #pragma once
+
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
@@ -55,7 +52,5 @@
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/client/PartitionAware.h"
-#include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include <hazelcast/client/cluster/memberselector/MemberSelectors.h>
-
 

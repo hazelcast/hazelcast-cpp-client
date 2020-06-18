@@ -15,7 +15,7 @@
  */
 #pragma once
 
- #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -411,7 +411,7 @@ namespace hazelcast {
             * @returns distributed object
             */
             template<typename T>
-            T getDistributedObject(const std::string& name) {
+            std::shared_ptr<T> getDistributedObject(const std::string& name) {
                 return clientImpl->getDistributedObject<T>(name);
             }
 

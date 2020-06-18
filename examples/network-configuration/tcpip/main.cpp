@@ -26,7 +26,7 @@ int main() {
     config.addAddress(addr);
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, std::string> map = hz.getMap<int, std::string>("test map");
+    auto map = hz.getMap("test map");
 
     std::cout << "Finished" << std::endl;
 

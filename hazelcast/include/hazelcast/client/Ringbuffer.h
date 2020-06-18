@@ -152,7 +152,7 @@ namespace hazelcast {
              * @return the sequenceId of the added item, or -1 if the add failed.
              */
             template<typename E>
-            boost::future<std::shared_ptr<int64_t>> add(const E &item, ringbuffer::OverflowPolicy overflowPolicy) {
+            boost::future<int64_t> add(const E &item, ringbuffer::OverflowPolicy overflowPolicy) {
                 return addData(toData(item), overflowPolicy);
             }
 
@@ -177,7 +177,8 @@ namespace hazelcast {
              * <p>
              *
              * @param collection the batch of items to add.
-             * @return the future to synchronize on completion.
+             * @return the future to synchronize on completion. The result of the future contains the sequenceId of
+             * the last written item.
              * @throws IllegalArgumentException if items is empty
              */
             template<typename E>

@@ -55,10 +55,12 @@ namespace hazelcast {
              * @param key      key with which the specified value is to be associated.
              * @param value    value to be associated with the specified key.
              * @param ttl      ttl to be associated with the specified key-value pair.
+             * @return the previous value associated with <tt>key</tt>, or
+             *         <tt>empty</tt> if there was no mapping for <tt>key</tt>.
              */
-            template<typename K, typename V>
-            boost::future<boost::optional<V>> put(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
-                return toObject<V>(putData(toData(key), toData(value), ttl));
+            template<typename K, typename V, typename R = V>
+            boost::future<boost::optional<R>> put(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
+                return toObject<R>(putData(toData(key), toData(value), ttl));
             }
 
             /**
@@ -235,9 +237,9 @@ namespace hazelcast {
              * @param value The value of the key
              * @return The previous value if the key existed in the map or null pointer otherwise.
              */
-            template<typename K, typename V>
-            boost::future<boost::optional<V>> put(const K &key, const V &value) {
-                return put(key, value, std::chrono::milliseconds(0));
+            template<typename K, typename V, typename R = V>
+            boost::future<boost::optional<R>> put(const K &key, const V &value) {
+                return put<K, V, R>(key, value, std::chrono::milliseconds(0));
             }
 
             /**
