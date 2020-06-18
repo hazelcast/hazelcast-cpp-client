@@ -36,7 +36,7 @@ pushd %BUILD_DIR%
 
 echo "Generating the solution files for compilation"
 cmake .. -G %SOLUTIONTYPE% -A %BUILDFORPLATFORM% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DBUILD_GMOCK=OFF -DHZ_BUILD_EXAMPLES=ON -DOPENSSL_ROOT_DIR=%OPENSSL_ROOT_DIR% -DHZ_COMPILE_WITH_SSL=%HZ_COMPILE_WITH_SSL% -DBUILD_GMOCK=OFF -DINSTALL_GTEST=OFF || exit /b 1
-MSBuild.exe HazelcastClient.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_BUILD_TYPE%;Platform=%BUILDFORPLATFORM%;PlatformTarget=%BUILDFORPLATFORM% /verbosity:n || exit /b 1
+cmake --build . --parallel -v
 
 popd
 
