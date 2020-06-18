@@ -1099,7 +1099,10 @@ namespace hazelcast {
                     return;
                 }
 
-                socket->close();
+                auto thisConnection = shared_from_this();
+                boost::asio::post(socket->get_executor(), [=] () {
+                    thisConnection->socket->close();
+                });
             }
 
             std::ostream &operator<<(std::ostream &os, const Connection &connection) {
