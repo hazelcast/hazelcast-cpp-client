@@ -118,14 +118,14 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                auto toObject(boost::future<serialization::pimpl::Data> f) -> boost::future<decltype(toObject<T>(f.get()))> {
+                boost::future<boost::optional<T>> toObject(boost::future<serialization::pimpl::Data> f) {
                     return f.then(boost::launch::deferred, [=] (boost::future<serialization::pimpl::Data> f) {
                         return toObject<T>(f.get());
                     });
                 }
 
                 template<typename T>
-                auto toObject(boost::future<std::unique_ptr<serialization::pimpl::Data>> f) -> boost::future<decltype(toObject<T>(f.get()))> {
+                boost::future<boost::optional<T>> toObject(boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
                     return f.then(boost::launch::deferred, [=] (boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
                         return toObject<T>(f.get());
                     });

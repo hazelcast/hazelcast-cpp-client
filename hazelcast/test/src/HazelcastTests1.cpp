@@ -552,6 +552,8 @@ namespace hazelcast {
 
                     static constexpr int64_t CAPACITY = 10;
                 };
+
+                constexpr int64_t RingbufferTest::CAPACITY;
                 
                 HazelcastServer *RingbufferTest::instance = nullptr;
                 HazelcastClient *RingbufferTest::client = nullptr;

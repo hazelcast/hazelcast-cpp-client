@@ -1777,10 +1777,10 @@ namespace hazelcast {
                     FIPS_mode_set(1);
 
                     HazelcastClient hazelcastClient(clientConfig);
-                    auto map = hazelcastClient.getMap<int, int>("myMap");
+                    auto map = hazelcastClient.getMap("myMap");
                     map->put(5, 20);
-                    std::shared_ptr<int> val = map->get(5);
-                    ASSERT_NE((int *) NULL, val.get());
+                    auto val = map->get<int, int>(5).get();
+                    ASSERT_TRUE(val);
                     ASSERT_EQ(20, *val);
                 }
 #endif // ifndef __APPLE__

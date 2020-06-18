@@ -283,9 +283,9 @@ namespace hazelcast {
 
                 static int32_t getClassId();
 
-                static void writePortable(const test::TestRawDataPortable &object, serialization::PortableWriter &writer);
+                static void writePortable(const test::TestRawDataPortable &object, PortableWriter &writer);
 
-                static test::TestRawDataPortable readPortable(serialization::PortableReader &reader);
+                static test::TestRawDataPortable readPortable(PortableReader &reader);
             };
 
             template<>
@@ -381,7 +381,7 @@ namespace hazelcast {
                 }
 
                 static test::ObjectCarryingPortable<P> readPortable(PortableReader &reader) {
-                    serialization::ObjectDataInput& input = reader.getRawDataInput();
+                    ObjectDataInput& input = reader.getRawDataInput();
                     return test::ObjectCarryingPortable<P>{input.readObject<P>().value()};
                 }
             };
@@ -428,7 +428,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct serialization::hz_serializer<test::TestCustomPerson> : public custom_serializer {
+            struct hz_serializer<test::TestCustomPerson> : public custom_serializer {
                 static constexpr int32_t getTypeId() {
                     return 666;
                 }
@@ -439,7 +439,7 @@ namespace hazelcast {
             };
 
             template<>
-            struct serialization::hz_serializer<test::TestCustomXSerializable> : public custom_serializer {
+            struct hz_serializer<test::TestCustomXSerializable> : public custom_serializer {
                 static constexpr int32_t getTypeId() {
                     return 666;
                 }
