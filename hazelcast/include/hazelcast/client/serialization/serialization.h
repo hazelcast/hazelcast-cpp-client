@@ -24,7 +24,6 @@
 #include<boost/optional/optional_io.hpp>
 
 #include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
@@ -98,11 +97,11 @@ namespace hazelcast {
                  * @link SerializationConstants
                  * 2. Array of primitives: factoryId=-1, classId=-1, typeId is the type id for that array as listed in
                  * @link SerializationConstants
-                 * 3. IdentifiedDataSerializable: factory, class and type ids are non-negative values as registered by
+                 * 3. identified_data_serializer: factory, class and type ids are non-negative values as registered by
                  * the DataSerializableFactory.
-                 * 4. Portable: factory, class and type ids are non-negative values as registered by the PortableFactory.
+                 * 4. portable_serializer: factory, class and type ids are non-negative values.
                  * 5. Custom serialized objects: factoryId=-1, classId=-1, typeId is the non-negative type id as
-                 * registered for the custom object.
+                 * registered by custom_serializer.
                  *
                  */
                 struct HAZELCAST_API ObjectType {
@@ -405,11 +404,10 @@ namespace hazelcast {
             };
 
             /**
-            * ClassDefinition defines a class schema for Portable classes. It allows to query field names, types, class id etc.
+            * ClassDefinition defines a class schema for portable classes. It allows to query field names, types, class id etc.
             * It can be created manually using {@link ClassDefinitionBuilder}
             * or on demand during serialization phase.
             *
-            * @see Portable
             * @see ClassDefinitionBuilder
             */
             /**
@@ -590,7 +588,6 @@ namespace hazelcast {
             * ClassDefinitionBuilder is used to build and register ClassDefinitions manually.
             *
             * @see ClassDefinition
-            * @see Portable
             * @see SerializationConfig#addClassDefinition(ClassDefinition)
             */
             class HAZELCAST_API ClassDefinitionBuilder {

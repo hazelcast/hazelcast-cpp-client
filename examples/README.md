@@ -59,7 +59,7 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
 **serialization** — Examples for different Hazelcast serialization techniques.
   * **custom**: Illustrates how you can use configure and custom serializers.
   * **global-serializer**: Illustrates how you can use configure global serializer to be used when no matching serializer exist for a provided object.
-  * **identified-data-serializable**: Shows hoe to implement and configure IdentifiedDataSerializable serialization for objects.
+  * **identified-data-serializable**: Shows how to implement and configure IdentifiedDataSerializable serialization for objects.
   * **portable**: Illustrates the configuration and usage of Portable objects.
   * **portable**: Illustrates the configuration and usage of Portable objects.
 

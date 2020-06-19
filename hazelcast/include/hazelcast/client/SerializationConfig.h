@@ -32,8 +32,7 @@ namespace hazelcast {
 
         /**
          * SerializationConfig is used to
-         *   * set version of portable classes in this client (@see Portable)
-         *   * register custom serializers to be used (@see Serializer , @see SerializationConfig#registerSerializer)
+         *   * set version of portable classes in this client (@see portable_serializer)
          */
         class HAZELCAST_API SerializationConfig {
         public:

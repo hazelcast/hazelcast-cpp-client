@@ -423,7 +423,7 @@ namespace hazelcast {
             * and execute user defined methods and will cancel operations if user defined method throw exception.
             *
             *
-            * Interceptor should extend either Portable or IdentifiedSerializable.
+            * Interceptor should be serializable.
             * Notice that map interceptor runs on the nodes. Because of that same class should be implemented in java side
             * with same classId and factoryId.
             * @param interceptor map interceptor
@@ -742,7 +742,7 @@ namespace hazelcast {
             *
             * Let's say your map values are Employee objects.
             *
-            *   class Employee : public serialization::Portable {
+            *   class Employee {
             *       //...
             *       private:
             *          bool active;
@@ -755,7 +755,7 @@ namespace hazelcast {
             * If you are querying your values mostly based on age and active then
             * you should consider indexing these fields.
             *
-            *   IMap<std::string, Employee > imap = hazelcastInstance.getMap<std::string, Employee >("employees");
+            *   auto imap = hazelcastInstance.getMap("employees");
             *   imap.addIndex("age", true);        // ordered, since we have ranged queries for this field
             *   imap.addIndex("active", false);    // not ordered, because boolean field cannot have range
             *
@@ -780,7 +780,7 @@ namespace hazelcast {
             * Applies the user defined EntryProcessor to the entry mapped by the key.
             * Returns the the ResultType which is result of the process() method of EntryProcessor.
             *
-            * EntryProcessor should extend either Portable or IdentifiedSerializable.
+            * EntryProcessor should be serializable.
             * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
             * with same classId and factoryId.
             *
@@ -834,7 +834,7 @@ namespace hazelcast {
             * Returns the results mapped by each key in the map.
             *
             *
-            * EntryProcessor should extend either Portable or IdentifiedSerializable.
+            * EntryProcessor should be serializable.
             * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
             * with same classId and factoryId.
             *
@@ -852,7 +852,7 @@ namespace hazelcast {
             * Returns the results mapped by each key in the map.
             *
             *
-            * EntryProcessor should extend either Portable or IdentifiedSerializable.
+            * EntryProcessor should be serializable.
             * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
             * with same classId and factoryId.
             *
