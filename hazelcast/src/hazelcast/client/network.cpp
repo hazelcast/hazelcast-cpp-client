@@ -1100,9 +1100,7 @@ namespace hazelcast {
                 }
 
                 auto thisConnection = shared_from_this();
-                boost::asio::post(socket->get_executor(), [=] () {
-                    thisConnection->socket->close();
-                });
+                boost::asio::post(socket->get_executor(), [=] () { thisConnection->socket->close(); });
             }
 
             std::ostream &operator<<(std::ostream &os, const Connection &connection) {
@@ -1132,7 +1130,7 @@ namespace hazelcast {
                 return startTime;
             }
 
-            const Socket &Connection::getSocket() const {
+            Socket &Connection::getSocket() {
                 return *socket;
             }
 
@@ -1405,14 +1403,12 @@ namespace hazelcast {
                                      const client::Address &address, client::config::SocketOptions &socketOptions,
                                      std::chrono::steady_clock::duration &connectTimeoutInMillis,
                                      boost::asio::ip::tcp::resolver &resolver)
-                        : BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(
-                        std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(
-                                new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(ioService, sslContext)),
-                        resolver, address, socketOptions, ioService, connectTimeoutInMillis) {
+                        : BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(resolver, address,
+                                socketOptions, ioService,connectTimeoutInMillis, sslContext) {
                 }
 
-                std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() const {
-                    STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(socket_->native_handle());
+                std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() {
+                    STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(socket_.native_handle());
                     std::vector<CipherInfo> supportedCiphers;
                     for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
                         struct SSLSocket::CipherInfo info;
@@ -1429,7 +1425,7 @@ namespace hazelcast {
 
                 void SSLSocket::async_handle_connect(const std::shared_ptr<connection::Connection> connection,
                                                      const std::shared_ptr<connection::AuthenticationFuture> authFuture) {
-                    socket_->async_handshake(boost::asio::ssl::stream_base::client,
+                    socket_.async_handshake(boost::asio::ssl::stream_base::client,
                                              [=](const boost::system::error_code &ec) {
                                                  if (ec) {
                                                      authFuture->onFailure(
@@ -1462,9 +1458,8 @@ namespace hazelcast {
                                      client::config::SocketOptions &socketOptions,
                                      std::chrono::steady_clock::duration &connectTimeoutInMillis,
                                      boost::asio::ip::tcp::resolver &resolver)
-                        : BaseSocket<boost::asio::ip::tcp::socket>(
-                        std::unique_ptr<boost::asio::ip::tcp::socket>(new boost::asio::ip::tcp::socket(io)),
-                        resolver, address, socketOptions, io, connectTimeoutInMillis) {
+                        : BaseSocket<boost::asio::ip::tcp::socket>(resolver, address, socketOptions, io,
+                                                                   connectTimeoutInMillis) {
                 }
 
             }

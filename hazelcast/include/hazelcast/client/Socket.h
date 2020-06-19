@@ -65,7 +65,7 @@ namespace hazelcast {
 
             virtual const Address &getRemoteEndpoint() const = 0;
 
-            virtual boost::asio::executor get_executor() const noexcept = 0;
+            virtual boost::asio::executor get_executor() noexcept = 0;
         };
     }
 }

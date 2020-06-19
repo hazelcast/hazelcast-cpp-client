@@ -122,7 +122,7 @@ namespace hazelcast {
 
                 std::chrono::steady_clock::time_point getStartTime() const;
 
-                const Socket &getSocket() const;
+                Socket &getSocket();
 
                 void deregisterListenerInvocation(int64_t callId);
 

@@ -2107,7 +2107,7 @@ namespace hazelcast {
                     void
                     AbstractClientListenerService::removeEventHandler(const ClientEventRegistration &registration) {
                         auto callId = registration.getCallId();
-                        auto connection = registration.getSubscriber();
+                        std::shared_ptr<connection::Connection> connection = registration.getSubscriber();
                         boost::asio::post(connection->getSocket().get_executor(),
                                           std::packaged_task<void()>([=]() {
                                               connection->deregisterListenerInvocation(callId);

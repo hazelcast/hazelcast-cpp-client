@@ -207,7 +207,7 @@ namespace hazelcast {
                     virtual void onFailure(std::exception_ptr e);
 
                 private:
-                    const std::shared_ptr<Connection> connection;
+                    std::shared_ptr<Connection> connection;
                     bool asOwner;
                     Address target;
                     std::shared_ptr<AuthenticationFuture> authFuture;
