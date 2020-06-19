@@ -2143,7 +2143,7 @@ namespace hazelcast {
                 val = client.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
-                ASSERT_NO_THROW(map->set("key1", "myNewValue"));
+                ASSERT_NO_THROW(map->set("key1", "myNewValue").get());
 
                 val = map->get<std::string, std::string>("key1").get();
                 ASSERT_TRUE(val.has_value());
