@@ -1746,17 +1746,57 @@ namespace hazelcast {
                 ASSERT_FALSE(ptr.has_value());
             }
 
-            TEST_F(ClientSerializationTest, testMorphingWithDifferentTypes_differentVersions) {
+            TEST_F(ClientSerializationTest, testMorphingPortableV1ToV2Conversion) {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                TestNamedPortable p{"portable-v1", 123};
+                serialization::pimpl::Data data = serializationService.toData<TestNamedPortable>(p);
+
+                auto p2 = serializationService.toObject<TestNamedPortableV2>(data);
+                ASSERT_TRUE(p2);
+                ASSERT_EQ(std::string("portable-v1"), p2->name);
+                ASSERT_EQ(123, p2->k);
+                ASSERT_EQ(0, p2->v);
+            }
+
+            TEST_F(ClientSerializationTest, testMorphingPortableV2ToV1Conversion) {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                TestNamedPortableV2 p2{"portable-v2", 123, 9999};
+                serialization::pimpl::Data data = serializationService.toData<TestNamedPortableV2>(p2);
+
+                auto p = serializationService.toObject<TestNamedPortable>(data);
+                ASSERT_TRUE(p);
+                ASSERT_EQ(std::string("portable-v2"), p->name);
+                ASSERT_EQ(123, p->k);
+            }
+
+            TEST_F(ClientSerializationTest, testMorphingPortableV1ToV3Conversion) {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                TestNamedPortable p{"portable-v1", 123};
+                serialization::pimpl::Data data = serializationService.toData<TestNamedPortable>(p);
+
+                ASSERT_THROW(serializationService.toObject<TestNamedPortableV3>(data), exception::HazelcastSerializationException);
+            }
+
+            TEST_F(ClientSerializationTest, testMorphingPortableWithDifferentTypes_differentVersions_V2ToV1) {
                 SerializationConfig serializationConfig;
                 serializationConfig.setPortableVersion(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 SerializationConfig serializationConfig2;
-                serializationConfig.setPortableVersion(2);
+                serializationConfig.setPortableVersion(5);
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
-                TestNamedPortableV3 p2{"portable-v2", 123};
-                serialization::pimpl::Data data2 = serializationService2.toData<TestNamedPortableV3>(&p2);
+                TestNamedPortableV2 p2{"portable-v2", 123, 7};
+                serialization::pimpl::Data data2 = serializationService2.toData<TestNamedPortableV2>(p2);
 
                 auto t1 = serializationService.toObject<TestNamedPortable>(data2);
                 ASSERT_TRUE(t1.has_value());

@@ -322,10 +322,12 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<test::TestNamedPortableV2> : public portable_serializer {
+            struct hz_serializer<test::TestNamedPortableV2> : public versioned_portable_serializer {
                 static int32_t getFactoryId();
 
                 static int32_t getClassId();
+
+                static int32_t getClassVersion();
 
                 static void writePortable(const test::TestNamedPortableV2 &object, PortableWriter &writer);
 
@@ -333,10 +335,12 @@ namespace hazelcast {
             };
 
             template<>
-            struct hz_serializer<test::TestNamedPortableV3> : public portable_serializer {
+            struct hz_serializer<test::TestNamedPortableV3> : public versioned_portable_serializer {
                 static int32_t getFactoryId();
 
                 static int32_t getClassId();
+
+                static int32_t getClassVersion();
 
                 static void writePortable(const test::TestNamedPortableV3 &object, PortableWriter &writer);
 

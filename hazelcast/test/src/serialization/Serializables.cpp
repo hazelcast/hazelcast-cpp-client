@@ -480,7 +480,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestNamedPortableV2>::getClassId() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE_2);
+                return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE);
+            }
+
+            int32_t hz_serializer<test::TestNamedPortableV2>::getClassVersion() {
+                return 2;
             }
 
             void hz_serializer<test::TestNamedPortableV2>::writePortable(const test::TestNamedPortableV2 &object,
@@ -500,7 +504,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestNamedPortableV3>::getClassId() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE_3);
+                return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE);
+            }
+
+            int32_t hz_serializer<test::TestNamedPortableV3>::getClassVersion() {
+                return 3;
             }
 
             void hz_serializer<test::TestNamedPortableV3>::writePortable(const test::TestNamedPortableV3 &object,

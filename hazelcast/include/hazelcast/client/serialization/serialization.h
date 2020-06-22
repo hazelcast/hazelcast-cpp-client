@@ -1898,6 +1898,14 @@ namespace hazelcast {
                     int32_t factoryId = readInt(in);
                     int32_t classId = readInt(in);
 
+                    if (factoryId != hz_serializer<T>::getFactoryId() || classId != hz_serializer<T>::getClassId()) {
+                        BOOST_THROW_EXCEPTION(
+                                exception::HazelcastSerializationException("PortableSerializer::readObject",
+                                                                           (boost::format("Received data (factory-class id)=(%1%, %2%) does not match expected factory-class id (%3%, %4%)") %
+                                                                            factoryId % classId %
+                                                                            hz_serializer<T>::getFactoryId() %
+                                                                            hz_serializer<T>::getClassId()).str()));
+                    }
                     return read<T>(in, factoryId, classId);
                 }
 
