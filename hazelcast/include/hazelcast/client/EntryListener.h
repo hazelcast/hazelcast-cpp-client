@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 04/09/14.
-//
+
 
 
 #pragma once
+
 #include "hazelcast/client/EntryEvent.h"
 
 namespace hazelcast {
@@ -99,5 +98,6 @@ namespace hazelcast {
         };
     }
 }
+
 
 

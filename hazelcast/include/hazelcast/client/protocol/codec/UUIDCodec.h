@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/util/UUID.h"
 #include "hazelcast/util/Bits.h"
 
@@ -39,5 +40,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <string>
 #include "hazelcast/client/protocol/ClientMessage.h"
 

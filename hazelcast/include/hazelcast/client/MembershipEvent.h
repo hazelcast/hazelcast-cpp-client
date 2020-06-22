@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 23/01/14.
-//
+
 
 #pragma once
+
 #include <vector>
 #include "hazelcast/client/Member.h"
 
@@ -112,5 +111,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

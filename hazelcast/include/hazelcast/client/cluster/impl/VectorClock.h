@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <string>
 #include <stdint.h>
 #include <unordered_map>
@@ -64,5 +65,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

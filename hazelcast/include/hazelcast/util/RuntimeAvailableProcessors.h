@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/util/AtomicInt.h"
 
 namespace hazelcast {
@@ -67,3 +68,4 @@ namespace hazelcast {
         };
     }
 }
+

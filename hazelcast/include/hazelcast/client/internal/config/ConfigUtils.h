@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <string>
 
 #include "hazelcast/client/config/ConfigPatternMatcher.h"
@@ -48,4 +49,5 @@ namespace hazelcast {
         }
     }
 };
+
 

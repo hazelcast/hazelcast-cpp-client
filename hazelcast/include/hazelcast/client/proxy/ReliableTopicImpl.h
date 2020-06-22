@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 01/10/14.
-//
+
 
 #pragma once
+
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 #include "hazelcast/client/Ringbuffer.h"
@@ -60,4 +59,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

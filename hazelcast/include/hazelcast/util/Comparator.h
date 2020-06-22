@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 14 Apr 2016.
-
 #pragma once
+
 namespace hazelcast {
     namespace util {
         template <typename T>
@@ -33,6 +31,7 @@ namespace hazelcast {
         };
     }
 }
+
 
 
 

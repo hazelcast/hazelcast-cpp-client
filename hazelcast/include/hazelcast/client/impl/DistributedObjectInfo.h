@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 19/11/15.
-
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
 
@@ -49,5 +47,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

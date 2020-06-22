@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 15/05/14.
-//
+
 
 #pragma once
+
 #define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG(message, expected, actual, timeoutSeconds) do{              \
             bool __result__ = false;                                \
             for(int i = 0 ; i < timeoutSeconds * 5 && !__result__ ; i++ ) {    \
@@ -73,4 +72,5 @@ ASSERT_EQ((expected), (*actual));                 \
 #define assertSizeEventuallyWithTimeout(expectedSize, container, timeoutSeconds) do{  \
     ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG("the size of the map is not correct", expectedSize, ((container)->size().get()), timeoutSeconds);  \
     } while(0)                                                                                                                      \
+
 

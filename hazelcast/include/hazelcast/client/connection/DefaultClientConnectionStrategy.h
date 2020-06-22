@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include "hazelcast/util/SynchronizedQueue.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
@@ -68,5 +69,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

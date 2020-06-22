@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #ifdef HZ_BUILD_WITH_SSL
 
 #include <boost/asio.hpp>
@@ -66,4 +67,5 @@ namespace hazelcast {
 #endif
 
 #endif /* HZ_BUILD_WITH_SSL */
+
 

@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/21/13.
-
 #pragma once
+
 #include <atomic>
 #include <stdint.h>
 #include <memory>
@@ -264,5 +262,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

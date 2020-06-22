@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/util/ExceptionUtil.h"
 
@@ -35,4 +36,5 @@ namespace hazelcast {
         }
     }
 }
+
 

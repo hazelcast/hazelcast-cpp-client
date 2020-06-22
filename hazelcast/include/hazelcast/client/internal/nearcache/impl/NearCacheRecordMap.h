@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/client/internal/eviction/EvictableStore.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -46,5 +47,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

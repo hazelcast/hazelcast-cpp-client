@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 26/05/15.
-//
+
 
 #pragma once
+
 #include <memory>
 #include <thread>
 #include <string>
@@ -105,5 +104,6 @@ namespace hazelcast {
         };
     }
 }
+
 
 

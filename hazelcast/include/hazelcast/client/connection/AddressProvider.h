@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <vector>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -38,5 +39,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

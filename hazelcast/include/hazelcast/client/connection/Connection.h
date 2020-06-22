@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/21/13.
 #pragma once
+
 #include <memory>
 #include <ostream>
 #include <stdint.h>
@@ -140,7 +139,7 @@ namespace hazelcast {
                 void innerClose();
 
                 std::chrono::steady_clock::time_point startTime;
-                std::atomic<std::chrono::steady_clock::duration> closedTimeDuration;
+                std::atomic<std::chrono::steady_clock::time_point> closedTime;
                 spi::ClientContext &clientContext;
                 protocol::IMessageHandler &invocationService;
                 std::unique_ptr<Socket> socket;
@@ -175,5 +174,6 @@ namespace std {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 02 June 2016.
-
-
 #pragma once
+
 #include <list>
 #include <iostream>
 #include <mutex>
@@ -28,7 +25,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -112,6 +109,7 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif
+#endif 
+
 
 

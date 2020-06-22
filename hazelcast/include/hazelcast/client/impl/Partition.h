@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_IMPL_PARTITION_H_
-#define HAZELCAST_CLIENT_IMPL_PARTITION_H_
+#pragma once
 
 #include <boost/optional.hpp>
 
@@ -62,5 +61,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_IMPL_PARTITION_H_
+
 

@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 23/01/14.
-//
+
 
 
 #pragma once
+
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IException.h"
@@ -52,6 +51,7 @@ namespace hazelcast {
 
     }
 }
+
 
 
 

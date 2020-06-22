@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
-#define HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
+#pragma once
 
 #include <unordered_map>
 #include <vector>
@@ -228,7 +227,7 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
+
 
 
 

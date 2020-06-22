@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <stdint.h>
 #include <sstream>
 #include <memory>
@@ -118,5 +119,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

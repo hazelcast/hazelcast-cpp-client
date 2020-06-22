@@ -15,8 +15,7 @@
  */
 
 #pragma once
-#include <ostream>
-#include "hazelcast/client/ClientProperties.h"
+
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/HazelcastDll.h"
@@ -102,4 +101,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

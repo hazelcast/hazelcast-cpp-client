@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/2/13.
-
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -39,5 +37,6 @@ namespace hazelcast {
         };
     }
 }
+
 
 

@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <string>
 
 namespace hazelcast {
@@ -34,5 +35,6 @@ namespace hazelcast {
 
     }
 }
+
 
 

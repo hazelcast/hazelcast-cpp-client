@@ -254,11 +254,6 @@ namespace hazelcast {
 }
 
 
-//
-// Created by ihsan demir on 9 Dec 2016.
-
-
-
 namespace hazelcast {
     namespace util {
         int HashUtil::hashToIndex(int hash, int length) {
@@ -1026,10 +1021,6 @@ namespace hazelcast {
         }
     }
 }
-
-//
-// Created by ihsan demir on 9 Dec 2016.
-
 
 namespace hazelcast {
     namespace util {

@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 24/12/13.
-//
+
 
 #pragma once
+
 #include<stdint.h>
 #include<atomic>
 
@@ -58,7 +57,7 @@ namespace hazelcast {
             private:
 
                 protocol::ClientMessageBuilder builder;
-                std::atomic<std::chrono::steady_clock::duration> lastReadTimeDuration;
+                std::atomic<std::chrono::steady_clock::time_point> lastReadTime;
             };
         }
     }
@@ -67,5 +66,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

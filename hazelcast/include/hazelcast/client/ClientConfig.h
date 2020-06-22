@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>
@@ -40,7 +41,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -409,7 +410,7 @@ namespace hazelcast {
              * @param nearCacheConfig {@link com.hazelcast.config.NearCacheConfig} to be added
              * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
              * @see com.hazelcast.config.NearCacheConfig
-             *
+             * 
              * Memory ownership of the config is passed to the client config
              */
             template <typename K, typename V>
@@ -590,4 +591,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

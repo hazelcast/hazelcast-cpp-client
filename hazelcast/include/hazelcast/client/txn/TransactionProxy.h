@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/5/13.
-
-
-
-
-
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -128,5 +122,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

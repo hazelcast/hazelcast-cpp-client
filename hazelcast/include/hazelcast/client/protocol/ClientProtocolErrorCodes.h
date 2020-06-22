@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 #include <memory>
 #include <unordered_map>
@@ -121,4 +122,5 @@ namespace hazelcast {
         }
     }
 }
+
 

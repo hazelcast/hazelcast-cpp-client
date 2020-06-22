@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
 
 namespace hazelcast {
@@ -35,4 +36,5 @@ namespace hazelcast {
         }
     }
 }
+
 

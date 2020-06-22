@@ -2979,9 +2979,7 @@ namespace hazelcast {
     }
 }
 
-//
-// Created by İhsan Demir on 18/05/15.
-//
+
 
 
 namespace hazelcast {

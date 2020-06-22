@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <stdint.h>
 #include <atomic>
 
@@ -42,5 +43,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

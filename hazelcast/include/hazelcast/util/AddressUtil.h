@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <boost/asio/ip/address.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -36,6 +37,7 @@ namespace hazelcast {
 
     }
 }
+
 
 
 

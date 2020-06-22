@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 26 May 2016.
-
 #pragma once
+
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/serialization/serialization.h"
 
@@ -58,5 +56,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

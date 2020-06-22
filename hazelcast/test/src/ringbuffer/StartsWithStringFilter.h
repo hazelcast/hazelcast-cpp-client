@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <string>
 
 #include <hazelcast/client/serialization/serialization.h>
@@ -46,4 +47,5 @@ namespace hazelcast {
         }
     }
 }
+
 
