@@ -68,12 +68,20 @@ namespace hazelcast {
 
             bool operator!=(const HazelcastJsonValue &rhs) const;
 
+            bool operator<(const HazelcastJsonValue &rhs) const;
+
             friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const HazelcastJsonValue &value);
 
         private:
             std::string jsonString;
         };
     }
+}
+
+namespace std {
+    template<> struct hash<hazelcast::client::HazelcastJsonValue> {
+        std::size_t operator()(const hazelcast::client::HazelcastJsonValue &object) const noexcept;
+    };
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

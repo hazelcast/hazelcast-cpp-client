@@ -141,6 +141,7 @@ namespace hazelcast {
                 std::vector<int64_t> ll;
                 std::vector<float> ff;
                 std::vector<double> dd;
+                std::vector<std::string> stringVector;
                 std::vector<TestNamedPortable> nn;
 
                 friend bool operator==(const TestInnerPortable &lhs, const TestInnerPortable &rhs);

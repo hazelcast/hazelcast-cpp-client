@@ -1100,7 +1100,7 @@ namespace hazelcast {
                                             std::is_same<std::vector<int64_t>, typename std::remove_cv<T>::type>::value ||
                                             std::is_same<std::vector<float>, typename std::remove_cv<T>::type>::value ||
                                             std::is_same<std::vector<double>, typename std::remove_cv<T>::type>::value ||
-                                            std::is_same<std::vector<boost::optional<std::string>>, typename std::remove_cv<T>::type>::value, boost::optional<T>>::type
+                                            std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value, boost::optional<T>>::type
                     read(const std::string &fieldName) {
                         if (!cd->hasField(fieldName)) {
                             return boost::none;
@@ -1463,7 +1463,8 @@ namespace hazelcast {
                                         std::is_same<std::vector<int32_t>, typename std::remove_cv<T>::type>::value ||
                                         std::is_same<std::vector<int64_t>, typename std::remove_cv<T>::type>::value ||
                                         std::is_same<std::vector<float>, typename std::remove_cv<T>::type>::value ||
-                                        std::is_same<std::vector<double>, typename std::remove_cv<T>::type>::value, boost::optional<T>>::type
+                                        std::is_same<std::vector<double>, typename std::remove_cv<T>::type>::value ||
+                                        std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value, boost::optional<T>>::type
                 read(const std::string &fieldName) {
                     if (isDefaultReader)
                         return defaultPortableReader->read<T>(fieldName);

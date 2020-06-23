@@ -383,8 +383,8 @@ namespace hazelcast {
                 return operationName;
             }
 
-            void ClientMessage::setOperationName(const std::string &operationName) {
-                this->operationName = operationName;
+            void ClientMessage::setOperationName(const std::string &name) {
+                this->operationName = name;
             }
 
             bool ClientMessage::isComplete() const {

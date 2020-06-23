@@ -62,6 +62,10 @@ namespace hazelcast {
             return !(rhs == *this);
         }
 
+        bool HazelcastJsonValue::operator<(const HazelcastJsonValue &rhs) const {
+            return jsonString < rhs.jsonString;
+        }
+
         std::ostream &operator<<(std::ostream &os, const HazelcastJsonValue &value) {
             os << "jsonString: " << value.jsonString;
             return os;
@@ -1053,6 +1057,11 @@ namespace hazelcast {
 }
 
 namespace std {
+    std::size_t hash<hazelcast::client::HazelcastJsonValue>::operator()(
+            const hazelcast::client::HazelcastJsonValue &object) const noexcept {
+        return std::hash<std::string>{}(object.toString());
+    }
+
     std::size_t hash<hazelcast::client::serialization::pimpl::Data>::operator()
             (const hazelcast::client::serialization::pimpl::Data &val) const noexcept {
         return std::hash<int>{}(val.hash());

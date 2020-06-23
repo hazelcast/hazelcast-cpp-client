@@ -1319,11 +1319,12 @@ namespace hazelcast {
                     std::vector<float> ff = {0.6543f, -3.56f, 45.67f};
                     std::vector<double> dd = {456.456, 789.789, 321.321};
                     TestNamedPortable portableArray[5];
+                    std::vector<std::string> stringVector{"イロハニホヘト", "チリヌルヲ", "ワカヨタレソ"};
                     std::vector<TestNamedPortable> nn;
                     for (int i = 0; i < 5; i++) {
                         nn.emplace_back(TestNamedPortable{"named-portable-" + std::to_string(i), i});
                     }
-                    return TestInnerPortable{bb, ba, cc, ss, ii, ll, ff, dd, nn};
+                    return TestInnerPortable{bb, ba, cc, ss, ii, ll, ff, dd, stringVector, nn};
                 }
 
                 struct NonSerializableObject {
@@ -1551,14 +1552,14 @@ namespace hazelcast {
                 std::vector<int64_t> ll(LARGE_ARRAY_SIZE);
                 std::vector<float> ff(LARGE_ARRAY_SIZE);
                 std::vector<double> dd(LARGE_ARRAY_SIZE);
+                std::vector<std::string> stringVector{"イロハニホヘト", "チリヌルヲ", "ワカヨタレソ"};
 
                 TestNamedPortable portableArray[5];
-
                 std::vector<TestNamedPortable> nn;
                 for (int i = 0; i < 5; i++) {
                     nn.emplace_back(TestNamedPortable{"named-portable-" + std::to_string(i), i});
                 }
-                TestInnerPortable inner{bb, ba, cc, ss, ii, ll, ff, dd, nn};
+                TestInnerPortable inner{bb, ba, cc, ss, ii, ll, ff, dd, stringVector, nn};
                 data = serializationService.toData<TestInnerPortable>(inner);
                 auto tip1 = serializationService.toObject<TestInnerPortable>(data);
                 auto tip2 = serializationService.toObject<TestInnerPortable>(data);

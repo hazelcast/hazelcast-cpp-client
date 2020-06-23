@@ -147,6 +147,10 @@ namespace hazelcast {
 
                 boost::future<bool> tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout);
 
+                boost::future<bool>
+                tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout,
+                        std::chrono::steady_clock::duration leaseTime);
+
                 boost::future<protocol::ClientMessage> unlock(const serialization::pimpl::Data &key);
 
                 boost::future<protocol::ClientMessage> forceUnlock(const serialization::pimpl::Data &key);

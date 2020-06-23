@@ -196,9 +196,14 @@ namespace hazelcast {
             }
 
             boost::future<bool> MultiMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout) {
+                return tryLock(key, timeout, std::chrono::steady_clock::duration(INT64_MAX));
+            }
+
+            boost::future<bool> MultiMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout, std::chrono::steady_clock::duration leaseTime) {
                 auto request = protocol::codec::MultiMapTryLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
-                                                                             INT64_MAX, std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
-                                                                             lockReferenceIdGenerator->getNextReferenceId());
+                        std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
+                        std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
+                        lockReferenceIdGenerator->getNextReferenceId());
                 return invokeAndGetFuture<bool, protocol::codec::MultiMapTryLockCodec::ResponseParameters>(request,
                                                                                                            key);
             }
@@ -1203,9 +1208,16 @@ namespace hazelcast {
             }
 
             boost::future<bool> IMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout) {
-                auto request = protocol::codec::MapTryLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(), -1,
-                                                                        std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
-                                                                        lockReferenceIdGenerator->getNextReferenceId());
+                return tryLock(key, timeout, std::chrono::milliseconds(-1));
+            }
+
+            boost::future<bool>
+            IMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout,
+                              std::chrono::steady_clock::duration leaseTime) {
+                auto request = protocol::codec::MapTryLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
+                        std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
+                        std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
+                        lockReferenceIdGenerator->getNextReferenceId());
                 return invokeAndGetFuture<bool, protocol::codec::MapTryLockCodec::ResponseParameters>(request, key);
             }
 

@@ -182,6 +182,7 @@ namespace hazelcast {
                        lhs.ll == rhs.ll &&
                        lhs.ff == rhs.ff &&
                        lhs.dd == rhs.dd &&
+                       lhs.stringVector == rhs.stringVector &&
                        lhs.nn == rhs.nn;
             }
 
@@ -458,6 +459,7 @@ namespace hazelcast {
                 writer.write("l", object.ll);
                 writer.write("f", object.ff);
                 writer.write("d", object.dd);
+                writer.write("stringVector", object.stringVector);
                 writer.writePortableArray("nn", &object.nn);
             }
 
@@ -471,6 +473,7 @@ namespace hazelcast {
                 object.ll = *reader.read<std::vector<int64_t>>("l");
                 object.ff = *reader.read<std::vector<float>>("f");
                 object.dd = *reader.read<std::vector<double>>("d");
+                object.stringVector = *reader.read<std::vector<std::string>>("stringVector");
                 object.nn = *reader.readPortableArray<test::TestNamedPortable>("nn");
                 return object;
             }

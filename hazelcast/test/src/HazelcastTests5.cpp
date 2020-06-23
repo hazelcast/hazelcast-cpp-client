@@ -1535,6 +1535,34 @@ namespace hazelcast {
                 imap->forceUnlock("key1").get();
             }
 
+            TEST_P(ClientMapTest, testTryLockTtl) {
+                ASSERT_TRUE(imap->tryLock("key1", std::chrono::seconds(2), std::chrono::seconds(1)).get());
+                boost::latch latch1(1);
+                hazelcast::util::StartedThread t1(testMapTryLockThread1, &latch1, imap.get());
+
+                ASSERT_OPEN_EVENTUALLY(latch1);
+
+                ASSERT_TRUE(imap->isLocked("key1").get());
+
+                boost::latch latch2(1);
+                hazelcast::util::StartedThread t2(testMapTryLockThread2, &latch2, imap.get());
+
+                ASSERT_OPEN_EVENTUALLY(latch2);
+                ASSERT_TRUE(imap->isLocked("key1").get());
+                imap->forceUnlock("key1").get();
+            }
+
+            TEST_P(ClientMapTest, testTryLockTtlTimeout) {
+                ASSERT_TRUE(imap->tryLock("key1", std::chrono::seconds(2), std::chrono::seconds(200)).get());
+                boost::latch latch1(1);
+                hazelcast::util::StartedThread t1(testMapTryLockThread1, &latch1, imap.get());
+
+                ASSERT_OPEN_EVENTUALLY(latch1);
+
+                ASSERT_TRUE(imap->isLocked("key1").get());
+                imap->forceUnlock("key1").get();
+            }
+
             TEST_P(ClientMapTest, testForceUnlock) {
                 imap->lock("key1").get();
                 boost::latch latch1(1);
@@ -1543,6 +1571,28 @@ namespace hazelcast {
                 t2.join();
                 ASSERT_FALSE(imap->isLocked("key1").get());
             }
+
+            TEST_P(ClientMapTest, testJsonValues) {
+                const int numItems = 5;
+                for (int i = 0; i < numItems; ++i) {
+                    imap->put("key_" + std::to_string(i), HazelcastJsonValue("{ \"value\"=\"value_" + std::to_string(i) + "\"}")).get();
+                }
+                auto values = imap->values<HazelcastJsonValue>().get();
+                ASSERT_EQ(numItems, (int) values.size());
+            }
+
+            TEST_P(ClientMapTest, testJsonValuesWithPagingPredicate) {
+                const int numItems = 5;
+                const int predSize = 3;
+                for (int i = 0; i < numItems; ++i) {
+                    imap->put<std::string, HazelcastJsonValue>("key_" + std::to_string(i), HazelcastJsonValue(
+                            "{ \"value\"=\"value_" + std::to_string(i) + "\"}")).get();
+                }
+                auto predicate = imap->newPagingPredicate<std::string, HazelcastJsonValue>((size_t) predSize);
+                auto values = imap->values<std::string, HazelcastJsonValue>(predicate).get();
+                ASSERT_EQ(predSize, (int) values.size());
+            }
+
 
             TEST_P(ClientMapTest, testValues) {
                 fillMap();

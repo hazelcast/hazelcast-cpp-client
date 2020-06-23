@@ -138,6 +138,7 @@ namespace hazelcast {
                                            [=](boost::future<std::vector<serialization::pimpl::Data>> f) {
                                                auto dataResult = f.get();
                                                std::vector<T> result;
+                                               result.reserve(dataResult.size());
                                                std::for_each(dataResult.begin(), dataResult.end(),
                                                              [&](const serialization::pimpl::Data &keyData) {
                                                                  // The object is guaranteed to exist (non-null)
@@ -152,6 +153,7 @@ namespace hazelcast {
                     return entriesData.then(boost::launch::deferred, [=](boost::future<EntryVector> f) {
                         auto entries = f.get();
                         std::unordered_map<K, boost::optional<V>> result;
+                        result.reserve(entries.size());
                         std::for_each(entries.begin(), entries.end(), [&](std::pair<serialization::pimpl::Data, serialization::pimpl::Data> entry) {
                             result.insert({std::move(toObject<K>(entry.first)).value(), toObject<V>(entry.second)});
                         });
