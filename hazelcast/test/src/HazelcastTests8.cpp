@@ -73,7 +73,6 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
@@ -1263,11 +1262,11 @@ namespace hazelcast {
                         }
                     };
 
-                    class StatsPrinterTask : public hazelcast::util::Runnable {
+                    class StatsPrinterTask {
                     public:
                         explicit StatsPrinterTask(Stats &stats) : stats(stats) {}
 
-                        void run() override {
+                        void run()  {
                             while (true) {
                                 try {
                                     hazelcast::util::sleep((unsigned int) STATS_SECONDS);
@@ -1281,7 +1280,7 @@ namespace hazelcast {
                             }
                         }
 
-                        const std::string getName() const override {
+                        const std::string getName() const {
                             return "StatPrinterTask";
                         }
 
@@ -1289,14 +1288,14 @@ namespace hazelcast {
                         Stats &stats;
                     };
 
-                    class Task : public hazelcast::util::Runnable {
+                    class Task {
                     public:
                         Task(Stats &stats, std::shared_ptr<IMap> map,
                              std::shared_ptr<hazelcast::util::ILogger> logger) : stats(stats), map(map),
                                                                                  logger(std::move(logger)) {
                         }
 
-                        void run() override {
+                        void run() {
                             std::vector<char> value(VALUE_SIZE);
                             bool running = true;
                             int getCount = 0;
@@ -1336,7 +1335,7 @@ namespace hazelcast {
                             }
                         }
 
-                        const std::string getName() const override {
+                        const std::string getName() {
                             return "SimpleMapTest Task";
                         }
 

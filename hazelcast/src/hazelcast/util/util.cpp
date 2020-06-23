@@ -60,7 +60,6 @@
 #include "hazelcast/util/TimeUtil.h"
 #include "hazelcast/util/concurrent/TimeUnit.h"
 #include "hazelcast/util/Closeable.h"
-#include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/UUID.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/SyncHttpClient.h"
@@ -377,37 +376,6 @@ namespace hazelcast {
         }
     }
 }
-
-namespace hazelcast {
-    namespace util {
-        bool Runnable::isStriped() {
-            return false;
-        }
-
-        Runnable::~Runnable() {
-        }
-
-        bool StripedRunnable::isStriped() {
-            return true;
-        }
-
-        RunnableDelegator::RunnableDelegator(Runnable &runnable) : runnable(runnable) {
-        }
-
-        void RunnableDelegator::run() {
-            runnable.run();
-        }
-
-        const std::string RunnableDelegator::getName() const {
-            return runnable.getName();
-        }
-
-    }
-}
-
-//  Copyright (c) 2015 ihsan demir. All rights reserved.
-//
-
 
 namespace hazelcast {
     namespace util {

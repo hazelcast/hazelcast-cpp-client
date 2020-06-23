@@ -60,7 +60,6 @@
 #include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/util/Runnable.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
@@ -584,7 +583,7 @@ namespace hazelcast {
                 class ConcurentQueueTest : public ClientTestSupport
                 {
                 protected:
-                    class ConcurrentQueueTask : public hazelcast::util::Runnable {
+                    class ConcurrentQueueTask {
                     public:
                         ConcurrentQueueTask(hazelcast::util::ConcurrentQueue<int> &q,
                                             boost::latch &startLatch,
