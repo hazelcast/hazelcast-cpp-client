@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 6/20/13.
 #pragma once
+
 #include "hazelcast/client/proxy/ITopicImpl.h"
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
-#include <string>
 
 namespace hazelcast {
     namespace client {
@@ -35,19 +33,20 @@ namespace hazelcast {
         * and process m1, m2, m3...mn in order.
         *
         */
-        template<typename E>
         class ITopic : public proxy::ITopicImpl {
-            friend class impl::HazelcastClientInstanceImpl;
+            friend class spi::ProxyManager;
 
         public:
+            static constexpr const char *SERVICE_NAME = "hz:impl:topicService";
 
             /**
             * Publishes the message to all subscribers of this topic
             *
             * @param message
             */
-            void publish(const E& message) {
-                proxy::ITopicImpl::publish(toData<E>(message));
+            template<typename E>
+            boost::future<void> publish(const E &message) {
+                return proxy::ITopicImpl::publish(toData<E>(message));
             }
 
             /**
@@ -74,33 +73,20 @@ namespace hazelcast {
             *
             * @return returns registration id.
             */
-            template<typename L>
-            std::string addMessageListener(L& listener) {
-                impl::BaseEventHandler *topicEventHandler = new topic::impl::TopicEventHandlerImpl<E>(getName(),
+            template<typename Listener>
+            boost::future<std::string> addMessageListener(Listener &&listener) {
+                return proxy::ITopicImpl::addMessageListener(
+                        std::unique_ptr<impl::BaseEventHandler>(new topic::impl::TopicEventHandlerImpl<Listener>(getName(),
                                                                                                       getContext().getClientClusterService(),
                                                                                                       getContext().getSerializationService(),
-                                                                                                      listener);
-                return proxy::ITopicImpl::addMessageListener(topicEventHandler);
+                                                                                                      std::move(
+                                                                                                              listener))));
             }
-
-            /**
-            * Stops receiving messages for the given message listener. If the given listener already removed,
-            * this method does nothing.
-            *
-            * @param registrationId Id of listener registration.
-            *
-            * @return true if registration is removed, false otherwise
-            */
-            bool removeMessageListener(const std::string& registrationId) {
-                return proxy::ITopicImpl::removeMessageListener(registrationId);
-            };
 
         private:
-            ITopic(const std::string& instanceName, spi::ClientContext *context)
-            : proxy::ITopicImpl(instanceName, context) {
-            }
+            ITopic(const std::string &instanceName, spi::ClientContext *context)
+                    : proxy::ITopicImpl(instanceName, context) {}
         };
     }
 }
-
 

@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 26/05/15.
-//
+
 
 #pragma once
+
 #include <memory>
 #include <thread>
 #include <string>
@@ -79,13 +78,13 @@ namespace hazelcast {
         class StartedThread : util::Runnable {
         public:
             StartedThread(const std::string &name, void (*func)(ThreadArgs &),
-                          void *arg0 = NULL, void *arg1 = NULL, void *arg2 = NULL, void *arg3 = NULL);
+                          void *arg0 = nullptr, void *arg1 = nullptr, void *arg2 = nullptr, void *arg3 = nullptr);
 
             StartedThread(void (func)(ThreadArgs &),
-                          void *arg0 = NULL,
-                          void *arg1 = NULL,
-                          void *arg2 = NULL,
-                          void *arg3 = NULL);
+                          void *arg0 = nullptr,
+                          void *arg1 = nullptr,
+                          void *arg2 = nullptr,
+                          void *arg3 = nullptr);
 
             virtual ~StartedThread();
 
@@ -105,5 +104,6 @@ namespace hazelcast {
         };
     }
 }
+
 
 

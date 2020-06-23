@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 add_subdirectory(basic)
-add_subdirectory(mixed-map)
 add_subdirectory(near-cache)
 add_subdirectory(query)
 add_subdirectory(custom-attributes)
@@ -27,4 +26,3 @@ add_subdirectory(map-interceptor)
 add_subdirectory(multimap)
 add_subdirectory(partitionaware)
 add_subdirectory(removeAll)
-add_subdirectory(async-api)

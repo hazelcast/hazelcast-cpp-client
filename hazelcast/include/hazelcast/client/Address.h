@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/serialization.h"
 
 #include <string>
 #include <sstream>
@@ -31,7 +32,9 @@ namespace hazelcast {
         /**
          * IP Address
          */
-        class HAZELCAST_API Address : public serialization::IdentifiedDataSerializable {
+        class HAZELCAST_API Address {
+            friend struct serialization::hz_serializer<Address>;
+            friend struct std::hash<hazelcast::client::Address>;
         public:
             Address(const std::string &hostname, int port, unsigned long scopeId);
 
@@ -75,17 +78,6 @@ namespace hazelcast {
              */
             const std::string& getHost() const;
 
-            /***** serialization::IdentifiedDataSerializable interface implementation starts here *********************/
-            virtual int getFactoryId() const;
-
-            virtual int getClassId() const;
-
-            virtual void writeData(serialization::ObjectDataOutput &writer) const;
-
-            virtual void readData(serialization::ObjectDataInput &reader);
-
-            /***** serialization::IdentifiedDataSerializable interface implementation end here ************************/
-
             unsigned long getScopeId() const;
 
             bool operator<(const Address &rhs) const;
@@ -101,14 +93,31 @@ namespace hazelcast {
             static const byte IPV6;
         };
 
-        typedef std::less<Address> addressComparator;
+        namespace serialization {
+            template<>
+            struct hz_serializer<Address> : public identified_data_serializer {
+                static constexpr int32_t F_ID = 0;
+                static constexpr int32_t ADDRESS = 1;
+                static int32_t getFactoryId();
+                static int32_t getClassId();
+                static void writeData(const Address &object, ObjectDataOutput &out);
+                static Address readData(ObjectDataInput &in);
+            };
+        }
 
         std::ostream HAZELCAST_API &operator << (std::ostream &stream, const Address &address);
-
     }
-};
+}
+
+namespace std {
+    template<>
+    struct hash<hazelcast::client::Address> {
+        std::size_t operator()(const hazelcast::client::Address &address) const noexcept;
+    };
+}
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif
+#endif 
+
 

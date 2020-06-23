@@ -15,9 +15,11 @@
  */
 
 #pragma once
-#include <map>
+
+#include <unordered_map>
 #include <vector>
 #include <memory>
+#include <iostream>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include <mutex>
@@ -35,19 +37,18 @@ namespace hazelcast {
          * This is the base synchronized map which works with any provided value and key types.
          * @tparam K The type of the key for the map.
          * @tparam V The type of the value for the map. The shared_ptr<V> is being kept in the map.
-         * @tparam Comparator The comparator to be used for the key type.
          */
-        template <typename K, typename V, typename Comparator  = std::less<K> >
+        template <typename K, typename V>
         class SynchronizedMap {
         public:
             SynchronizedMap() {
             }
 
-            SynchronizedMap(const SynchronizedMap<K, V, Comparator> &rhs) {
+            SynchronizedMap(const SynchronizedMap<K, V> &rhs) {
                 *this = rhs;
             }
 
-            void operator=(const SynchronizedMap<K, V, Comparator> &rhs) {
+            void operator=(const SynchronizedMap<K, V> &rhs) {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::lock_guard<std::mutex> lgRhs(rhs.mapLock);
                 internalMap = rhs.internalMap;
@@ -56,12 +57,12 @@ namespace hazelcast {
             virtual ~SynchronizedMap() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 internalMap.clear();
-            };
+            }
 
             bool containsKey(const K &key) const {
                 std::lock_guard<std::mutex> guard(mapLock);
-                return internalMap.count(key) > 0;
-            };
+                return internalMap.find(key) != internalMap.end();
+            }
 
             /**
              *
@@ -74,9 +75,9 @@ namespace hazelcast {
                     return internalMap[key];
                 } else {
                     internalMap[key] = value;
-                    return std::shared_ptr<V>();
+                    return nullptr;
                 }
-            };
+            }
 
             /**
              *
@@ -86,12 +87,13 @@ namespace hazelcast {
             std::shared_ptr<V> put(const K &key, std::shared_ptr<V> value) {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::shared_ptr<V> returnValue;
-                if (internalMap.count(key) > 0) {
-                    returnValue = internalMap[key];
+                auto foundIter = internalMap.find(key);
+                if (foundIter != internalMap.end()) {
+                    returnValue = foundIter->second;
                 }
                 internalMap[key] = value;
                 return returnValue;
-            };
+            }
 
             /**
              * Returns the value to which the specified key is mapped,
@@ -100,11 +102,13 @@ namespace hazelcast {
              */
             std::shared_ptr<V> get(const K &key) {
                 std::lock_guard<std::mutex> lg(mapLock);
-                if (internalMap.count(key) > 0)
-                    return internalMap[key];
-                else
-                    return std::shared_ptr<V>();
-            };
+                auto foundIter = internalMap.find(key);
+                if (foundIter != internalMap.end()) {
+                    return foundIter->second;
+                }
+
+                return nullptr;
+            }
 
             /**
             * Returns the value to which the specified key is mapped,
@@ -114,31 +118,40 @@ namespace hazelcast {
             */
             std::shared_ptr<V> remove(const K &key) {
                 std::lock_guard<std::mutex> lg(mapLock);
-                if (internalMap.count(key) > 0) {
-                    std::shared_ptr<V> v = internalMap[key];
-                    internalMap.erase(key);
+                auto foundIter = internalMap.find(key);
+                if (foundIter != internalMap.end()) {
+                    std::shared_ptr<V> v = foundIter->second;
+                    internalMap.erase(foundIter);
                     return v;
                 }
-                else
-                    return std::shared_ptr<V>();
-            };
+
+                return nullptr;
+            }
 
             bool remove(const K &key, const std::shared_ptr<V> &value) {
                 std::lock_guard<std::mutex> lg(mapLock);
-                for (typename std::map<K, std::shared_ptr<V> >::iterator it = internalMap.find(key);
-                     it != internalMap.end(); ++it) {
-                    if (it->second == value) {
-                        internalMap.erase(it);
+                auto foundIter = internalMap.find(key);
+                if (foundIter != internalMap.end()) {
+                    auto &foundValue = foundIter->second;
+                    if (!value || !foundValue) {
+                        if (value == foundValue) {
+                            internalMap.erase(foundIter);
+                            return true;
+                        }
+                    }
+                    if (*value == *foundValue) {
+                        internalMap.erase(foundIter);
                         return true;
                     }
                 }
+
                 return false;
             }
 
             std::vector<std::pair<K, std::shared_ptr<V> > > entrySet() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
-                typename std::map<K, std::shared_ptr<V>, Comparator>::iterator it;
+                typename std::unordered_map<K, std::shared_ptr<V>>::iterator it;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
                     entries.push_back(std::pair<K, std::shared_ptr<V> >(it->first, it->second));
                 }
@@ -148,7 +161,7 @@ namespace hazelcast {
             std::vector<std::pair<K, std::shared_ptr<V> > > clear() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
-                typename std::map<K, std::shared_ptr<V>, Comparator>::iterator it;
+                typename std::unordered_map<K, std::shared_ptr<V>>::iterator it;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
                     entries.push_back(std::pair<K, std::shared_ptr<V> >(it->first, it->second));
                 }
@@ -159,7 +172,7 @@ namespace hazelcast {
             std::vector<std::shared_ptr<V> > values() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::vector<std::shared_ptr<V> > valueArray;
-                typename std::map<K, std::shared_ptr<V>, Comparator>::iterator it;
+                typename std::unordered_map<K, std::shared_ptr<V>>::iterator it;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
                     valueArray.push_back(it->second);
                 }
@@ -169,7 +182,7 @@ namespace hazelcast {
             std::vector<K> keys() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::vector<K> keysArray;
-                typename std::map<K, std::shared_ptr<V>, Comparator>::iterator it;
+                typename std::unordered_map<K, std::shared_ptr<V>>::iterator it;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
                     keysArray.push_back(it->first);
                 }
@@ -178,10 +191,10 @@ namespace hazelcast {
 
             std::shared_ptr<V> getOrPutIfAbsent(const K &key) {
                 std::shared_ptr<V> value = get(key);
-                if (value.get() == NULL) {
+                if (!value) {
                     value.reset(new V());
                     std::shared_ptr<V> current = putIfAbsent(key, value);
-                    value = current.get() == NULL ? value : current;
+                    value = !current ? value : current;
                 }
                 return value;
             }
@@ -196,7 +209,7 @@ namespace hazelcast {
                 if (index < 0 || index >= internalMap.size()) {
                     return std::unique_ptr<std::pair<K, std::shared_ptr<V> > >();
                 }
-                typename std::map<K, std::shared_ptr<V> >::const_iterator it = internalMap.begin();
+                typename std::unordered_map<K, std::shared_ptr<V> >::const_iterator it = internalMap.begin();
                 for (size_t i = 0; i < index; ++i) {
                     ++it;
                 }
@@ -204,7 +217,7 @@ namespace hazelcast {
                         new std::pair<K, std::shared_ptr<V> >(it->first, it->second));
             }
         private:
-            std::map<K, std::shared_ptr<V>, Comparator> internalMap;
+            std::unordered_map<K, std::shared_ptr<V>> internalMap;
             mutable std::mutex mapLock;
         };
     }
@@ -213,6 +226,7 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 
 

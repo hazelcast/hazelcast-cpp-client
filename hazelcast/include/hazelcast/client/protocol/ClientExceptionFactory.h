@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include <stdint.h>
 #include <string>
 
@@ -50,7 +51,7 @@ namespace hazelcast {
             private:
                 void registerException(int32_t errorCode, ExceptionFactory *factory);
 
-                std::map<int32_t, ExceptionFactory *> errorCodeToFactory;
+                std::unordered_map<int32_t, ExceptionFactory *> errorCodeToFactory;
             };
 
             class HAZELCAST_API ExceptionFactory {
@@ -95,4 +96,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

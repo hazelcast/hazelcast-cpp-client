@@ -17,25 +17,33 @@
 
 #include <hazelcast/client/HazelcastClient.h>
 
-class WaitMultiplierProcessor : public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    virtual int getFactoryId() const {
-        return 666;
-    }
+class WaitMultiplierProcessor {};
 
-    virtual int getClassId() const {
-        return 8;
-    }
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<WaitMultiplierProcessor> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 666;
+                }
 
-    virtual void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
-        out.writeInt(INT32_MAX);
-        out.writeInt(5);
-    }
+                static int32_t getClassId() noexcept {
+                    return 8;
+                }
 
-    virtual void readData(hazelcast::client::serialization::ObjectDataInput &reader) {
-        // no-op. Client never needs to read
+                static void writeData(const WaitMultiplierProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(INT32_MAX);
+                    out.write(5);
+                }
+
+                static WaitMultiplierProcessor readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return WaitMultiplierProcessor{};
+                }
+            };
+        }
     }
-};
+}
 
 int main() {
     hazelcast::client::ClientConfig config;
@@ -71,22 +79,22 @@ int main() {
 
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
+    auto map = hz.getMap("MyMap");
     
-    map.put(1, 1);
+    map->put(1, 1).get();
 
     WaitMultiplierProcessor blockerTask;
 
     // submit 5 blocker tasks
-    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
-    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
-    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
-    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
-    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
 
     // Now the 6th call should receive HazelcastOverloadException
     try {
-        map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+        map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
         std::cout << "This line should not execute!!!" << std::endl;
     } catch (hazelcast::client::exception::HazelcastOverloadException &) {
         std::cout << "Received the expected overload exception." << std::endl;

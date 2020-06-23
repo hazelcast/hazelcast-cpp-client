@@ -17,29 +17,41 @@
 
 using namespace hazelcast::client;
 
-class GlobalSerializer : public serialization::StreamSerializer {
+struct Person {
+    friend std::ostream &operator<<(std::ostream &os, const Person &person);
+
+    std::string name;
+    bool male;
+    int32_t age;
+};
+
+std::ostream &operator<<(std::ostream &os, const Person &person) {
+    os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
+    return os;
+}
+
+class MyGlobalSerializer : public hazelcast::client::serialization::global_serializer {
 public:
-    virtual int32_t getHazelcastTypeId() const {
-        return 20;
+    void write(const boost::any &obj, hazelcast::client::serialization::ObjectDataOutput &out) override {
+        auto const &object = boost::any_cast<Person>(obj);
+        out.write(object.name);
+        out.write(object.male);
+        out.write(object.age);
     }
 
-    virtual void write(serialization::ObjectDataOutput &out, const void *object) {
-        // out.write(MyFavoriteSerializer.serialize(object))
-    }
-
-    virtual void *read(serialization::ObjectDataInput &in) {
-        // return MyFavoriteSerializer.deserialize(in);
-        return NULL;
+    boost::any read(hazelcast::client::serialization::ObjectDataInput &in) override {
+        return boost::any(Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()});
     }
 };
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    clientConfig.getSerializationConfig().setGlobalSerializer(
-            std::shared_ptr<serialization::StreamSerializer>(new GlobalSerializer()));
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::SerializationConfig serializationConfig;
+    serializationConfig.setGlobalSerializer(std::make_shared<MyGlobalSerializer>());
+    config.setSerializationConfig(serializationConfig);
 
-    HazelcastClient hz(clientConfig);
+    hazelcast::client::HazelcastClient hz(config);
 
     return 0;
 }

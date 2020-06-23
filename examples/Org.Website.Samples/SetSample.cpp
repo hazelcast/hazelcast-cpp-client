@@ -20,19 +20,26 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get the Distributed Set from Cluster.
-    ISet<std::string> set = hz.getSet<std::string>("my-distributed-set");
+    auto set = hz.getSet("my-distributed-set");
     // Add items to the set with duplicates
-    set.add("item1");
-    set.add("item1");
-    set.add("item2");
-    set.add("item2");
-    set.add("item2");
-    set.add("item3");
+    set->add("item1").get();
+    set->add("item1").get();
+    set->add("item2").get();
+    set->add("item2").get();
+    set->add("item2").get();
+    set->add("item3").get();
     // Get the items. Note that there are no duplicates.
-    std::vector<std::string> values = set.toArray();
-    for (std::vector<std::string>::const_iterator it=values.begin();it != values.end();++it) {
-        std::cout << (*it) << std::endl;
-    }
+    auto future = set->toArray<std::string>().then(boost::launch::deferred, [] (boost::future<std::vector<std::string>> f) {
+        for(auto &v : f.get()) {
+            std::cout << v << '\n';
+        }
+    });
+
+    // do something else
+    //...
+    // print the output
+    future.get();
+
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

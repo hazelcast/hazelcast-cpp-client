@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 5/11/15.
-//
+
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/map/DataEntryView.h"
 
@@ -38,5 +37,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

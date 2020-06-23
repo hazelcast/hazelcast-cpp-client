@@ -3577,7 +3577,7 @@ bool RemoteControllerProcessor::dispatchCall(::apache::thrift::protocol::TProtoc
 
 void RemoteControllerProcessor::process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.ping", callContext);
   }
@@ -3631,7 +3631,7 @@ void RemoteControllerProcessor::process_ping(int32_t seqid, ::apache::thrift::pr
 
 void RemoteControllerProcessor::process_clean(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.clean", callContext);
   }
@@ -3685,7 +3685,7 @@ void RemoteControllerProcessor::process_clean(int32_t seqid, ::apache::thrift::p
 
 void RemoteControllerProcessor::process_exit(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.exit", callContext);
   }
@@ -3739,7 +3739,7 @@ void RemoteControllerProcessor::process_exit(int32_t seqid, ::apache::thrift::pr
 
 void RemoteControllerProcessor::process_createCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.createCluster", callContext);
   }
@@ -3796,7 +3796,7 @@ void RemoteControllerProcessor::process_createCluster(int32_t seqid, ::apache::t
 
 void RemoteControllerProcessor::process_startMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.startMember", callContext);
   }
@@ -3853,7 +3853,7 @@ void RemoteControllerProcessor::process_startMember(int32_t seqid, ::apache::thr
 
 void RemoteControllerProcessor::process_shutdownMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.shutdownMember", callContext);
   }
@@ -3907,7 +3907,7 @@ void RemoteControllerProcessor::process_shutdownMember(int32_t seqid, ::apache::
 
 void RemoteControllerProcessor::process_terminateMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.terminateMember", callContext);
   }
@@ -3961,7 +3961,7 @@ void RemoteControllerProcessor::process_terminateMember(int32_t seqid, ::apache:
 
 void RemoteControllerProcessor::process_suspendMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.suspendMember", callContext);
   }
@@ -4015,7 +4015,7 @@ void RemoteControllerProcessor::process_suspendMember(int32_t seqid, ::apache::t
 
 void RemoteControllerProcessor::process_resumeMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.resumeMember", callContext);
   }
@@ -4069,7 +4069,7 @@ void RemoteControllerProcessor::process_resumeMember(int32_t seqid, ::apache::th
 
 void RemoteControllerProcessor::process_shutdownCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.shutdownCluster", callContext);
   }
@@ -4123,7 +4123,7 @@ void RemoteControllerProcessor::process_shutdownCluster(int32_t seqid, ::apache:
 
 void RemoteControllerProcessor::process_terminateCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.terminateCluster", callContext);
   }
@@ -4177,7 +4177,7 @@ void RemoteControllerProcessor::process_terminateCluster(int32_t seqid, ::apache
 
 void RemoteControllerProcessor::process_splitMemberFromCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.splitMemberFromCluster", callContext);
   }
@@ -4231,7 +4231,7 @@ void RemoteControllerProcessor::process_splitMemberFromCluster(int32_t seqid, ::
 
 void RemoteControllerProcessor::process_mergeMemberToCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.mergeMemberToCluster", callContext);
   }
@@ -4285,7 +4285,7 @@ void RemoteControllerProcessor::process_mergeMemberToCluster(int32_t seqid, ::ap
 
 void RemoteControllerProcessor::process_executeOnController(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = NULL;
+  void* ctx = nullptr;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.executeOnController", callContext);
   }

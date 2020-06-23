@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/21/13.
-
 #pragma once
+
 #include <atomic>
 #include <stdint.h>
 #include <memory>
@@ -26,7 +24,7 @@
 #include <vector>
 #include <boost/asio.hpp>
 
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/ConcurrentSet.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/Address.h"
@@ -188,7 +186,7 @@ namespace hazelcast {
 
                 void connectToClusterInternal();
 
-                std::set<Address> getPossibleMemberAddresses();
+                std::unordered_set<Address> getPossibleMemberAddresses();
 
                 std::unique_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &context);
 
@@ -207,14 +205,14 @@ namespace hazelcast {
                     virtual void onFailure(std::exception_ptr e);
 
                 private:
-                    const std::shared_ptr<Connection> connection;
+                    std::shared_ptr<Connection> connection;
                     bool asOwner;
                     Address target;
                     std::shared_ptr<AuthenticationFuture> authFuture;
                     std::shared_ptr<ClientConnectionManagerImpl> connectionManager;
                     std::shared_ptr<boost::asio::steady_timer> timeoutTimer;
 
-                    void onAuthenticationFailed(const Address &target, const std::shared_ptr<Connection> &connection,
+                    void onAuthenticationFailed(const Address &targetAddress, const std::shared_ptr<Connection> &conn,
                                                 std::exception_ptr cause);
 
                     virtual void handleAuthenticationException(std::exception_ptr e);
@@ -238,7 +236,7 @@ namespace hazelcast {
                 util::SynchronizedMap<Address, FutureTuple> connectionsInProgress;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
-                const Credentials *credentials;
+                boost::optional<serialization::pimpl::Data> credentials;
                 util::Sync<std::shared_ptr<Address> > ownerConnectionAddress;
                 util::Sync<std::shared_ptr<Address> > previousOwnerConnectionAddress;
                 util::Sync<std::shared_ptr<protocol::Principal> > principal;
@@ -264,5 +262,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

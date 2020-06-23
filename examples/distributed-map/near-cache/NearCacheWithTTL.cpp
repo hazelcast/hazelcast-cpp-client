@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 13 Jan 2017.
-//
 #include "NearCacheSupport.h"
 
 using namespace hazelcast::client;
@@ -34,21 +31,21 @@ int main() {
     config.addNearCacheConfig(nearCacheConfig);
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, std::string> map = hz.getMap<int, std::string>(mapName);
+    auto map = hz.getMap(mapName);
 
-    map.put(1, "myValue");
+    map->put<int, std::string>(1, "myValue");
     NearCacheSupport::printNearCacheStats(map, "The put(1, article) call has no effect on the empty Near Cache");
 
-    map.get(1);
+    map->get<int, std::string>(1).get();
     NearCacheSupport::printNearCacheStats(map, "The first get(1) call populates the Near Cache");
 
-    map.get(1);
+    map->get<int, std::string>(1).get();
     NearCacheSupport::printNearCacheStats(map, "The second get(1) call is served from the Near Cache");
 
-    hazelcast::util::sleep(2);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     printf("We've waited for the time-to-live-seconds, so the Near Cache entry is expired.");
 
-    map.get(1);
+    map->get<int, std::string>(1).get();
     NearCacheSupport::printNearCacheStats(map, "The third get(1) call is fetching the value again from the map");
 
     std::cout << "Finished" << std::endl;

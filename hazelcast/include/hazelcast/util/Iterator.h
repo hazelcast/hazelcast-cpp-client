@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 9 Dec 2016.
-
 #pragma once
+
 #include <assert.h>
 #include <memory>
 
@@ -70,5 +68,6 @@ namespace hazelcast {
         };
     }
 }
+
 
 

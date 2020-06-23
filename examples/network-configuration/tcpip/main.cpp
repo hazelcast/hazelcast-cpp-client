@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
+
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
@@ -26,7 +24,7 @@ int main() {
     config.addAddress(addr);
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, std::string> map = hz.getMap<int, std::string>("test map");
+    auto map = hz.getMap("test map");
 
     std::cout << "Finished" << std::endl;
 

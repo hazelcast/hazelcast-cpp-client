@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <string>
 #include <assert.h>
 
@@ -57,7 +58,7 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                      */
-                    virtual monitor::NearCacheStats &getNearCacheStats() = 0;
+                    virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const = 0;
 
                     /**
                      * Gets the name of this {@link NearCache} instance.
@@ -82,7 +83,7 @@ namespace hazelcast {
                     /**
                      * NULL Object
                      */
-                    static std::shared_ptr<void> NULL_OBJECT;
+                    static std::shared_ptr<V> NULL_OBJECT;
 
                     virtual ~NearCache() {
                     }
@@ -128,10 +129,12 @@ namespace hazelcast {
                      * @param key   the key of the value will be stored
                      * @param value the value as Data which will be stored
                      */
+/*
                     virtual void put(const std::shared_ptr<K> &key,
                                      const std::shared_ptr<serialization::pimpl::Data> &value) {
                         assert(0);
                     }
+*/
 
                     /**
                      * Removes the value associated with the given {@code key}
@@ -174,7 +177,7 @@ namespace hazelcast {
                 };
 
                 template<typename K, typename V>
-                std::shared_ptr<void> NearCache<K, V>::NULL_OBJECT(new char);
+                std::shared_ptr<V> NearCache<K, V>::NULL_OBJECT(new V);
 
                 template<typename K, typename V>
                 const int NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS = 5;
@@ -189,5 +192,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

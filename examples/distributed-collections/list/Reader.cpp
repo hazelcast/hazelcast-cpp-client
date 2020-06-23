@@ -13,20 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IList<std::string> list = hz.getList<std::string>("list");
+    auto list = hz.getList("list");
 
-    std::vector<std::string> listValues = list.toArray();
-
-    for (std::vector<std::string>::const_iterator it = listValues.begin(); it != listValues.end(); ++it) {
-        std::cout << *it << std::endl;
+    for (auto &item : list->toArray<std::string>().get()) {
+        std::cout << item << std::endl;
     }
 
     std::cout << "Reading finished!" << std::endl;

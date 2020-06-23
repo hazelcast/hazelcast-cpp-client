@@ -2,8 +2,6 @@
 
 This folder contains an extensive collection of Hazelcast C++ Client code samples, which helps you to learn how to use Hazelcast features. The following lists the samples with their brief descriptions.
 
-**adaptor** — Examples for using hazelcast containers with raw pointers instead of shared pointer, where ownership can not be claimed.
-
 **aws** — Configure and use AWS discovery.
 
 **backpressure** — Enable backpressure on client invocations.
@@ -26,7 +24,6 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
   * **index**: Illustrates IMap Sql query on an indexed field.
   * **locking**: Illustrates how races on IMap updates can occur and how to avoid races using optimistic or pessimistic updates which involves IMap lock usages.
   * **map-interceptor**: Illustrates how to add interceptor for the IMap at the server side and how it affects the IMap get.
-  * **mixed-map**: Illustrates how to use map with mixed types (mixed map adaptor). These types may be polymorphic or completely unrelated types.
   * **multimap**: Illustrates how to use MultiMap which allows multiple values for a key.
   * **near-cache**: Illustrates how you can configure near-cache feature for IMap with different eviction policies.
   * **partitionaware**: Illustrates how you can use partition aware keys for IMap for putting the data into certain partitions.
@@ -62,7 +59,7 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
 **serialization** — Examples for different Hazelcast serialization techniques.
   * **custom**: Illustrates how you can use configure and custom serializers.
   * **global-serializer**: Illustrates how you can use configure global serializer to be used when no matching serializer exist for a provided object.
-  * **identified-data-serializable**: Shows hoe to implement and configure IdentifiedDataSerializable serialization for objects.
+  * **identified-data-serializable**: Shows how to implement and configure IdentifiedDataSerializable serialization for objects.
   * **portable**: Illustrates the configuration and usage of Portable objects.
   * **portable**: Illustrates the configuration and usage of Portable objects.
 

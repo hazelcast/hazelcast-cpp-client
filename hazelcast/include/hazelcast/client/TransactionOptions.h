@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/2/13.
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -25,45 +24,20 @@
 
 namespace hazelcast {
     namespace client {
-        /**
-        * Transaction type.
-        */
-        class HAZELCAST_API TransactionType {
-        public:
-            /**
-            * Type enum.
-            */
-            enum Type {
-                TWO_PHASE = 1,
-                LOCAL = 2
-            };
-            /**
-            * value.
-            */
-            Type value;
-
-            /**
-            * Constructor
-            */
-            TransactionType(Type value);
-
-            /**
-            * cast to int.
-            */
-            operator int() const;
-
-            /**
-            * copy constructor.
-            */
-            void operator=(int i);
-
-        };
 
         /**
         * Contains the configuration for a Hazelcast transaction.
         */
         class HAZELCAST_API TransactionOptions {
         public:
+            /**
+            * Transaction type.
+            */
+            enum struct TransactionType {
+                TWO_PHASE = 1,
+                LOCAL = 2
+            };
+
             /**
             * Creates a new default configured TransactionsOptions.
             *
@@ -92,28 +66,22 @@ namespace hazelcast {
             TransactionOptions& setTransactionType(TransactionType transactionType);
 
             /**
-            *
-            * @return the timeout in seconds.
-            */
-            int getTimeout() const;
-
-            /**
              *
-             * @return the timeout in milliseconds
+             * @return the timeout
              */
-            int getTimeoutMillis() const;
+            std::chrono::steady_clock::duration getTimeout() const;
 
             /**
             *
             * The timeout determines the maximum lifespan of a transaction. So if a transaction is configured with a
             * timeout of 2 minutes, then it will automatically rollback if it hasn't committed yet.
             *
-            * @param timeoutInSeconds  the timeout value in seconds.
+            * @param timeoutInSeconds  the timeout value.
             * @return the updated TransactionOptions
             * @throws IllegalArgumentException if timeout smaller or equal than 0, or timeUnit is null.
             * @see #getTimeout()
             */
-            TransactionOptions& setTimeout(int timeoutInSeconds);
+            TransactionOptions& setTimeout(std::chrono::steady_clock::duration duration);
 
             /**
             *
@@ -132,15 +100,12 @@ namespace hazelcast {
             * @return the updated TransactionOptions.
             * @throws IllegalArgumentException if durability smaller than 0.
             */
-            TransactionOptions& setDurability(int durability);
+            TransactionOptions& setDurability(int numMachines);
 
         private:
-            int timeoutSeconds;
-
+            std::chrono::steady_clock::duration timeout;
             int durability;
-
             TransactionType transactionType;
-
         };
     }
 }
@@ -148,5 +113,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

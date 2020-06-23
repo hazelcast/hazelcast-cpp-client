@@ -15,16 +15,17 @@
  */
 
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 
 #include <mutex>
-#include <set>
+#include <unordered_set>
 #include <vector>
 
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -92,7 +93,7 @@ namespace hazelcast {
             std::vector<T> toArray() {
                 std::lock_guard<std::mutex> lg(m);
                 std::vector<T> result;
-                for (const typename std::set<T>::value_type &value  : internalSet) {
+                for (const typename std::unordered_set<T>::value_type &value  : internalSet) {
                                 result.push_back(value);
                             }
                 return result;
@@ -104,13 +105,14 @@ namespace hazelcast {
             }
         private:
             std::mutex m;
-            std::set<T> internalSet;
+            std::unordered_set<T> internalSet;
         };
     }
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif
+#endif 
+
 
 

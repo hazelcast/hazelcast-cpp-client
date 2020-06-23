@@ -15,9 +15,10 @@
  */
 
 #pragma once
+
 #include <string>
 #include <stdint.h>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace hazelcast {
@@ -56,7 +57,7 @@ namespace hazelcast {
                      */
                     std::pair<bool, int64_t> getTimestampForReplica(const std::string &replicaId);
 
-                    typedef std::map<std::string, int64_t> TimestampMap;
+                    typedef std::unordered_map<std::string, int64_t> TimestampMap;
                     TimestampMap replicaTimestamps;
                     VectorClock::TimestampVector replicaTimestampEntries;
                 };
@@ -64,5 +65,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <stdint.h>
 
 #include "hazelcast/client/DistributedObject.h"
@@ -217,5 +218,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

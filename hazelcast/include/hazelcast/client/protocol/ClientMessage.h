@@ -50,6 +50,7 @@
 */
 
 #pragma once
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -59,7 +60,7 @@
 #include <memory>
 #include <vector>
 #include <assert.h>
-#include <map>
+#include <unordered_map>
 #include <ostream>
 
 #include "hazelcast/util/LittleEndianBufferWrapper.h"
@@ -384,8 +385,7 @@ namespace hazelcast {
 
                 std::string getOperationName() const;
 
-                void setOperationName(const std::string &operationName);
-
+                void setOperationName(const std::string &name);
 
                 /**
                  * Checks the frame size and total data size to validate the message size.
@@ -484,4 +484,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

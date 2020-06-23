@@ -13,70 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
 
-class Person : public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    Person() {
-    }
+struct Person {
+    friend std::ostream &operator<<(std::ostream &os, const Person &person);
 
-    Person(const char *n) : name(new std::string(n)) {
-    }
-
-    Person(const Person &rhs) {
-        if (rhs.name.get() == NULL) {
-            name.reset();
-        } else {
-            name = std::unique_ptr<std::string>(new std::string(*rhs.name));
-        }
-    }
-
-    const std::string *getName() const {
-        return name.get();
-    }
-
-    int getFactoryId() const {
-        return 1;
-    }
-
-    int getClassId() const {
-        return 1;
-    }
-
-    void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
-        out.writeUTF(name.get());
-    }
-
-    void readData(hazelcast::client::serialization::ObjectDataInput &in) {
-        name = in.readUTF();
-    }
-
-private:
-    std::unique_ptr<std::string> name;
+    std::string name;
+    bool male;
+    int32_t age;
 };
 
-std::ostream &operator<<(std::ostream &out, const Person &p) {
-    const std::string *str = p.getName();
-    out << ((NULL == str) ? "NULL" : str->c_str());
-    return out;
+std::ostream &operator<<(std::ostream &os, const Person &person) {
+    os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
+    return os;
+}
+
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Person> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 3;
+                }
+
+                static void writeData(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.name);
+                    out.write(object.male);
+                    out.write(object.age);
+                }
+
+                static Person readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+                }
+            };
+        }
+    }
 }
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, Person> map = hz.getMap<std::string, Person>("map");
-    Person testPerson("foo");
-    map.put("foo", testPerson);
-    std::cout << "Finished writing" << std::endl;
-    std::cout << map.get("foo");
-    std::cout << "Finished reading" << std::endl;
-
+    auto map = hz.getMap("map");
+    map->put("foo", Person{"bar", true, 40}).get();
+    std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
 
     std::cout << "Finished" << std::endl;
 

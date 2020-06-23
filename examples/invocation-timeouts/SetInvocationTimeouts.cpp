@@ -41,14 +41,14 @@ int main() {
 
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
+    auto map = hz.getMap("MyMap");
     
-    map.put(1, 100);
+    map->put(1, 100).get();
 
-    // while doing the map.get in the following loop just shutdown the cluster and restart within 30 seconds, you will
+    // while doing the map->get in the following loop just shutdown the cluster and restart within 30 seconds, you will
     // observe that the retries will be done and it will finally succeed when the cluster comes back again.
     for (int i=0;i < 100000; ++i) {
-        map.get(1);
+        map->get<int, int>(1).get();
     }
 
     std::cout << "Finished" << std::endl;

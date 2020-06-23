@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 6/27/13.
-
 #pragma once
-#include <stdint.h>
+
+#include <utility>
+
+#include "hazelcast/client/serialization/serialization.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,59 +29,42 @@ namespace hazelcast {
         class Member;
 
         namespace topic {
-            template <typename E>
-            class Message {
+            class HAZELCAST_API Message {
             public:
-                /**
-                 * Returns the published message
-                 *
-                 * @return the published message object
-                 */
-                virtual const E *getMessageObject() const = 0;
+                Message(const std::string &topicName, TypedData &&message, int64_t publishTime,
+                        boost::optional<Member> &&member) : Message(topicName, std::move(message),
+                                std::chrono::system_clock::from_time_t(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::milliseconds(publishTime)).count()),
+                                std::move(member)) {}
 
-                /**
-                 * Returns the published message with the memory ownership
-                 *
-                 * @return the published message object with the memory ownership
-                 *
-                 * Warning: This method can be called only one time, since the message kept internally will no longer
-                 * exist after this call, hence the method will only return a null unique_ptr in the second call.
-                 */
-                virtual std::unique_ptr<E> &&releaseMessageObject() = 0;
+                Message(std::string topicName, TypedData &&message, std::chrono::system_clock::time_point publishTime,
+                        boost::optional<Member> &&member)
+                        : messageObject(message), publishTime(publishTime), publishingMember(member), name(std::move(topicName)) {}
 
-                /**
-                 * Return the time when the message is published
-                 *
-                 * @return the time when the message is published in milliseconds since 1970.01.01.
-                 */
-                virtual int64_t getPublishTime() const = 0;
+                const TypedData &getMessageObject() const {
+                    return messageObject;
+                }
 
-                /**
-                 * Returns the member that published the message.
-                 *
-                 * It can be that the member is null if:
-                 * <ol>
-                 *     <li>the message was send by a client and not a member</li>
-                 *     <li>the member that send the message, left the cluster before the message was processed.</li>
-                 * </ol>
-                 *
-                 * @return the member that published the message
-                 */
-                virtual const Member *getPublishingMember() const = 0;
+                std::chrono::system_clock::time_point getPublishTime() const {
+                    return publishTime;
+                }
 
-                /**
-                 * @return the name of the topic for which this message is produced
-                 */
-                virtual const std::string &getSource() const = 0;
+                const Member *getPublishingMember() const {
+                    return publishingMember.get_ptr();
+                }
 
-                /**
-                 * @deprecated Please use getSource instead.
-                 *
-                 * @return the name of the topic for which this message is produced
-                 */
-                virtual std::string getName() = 0;
+                const std::string &getSource() const {
+                    return name;
+                }
 
-                virtual ~Message() { }
+                const std::string &getName() const {
+                    return name;
+                }
+
+            private:
+                TypedData messageObject;
+                std::chrono::system_clock::time_point publishTime;
+                boost::optional<Member> publishingMember;
+                std::string name;
             };
         }
     }
@@ -90,5 +73,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 

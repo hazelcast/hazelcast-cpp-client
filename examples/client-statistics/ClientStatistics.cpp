@@ -38,20 +38,20 @@ int main() {
     config.addNearCacheConfig(std::shared_ptr<config::NearCacheConfig<int, int> >(new config::NearCacheConfig<int, int>("MyMap")));
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
+    auto map = hz.getMap("MyMap");
     
-    map.put(2, 500);
+    map->put(2, 500).get();
 
     // generate a near-cache miss
-    map.get(2);
+    map->get<int, int>(2).get();
 
     // generate two near-cache hits
-    map.get(2);
-    map.get(2);
+    map->get<int, int>(2).get();
+    map->get<int, int>(2).get();
 
     // sleep more than the statistics collection time and keep the client running. Statistics is now populated at the
     // member side, so you can see them at the Management Center.
-    hazelcast::util::sleep(100);
+    std::this_thread::sleep_for(std::chrono::seconds(100));
 
     std::cout << "Finished" << std::endl;
 

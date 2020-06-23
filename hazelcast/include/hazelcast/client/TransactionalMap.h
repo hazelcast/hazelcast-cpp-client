@@ -13,44 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/5/13.
 #pragma once
+
 #include "hazelcast/client/proxy/TransactionalMapImpl.h"
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            namespace pimpl {
-                class Data;
-            }
-        }
-
-        namespace adaptor {
-            template <typename K, typename V>
-            class RawPointerTransactionalMap;
-        }
-
         /**
         * Transactional implementation of IMap.
         *
         * @see IMap
-        * @param <K> key
-        * @param <V> value
         */
-        template<typename K, typename V>
-        class TransactionalMap : public proxy::TransactionalMapImpl {
+        class HAZELCAST_API TransactionalMap : public proxy::TransactionalMapImpl {
             friend class TransactionContext;
-            friend class adaptor::RawPointerTransactionalMap<K, V>;
-
         public:
             /**
             * Transactional implementation of IMap#containsKey(Object).
             *
             * @see IMap#containsKey(key)
             */
-            bool containsKey(const K& key) {
-                return proxy::TransactionalMapImpl::containsKey(toData(&key));
+            template<typename K>
+            boost::future<bool> containsKey(const K &key) {
+                return containsKeyData(toData(key));
             }
 
             /**
@@ -58,26 +42,9 @@ namespace hazelcast {
             *
             * @see IMap#get(keu)
             */
-            std::shared_ptr<V> get(const K& key) {
-                return std::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::getData(toData(&key))));
-            }
-
-            /**
-            * Transactional implementation of IMap#size().
-            *
-            * @see IMap#size()
-            */
-            int size() {
-                return proxy::TransactionalMapImpl::size();
-            }
-
-            /**
-            * Transactional implementation of IMap#isEmpty().
-            *
-            * @see IMap#isEmpty()
-            */
-            bool isEmpty() {
-                return proxy::TransactionalMapImpl::isEmpty();
+            template<typename K, typename V>
+            boost::future<boost::optional<V>> get(const K &key) {
+                return toObject<V>(getData(toData(key)));
             }
 
             /**
@@ -87,9 +54,10 @@ namespace hazelcast {
             *
             * @see IMap#put(key, value)
             */
-            std::shared_ptr<V> put(const K& key, const V& value) {
-                return std::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::putData(toData(&key), toData(&value))));
-            };
+            template<typename K, typename V, typename R=V>
+            boost::future<boost::optional<R>> put(const K &key, const V &value) {
+                return toObject<R>(putData(toData(key), toData(value)));
+            }
 
             /**
             * Transactional implementation of IMap#set(key, value).
@@ -98,8 +66,9 @@ namespace hazelcast {
             *
             * @see IMap#set(key, value)
             */
-            void set(const K& key, const V& value) {
-                proxy::TransactionalMapImpl::set(toData(&key), toData(&value));
+            template<typename K, typename V>
+            boost::future<void> set(const K &key, const V &value) {
+                return setData(toData(key), toData(value));
             }
 
             /**
@@ -109,9 +78,10 @@ namespace hazelcast {
             *
             * @see IMap#putIfAbsent(key, value)
             */
-            std::shared_ptr<V> putIfAbsent(const K& key, const V& value) {
-                return std::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::putIfAbsentData(toData(&key), toData(&value))));
-            };
+            template<typename K, typename V, typename R=V>
+            boost::future<boost::optional<R>> putIfAbsent(const K &key, const V &value) {
+                return toObject<R>(putIfAbsentData(toData(key), toData(value)));
+            }
 
             /**
             * Transactional implementation of IMap#replace(key, value).
@@ -120,9 +90,10 @@ namespace hazelcast {
             *
             * @see IMap#replace(key, value)
             */
-            std::shared_ptr<V> replace(const K& key, const V& value) {
-                return std::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::replaceData(toData(&key), toData(&value))));
-            };
+            template<typename K, typename V, typename R=V>
+            boost::future<boost::optional<R>> replace(const K &key, const V &value) {
+                return toObject<R>(replaceData(toData(key), toData(value)));
+            }
 
             /**
             * Transactional implementation of IMap#replace(key, value, oldValue).
@@ -131,9 +102,10 @@ namespace hazelcast {
             *
             * @see IMap#replace(key, value, oldValue)
             */
-            bool replace(const K& key, const V& oldValue, const V& newValue) {
-                return proxy::TransactionalMapImpl::replace(toData(&key), toData(&oldValue), toData(&newValue));
-            };
+            template<typename K, typename V, typename N>
+            boost::future<bool> replace(const K &key, const V &oldValue, const N &newValue) {
+                return replaceData(toData(key), toData(oldValue), toData(newValue));
+            }
 
             /**
             * Transactional implementation of IMap#remove(key).
@@ -142,21 +114,22 @@ namespace hazelcast {
             *
             * @see IMap#remove(key)
             */
-            std::shared_ptr<V> remove(const K& key) {
-                return std::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::removeData(toData(&key))));
-            };
+            template<typename K, typename V>
+            boost::future<boost::optional<V>> remove(const K &key) {
+                return toObject<V>(removeData(toData(key)));
+            }
 
             /**
             * Transactional implementation of IMap#delete(key).
             *
             * The object to be deleted will be removed from only the current transaction context till transaction is committed.
             *
-            * @see IMap#delete(keu)
+            * @see IMap#delete(key)
             */
-
-            void deleteEntry(const K& key) {
-                proxy::TransactionalMapImpl::deleteEntry(toData(&key));
-            };
+            template<typename K>
+            boost::future<void> deleteEntry(const K &key) {
+                return deleteEntryData(toData(key));
+            }
 
             /**
             * Transactional implementation of IMap#remove(key, value).
@@ -165,8 +138,9 @@ namespace hazelcast {
             *
             * @see IMap#remove(key, value)
             */
-            bool remove(const K& key, const V& value) {
-                return proxy::TransactionalMapImpl::remove(toData(&key), toData(&value));
+            template<typename K, typename V>
+            boost::future<bool> remove(const K &key, const V &value) {
+                return removeData(toData(key), toData(value));
             }
 
             /**
@@ -175,8 +149,9 @@ namespace hazelcast {
             *
             * @see IMap#keySet()
             */
-            std::vector<K> keySet() {
-                return toObjectCollection<K>(proxy::TransactionalMapImpl::keySetData());
+            template<typename K>
+            boost::future<std::vector<K>> keySet() {
+                return toObjectVector<K>(keySetData());
             }
 
             /**
@@ -185,8 +160,9 @@ namespace hazelcast {
             *
             * @see IMap#keySet(predicate)
             */
-            std::vector<K> keySet(const serialization::IdentifiedDataSerializable *predicate) {
-                return toObjectCollection<K>(proxy::TransactionalMapImpl::keySetData(predicate));
+            template<typename K, typename P>
+            boost::future<std::vector<K>> keySet(const P &predicate) {
+                return toObjectVector<K>(keySetData(toData(predicate)));
             }
 
             /**
@@ -195,8 +171,9 @@ namespace hazelcast {
             *
             * @see IMap#values()
             */
-            std::vector<V> values() {
-                return toObjectCollection<K>(proxy::TransactionalMapImpl::valuesData());
+            template<typename V>
+            boost::future<std::vector<V>> values() {
+                return toObjectVector<V>(valuesData());
             }
 
             /**
@@ -204,18 +181,15 @@ namespace hazelcast {
             *
             * @see IMap#values(Predicate)
             */
-            std::vector<V> values(const serialization::IdentifiedDataSerializable *predicate) {
-                return toObjectCollection<K>(proxy::TransactionalMapImpl::valuesData(predicate));
+            template<typename V, typename P>
+            boost::future<std::vector<V>> values(const P &predicate) {
+                return toObjectVector<V>(valuesData(toData(predicate)));
             }
 
         private:
-            TransactionalMap(const std::string& name, txn::TransactionProxy *transactionProxy)
-            : proxy::TransactionalMapImpl(name, transactionProxy) {
-
-            }
-
+            TransactionalMap(const std::string &name, txn::TransactionProxy &transactionProxy)
+                    : proxy::TransactionalMapImpl(name, transactionProxy) {}
         };
     }
 }
-
 

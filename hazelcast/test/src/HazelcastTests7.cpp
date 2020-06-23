@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include<boost/thread/barrier.hpp>
+
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
 #include <regex>
 #include <vector>
 #include "ringbuffer/StartsWithStringFilter.h"
-#include "serialization/Employee.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/ClientConfig.h>
 #include <hazelcast/client/exception/IllegalStateException.h>
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/serialization/pimpl/SerializationService.h>
+#include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/util/UuidUtil.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/spi/impl/ClientInvocation.h>
@@ -36,7 +37,7 @@
 #include <hazelcast/client/connection/Connection.h>
 #include <ClientTestSupport.h>
 #include <memory>
-#include <hazelcast/client/proxy/ClientPNCounterProxy.h>
+#include <hazelcast/client/proxy/PNCounterImpl.h>
 #include <hazelcast/client/serialization/pimpl/DataInput.h>
 #include <hazelcast/util/AddressUtil.h>
 #include <hazelcast/util/RuntimeAvailableProcessors.h>
@@ -45,42 +46,21 @@
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
 #include <hazelcast/util/IOUtil.h>
-
 #include <ClientTestSupportBase.h>
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <hazelcast/util/ILogger.h>
 #include <ctime>
-#include <errno.h>
+#include <cerrno>
 #include <hazelcast/client/LifecycleListener.h>
-#include "serialization/TestRawDataPortable.h"
-#include "serialization/TestSerializationConstants.h"
-#include "serialization/TestMainPortable.h"
-#include "serialization/TestNamedPortable.h"
-#include "serialization/TestInvalidReadPortable.h"
-#include "serialization/TestInvalidWritePortable.h"
-#include "serialization/TestInnerPortable.h"
-#include "serialization/TestNamedPortableV2.h"
-#include "serialization/TestNamedPortableV3.h"
+#include "serialization/Serializables.h"
 #include <hazelcast/client/SerializationConfig.h>
 #include <hazelcast/client/HazelcastJsonValue.h>
-#include <stdint.h>
-#include "customSerialization/TestCustomSerializerX.h"
-#include "customSerialization/TestCustomXSerializable.h"
-#include "customSerialization/TestCustomPersonSerializer.h"
-#include "serialization/ChildTemplatedPortable2.h"
-#include "serialization/ParentTemplatedPortable.h"
-#include "serialization/ChildTemplatedPortable1.h"
-#include "serialization/ObjectCarryingPortable.h"
-#include "serialization/TestDataSerializable.h"
+#include <cstdint>
 #include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/query/FalsePredicate.h>
-#include <set>
-#include <hazelcast/client/query/EqualPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
 #include <HazelcastServer.h>
 #include "TestHelperFunctions.h"
 #include <cmath>
@@ -89,30 +69,9 @@
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
 #include <string>
-#include "executor/tasks/SelectAllMembers.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
-#include "executor/tasks/CancellationAwareTask.h"
-#include "executor/tasks/NullCallable.h"
-#include "executor/tasks/SerializedCounterCallable.h"
-#include "executor/tasks/MapPutPartitionAwareCallable.h"
-#include "executor/tasks/SelectNoMembers.h"
-#include "executor/tasks/GetMemberUuidTask.h"
-#include "executor/tasks/FailingCallable.h"
-#include "executor/tasks/AppendCallable.h"
-#include "executor/tasks/TaskWithUnserializableResponse.h"
-#include <executor/tasks/CancellationAwareTask.h>
-#include <executor/tasks/FailingCallable.h>
-#include <executor/tasks/SelectNoMembers.h>
-#include <executor/tasks/SerializedCounterCallable.h>
-#include <executor/tasks/TaskWithUnserializableResponse.h>
-#include <executor/tasks/GetMemberUuidTask.h>
-#include <executor/tasks/AppendCallable.h>
-#include <executor/tasks/SelectAllMembers.h>
-#include <executor/tasks/MapPutPartitionAwareCallable.h>
-#include <executor/tasks/NullCallable.h>
-#include <stdlib.h>
+#include "executor/tasks/Tasks.h"
+#include <hazelcast/client/serialization/serialization.h>
+#include <cstdlib>
 #include <fstream>
 #include <boost/asio.hpp>
 #include <cassert>
@@ -126,8 +85,8 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/serialization.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -140,74 +99,17 @@
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/client/Cluster.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/client/query/SqlPredicate.h"
-#include "hazelcast/util/Util.h"
-#include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/IMap.h"
-#include "hazelcast/util/Bits.h"
-#include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/AtomicInt.h"
-#include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/util/UTFUtil.h"
-#include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/SerializationConfig.h"
-#include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/ITopic.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/adaptor/RawPointerSet.h"
-#include "hazelcast/client/query/OrPredicate.h"
-#include "hazelcast/client/query/RegexPredicate.h"
-#include "hazelcast/client/query/PagingPredicate.h"
-#include "hazelcast/client/query/QueryConstants.h"
-#include "hazelcast/client/query/NotPredicate.h"
-#include "hazelcast/client/query/InstanceOfPredicate.h"
-#include "hazelcast/client/query/NotEqualPredicate.h"
-#include "hazelcast/client/query/InPredicate.h"
-#include "hazelcast/client/query/ILikePredicate.h"
-#include "hazelcast/client/query/LikePredicate.h"
-#include "hazelcast/client/query/GreaterLessPredicate.h"
-#include "hazelcast/client/query/AndPredicate.h"
-#include "hazelcast/client/query/BetweenPredicate.h"
-#include "hazelcast/client/query/EqualPredicate.h"
-#include "hazelcast/client/query/TruePredicate.h"
-#include "hazelcast/client/query/FalsePredicate.h"
-#include "hazelcast/client/adaptor/RawPointerMap.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/adaptor/RawPointerList.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalQueue.h"
 #include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/adaptor/RawPointerQueue.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalMap.h"
 #include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/adaptor/RawPointerMultiMap.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalMultiMap.h"
-#include "hazelcast/util/LittleEndianBufferWrapper.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/mixedtype/MultiMap.h"
-#include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/mixedtype/IQueue.h"
 #include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
-#include "hazelcast/client/ISet.h"
-#include "hazelcast/client/mixedtype/ISet.h"
-#include "hazelcast/client/ReliableTopic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(disable: 4996) //for unsafe getenv
@@ -218,522 +120,266 @@ namespace hazelcast {
         namespace test {
             class ClientMultiMapTest : public ClientTestSupport {
             protected:
-                virtual void TearDown() {
+                class MyMultiMapListener : public EntryAdapter {
+                public:
+                    MyMultiMapListener(boost::latch &addedLatch, boost::latch &removedLatch) : addedLatch(addedLatch),
+                                                                                               removedLatch(removedLatch) {}
+
+                    void entryAdded(const EntryEvent &event) override {
+                        addedLatch.count_down();
+                    }
+
+                    void entryRemoved(const EntryEvent &event) override {
+                        removedLatch.count_down();
+                    }
+
+                private:
+                    boost::latch &addedLatch;
+                    boost::latch &removedLatch;
+                };
+
+                static void fillData() {
+                    ASSERT_TRUE(mm->put("key1", "value1").get());
+                    ASSERT_TRUE(mm->put("key1", "value2").get());
+                    ASSERT_TRUE(mm->put("key1", "value3").get());
+                    ASSERT_TRUE(mm->put("key2", "value4").get());
+                    ASSERT_TRUE(mm->put("key2", "value5").get());
+                }
+                
+                void TearDown() override {
                     // clear mm
-                    mm->clear();
+                    mm->clear().get();
                 }
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new HazelcastClient(getConfig());
-                    mm = new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("MyMultiMap"));
+                    mm = client->getMultiMap("MyMultiMap");
                 }
 
                 static void TearDownTestCase() {
-                    delete mm;
                     delete client;
                     delete instance;
 
-                    mm = NULL;
-                    client = NULL;
-                    instance = NULL;
+                    mm = nullptr;
+                    client = nullptr;
+                    instance = nullptr;
                 }
 
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
-                static MultiMap<std::string, std::string> *mm;
+                static std::shared_ptr<MultiMap> mm;
             };
 
-            HazelcastServer *ClientMultiMapTest::instance = NULL;
-            HazelcastClient *ClientMultiMapTest::client = NULL;
-            MultiMap<std::string, std::string> *ClientMultiMapTest::mm = NULL;
+            HazelcastServer *ClientMultiMapTest::instance = nullptr;
+            HazelcastClient *ClientMultiMapTest::client = nullptr;
+            std::shared_ptr<MultiMap> ClientMultiMapTest::mm;
 
             TEST_F(ClientMultiMapTest, testPutGetRemove) {
-                ASSERT_TRUE(mm->put("key1", "value1"));
-                ASSERT_TRUE(mm->put("key1", "value2"));
-                ASSERT_TRUE(mm->put("key1", "value3"));
+                fillData();
+                ASSERT_EQ(3, mm->valueCount("key1").get());
+                ASSERT_EQ(2, mm->valueCount("key2").get());
+                ASSERT_EQ(5, mm->size().get());
 
-                ASSERT_TRUE(mm->put("key2", "value4"));
-                ASSERT_TRUE(mm->put("key2", "value5"));
-
-                ASSERT_EQ(3, mm->valueCount("key1"));
-                ASSERT_EQ(2, mm->valueCount("key2"));
-                ASSERT_EQ(5, mm->size());
-
-                std::vector<std::string> coll = mm->get("key1");
+                auto coll = mm->get<std::string, std::string>("key1").get();
                 ASSERT_EQ(3, (int) coll.size());
 
-                coll = mm->remove("key2");
+                coll = mm->remove<std::string, std::string>("key2").get();
                 ASSERT_EQ(2, (int) coll.size());
-                ASSERT_EQ(0, mm->valueCount("key2"));
-                ASSERT_EQ(0, (int) mm->get("key2").size());
+                ASSERT_EQ(0, mm->valueCount("key2").get());
+                ASSERT_EQ(0, ((int) mm->get<std::string, std::string>("key2").get().size()));
 
-                ASSERT_FALSE(mm->remove("key1", "value4"));
-                ASSERT_EQ(3, mm->size());
+                ASSERT_FALSE(mm->remove("key1", "value4").get());
+                ASSERT_EQ(3, mm->size().get());
 
-                ASSERT_TRUE(mm->remove("key1", "value2"));
-                ASSERT_EQ(2, mm->size());
+                ASSERT_TRUE(mm->remove("key1", "value2").get());
+                ASSERT_EQ(2, mm->size().get());
 
-                ASSERT_TRUE(mm->remove("key1", "value1"));
-                ASSERT_EQ(1, mm->size());
-                ASSERT_EQ("value3", mm->get("key1")[0]);
+                ASSERT_TRUE(mm->remove("key1", "value1").get());
+                ASSERT_EQ(1, mm->size().get());
+                ASSERT_EQ("value3", (mm->get<std::string, std::string>("key1").get()[0]));
             }
 
 
             TEST_F(ClientMultiMapTest, testKeySetEntrySetAndValues) {
-                ASSERT_TRUE(mm->put("key1", "value1"));
-                ASSERT_TRUE(mm->put("key1", "value2"));
-                ASSERT_TRUE(mm->put("key1", "value3"));
-
-                ASSERT_TRUE(mm->put("key2", "value4"));
-                ASSERT_TRUE(mm->put("key2", "value5"));
-
-
-                ASSERT_EQ(2, (int) mm->keySet().size());
-                ASSERT_EQ(5, (int) mm->values().size());
-                ASSERT_EQ(5, (int) mm->entrySet().size());
+                fillData();
+                ASSERT_EQ(2, (int) mm->keySet<std::string>().get().size());
+                ASSERT_EQ(5, (int) mm->values<std::string>().get().size());
+                ASSERT_EQ(5, ((int) mm->entrySet<std::string, std::string>().get().size()));
             }
 
 
             TEST_F(ClientMultiMapTest, testContains) {
-                ASSERT_TRUE(mm->put("key1", "value1"));
-                ASSERT_TRUE(mm->put("key1", "value2"));
-                ASSERT_TRUE(mm->put("key1", "value3"));
+                fillData();
+                ASSERT_FALSE(mm->containsKey<std::string>("key3").get());
+                ASSERT_TRUE(mm->containsKey<std::string>("key1").get());
 
-                ASSERT_TRUE(mm->put("key2", "value4"));
-                ASSERT_TRUE(mm->put("key2", "value5"));
+                ASSERT_FALSE(mm->containsValue<std::string>("value6").get());
+                ASSERT_TRUE(mm->containsValue<std::string>("value4").get());
 
-                ASSERT_FALSE(mm->containsKey("key3"));
-                ASSERT_TRUE(mm->containsKey("key1"));
-
-                ASSERT_FALSE(mm->containsValue("value6"));
-                ASSERT_TRUE(mm->containsValue("value4"));
-
-                ASSERT_FALSE(mm->containsEntry("key1", "value4"));
-                ASSERT_FALSE(mm->containsEntry("key2", "value3"));
-                ASSERT_TRUE(mm->containsEntry("key1", "value1"));
-                ASSERT_TRUE(mm->containsEntry("key2", "value5"));
+                ASSERT_FALSE(mm->containsEntry("key1", "value4").get());
+                ASSERT_FALSE(mm->containsEntry("key2", "value3").get());
+                ASSERT_TRUE(mm->containsEntry("key1", "value1").get());
+                ASSERT_TRUE(mm->containsEntry("key2", "value5").get());
             }
-
-            class MyMultiMapListener : public EntryAdapter<std::string, std::string> {
-            public:
-                MyMultiMapListener(boost::latch &addedLatch,
-                                   boost::latch &removedLatch)
-                        : addedLatch(addedLatch), removedLatch(removedLatch) {
-                }
-
-                void entryAdded(const EntryEvent<std::string, std::string> &event) {
-                    addedLatch.count_down();
-                }
-
-                void entryRemoved(const EntryEvent<std::string, std::string> &event) {
-                    removedLatch.count_down();
-                }
-
-            private:
-                boost::latch &addedLatch;
-                boost::latch &removedLatch;
-            };
 
             TEST_F(ClientMultiMapTest, testListener) {
                 boost::latch latch1Add(8);
                 boost::latch latch1Remove(4);
-
                 boost::latch latch2Add(3);
                 boost::latch latch2Remove(3);
-
                 MyMultiMapListener listener1(latch1Add, latch1Remove);
                 MyMultiMapListener listener2(latch2Add, latch2Remove);
 
-                std::string id1 = mm->addEntryListener(listener1, true);
-                std::string id2 = mm->addEntryListener(listener2, "key3", true);
+                std::string id1 = mm->addEntryListener(listener1, true).get();
+                std::string id2 = mm->addEntryListener(listener2, "key3", true).get();
 
-                mm->put("key1", "value1");
-                mm->put("key1", "value2");
-                mm->put("key1", "value3");
-                mm->put("key2", "value4");
-                mm->put("key2", "value5");
+                fillData();
 
-                mm->remove("key1", "value2");
+                mm->remove("key1", "value2").get();
 
-                mm->put("key3", "value6");
-                mm->put("key3", "value7");
-                mm->put("key3", "value8");
+                mm->put("key3", "value6").get();
+                mm->put("key3", "value7").get();
+                mm->put("key3", "value8").get();
 
-                mm->remove("key3");
+                mm->remove<std::string, std::string>("key3").get();
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1Add.wait_for(boost::chrono::seconds(20)));
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1Remove.wait_for(boost::chrono::seconds(20)));
+                ASSERT_OPEN_EVENTUALLY(latch1Add);
+                ASSERT_OPEN_EVENTUALLY(latch1Remove);
+                ASSERT_OPEN_EVENTUALLY(latch2Add);
+                ASSERT_OPEN_EVENTUALLY(latch2Remove);
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2Add.wait_for(boost::chrono::seconds(20)));
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2Remove.wait_for(boost::chrono::seconds(20)));
-
-                ASSERT_TRUE(mm->removeEntryListener(id1));
-                ASSERT_TRUE(mm->removeEntryListener(id2));
-
-            }
-
-            void lockThread(hazelcast::util::ThreadArgs &args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                if (!mm->tryLock("key1")) {
-                    latch1->count_down();
-                }
+                ASSERT_TRUE(mm->removeEntryListener(id1).get());
+                ASSERT_TRUE(mm->removeEntryListener(id2).get());
             }
 
             TEST_F(ClientMultiMapTest, testLock) {
-                mm->lock("key1");
+                mm->lock("key1").get();
                 boost::latch latch1(1);
-                hazelcast::util::StartedThread t(lockThread, mm, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
-                mm->forceUnlock("key1");
-            }
-
-            void lockTtlThread(hazelcast::util::ThreadArgs &args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-
-                if (!mm->tryLock("key1")) {
-                    latch1->count_down();
-                }
-
-                if (mm->tryLock("key1", std::chrono::seconds(5))) {
-                    latch1->count_down();
-                }
+                std::thread([&]() {
+                    if (!mm->tryLock("key1").get()) {
+                        latch1.count_down();
+                    }
+                }).detach();
+                ASSERT_OPEN_EVENTUALLY(latch1);
+                mm->forceUnlock("key1").get();
             }
 
             TEST_F(ClientMultiMapTest, testLockTtl) {
-                mm->lock("key1", std::chrono::seconds(3));
+                mm->lock("key1", std::chrono::seconds(2)).get();
                 boost::latch latch1(2);
-                hazelcast::util::StartedThread t(lockTtlThread, mm, &latch1);
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
-                mm->forceUnlock("key1");
-            }
-
-
-            void tryLockThread(hazelcast::util::ThreadArgs &args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                try {
-                    if (!mm->tryLock("key1", std::chrono::milliseconds(2))) {
-                        latch1->count_down();
+                std::thread([&]() {
+                    if (!mm->tryLock("key1").get()) {
+                        latch1.count_down();
                     }
-                } catch (...) {
-                    std::cerr << "Unexpected exception at ClientMultiMapTest tryLockThread" << std::endl;
-                }
-            }
-
-            void tryLockThread2(hazelcast::util::ThreadArgs &args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                try {
-                    if (mm->tryLock("key1", std::chrono::seconds(20))) {
-                        latch1->count_down();
+                    if (mm->tryLock("key1", std::chrono::seconds(5)).get()) {
+                        latch1.count_down();
                     }
-                } catch (...) {
-                    std::cerr << "Unexpected exception at ClientMultiMapTest lockThread2" << std::endl;
-                }
+                }).detach();
+
+                ASSERT_OPEN_EVENTUALLY(latch1);
+                mm->forceUnlock("key1").get();
             }
 
             TEST_F(ClientMultiMapTest, testTryLock) {
-                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2)));
+                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2)).get());
                 boost::latch latch1(1);
-                hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
+                std::thread([&]() {
+                    if (!mm->tryLock("key1", std::chrono::milliseconds(500)).get()) {
+                        latch1.count_down();
+                    }
+                }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_TRUE(mm->isLocked("key1"));
+                ASSERT_TRUE(mm->isLocked("key1").get());
 
                 boost::latch latch2(1);
-                hazelcast::util::StartedThread t2(tryLockThread2, mm, &latch2);
-
-                hazelcast::util::sleep(1);
-                mm->unlock("key1");
+                boost::barrier b(2);
+                std::thread([&]() {
+                    b.count_down_and_wait();
+                    if (mm->tryLock("key1", std::chrono::seconds(20)).get()) {
+                        latch2.count_down();
+                    }
+                }).detach();
+                b.count_down_and_wait();
+                mm->unlock("key1").get();
                 ASSERT_OPEN_EVENTUALLY(latch2);
-                ASSERT_TRUE(mm->isLocked("key1"));
-                mm->forceUnlock("key1");
-            }
-
-            TEST_F(ClientMultiMapTest, testTryLockTtl) {
-                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2), std::chrono::seconds(1)));
-                boost::latch latch1(1);
-                hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
-                ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_TRUE(mm->isLocked("key1"));
-
-                boost::latch latch2(1);
-                hazelcast::util::StartedThread t2(tryLockThread2, mm, &latch2);
-
-                ASSERT_OPEN_EVENTUALLY(latch2);
-                ASSERT_TRUE(mm->isLocked("key1"));
-                mm->forceUnlock("key1");
-            }
-
-            TEST_F(ClientMultiMapTest, testTryLockTtlTimeout) {
-                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2), std::chrono::seconds(200)));
-                boost::latch latch1(1);
-                hazelcast::util::StartedThread t(tryLockThread, mm, &latch1);
-                ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_TRUE(mm->isLocked("key1"));
-                mm->forceUnlock("key1");
-            }
-
-            void forceUnlockThread(hazelcast::util::ThreadArgs &args) {
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string> *) args.arg0;
-                boost::latch *latch1 = (boost::latch *) args.arg1;
-                mm->forceUnlock("key1");
-                latch1->count_down();
+                ASSERT_TRUE(mm->isLocked("key1").get());
+                mm->forceUnlock("key1").get();
             }
 
             TEST_F(ClientMultiMapTest, testForceUnlock) {
-                mm->lock("key1");
+                mm->lock("key1").get();
                 boost::latch latch1(1);
-                hazelcast::util::StartedThread t(forceUnlockThread, mm, &latch1);
+                std::thread([&]() {
+                    mm->forceUnlock("key1").get();
+                    latch1.count_down();
+                }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_FALSE(mm->isLocked("key1"));
+                ASSERT_FALSE(mm->isLocked("key1").get());
             }
-        }
-    }
-}
 
-
-
-
-using namespace hazelcast::client::mixedtype;
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            class MixedListTest : public ClientTestSupport {
-            protected:
-                class MyListItemListener : public MixedItemListener {
-                public:
-                    MyListItemListener(boost::latch &latch1)
-                            : latch1(latch1) {
-
-                    }
-
-                    virtual void itemAdded(const ItemEvent<TypedData> &item) {
+            TEST_F(ClientMultiMapTest, testTryLockTtl) {
+                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2), std::chrono::seconds(1)).get());
+                boost::latch latch1(1);
+                std::thread([&]() {
+                    if (!mm->tryLock("key1", std::chrono::milliseconds(500)).get()) {
                         latch1.count_down();
                     }
+                }).detach();
+                ASSERT_OPEN_EVENTUALLY(latch1);
+                ASSERT_TRUE(mm->isLocked("key1").get());
 
-                    virtual void itemRemoved(const ItemEvent<TypedData> &item) {
+                boost::latch latch2(1);
+                boost::barrier b(2);
+                std::thread([&]() {
+                    b.count_down_and_wait();
+                    if (mm->tryLock("key1", std::chrono::seconds(20)).get()) {
+                        latch2.count_down();
                     }
-
-                private:
-                    boost::latch &latch1;
-                };
-
-                virtual void TearDown() {
-                    // clear list
-                    list->clear();
-                }
-
-                static void SetUpTestCase() {
-#ifdef HZ_BUILD_WITH_SSL
-                    sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
-                    instance = new HazelcastServer(*sslFactory);
-#else
-                    instance = new HazelcastServer(*g_srvFactory);
-#endif
-
-                    ClientConfig clientConfig = getConfig();
-
-#ifdef HZ_BUILD_WITH_SSL
-                    config::ClientNetworkConfig networkConfig;
-                    config::SSLConfig sslConfig;
-                    sslConfig.setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList("HIGH");
-                    networkConfig.setSSLConfig(sslConfig);
-                    clientConfig.setNetworkConfig(networkConfig);
-#endif // HZ_BUILD_WITH_SSL
-
-                    client = new HazelcastClient(clientConfig);
-                    list = new mixedtype::IList(client->toMixedType().getList("MyMixedList"));
-                }
-
-                static void TearDownTestCase() {
-                    delete list;
-                    delete client;
-                    delete instance;
-                    delete sslFactory;
-
-                    list = NULL;
-                    client = NULL;
-                    instance = NULL;
-                }
-
-                static HazelcastServer *instance;
-                static HazelcastClient *client;
-                static mixedtype::IList *list;
-                static HazelcastServerFactory *sslFactory;
-            };
-
-            HazelcastServer *MixedListTest::instance = NULL;
-            HazelcastClient *MixedListTest::client = NULL;
-            mixedtype::IList *MixedListTest::list = NULL;
-            HazelcastServerFactory *MixedListTest::sslFactory = NULL;
-
-            TEST_F(MixedListTest, testAddAll) {
-                std::vector<std::string> l;
-                l.push_back("item1");
-                l.push_back("item2");
-                ASSERT_TRUE(list->addAll<std::string>(l));
-
-                ASSERT_TRUE(list->addAll<std::string>(1, l));
-                ASSERT_EQ(4, list->size());
-
-                ASSERT_EQ("item1", *(list->get(0).get<std::string>()));
-                ASSERT_EQ("item1", *(list->get(1).get<std::string>()));
-                ASSERT_EQ("item2", *(list->get(2).get<std::string>()));
-                ASSERT_EQ("item2", *(list->get(3).get<std::string>()));
+                }).detach();
+                b.count_down_and_wait();
+                mm->unlock("key1").get();
+                ASSERT_OPEN_EVENTUALLY(latch2);
+                ASSERT_TRUE(mm->isLocked("key1").get());
+                mm->forceUnlock("key1").get();
             }
 
-            TEST_F(MixedListTest, testAddSetRemove) {
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item2"));
-                list->add<std::string>(0, "item3");
-                ASSERT_EQ(3, list->size());
-                std::unique_ptr<std::string> temp = list->IList::set<std::string>(2, "item4").get<std::string>();
-                ASSERT_EQ("item2", *temp);
-
-                ASSERT_EQ(3, list->size());
-                ASSERT_EQ("item3", *(list->get(0).get<std::string>()));
-                ASSERT_EQ("item1", *(list->get(1).get<std::string>()));
-                ASSERT_EQ("item4", *(list->get(2).get<std::string>()));
-
-                ASSERT_FALSE(list->remove<std::string>("item2"));
-                ASSERT_TRUE(list->remove<std::string>("item3"));
-
-                temp = list->remove(1).get<std::string>();
-                ASSERT_EQ("item4", *temp);
-
-                ASSERT_EQ(1, list->size());
-                ASSERT_EQ("item1", *(list->get(0).get<std::string>()));
-            }
-
-            TEST_F(MixedListTest, testIndexOf) {
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item2"));
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item4"));
-
-                ASSERT_EQ(-1, list->indexOf<std::string>("item5"));
-                ASSERT_EQ(0, list->indexOf<std::string>("item1"));
-
-                ASSERT_EQ(-1, list->lastIndexOf<std::string>("item6"));
-                ASSERT_EQ(2, list->lastIndexOf<std::string>("item1"));
-            }
-
-            TEST_F(MixedListTest, testToArray) {
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item2"));
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item4"));
-
-                std::vector<TypedData> ar = list->toArray();
-
-                ASSERT_EQ("item1", *ar[0].get<std::string>());
-                ASSERT_EQ("item2", *ar[1].get<std::string>());
-                ASSERT_EQ("item1", *ar[2].get<std::string>());
-                ASSERT_EQ("item4", *ar[3].get<std::string>());
-
-                std::vector<TypedData> arr2 = list->subList(1, 3);
-
-                ASSERT_EQ(2, (int) arr2.size());
-                ASSERT_EQ("item2", *arr2[0].get<std::string>());
-                ASSERT_EQ("item1", *arr2[1].get<std::string>());
-            }
-
-            TEST_F(MixedListTest, testContains) {
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item2"));
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item4"));
-
-                ASSERT_FALSE(list->contains<std::string>("item3"));
-                ASSERT_TRUE(list->contains<std::string>("item2"));
-
-                std::vector<std::string> l;
-                l.push_back("item4");
-                l.push_back("item3");
-
-                ASSERT_FALSE(list->containsAll<std::string>(l));
-                ASSERT_TRUE(list->add<std::string>("item3"));
-                ASSERT_TRUE(list->containsAll<std::string>(l));
-            }
-
-            TEST_F(MixedListTest, testRemoveRetainAll) {
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item2"));
-                ASSERT_TRUE(list->add<std::string>("item1"));
-                ASSERT_TRUE(list->add<std::string>("item4"));
-
-                std::vector<std::string> l;
-                l.push_back("item4");
-                l.push_back("item3");
-
-                ASSERT_TRUE(list->removeAll<std::string>(l));
-                ASSERT_EQ(3, (int) list->size());
-                ASSERT_FALSE(list->removeAll<std::string>(l));
-                ASSERT_EQ(3, (int) list->size());
-
-                l.clear();
-                l.push_back("item1");
-                l.push_back("item2");
-                ASSERT_FALSE(list->retainAll<std::string>(l));
-                ASSERT_EQ(3, (int) list->size());
-
-                l.clear();
-                ASSERT_TRUE(list->retainAll<std::string>(l));
-                ASSERT_EQ(0, (int) list->size());
-
-            }
-
-            TEST_F(MixedListTest, testListener) {
-                boost::latch latch1(5);
-
-                MyListItemListener listener(latch1);
-                std::string registrationId = list->addItemListener(listener, true);
-
-                for (int i = 0; i < 5; i++) {
-                    list->add(std::string("item") + hazelcast::util::IOUtil::to_string(i));
-                }
-
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
-
-                ASSERT_TRUE(list->removeItemListener(registrationId));
+            TEST_F(ClientMultiMapTest, testTryLockTtlTimeout) {
+                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(1), std::chrono::seconds(200)).get());
+                boost::latch latch1(1);
+                std::thread([&]() {
+                    if (!mm->tryLock("key1", std::chrono::seconds(2)).get()) {
+                        latch1.count_down();
+                    }
+                }).detach();
+                ASSERT_OPEN_EVENTUALLY(latch1);
+                ASSERT_TRUE(mm->isLocked("key1").get());
             }
         }
     }
 }
-
-
-
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class ClientListTest : public ClientTestSupport {
             protected:
-                class MyListItemListener : public ItemListener<std::string> {
+                class MyListItemListener : public ItemListener {
                 public:
-                    MyListItemListener(boost::latch &latch1)
-                            : latch1(latch1) {
+                    MyListItemListener(boost::latch &latch1) : latch1(latch1) {}
 
-                    }
-
-                    void itemAdded(const ItemEvent<std::string> &itemEvent) {
-                        int type = itemEvent.getEventType();
-                                assertEquals((int) ItemEventType::ADDED, type);
-                                assertEquals("MyList", itemEvent.getName());
+                    void itemAdded(const ItemEvent &itemEvent) {
+                        auto type = itemEvent.getEventType();
+                        ASSERT_EQ(ItemEventType::ADDED, type);
+                        ASSERT_EQ("MyList", itemEvent.getName());
                         std::string host = itemEvent.getMember().getAddress().getHost();
-                                assertTrue(host == "localhost" || host == "127.0.0.1");
-                                assertEquals(5701, itemEvent.getMember().getAddress().getPort());
-                        assertEquals("item-1", itemEvent.getItem());
+                        ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
+                        ASSERT_EQ(5701, itemEvent.getMember().getAddress().getPort());
+                        ASSERT_EQ("item-1", itemEvent.getItem().get<std::string>().value());
                         latch1.count_down();
                     }
 
-                    void itemRemoved(const ItemEvent<std::string>& item) {
-                    }
-
+                    void itemRemoved(const ItemEvent &item) {}
                 private:
                     boost::latch &latch1;
                 };
@@ -750,7 +396,6 @@ namespace hazelcast {
 #else
                     instance = new HazelcastServer(*g_srvFactory);
 #endif
-
                     ClientConfig clientConfig = getConfig();
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -762,96 +407,103 @@ namespace hazelcast {
 #endif // HZ_BUILD_WITH_SSL
 
                     client = new HazelcastClient(clientConfig);
-                    list = new IList<std::string>(client->getList<std::string>("MyList"));
+                    list = client->getList("MyList");
                 }
 
                 static void TearDownTestCase() {
-                    delete list;
                     delete client;
                     delete instance;
                     delete sslFactory;
 
-                    list = NULL;
-                    client = NULL;
-                    instance = NULL;
+                    client = nullptr;
+                    instance = nullptr;
                 }
 
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
-                static IList<std::string> *list;
+                static std::shared_ptr<IList> list;
                 static HazelcastServerFactory *sslFactory;
             };
 
-            HazelcastServer *ClientListTest::instance = NULL;
-            HazelcastClient *ClientListTest::client = NULL;
-            IList<std::string> *ClientListTest::list = NULL;
-            HazelcastServerFactory *ClientListTest::sslFactory = NULL;
+            std::shared_ptr<IList> ClientListTest::list;
+            HazelcastServer *ClientListTest::instance = nullptr;
+            HazelcastClient *ClientListTest::client = nullptr;
+            HazelcastServerFactory *ClientListTest::sslFactory = nullptr;
 
             TEST_F(ClientListTest, testAddAll) {
                 std::vector<std::string> l;
                 l.push_back("item1");
                 l.push_back("item2");
-                ASSERT_TRUE(list->addAll(l));
+                ASSERT_TRUE(list->addAll(l).get());
 
-                ASSERT_TRUE(list->addAll(1, l));
-                ASSERT_EQ(4, list->size());
+                ASSERT_TRUE(list->addAll(1, l).get());
+                ASSERT_EQ(4, list->size().get());
 
-                ASSERT_EQ("item1", *(list->get(0)));
-                ASSERT_EQ("item1", *(list->get(1)));
-                ASSERT_EQ("item2", *(list->get(2)));
-                ASSERT_EQ("item2", *(list->get(3)));
+                auto item = list->get<std::string>(0).get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("item1", item.value());
+                item = list->get<std::string>(1).get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("item1", item.value());
+                item = list->get<std::string>(2).get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("item2", item.value());
+                item = list->get<std::string>(3).get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("item2", item.value());
             }
 
             TEST_F(ClientListTest, testAddSetRemove) {
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item2"));
-                list->add(0, "item3");
-                ASSERT_EQ(3, list->size());
-                std::shared_ptr<std::string> temp = list->set(2, "item4");
-                ASSERT_EQ("item2", *temp);
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item2").get());
+                list->add(0, "item3").get();
+                ASSERT_EQ(3, list->size().get());
+                auto temp = list->set<std::string>(2, "item4").get();
+                ASSERT_EQ("item2", temp.value());
 
-                ASSERT_EQ(3, list->size());
-                ASSERT_EQ("item3", *(list->get(0)));
-                ASSERT_EQ("item1", *(list->get(1)));
-                ASSERT_EQ("item4", *(list->get(2)));
+                ASSERT_EQ(3, list->size().get());
+                ASSERT_EQ("item3", list->get<std::string>(0).get().value());
+                ASSERT_EQ("item1", list->get<std::string>(1).get().value());
+                ASSERT_EQ("item4", list->get<std::string>(2).get().value());
 
-                ASSERT_FALSE(list->remove("item2"));
-                ASSERT_TRUE(list->remove("item3"));
+                ASSERT_FALSE(list->remove("item2").get());
+                ASSERT_TRUE(list->remove("item3").get());
 
-                temp = list->remove(1);
-                ASSERT_EQ("item4", *temp);
+                temp = list->remove<std::string>(1).get();
+                ASSERT_TRUE(temp.has_value());
+                ASSERT_EQ("item4", temp.value());
 
-                ASSERT_EQ(1, list->size());
-                ASSERT_EQ("item1", *(list->get(0)));
+                ASSERT_EQ(1, list->size().get());
+                ASSERT_EQ("item1", list->get<std::string>(0).get().value());
             }
 
             TEST_F(ClientListTest, testIndexOf) {
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item2"));
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item4"));
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item2").get());
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item4").get());
 
-                ASSERT_EQ(-1, list->indexOf("item5"));
-                ASSERT_EQ(0, list->indexOf("item1"));
+                ASSERT_EQ(-1, list->indexOf("item5").get());
+                ASSERT_EQ(0, list->indexOf("item1").get());
 
-                ASSERT_EQ(-1, list->lastIndexOf("item6"));
-                ASSERT_EQ(2, list->lastIndexOf("item1"));
+                ASSERT_EQ(-1, list->lastIndexOf("item6").get());
+                ASSERT_EQ(2, list->lastIndexOf("item1").get());
             }
 
             TEST_F(ClientListTest, testToArray) {
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item2"));
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item4"));
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item2").get());
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item4").get());
 
-                std::vector<std::string> ar = list->toArray();
+                std::vector<std::string> ar = list->toArray<std::string>().get();
 
                 ASSERT_EQ("item1", ar[0]);
                 ASSERT_EQ("item2", ar[1]);
                 ASSERT_EQ("item1", ar[2]);
                 ASSERT_EQ("item4", ar[3]);
 
-                std::vector<std::string> arr2 = list->subList(1, 3);
+                std::vector<std::string> arr2 = list->subList<std::string>(1, 3).get();
 
                 ASSERT_EQ(2, (int) arr2.size());
                 ASSERT_EQ("item2", arr2[0]);
@@ -859,289 +511,259 @@ namespace hazelcast {
             }
 
             TEST_F(ClientListTest, testContains) {
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item2"));
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item4"));
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item2").get());
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item4").get());
 
-                ASSERT_FALSE(list->contains("item3"));
-                ASSERT_TRUE(list->contains("item2"));
+                ASSERT_FALSE(list->contains("item3").get());
+                ASSERT_TRUE(list->contains("item2").get());
 
                 std::vector<std::string> l;
                 l.push_back("item4");
                 l.push_back("item3");
 
-                ASSERT_FALSE(list->containsAll(l));
-                ASSERT_TRUE(list->add("item3"));
-                ASSERT_TRUE(list->containsAll(l));
+                ASSERT_FALSE(list->containsAll(l).get());
+                ASSERT_TRUE(list->add("item3").get());
+                ASSERT_TRUE(list->containsAll(l).get());
             }
 
             TEST_F(ClientListTest, testRemoveRetainAll) {
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item2"));
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_TRUE(list->add("item4"));
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item2").get());
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_TRUE(list->add("item4").get());
 
                 std::vector<std::string> l;
                 l.push_back("item4");
                 l.push_back("item3");
 
-                ASSERT_TRUE(list->removeAll(l));
-                ASSERT_EQ(3, (int) list->size());
-                ASSERT_FALSE(list->removeAll(l));
-                ASSERT_EQ(3, (int) list->size());
+                ASSERT_TRUE(list->removeAll(l).get());
+                ASSERT_EQ(3, (int) list->size().get());
+                ASSERT_FALSE(list->removeAll(l).get());
+                ASSERT_EQ(3, (int) list->size().get());
 
                 l.clear();
                 l.push_back("item1");
                 l.push_back("item2");
-                ASSERT_FALSE(list->retainAll(l));
-                ASSERT_EQ(3, (int) list->size());
+                ASSERT_FALSE(list->retainAll(l).get());
+                ASSERT_EQ(3, (int) list->size().get());
 
                 l.clear();
-                ASSERT_TRUE(list->retainAll(l));
-                ASSERT_EQ(0, (int) list->size());
-
+                ASSERT_TRUE(list->retainAll(l).get());
+                ASSERT_EQ(0, (int) list->size().get());
             }
 
             TEST_F(ClientListTest, testListener) {
                 boost::latch latch1(1);
 
                 MyListItemListener listener(latch1);
-                std::string registrationId = list->addItemListener(listener, true);
+                std::string registrationId = list->addItemListener(listener, true).get();
 
-                list->add("item-1");
+                list->add("item-1").get();
 
                 ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
 
-                ASSERT_TRUE(list->removeItemListener(registrationId));
+                ASSERT_TRUE(list->removeItemListener(registrationId).get());
             }
 
             TEST_F(ClientListTest, testIsEmpty) {
-                ASSERT_TRUE(list->isEmpty());
-                ASSERT_TRUE(list->add("item1"));
-                ASSERT_FALSE(list->isEmpty());
+                ASSERT_TRUE(list->isEmpty().get());
+                ASSERT_TRUE(list->add("item1").get());
+                ASSERT_FALSE(list->isEmpty().get());
             }
-
         }
     }
 }
-
-
-
-
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class ClientQueueTest : public ClientTestSupport {
             protected:
+                void offer(int numberOfItems) {
+                    for (int i = 1; i <= numberOfItems; ++i) {
+                        ASSERT_TRUE(q->offer(std::string("item") + std::to_string(i)).get());
+                    }
+                }
+                
                 virtual void TearDown() {
                     q->clear();
                 }
-
+                
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client = new HazelcastClient(getConfig());
-                    q = new IQueue<std::string>(client->getQueue<std::string>("MyQueue"));
+                    q = client->getQueue("MyQueue");
                 }
 
                 static void TearDownTestCase() {
-                    delete q;
                     delete client;
                     delete instance;
 
-                    q = NULL;
-                    client = NULL;
-                    instance = NULL;
+                    q = nullptr;
+                    client = nullptr;
+                    instance = nullptr;
                 }
 
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
-                static IQueue<std::string> *q;
+                static std::shared_ptr<IQueue> q;
             };
 
-            HazelcastServer *ClientQueueTest::instance = NULL;
-            HazelcastClient *ClientQueueTest::client = NULL;
-            IQueue<std::string> *ClientQueueTest::q = NULL;
+            HazelcastServer *ClientQueueTest::instance = nullptr;
+            HazelcastClient *ClientQueueTest::client = nullptr;
+            std::shared_ptr<IQueue> ClientQueueTest::q;
 
-            class QueueTestItemListener : public ItemListener<std::string> {
+            class QueueTestItemListener : public ItemListener {
             public:
-                QueueTestItemListener(boost::latch &latch1)
-                        : latch1(latch1) {
+                explicit QueueTestItemListener(boost::latch &latch1) : latch1(latch1) {}
 
-                }
-
-                void itemAdded(const ItemEvent<std::string> &itemEvent) {
+                void itemAdded(const ItemEvent &itemEvent) override {
                     latch1.count_down();
                 }
 
-                void itemRemoved(const ItemEvent<std::string> &item) {
-                }
-
+                void itemRemoved(const ItemEvent &item) override {}
             private:
                 boost::latch &latch1;
             };
 
             TEST_F(ClientQueueTest, testListener) {
-                ASSERT_EQ(0, q->size());
+                ASSERT_EQ(0, q->size().get());
 
                 boost::latch latch1(5);
 
-                QueueTestItemListener listener(latch1);
-                std::string id = q->addItemListener(listener, true);
-
-                hazelcast::util::sleep(1);
-
+                std::string id = q->addItemListener(QueueTestItemListener(latch1), true).get();
+                
                 for (int i = 0; i < 5; i++) {
-                    ASSERT_TRUE(q->offer(std::string("event_item") + hazelcast::util::IOUtil::to_string(i)));
+                    ASSERT_TRUE(q->offer(std::string("event_item") + std::to_string(i)).get());
                 }
 
                 ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
-                ASSERT_TRUE(q->removeItemListener(id));
+                ASSERT_TRUE(q->removeItemListener(id).get());
 
                 // added for test coverage
-                ASSERT_NO_THROW(q->destroy());
+                ASSERT_NO_THROW(q->destroy().get());
             }
 
             void testOfferPollThread2(hazelcast::util::ThreadArgs &args) {
-                IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
-                hazelcast::util::sleep(2);
+                auto *q = (IQueue *) args.arg0;
+                std::this_thread::sleep_for(std::chrono::seconds(2));
                 q->offer("item1");
             }
 
             TEST_F(ClientQueueTest, testOfferPoll) {
                 for (int i = 0; i < 10; i++) {
-                    bool result = q->offer("item");
-                    ASSERT_TRUE(result);
+                    ASSERT_TRUE(q->offer("item").get());
                 }
-                ASSERT_EQ(10, q->size());
-                q->poll();
-                bool result = q->offer("item", 5);
-                ASSERT_TRUE(result);
+                ASSERT_EQ(10, q->size().get());
+                q->poll<std::string>().get();
+                ASSERT_TRUE(q->offer("item", std::chrono::milliseconds(5)).get());
 
                 for (int i = 0; i < 10; i++) {
-                    ASSERT_NE(q->poll().get(), (std::string *) NULL);
+                    ASSERT_TRUE(q->poll<std::string>().get().has_value());
                 }
-                ASSERT_EQ(0, q->size());
+                ASSERT_EQ(0, q->size().get());
 
-                hazelcast::util::StartedThread t2(testOfferPollThread2, q);
+                hazelcast::util::StartedThread t2(testOfferPollThread2, q.get());
 
-                std::shared_ptr<std::string> item = q->poll(30 * 1000);
-                ASSERT_NE(item.get(), (std::string *) NULL);
-                ASSERT_EQ("item1", *item);
+                boost::optional<std::string> item = q->poll<std::string>(std::chrono::seconds(30)).get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("item1", item.value());
                 t2.join();
             }
 
             TEST_F(ClientQueueTest, testPeek) {
-                ASSERT_TRUE(q->offer("peek 1"));
-                ASSERT_TRUE(q->offer("peek 2"));
-                ASSERT_TRUE(q->offer("peek 3"));
-
-                std::shared_ptr<std::string> item = q->peek();
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("peek 1", *item);
+                offer(3);
+                boost::optional<std::string> item = q->peek<std::string>().get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("item1", item.value());
             }
 
             TEST_F(ClientQueueTest, testTake) {
-                q->put("peek 1");
-                ASSERT_TRUE(q->offer("peek 2"));
-                ASSERT_TRUE(q->offer("peek 3"));
+                q->put("peek 1").get();
+                ASSERT_TRUE(q->offer("peek 2").get());
+                ASSERT_TRUE(q->offer("peek 3").get());
 
-                std::shared_ptr<std::string> item = q->take();
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("peek 1", *item);
+                boost::optional<std::string> item = q->take<std::string>().get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("peek 1", item.value());
 
-                item = q->take();
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("peek 2", *item);
+                item = q->take<std::string>().get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("peek 2", item.value());
 
-                item = q->take();
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("peek 3", *item);
+                item = q->take<std::string>().get();
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("peek 3", item.value());
 
-                ASSERT_TRUE(q->isEmpty());
+                ASSERT_TRUE(q->isEmpty().get());
 
-// start a thread to insert an item
-                hazelcast::util::StartedThread t2(testOfferPollThread2, q);
+                // start a thread to insert an item
+                hazelcast::util::StartedThread t2(testOfferPollThread2, q.get());
 
-                item = q->take();  //  should block till it gets an item
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("item1", *item);
+                item = q->take<std::string>().get();  //  should block till it gets an item
+                ASSERT_TRUE(item.has_value());
+                ASSERT_EQ("item1", item.value());
 
                 t2.join();
             }
 
             TEST_F(ClientQueueTest, testRemainingCapacity) {
-                int capacity = q->remainingCapacity();
+                int capacity = q->remainingCapacity().get();
                 ASSERT_TRUE(capacity > 10000);
                 q->offer("item");
-                ASSERT_EQ(capacity - 1, q->remainingCapacity());
+                ASSERT_EQ(capacity - 1, q->remainingCapacity().get());
             }
 
 
             TEST_F(ClientQueueTest, testRemove) {
-                ASSERT_TRUE(q->offer("item1"));
-                ASSERT_TRUE(q->offer("item2"));
-                ASSERT_TRUE(q->offer("item3"));
+                offer(3);
+                ASSERT_FALSE(q->remove("item4").get());
+                ASSERT_EQ(3, q->size().get());
 
-                ASSERT_FALSE(q->remove("item4"));
-                ASSERT_EQ(3, q->size());
+                ASSERT_TRUE(q->remove("item2").get());
 
-                ASSERT_TRUE(q->remove("item2"));
+                ASSERT_EQ(2, q->size().get());
 
-                ASSERT_EQ(2, q->size());
-
-                ASSERT_EQ("item1", *(q->poll()));
-                ASSERT_EQ("item3", *(q->poll()));
+                ASSERT_EQ("item1", q->poll<std::string>().get().value());
+                ASSERT_EQ("item3", q->poll<std::string>().get().value());
             }
 
 
             TEST_F(ClientQueueTest, testContains) {
-                ASSERT_TRUE(q->offer("item1"));
-                ASSERT_TRUE(q->offer("item2"));
-                ASSERT_TRUE(q->offer("item3"));
-                ASSERT_TRUE(q->offer("item4"));
-                ASSERT_TRUE(q->offer("item5"));
-
-
-                ASSERT_TRUE(q->contains("item3"));
-                ASSERT_FALSE(q->contains("item"));
+                offer(5);
+                ASSERT_TRUE(q->contains("item3").get());
+                ASSERT_FALSE(q->contains("item").get());
 
                 std::vector<std::string> list;
-                list.push_back("item4");
-                list.push_back("item2");
+                list.emplace_back("item4");
+                list.emplace_back("item2");
 
-                ASSERT_TRUE(q->containsAll(list));
+                ASSERT_TRUE(q->containsAll(list).get());
 
-                list.push_back("item");
-                ASSERT_FALSE(q->containsAll(list));
+                list.emplace_back("item");
+                ASSERT_FALSE(q->containsAll(list).get());
             }
 
             TEST_F(ClientQueueTest, testDrain) {
-                ASSERT_TRUE(q->offer("item1"));
-                ASSERT_TRUE(q->offer("item2"));
-                ASSERT_TRUE(q->offer("item3"));
-                ASSERT_TRUE(q->offer("item4"));
-                ASSERT_TRUE(q->offer("item5"));
-
+                offer(5);
                 std::vector<std::string> list;
-                size_t result = q->drainTo(list, 2);
+                size_t result = q->drainTo(list, 2).get();
                 ASSERT_EQ(2U, result);
                 ASSERT_EQ("item1", list[0]);
                 ASSERT_EQ("item2", list[1]);
 
                 std::vector<std::string> list2;
-                result = q->drainTo(list2);
+                result = q->drainTo(list2).get();
                 ASSERT_EQ(3U, result);
                 ASSERT_EQ("item3", list2[0]);
                 ASSERT_EQ("item4", list2[1]);
                 ASSERT_EQ("item5", list2[2]);
 
-                ASSERT_TRUE(q->offer("item1"));
-                ASSERT_TRUE(q->offer("item2"));
-                ASSERT_TRUE(q->offer("item3"));
+                offer(3);
                 list2.clear();
-                result = q->drainTo(list2, 5);
+                result = q->drainTo(list2, 5).get();
                 ASSERT_EQ(3U, result);
                 ASSERT_EQ("item1", list2[0]);
                 ASSERT_EQ("item2", list2[1]);
@@ -1149,635 +771,110 @@ namespace hazelcast {
             }
 
             TEST_F(ClientQueueTest, testToArray) {
-                ASSERT_TRUE(q->offer("item1"));
-                ASSERT_TRUE(q->offer("item2"));
-                ASSERT_TRUE(q->offer("item3"));
-                ASSERT_TRUE(q->offer("item4"));
-                ASSERT_TRUE(q->offer("item5"));
-
-                std::vector<std::string> array = q->toArray();
+                offer(5);
+                std::vector<std::string> array = q->toArray<std::string>().get();
                 size_t size = array.size();
                 for (size_t i = 0; i < size; i++) {
-                    ASSERT_EQ(std::string("item") + hazelcast::util::IOUtil::to_string(i + 1), array[i]);
+                    ASSERT_EQ(std::string("item") + std::to_string(i + 1), array[i]);
                 }
             }
 
             TEST_F(ClientQueueTest, testAddAll) {
                 std::vector<std::string> coll;
-                coll.push_back("item1");
-                coll.push_back("item2");
-                coll.push_back("item3");
-                coll.push_back("item4");
+                coll.emplace_back("item1");
+                coll.emplace_back("item2");
+                coll.emplace_back("item3");
+                coll.emplace_back("item4");
 
-                ASSERT_TRUE(q->addAll(coll));
-                int size = q->size();
+                ASSERT_TRUE(q->addAll(coll).get());
+                int size = q->size().get();
                 ASSERT_EQ(size, (int) coll.size());
             }
 
             TEST_F(ClientQueueTest, testRemoveRetain) {
-                ASSERT_TRUE(q->offer("item1"));
-                ASSERT_TRUE(q->offer("item2"));
-                ASSERT_TRUE(q->offer("item3"));
-                ASSERT_TRUE(q->offer("item4"));
-                ASSERT_TRUE(q->offer("item5"));
+                offer(5);
+                std::vector<std::string> list{"item8", "item9"};
+                ASSERT_FALSE(q->removeAll(list).get());
+                ASSERT_EQ(5, q->size().get());
 
-                std::vector<std::string> list;
-                list.push_back("item8");
-                list.push_back("item9");
-                ASSERT_FALSE(q->removeAll(list));
-                ASSERT_EQ(5, q->size());
-
-                list.push_back("item3");
-                list.push_back("item4");
-                list.push_back("item1");
-                ASSERT_TRUE(q->removeAll(list));
-                ASSERT_EQ(2, q->size());
+                list.emplace_back("item3");
+                list.emplace_back("item4");
+                list.emplace_back("item1");
+                ASSERT_TRUE(q->removeAll(list).get());
+                ASSERT_EQ(2, q->size().get());
 
                 list.clear();
-                list.push_back("item2");
-                list.push_back("item5");
-                ASSERT_FALSE(q->retainAll(list));
-                ASSERT_EQ(2, q->size());
+                list.emplace_back("item2");
+                list.emplace_back("item5");
+                ASSERT_FALSE(q->retainAll(list).get());
+                ASSERT_EQ(2, q->size().get());
 
                 list.clear();
-                ASSERT_TRUE(q->retainAll(list));
-                ASSERT_EQ(0, q->size());
+                ASSERT_TRUE(q->retainAll(list).get());
+                ASSERT_EQ(0, q->size().get());
             }
 
             TEST_F(ClientQueueTest, testClear) {
-                ASSERT_TRUE(q->offer("item1"));
-                ASSERT_TRUE(q->offer("item2"));
-                ASSERT_TRUE(q->offer("item3"));
-                ASSERT_TRUE(q->offer("item4"));
-                ASSERT_TRUE(q->offer("item5"));
-
-                q->clear();
-
-                ASSERT_EQ(0, q->size());
-                ASSERT_EQ(q->poll().get(), (std::string *) NULL);
+                offer(5);
+                q->clear().get();
+                ASSERT_EQ(0, q->size().get());
+                ASSERT_FALSE(q->poll<std::string>().get().has_value());
             }
 
             TEST_F(ClientQueueTest, testIsEmpty) {
-                ASSERT_TRUE(q->isEmpty());
-                ASSERT_TRUE(q->offer("item1"));
-                ASSERT_FALSE(q->isEmpty());
+                ASSERT_TRUE(q->isEmpty().get());
+                ASSERT_TRUE(q->offer("item1").get());
+                ASSERT_FALSE(q->isEmpty().get());
             }
 
             TEST_F(ClientQueueTest, testPut) {
-                q->put("item1");
-                ASSERT_EQ(1, q->size());
+                q->put("item1").get();
+                ASSERT_EQ(1, q->size().get());
             }
         }
     }
 }
-
-
-
-
-
-using namespace hazelcast::client::mixedtype;
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class MixedQueueTest : public ClientTestSupport {
-            protected:
-                virtual void TearDown() {
-                    q->clear();
+            namespace executor {
+                namespace tasks {
+                    bool SelectAllMembers::select(const hazelcast::client::Member &member) const {
+                        return true;
+                    }
+
+                    void SelectAllMembers::toString(std::ostream &os) const {
+                        os << "SelectAllMembers";
+                    }
+
+                    bool SelectNoMembers::select(const hazelcast::client::Member &member) const {
+                        return false;
+                    }
+
+                    void SelectNoMembers::toString(std::ostream &os) const {
+                        os << "SelectNoMembers";
+                    }
+
+                    const std::string *MapPutPartitionAwareCallable::getPartitionKey() const {
+                        return &partitionKey;
+                    }
+
+                    MapPutPartitionAwareCallable::MapPutPartitionAwareCallable(
+                            const std::string &mapName, const std::string &partitionKey) : mapName(mapName), partitionKey(partitionKey) {}
                 }
-
-                static void SetUpTestCase() {
-                    instance = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient;
-                    q = new mixedtype::IQueue(client->toMixedType().getQueue("MyQueue"));
-                }
-
-                static void TearDownTestCase() {
-                    delete q;
-                    delete client;
-                    delete instance;
-
-                    q = NULL;
-                    client = NULL;
-                    instance = NULL;
-                }
-
-                static void testOfferPollThread2(hazelcast::util::ThreadArgs &args) {
-                    mixedtype::IQueue *queue = (mixedtype::IQueue *) args.arg0;
-                    hazelcast::util::sleep(2);
-                    queue->offer<std::string>("item1");
-                }
-
-                static HazelcastServer *instance;
-                static HazelcastClient *client;
-                static mixedtype::IQueue *q;
-            };
-
-            HazelcastServer *MixedQueueTest::instance = NULL;
-            HazelcastClient *MixedQueueTest::client = NULL;
-            mixedtype::IQueue *MixedQueueTest::q = NULL;
-
-            class MixedQueueTestItemListener : public MixedItemListener {
-            public:
-                MixedQueueTestItemListener(boost::latch &latch1)
-                        : latch1(latch1) {
-                }
-
-                virtual void itemAdded(const ItemEvent<TypedData> &item) {
-                    latch1.count_down();
-                }
-
-                virtual void itemRemoved(const ItemEvent<TypedData> &item) {
-                }
-
-            private:
-                boost::latch &latch1;
-            };
-
-            TEST_F(MixedQueueTest, testListener) {
-                ASSERT_EQ(0, q->size());
-
-                boost::latch latch1(5);
-
-                MixedQueueTestItemListener listener(latch1);
-                std::string id = q->addItemListener(listener, true);
-
-                hazelcast::util::sleep(1);
-
-                for (int i = 0; i < 5; i++) {
-                    ASSERT_TRUE(
-                            q->offer<std::string>(std::string("event_item") + hazelcast::util::IOUtil::to_string(i)));
-                }
-
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
-                ASSERT_TRUE(q->removeItemListener(id));
-
-                // added for test coverage
-                ASSERT_NO_THROW(q->destroy());
-            }
-
-            TEST_F(MixedQueueTest, testOfferPoll) {
-                for (int i = 0; i < 10; i++) {
-                    bool result = q->offer<std::string>("item");
-                    ASSERT_TRUE(result);
-                }
-                ASSERT_EQ(10, q->size());
-                q->poll();
-                bool result = q->offer<std::string>("item", 5);
-                ASSERT_TRUE(result);
-
-                for (int i = 0; i < 10; i++) {
-                    ASSERT_NE(q->poll().get<std::string>().get(), (std::string *) NULL);
-                }
-                ASSERT_EQ(0, q->size());
-
-                hazelcast::util::StartedThread t2(testOfferPollThread2, q);
-
-                std::unique_ptr<std::string> item = q->poll(30 * 1000).get<std::string>();
-                ASSERT_NE(item.get(), (std::string *) NULL);
-                ASSERT_EQ("item1", *item);
-                t2.join();
-            }
-
-            TEST_F(MixedQueueTest, testPeek) {
-                ASSERT_TRUE(q->offer<std::string>("peek 1"));
-                ASSERT_TRUE(q->offer<std::string>("peek 2"));
-                ASSERT_TRUE(q->offer<std::string>("peek 3"));
-
-                std::unique_ptr<std::string> item = q->peek().get<std::string>();
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("peek 1", *item);
-            }
-
-            TEST_F(MixedQueueTest, testTake) {
-                ASSERT_TRUE(q->offer<std::string>("peek 1"));
-                ASSERT_TRUE(q->offer<std::string>("peek 2"));
-                ASSERT_TRUE(q->offer<std::string>("peek 3"));
-
-                std::unique_ptr<std::string> item = q->take().get<std::string>();
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("peek 1", *item);
-
-                item = q->take().get<std::string>();
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("peek 2", *item);
-
-                item = q->take().get<std::string>();
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("peek 3", *item);
-
-                ASSERT_TRUE(q->isEmpty());
-
-// start a thread to insert an item
-                hazelcast::util::StartedThread t2(testOfferPollThread2, q);
-
-                item = q->take().get<std::string>();  //  should block till it gets an item
-                ASSERT_NE((std::string *) NULL, item.get());
-                ASSERT_EQ("item1", *item);
-
-                t2.join();
-            }
-
-            TEST_F(MixedQueueTest, testRemainingCapacity) {
-                int capacity = q->remainingCapacity();
-                ASSERT_TRUE(capacity > 10000);
-                q->offer<std::string>("item");
-                ASSERT_EQ(capacity - 1, q->remainingCapacity());
-            }
-
-
-            TEST_F(MixedQueueTest, testRemove) {
-                ASSERT_TRUE(q->offer<std::string>("item1"));
-                ASSERT_TRUE(q->offer<std::string>("item2"));
-                ASSERT_TRUE(q->offer<std::string>("item3"));
-
-                ASSERT_FALSE(q->remove<std::string>("item4"));
-                ASSERT_EQ(3, q->size());
-
-                ASSERT_TRUE(q->remove<std::string>("item2"));
-
-                ASSERT_EQ(2, q->size());
-
-                ASSERT_EQ("item1", *(q->poll().get<std::string>()));
-                ASSERT_EQ("item3", *(q->poll().get<std::string>()));
-            }
-
-
-            TEST_F(MixedQueueTest, testContains) {
-                ASSERT_TRUE(q->offer<std::string>("item1"));
-                ASSERT_TRUE(q->offer<std::string>("item2"));
-                ASSERT_TRUE(q->offer<std::string>("item3"));
-                ASSERT_TRUE(q->offer<std::string>("item4"));
-                ASSERT_TRUE(q->offer<std::string>("item5"));
-
-
-                ASSERT_TRUE(q->contains<std::string>("item3"));
-                ASSERT_FALSE(q->contains<std::string>("item"));
-
-                std::vector<std::string> list;
-                list.push_back("item4");
-                list.push_back("item2");
-
-                ASSERT_TRUE(q->containsAll<std::string>(list));
-
-                list.push_back("item");
-                ASSERT_FALSE(q->containsAll(list));
-            }
-
-            TEST_F(MixedQueueTest, testDrain) {
-                ASSERT_TRUE(q->offer<std::string>("item1"));
-                ASSERT_TRUE(q->offer<std::string>("item2"));
-                ASSERT_TRUE(q->offer<std::string>("item3"));
-                ASSERT_TRUE(q->offer<std::string>("item4"));
-                ASSERT_TRUE(q->offer<std::string>("item5"));
-
-                std::vector<TypedData> list;
-                size_t result = q->drainTo(list, 2);
-                ASSERT_EQ(2U, result);
-                ASSERT_EQ("item1", *list[0].get<std::string>());
-                ASSERT_EQ("item2", *list[1].get<std::string>());
-
-                std::vector<TypedData> list2;
-                result = q->drainTo(list2);
-                ASSERT_EQ(3U, result);
-                ASSERT_EQ("item3", *list2[0].get<std::string>());
-                ASSERT_EQ("item4", *list2[1].get<std::string>());
-                ASSERT_EQ("item5", *list2[2].get<std::string>());
-
-                ASSERT_TRUE(q->offer<std::string>("item1"));
-                ASSERT_TRUE(q->offer<std::string>("item2"));
-                ASSERT_TRUE(q->offer<std::string>("item3"));
-                list2.clear();
-                result = q->drainTo(list2, 5);
-                ASSERT_EQ(3U, result);
-                ASSERT_EQ("item1", *list2[0].get<std::string>());
-                ASSERT_EQ("item2", *list2[1].get<std::string>());
-                ASSERT_EQ("item3", *list2[2].get<std::string>());
-            }
-
-            TEST_F(MixedQueueTest, testToArray) {
-                ASSERT_TRUE(q->offer<std::string>("item1"));
-                ASSERT_TRUE(q->offer<std::string>("item2"));
-                ASSERT_TRUE(q->offer<std::string>("item3"));
-                ASSERT_TRUE(q->offer<std::string>("item4"));
-                ASSERT_TRUE(q->offer<std::string>("item5"));
-
-                std::vector<TypedData> array = q->toArray();
-                size_t size = array.size();
-                for (size_t i = 0; i < size; i++) {
-                    ASSERT_EQ(std::string("item") + hazelcast::util::IOUtil::to_string(i + 1),
-                              *array[i].get<std::string>());
-                }
-            }
-
-            TEST_F(MixedQueueTest, testAddAll) {
-                std::vector<std::string> coll;
-                coll.push_back("item1");
-                coll.push_back("item2");
-                coll.push_back("item3");
-                coll.push_back("item4");
-
-                ASSERT_TRUE(q->addAll<std::string>(coll));
-                int size = q->size();
-                ASSERT_EQ(size, (int) coll.size());
-            }
-
-            TEST_F(MixedQueueTest, testRemoveRetain) {
-                ASSERT_TRUE(q->offer<std::string>("item1"));
-                ASSERT_TRUE(q->offer<std::string>("item2"));
-                ASSERT_TRUE(q->offer<std::string>("item3"));
-                ASSERT_TRUE(q->offer<std::string>("item4"));
-                ASSERT_TRUE(q->offer<std::string>("item5"));
-
-                std::vector<std::string> list;
-                list.push_back("item8");
-                list.push_back("item9");
-                ASSERT_FALSE(q->removeAll(list));
-                ASSERT_EQ(5, q->size());
-
-                list.push_back("item3");
-                list.push_back("item4");
-                list.push_back("item1");
-                ASSERT_TRUE(q->removeAll(list));
-                ASSERT_EQ(2, q->size());
-
-                list.clear();
-                list.push_back("item2");
-                list.push_back("item5");
-                ASSERT_FALSE(q->retainAll<std::string>(list));
-                ASSERT_EQ(2, q->size());
-
-                list.clear();
-                ASSERT_TRUE(q->retainAll<std::string>(list));
-                ASSERT_EQ(0, q->size());
-            }
-
-            TEST_F(MixedQueueTest, testClear) {
-                ASSERT_TRUE(q->offer<std::string>("item1"));
-                ASSERT_TRUE(q->offer<std::string>("item2"));
-                ASSERT_TRUE(q->offer<std::string>("item3"));
-                ASSERT_TRUE(q->offer<std::string>("item4"));
-                ASSERT_TRUE(q->offer<std::string>("item5"));
-
-                q->clear();
-
-                ASSERT_EQ(0, q->size());
-                ASSERT_EQ(q->poll().get<std::string>().get(), (std::string *) NULL);
             }
         }
     }
 }
-
-
-
-
-int hazelcast::client::test::executor::tasks::SelectAllMembers::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::SelectAllMembers::getClassId() const {
-    return IdentifiedFactory::SELECT_ALL_MEMBERS;
-}
-
-void hazelcast::client::test::executor::tasks::SelectAllMembers::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-}
-
-void hazelcast::client::test::executor::tasks::SelectAllMembers::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-}
-
-hazelcast::client::test::executor::tasks::SelectAllMembers::SelectAllMembers() {}
-
-bool hazelcast::client::test::executor::tasks::SelectAllMembers::select(const hazelcast::client::Member &member) const {
-    return true;
-}
-
-void hazelcast::client::test::executor::tasks::SelectAllMembers::toString(std::ostream &os) const {
-    os << "SelectAllMembers";
-}
-
-
-
-
-int hazelcast::client::test::executor::tasks::CancellationAwareTask::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::CancellationAwareTask::getClassId() const {
-    return IdentifiedFactory::CANCELLATION_AWARE_TASK;
-}
-
-void hazelcast::client::test::executor::tasks::CancellationAwareTask::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-    writer.writeLong(sleepTime);
-}
-
-void hazelcast::client::test::executor::tasks::CancellationAwareTask::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-    sleepTime = reader.readLong();
-}
-
-hazelcast::client::test::executor::tasks::CancellationAwareTask::CancellationAwareTask(int64_t sleepTime) : sleepTime(
-        sleepTime) {}
-
-hazelcast::client::test::executor::tasks::CancellationAwareTask::CancellationAwareTask() {}
-
-
-
-int hazelcast::client::test::executor::tasks::NullCallable::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::NullCallable::getClassId() const {
-    return IdentifiedFactory::NULL_CALLABLE;
-}
-
-void hazelcast::client::test::executor::tasks::NullCallable::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-}
-
-void hazelcast::client::test::executor::tasks::NullCallable::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-}
-
-hazelcast::client::test::executor::tasks::NullCallable::NullCallable() {}
-
-
-
-int hazelcast::client::test::executor::tasks::SerializedCounterCallable::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::SerializedCounterCallable::getClassId() const {
-    return IdentifiedFactory::SERIALIZED_COUNTER_CALLABLE;
-}
-
-void hazelcast::client::test::executor::tasks::SerializedCounterCallable::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-    writer.writeInt(counter + 1);
-}
-
-void hazelcast::client::test::executor::tasks::SerializedCounterCallable::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-    counter = reader.readInt() + 1;
-}
-
-hazelcast::client::test::executor::tasks::SerializedCounterCallable::SerializedCounterCallable() : counter(0) {}
-
-
-
-int hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::getClassId() const {
-    return IdentifiedFactory::MAP_PUTPARTITIONAWARE_CALLABLE;
-}
-
-void hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-    writer.writeUTF(&mapName);
-    writer.writeObject<std::string>(&partitionKey);
-}
-
-void hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-    // no need to implement at client side for the tests
-}
-
-hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::MapPutPartitionAwareCallable() {}
-
-hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::MapPutPartitionAwareCallable(
-        const std::string &mapName, const std::string &partitionKey) : mapName(mapName), partitionKey(partitionKey) {}
-
-const std::string *hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::getPartitionKey() const {
-    return &partitionKey;
-}
-
-
-
-int hazelcast::client::test::executor::tasks::SelectNoMembers::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::SelectNoMembers::getClassId() const {
-    return IdentifiedFactory::SELECT_NO_MEMBERS;
-}
-
-void hazelcast::client::test::executor::tasks::SelectNoMembers::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-}
-
-void hazelcast::client::test::executor::tasks::SelectNoMembers::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-}
-
-hazelcast::client::test::executor::tasks::SelectNoMembers::SelectNoMembers() {}
-
-bool hazelcast::client::test::executor::tasks::SelectNoMembers::select(const hazelcast::client::Member &member) const {
-    return false;
-}
-
-void hazelcast::client::test::executor::tasks::SelectNoMembers::toString(std::ostream &os) const {
-    os << "SelectNoMembers";
-}
-
-
-
-int hazelcast::client::test::executor::tasks::GetMemberUuidTask::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::GetMemberUuidTask::getClassId() const {
-    return IdentifiedFactory::GET_MEMBER_UUID_TASK;
-}
-
-void hazelcast::client::test::executor::tasks::GetMemberUuidTask::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-}
-
-void hazelcast::client::test::executor::tasks::GetMemberUuidTask::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-}
-
-hazelcast::client::test::executor::tasks::GetMemberUuidTask::GetMemberUuidTask() {}
-
-
-
-int hazelcast::client::test::executor::tasks::FailingCallable::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::FailingCallable::getClassId() const {
-    return IdentifiedFactory::FAILING_CALLABLE;
-}
-
-void hazelcast::client::test::executor::tasks::FailingCallable::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-}
-
-void hazelcast::client::test::executor::tasks::FailingCallable::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-}
-
-hazelcast::client::test::executor::tasks::FailingCallable::FailingCallable() {}
-
-
-
-std::string hazelcast::client::test::executor::tasks::AppendCallable::APPENDAGE = ":CallableResult";
-
-int hazelcast::client::test::executor::tasks::AppendCallable::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::AppendCallable::getClassId() const {
-    return IdentifiedFactory::APPEND_CALLABLE;
-}
-
-void hazelcast::client::test::executor::tasks::AppendCallable::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-    writer.writeUTF(&msg);
-}
-
-void hazelcast::client::test::executor::tasks::AppendCallable::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-    // No need to implement this part for the client
-}
-
-hazelcast::client::test::executor::tasks::AppendCallable::AppendCallable() {}
-
-hazelcast::client::test::executor::tasks::AppendCallable::AppendCallable(const std::string &msg) : msg(msg) {}
-
-
-
-int hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::getFactoryId() const {
-    return IdentifiedFactory::FACTORY_ID;
-}
-
-int hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::getClassId() const {
-    return IdentifiedFactory::TASK_WITH_UNSERIALIZABLE_RESPONSE;
-}
-
-void hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::writeData(
-        hazelcast::client::serialization::ObjectDataOutput &writer) const {
-}
-
-void hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::readData(
-        hazelcast::client::serialization::ObjectDataInput &reader) {
-}
-
-hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::TaskWithUnserializableResponse() {}
-
-
-
-
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class ClientExecutorServiceTest : public ClientTestSupport {
             protected:
+                static constexpr const char *APPENDAGE = ":CallableResult";
+
                 static const size_t numberOfMembers;
 
                 virtual void TearDown() {
@@ -1799,7 +896,7 @@ namespace hazelcast {
                         delete server;
                     }
 
-                    client = NULL;
+                    client = nullptr;
                 }
 
                 class FailingExecutionCallback : public ExecutionCallback<std::string> {
@@ -1807,7 +904,7 @@ namespace hazelcast {
                     FailingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(
                             latch1) {}
 
-                    virtual void onResponse(const std::shared_ptr<std::string> &response) {
+                    virtual void onResponse(const boost::optional<std::string> &response) {
                     }
 
                     virtual void onFailure(std::exception_ptr e) {
@@ -1828,7 +925,7 @@ namespace hazelcast {
                 public:
                     SuccessfullExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
 
-                    virtual void onResponse(const std::shared_ptr<std::string> &response) {
+                    virtual void onResponse(const boost::optional<std::string> &response) {
                         latch1->count_down();
                     }
 
@@ -1843,35 +940,35 @@ namespace hazelcast {
                 public:
                     ResultSettingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
 
-                    virtual void onResponse(const std::shared_ptr<std::string> &response) {
-                        result.set(response);
+                    virtual void onResponse(const boost::optional<std::string> &response) {
+                        result.set(std::move(response));
                         latch1->count_down();
                     }
 
                     virtual void onFailure(std::exception_ptr e) {
                     }
 
-                    std::shared_ptr<std::string> getResult() {
+                    boost::optional<std::string> getResult() {
                         return result.get();
                     }
 
                 private:
                     const std::shared_ptr<boost::latch> latch1;
-                    hazelcast::util::Sync<std::shared_ptr<std::string>> result;
+                    hazelcast::util::Sync<boost::optional<std::string>> result;
                 };
 
                 class MultiExecutionCompletionCallback : public MultiExecutionCallback<std::string> {
                 public:
-                    MultiExecutionCompletionCallback(const std::string &msg,
-                                                     const std::shared_ptr<boost::latch> &responseLatch,
-                                                     const std::shared_ptr<boost::latch> &completeLatch) : msg(msg),
-                                                                                                           responseLatch(
-                                                                                                                   responseLatch),
+                    MultiExecutionCompletionCallback(std::string msg,
+                                                     std::shared_ptr<boost::latch> responseLatch,
+                                                     const std::shared_ptr<boost::latch> &completeLatch) : msg(std::move(msg)),
+                                                                                                           responseLatch(std::move(
+                                                                                                                   responseLatch)),
                                                                                                            completeLatch(
                                                                                                                    completeLatch) {}
 
-                    virtual void onResponse(const Member &member, const std::shared_ptr<std::string> &response) {
-                        if (response.get() && *response == msg + executor::tasks::AppendCallable::APPENDAGE) {
+                    virtual void onResponse(const Member &member, const boost::optional<std::string> &response) {
+                        if (response && *response == msg + APPENDAGE) {
                             responseLatch->count_down();
                         }
                     }
@@ -1880,12 +977,12 @@ namespace hazelcast {
                     onFailure(const Member &member, std::exception_ptr exception) {
                     }
 
-                    virtual void onComplete(const std::unordered_map<Member, std::shared_ptr<std::string> > &values,
+                    virtual void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
                                             const std::unordered_map<Member, std::exception_ptr> &exceptions) {
-                        typedef std::map<Member, std::shared_ptr<std::string> > VALUE_MAP;
-                        std::string expectedValue(msg + executor::tasks::AppendCallable::APPENDAGE);
+                        typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
+                        std::string expectedValue(msg + APPENDAGE);
                         for (const VALUE_MAP::value_type &entry  : values) {
-                            if (entry.second.get() && *entry.second == expectedValue) {
+                            if (entry.second && *entry.second == expectedValue) {
                                 completeLatch->count_down();
                             }
                         }
@@ -1899,12 +996,12 @@ namespace hazelcast {
 
                 class MultiExecutionNullCallback : public MultiExecutionCallback<std::string> {
                 public:
-                    MultiExecutionNullCallback(const std::shared_ptr<boost::latch> &responseLatch,
-                                               const std::shared_ptr<boost::latch> &completeLatch)
-                            : responseLatch(responseLatch), completeLatch(completeLatch) {}
+                    MultiExecutionNullCallback(std::shared_ptr<boost::latch> responseLatch,
+                                               std::shared_ptr<boost::latch> completeLatch)
+                            : responseLatch(std::move(responseLatch)), completeLatch(std::move(completeLatch)) {}
 
-                    virtual void onResponse(const Member &member, const std::shared_ptr<std::string> &response) {
-                        if (response.get() == NULL) {
+                    virtual void onResponse(const Member &member, const boost::optional<std::string> &response) {
+                        if (!response) {
                             responseLatch->count_down();
                         }
                     }
@@ -1913,11 +1010,11 @@ namespace hazelcast {
                     onFailure(const Member &member, std::exception_ptr exception) {
                     }
 
-                    virtual void onComplete(const std::unordered_map<Member, std::shared_ptr<std::string> > &values,
+                    virtual void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
                                             const std::unordered_map<Member, std::exception_ptr> &exceptions) {
-                        typedef std::map<Member, std::shared_ptr<std::string> > VALUE_MAP;
+                        typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
                         for (const VALUE_MAP::value_type &entry  : values) {
-                            if (entry.second.get() == NULL) {
+                            if (!entry.second) {
                                 completeLatch->count_down();
                             }
                         }
@@ -1934,20 +1031,20 @@ namespace hazelcast {
             };
 
             std::vector<HazelcastServer *>ClientExecutorServiceTest::instances;
-            HazelcastClient *ClientExecutorServiceTest::client = NULL;
-            HazelcastServerFactory *ClientExecutorServiceTest::factory = NULL;
+            HazelcastClient *ClientExecutorServiceTest::client = nullptr;
+            HazelcastServerFactory *ClientExecutorServiceTest::factory = nullptr;
             const size_t ClientExecutorServiceTest::numberOfMembers = 4;
 
             TEST_F(ClientExecutorServiceTest, testIsTerminated) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                ASSERT_FALSE(service->isTerminated());
+                ASSERT_FALSE(service->isTerminated().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testIsShutdown) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                ASSERT_FALSE(service->isShutdown());
+                ASSERT_FALSE(service->isShutdown().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testShutdown) {
@@ -1955,7 +1052,7 @@ namespace hazelcast {
 
                 service->shutdown();
 
-                ASSERT_TRUE_EVENTUALLY(service->isShutdown());
+                ASSERT_TRUE_EVENTUALLY(service->isShutdown().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testShutdownMultipleTimes) {
@@ -1964,13 +1061,13 @@ namespace hazelcast {
                 service->shutdown();
                 service->shutdown();
 
-                ASSERT_TRUE_EVENTUALLY(service->isShutdown());
+                ASSERT_TRUE_EVENTUALLY(service->isShutdown().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testCancellationAwareTask_whenTimeOut) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                executor::tasks::CancellationAwareTask task(INT64_MAX);
+                executor::tasks::CancellationAwareTask task{INT64_MAX};
 
                 auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
 
@@ -1980,7 +1077,7 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, testFutureAfterCancellationAwareTaskTimeOut) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                executor::tasks::CancellationAwareTask task(INT64_MAX);
+                executor::tasks::CancellationAwareTask task{INT64_MAX};
 
                 auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
                 auto future = promise.get_future();
@@ -1993,7 +1090,7 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, testGetFutureAfterCancel) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                executor::tasks::CancellationAwareTask task(INT64_MAX);
+                executor::tasks::CancellationAwareTask task{INT64_MAX};
 
                 auto promise = service->submit<executor::tasks::CancellationAwareTask, bool>(task);
 
@@ -2045,7 +1142,7 @@ namespace hazelcast {
                 executor::tasks::SelectNoMembers selector;
 
                 ASSERT_THROW(service->execute<executor::tasks::MapPutPartitionAwareCallable>(
-                        executor::tasks::MapPutPartitionAwareCallable(mapName, randomString()), selector),
+                        executor::tasks::MapPutPartitionAwareCallable{mapName, randomString()}, selector),
                              exception::RejectedExecutionException);
             }
 
@@ -2054,12 +1151,12 @@ namespace hazelcast {
 
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(name);
 
-                executor::tasks::SerializedCounterCallable counterCallable;
+                executor::tasks::SerializedCounterCallable counterCallable{0};
 
                 auto future = service->submitToKeyOwner<executor::tasks::SerializedCounterCallable, int, std::string>(
                         counterCallable, name).get_future();
-                std::shared_ptr<int> value = future.get();
-                ASSERT_NOTNULL(value.get(), int);
+                auto value = future.get();
+                ASSERT_TRUE(value);
                 ASSERT_EQ(2, *value);
             }
 
@@ -2068,14 +1165,14 @@ namespace hazelcast {
 
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(name);
 
-                executor::tasks::SerializedCounterCallable counterCallable;
+                executor::tasks::SerializedCounterCallable counterCallable{0};
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_FALSE(members.empty());
                 auto future = service->submitToMember<executor::tasks::SerializedCounterCallable, int>(
                         counterCallable, members[0]).get_future();
                 auto value = future.get();
-                ASSERT_NOTNULL(value.get(), int);
+                ASSERT_TRUE(value);
                 ASSERT_EQ(2, *value);
             }
 
@@ -2123,8 +1220,8 @@ namespace hazelcast {
                 auto future = service->submitToMember<executor::tasks::GetMemberUuidTask, std::string>(
                         task, members[0]).get_future();
 
-                std::shared_ptr<std::string> uuid = future.get();
-                ASSERT_NOTNULL(uuid.get(), std::string);
+                auto uuid = future.get();
+                ASSERT_TRUE(uuid);
                 ASSERT_EQ(members[0].getUuid(), *uuid);
             }
 
@@ -2143,8 +1240,8 @@ namespace hazelcast {
                     ASSERT_EQ(1U, futuresMap.count(member));
                     auto it = futuresMap.find(member);
                     ASSERT_NE(futuresMap.end(), it);
-                    std::shared_ptr<std::string> uuid = (*it).second.get_future().get();
-                    ASSERT_NOTNULL(uuid.get(), std::string);
+                    auto uuid = (*it).second.get_future().get();
+                    ASSERT_TRUE(uuid);
                     ASSERT_EQ(member.getUuid(), *uuid);
                 }
             }
@@ -2153,15 +1250,15 @@ namespace hazelcast {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
                 executor::tasks::SelectAllMembers selectAll;
 
                 auto f = service->submit<executor::tasks::AppendCallable, std::string>(callable,
                                                                                        selectAll).get_future();
 
-                std::shared_ptr<std::string> result = f.get();
-                ASSERT_NOTNULL(result.get(), std::string);
-                ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *result);
+                auto result = f.get();
+                ASSERT_TRUE(result);
+                ASSERT_EQ(msg + APPENDAGE, *result);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMembers_withMemberSelector) {
@@ -2177,9 +1274,8 @@ namespace hazelcast {
                     const Member &member = pair.first;
                     auto future = pair.second.get_future();
 
-                    std::shared_ptr<std::string> uuid = future.get();
-
-                    ASSERT_NOTNULL(uuid.get(), std::string);
+                    auto uuid = future.get();
+                    ASSERT_TRUE(uuid);
                     ASSERT_EQ(member.getUuid(), *uuid);
                 }
             }
@@ -2188,17 +1284,16 @@ namespace hazelcast {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
 
                 auto futuresMap = service->submitToAllMembers<executor::tasks::AppendCallable, std::string>(callable);
 
                 for (auto &pair : futuresMap) {
                     auto future = pair.second.get_future();
 
-                    std::shared_ptr<std::string> result = future.get();
-
-                    ASSERT_NOTNULL(result.get(), std::string);
-                    ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *result);
+                    auto result = future.get();
+                    ASSERT_TRUE(result);
+                    ASSERT_EQ(msg + APPENDAGE, *result);
                 }
             }
 
@@ -2218,10 +1313,10 @@ namespace hazelcast {
                                                                                                     members[0],
                                                                                                     callback);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
-                ASSERT_EQ(1, map.size());
+                ASSERT_EQ(1, map->size().get());
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMember_withMultiExecutionCallback) {
@@ -2231,7 +1326,7 @@ namespace hazelcast {
                 std::shared_ptr<boost::latch> completeLatch(new boost::latch(numberOfMembers));
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_EQ(numberOfMembers, members.size());
 
@@ -2248,7 +1343,7 @@ namespace hazelcast {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
                 executor::tasks::SelectAllMembers selector;
                 std::shared_ptr<boost::latch> responseLatch(new boost::latch(1));
                 std::shared_ptr<ResultSettingExecutionCallback> callback(
@@ -2259,9 +1354,9 @@ namespace hazelcast {
                                                                                       callback));
 
                 ASSERT_OPEN_EVENTUALLY(*responseLatch);
-                std::shared_ptr<std::string> message = callback->getResult();
-                ASSERT_NOTNULL(message.get(), std::string);
-                ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *message);
+                auto message = callback->getResult();
+                ASSERT_TRUE(message.has_value());
+                ASSERT_EQ(msg + APPENDAGE, *message);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMembers_withExecutionCallback) {
@@ -2273,7 +1368,7 @@ namespace hazelcast {
                         new boost::latch(numberOfMembers));
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
                 executor::tasks::SelectAllMembers selector;
 
                 std::shared_ptr<MultiExecutionCallback<std::string> > callback(
@@ -2294,7 +1389,7 @@ namespace hazelcast {
                         new boost::latch(numberOfMembers));
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
 
                 std::shared_ptr<MultiExecutionCallback<std::string> > callback(
                         new MultiExecutionCompletionCallback(msg, responseLatch, completeLatch));
@@ -2326,20 +1421,20 @@ namespace hazelcast {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
 
                 auto result = service->submit<executor::tasks::AppendCallable, std::string>(callable).get_future();
 
-                std::shared_ptr<std::string> message = result.get();
-                ASSERT_NOTNULL(message.get(), std::string);
-                ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *message);
+                auto message = result.get();
+                ASSERT_TRUE(message);
+                ASSERT_EQ(msg + APPENDAGE, *message);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallable_withExecutionCallback) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
                 std::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch1));
@@ -2349,30 +1444,30 @@ namespace hazelcast {
                                                                                       callback));
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
-                std::shared_ptr<std::string> value = callback->getResult();
-                ASSERT_NOTNULL(value.get(), std::string);
-                ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *value);
+                auto value = callback->getResult();
+                ASSERT_TRUE(value.has_value());
+                ASSERT_EQ(msg + APPENDAGE, *value);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToKeyOwner) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
 
                 auto f = service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(callable,
                                                                                                               "key").get_future();
 
-                std::shared_ptr<std::string> result = f.get();
-                ASSERT_NOTNULL(result.get(), std::string);
-                ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *result);
+                auto result = f.get();
+                ASSERT_TRUE(result);
+                ASSERT_EQ(msg + APPENDAGE, *result);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToKeyOwner_withExecutionCallback) {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
                 std::string msg = randomString();
-                executor::tasks::AppendCallable callable(msg);
+                executor::tasks::AppendCallable callable{msg};
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
                 std::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch1));
@@ -2382,38 +1477,38 @@ namespace hazelcast {
                                                                                                              callback));
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
-                std::shared_ptr<std::string> value = callback->getResult();
-                ASSERT_NOTNULL(value.get(), std::string);
-                ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *value);
+                auto value = callback->getResult();
+                ASSERT_TRUE(value.has_value());
+                ASSERT_EQ(msg + APPENDAGE, *value);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallablePartitionAware) {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
                 std::string key = generateKeyOwnedBy(clientContext, member);
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, key);
+                executor::tasks::MapPutPartitionAwareCallable callable{testName, key};
 
                 auto f = service->submit<executor::tasks::MapPutPartitionAwareCallable, std::string>(
                         callable).get_future();
 
-                std::shared_ptr<std::string> result = f.get();
-                ASSERT_NOTNULL(result.get(), std::string);
+                auto result = f.get();
+                ASSERT_TRUE(result);
                 ASSERT_EQ(member.getUuid(), *result);
-                ASSERT_TRUE(map.containsKey(member.getUuid()));
+                ASSERT_TRUE(map->containsKey(member.getUuid()).get());
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallablePartitionAware_WithExecutionCallback) {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 spi::ClientContext clientContext(*client);
@@ -2428,11 +1523,10 @@ namespace hazelcast {
                 service->submit<executor::tasks::MapPutPartitionAwareCallable, std::string>(callable, callback);
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
-                std::shared_ptr<std::string> value = std::static_pointer_cast<ResultSettingExecutionCallback>(
-                        callback)->getResult();
-                ASSERT_NOTNULL(value.get(), std::string);
+                auto value = std::static_pointer_cast<ResultSettingExecutionCallback>(callback)->getResult();
+                ASSERT_TRUE(value);
                 ASSERT_EQ(member.getUuid(), *value);
-                ASSERT_TRUE(map.containsKey(member.getUuid()));
+                ASSERT_TRUE(map->containsKey(member.getUuid()).get());
             }
 
             TEST_F(ClientExecutorServiceTest, testExecute) {
@@ -2442,7 +1536,7 @@ namespace hazelcast {
                 service->execute<executor::tasks::MapPutPartitionAwareCallable>(
                         executor::tasks::MapPutPartitionAwareCallable(testName, "key"));
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 assertSizeEventually(1, map);
             }
@@ -2454,7 +1548,7 @@ namespace hazelcast {
 
                 service->execute<executor::tasks::MapPutPartitionAwareCallable>(
                         executor::tasks::MapPutPartitionAwareCallable(testName, "key"), selector);
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 assertSizeEventually(1, map);
             }
@@ -2463,7 +1557,7 @@ namespace hazelcast {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 spi::ClientContext clientContext(*client);
@@ -2475,14 +1569,14 @@ namespace hazelcast {
 
                 service->executeOnKeyOwner<executor::tasks::MapPutPartitionAwareCallable, std::string>(callable, key);
 
-                ASSERT_TRUE_EVENTUALLY(map.containsKey(targetUuid));
+                ASSERT_TRUE_EVENTUALLY(map->containsKey(targetUuid).get());
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMember) {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 Member &member = members[0];
@@ -2492,14 +1586,14 @@ namespace hazelcast {
 
                 service->executeOnMember<executor::tasks::MapPutPartitionAwareCallable>(callable, member);
 
-                ASSERT_TRUE_EVENTUALLY(map.containsKey(targetUuid));
+                ASSERT_TRUE_EVENTUALLY(map->containsKey(targetUuid).get());
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMembers) {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 std::vector<Member> allMembers = client->getCluster().getMembers();
                 std::vector<Member> members(allMembers.begin(), allMembers.begin() + 2);
@@ -2508,14 +1602,14 @@ namespace hazelcast {
 
                 service->executeOnMembers<executor::tasks::MapPutPartitionAwareCallable>(callable, members);
 
-                ASSERT_TRUE_EVENTUALLY(map.containsKey(members[0].getUuid()) && map.containsKey(members[1].getUuid()));
+                ASSERT_TRUE_EVENTUALLY(map->containsKey(members[0].getUuid()).get() && map->containsKey(members[1].getUuid()).get());
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMembers_withEmptyCollection) {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+               auto map = client->getMap(testName);
 
                 executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
 
@@ -2529,7 +1623,7 @@ namespace hazelcast {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
 
@@ -2544,7 +1638,7 @@ namespace hazelcast {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+                auto map = client->getMap(testName);
 
                 executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
 
@@ -2556,13 +1650,7 @@ namespace hazelcast {
     }
 }
 
-
-
 #ifdef HZ_BUILD_WITH_SSL
-
-
-
-
 
 namespace hazelcast {
     namespace client {
@@ -2652,15 +1740,10 @@ namespace hazelcast {
     }
 }
 
-
 #endif // HZ_BUILD_WITH_SSL
 
 
 #ifdef HZ_BUILD_WITH_SSL
-
-
-
-
 
 namespace hazelcast {
     namespace client {
@@ -2674,7 +1757,7 @@ namespace hazelcast {
 
                     clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
-                            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
+                            setAccessKey(std::getenv("AWS_ACCESS_KEY_ID")).setSecretKey(std::getenv("AWS_SECRET_ACCESS_KEY")).
                             setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -2682,19 +1765,16 @@ namespace hazelcast {
 #else
                     clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(false);
 #endif
-
                     HazelcastClient hazelcastClient(clientConfig);
-
-                    IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
-                    map.put(5, 20);
-                    std::shared_ptr<int> val = map.get(5);
-                    ASSERT_NE((int *) NULL, val.get());
-                    ASSERT_EQ(20, *val);
+                    auto map = hazelcastClient.getMap("myMap");
+                    map->put(5, 20).get();
+                    auto val = map->get<int, int>(5).get();
+                    ASSERT_TRUE(val.has_value());
+                    ASSERT_EQ(20, val.value());
                 }
 
                 TEST_F (AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole) {
                     ClientConfig clientConfig;
-
                     clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
                             setSecurityGroupName("launch-wizard-147");
@@ -2703,17 +1783,16 @@ namespace hazelcast {
                                                                                                                                             // The access key and secret will be retrieved from default IAM role at windows machine
                     clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
 #else
-                    clientConfig.getNetworkConfig().getAwsConfig().setAccessKey(getenv("AWS_ACCESS_KEY_ID")).
-                            setSecretKey(getenv("AWS_SECRET_ACCESS_KEY"));
+                    clientConfig.getNetworkConfig().getAwsConfig().setAccessKey(std::getenv("AWS_ACCESS_KEY_ID")).
+                            setSecretKey(std::getenv("AWS_SECRET_ACCESS_KEY"));
 #endif
 
                     HazelcastClient hazelcastClient(clientConfig);
-
-                    IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
-                    map.put(5, 20);
-                    std::shared_ptr<int> val = map.get(5);
-                    ASSERT_NE((int *) NULL, val.get());
-                    ASSERT_EQ(20, *val);
+                    auto map = hazelcastClient.getMap("myMap");
+                    map->put(5, 20).get();
+                    auto val = map->get<int, int>(5).get();
+                    ASSERT_TRUE(val.has_value());
+                    ASSERT_EQ(20, val.value());
                 }
 
                 // FIPS_mode_set is not available for Mac OS X built-in openssl library
@@ -2736,10 +1815,10 @@ namespace hazelcast {
                     FIPS_mode_set(1);
 
                     HazelcastClient hazelcastClient(clientConfig);
-                    IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
-                    map.put(5, 20);
-                    std::shared_ptr<int> val = map.get(5);
-                    ASSERT_NE((int *) NULL, val.get());
+                    auto map = hazelcastClient.getMap("myMap");
+                    map->put(5, 20);
+                    auto val = map->get<int, int>(5).get();
+                    ASSERT_TRUE(val);
                     ASSERT_EQ(20, *val);
                 }
 #endif // ifndef __APPLE__
@@ -2790,7 +1869,7 @@ namespace hazelcast {
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
-                    std::map<std::string, std::string> results = desc.execute();
+                    std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
@@ -2801,7 +1880,7 @@ namespace hazelcast {
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue(
                             "non-existent-value");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
-                    std::map<std::string, std::string> results = desc.execute();
+                    std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
 
@@ -2810,7 +1889,7 @@ namespace hazelcast {
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
-                    std::map<std::string, std::string> results = desc.execute();
+                    std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
@@ -2820,7 +1899,7 @@ namespace hazelcast {
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("non-existent-tag");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
-                    std::map<std::string, std::string> results = desc.execute();
+                    std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
 
@@ -2829,7 +1908,7 @@ namespace hazelcast {
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagValue("aws-tag-value-1");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
-                    std::map<std::string, std::string> results = desc.execute();
+                    std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
@@ -2839,7 +1918,7 @@ namespace hazelcast {
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagValue("non-existent-value");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
-                    std::map<std::string, std::string> results = desc.execute();
+                    std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
 
@@ -2848,7 +1927,7 @@ namespace hazelcast {
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setSecurityGroupName("launch-wizard-147");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
-                    std::map<std::string, std::string> results = desc.execute();
+                    std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
@@ -2858,7 +1937,7 @@ namespace hazelcast {
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setSecurityGroupName("non-existent-group");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
-                    std::map<std::string, std::string> results = desc.execute();
+                    std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
 
@@ -2869,10 +1948,7 @@ namespace hazelcast {
 
 #endif //HZ_BUILD_WITH_SSL
 
-
 #ifdef HZ_BUILD_WITH_SSL
-
-
 
 namespace awsutil = hazelcast::client::aws::utility;
 
@@ -2889,7 +1965,7 @@ namespace hazelcast {
                     std::istream responseStream(&fb);
 
                     config::ClientAwsConfig awsConfig;
-                    std::map<std::string, std::string> results = hazelcast::client::aws::utility::CloudUtility::unmarshalTheResponse(
+                    std::unordered_map<std::string, std::string> results = hazelcast::client::aws::utility::CloudUtility::unmarshalTheResponse(
                             responseStream, getLogger());
                     ASSERT_EQ(4U, results.size());
                     ASSERT_NE(results.end(), results.find("10.0.16.13"));
@@ -2907,98 +1983,6 @@ namespace hazelcast {
 }
 
 #endif //HZ_BUILD_WITH_SSL
-
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-
-
-            TestCustomXSerializable::TestCustomXSerializable() {
-
-            }
-
-            TestCustomXSerializable::TestCustomXSerializable(int id) :id(id){
-
-            }
-
-            bool TestCustomXSerializable::operator==(const TestCustomXSerializable& rhs) const {
-                if (this == &rhs)
-                    return true;
-                if (id != rhs.id) return false;
-                return true;
-            }
-
-            bool TestCustomXSerializable::operator!=(const TestCustomXSerializable& rhs) const {
-                return !(*this == rhs);
-            }
-
-            int getHazelcastTypeId(TestCustomXSerializable const* param) {
-                return 666;
-            }
-
-            TestCustomPerson::TestCustomPerson() {
-
-            }
-
-            TestCustomPerson::TestCustomPerson(const std::string& name):name(name) {
-
-            }
-
-            bool TestCustomPerson::operator==(const TestCustomPerson& rhs) const {
-                if (this == &rhs)
-                    return true;
-                if (name.compare(rhs.name))
-                    return false;
-                return true;
-            }
-
-            bool TestCustomPerson::operator!=(const TestCustomPerson &rhs) const {
-                return !(*this == rhs);
-            }
-
-            void TestCustomPerson::setName(const std::string &n) {
-                this->name = n;
-            }
-
-            std::string TestCustomPerson::getName() const {
-                return name;
-            }
-
-            int getHazelcastTypeId(TestCustomPerson const *param) {
-                return 999;
-            }
-
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-
-            void TestCustomPersonSerializer::write(serialization::ObjectDataOutput & out, const TestCustomPerson& object) {
-                out.writeInt(999);
-                const std::string &name = object.getName();
-                out.writeUTF(&name);
-                out.writeInt(999);
-            }
-
-            void TestCustomPersonSerializer::read(serialization::ObjectDataInput & in, TestCustomPerson& object) {
-                int i = in.readInt();
-                assert(i == 999);
-                object.setName(*in.readUTF());
-                i = in.readInt();
-                assert(i == 999);
-            }
-
-            int TestCustomPersonSerializer::getHazelcastTypeId() const {
-                return 999;
-            }
-
-        }
-    }
-}
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)

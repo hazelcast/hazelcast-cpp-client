@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 13 Jan 2017.
-//
 #include <stdio.h>
 
 #include "NearCacheSupport.h"
@@ -35,13 +32,13 @@ int main() {
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);
 
-    IMap<int, std::string> map = client.getMap<int, std::string>(mapName);
+    auto map = client.getMap(mapName);
 
     // the first get() will populate the Near Cache
-    std::shared_ptr<std::string> firstGet = map.get(1);
+    auto firstGet = map->get<int, std::string>(1).get();
     // the second and third get() will be served from the Near Cache
-    std::shared_ptr<std::string> secondGet = map.get(1);
-    std::shared_ptr<std::string> thirdGet = map.get(1);
+    auto secondGet = map->get<int, std::string>(1).get();
+    auto thirdGet = map->get<int, std::string>(1).get();
 
     NearCacheSupport::printNearCacheStats(map);
 

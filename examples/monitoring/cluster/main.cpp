@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/MemberAttributeEvent.h>
 #include <hazelcast/client/InitialMembershipListener.h>
@@ -34,8 +31,7 @@ public:
 
     void memberAdded(const hazelcast::client::MembershipEvent &membershipEvent) {
         std::cout << "[MyInitialMemberListener::memberAdded] New member joined:" <<
-        membershipEvent.getMember().getAddress() <<
-        std::endl;
+        membershipEvent.getMember().getAddress() << std::endl;
     }
 
     void memberRemoved(const hazelcast::client::MembershipEvent &membershipEvent) {
@@ -75,7 +71,7 @@ int main() {
     MyMemberListener memberListener;
     MyInitialMemberListener initialMemberListener;
 
-    hazelcast::client::Cluster *clusterPtr = NULL;
+    hazelcast::client::Cluster *clusterPtr = nullptr;
     try {
         hazelcast::client::HazelcastClient hz;
 
@@ -92,7 +88,7 @@ int main() {
         cluster.addMembershipListener(&initialMemberListener);
 
         // sleep some time for the events to be delivered before exiting
-        hazelcast::util::sleep(3);
+        std::this_thread::sleep_for(std::chrono::seconds(3));
 
         cluster.removeMembershipListener(&memberListener);
         cluster.removeMembershipListener(&initialMemberListener);

@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <atomic>
 
 #include "hazelcast/util/SynchronizedMap.h"
@@ -85,7 +86,7 @@ namespace hazelcast {
 
                         virtual int getPartitionId() const;
 
-                        virtual std::shared_ptr<Member> getOwner() const;
+                        virtual boost::optional<Member> getOwner() const;
 
                     private:
                         int partitionId;
@@ -119,4 +120,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

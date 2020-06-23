@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 01/10/14.
-//
+
 
 #pragma once
+
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 #include "hazelcast/client/Ringbuffer.h"
@@ -43,13 +42,13 @@ namespace hazelcast {
         namespace proxy {
             class HAZELCAST_API ReliableTopicImpl : public proxy::ProxyImpl {
             protected:
-                ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context,
-                                  std::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb);
+                static constexpr const char * TOPIC_RB_PREFIX = "_hz_rb_";
 
-                void publish(const serialization::pimpl::Data &data);
+                ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context);
 
+                boost::future<void> publish(serialization::pimpl::Data &&data);
             protected:
-                std::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > ringbuffer;
+                std::shared_ptr<Ringbuffer> ringbuffer;
                 util::ILogger &logger;
                 const config::ReliableTopicConfig *config;
             };
@@ -60,4 +59,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

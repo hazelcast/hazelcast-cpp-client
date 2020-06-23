@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include <memory>
 
 #include "hazelcast/client/aws/AWSClient.h"
@@ -24,7 +25,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -57,7 +58,7 @@ namespace hazelcast {
                     bool findFromCache(const Address &address, Address &translatedAddress);
 
                     std::unique_ptr<AWSClient> awsClient;
-                    util::Sync<std::shared_ptr<std::map<std::string, std::string> > > privateToPublic;
+                    util::Sync<std::shared_ptr<std::unordered_map<std::string, std::string> > > privateToPublic;
                     util::ILogger &logger;
                 };
             };
@@ -68,4 +69,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

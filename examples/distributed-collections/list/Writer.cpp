@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IList<std::string> list = hz.getList<std::string>("list");
+    auto list = hz.getList("list");
 
-    list.add("Tokyo");
-    list.add("Paris");
-    list.add("London");
-    list.add("New York");
+    list->add("Tokyo").then(boost::launch::deferred, [=] (boost::future<bool> f) {
+       if (f.get()) {
+           std::cout << "First addition is successfull!!!" << '\n';
+           list->add("Paris").get();
+           list->add("London").get();
+           list->add("New York").get();
+       }
+    });
 
     std::cout << "Putting finished!" << std::endl;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <stdint.h>
+#include <random>
 
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/Pipelining.h>
@@ -30,14 +30,11 @@ using namespace hazelcast::util;
 
 class PipeliningDemo {
 public:
-    PipeliningDemo() : client(clientConfig), map(client.getMap<int, string>("map")) {
-    }
+    PipeliningDemo() : client(clientConfig), map(client.getMap("map")), gen(rd()) {}
 
     void init() {
-        char buf[150];
         for (int l = 0; l < keyDomain; l++) {
-            hz_snprintf(buf, 150, "%d", l);
-            map.put(l, buf);
+            map->put(l, std::to_string(l)).get();
         }
     }
 
@@ -47,12 +44,12 @@ public:
         for (int i = 0; i < iterations; i++) {
             std::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(depth);
             for (long k = 0; k < getsPerIteration; k++) {
-                int key = rand() % keyDomain;
-                pipelining->add(map.getAsync(key));
+                int key = dist(gen) % keyDomain;
+                pipelining->add(map->get<int, std::string>(key));
             }
 
             // wait for completion
-            vector<std::shared_ptr<string> > results = pipelining->results();
+            auto results = pipelining->results();
             // and verification we got the appropriate number of results.
             if ((int) results.size() != getsPerIteration) {
                 throw hazelcast::client::exception::IllegalStateException("pipelined", "Incorrect number of results");
@@ -67,8 +64,8 @@ public:
         int64_t startMs = currentTimeMillis();
         for (int i = 0; i < iterations; i++) {
             for (long k = 0; k < getsPerIteration; k++) {
-                int key = rand() % keyDomain;
-                map.get(key);
+                int key = dist(gen) % keyDomain;
+                map->get<int, std::string>(key).get();
             }
         }
         int64_t endMs = currentTimeMillis();
@@ -77,11 +74,14 @@ public:
 
 private:
     HazelcastClient client;
-    IMap<int, string> map;
+    std::shared_ptr<IMap> map;
     ClientConfig clientConfig;
     static const int keyDomain = 100000;
     static const int iterations = 500;
     static const int getsPerIteration = 1000;
+    std::random_device rd;
+    std::mt19937 gen;
+    std::uniform_int_distribution<int> dist;
 };
 
 int main() {

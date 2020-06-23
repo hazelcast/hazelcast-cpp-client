@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
@@ -74,5 +75,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

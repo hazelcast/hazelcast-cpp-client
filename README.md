@@ -664,7 +664,7 @@ When Hazelcast serializes an object into Data (byte array):
 
 2. If the above check fails, then the object is serialized using the serializer that matches the object type. The object type is determined using the free function `int32_t getHazelcastTypeId(const T *object);`. This method returns the constant built-int serializer type ID for the built-in types such as `byte`, `char`, `int32_t`, `bool` and `int64_t`, etc. If it does not match any of the built-in types, it may match the types offered by Hazelcast, i.e., IdentifiedDataSerializable, Portable or custom. The matching is done based on method parameter matching. 
 
-3. If the above check fails, Hazelcast will use the registered Global Serializer if one exists.
+3. If the above check fails, Hazelcast will use the registered Global hz_serializer if one exists.
 
 If all the above fails, then `exception::HazelcastSerializationException` is thrown.
 
@@ -1568,7 +1568,7 @@ Please see the below code as an example of when you want to get notified when a 
 ```
     class ItemsPrinter : public ExecutionCallback<hazelcast::client::ringbuffer::ReadResultSet<std::string> > {
     public:
-        virtual void onResponse(const boost::shared_ptr<ringbuffer::ReadResultSet<std::string> > &response) {
+        virtual void onResponse(const boost::optional<ringbuffer::ReadResultSet<std::string> > &response) {
             DataArray<std::string> &items = response->getItems();
             for (size_t i = 0; i < items.size(); ++i) {
                 std::cout << "Received " << items.get(i) << std::endl;
@@ -2227,11 +2227,11 @@ The `PrinterCallback` implementation class is as below:
 ```C++
 class PrinterCallback : public ExecutionCallback<std::string> {
 public:
-    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
+    virtual void onResponse(const boost::optional<std::string> &response) {
         std::cout << "The execution of the task is completed successfully and server returned:" << *response << std::endl;
     }
 
-    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
         std::cout << "The execution of the task failed with exception:" << e << std::endl;
     }
 };
@@ -2573,7 +2573,7 @@ ILIKE is similar to the LIKE predicate but in a case-insensitive manner.
 
 ##### Querying Examples with Predicates
 
-You can use the `query::QueryConstants::getKeyAttributeName()` (`__key`) attribute to perform a predicated search for entry keys. See the following example:
+You can use the `query::QueryConstants::KEY_ATTRIBUTE_NAME` (`__key`) attribute to perform a predicated search for entry keys. See the following example:
 
 ```C++
     hazelcast::client::IMap<std::string, int> map = hz.getMap<std::string, int>("personMap;");
@@ -2587,14 +2587,14 @@ You can use the `query::QueryConstants::getKeyAttributeName()` (`__key`) attribu
 
 In this example, the code creates a list with the values whose keys start with the letter "F”.
 
-You can use `query::QueryConstants::getValueAttributeName()` (`this`) attribute to perform a predicated search for entry values. See the following example:
+You can use `query::QueryConstants::THIS_ATTRIBUTE_NAME` (`this`) attribute to perform a predicated search for entry values. See the following example:
 
 ```C++
     hazelcast::client::IMap<std::string, int> map = hz.getMap<std::string, int>("personMap;");
     map.put("Mali", 28);
     map.put("Ahmet", 30);
     map.put("Furkan", 23);
-    query::GreaterLessPredicate<int> greaterThan27Predicate(query::QueryConstants::getValueAttributeName(), 27, false, false);
+    query::GreaterLessPredicate<int> greaterThan27Predicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, 27, false, false);
     std::vector<std::string> olderThan27 = map.keySet(greaterThan27Predicate);
     std::cout << "First person:" << olderThan27[0] << ", second person:" << olderThan27[1] << std::endl;
 ```
@@ -2669,7 +2669,7 @@ The C++ client provides paging for defined predicates. With its `PagingPredicate
 
 ```C++
     hazelcast::client::IMap<std::string, int> map = hz.getMap<std::string, int>("personMap;");
-    query::PagingPredicate<std::string, int> pagingPredicate(std::auto_ptr<query::Predicate>(new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 18, false, false)), 5);
+    query::PagingPredicate<std::string, int> pagingPredicate(std::auto_ptr<query::Predicate>(new query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 18, false, false)), 5);
     // Set page to retrieve third page
     pagingPredicate.setPage(3);
     std::vector<int> values = map.values(pagingPredicate);
@@ -3027,33 +3027,7 @@ Using the raw pointer based API may improve the performance if you are using the
 
 ## 7.11. Mixed Object Types Supporting HazelcastClient
 
-Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put `int`, `string`, `IdentifiedDataSerializable`, etc. objects into the same Hazelcast `IMap` data structure. You can do this by using the mixed type adopted `HazelcastClient`. You can adopt the client in this way:
-```
-    ClientConfig config;
-    HazelcastClient client(config);
-    mixedtype::HazelcastClient &hazelcastClient = client.toMixedType();
-``` 
-The `mixedtype::HazelcastClient` interface is designed to provide you the data structures which allows you to work with any object types in a mixed manner. For example, the interface allows you to provide the key and value type differently for each `map.put` call. An example usage is shown below:
-```
-    mixedtype::IMap map = hazelcastClient.getMap("MyMap");
-
-    map.put<int, int>(3, 5);
-    map.put<string, std::string>("string key1", "MyStringValue");
-    map.put<int, MyCustomObject>("string key1", myCustomInstance);
-    TypedData result = map.get<int>(3);
-``` 
-
-As you can see in the above code snippet, we are putting `int`, `string` and `MyCustomObject` to the same map. Both the key and value can be of different type for each `map.put` call.
-
-If you want to use a mixed type map with near cache, then you should use the `MixedNearCacheConfig` class and add this configuration to the `ClientConfig` using the `addMixedNearCacheConfig` method. See the below example:
-
-```
-   boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig(new mixedtype::config::MixedNearCacheConfig("MixedMapTestMap"));
-   clientConfig.addMixedNearCacheConfig(nearCacheConfig);
-```
-Mixed type support for near cache only exists when the in-memory format is BINARY. The OBJECT in-memory format is not supported for `MixedNearCacheConfig`.
-
-The mixed type API uses the TypedData class at the user interface.
+Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put `int`, `string`, `IdentifiedDataSerializable`, etc. objects into the same Hazelcast `IMap` data structure.
 
 ### 7.11.1. TypedData API
 
@@ -3090,7 +3064,6 @@ the `DataSerializableFactory`.
 4. <b>Portable</b>: `factoryId`, `classId` and `typeId` are non-negative values as registered by the `PortableFactory`.
 5. <b>Custom serialized objects</b>: `factoryId=-1`, `classId=-1`, `typeId` is the non-negative type ID as 
 registered for the custom object. 
-
 
 # 8. Development and Testing
 

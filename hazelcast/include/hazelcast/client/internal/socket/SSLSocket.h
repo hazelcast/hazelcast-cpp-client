@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #ifdef HZ_BUILD_WITH_SSL
 
 #include <boost/asio.hpp>
@@ -49,7 +50,7 @@ namespace hazelcast {
                     /**
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.
                      */
-                    std::vector<SSLSocket::CipherInfo> getCiphers() const;
+                    std::vector<SSLSocket::CipherInfo> getCiphers();
 
                     void async_handle_connect(const std::shared_ptr<connection::Connection> connection,
                                               const std::shared_ptr<connection::AuthenticationFuture> authFuture) override;
@@ -66,4 +67,5 @@ namespace hazelcast {
 #endif
 
 #endif /* HZ_BUILD_WITH_SSL */
+
 

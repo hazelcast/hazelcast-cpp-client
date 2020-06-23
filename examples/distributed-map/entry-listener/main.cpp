@@ -13,36 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/query/GreaterLessPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
 
-class MyEntryListener : public hazelcast::client::EntryListener<int, int> {
+class MyEntryListener : public hazelcast::client::EntryListener {
 public:
-    void entryAdded(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryAdded(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryRemoved(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryRemoved(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryRemoved] " << event << std::endl;
     }
 
-    void entryUpdated(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryUpdated(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryEvicted(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryEvicted(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryUpdated] " << event << std::endl;
     }
 
-    void entryExpired(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryExpired(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryExpired] " << event << std::endl;
     }
 
-    void entryMerged(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryMerged(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryMerged] " << event << std::endl;
     }
 
@@ -58,29 +53,29 @@ public:
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("somemap");
+    auto map = hz.getMap("somemap");
 
     MyEntryListener listener;
 
-    std::string listenerId = map.addEntryListener(listener, true);
+    std::string listenerId = map->addEntryListener(listener, true).get();
 
     std::cout << "EntryListener registered" << std::endl;
 
     // wait for modifymap executable to run
-    hazelcast::util::sleep(10);
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 
-    map.removeEntryListener(listenerId);
+    map->removeEntryListener(listenerId).get();
 
     // Continuous Query example
     // Register listener with predicate
     // Only listen events for entries with key >= 7
-    listenerId = map.addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate<int>(
-            hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
+    listenerId = map->addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate(hz,
+            hazelcast::client::query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, true, false), true).get();
 
     // wait for modifymap executable to run
-    hazelcast::util::sleep(10);
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 
-    map.removeEntryListener(listenerId);
+    map->removeEntryListener(listenerId).get();
 
     std::cout << "Finished" << std::endl;
 

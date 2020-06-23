@@ -15,9 +15,12 @@
  */
 
 #pragma once
+
 #include <string>
 #include <future>
 #include <unordered_map>
+
+#include <boost/any.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/DefaultObjectNamespace.h"
@@ -38,11 +41,47 @@ namespace hazelcast {
 
             class HAZELCAST_API ProxyManager {
             public:
+                typedef std::unordered_map<DefaultObjectNamespace, std::shared_future<std::shared_ptr<ClientProxy>>> proxy_map;
+
                 ProxyManager(ClientContext &context);
 
-                std::shared_ptr<ClientProxy> getOrCreateProxy(const std::string &service,
-                                                                const std::string &id,
-                                                                spi::ClientProxyFactory &factory);
+                template<typename T>
+                std::shared_ptr<T> getOrCreateProxy(const std::string &service, const std::string &id) {
+                    DefaultObjectNamespace ns(service, id);
+
+                    std::shared_future<std::shared_ptr<ClientProxy>> proxyFuture;
+                    std::promise<std::shared_ptr<ClientProxy>> promise;
+                    bool insertedEntry = false;
+                    {
+                        std::lock_guard<std::mutex> guard(lock);
+                        auto it = proxies.find(ns);
+                        if (it != proxies.end()) {
+                            proxyFuture = it->second;
+                        } else {
+                            auto result = proxies.insert({ns, promise.get_future().share()});
+                            assert(result.second);
+                            insertedEntry = true;
+                        }
+                    }
+
+                    if (proxyFuture.valid()) {
+                        return std::static_pointer_cast<T>(proxyFuture.get());
+                    }
+
+                    try {
+                        auto clientProxy = std::shared_ptr<T>(new T(id, &client));
+                        initializeWithRetry(std::static_pointer_cast<ClientProxy>(clientProxy));
+                        promise.set_value(std::static_pointer_cast<ClientProxy>(clientProxy));
+                        return clientProxy;
+                    } catch (exception::IException &e) {
+                        promise.set_exception(std::current_exception());
+                        std::lock_guard<std::mutex> guard(lock);
+                        if (insertedEntry) {
+                            proxies.erase(ns);
+                        }
+                        throw;
+                    }
+                }
 
                 /**
                  * Destroys the given proxy in a cluster-wide way.
@@ -58,7 +97,7 @@ namespace hazelcast {
                  *
                  * @param proxy the proxy to destroy.
                  */
-                void destroyProxy(ClientProxy &proxy);
+                boost::future<void> destroyProxy(ClientProxy &proxy);
 
                 void init();
 
@@ -71,7 +110,7 @@ namespace hazelcast {
 
                 void initialize(const std::shared_ptr<ClientProxy> &clientProxy);
 
-                std::unordered_map<DefaultObjectNamespace, std::shared_future<std::shared_ptr<ClientProxy>>> proxies;
+                proxy_map proxies;
                 std::mutex lock;
                 std::chrono::steady_clock::duration invocationTimeout;
                 std::chrono::steady_clock::duration invocationRetryPause;
@@ -88,4 +127,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

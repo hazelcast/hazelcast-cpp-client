@@ -13,22 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IQueue<std::string> q1 = hz.getQueue<std::string>("q");
-    hazelcast::client::IQueue<std::string> q2 = hz.getQueue<std::string>("q");
+    auto q1 = hz.getQueue("q");
+    auto q2 = hz.getQueue("q");
 
-    q1.put("foo");
-    std::cout << "q1.size:" << q1.size() << "  q2.size:" << q2.size() << std::endl;
+    q1->put("foo").get();
+    std::cout << "q1->size:" << q1->size().get() << "  q2->size:" << q2->size().get() << std::endl;
 
-    q1.destroy();
-    std::cout << "q1.size:" << q1.size() << "  q2.size:" << q2.size() << std::endl;
+    q1->destroy().get();
+    std::cout << "q1->size:" << q1->size().get() << "  q2->size:" << q2->size().get() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

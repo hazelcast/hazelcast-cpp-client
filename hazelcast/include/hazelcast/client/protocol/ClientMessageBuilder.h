@@ -22,10 +22,11 @@
  */
 
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
-#include <map>
+#include <unordered_map>
 #include <list>
 #include <stdint.h>
 #include <memory>
@@ -68,7 +69,7 @@ namespace hazelcast {
                 */
                 bool appendExistingPartialMessage(std::unique_ptr<ClientMessage> &message);
 
-                typedef std::map<int64_t, std::shared_ptr<ClientMessage> > MessageMap;
+                typedef std::unordered_map<int64_t, std::shared_ptr<ClientMessage> > MessageMap;
 
                 MessageMap partialMessages;
 
@@ -85,5 +86,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

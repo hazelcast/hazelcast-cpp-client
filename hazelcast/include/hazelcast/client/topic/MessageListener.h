@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 26 May 2016.
-
 #pragma once
+
 #include "hazelcast/client/topic/Message.h"
-#include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/serialization/serialization.h"
 
 #include <memory>
 
@@ -37,8 +35,7 @@ namespace hazelcast {
              *
              * @param message the message that is received for the added topic
              */
-            template <typename E>
-            class MessageListener {
+            class HAZELCAST_API MessageListener {
             public:
                 virtual ~MessageListener() { }
 
@@ -49,33 +46,9 @@ namespace hazelcast {
                 *
                 * @param message the message that is received for the added topic
                 */
-                virtual void onMessage(std::unique_ptr<Message<E> > &&message) = 0;
+                virtual void onMessage(Message &&message) = 0;
             };
 
-        }
-        namespace mixedtype {
-            namespace topic {
-                /**
-                 * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.
-                 * Therefore there is only one thread invoking onMessage. The user should not keep the thread busy, but preferably
-                 * should dispatch it via an Executor. This will increase the performance of the topic.
-                 *
-                 * @param message the message that is received for the added topic
-                 */
-                class HAZELCAST_API MessageListener {
-                public:
-                    virtual ~MessageListener() {}
-
-                    /**
-                    * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.
-                    * Therefore there is only one thread invoking onMessage. The user should not keep the thread busy, but preferably
-                    * should dispatch it via an Executor. This will increase the performance of the topic.
-                    *
-                    * @param message the message that is received for the added topic
-                    */
-                    virtual void onMessage(std::unique_ptr<client::topic::Message<TypedData> > &&message) = 0;
-                };
-            }
         }
     }
 }
@@ -83,5 +56,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

@@ -15,19 +15,19 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/HazelcastJsonValue.h>
-#include <hazelcast/client/query/GreaterLessPredicate.h>
+#include <hazelcast/client/query/Predicates.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getMap<std::string, hazelcast::client::HazelcastJsonValue>("map");
+    auto map = hz.getMap("map");
 
-    map.put("item1", hazelcast::client::HazelcastJsonValue("{ \"age\": 4 }"));
-    map.put("item2", hazelcast::client::HazelcastJsonValue("{ \"age\": 20 }"));
+    map->put("item1", hazelcast::client::HazelcastJsonValue("{ \"age\": 4 }")).get();
+    map->put("item2", hazelcast::client::HazelcastJsonValue("{ \"age\": 20 }")).get();
 
     // Get the objects whose age is less than 6
-    std::vector<hazelcast::client::HazelcastJsonValue> result = map.values(
-            hazelcast::client::query::GreaterLessPredicate<int>("age", 6, false, true));
+    auto result = map->values<hazelcast::client::HazelcastJsonValue>(
+            hazelcast::client::query::GreaterLessPredicate(hz, "age", 6, false, true)).get();
 
     std::cout << "Retrieved " << result.size() << " values whose age is less than 6." << std::endl;
     std::cout << "Entry is:" << result[0].toString() << std::endl;

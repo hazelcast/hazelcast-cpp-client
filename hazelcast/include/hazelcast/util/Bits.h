@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 18/11/14.
-//
+
 
 #pragma once
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -196,7 +195,7 @@ namespace hazelcast {
             #endif
             }
 
-            inline static int32_t readIntB(std::vector<byte> &buffer, unsigned long pos) {
+            inline static int32_t readIntB(const std::vector<byte> &buffer, unsigned long pos) {
                 #ifdef HZ_BIG_ENDIAN
                     return *((int32_t *) (&buffer[0] + pos));
                 #else
@@ -311,4 +310,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

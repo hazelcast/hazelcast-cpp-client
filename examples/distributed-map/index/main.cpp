@@ -13,100 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/query/SqlPredicate.h>
 
-class Person : public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    Person() { }
-
-    Person(const Person &p) : male(p.male), age(p.age) {
-        if (NULL != p.name.get()) {
-            name = std::unique_ptr<std::string>(new std::string(*p.name));
-        }
-    }
-
-    Person &operator=(const Person &p) {
-        if (NULL != p.name.get()) {
-            name = std::unique_ptr<std::string>(new std::string(*p.name));
-        }
-        male = p.male;
-        age = p.age;
-
-        return *this;
-    }
-
-    Person(const char *n, bool male, int age)
-            : name(std::unique_ptr<std::string>(new std::string(n))), male(male), age(age) { }
-
-    int getFactoryId() const {
-        return 1;
-    }
-
-    int getClassId() const {
-        return 3;
-    }
-
-    void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
-        out.writeUTF(name.get());
-        out.writeBoolean(male);
-        out.writeInt(age);
-    }
-
-    void readData(hazelcast::client::serialization::ObjectDataInput &in) {
-        name = in.readUTF();
-        male = in.readBoolean();
-        age = in.readInt();
-    }
-
-    const std::string *getName() const {
-        return name.get();
-    }
-
-    bool isMale() const {
-        return male;
-    }
-
-    int getAge() const {
-        return age;
-    }
-
-private:
-    std::unique_ptr<std::string> name;
+struct Person {
+    std::string name;
     bool male;
-    int age;
+    int32_t age;
 };
+
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Person> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 3;
+                }
+
+                static void writeData(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.name);
+                    out.write(object.male);
+                    out.write(object.age);
+                }
+
+                static Person readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+                }
+            };
+        }
+    }
+}
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, Person> map =
-            hz.getMap<std::string, Person>("personsWithIndex");
+    auto map = hz.getMap("personsWithIndex");
 
-    map.addIndex("name", true);
+    map->addIndex("name", true).get();
 
     const int mapSize = 200000;
 
-    char buf[30];
-    char name[30];
-    time_t start = time(NULL);
+    auto start = std::chrono::steady_clock::now();
     for (int i = 0; i < mapSize; ++i) {
-        hazelcast::util::hz_snprintf(buf, 30, "person-%d", i);
-        hazelcast::util::hz_snprintf(name, 50, "myname-%d", i % 1000);
-        Person p(name, (i % 2 == 0), (i % 100));
-        map.put(buf, p);
+        map->put<std::string, Person>(std::string("person-") + std::to_string(i),
+                                      {std::string("myname-") + std::to_string(i), (i % 2 == 0), (i % 100)}).get();
     }
-    time_t end = time(NULL);
-    std::cout << "Put " << mapSize << " entries into the map in " << end - start << " seconds" << std::endl;
+    auto end = std::chrono::steady_clock::now();
+    std::cout << "Put " << mapSize << " entries into the map in "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " milliseconds" << '\n';
 
-    start = time(NULL);
-    hazelcast::client::query::SqlPredicate predicate("name == 'myname-30'");
-    std::vector<std::pair<std::string, Person> > entries = map.entrySet(predicate);
-    end = time(NULL);
-    std::cout << "The query resulted in " << entries.size() << " entries in " << end - start << " seconds" << std::endl;
+    start = std::chrono::steady_clock::now();
+    auto entries = map->entrySet<std::string, Person>(
+            hazelcast::client::query::SqlPredicate(hz, "name == 'myname-30'")).get();
+    end = std::chrono::steady_clock::now();
+    std::cout << "The query resulted in " << entries.size() << " entries in "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " milliseconds" << '\n';
 
     std::cout << "Finished" << std::endl;
 

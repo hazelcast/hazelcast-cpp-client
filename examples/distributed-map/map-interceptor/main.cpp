@@ -13,42 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
+
 #include <hazelcast/client/HazelcastClient.h>
 
-class MapInterceptor : public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    MapInterceptor() { }
+class MapInterceptor {};
 
-    int getFactoryId() const {
-        return 1;
-    }
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<MapInterceptor> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
 
-    int getClassId() const {
-        return 7;
-    }
+                static int32_t getClassId() noexcept {
+                    return 7;
+                }
 
-    void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
-    }
+                static void writeData(const MapInterceptor &object, hazelcast::client::serialization::ObjectDataOutput &out) {}
 
-    void readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static MapInterceptor readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return MapInterceptor{};
+                }
+            };
+        }
     }
-};
+}
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, std::string> map =
-            hz.getMap<std::string, std::string>("themap");
+    auto map = hz.getMap("themap");
 
-    MapInterceptor interceptor;
-    map.addInterceptor<MapInterceptor>(interceptor);
+    map->addInterceptor(MapInterceptor{}).get();
 
-    map.put("1", "1");
+    map->put<std::string, std::string>("1", "1").get();
 
-    std::cout << "The modified value (modified by the interceptor) at the server:" << map.get("1") << std::endl;
+    std::cout << "The modified value (modified by the interceptor) at the server:" << *map->get<std::string, std::string>("1").get() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

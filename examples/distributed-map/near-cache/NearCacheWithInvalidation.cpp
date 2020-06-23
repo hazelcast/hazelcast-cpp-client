@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 13 Jan 2017.
-//
 #include "NearCacheSupport.h"
 
 using namespace hazelcast::client;
@@ -23,8 +20,6 @@ using namespace hazelcast::client;
 int main() {
     ClientConfig config;
     const char *mapName = "InvalidationMap";
-    Address serverAddr("127.0.0.1", 5701);
-    config.addAddress(serverAddr);
     std::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
             new config::NearCacheConfig<int, std::string>(mapName, config::OBJECT));
     nearCacheConfig->setInvalidateOnChange(true);
@@ -33,26 +28,24 @@ int main() {
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);
 
-    ClientConfig noNearCacheConfig;
-    config.addAddress(serverAddr);
-    HazelcastClient noNearCacheclient(noNearCacheConfig);
+    HazelcastClient noNearCacheclient;
 
-    IMap<int, std::string> map = client.getMap<int, std::string>(mapName);
-    IMap<int, std::string> noNearCacheMap = noNearCacheclient.getMap<int, std::string>(mapName);
+    auto map = client.getMap(mapName);
+    auto noNearCacheMap = noNearCacheclient.getMap(mapName);
 
-    noNearCacheMap.put(1, "foo");
-    NearCacheSupport::printNearCacheStats(map, "The noNearCacheMap.put(key, \"foo\")) call has no effect on the Near Cache of map");
+    noNearCacheMap->put<int, std::string>(1, "foo").get();
+    NearCacheSupport::printNearCacheStats(map, "The noNearCacheMap->put(key, \"foo\")) call has no effect on the Near Cache of map");
 
-    map.get(1);
+    map->get<int, std::string>(1).get();
     NearCacheSupport::printNearCacheStats(map, "The first get(1) call populates the Near Cache");
 
-    noNearCacheMap.put(1, "foo");
-    NearCacheSupport::printNearCacheStats(map, "The noNearCacheMap.put(key, \"foo\")) call will invalidate the Near Cache of map");
+    noNearCacheMap->put<int, std::string>(1, "foo").get();
+    NearCacheSupport::printNearCacheStats(map, "The noNearCacheMap->put(key, \"foo\")) call will invalidate the Near Cache of map");
 
     NearCacheSupport::waitForInvalidationEvents();
     NearCacheSupport::printNearCacheStats(map, "The Near Cache of map is empty after the invalidation event has been processed");
 
-    map.get(1);
+    map->get<int, std::string>(1).get();
     NearCacheSupport::printNearCacheStats(map, "The next map1.get(key) call populates the Near Cache again");
 
     std::cout << "Finished" << std::endl;

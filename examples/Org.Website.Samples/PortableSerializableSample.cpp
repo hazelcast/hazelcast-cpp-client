@@ -14,64 +14,47 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastAll.h>
-#include <hazelcast/client/serialization/PortableReader.h>
-#include <hazelcast/client/serialization/PortableWriter.h>
 
 using namespace hazelcast::client;
 
-class PortableSerializableSample : public serialization::Portable {
-public:
-    static const int CLASS_ID = 1;
-
-    virtual int getFactoryId() const {
-        return 1;
-    }
-
-    virtual int getClassId() const {
-        return CLASS_ID;
-    }
-
-    virtual void writePortable(serialization::PortableWriter &writer) const {
-        writer.writeInt("id", id);
-        writer.writeUTF("name", &name);
-        writer.writeLong("lastOrder", lastOrder);
-    }
-
-    virtual void readPortable(serialization::PortableReader &reader) {
-        id = reader.readInt("id");
-        name = *reader.readUTF("name");
-        lastOrder = reader.readLong("lastOrder");
-    }
-
-private:
+struct PortableSerializableSample {
     std::string name;
     int32_t id;
     int64_t lastOrder;
 };
 
-class SamplePortableFactory : public serialization::PortableFactory {
-public:
-    static const int FACTORY_ID = 1;
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<PortableSerializableSample> : portable_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
 
-    virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
-        switch (classId) {
-            case 1:
-                return std::unique_ptr<serialization::Portable>(new PortableSerializableSample());
-            default:
-                return std::unique_ptr<serialization::Portable>();
+                static int32_t getClassId() noexcept {
+                    return 1;
+                }
+
+                static void writePortable(const PortableSerializableSample &object,
+                                          hazelcast::client::serialization::PortableWriter &out) {
+                    out.write("name", object.name);
+                    out.write("id", object.id);
+                    out.write("lastOrder", object.lastOrder);
+                }
+
+                static PortableSerializableSample readPortable(hazelcast::client::serialization::PortableReader &in) {
+                    return PortableSerializableSample{in.read<std::string>("name"), in.read<int32_t>("id"),
+                                                      in.read<int64_t>("lastOrder")};
+                }
+            };
         }
     }
-};
-
+}
 
 int main() {
-    ClientConfig clientConfig;
-    clientConfig.getSerializationConfig().addPortableFactory(SamplePortableFactory::FACTORY_ID,
-                                                             std::shared_ptr<serialization::PortableFactory>(
-                                                                     new SamplePortableFactory()));
-
-    HazelcastClient hz(clientConfig);
-    //Customer can be used here
+    HazelcastClient hz;
+    //PortableSerializableSample can be used here
     hz.shutdown();
 
     return 0;

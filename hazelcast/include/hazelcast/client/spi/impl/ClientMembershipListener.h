@@ -15,7 +15,8 @@
  */
 
 #pragma once
-#include <set>
+
+#include <unordered_set>
 #include <memory>
 
 #include <boost/thread/latch.hpp>
@@ -73,7 +74,7 @@ namespace hazelcast {
                     static int INITIAL_MEMBERS_TIMEOUT_SECONDS;
 
                     ClientContext &client;
-                    std::set<Member> members;
+                    std::unordered_set<Member> members;
                     ClientClusterServiceImpl &clusterService;
                     ClientPartitionServiceImpl &partitionService;
                     connection::ClientConnectionManagerImpl &connectionManager;
@@ -88,7 +89,7 @@ namespace hazelcast {
                     std::exception_ptr newTargetDisconnectedExceptionCausedByMemberLeftEvent(
                             const std::shared_ptr<connection::Connection> &connection);
 
-                    std::vector<MembershipEvent> detectMembershipEvents(std::map<std::string, Member> &prevMembers);
+                    std::vector<MembershipEvent> detectMembershipEvents(std::unordered_map<std::string, Member> &prevMembers);
 
                     void fireMembershipEvent(std::vector<MembershipEvent> &events);
 
@@ -103,4 +104,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

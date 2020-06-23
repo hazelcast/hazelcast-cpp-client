@@ -17,57 +17,46 @@
 
 using namespace hazelcast::client;
 
-class SampleDataSerializableFactory;
+struct Employee {
+    friend std::ostream &operator<<(std::ostream &os, const Employee &person);
 
-class Employee : public serialization::IdentifiedDataSerializable {
-public:
-    static const int TYPE_ID = 100;
-
-    virtual int getFactoryId() const {
-        return 1000;
-    }
-
-    virtual int getClassId() const {
-        return TYPE_ID;
-    }
-
-    virtual void writeData(serialization::ObjectDataOutput &writer) const {
-        writer.writeInt(id);
-        writer.writeUTF(&name);
-    }
-
-    virtual void readData(serialization::ObjectDataInput &reader) {
-        id = reader.readInt();
-        name = *reader.readUTF();
-    }
-
-private:
-    int id;
+    int32_t id;
     std::string name;
 };
 
-class SampleDataSerializableFactory : public serialization::DataSerializableFactory {
-public:
-    static const int FACTORY_ID = 1000;
+std::ostream &operator<<(std::ostream &os, const Employee &person) {
+    os << "id: " << person.id << " name: " << person.name;
+    return os;
+}
 
-    virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId) {
-        switch (classId) {
-            case 100:
-                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Employee());
-            default:
-                return std::unique_ptr<serialization::IdentifiedDataSerializable>();
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Employee> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 100;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 1000;
+                }
+
+                static void writeData(const Employee &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.id);
+                    out.write(object.name);
+                }
+
+                static Employee readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Employee{in.read<int32_t>(), in.read<std::string>()};
+                }
+            };
         }
-
     }
-};
+}
 
 int main() {
-    ClientConfig clientConfig;
-    clientConfig.getSerializationConfig().addDataSerializableFactory(SampleDataSerializableFactory::FACTORY_ID,
-                                                                     std::shared_ptr<serialization::DataSerializableFactory>(
-                                                                             new SampleDataSerializableFactory()));
-
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     //Employee can be used here
     hz.shutdown();
 

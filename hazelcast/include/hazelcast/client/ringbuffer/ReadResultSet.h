@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 #pragma once
-#include <stdint.h>
-
-#include "hazelcast/client/impl/DataArrayImpl.h"
 
 namespace hazelcast {
     namespace client {
         namespace ringbuffer {
-            template<typename E>
-            class ReadResultSet {
+            class HAZELCAST_API ReadResultSet {
             public:
                 /**
                  * Value returned from methods returning a sequence number when the
@@ -31,19 +27,15 @@ namespace hazelcast {
                  */
                 static const int64_t SEQUENCE_UNAVAILABLE = -1;
 
-                ReadResultSet() {}
-
-                ReadResultSet(int32_t readCount, const std::vector<serialization::pimpl::Data> &dataItems,
+                ReadResultSet(int32_t readCount, std::vector<serialization::pimpl::Data> &&dataItems,
                               serialization::pimpl::SerializationService &serializationService,
-                              std::unique_ptr<std::vector<int64_t> > &itemSeqs, bool itemSeqsExist,
-                              int64_t nextSeq) : itemsReadCount(readCount),
-                                                 items(new client::impl::DataArrayImpl<E>(dataItems,
-                                                                                          serializationService)),
-                                                 itemSeqs(std::move(itemSeqs)),
-                                                 itemSeqsExist(itemSeqsExist),
-                                                 nextSeq(nextSeq) {}
-
-                virtual ~ReadResultSet() {}
+                              std::unique_ptr<std::vector<int64_t>> &itemSeqs, bool itemSeqsExist,
+                              int64_t nextSeq) : itemsReadCount(readCount), itemSeqs(std::move(itemSeqs)),
+                                                 itemSeqsExist(itemSeqsExist), nextSeq(nextSeq) {
+                    for (auto &&item : dataItems) {
+                        items.emplace_back(item, serializationService);
+                    }
+                }
 
                 /**
                  * Returns the number of items that have been read before filtering.
@@ -58,12 +50,12 @@ namespace hazelcast {
                  *
                  * @return the number of items read (including the filtered ones).
                  */
-                virtual int32_t readCount() const {
+                int32_t readCount() const {
                     return itemsReadCount;
                 }
 
-                virtual DataArray<E> &getItems() {
-                    return *items;
+                const std::vector<TypedData> &getItems() const {
+                    return items;
                 }
 
                 /**
@@ -74,16 +66,16 @@ namespace hazelcast {
                  * @throws IllegalArgumentException if index out of bounds.
                  * @since 3.9
                  */
-                virtual int64_t getSequence(int32_t index) const {
+                int64_t getSequence(int32_t index) const {
                     if (!itemSeqsExist) {
                         BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ReadResultSet::getSequence",
                                                                                   "No item sequences exist"));
                     }
                     if (index >= (int32_t) itemSeqs->size() || index < 0) {
-                        throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(
+                        BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::IllegalArgumentException>(
                                 "ReadResultSet::getSequence") << "Index " << index
                                                               << " is out of bounds. Sequences size is:"
-                                                              << itemSeqs->size()).build();
+                                                              << itemSeqs->size()).build());
                     }
 
                     return (*itemSeqs)[index];
@@ -110,18 +102,17 @@ namespace hazelcast {
                  * @return the sequence of the item following the last item in the result set
                  * @since 3.10
                  */
-                virtual int64_t getNextSequenceToReadFrom() const {
+                int64_t getNextSequenceToReadFrom() const {
                     return nextSeq;
                 }
 
             private:
                 int32_t itemsReadCount;
-                std::unique_ptr<client::impl::DataArrayImpl<E> > items;
-                std::unique_ptr<std::vector<int64_t> > itemSeqs;
+                std::vector<TypedData> items;
+                std::unique_ptr<std::vector<int64_t>> itemSeqs;
                 bool itemSeqsExist;
                 int64_t nextSeq;
             };
         }
     }
 }
-

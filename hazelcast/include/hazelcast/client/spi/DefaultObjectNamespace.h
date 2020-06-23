@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 30 Nov 2016.
-
 #pragma once
+
 #include <string>
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -68,12 +66,13 @@ namespace std {
 
     template<>
     struct hash<hazelcast::client::spi::DefaultObjectNamespace> {
-        std::size_t operator()(const hazelcast::client::spi::DefaultObjectNamespace &k) const;
+        std::size_t operator()(const hazelcast::client::spi::DefaultObjectNamespace &k) const noexcept;
     };
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

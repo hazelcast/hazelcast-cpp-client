@@ -15,30 +15,30 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 
-class MapChangeListener : public hazelcast::client::EntryListener<int, int> {
+class MapChangeListener : public hazelcast::client::EntryListener {
 public:
-    virtual void entryAdded(const hazelcast::client::EntryEvent<int, int> &event) {
-            std::cout << "Entry added:" << event.getKey();
+    virtual void entryAdded(const hazelcast::client::EntryEvent &event) {
+            std::cout << "Entry added:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryRemoved(const hazelcast::client::EntryEvent<int, int> &event) {
-        std::cout << "Entry removed:" << event.getKey();
+    virtual void entryRemoved(const hazelcast::client::EntryEvent &event) {
+        std::cout << "Entry removed:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryUpdated(const hazelcast::client::EntryEvent<int, int> &event) {
-        std::cout << "Entry updated:" << event.getKey();
+    virtual void entryUpdated(const hazelcast::client::EntryEvent &event) {
+        std::cout << "Entry updated:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryEvicted(const hazelcast::client::EntryEvent<int, int> &event) {
-        std::cout << "Entry evicted:" << event.getKey();
+    virtual void entryEvicted(const hazelcast::client::EntryEvent &event) {
+        std::cout << "Entry evicted:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryExpired(const hazelcast::client::EntryEvent<int, int> &event) {
-        std::cout << "Entry expired:" << event.getKey();
+    virtual void entryExpired(const hazelcast::client::EntryEvent &event) {
+        std::cout << "Entry expired:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryMerged(const hazelcast::client::EntryEvent<int, int> &event) {
-        std::cout << "Entry merged:" << event.getKey();
+    virtual void entryMerged(const hazelcast::client::EntryEvent &event) {
+        std::cout << "Entry merged:" << event.getKey().get<int>().value();
     }
 
     virtual void mapEvicted(const hazelcast::client::MapEvent &event) {
@@ -72,17 +72,15 @@ int main() {
 
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
+    auto map = hz.getMap("MyMap");
 
-    MapChangeListener listener;
-
-    map.addEntryListener(listener, false);
+    map->addEntryListener(MapChangeListener(), false).get();
 
     // Now we put two entries, and since there is only one event thread, they will be delivered to the entry listener,
     // from within the same thread, hence it will be a sequential delivery. Hence we should see that "Entry added:100"
     // is printed before "Entry added:200"
-    map.put(1, 100);
-    map.put(2, 200);
+    map->put(1, 100).get();
+    map->put(2, 200).get();
 
     std::cout << "Finished" << std::endl;
 

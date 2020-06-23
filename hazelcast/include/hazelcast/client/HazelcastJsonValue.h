@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <string>
 #include <ostream>
 
@@ -53,7 +54,7 @@ namespace hazelcast {
              * @param jsonString The json string
              * @return The HazelcastJsonValue representing the json string.
              */
-            HazelcastJsonValue(const std::string &jsonString);
+            HazelcastJsonValue(std::string jsonString);
 
             virtual ~HazelcastJsonValue();
 
@@ -77,8 +78,15 @@ namespace hazelcast {
     }
 }
 
+namespace std {
+    template<> struct hash<hazelcast::client::HazelcastJsonValue> {
+        std::size_t operator()(const hazelcast::client::HazelcastJsonValue &object) const noexcept;
+    };
+}
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

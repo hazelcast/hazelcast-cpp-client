@@ -13,71 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/PartitionAware.h>
 
-class PartitionAwareString
-        : public hazelcast::client::PartitionAware<std::string>,
-          public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    static const std::string desiredPartitionString;
+struct PartitionAwareString : public hazelcast::client::PartitionAware<std::string> {
+    PartitionAwareString(const std::string &actualKey) : actualKey(actualKey) {}
 
-    PartitionAwareString() {
-    }
-
-    PartitionAwareString(const std::string &actualKey) : actualKey(actualKey) {
-    }
-
-    virtual const std::string *getPartitionKey() const {
+    const std::string *getPartitionKey() const override {
         return &desiredPartitionString;
     }
 
-    virtual int getFactoryId() const {
-        return 1;
-    }
-
-    virtual int getClassId() const {
-        return 10;
-    }
-
-    virtual void writeData(hazelcast::client::serialization::ObjectDataOutput &writer) const {
-        writer.writeUTF(&actualKey);
-    }
-
-    virtual void readData(hazelcast::client::serialization::ObjectDataInput &reader) {
-        actualKey = *reader.readUTF();
-    }
-
-    const std::string &getActualKey() const {
-        return actualKey;
-    }
-
-private:
     std::string actualKey;
+    static const std::string desiredPartitionString;
 };
 
-const std::string PartitionAwareString::desiredPartitionString = "desiredKeyString";
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<PartitionAwareString> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
 
-bool operator<(const PartitionAwareString &lhs, const PartitionAwareString &rhs) {
-    return lhs.getActualKey() < rhs.getActualKey();
+                static int32_t getClassId() noexcept {
+                    return 10;
+                }
+
+                static void
+                writeData(const PartitionAwareString &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.actualKey);
+                }
+
+                static PartitionAwareString readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return PartitionAwareString{in.read<std::string>()};
+                }
+            };
+        }
+    }
 }
+
+
+const std::string PartitionAwareString::desiredPartitionString = "desiredKeyString";
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    PartitionAwareString partitionKey("MyString");
+    PartitionAwareString partitionKey{"MyString"};
 
-    hazelcast::client::IMap<PartitionAwareString, std::string> map = hz.getMap<PartitionAwareString, std::string>(
-            "paritionawaremap");
+    auto map = hz.getMap("paritionawaremap");
 
     // Puts the key, value tokyo at the partition for "desiredKeyString" rather than the partition for "MyString"
-    map.put(partitionKey, "Tokyo");
-    std::shared_ptr<std::string> value = map.get(partitionKey);
+    map->put<PartitionAwareString, std::string>(partitionKey, "Tokyo").get();
+    auto value = map->get<PartitionAwareString, std::string>(partitionKey).get();
 
-    std::cout << "Got the value for key " << partitionKey.getActualKey() << ". Value is:" << *value << std::endl;
+    std::cout << "Got the value for key " << partitionKey.actualKey << ". PartitionAwareString is:" << value.value()
+              << '\n';
 
     std::cout << "Finished" << std::endl;
 

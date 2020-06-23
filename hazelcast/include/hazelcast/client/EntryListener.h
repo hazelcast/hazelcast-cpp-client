@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 04/09/14.
-//
+
 
 
 #pragma once
+
 #include "hazelcast/client/EntryEvent.h"
 
 namespace hazelcast {
@@ -39,133 +38,66 @@ namespace hazelcast {
         * @param <V> value of the map entry.
         * @see IMap#addEntryListener(EntryListener, boolean)
         */
-        template<typename K, typename V>
         class EntryListener {
         public:
-            virtual ~EntryListener() {
-
-            }
+            virtual ~EntryListener() {}
 
             /**
             * Invoked when an entry is added.
             *
             * @param event entry event
             */
-            virtual void entryAdded(const EntryEvent<K, V>& event) = 0;
+            virtual void entryAdded(const EntryEvent &event) = 0;
 
             /**
             * Invoked when an entry is removed.
             *
             * @param event entry event
             */
-            virtual void entryRemoved(const EntryEvent<K, V>& event) = 0;
+            virtual void entryRemoved(const EntryEvent &event) = 0;
 
             /**
             * Invoked when an entry is removed.
             *
             * @param event entry event
             */
-            virtual void entryUpdated(const EntryEvent<K, V>& event) = 0;
+            virtual void entryUpdated(const EntryEvent &event) = 0;
 
             /**
             * Invoked when an entry is evicted.
             *
             * @param event entry event
             */
-            virtual void entryEvicted(const EntryEvent<K, V>& event) = 0;
+            virtual void entryEvicted(const EntryEvent &event) = 0;
 
             /**
             * Invoked upon expiration of an entry.
             *
             * @param event the event invoked when an entry is expired.
             */
-            virtual void entryExpired(const EntryEvent<K, V>& event) = 0;
+            virtual void entryExpired(const EntryEvent &event) = 0;
 
             /**
             *  Invoked after WAN replicated entry is merged.
             *
             * @param event the event invoked when an entry is expired.
             */
-            virtual void entryMerged(const EntryEvent<K, V>& event) = 0;
+            virtual void entryMerged(const EntryEvent &event) = 0;
 
             /**
             * Invoked when all entries evicted by {@link IMap#evictAll()}.
             *
             * @param event map event
             */
-            virtual void mapEvicted(const MapEvent& event) = 0;
+            virtual void mapEvicted(const MapEvent &event) = 0;
 
             /**
             * Invoked when all entries are removed by {@link IMap#clear()}.}
             */
-            virtual void mapCleared(const MapEvent& event) = 0;
-
+            virtual void mapCleared(const MapEvent &event) = 0;
         };
-
-        namespace mixedtype {
-            class HAZELCAST_API MixedEntryListener {
-            public:
-                virtual ~MixedEntryListener() {
-
-                }
-
-                /**
-                * Invoked when an entry is added.
-                *
-                * @param event entry event
-                */
-                virtual void entryAdded(const MixedEntryEvent& event) = 0;
-
-                /**
-                * Invoked when an entry is removed.
-                *
-                * @param event entry event
-                */
-                virtual void entryRemoved(const MixedEntryEvent& event) = 0;
-
-                /**
-                * Invoked when an entry is removed.
-                *
-                * @param event entry event
-                */
-                virtual void entryUpdated(const MixedEntryEvent& event) = 0;
-
-                /**
-                * Invoked when an entry is evicted.
-                *
-                * @param event entry event
-                */
-                virtual void entryEvicted(const MixedEntryEvent& event) = 0;
-
-                /**
-                * Invoked upon expiration of an entry.
-                *
-                * @param event the event invoked when an entry is expired.
-                */
-                virtual void entryExpired(const MixedEntryEvent& event) = 0;
-
-                /**
-                *  Invoked after WAN replicated entry is merged.
-                *
-                * @param event the event invoked when an entry is expired.
-                */
-                virtual void entryMerged(const MixedEntryEvent& event) = 0;
-
-                /**
-                * Invoked when all entries evicted by {@link IMap#evictAll()}.
-                *
-                * @param event map event
-                */
-                virtual void mapEvicted(const MapEvent& event) = 0;
-
-                /**
-                * Invoked when all entries are removed by {@link IMap#clear()}.}
-                */
-                virtual void mapCleared(const MapEvent& event) = 0;
-
-            };
-        }
     }
 }
+
 
 

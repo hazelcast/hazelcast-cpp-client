@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/7/13.
-
 #pragma once
+
 #include <string>
 #include <vector>
 
@@ -24,8 +22,8 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
+#pragma warning(disable: 4251) //for dll export	
+#endif 
 
 namespace hazelcast {
     namespace client {
@@ -38,7 +36,6 @@ namespace hazelcast {
              */
             class HAZELCAST_API UsernamePasswordCredentials {
             public:
-
                 UsernamePasswordCredentials(const std::string &principal, const std::string &password);
 
                 const std::string &getPrincipal() const;
@@ -55,7 +52,8 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif
+#endif 
+
 
 
 

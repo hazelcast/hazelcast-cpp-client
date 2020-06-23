@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 29/01/14.
-//
-
 #pragma once
+
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/Credentials.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
@@ -40,11 +36,10 @@
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/Member.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/MembershipEvent.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/TransactionalList.h"
@@ -57,10 +52,5 @@
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/client/PartitionAware.h"
-#include "hazelcast/client/mixedtype/IList.h"
-#include "hazelcast/client/mixedtype/IQueue.h"
-#include "hazelcast/client/mixedtype/Ringbuffer.h"
-#include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include <hazelcast/client/cluster/memberselector/MemberSelectors.h>
-
 

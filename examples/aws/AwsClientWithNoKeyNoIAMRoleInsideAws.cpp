@@ -31,15 +31,15 @@ int main() {
     
     hazelcast::client::HazelcastClient hz(clientConfig);
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
+    auto map = hz.getMap("MyMap");
     
-    map.put(1, 100);
-    map.put(2, 200);
+    map->put(1, 100).get();
+    map->put(2, 200).get();
 
-    std::shared_ptr<int> value = map.get(1);
+    auto value = map->get<int, int>(1).get();
 
-    if (value.get()) {
-        std::cout << "Value for key 1 is " << *value << std::endl;
+    if (value) {
+        std::cout << "Value for key 1 is " << value.value() << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

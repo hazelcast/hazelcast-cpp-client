@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <stdint.h>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -59,4 +60,5 @@ namespace hazelcast {
         }
     }
 }
+
 

@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/31/13.
-
 #pragma once
+
 #include <vector>
 #include <memory>
 
@@ -148,5 +146,6 @@ namespace hazelcast {
         };
     }
 }
+
 
 

@@ -13,19 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/23/13.
-
 #pragma once
+
 #include <stdint.h>
 
 #include "hazelcast/client/map/DataEntryView.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
+#include "hazelcast/client/serialization/serialization.h"
 
 namespace hazelcast {
     namespace client {
@@ -38,13 +31,9 @@ namespace hazelcast {
         template<typename K, typename V>
         class EntryView{
         public:
-
-            /**
-             * Constructor
-             */
-            EntryView(const K &key, const V &value, const map::DataEntryView& rhs)
-            : key(key)
-            , value(value)
+            EntryView(K key, V value, map::DataEntryView rhs)
+            : key(std::move(key))
+            , value(std::move(value))
             , cost (rhs.getCost())
             , creationTime (rhs.getCreationTime())
             , expirationTime (rhs.getExpirationTime())
@@ -52,9 +41,8 @@ namespace hazelcast {
             , lastAccessTime (rhs.getLastAccessTime())
             , lastStoredTime (rhs.getLastStoredTime())
             , lastUpdateTime (rhs.getLastUpdateTime())
-            , version (rhs.getVersion()) {
+            , version (rhs.getVersion()) {};
 
-            };
             /**
              * key
              */
@@ -98,9 +86,5 @@ namespace hazelcast {
         };
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 

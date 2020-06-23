@@ -13,23 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("somemap");
+    auto map = hz.getMap("somemap");
 
-    std::ostringstream out;
-    out << time(NULL);
-    const std::string &key = out.str();
+    std::string key{"some string key"};
 
-    map.put(key, "1");
-    map.put(key, "2");
-    map.deleteEntry(key);
+    map->put<std::string, std::string>(key, "1").get();
+    map->put<std::string, std::string>(key, "2").get();
+    map->deleteEntry(key).get();
 
     std::cout << "Finished" << std::endl;
 

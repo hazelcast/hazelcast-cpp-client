@@ -15,12 +15,15 @@
  */
 
 #pragma once
+
 #include <string>
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/spi/EventHandler.h"
 
 namespace hazelcast {
     namespace client {
+        namespace impl {
+            class BaseEventHandler;
+        }
         namespace spi {
             namespace impl {
                 class ListenerMessageCodec;
@@ -31,13 +34,14 @@ namespace hazelcast {
              * For smart client, it registers local  listeners to all nodes in cluster.
              * For dummy client, it registers global listener to one node.
              */
+             // TODO: Remove this interface and use abstract base class instead
             class ClientListenerService {
             public:
-                virtual std::string
-                registerListener(const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
-                                 const std::shared_ptr<EventHandler<protocol::ClientMessage>> handler) = 0;
+                virtual boost::future<std::string>
+                registerListener(std::unique_ptr<impl::ListenerMessageCodec> &&listenerMessageCodec,
+                                 std::unique_ptr<client::impl::BaseEventHandler> &&handler) = 0;
 
-                virtual bool deregisterListener(const std::string registrationId) = 0;
+                virtual boost::future<bool> deregisterListener(const std::string registrationId) = 0;
             };
         }
     }

@@ -13,13 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/6/13.
-
-
-
-
 #pragma once
+
 #include "hazelcast/client/proxy/TransactionalSetImpl.h"
 
 namespace hazelcast {
@@ -27,18 +22,17 @@ namespace hazelcast {
         /**
         * Transactional implementation of ISet.
         */
-        template<typename E>
         class TransactionalSet : public proxy::TransactionalSetImpl {
             friend class TransactionContext;
-
         public:
             /**
             * Add new item to transactional set
             * @param e item
             * @return true if item is added successfully
             */
-            bool add(const E& e) {
-                return proxy::TransactionalSetImpl::add(toData(&e));
+            template<typename E>
+            boost::future<bool> add(const E &e) {
+                return proxy::TransactionalSetImpl::addData(toData(e));
             }
 
             /**
@@ -46,27 +40,15 @@ namespace hazelcast {
             * @param e item
             * @return true if item is remove successfully
             */
-            bool remove(const E& e) {
-                return proxy::TransactionalSetImpl::remove(toData(&e));
-            }
-
-            /**
-            * Returns the size of the set
-            * @return size
-            */
-            int size() {
-                return proxy::TransactionalSetImpl::size();
+            template<typename E>
+            boost::future<bool> remove(const E &e) {
+                return proxy::TransactionalSetImpl::removeData(toData(e));
             }
 
         private:
-            TransactionalSet(const std::string& name, txn::TransactionProxy *transactionProxy)
-            : TransactionalSetImpl(name, transactionProxy) {
-
-            }
+            TransactionalSet(const std::string &name, txn::TransactionProxy &transactionProxy)
+                    : TransactionalSetImpl(name, transactionProxy) {}
         };
-
     }
 }
-
-
 

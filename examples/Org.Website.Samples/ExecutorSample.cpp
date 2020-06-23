@@ -59,33 +59,39 @@ using namespace hazelcast::client;
 //    }
 //}
 
-class MessagePrinter : public serialization::IdentifiedDataSerializable {
-public:
-    MessagePrinter(const std::string &message) : message(message) {}
-
-    virtual int getFactoryId() const {
-        return 1;
-    }
-
-    virtual int getClassId() const {
-        return 555;
-    }
-
-    virtual void writeData(serialization::ObjectDataOutput &writer) const {
-        writer.writeUTF(&message);
-    }
-
-    virtual void readData(serialization::ObjectDataInput &reader) {
-        // no need to implement since it will not be read by the client in our example
-    }
-
-private:
+struct MessagePrinter {
     std::string message;
 };
 
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<MessagePrinter> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 555;
+                }
+
+                static void
+                writeData(const MessagePrinter &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.message);
+                }
+
+                static MessagePrinter readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return MessagePrinter{in.read<std::string>()};
+                }
+            };
+        }
+    }
+}
+
 class PrinterCallback : public ExecutionCallback<std::string> {
 public:
-    virtual void onResponse(const std::shared_ptr<std::string> &response) {
+    virtual void onResponse(const boost::optional<std::string> &response) {
         std::cout << "The execution of the task is completed successfully and server returned:" << *response
                   << std::endl;
     }
@@ -121,25 +127,24 @@ int main() {
     // Get the Distributed Executor Service
     std::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    auto future = ex->submit<MessagePrinter, std::string>(MessagePrinter("message to any node"));
+    auto promise = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
     // Wait for the result of the submitted task and print the result
-    std::shared_ptr<std::string> result = future.get_future().get();
+    auto result = promise.get_future().get();
     std::cout << "Server result: " << *result << std::endl;
     // Get the first Hazelcast Cluster Member
     Member firstMember = hz.getCluster().getMembers()[0];
     // Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
-    ex->executeOnMember<MessagePrinter>(MessagePrinter("message to very first member of the cluster"), firstMember);
+    ex->executeOnMember<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, firstMember);
     // Submit the MessagePrinter Runnable to all Hazelcast Cluster Members
-    ex->executeOnAllMembers<MessagePrinter>(MessagePrinter("message to all members in the cluster"));
+    ex->executeOnAllMembers<MessagePrinter>(MessagePrinter{"message to all members in the cluster"});
     // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
     ex->executeOnKeyOwner<MessagePrinter, std::string>(
-            MessagePrinter("message to the member that owns the key"), "key");
-    // Instantiate a callback instance
-    std::shared_ptr<ExecutionCallback<std::string> > callback(new PrinterCallback());
+            MessagePrinter{"message to the member that owns the key"}, "key");
     // Use a callback execution when the task is completed
-    ex->submit<MessagePrinter, std::string>(MessagePrinter("Message for the callback"), callback);
+    ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message for the callback"},
+                                            std::make_shared<PrinterCallback>());
     // Choose which member to submit the task to using a member selector
-    ex->submit<MessagePrinter, std::string>(MessagePrinter("Message when using the member selector"),
+    ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message when using the member selector"},
                                             MyMemberSelector());
     // Shutdown this Hazelcast Client
     hz.shutdown();

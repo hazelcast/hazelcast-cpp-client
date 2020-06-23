@@ -18,16 +18,15 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    std::shared_ptr<hazelcast::client::ReplicatedMap<std::string, std::string> > map = hz.getReplicatedMap<std::string, std::string>(
-            "somemap");
+    auto map = hz.getReplicatedMap("somemap");
 
     std::ostringstream out;
     out << time(NULL);
     const std::string &key = out.str();
 
-    map->put(key, "1");
-    map->put(key, "2");
-    map->remove(key);
+    map->put<std::string, std::string>(key, "1").get();
+    map->put<std::string, std::string>(key, "2").get();
+    map->remove<std::string, std::string>(key).get();
 
     std::cout << "Finished" << std::endl;
 

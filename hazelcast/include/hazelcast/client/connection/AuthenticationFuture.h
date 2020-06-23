@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <memory>
 #include <boost/thread/latch.hpp>
 
@@ -40,7 +41,7 @@ namespace hazelcast {
                 AuthenticationFuture(const Address &address,
                                      util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress);
 
-                void onSuccess(const std::shared_ptr<Connection> &connection);
+                void onSuccess(const std::shared_ptr<Connection> &conn);
 
                 void onFailure(std::exception_ptr t);
 
@@ -61,4 +62,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <unordered_map>
 #include <memory>
 
@@ -31,7 +32,7 @@ namespace hazelcast {
         /**
          * MultiExecutionCallback provides notification for when an execution is completed on each member
          * that a task is submitted to. After all executions are completed on all submitted members,
-         * the {@link #onComplete(std::map)} method is called with a map of all results.
+         * the {@link #onComplete(std::unordered_map)} method is called with a map of all results.
          *
          * @see IExecutorService
          * @see ExecutionCallback
@@ -47,7 +48,7 @@ namespace hazelcast {
              * @param member member that the task is submitted to.
              * @param value result of the execution
              */
-            virtual void onResponse(const Member &member, const std::shared_ptr<V> &response) = 0;
+            virtual void onResponse(const Member &member, const boost::optional<V> &response) = 0;
 
             /**
              * Called when an execution is completed with an exception on a member.
@@ -63,7 +64,7 @@ namespace hazelcast {
              * @param values map of Member-Response pairs where no exception occured.
              * @param exceptions The exceptions produced by failing members.
              */
-            virtual void onComplete(const std::unordered_map<Member, std::shared_ptr<V> > &values,
+            virtual void onComplete(const std::unordered_map<Member, boost::optional<V> > &values,
                                     const std::unordered_map<Member, std::exception_ptr> &exceptions) = 0;
         };
     }
@@ -72,5 +73,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

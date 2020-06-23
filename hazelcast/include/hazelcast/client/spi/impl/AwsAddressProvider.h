@@ -15,7 +15,8 @@
  */
 
 #pragma once
-#include <map>
+
+#include <unordered_map>
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/aws/AWSClient.h"
 #include "hazelcast/util/Sync.h"
@@ -46,11 +47,11 @@ namespace hazelcast {
                     std::string awsMemberPort;
                     util::ILogger &logger;
                     aws::AWSClient awsClient;
-                    util::Sync<std::map<std::string, std::string> > privateToPublic;
+                    util::Sync<std::unordered_map<std::string, std::string> > privateToPublic;
 
                     void updateLookupTable();
 
-                    std::map<std::string, std::string> getLookupTable();
+                    std::unordered_map<std::string, std::string> getLookupTable();
                 };
             }
         }
@@ -60,4 +61,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

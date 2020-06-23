@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <string>
 #include <memory>
 #include <thread>
@@ -24,11 +25,12 @@
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/util/ILogger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -86,6 +88,7 @@ namespace hazelcast {
                         }
 
                         //@Override
+/*
                         void put(const std::shared_ptr<KS> &key,
                                  const std::shared_ptr<serialization::pimpl::Data> &value) {
                             util::Preconditions::checkNotNull<KS>(key, "key cannot be null on put!");
@@ -94,6 +97,7 @@ namespace hazelcast {
 
                             nearCacheRecordStore->put(key, value);
                         }
+*/
 
                         bool invalidate(const std::shared_ptr<KS> &key) {
                             util::Preconditions::checkNotNull<KS>(key, "key cannot be null on invalidate!");
@@ -131,7 +135,7 @@ namespace hazelcast {
                          *
                          * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                          */
-                        monitor::NearCacheStats &getNearCacheStats() {
+                        std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const {
                             return nearCacheRecordStore->getNearCacheStats();
                         }
 
@@ -207,5 +211,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 #pragma once
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/Comparator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -26,8 +27,12 @@ namespace hazelcast {
     namespace client {
         namespace query {
             template <typename K, typename V>
-            class EntryComparator : public serialization::IdentifiedDataSerializable,
-                                    public util::Comparator<std::pair<const K *, const V *> > {
+            class EntryComparator : public util::Comparator<std::pair<const K *, const V *> > {
+            public:
+                int compare(const std::pair<const K *, const V *> *,
+                            const std::pair<const K *, const V *> *) const override {
+                    return 0;
+                }
             };
         }
     }
@@ -36,4 +41,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

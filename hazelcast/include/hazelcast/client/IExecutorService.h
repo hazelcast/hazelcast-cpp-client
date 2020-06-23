@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <vector>
 #include <atomic>
 
@@ -40,12 +41,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace executor {
-            namespace impl {
-                class ExecutorServiceProxyFactory;
-            }
-        }
-
         /**
          * Distributed implementation of java.util.concurrent.ExecutorService.
          * IExecutorService provides additional methods like executing tasks
@@ -57,15 +52,16 @@ namespace hazelcast {
          * @see MultiExecutionCallback
          */
         class HAZELCAST_API IExecutorService : public proxy::ProxyImpl {
-            friend class executor::impl::ExecutorServiceProxyFactory;
-
+            friend class spi::ProxyManager;
         public:
             static const std::string SERVICE_NAME;
 
             template<typename T>
             class executor_promise {
             public:
-                executor_promise(boost::future<std::shared_ptr<T>> &future, const std::string &uuid, int partitionId,
+                executor_promise(spi::ClientContext &context) : context(context) {}
+
+                executor_promise(boost::future<boost::optional<T>> &future, const std::string &uuid, int partitionId,
                                  const Address &address, spi::ClientContext &context,
                                  const std::shared_ptr<spi::impl::ClientInvocation> &invocation)
                         : sharedFuture(future.share()), uuid(uuid), partitionId(partitionId), address(address),
@@ -84,12 +80,12 @@ namespace hazelcast {
                     return false;
                 }
 
-                boost::shared_future<std::shared_ptr<T>> get_future() {
+                boost::shared_future<boost::optional<T>> get_future() {
                     return sharedFuture;
                 }
 
             private:
-                boost::shared_future<std::shared_ptr<T>> sharedFuture;
+                boost::shared_future<boost::optional<T>> sharedFuture;
                 std::string uuid;
                 int partitionId;
                 Address address;
@@ -108,7 +104,7 @@ namespace hazelcast {
                         return protocol::codec::ExecutorServiceCancelOnPartitionCodec::ResponseParameters::decode(
                                 clientInvocation->invoke().get()).response;
                     } else {
-                        std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceCancelOnAddressCodec::encodeRequest(
+                        auto request = protocol::codec::ExecutorServiceCancelOnAddressCodec::encodeRequest(
                                 uuid, address, mayInterruptIfRunning);
                         std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                                 context, request, uuid, address);
@@ -129,7 +125,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable>
             void execute(const HazelcastSerializable &command) {
-                submit<HazelcastSerializable, bool>(command);
+                submit<HazelcastSerializable, executor_marker>(command);
             }
 
             /**
@@ -166,7 +162,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable>
             void executeOnMember(const HazelcastSerializable &command, const Member &member) {
-                submitToMember<HazelcastSerializable, bool>(command, member);
+                submitToMember<HazelcastSerializable, executor_marker>(command, member);
             }
 
             /**
@@ -178,7 +174,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable>
             void executeOnMembers(const HazelcastSerializable &command, const std::vector<Member> &members) {
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    submitToMember<HazelcastSerializable, bool>(command, *it);
+                    submitToMember<HazelcastSerializable, executor_marker>(command, *it);
                 }
             }
 
@@ -205,7 +201,7 @@ namespace hazelcast {
             void executeOnAllMembers(const HazelcastSerializable &command) {
                 std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
                 for (std::vector<Member>::const_iterator it = memberList.begin(); it != memberList.end(); ++it) {
-                    submitToMember<HazelcastSerializable, bool>(command, *it);
+                    submitToMember<HazelcastSerializable, executor_marker>(command, *it);
                 }
             }
 
@@ -253,11 +249,11 @@ namespace hazelcast {
             std::unordered_map<Member, executor_promise<T>>
             submitToMembers(const HazelcastSerializable &task, const std::vector<Member> &members) {
                 std::unordered_map<Member, executor_promise<T>> futureMap;
-                for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    Address memberAddress = getMemberAddress(*it);
+                for (auto &member : members) {
+                    Address memberAddress = getMemberAddress(member);
                     auto f = submitToTargetInternal<HazelcastSerializable, T>(task, memberAddress, true);
                     // no need to check if emplace is success since member is unique
-                    futureMap.emplace(*it, std::move(f));
+                    futureMap.emplace(member, std::move(f));
                 }
                 return futureMap;
             }
@@ -433,10 +429,10 @@ namespace hazelcast {
                 std::shared_ptr<MultiExecutionCallbackWrapper < T> >
                 multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) members.size(), callback));
 
-                for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
+                for (auto &member : members) {
                     std::shared_ptr<ExecutionCallbackWrapper < T> >
-                    executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, *it));
-                    submitToMember<HazelcastSerializable, T>(task, *it, executionCallback);
+                    executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, member));
+                    submitToMember<HazelcastSerializable, T>(task, member, executionCallback);
                 }
             }
 
@@ -489,7 +485,7 @@ namespace hazelcast {
              *
              * @return {@code true} if this executor has been shut down
              */
-            bool isShutdown();
+            boost::future<bool> isShutdown();
 
             /**
              * Returns {@code true} if all tasks have completed following shut down.
@@ -498,10 +494,12 @@ namespace hazelcast {
              *
              * @return {@code true} if all tasks have completed following shut down
              */
-            bool isTerminated();
+            boost::future<bool> isTerminated();
 
         private:
             IExecutorService(const std::string &name, spi::ClientContext *context);
+
+            struct executor_marker {};
 
             template<typename T>
             class MultiExecutionCallbackWrapper : MultiExecutionCallback<T> {
@@ -512,7 +510,7 @@ namespace hazelcast {
                 }
 
             public:
-                virtual void onResponse(const Member &member, const std::shared_ptr<T> &value) {
+                virtual void onResponse(const Member &member, const boost::optional<T> &value) {
                     multiExecutionCallback->onResponse(member, value);
 
                     std::lock_guard<std::mutex> guard(lock);
@@ -535,7 +533,7 @@ namespace hazelcast {
                     }
                 }
 
-                virtual void onComplete(const std::unordered_map<Member, std::shared_ptr<T> > &vals,
+                virtual void onComplete(const std::unordered_map<Member, boost::optional<T> > &vals,
                                         const std::unordered_map<Member, std::exception_ptr> &excs) {
                     multiExecutionCallback->onComplete(vals, excs);
                 }
@@ -544,7 +542,7 @@ namespace hazelcast {
 
                 const std::shared_ptr<MultiExecutionCallback<T> > multiExecutionCallback;
                 // TODO: We may not need thread safe structures here if being used from the same thread
-                std::unordered_map<Member, std::shared_ptr<T>> values;
+                std::unordered_map<Member, boost::optional<T>> values;
                 std::unordered_map<Member, std::exception_ptr> exceptions;
                 int members;
                 std::mutex lock;
@@ -555,10 +553,10 @@ namespace hazelcast {
             public:
                 ExecutionCallbackWrapper(
                         const std::shared_ptr<MultiExecutionCallbackWrapper<T> > &multiExecutionCallbackWrapper,
-                        const Member &member) : multiExecutionCallbackWrapper(multiExecutionCallbackWrapper),
-                                                member(member) {}
+                        Member member) : multiExecutionCallbackWrapper(multiExecutionCallbackWrapper),
+                                                member(std::move(member)) {}
 
-                virtual void onResponse(const std::shared_ptr<T> &response) {
+                virtual void onResponse(const boost::optional<T> &response) {
                     multiExecutionCallbackWrapper->onResponse(member, response);
                 }
 
@@ -591,14 +589,16 @@ namespace hazelcast {
 
                 auto messageFuture = invokeOnPartitionInternal(taskData, partitionId, uuid);
 
+                serialization::pimpl::SerializationService *serializationService = &getSerializationService();
+                spi::impl::ClientExecutionServiceImpl *executionService = &getContext().getClientExecutionService();
                 messageFuture.first.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     try {
-                        auto result = SUBMIT_TO_PARTITION_DECODER<T>()->decodeClientMessage(f.get(),
-                                                                                            getSerializationService());
-                        getContext().getClientExecutionService().execute([=]() { callback->onResponse(result); });
+                        auto result = retrieveResultFromMessage<T, protocol::codec::ExecutorServiceSubmitToPartitionCodec>(
+                                serializationService, std::move(f));
+                        executionService->execute([=]() { callback->onResponse(result); });
                     } catch (exception::IException &e) {
                         auto exception = std::current_exception();
-                        getContext().getClientExecutionService().execute([=]() { callback->onFailure(exception); });
+                        executionService->execute([=]() { callback->onFailure(exception); });
                     }
                 });
             }
@@ -606,8 +606,7 @@ namespace hazelcast {
             std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
             invokeOnPartitionInternal(const serialization::pimpl::Data &taskData, int partitionId,
                                       const std::string &uuid) {
-                std::unique_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ExecutorServiceSubmitToPartitionCodec::encodeRequest(name, uuid, taskData,
+                auto request = protocol::codec::ExecutorServiceSubmitToPartitionCodec::encodeRequest(name, uuid, taskData,
                                                                                               partitionId);
 
                 return invokeOnPartitionOwner(request, partitionId);
@@ -671,13 +670,16 @@ namespace hazelcast {
 
                 auto messageFuture = invokeOnAddressInternal<HazelcastSerializable>(task, address, uuid);
 
+                serialization::pimpl::SerializationService *serializationService = &(getSerializationService());
+                spi::impl::ClientExecutionServiceImpl *executionService = &getContext().getClientExecutionService();
                 messageFuture.first.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     try {
-                        auto result = SUBMIT_TO_ADDRESS_DECODER<T>()->decodeClientMessage(f.get(),
-                                                                                          getSerializationService());
-                        callback->onResponse(result);
-                    } catch (exception::IException &e) {
-                        callback->onFailure(std::current_exception());
+                        auto result = retrieveResultFromMessage<T, protocol::codec::ExecutorServiceSubmitToAddressCodec>(
+                                serializationService, std::move(f));
+                        executionService->execute([=]() { callback->onResponse(result); });
+                    } catch (exception::IException &) {
+                        auto exception = std::current_exception();
+                        executionService->execute([=]() { callback->onFailure(exception); });
                     }
                 });
             }
@@ -700,10 +702,10 @@ namespace hazelcast {
             invokeOnTarget(std::unique_ptr<protocol::ClientMessage> &request, const Address &target);
 
             template<typename T, typename DECODER>
-            std::shared_ptr<T>
-            retrieveResultFromMessage(boost::future<protocol::ClientMessage> &f) {
-                return impl::DataMessageDecoder<DECODER, T>::instance()->decodeClientMessage(f.get(),
-                                                                                             getSerializationService());
+            boost::optional<T>
+            retrieveResultFromMessage(serialization::pimpl::SerializationService *serializationService,
+                    boost::future<protocol::ClientMessage> f) {
+                return serializationService->toObject<T>(DECODER::ResponseParameters::decode(f.get()).response.get());
             }
 
             template<typename T, typename DECODER>
@@ -715,35 +717,48 @@ namespace hazelcast {
             }
 
             template<typename T, typename DECODER>
-            boost::future<std::shared_ptr<T>>
-            retrieveResultSync(boost::future<protocol::ClientMessage> &future) {
+            boost::future<boost::optional<T>>
+            retrieveResultSync(boost::future<protocol::ClientMessage> future) {
                 try {
-                    std::shared_ptr<T> response = retrieveResultFromMessage<T, DECODER>(future);
-                    return boost::make_ready_future<std::shared_ptr<T>>(response);
+                    auto response = retrieveResultFromMessage<T, DECODER>(&(getSerializationService()), std::move(future));
+                    return boost::make_ready_future(response);
                 } catch (exception::IException &) {
-                    return boost::make_exceptional_future<std::shared_ptr<T>>(boost::current_exception());
+                    return boost::make_exceptional_future<boost::optional<T>>(boost::current_exception());
                 }
             }
 
             template<typename T, typename DECODER>
-            executor_promise<T>
+            typename std::enable_if<!std::is_same<executor_marker, T>::value, executor_promise<T>>::type
             checkSync(
                     std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
                     const std::string &uuid, int partitionId, const Address &address, bool preventSync) {
                 bool sync = isSyncComputation(preventSync);
-                boost::future<std::shared_ptr<T>> objectFuture;
+                boost::future<boost::optional<T>> objectFuture;
                 if (sync) {
-                    objectFuture = retrieveResultSync<T, DECODER>(futurePair.first);
+                    objectFuture = retrieveResultSync<T, DECODER>(std::move(futurePair.first));
                 } else {
+                    serialization::pimpl::SerializationService *serializationService = &getSerializationService();
                     objectFuture = futurePair.first.then(boost::launch::sync,
                                                          [=](boost::future<protocol::ClientMessage> f) {
-                                                             return impl::DataMessageDecoder<DECODER, T>::instance()->decodeClientMessage(
-                                                                     f.get(),
-                                                                     getSerializationService());
+                                                             return retrieveResultFromMessage<T, DECODER>(
+                                                                     serializationService, std::move(f));
                                                          });
                 }
 
                 return executor_promise<T>(objectFuture, uuid, partitionId, address, getContext(), futurePair.second);
+            }
+
+            template<typename T, typename DECODER>
+            typename std::enable_if<std::is_same<executor_marker, T>::value, executor_promise<T>>::type
+            checkSync(
+                    std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
+                    const std::string &uuid, int partitionId, const Address &address, bool preventSync) {
+                bool sync = isSyncComputation(preventSync);
+                if (sync) {
+                    futurePair.first.get();
+                }
+
+                return executor_promise<T>(getContext());
             }
 
             bool isSyncComputation(bool preventSync);
@@ -751,16 +766,6 @@ namespace hazelcast {
             Address getMemberAddress(const Member &member);
 
             int randomPartitionId();
-
-            template<typename T>
-            static const std::shared_ptr<impl::ClientMessageDecoder<T> > SUBMIT_TO_PARTITION_DECODER() {
-                return impl::DataMessageDecoder<protocol::codec::ExecutorServiceSubmitToPartitionCodec, T>::instance();
-            }
-
-            template<typename T>
-            static const std::shared_ptr<impl::ClientMessageDecoder<T> > SUBMIT_TO_ADDRESS_DECODER() {
-                return impl::DataMessageDecoder<protocol::codec::ExecutorServiceSubmitToAddressCodec, T>::instance();
-            }
 
             static const int32_t MIN_TIME_RESOLUTION_OF_CONSECUTIVE_SUBMITS = 10;
             static const int32_t MAX_CONSECUTIVE_SUBMITS = 100;
@@ -774,4 +779,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

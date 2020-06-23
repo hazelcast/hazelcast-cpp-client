@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include "hazelcast/client/connection/ConnectionListener.h"
 
 namespace hazelcast {
@@ -38,5 +39,6 @@ namespace hazelcast {
         }
     }
 }
+
 
 

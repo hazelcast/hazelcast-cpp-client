@@ -18,12 +18,11 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    std::shared_ptr<hazelcast::client::ReplicatedMap<std::string, std::string> > map = hz.getReplicatedMap<std::string, std::string>(
-            "map");
+    auto map = hz.getReplicatedMap("map");
 
-    map->put("1", "Tokyo");
-    map->put("2", "Paris");
-    map->put("3", "New York");
+    map->put<std::string, std::string>("1", "Tokyo").get();
+    map->put<std::string, std::string>("2", "Paris").get();
+    map->put<std::string, std::string>("3", "New York").get();
 
     std::cout << "Finished loading map" << std::endl;
 

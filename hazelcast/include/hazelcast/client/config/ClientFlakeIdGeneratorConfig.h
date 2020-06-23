@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <stdint.h>
 #include <string>
 
@@ -37,12 +38,12 @@ namespace hazelcast {
                 /**
                  * Default value for {@link #getPrefetchCount()}.
                  */
-                static const int32_t DEFAULT_PREFETCH_COUNT = 100;
+                static constexpr int32_t DEFAULT_PREFETCH_COUNT = 100;
 
                 /**
                  * Default value for {@link #getPrefetchValidityMillis()}.
                  */
-                static const int64_t DEFAULT_PREFETCH_VALIDITY_MILLIS = 600000;
+                static constexpr int64_t DEFAULT_PREFETCH_VALIDITY_MILLIS = 600000;
 
                 /**
                  * Maximum value for prefetch count. The limit is ~10% of the time we allow the IDs to be from the future
@@ -52,9 +53,9 @@ namespace hazelcast {
                  * be blocked if the future allowance is exceeded: we want to avoid a single call for large batch to block
                  * another call for small batch.
                  */
-                static const int32_t MAXIMUM_PREFETCH_COUNT = 100000;
+                static constexpr int32_t MAXIMUM_PREFETCH_COUNT = 100000;
 
-                ClientFlakeIdGeneratorConfig(const std::string &name);
+                explicit ClientFlakeIdGeneratorConfig(const std::string &name);
 
                 /**
                  * Returns the configuration name. This can be actual object name or pattern.
@@ -67,7 +68,7 @@ namespace hazelcast {
                  *
                  * @return this instance for fluent API
                  */
-                ClientFlakeIdGeneratorConfig &setName(const std::string &name);
+                ClientFlakeIdGeneratorConfig &setName(const std::string &n);
 
                 /**
                  * @see #setPrefetchCount(int)
@@ -78,19 +79,19 @@ namespace hazelcast {
                  * Sets how many IDs are pre-fetched on the background when one call to
                  * {@link FlakeIdGenerator#newId()} is made. Default is 100.
                  *
-                 * @param prefetchCount the desired prefetch count, in the range 1..MAXIMUM_PREFETCH_COUNT.
+                 * @param count the desired prefetch count, in the range 1..MAXIMUM_PREFETCH_COUNT.
                  * @return this instance for fluent API
                  */
-                ClientFlakeIdGeneratorConfig &setPrefetchCount(int32_t prefetchCount);
+                ClientFlakeIdGeneratorConfig &setPrefetchCount(int32_t count);
 
                 /**
-                 * @see #setPrefetchValidityMillis(long)
+                 * @see #setPrefetchValidityDuration(std::chrono::steady_clock::duration)
                  */
-                int64_t getPrefetchValidityMillis() const;
+                std::chrono::steady_clock::duration getPrefetchValidityDuration() const;
 
                 /**
                  * Sets for how long the pre-fetched IDs can be used. If this time elapses, a new batch of IDs will be
-                 * fetched. Time unit is milliseconds, default is 600,000 (10 minutes).
+                 * fetched. Time unit resolution is milliseconds, default is 600,000msecs (10 minutes).
                  * <p>
                  * The IDs contain timestamp component, which ensures rough global ordering of IDs. If an ID
                  * is assigned to an object that was created much later, it will be much out of order. If you don't care
@@ -99,17 +100,17 @@ namespace hazelcast {
                  * This setting pertains only to {@link FlakeIdGenerator#newId newId} calls made on the member
                  * that configured it.
                  *
-                 * @param prefetchValidityMs the desired ID validity or unlimited, if configured to 0.
+                 * @param durations the desired ID validity or unlimited, if configured to 0.
                  * @return this instance for fluent API
                  *
-                 * @throws client::exception::IllegalArgumentException if prefetchValidityMillis is negative.
+                 * @throws client::exception::IllegalArgumentException if duration is negative.
                  */
-                ClientFlakeIdGeneratorConfig &setPrefetchValidityMillis(int64_t prefetchValidityMillis);
+                ClientFlakeIdGeneratorConfig &setPrefetchValidityDuration(std::chrono::steady_clock::duration duration);
 
             private:
                 std::string name;
                 int32_t prefetchCount;
-                int64_t prefetchValidityMillis;
+                std::chrono::steady_clock::duration prefetchValidityDuration;
             };
         }
     }
@@ -118,4 +119,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

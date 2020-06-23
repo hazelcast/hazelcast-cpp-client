@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("map");
-    std::vector<std::pair<std::string, std::string> > entries = map.entrySet();
-    for (std::vector<std::pair<std::string, std::string> >::const_iterator it = entries.begin();
-         it != entries.end(); ++it) {
-        std::cout << it->first << " " << it->second << std::endl;
+    auto map = hz.getMap("map");
+    auto entries = map->entrySet<std::string, std::string>().get();
+    for (auto &entry : map->entrySet<std::string, std::string>().get()) {
+        std::cout << entry.first << " " << entry.second << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

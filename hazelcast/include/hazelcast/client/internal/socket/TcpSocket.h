@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <boost/asio.hpp>
 
 #include "hazelcast/client/internal/socket/BaseSocket.h"
@@ -42,4 +43,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

@@ -14,81 +14,50 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
+#include <ostream>
 
-namespace test1 {
-    namespace test2 {
-        class Person {
-        public:
-            Person() {
-            }
+struct Person {
+    friend std::ostream &operator<<(std::ostream &os, const Person &person);
 
-            Person(const std::string& n) : name(n) {
-            }
+    std::string name;
+    bool male;
+    int32_t age;
+};
 
-            void setName(const std::string& n) {
-                name = n;
-            }
+std::ostream &operator<<(std::ostream &os, const Person &person) {
+    os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
+    return os;
+}
 
-            const std::string& getName() const {
-                return name;
-            }
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Person> : custom_serializer {
+                static constexpr int32_t getTypeId() noexcept {
+                    return 3;
+                }
 
-        private:
-            std::string name;
-        };
+                static void write(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.name);
+                    out.write(object.male);
+                    out.write(object.age);
+                }
 
-        /**
-         * Put the free function in the same namespace as the object it operates on
-         */
-        int getHazelcastTypeId(const Person* p){
-            return 666;
+                static Person read(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+                }
+            };
         }
     }
 }
 
-class CustomSerializer : public hazelcast::client::serialization::Serializer<test1::test2::Person> {
-public:
-
-    void write(hazelcast::client::serialization::ObjectDataOutput & out, const test1::test2::Person& object) {
-        out.writeInt(666);
-        out.writeUTF(&(object.getName()));
-        out.writeInt(666);
-    }
-
-    void read(hazelcast::client::serialization::ObjectDataInput & in, test1::test2::Person& object) {
-        int i = in.readInt();
-        assert(i == 666);
-        object.setName(*(in.readUTF()));
-        i = in.readInt();
-        assert(i == 666);
-    }
-
-    int getHazelcastTypeId() const {
-        return 666;
-    };
-};
-
-std::ostream &operator<<(std::ostream &out, const test1::test2::Person &p) {
-    const std::string & str = p.getName();
-    out << str;
-    return out;
-}
-
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::SerializationConfig serializationConfig;
-    serializationConfig.registerSerializer(std::shared_ptr<hazelcast::client::serialization::SerializerBase>(
-            new CustomSerializer()));
-    config.setSerializationConfig(serializationConfig);
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, test1::test2::Person> map = hz.getMap<std::string, test1::test2::Person>("map");
-    test1::test2::Person testPerson("bar");
-    map.put("foo", testPerson);
-    std::cout << *(map.get("foo")) << std::endl;
+    auto map = hz.getMap("map");
+    map->put("foo", Person{"bar", true, 40}).get();
+    std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
     std::cout << "Finished" << std::endl;
 
     return 0;

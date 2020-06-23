@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <stdint.h>
 
 #include "hazelcast/util/Named.h"
@@ -50,5 +51,6 @@ namespace hazelcast {
         };
     }
 }
+
 
 

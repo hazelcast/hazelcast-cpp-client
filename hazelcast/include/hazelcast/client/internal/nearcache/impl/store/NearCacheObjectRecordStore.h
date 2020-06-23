@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include "hazelcast/client/internal/nearcache/impl/store/BaseHeapNearCacheRecordStore.h"
 #include "hazelcast/client/internal/nearcache/impl/record/NearCacheObjectRecord.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
@@ -55,6 +56,7 @@ namespace hazelcast {
                             }
 
                             //@Override
+/*
                             std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
                                     const std::shared_ptr<serialization::pimpl::Data> &valueData) {
                                 std::shared_ptr<serialization::pimpl::Data> data = std::const_pointer_cast<serialization::pimpl::Data>(
@@ -62,6 +64,7 @@ namespace hazelcast {
                                 const std::shared_ptr<V> value = ANCRS::toValue(data);
                                 return valueToRecordInternal(value);
                             }
+*/
 
                             //@Override
                             std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
@@ -110,5 +113,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

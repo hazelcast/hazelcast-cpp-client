@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <boost/asio.hpp>
 
 #include "hazelcast/client/config/SocketOptions.h"
@@ -21,7 +22,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -65,7 +66,7 @@ namespace hazelcast {
 
             virtual const Address &getRemoteEndpoint() const = 0;
 
-            virtual boost::asio::executor get_executor() const noexcept = 0;
+            virtual boost::asio::executor get_executor() noexcept = 0;
         };
     }
 }
@@ -73,4 +74,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

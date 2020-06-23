@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <cstdint>
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -39,4 +40,5 @@ namespace hazelcast {
         };
     }
 }
+
 

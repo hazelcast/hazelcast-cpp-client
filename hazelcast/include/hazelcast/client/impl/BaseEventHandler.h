@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 14/01/14.
-//
+
 
 #pragma once
+
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include <memory>
@@ -40,7 +39,7 @@ namespace hazelcast {
                 BaseEventHandler();
 
                 virtual ~BaseEventHandler();
-
+                
                 virtual void handle(std::unique_ptr<protocol::ClientMessage> message) = 0;
 
                 // TODO: Remove the above method after changing and regenerating the codecs
@@ -80,5 +79,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

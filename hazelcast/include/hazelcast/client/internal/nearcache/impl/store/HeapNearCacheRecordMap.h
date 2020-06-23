@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <stdint.h>
 
 #include "hazelcast/client/internal/eviction/Evictable.h"
 #include "hazelcast/client/internal/nearcache/impl/SampleableNearCacheRecordMap.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/SampleableConcurrentHashMap.h"
 #include "hazelcast/client/internal/eviction/EvictionCandidate.h"
 #include "hazelcast/client/internal/eviction/EvictionListener.h"
@@ -80,8 +81,8 @@ namespace hazelcast {
 
                                 //@Override
                                 std::shared_ptr<K> getKey() const {
-                                    return std::shared_ptr<K>(serializationService.toSharedObject<K>(
-                                            util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key));
+                                    return serializationService.toSharedObject<K>(
+                                            util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key);
                                 }
 
                                 //@Override
@@ -213,5 +214,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

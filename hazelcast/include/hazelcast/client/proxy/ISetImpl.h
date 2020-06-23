@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 30/09/14.
-//
-
 #pragma once
+
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
 
@@ -25,39 +22,63 @@ namespace hazelcast {
     namespace client {
         namespace proxy {
             class HAZELCAST_API ISetImpl : public ProxyImpl {
+            public:
+                /**
+                * Removes the specified item listener.
+                * Returns false if the specified listener is not added before.
+                *
+                * @param registrationId Id of listener registration.
+                *
+                * @return true if registration is removed, false otherwise
+                */
+                boost::future<bool> removeItemListener(const std::string& registrationId);
+
+                /**
+                *
+                * @returns size of the distributed set
+                */
+                boost::future<int> size();
+
+                /**
+                *
+                * @returns true if empty
+                */
+                boost::future<bool> isEmpty();
+
+                /**
+                *
+                * Removes all elements from set.
+                */
+                boost::future<void> clear();
             protected:
                 ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext);
 
-                std::string addItemListener(impl::BaseEventHandler *handler, bool includeValue);
+                template<typename Listener>
+                boost::future<std::string>
+                addItemListener(std::unique_ptr<impl::ItemEventHandler<Listener, protocol::codec::SetAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
+                    return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
+                }
 
-                bool removeItemListener(const std::string& registrationId);
+                boost::future<bool> contains(const serialization::pimpl::Data& element);
 
-                int size();
+                boost::future<std::vector<serialization::pimpl::Data>> toArrayData();
 
-                bool isEmpty();
+                boost::future<bool> add(const serialization::pimpl::Data& element);
 
-                bool contains(const serialization::pimpl::Data& element);
+                boost::future<bool> remove(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data> toArrayData();
+                boost::future<bool> containsAll(const std::vector<serialization::pimpl::Data>& elements);
 
-                bool add(const serialization::pimpl::Data& element);
+                boost::future<bool> addAll(const std::vector<serialization::pimpl::Data>& elements);
 
-                bool remove(const serialization::pimpl::Data& element);
+                boost::future<bool> removeAll(const std::vector<serialization::pimpl::Data>& elements);
 
-                bool containsAll(const std::vector<serialization::pimpl::Data>& elements);
-
-                bool addAll(const std::vector<serialization::pimpl::Data>& elements);
-
-                bool removeAll(const std::vector<serialization::pimpl::Data>& elements);
-
-                bool retainAll(const std::vector<serialization::pimpl::Data>& elements);
-
-                void clear();
+                boost::future<bool> retainAll(const std::vector<serialization::pimpl::Data>& elements);
 
             private:
                 class SetListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    SetListenerMessageCodec(const std::string &name, bool includeValue);
+                    SetListenerMessageCodec(std::string name, bool includeValue);
 
                     virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 
@@ -69,15 +90,14 @@ namespace hazelcast {
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
 
                 private:
-                    std::string name;
+                    std::string  name;
                     bool includeValue;
                 };
 
                 int partitionId;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
+                std::unique_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
         }
     }
 }
-

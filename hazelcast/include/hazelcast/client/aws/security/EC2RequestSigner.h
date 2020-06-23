@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -39,23 +40,23 @@ namespace hazelcast {
 
                     virtual ~EC2RequestSigner();
 
-                    std::string sign(const std::map<std::string, std::string> &attributes);
+                    std::string sign(const std::unordered_map<std::string, std::string> &attributes);
 
                     std::string createFormattedCredential() const;
 
-                    std::string getCanonicalizedQueryString(const std::map<std::string, std::string> &attributes) const;
+                    std::string getCanonicalizedQueryString(const std::unordered_map<std::string, std::string> &attributes) const;
                 private:
                     /* Task 1 */
-                    std::string getCanonicalizedRequest(const std::map<std::string, std::string> &attributes) const;
+                    std::string getCanonicalizedRequest(const std::unordered_map<std::string, std::string> &attributes) const;
 
                     std::string getCanonicalHeaders() const;
 
                     std::string getCanonicalizedQueryString(const std::vector<std::string> &list) const;
 
-                    std::vector<std::string> getListOfEntries(const std::map<std::string, std::string> &entries) const;
+                    std::vector<std::string> getListOfEntries(const std::unordered_map<std::string, std::string> &entries) const;
 
                     void addComponents(std::vector<std::string> &components,
-                                       const std::map<std::string, std::string> &attributes,
+                                       const std::unordered_map<std::string, std::string> &attributes,
                                        const std::string &key) const;
 
                     /* Task 2 */
@@ -102,4 +103,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

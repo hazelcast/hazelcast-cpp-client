@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #if !(defined(HAZELCAST_USE_STATIC) || defined(HAZELCAST_USE_SHARED))
         #ifndef HAZELCAST_EXPORTS
@@ -39,4 +40,3 @@
 namespace hazelcast{
     typedef unsigned char byte;
 }
-

@@ -13,67 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
+
 #include <hazelcast/client/HazelcastClient.h>
 
-class Value : public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    int amount;
-
-    Value() {
-    }
-
-    Value(const Value &rhs) {
-        amount = rhs.amount;
-    }
-
-    bool equals(const Value &rhs) {
-        return rhs.amount == amount;
-    }
-
-    bool operator==(const Value &rhs) {
-        return equals(rhs);
-    }
-
-    int getFactoryId() const {
-        return 1;
-    }
-
-    int getClassId() const {
-        return 6;
-    }
-
-    void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
-        out.writeInt(amount);
-    }
-
-    void readData(hazelcast::client::serialization::ObjectDataInput &in) {
-        amount = in.readInt();
-    }
+struct Value {
+    int32_t amount;
+    int32_t version;
 };
+
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Value> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 6;
+                }
+
+                static void writeData(const Value &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.amount);
+                    out.write(object.version);
+                }
+
+                static Value readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Value{in.read<int32_t>(), in.read<int32_t>()};
+                }
+            };
+        }
+    }
+}
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, Value> map =
-            hz.getMap<std::string, Value>("map");
+    auto map = hz.getMap("map");
 
     std::string key("1");
     Value v;
-    map.put(key, v);
+    map->put(key, v).get();
     std::cout << "Starting" << std::endl;
     for (int k = 0; k < 1000; k++) {
         if (k % 100 == 0) {
             std::cout << "At: " << k << std::endl;
         }
 
-        std::shared_ptr<Value> oldValue = map.get(key);
-        hazelcast::util::sleepmillis(10);
-        map.put(key, *oldValue);
+        auto oldValue = map->get<std::string, Value>(key).get();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        map->put(key, *oldValue).get();
     }
-    std::cout << "Finished! Result = " << map.get(key)->amount << std::endl;
+    std::cout << "Finished! Result = " << map->get<std::string, Value>(key).get()->amount << std::endl;
 
     std::cout << "Finished" << std::endl;
 

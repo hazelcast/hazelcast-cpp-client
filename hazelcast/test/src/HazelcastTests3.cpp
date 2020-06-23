@@ -19,12 +19,11 @@
 #include <regex>
 #include <vector>
 #include "ringbuffer/StartsWithStringFilter.h"
-#include "serialization/Employee.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/ClientConfig.h>
 #include <hazelcast/client/exception/IllegalStateException.h>
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/serialization/pimpl/SerializationService.h>
+#include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/util/UuidUtil.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
@@ -35,7 +34,7 @@
 #include <hazelcast/client/connection/Connection.h>
 #include <ClientTestSupport.h>
 #include <memory>
-#include <hazelcast/client/proxy/ClientPNCounterProxy.h>
+#include <hazelcast/client/proxy/PNCounterImpl.h>
 #include <hazelcast/client/serialization/pimpl/DataInput.h>
 #include <hazelcast/util/AddressUtil.h>
 #include <hazelcast/util/RuntimeAvailableProcessors.h>
@@ -53,33 +52,12 @@
 #include <ctime>
 #include <errno.h>
 #include <hazelcast/client/LifecycleListener.h>
-#include "serialization/TestRawDataPortable.h"
-#include "serialization/TestSerializationConstants.h"
-#include "serialization/TestMainPortable.h"
-#include "serialization/TestNamedPortable.h"
-#include "serialization/TestInvalidReadPortable.h"
-#include "serialization/TestInvalidWritePortable.h"
-#include "serialization/TestInnerPortable.h"
-#include "serialization/TestNamedPortableV2.h"
-#include "serialization/TestNamedPortableV3.h"
+#include "serialization/Serializables.h"
 #include <hazelcast/client/SerializationConfig.h>
 #include <hazelcast/client/HazelcastJsonValue.h>
-#include <stdint.h>
-#include "customSerialization/TestCustomSerializerX.h"
-#include "customSerialization/TestCustomXSerializable.h"
-#include "customSerialization/TestCustomPersonSerializer.h"
-#include "serialization/ChildTemplatedPortable2.h"
-#include "serialization/ParentTemplatedPortable.h"
-#include "serialization/ChildTemplatedPortable1.h"
-#include "serialization/ObjectCarryingPortable.h"
-#include "serialization/TestDataSerializable.h"
 #include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
-#include <hazelcast/client/query/FalsePredicate.h>
-#include <set>
-#include <hazelcast/client/query/EqualPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
 #include <HazelcastServer.h>
 #include "TestHelperFunctions.h"
 #include <cmath>
@@ -87,30 +65,7 @@
 #include <hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h>
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <iostream>
-#include <string>
-#include "executor/tasks/SelectAllMembers.h"
-#include "executor/tasks/IdentifiedFactory.h"
-#include <hazelcast/client/serialization/ObjectDataOutput.h>
-#include <hazelcast/client/serialization/ObjectDataInput.h>
-#include "executor/tasks/CancellationAwareTask.h"
-#include "executor/tasks/NullCallable.h"
-#include "executor/tasks/SerializedCounterCallable.h"
-#include "executor/tasks/MapPutPartitionAwareCallable.h"
-#include "executor/tasks/SelectNoMembers.h"
-#include "executor/tasks/GetMemberUuidTask.h"
-#include "executor/tasks/FailingCallable.h"
-#include "executor/tasks/AppendCallable.h"
-#include "executor/tasks/TaskWithUnserializableResponse.h"
-#include <executor/tasks/CancellationAwareTask.h>
-#include <executor/tasks/FailingCallable.h>
-#include <executor/tasks/SelectNoMembers.h>
-#include <executor/tasks/SerializedCounterCallable.h>
-#include <executor/tasks/TaskWithUnserializableResponse.h>
-#include <executor/tasks/GetMemberUuidTask.h>
-#include <executor/tasks/AppendCallable.h>
-#include <executor/tasks/SelectAllMembers.h>
-#include <executor/tasks/MapPutPartitionAwareCallable.h>
-#include <executor/tasks/NullCallable.h>
+#include <hazelcast/client/serialization/serialization.h>
 #include <stdlib.h>
 #include <fstream>
 #include <boost/asio.hpp>
@@ -125,8 +80,8 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/serialization/serialization.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -141,7 +96,6 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/ILogger.h"
@@ -157,55 +111,27 @@
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/Pipelining.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/serialization/serialization.h"
+#include "hazelcast/client/serialization/serialization.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/adaptor/RawPointerSet.h"
-#include "hazelcast/client/query/OrPredicate.h"
-#include "hazelcast/client/query/RegexPredicate.h"
-#include "hazelcast/client/query/PagingPredicate.h"
-#include "hazelcast/client/query/QueryConstants.h"
-#include "hazelcast/client/query/NotPredicate.h"
-#include "hazelcast/client/query/InstanceOfPredicate.h"
-#include "hazelcast/client/query/NotEqualPredicate.h"
-#include "hazelcast/client/query/InPredicate.h"
-#include "hazelcast/client/query/ILikePredicate.h"
-#include "hazelcast/client/query/LikePredicate.h"
-#include "hazelcast/client/query/GreaterLessPredicate.h"
-#include "hazelcast/client/query/AndPredicate.h"
-#include "hazelcast/client/query/BetweenPredicate.h"
-#include "hazelcast/client/query/EqualPredicate.h"
-#include "hazelcast/client/query/TruePredicate.h"
-#include "hazelcast/client/query/FalsePredicate.h"
-#include "hazelcast/client/adaptor/RawPointerMap.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/adaptor/RawPointerList.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalQueue.h"
+#include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/adaptor/RawPointerQueue.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalMap.h"
 #include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/adaptor/RawPointerMultiMap.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalMultiMap.h"
 #include "hazelcast/util/LittleEndianBufferWrapper.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/mixedtype/MultiMap.h"
-#include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/mixedtype/IQueue.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/ISet.h"
-#include "hazelcast/client/mixedtype/ISet.h"
 #include "hazelcast/client/ReliableTopic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -217,44 +143,72 @@ namespace hazelcast {
         namespace test {
             class ClientReplicatedMapTest : public ClientTestSupport {
             public:
-            protected:
-                static const int OPERATION_COUNT;
-
-                typedef std::vector<std::pair<int, int> > TEST_VALUES_TYPE;
-
-                class SamplePortable : public serialization::Portable {
-                public:
-                    SamplePortable(int a) : a(a) {}
-
-                    SamplePortable() {}
-
-                    virtual int getFactoryId() const {
-                        return 5;
-                    }
-
-                    virtual int getClassId() const {
-                        return 6;
-                    }
-
-                    virtual void writePortable(serialization::PortableWriter &writer) const {
-                        writer.writeInt("a", a);
-                    }
-
-                    virtual void readPortable(serialization::PortableReader &reader) {
-                        a = reader.readInt("a");
-                    }
-
+                struct SamplePortable {
                     int32_t a;
                 };
+            protected:
+                static constexpr size_t OPERATION_COUNT = 100;
+                typedef std::vector<std::pair<int, int>> TEST_VALUES_TYPE;
 
-                class SamplePortableFactory : public serialization::PortableFactory {
-                public:
-                    virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
-                        return std::unique_ptr<serialization::Portable>(new SamplePortable());
+                template<typename Functor>
+                void executeForEach(Functor f) {
+                    for (size_t i = 0; i < OPERATION_COUNT; i++) {
+                        f(i);
                     }
-                };
+                }
 
-                bool findValueForKey(int key, TEST_VALUES_TYPE &testValues, int &value) {
+                void verifyEntriesInMap(const std::shared_ptr<ReplicatedMap>& map) {
+                    auto entries = map->entrySet<TypedData, TypedData>().get();
+                    ASSERT_EQ(OPERATION_COUNT, entries.size());
+                    for (auto &entry : entries) {
+                        auto key = entry.first.get<std::string>();
+                        ASSERT_TRUE(key.has_value());
+                        ASSERT_EQ(0U, key.value().find("foo-"));
+                        auto val = entry.second.get<std::string>();
+                        ASSERT_TRUE(val.has_value());
+                        ASSERT_EQ("bar", val.value());
+                    }
+                }
+                
+                void getAndVerifyEntriesInMap(const std::shared_ptr<ReplicatedMap> &map) {
+                    getAndVerifyEntriesInMap(map, "bar");
+                }
+
+                void
+                getAndVerifyEntriesInMap(const std::shared_ptr<ReplicatedMap>& map, const std::string &expectedValue) {
+                    executeForEach([=] (size_t i) {
+                        auto key = std::string("foo-") + std::to_string(i);
+                        boost::optional<std::string> val = map->get<std::string, std::string>(key).get();
+                        ASSERT_TRUE((val));
+                        ASSERT_EQ(expectedValue, (val.value()));
+                    });
+                }
+
+                void putAllEntriesIntoMap(std::shared_ptr<ReplicatedMap> map) {
+                    std::unordered_map<std::string, std::string> mapTest;
+                    executeForEach([=, &mapTest] (size_t i) {
+                        mapTest[std::string("foo-") + std::to_string(i)] = "bar";
+                    });
+                    map->putAll(mapTest).get();
+                    ASSERT_EQ((int) OPERATION_COUNT, map->size().get());
+                }
+
+                void putEntriesIntoMap(const std::shared_ptr<ReplicatedMap>& map) {
+                    executeForEach([=] (size_t i) {
+                        auto oldEntry = map->put<std::string, std::string>(std::string("foo-") + std::to_string(i),
+                                                                           "bar").get();
+                        ASSERT_FALSE(oldEntry);
+                    });
+                }
+
+                void putEntriesIntoMap(const std::shared_ptr<ReplicatedMap> &map, const std::string value) {
+                    executeForEach([&] (size_t i) {
+                        map->put<std::string, std::string>(std::string("foo-") + std::to_string(i),
+                                                                           value).get();
+                    });
+                }
+
+                static bool findValueForKey(int key, TEST_VALUES_TYPE &testValues, int &value) {
                     for (const TEST_VALUES_TYPE::value_type &entry : testValues) {
                         if (key == entry.first) {
                             value = entry.second;
@@ -265,28 +219,21 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                bool contains(std::shared_ptr<DataArray<T> > &values, const T &value) {
-                    for (size_t i = 0; i < values->size(); ++i) {
-                        if (*values->get(i) == value) {
-                            return true;
-                        }
-                    }
-                    return false;
+                bool contains(std::vector<T> &values, const T &value) {
+                    return std::find(values.begin(), values.end(), value) != values.end();
                 }
 
-                TEST_VALUES_TYPE buildTestValues() {
+                static TEST_VALUES_TYPE buildTestValues() {
                     TEST_VALUES_TYPE testValues;
                     for (int i = 0; i < 100; ++i) {
-                        testValues.push_back(std::make_pair(i, i * i));
+                        testValues.emplace_back(i, i * i);
                     }
                     return testValues;
                 }
-
-                virtual void TearDown() {
-                }
-
+                
                 static void SetUpTestCase() {
-                    factory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
+                    factory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), 
+                            "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                     instance1 = new HazelcastServer(*factory);
                     client = new HazelcastClient(getConfig());
                     client2 = new HazelcastClient(getConfig());
@@ -298,15 +245,14 @@ namespace hazelcast {
                     delete instance1;
                     delete factory;
 
-                    client = NULL;
-                    client2 = NULL;
-                    instance1 = NULL;
-                    factory = NULL;
+                    client = nullptr;
+                    client2 = nullptr;
+                    instance1 = nullptr;
+                    factory = nullptr;
                 }
 
                 static ClientConfig getClientConfigWithNearCacheInvalidationEnabled() {
-                    std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(
-                            new config::NearCacheConfig<int, int>());
+                    auto nearCacheConfig = std::make_shared<config::NearCacheConfig<serialization::pimpl::Data>>();
                     nearCacheConfig->setInvalidateOnChange(true).setInMemoryFormat(config::BINARY);
                     return ClientConfig().addNearCacheConfig(nearCacheConfig);
                 }
@@ -317,379 +263,208 @@ namespace hazelcast {
                 static HazelcastServerFactory *factory;
             };
 
-            HazelcastServer *ClientReplicatedMapTest::instance1 = NULL;
-            HazelcastClient *ClientReplicatedMapTest::client = NULL;
-            HazelcastClient *ClientReplicatedMapTest::client2 = NULL;
-            HazelcastServerFactory *ClientReplicatedMapTest::factory = NULL;
-            const int ClientReplicatedMapTest::OPERATION_COUNT = 100;
+            HazelcastServer *ClientReplicatedMapTest::instance1 = nullptr;
+            HazelcastClient *ClientReplicatedMapTest::client = nullptr;
+            HazelcastClient *ClientReplicatedMapTest::client2 = nullptr;
+            HazelcastServerFactory *ClientReplicatedMapTest::factory = nullptr;
+            constexpr size_t ClientReplicatedMapTest::OPERATION_COUNT;
 
             TEST_F(ClientReplicatedMapTest, testEmptyMapIsEmpty) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = client->getReplicatedMap<int, int>(getTestName());
-                ASSERT_TRUE(map->isEmpty()) << "map should be empty";
+                std::shared_ptr<ReplicatedMap> map = client->getReplicatedMap(getTestName());
+                ASSERT_TRUE(map->isEmpty().get()) << "map should be empty";
             }
 
             TEST_F(ClientReplicatedMapTest, testNonEmptyMapIsNotEmpty) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = client->getReplicatedMap<int, int>(getTestName());
-                map->put(1, 1);
-                ASSERT_FALSE(map->isEmpty()) << "map should not be empty";
+                auto map = client->getReplicatedMap(getTestName());
+                map->put(1, 1).get();
+                ASSERT_FALSE(map->isEmpty().get()) << "map should not be empty";
             }
 
             TEST_F(ClientReplicatedMapTest, testPutAll) {
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map1 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client2->getReplicatedMap<std::string, std::string>(getTestName());
-
-                std::map<std::string, std::string> mapTest;
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    mapTest[out.str()] = "bar";
-                }
-                map1->putAll(mapTest);
-                ASSERT_EQ((int32_t) mapTest.size(), map1->size());
-                std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map1->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                entries = map2->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
+                putAllEntriesIntoMap(map1);
+                verifyEntriesInMap(map1);
+                verifyEntriesInMap(map2);
 
 // TODO add server side data check using remote controller scripting
             }
 
             TEST_F(ClientReplicatedMapTest, testGet) {
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map1 = client->getReplicatedMap<std::string, std::string>(
-                        getTestName());
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map2 = client2->getReplicatedMap<std::string, std::string>(
-                        getTestName());
-
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    map1->put(out.str(), "bar");
-                }
-
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    ASSERT_NOTNULL(map1->get(out.str()).get(), std::string);
-                    ASSERT_NOTNULL(map2->get(out.str()).get(), std::string);
-                    ASSERT_EQ("bar", *map1->get(out.str()));
-                    ASSERT_EQ("bar", *map2->get(out.str()));
-                }
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
+                putEntriesIntoMap(map1);
+                getAndVerifyEntriesInMap(map1);
+                getAndVerifyEntriesInMap(map2);
             }
 
             TEST_F(ClientReplicatedMapTest, testPutNullReturnValueDeserialization) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = client->getReplicatedMap<int, int>(getTestName());
-                ASSERT_NULL("Put should return null", map->put(1, 2).get(), int);
+                auto map = client->getReplicatedMap(getTestName());
+                ASSERT_FALSE(map->put(1, 2).get().has_value()) << "Put should return null";
             }
 
             TEST_F(ClientReplicatedMapTest, testPutReturnValueDeserialization) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = client->getReplicatedMap<int, int>(getTestName());
-                map->put(1, 2);
-
-                std::shared_ptr<int> value = map->put(1, 3);
-                ASSERT_NOTNULL(value.get(), int);
-                ASSERT_EQ(2, *value);
+                auto map = client->getReplicatedMap(getTestName());
+                map->put(1, 2).get();
+                auto value = map->put(1, 3).get();
+                ASSERT_TRUE(value.has_value());
+                ASSERT_EQ(2, value.value());
             }
 
             TEST_F(ClientReplicatedMapTest, testAdd) {
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map1 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client2->getReplicatedMap<std::string, std::string>(getTestName());
+                putEntriesIntoMap(map1);
+                ASSERT_EQ(OPERATION_COUNT, map2->size().get());
 
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    map1->put(out.str(), "bar");
-                }
-
-                ASSERT_EQ(OPERATION_COUNT, map2->size());
-
-                std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                entries = map1->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
+                verifyEntriesInMap(map2);
+                verifyEntriesInMap(map1);
             }
 
             TEST_F(ClientReplicatedMapTest, testClear) {
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map1 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 =client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 =client2->getReplicatedMap(getTestName());
 
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client2->getReplicatedMap<std::string, std::string>(getTestName());
+                putEntriesIntoMap(map1);
+                ASSERT_EQ(OPERATION_COUNT, map2->size().get());
 
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    map1->put(out.str(), "bar");
-                }
+                verifyEntriesInMap(map1);
+                verifyEntriesInMap(map2);
 
-                ASSERT_EQ(OPERATION_COUNT, map2->size());
-
-                std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                entries = map1->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                map1->clear();
-                ASSERT_EQ(0, map1->size());
-                ASSERT_EQ(0, map2->size());
+                map1->clear().get();
+                ASSERT_EQ(0, map1->size().get());
+                ASSERT_EQ(0, map2->size().get());
             }
 
             TEST_F(ClientReplicatedMapTest, testUpdate) {
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map1 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client2->getReplicatedMap<std::string, std::string>(getTestName());
+                putEntriesIntoMap(map1);
+                ASSERT_EQ(OPERATION_COUNT, map2->size().get());
 
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    map1->put(out.str(), "bar");
-                }
+                verifyEntriesInMap(map1);
+                verifyEntriesInMap(map2);
 
-                ASSERT_EQ(OPERATION_COUNT, map2->size());
+                putEntriesIntoMap(map1, "bar2");
 
-                std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                entries = map1->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    map2->put(out.str(), "bar2");
-                }
-
-                entries = map2->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar2", *value);
-                }
-
-                entries = map1->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar2", *value);
-                }
-
+                getAndVerifyEntriesInMap(map2, "bar2");
+                getAndVerifyEntriesInMap(map1, "bar2");
             }
 
             TEST_F(ClientReplicatedMapTest, testRemove) {
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map1 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client2->getReplicatedMap<std::string, std::string>(getTestName());
+                putEntriesIntoMap(map1);
+                ASSERT_EQ(OPERATION_COUNT, map2->size().get());
 
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    map1->put(out.str(), "bar");
-                }
+                verifyEntriesInMap(map2);
+                verifyEntriesInMap(map1);
 
-                ASSERT_EQ(OPERATION_COUNT, map2->size());
+                executeForEach([=] (size_t index) {
+                    auto val = map2->remove<std::string, std::string>(std::string("foo-") + std::to_string(index)).get();
+                    ASSERT_TRUE(val.has_value());
+                    ASSERT_EQ("bar", val.value());
+                });
 
-                std::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                entries = map1->entrySet();
-                for (size_t j = 0; j < entries->size(); ++j) {
-                    const std::string *key = entries->getKey(j);
-                    ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
-                    const std::string *value = entries->getValue(j);
-                    ASSERT_NOTNULL(value, std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    std::shared_ptr<std::string> value = map2->remove(out.str());
-                    ASSERT_NOTNULL(value.get(), std::string);
-                    ASSERT_EQ("bar", *value);
-                }
-
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    ASSERT_NULL("Removed value should not exist for map1", map1->get(out.str()).get(), std::string);
-                    ASSERT_NULL("Removed value should not exist for map2", map2->get(out.str()).get(), std::string);
-                }
+                executeForEach([=](size_t index) {
+                    auto key = std::string("foo-") + std::to_string(index);
+                    ASSERT_FALSE((map1->get<std::string, std::string>(key).get().has_value()))
+                                                << "Removed value should not exist for map1";
+                    ASSERT_FALSE((map2->get<std::string, std::string>(key).get().has_value()))
+                                                << "Removed value should not exist for map2";
+                });
             }
 
             TEST_F(ClientReplicatedMapTest, testSize) {
-                std::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                std::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
                 for (size_t i = 0; i < testValues.size(); i++) {
-                    std::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    auto map = i < half ? map1 : map2;
                     std::pair<int, int> &entry = testValues[i];
-                    map->put(entry.first, entry.second);
+                    map->put(entry.first, entry.second).get();
                 }
 
-                ASSERT_EQ((int32_t) testValues.size(), map1->size());
-                ASSERT_EQ((int32_t) testValues.size(), map2->size());
+                ASSERT_EQ((int32_t) testValues.size(), map1->size().get());
+                ASSERT_EQ((int32_t) testValues.size(), map2->size().get());
             }
 
             TEST_F(ClientReplicatedMapTest, testContainsKey) {
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map1 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client2->getReplicatedMap<std::string, std::string>(getTestName());
+                putEntriesIntoMap(map1);
 
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    map1->put(out.str(), "bar");
-                }
+                executeForEach([=] (size_t i) {
+                    ASSERT_TRUE(map2->containsKey(std::string("foo-") + std::to_string(i)).get());
+                });
 
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    ASSERT_TRUE(map2->containsKey(out.str()));
-                }
-
-                for (int i = 0; i < OPERATION_COUNT; i++) {
-                    std::ostringstream out;
-                    out << "foo-" << i;
-                    ASSERT_TRUE(map1->containsKey(out.str()));
-                }
+                executeForEach([=] (size_t i) {
+                    ASSERT_TRUE(map2->containsKey(std::string("foo-") + std::to_string(i)).get());
+                });
             }
 
             TEST_F(ClientReplicatedMapTest, testContainsValue) {
-                std::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                std::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
                 for (size_t i = 0; i < testValues.size(); i++) {
-                    std::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    auto map = i < half ? map1 : map2;
                     std::pair<int, int> &entry = testValues[i];
-                    map->put(entry.first, entry.second);
+                    map->put(entry.first, entry.second).get();
                 }
 
                 for (TEST_VALUES_TYPE::value_type &entry : testValues) {
-                    ASSERT_TRUE(map2->containsValue(entry.second));
+                    ASSERT_TRUE(map2->containsValue(entry.second).get());
                 }
 
                 for (TEST_VALUES_TYPE::value_type &entry : testValues) {
-                    ASSERT_TRUE(map1->containsValue(entry.second));
+                    ASSERT_TRUE(map1->containsValue(entry.second).get());
                 }
             }
 
             TEST_F(ClientReplicatedMapTest, testValues) {
-                std::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                std::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
                 for (size_t i = 0; i < testValues.size(); i++) {
-                    std::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    auto map = i < half ? map1 : map2;
                     std::pair<int, int> &entry = testValues[i];
                     map->put(entry.first, entry.second);
                 }
 
-                std::shared_ptr<DataArray<int> > values1 = map1->values();
-                std::shared_ptr<DataArray<int> > values2 = map2->values();
-
+                auto values1 = map1->values<int>().get();
+                auto values2 = map2->values<int>().get();
                 for (TEST_VALUES_TYPE::value_type &entry : testValues) {
-                    ASSERT_TRUE(contains(values1, entry.second));
-                    ASSERT_TRUE(contains(values2, entry.second));
+                    contains(values1, entry.second);
+                    contains(values2, entry.second);
                 }
             }
 
             TEST_F(ClientReplicatedMapTest, testKeySet) {
-                std::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                std::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
                 for (size_t i = 0; i < testValues.size(); i++) {
-                    std::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    auto map = i < half ? map1 : map2;
                     std::pair<int, int> &entry = testValues[i];
-                    map->put(entry.first, entry.second);
+                    map->put(entry.first, entry.second).get();
                 }
 
-                std::shared_ptr<DataArray<int> > keys1 = map1->keySet();
-                std::shared_ptr<DataArray<int> > keys2 = map2->keySet();
+                auto keys1 = map1->keySet<int>().get();
+                auto keys2 = map2->keySet<int>().get();
 
                 for (TEST_VALUES_TYPE::value_type &entry : testValues) {
                     ASSERT_TRUE(contains(keys1, entry.first));
@@ -698,39 +473,37 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testEntrySet) {
-                std::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                std::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<ReplicatedMap> map1 = client->getReplicatedMap(getTestName());
+                std::shared_ptr<ReplicatedMap> map2 = client2->getReplicatedMap(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
                 for (size_t i = 0; i < testValues.size(); i++) {
-                    std::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    auto map = i < half ? map1 : map2;
                     std::pair<int, int> &entry = testValues[i];
-                    map->put(entry.first, entry.second);
+                    map->put(entry.first, entry.second).get();
                 }
 
-                std::shared_ptr<LazyEntryArray<int, int> > entrySet1 = map1->entrySet();
-                std::shared_ptr<LazyEntryArray<int, int> > entrySet2 = map2->entrySet();
+                auto entrySet1 = map1->entrySet<TypedData, TypedData>().get();
+                auto entrySet2 = map2->entrySet<TypedData, TypedData>().get();
 
-                for (size_t j = 0; j < entrySet2->size(); ++j) {
+                for (auto &entry : entrySet2) {
                     int value;
-                    ASSERT_TRUE(findValueForKey(*entrySet2->getKey(j), testValues, value));
-                    ASSERT_EQ(value, *entrySet2->getValue(j));
+                    ASSERT_TRUE(findValueForKey(entry.first.get<int>().value(), testValues, value));
+                    ASSERT_EQ(value, entry.second.get<int>().value());
                 }
 
-                for (size_t j = 0; j < entrySet1->size(); ++j) {
+                for (auto &entry : entrySet1) {
                     int value;
-                    ASSERT_TRUE(findValueForKey(*entrySet1->getKey(j), testValues, value));
-                    ASSERT_EQ(value, *entrySet1->getValue(j));
+                    ASSERT_TRUE(findValueForKey(entry.first.get<int>().value(), testValues, value));
+                    ASSERT_EQ(value, entry.second.get<int>().value());
                 }
             }
 
             TEST_F(ClientReplicatedMapTest, testRetrieveUnknownValue) {
-                std::shared_ptr<ReplicatedMap<std::string, std::string> > map =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
-
-                std::shared_ptr<std::string> value = map->get("foo");
-                ASSERT_NULL("No entry with key foo should exist", value.get(), std::string);
+                std::shared_ptr<ReplicatedMap> map = client->getReplicatedMap(getTestName());
+                auto value = map->get<std::string, std::string>("foo").get();
+                ASSERT_FALSE(value.has_value()) << "No entry with key foo should exist";
             }
 
             TEST_F(ClientReplicatedMapTest, testNearCacheInvalidation) {
@@ -740,86 +513,59 @@ namespace hazelcast {
                 HazelcastClient client1(clientConfig);
                 HazelcastClient client2(clientConfig);
 
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap1 = client1.getReplicatedMap<int, int>(
-                        mapName);
+                auto replicatedMap1 = client1.getReplicatedMap(mapName);
 
-                replicatedMap1->put(1, 1);
+                replicatedMap1->put(1, 1).get();
 // puts key 1 to Near Cache
-                replicatedMap1->get(1);
+                replicatedMap1->get<int, int>(1).get();
 
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap2 = client2.getReplicatedMap<int, int>(
-                        mapName);
+                auto replicatedMap2 = client2.getReplicatedMap(mapName);
 // this should invalidate Near Cache of replicatedMap1
-                replicatedMap2->clear();
+                replicatedMap2->clear().get();
 
-                ASSERT_NULL_EVENTUALLY(replicatedMap1->get(1).get(), int);
+                ASSERT_FALSE_EVENTUALLY((replicatedMap1->get<int, int>(1).get().has_value()));
             }
 
             TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode) {
-                ClientConfig clientConfig;
-                SerializationConfig serializationConfig;
-                serializationConfig.addPortableFactory(5, std::shared_ptr<serialization::PortableFactory>(
-                        new SamplePortableFactory()));
-                clientConfig.setSerializationConfig(serializationConfig);
-
-                HazelcastClient client(clientConfig);
-                std::shared_ptr<ReplicatedMap<int, SamplePortable> > sampleMap = client.getReplicatedMap<int, SamplePortable>(
-                        getTestName());
-                sampleMap->put(1, SamplePortable(666));
-                std::shared_ptr<SamplePortable> samplePortable = sampleMap->get(1);
-                ASSERT_NOTNULL(samplePortable.get(), SamplePortable);
+                auto sampleMap = client->getReplicatedMap(getTestName());
+                sampleMap->put(1, SamplePortable{666});
+                auto samplePortable = sampleMap->get<int, SamplePortable>(1).get();
+                ASSERT_TRUE(samplePortable.has_value());
                 ASSERT_EQ(666, samplePortable->a);
             }
         }
+
+        namespace serialization {
+            template<>
+            struct hz_serializer<test::ClientReplicatedMapTest::SamplePortable> : public portable_serializer {
+                static int32_t getFactoryId() {
+                    return 5;
+                }
+
+                static int32_t getClassId() {
+                    return 6;
+                }
+
+                static void writePortable(test::ClientReplicatedMapTest::SamplePortable object, serialization::PortableWriter &out) {
+                    out.write<int32_t>("a", object.a);
+                }
+
+                static test::ClientReplicatedMapTest::SamplePortable readPortable(serialization::PortableReader &reader) {
+                    return {reader.read<int32_t>("a")};
+                }
+            };
+        }
     }
 }
-
-
-
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class ClientReplicatedMapListenerTest : public ClientTestSupport {
             protected:
-                class EventCountingListener : public EntryListener<int, int> {
-                public:
-                    EventCountingListener() : keys(UINT_MAX) {}
-
-                    virtual void entryAdded(const EntryEvent<int, int> &event) {
-                        keys.push(event.getKey());
-                        ++addCount;
-                    }
-
-                    virtual void entryRemoved(const EntryEvent<int, int> &event) {
-                        keys.push(event.getKey());
-                        ++removeCount;
-                    }
-
-                    virtual void entryUpdated(const EntryEvent<int, int> &event) {
-                        keys.push(event.getKey());
-                        ++updateCount;
-                    }
-
-                    virtual void entryEvicted(const EntryEvent<int, int> &event) {
-                        keys.push(event.getKey());
-                        ++evictCount;
-                    }
-
-                    virtual void entryExpired(const EntryEvent<int, int> &event) {
-                    }
-
-                    virtual void entryMerged(const EntryEvent<int, int> &event) {
-                    }
-
-                    virtual void mapEvicted(const MapEvent &event) {
-                        ++mapEvictCount;
-                    }
-
-                    virtual void mapCleared(const MapEvent &event) {
-                        ++mapClearCount;
-                    }
-
+                
+                struct ListenerState {
+                    ListenerState() : keys(UINT_MAX) {}
                     hazelcast::util::BlockingConcurrentQueue<int> keys;
                     hazelcast::util::AtomicInt addCount;
                     hazelcast::util::AtomicInt removeCount;
@@ -828,9 +574,44 @@ namespace hazelcast {
                     hazelcast::util::AtomicInt mapClearCount;
                     hazelcast::util::AtomicInt mapEvictCount;
                 };
+                
+                struct EventCountingListener {
+                    explicit EventCountingListener(ListenerState &state) : state_(state) {}
+                              
+                    void entryAdded(const EntryEvent &event) {
+                        state_.keys.push(event.getKey().get<int>().value());
+                        ++state_.addCount;
+                    }
 
-                virtual void TearDown() {
-                }
+                    void entryRemoved(const EntryEvent &event) {
+                        state_.keys.push(event.getKey().get<int>().value());
+                        ++state_.removeCount;
+                    }
+
+                    void entryUpdated(const EntryEvent &event) {
+                        state_.keys.push(event.getKey().get<int>().value());
+                        ++state_.updateCount;
+                    }
+
+                    void entryEvicted(const EntryEvent &event) {
+                        state_.keys.push(event.getKey().get<int>().value());
+                        ++state_.evictCount;
+                    }
+
+                    void entryExpired(const EntryEvent &event) {}
+
+                    void entryMerged(const EntryEvent &event) {}
+
+                    void mapEvicted(const MapEvent &event) {
+                        ++state_.mapEvictCount;
+                    }
+
+                    virtual void mapCleared(const MapEvent &event) {
+                        ++state_.mapClearCount;
+                    }
+
+                    ListenerState &state_;
+                };
 
                 static void SetUpTestCase() {
                     instance1 = new HazelcastServer(*g_srvFactory);
@@ -845,89 +626,73 @@ namespace hazelcast {
                     delete instance1;
                     delete instance2;
 
-                    client = NULL;
-                    client2 = NULL;
-                    instance1 = NULL;
-                    instance2 = NULL;
+                    client = nullptr;
+                    client2 = nullptr;
+                    instance1 = nullptr;
+                    instance2 = nullptr;
                 }
 
                 static HazelcastServer *instance1;
                 static HazelcastServer *instance2;
                 static HazelcastClient *client;
                 static HazelcastClient *client2;
+                ListenerState state;
             };
 
-            HazelcastServer *ClientReplicatedMapListenerTest::instance1 = NULL;
-            HazelcastServer *ClientReplicatedMapListenerTest::instance2 = NULL;
-            HazelcastClient *ClientReplicatedMapListenerTest::client = NULL;
-            HazelcastClient *ClientReplicatedMapListenerTest::client2 = NULL;
+            HazelcastServer *ClientReplicatedMapListenerTest::instance1 = nullptr;
+            HazelcastServer *ClientReplicatedMapListenerTest::instance2 = nullptr;
+            HazelcastClient *ClientReplicatedMapListenerTest::client = nullptr;
+            HazelcastClient *ClientReplicatedMapListenerTest::client2 = nullptr;
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryAdded) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
-                        getTestName());
-                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
-                replicatedMap->addEntryListener(listener);
-                replicatedMap->put(1, 1);
-                ASSERT_EQ_EVENTUALLY(1, listener->addCount.load());
+                auto replicatedMap = client->getReplicatedMap(getTestName());
+                replicatedMap->addEntryListener(EventCountingListener(state)).get();
+                replicatedMap->put(1, 1).get();
+                ASSERT_EQ_EVENTUALLY(1, state.addCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryUpdated) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
-                        getTestName());
-                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
-                replicatedMap->addEntryListener(listener);
-                replicatedMap->put(1, 1);
-                replicatedMap->put(1, 2);
-                ASSERT_EQ_EVENTUALLY(1, listener->updateCount.load());
+                auto replicatedMap = client->getReplicatedMap(getTestName());
+                replicatedMap->addEntryListener(EventCountingListener(state)).get();
+                replicatedMap->put(1, 1).get();
+                replicatedMap->put(1, 2).get();
+                ASSERT_EQ_EVENTUALLY(1, state.updateCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryRemoved) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
-                        getTestName());
-                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
-                replicatedMap->addEntryListener(listener);
-                replicatedMap->put(1, 1);
-                replicatedMap->remove(1);
-                ASSERT_EQ_EVENTUALLY(1, listener->removeCount.load());
+                auto replicatedMap = client->getReplicatedMap(getTestName());
+                replicatedMap->addEntryListener(EventCountingListener(state)).get();
+                replicatedMap->put(1, 1).get();
+                replicatedMap->remove<int, int>(1).get();
+                ASSERT_EQ_EVENTUALLY(1, state.removeCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testMapClear) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
-                        getTestName());
-                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
-                replicatedMap->addEntryListener(listener);
-                replicatedMap->put(1, 1);
-                replicatedMap->clear();
-                ASSERT_EQ_EVENTUALLY(1, listener->mapClearCount.load());
+                auto replicatedMap = client->getReplicatedMap(getTestName());
+                replicatedMap->addEntryListener(EventCountingListener(state)).get();
+                replicatedMap->put(1, 1).get();
+                replicatedMap->clear().get();
+                ASSERT_EQ_EVENTUALLY(1, state.mapClearCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenToKeyForEntryAdded) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
-                        getTestName());
-                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
-                replicatedMap->addEntryListener(listener, 1);
-                replicatedMap->put(1, 1);
-                replicatedMap->put(2, 2);
+                auto replicatedMap = client->getReplicatedMap(getTestName());
+                replicatedMap->addEntryListener(EventCountingListener(state), 1).get();
+                replicatedMap->put(1, 1).get();
+                replicatedMap->put(2, 2).get();
                 ASSERT_TRUE_EVENTUALLY(
-                        listener->keys.size() == 1U && listener->keys.pop() == 1 && listener->addCount.load() == 1);
+                        state.keys.size() == 1U && state.keys.pop() == 1 && state.addCount.load() == 1);
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate) {
-                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(
-                        getTestName());
-                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
-                replicatedMap->addEntryListener(listener, query::FalsePredicate());
-                replicatedMap->put(2, 2);
-// Check for 3 seconds
-                ASSERT_TRUE_ALL_THE_TIME((listener->addCount.load() == 0), 3);
+                auto replicatedMap = client->getReplicatedMap(getTestName());
+                replicatedMap->addEntryListener(EventCountingListener(state), query::FalsePredicate(*client)).get();
+                replicatedMap->put(2, 2).get();
+                ASSERT_TRUE_ALL_THE_TIME((state.addCount.load() == 0), 1);
             }
-
         }
     }
 }
-
-
-
 
 namespace hazelcast {
     namespace client {
@@ -943,26 +708,26 @@ namespace hazelcast {
                 static void TearDownTestSuite() {
                     delete instance2;
                     delete instance;
-                    instance2 = NULL;
-                    instance = NULL;
+                    instance2 = nullptr;
+                    instance = nullptr;
                 }
 
-                virtual void SetUp() {
-                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<int, std::string>(GetParam(),
-                                                                                                  getTestName());
+                void SetUp() override {
+                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>(
+                            GetParam(), getTestName());
                 }
 
-                virtual void TearDown() {
-                    if (nearCachedMap.get()) {
+                void TearDown() override {
+                    if (nearCachedMap) {
                         nearCachedMap->destroy();
                     }
-                    if (noNearCacheMap.get()) {
+                    if (noNearCacheMap) {
                         noNearCacheMap->destroy();
                     }
-                    if (NULL != client.get()) {
+                    if (client) {
                         client->shutdown();
                     }
-                    if (NULL != nearCachedClient.get()) {
+                    if (nearCachedClient) {
                         nearCachedClient->shutdown();
                     }
                 }
@@ -1057,9 +822,8 @@ namespace hazelcast {
                     }
 
                 private:
-                    NearCacheTestUtils();
-
-                    NearCacheTestUtils(const NearCacheTestUtils &);
+                    NearCacheTestUtils() = delete;
+                    NearCacheTestUtils(const NearCacheTestUtils &) = delete;
                 };
 
                 /**
@@ -1074,85 +838,81 @@ namespace hazelcast {
 
                 void createNoNearCacheContext() {
                     client = std::unique_ptr<HazelcastClient>(new HazelcastClient(getConfig()));
-                    noNearCacheMap = client->getReplicatedMap<int, std::string>(getTestName());
+                    noNearCacheMap = client->getReplicatedMap(getTestName());
                 }
 
                 void createNearCacheContext() {
                     ClientConfig nearCachedClientConfig = getConfig();
                     nearCachedClientConfig.addNearCacheConfig(nearCacheConfig);
                     nearCachedClient = std::unique_ptr<HazelcastClient>(new HazelcastClient(nearCachedClientConfig));
-                    nearCachedMap = nearCachedClient->getReplicatedMap<int, std::string>(getTestName());
+                    nearCachedMap = nearCachedClient->getReplicatedMap(getTestName());
                     spi::ClientContext clientContext(*nearCachedClient);
                     nearCacheManager = &clientContext.getNearCacheManager();
                     nearCache = nearCacheManager->
-                            getNearCache<int, std::string, serialization::pimpl::Data>(getTestName());
-                    this->stats = (nearCache.get() == NULL) ? NULL : &nearCache->getNearCacheStats();
+                            getNearCache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(getTestName());
+                    this->stats = nearCache ? nearCache->getNearCacheStats() : nullptr;
                 }
 
                 void testContainsKey(bool useNearCachedMapForRemoval) {
                     createNoNearCacheContext();
 
                     // populate map
-                    noNearCacheMap->put(1, "value1");
-                    noNearCacheMap->put(2, "value2");
-                    noNearCacheMap->put(3, "value3");
+                    noNearCacheMap->put<int, std::string>(1, "value1").get();
+                    noNearCacheMap->put<int, std::string>(2, "value2").get();
+                    noNearCacheMap->put<int, std::string>(3, "value3").get();
 
                     createNearCacheContext();
 
                     // populate Near Cache
-                    nearCachedMap->get(1);
-                    nearCachedMap->get(2);
-                    nearCachedMap->get(3);
+                    nearCachedMap->get<int, std::string>(1).get();
+                    nearCachedMap->get<int, std::string>(2).get();
+                    nearCachedMap->get<int, std::string>(3).get();
 
-                    ASSERT_TRUE(nearCachedMap->containsKey(1));
-                    ASSERT_TRUE(nearCachedMap->containsKey(2));
-                    ASSERT_TRUE(nearCachedMap->containsKey(3));
-                    ASSERT_FALSE(nearCachedMap->containsKey(5));
+                    ASSERT_TRUE(nearCachedMap->containsKey(1).get());
+                    ASSERT_TRUE(nearCachedMap->containsKey(2).get());
+                    ASSERT_TRUE(nearCachedMap->containsKey(3).get());
+                    ASSERT_FALSE(nearCachedMap->containsKey(5).get());
 
                     // remove a key which is in the Near Cache
-                    std::shared_ptr<ReplicatedMap<int, std::string> > &adapter = useNearCachedMapForRemoval
+                    std::shared_ptr<ReplicatedMap> &adapter = useNearCachedMapForRemoval
                                                                                  ? nearCachedMap
                                                                                  : noNearCacheMap;
-                    adapter->remove(1);
+                    adapter->remove<int, std::string>(1).get();
 
                     WAIT_TRUE_EVENTUALLY(checkContainKeys());
-                    ASSERT_FALSE(nearCachedMap->containsKey(1));
-                    ASSERT_TRUE(nearCachedMap->containsKey(2));
-                    ASSERT_TRUE(nearCachedMap->containsKey(3));
-                    ASSERT_FALSE(nearCachedMap->containsKey(5));
+                    ASSERT_FALSE(nearCachedMap->containsKey(1).get());
+                    ASSERT_TRUE(nearCachedMap->containsKey(2).get());
+                    ASSERT_TRUE(nearCachedMap->containsKey(3).get());
+                    ASSERT_FALSE(nearCachedMap->containsKey(5).get());
                 }
 
                 bool checkContainKeys() {
-                    return !nearCachedMap->containsKey(1) && nearCachedMap->containsKey(2) &&
-                           nearCachedMap->containsKey(3) && !nearCachedMap->containsKey(5);
+                    return !nearCachedMap->containsKey(1).get() && nearCachedMap->containsKey(2).get() &&
+                           nearCachedMap->containsKey(3).get() && !nearCachedMap->containsKey(5).get();
                 }
 
                 void
-                assertNearCacheInvalidationRequests(monitor::NearCacheStats &stats, int64_t invalidationRequests) {
+                assertNearCacheInvalidationRequests(monitor::NearCacheStats &stat, int64_t invalidationRequests) {
                     if (nearCacheConfig->isInvalidateOnChange() && invalidationRequests > 0) {
-                        monitor::impl::NearCacheStatsImpl &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stats;
+                        auto &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stat;
                         ASSERT_EQ_EVENTUALLY(invalidationRequests, nearCacheStatsImpl.getInvalidationRequests());
                         nearCacheStatsImpl.resetInvalidationEvents();
                     }
                 }
 
                 void populateMap() {
-                    char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        hazelcast::util::hz_snprintf(buf, 30, "value-%d", i);
-                        noNearCacheMap->put(i, buf);
+                        noNearCacheMap->put<int, std::string>(i, std::string("value-") + std::to_string(i)).get();
                     }
 
                     assertNearCacheInvalidationRequests(*stats, DEFAULT_RECORD_COUNT);
                 }
 
                 void populateNearCache() {
-                    char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        std::shared_ptr<std::string> value = nearCachedMap->get(i);
-                        ASSERT_NOTNULL(value.get(), std::string);
-                        hazelcast::util::hz_snprintf(buf, 30, "value-%d", i);
-                        ASSERT_EQ(buf, *value);
+                        auto value = nearCachedMap->get<int, std::string>(i).get();
+                        ASSERT_TRUE(value.has_value());
+                        ASSERT_EQ(std::string("value-" + std::to_string(i)), value.value());
                     }
                 }
 
@@ -1162,7 +922,8 @@ namespace hazelcast {
                 }
 
                 int64_t getExpectedMissesWithLocalUpdatePolicy() {
-                    if (nearCacheConfig->getLocalUpdatePolicy() == config::NearCacheConfig<int, std::string>::CACHE) {
+                    if (nearCacheConfig->getLocalUpdatePolicy() ==
+                        config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
                         return stats->getMisses();
                     }
@@ -1171,7 +932,7 @@ namespace hazelcast {
                 }
 
                 int64_t getExpectedHitsWithLocalUpdatePolicy() {
-                    if (nearCacheConfig->getLocalUpdatePolicy() == config::NearCacheConfig<int, std::string>::CACHE) {
+                    if (nearCacheConfig->getLocalUpdatePolicy() == config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
                         return stats->getHits() + 2;
                     }
@@ -1180,16 +941,16 @@ namespace hazelcast {
                 }
 
                 bool checkMissesAndHits(int64_t &expectedMisses, int64_t &expectedHits,
-                                        std::shared_ptr<std::string> &value) {
+                                        boost::optional<std::string> &value) {
                     expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
                     expectedHits = getExpectedHitsWithLocalUpdatePolicy();
 
-                    value = nearCachedMap->get(1);
-                    if (NULL == value.get() || *value != "newValue") {
+                    value = nearCachedMap->get<int, std::string>(1).get();
+                    if (!value.has_value() || value.value() != "newValue") {
                         return false;
                     }
-                    value = nearCachedMap->get(1);
-                    if (NULL == value.get() || *value != "newValue") {
+                    value = nearCachedMap->get<int, std::string>(1).get();
+                    if (!value.has_value() || value.value() != "newValue") {
                         return false;
                     }
 
@@ -1205,37 +966,34 @@ namespace hazelcast {
 
                     populateNearCache();
 
-                    std::map<int, std::string> invalidationMap;
-                    char buf[30];
+                    std::unordered_map<int, std::string> invalidationMap;
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        hazelcast::util::hz_snprintf(buf, 30, "value-%d", i);
-                        invalidationMap[i] = buf;
+                        invalidationMap[i] = std::string("value-" + std::to_string(i));
                     }
 
                     // this should invalidate the Near Cache
-                    std::shared_ptr<ReplicatedMap<int, std::string> > &adapter = useNearCacheAdapter ? nearCachedMap
-                                                                                                     : noNearCacheMap;
-                    adapter->putAll(invalidationMap);
+                    std::shared_ptr<ReplicatedMap> &adapter = useNearCacheAdapter ? nearCachedMap : noNearCacheMap;
+                    adapter->putAll(invalidationMap).get();
 
                     WAIT_EQ_EVENTUALLY(0, nearCache->size());
                     ASSERT_EQ(0, nearCache->size()) << "Invalidation is not working on putAll()";
                 }
 
-                std::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig;
+                std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>> nearCacheConfig;
                 std::unique_ptr<HazelcastClient> client;
                 std::unique_ptr<HazelcastClient> nearCachedClient;
-                std::shared_ptr<ReplicatedMap<int, std::string> > noNearCacheMap;
-                std::shared_ptr<ReplicatedMap<int, std::string> > nearCachedMap;
-                hazelcast::client::internal::nearcache::NearCacheManager *nearCacheManager;
-                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, std::string> > nearCache;
-                monitor::NearCacheStats *stats;
+                std::shared_ptr<ReplicatedMap> noNearCacheMap;
+                std::shared_ptr<ReplicatedMap> nearCachedMap;
+                hazelcast::client::internal::nearcache::NearCacheManager *nearCacheManager{};
+                std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> nearCache;
+                std::shared_ptr<monitor::NearCacheStats> stats;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
             };
 
             const int BasicClientReplicatedMapNearCacheTest::DEFAULT_RECORD_COUNT = 1000;
-            HazelcastServer *BasicClientReplicatedMapNearCacheTest::instance = NULL;
-            HazelcastServer *BasicClientReplicatedMapNearCacheTest::instance2 = NULL;
+            HazelcastServer *BasicClientReplicatedMapNearCacheTest::instance = nullptr;
+            HazelcastServer *BasicClientReplicatedMapNearCacheTest::instance2 = nullptr;
 
             /**
              * Checks that the Near Cache keys are correctly checked when {@link DataStructureAdapter#containsKey(Object)} is used.
@@ -1266,25 +1024,25 @@ namespace hazelcast {
 
                 for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                     // populate Near Cache
-                    ASSERT_NULL("Expected null from original data structure for key " << i,
-                                nearCachedMap->get(i).get(), std::string);
+                    ASSERT_FALSE((nearCachedMap->get<int, std::string>(i).get().has_value()))
+                                                << "Expected null from original data structure for key " << i;
                     // fetch value from Near Cache
-                    ASSERT_NULL("Expected null from Near cached data structure for key " << i,
-                                nearCachedMap->get(i).get(), std::string);
+                    ASSERT_FALSE((nearCachedMap->get<int, std::string>(i).get().has_value()))
+                                                << "Expected null from Near cached data structure for key " << i;
 
                     // fetch internal value directly from Near Cache
                     std::shared_ptr<serialization::pimpl::Data> key = getNearCacheKey(i);
-                    std::shared_ptr<std::string> value = nearCache->get(key);
+                    auto value = nearCache->get(key);
                     if (value.get() != NULL) {
                         // the internal value should either be `null` or `NULL_OBJECT`
-                        std::shared_ptr<std::string> nullObj = std::static_pointer_cast<std::string>(
-                                hazelcast::client::internal::nearcache::NearCache<int, std::string>::NULL_OBJECT);
-                        ASSERT_EQ(nullObj, nearCache->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
+                        ASSERT_EQ(
+                        (hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>::NULL_OBJECT),
+                                nearCache->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
                     }
                 }
             }
 
-/**
+            /**
              * Checks that the Near Cache updates value for keys which are already in the Near Cache,
              * even if the Near Cache is full and the eviction is disabled (via {@link com.hazelcast.config.EvictionPolicy#NONE}.
              *
@@ -1293,8 +1051,8 @@ namespace hazelcast {
             TEST_P(BasicClientReplicatedMapNearCacheTest,
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnNearCacheAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
-                NearCacheTestUtils::setEvictionConfig<int, std::string>(*nearCacheConfig, config::NONE,
-                                                                        config::EvictionConfig<int, std::string>::ENTRY_COUNT,
+                NearCacheTestUtils::setEvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>(*nearCacheConfig, config::NONE,
+                                                                        config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::ENTRY_COUNT,
                                                                         size);
 
                 nearCacheConfig->setInvalidateOnChange(false);
@@ -1308,26 +1066,26 @@ namespace hazelcast {
                 populateNearCache();
 
                 ASSERT_EQ(size, nearCache->size());
-                std::shared_ptr<std::string> value = nearCachedMap->get(1);
-                ASSERT_NOTNULL(value.get(), std::string);
-                ASSERT_EQ("value-1", *value);
+                auto value = nearCachedMap->get<int, std::string>(1).get();
+                ASSERT_TRUE(value.has_value());
+                ASSERT_EQ("value-1", value.value());
 
-                nearCachedMap->put(1, "newValue");
+                nearCachedMap->put<int, std::string>(1, "newValue").get();
 
                 int64_t expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
                 int64_t expectedHits = getExpectedHitsWithLocalUpdatePolicy();
 
-                value = nearCachedMap->get(1);
-                ASSERT_NOTNULL(value.get(), std::string);
-                ASSERT_EQ("newValue", *value);
-                value = nearCachedMap->get(1);
-                ASSERT_NOTNULL(value.get(), std::string);
-                ASSERT_EQ("newValue", *value);
+                value = nearCachedMap->get<int, std::string>(1).get();
+                ASSERT_TRUE(value.has_value());
+                ASSERT_EQ("newValue", value.value());
+                value = nearCachedMap->get<int, std::string>(1).get();
+                ASSERT_TRUE(value.has_value());
+                ASSERT_EQ("newValue", value.value());
 
                 NearCacheTestUtils::assertNearCacheStats(*stats, size, expectedHits, expectedMisses);
             }
 
-/**
+            /**
              * Checks that the Near Cache updates value for keys which are already in the Near Cache,
              * even if the Near Cache is full an the eviction is disabled (via {@link com.hazelcast.config.EvictionPolicy#NONE}.
              *
@@ -1336,8 +1094,8 @@ namespace hazelcast {
             TEST_P(BasicClientReplicatedMapNearCacheTest,
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnDataAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
-                NearCacheTestUtils::setEvictionConfig<int, std::string>(*nearCacheConfig, config::NONE,
-                                                                        config::EvictionConfig<int, std::string>::ENTRY_COUNT,
+                NearCacheTestUtils::setEvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>(*nearCacheConfig, config::NONE,
+                                                                        config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::ENTRY_COUNT,
                                                                         size);
                 nearCacheConfig->setInvalidateOnChange(true);
 
@@ -1350,13 +1108,13 @@ namespace hazelcast {
                 populateNearCache();
 
                 ASSERT_EQ(size, nearCache->size());
-                std::shared_ptr<std::string> value = nearCachedMap->get(1);
-                ASSERT_NOTNULL(value.get(), std::string);
-                ASSERT_EQ("value-1", *value);
+                auto value = nearCachedMap->get<int, std::string>(1).get();
+                ASSERT_TRUE(value.has_value());
+                ASSERT_EQ("value-1", value.value());
 
-                noNearCacheMap->put(1, "newValue");
+                noNearCacheMap->put<int, std::string>(1, "newValue").get();
 
-// we have to use assertTrueEventually since the invalidation is done asynchronously
+                // we have to use assertTrueEventually since the invalidation is done asynchronously
                 int64_t expectedMisses = 0;
                 int64_t expectedHits = 0;
                 WAIT_TRUE_EVENTUALLY(checkMissesAndHits(expectedMisses, expectedHits, value));
@@ -1364,7 +1122,7 @@ namespace hazelcast {
                 NearCacheTestUtils::assertNearCacheStats(*stats, size, expectedHits, expectedMisses);
             }
 
-/**
+            /**
              * Checks that the Near Cache values are eventually invalidated when {@link DataStructureAdapter#putAll(Map)} is used.
              *
              * This variant uses the nearCacheMap, so there is no Near Cache invalidation necessary.
@@ -1374,7 +1132,7 @@ namespace hazelcast {
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(true);
             }
 
-/**
+            /**
              * Checks that the Near Cache values are eventually invalidated when {@link DataStructureAdapter#putAll(Map)} is used.
              *
              * This variant uses the noNearCacheMap, so we need to configure Near Cache invalidation.
@@ -1385,7 +1143,7 @@ namespace hazelcast {
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(false);
             }
 
-/**
+            /**
              * Checks that the {@link com.hazelcast.monitor.NearCacheStats} are calculated correctly.
              */
             TEST_P(BasicClientReplicatedMapNearCacheTest, testNearCacheStats) {
@@ -1393,7 +1151,7 @@ namespace hazelcast {
 
                 createNearCacheContext();
 
-// populate map
+                // populate map
                 populateMap();
 
                 {
@@ -1401,14 +1159,14 @@ namespace hazelcast {
                     NearCacheTestUtils::assertNearCacheStats(*stats, 0, 0, 0);
                 }
 
-// populate Near Cache. Will cause misses and will increment the owned entry count
+                // populate Near Cache. Will cause misses and will increment the owned entry count
                 populateNearCache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is initially populated");
                     NearCacheTestUtils::assertNearCacheStats(*stats, DEFAULT_RECORD_COUNT, 0, DEFAULT_RECORD_COUNT);
                 }
 
-// make some hits
+                // make some hits
                 populateNearCache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is hit after being populated.");
@@ -1418,32 +1176,30 @@ namespace hazelcast {
             }
 
             TEST_P(BasicClientReplicatedMapNearCacheTest, testNearCacheEviction) {
-                NearCacheTestUtils::setEvictionConfig<int, std::string>(*nearCacheConfig, config::LRU,
-                                                                        config::EvictionConfig<int, std::string>::ENTRY_COUNT,
+                NearCacheTestUtils::setEvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>(*nearCacheConfig, config::LRU,
+                                                                        config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::ENTRY_COUNT,
                                                                         DEFAULT_RECORD_COUNT);
                 createNoNearCacheContext();
 
-// all Near Cache implementations use the same eviction algorithm, which evicts a single entry
+                // all Near Cache implementations use the same eviction algorithm, which evicts a single entry
                 int64_t expectedEvictions = 1;
 
                 createNearCacheContext();
 
-// populate map with an extra entry
+                // populate map with an extra entry
                 populateMap();
-                char buf[20];
-                hazelcast::util::hz_snprintf(buf, 20, "value-%d", DEFAULT_RECORD_COUNT);
-                noNearCacheMap->put(DEFAULT_RECORD_COUNT, buf);
+                noNearCacheMap->put(DEFAULT_RECORD_COUNT, std::string("value-") + std::to_string(DEFAULT_RECORD_COUNT)).get();
 
-// populate Near Caches
+                // populate Near Caches
                 populateNearCache();
 
-// we expect (size + the extra entry - the expectedEvictions) entries in the Near Cache
+                // we expect (size + the extra entry - the expectedEvictions) entries in the Near Cache
                 int64_t expectedOwnedEntryCount = DEFAULT_RECORD_COUNT + 1 - expectedEvictions;
                 int64_t expectedHits = stats->getHits();
                 int64_t expectedMisses = stats->getMisses() + 1;
 
-// trigger eviction via fetching the extra entry
-                nearCachedMap->get(DEFAULT_RECORD_COUNT);
+                // trigger eviction via fetching the extra entry
+                nearCachedMap->get<int, std::string>(DEFAULT_RECORD_COUNT).get();
 
                 int64_t evictions = stats->getEvictions();
                 ASSERT_GE(evictions, expectedEvictions)
@@ -1463,9 +1219,6 @@ namespace hazelcast {
     }
 }
 
-
-
-
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -1484,124 +1237,125 @@ namespace hazelcast {
                 static void TearDownTestCase() {
                     delete instance2;
                     delete instance;
-                    instance2 = NULL;
-                    instance = NULL;
+                    instance2 = nullptr;
+                    instance = nullptr;
                 }
 
 
-                virtual void TearDown() {
-                    if (map.get()) {
-                        map->destroy();
+                void TearDown() override {
+                    if (map) {
+                        map->destroy().get();
                     }
                 }
 
-                std::shared_ptr<config::NearCacheConfig<int, int> > newNoInvalidationNearCacheConfig() {
-                    std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(newNearCacheConfig());
-                    nearCacheConfig->setInMemoryFormat(config::OBJECT);
-                    nearCacheConfig->setInvalidateOnChange(false);
-                    return nearCacheConfig;
+                std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > newNoInvalidationNearCacheConfig() {
+                    std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > config(newNearCacheConfig());
+                    config->setInMemoryFormat(config::OBJECT);
+                    config->setInvalidateOnChange(false);
+                    return config;
                 }
 
-                std::shared_ptr<config::NearCacheConfig<int, int> > newNearCacheConfig() {
-                    return std::shared_ptr<config::NearCacheConfig<int, int> >(
-                            new config::NearCacheConfig<int, int>());
+                static std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > newNearCacheConfig() {
+                    return std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> >(
+                            new config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>());
                 }
 
-                std::unique_ptr<ClientConfig> newClientConfig() {
+                static std::unique_ptr<ClientConfig> newClientConfig() {
                     return std::unique_ptr<ClientConfig>(new ClientConfig());
                 }
 
-                std::shared_ptr<ReplicatedMap<int, int> > getNearCachedMapFromClient(
-                        std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig) {
+                std::shared_ptr<ReplicatedMap > getNearCachedMapFromClient(
+                        std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > config) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
 
-                    nearCacheConfig->setName(mapName);
+                    config->setName(mapName);
 
                     clientConfig = newClientConfig();
-                    clientConfig->addNearCacheConfig(nearCacheConfig);
+                    clientConfig->addNearCacheConfig(config);
 
                     client = std::unique_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
-                    map = client->getReplicatedMap<int, int>(mapName);
+                    map = client->getReplicatedMap(mapName);
                     return map;
                 }
 
-                monitor::NearCacheStats *getNearCacheStats(ReplicatedMap<int, int> &map) {
-                    return  (static_cast<proxy::ClientReplicatedMapProxy<int, int> &>(map)).getNearCacheStats();
+                std::shared_ptr<monitor::NearCacheStats> getNearCacheStats(ReplicatedMap &repMap) {
+                    spi::ClientContext clientContext(*client);
+                    auto nearCacheManager = &clientContext.getNearCacheManager();
+                    auto nearCache = nearCacheManager->
+                            getNearCache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(repMap.getName());
+                    return nearCache->getNearCacheStats();
                 }
 
-                void assertThatOwnedEntryCountEquals(ReplicatedMap<int, int> &clientMap, int64_t expected) {
+                void assertThatOwnedEntryCountEquals(ReplicatedMap &clientMap, int64_t expected) {
                     ASSERT_EQ(expected, getNearCacheStats(clientMap)->getOwnedEntryCount());
                 }
 
                 std::unique_ptr<ClientConfig> clientConfig;
-                std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig;
+                std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > nearCacheConfig;
                 std::unique_ptr<HazelcastClient> client;
-                std::shared_ptr<ReplicatedMap<int, int> > map;
+                std::shared_ptr<ReplicatedMap> map;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
             };
 
             const std::string ClientReplicatedMapNearCacheTest::DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";
-            HazelcastServer *ClientReplicatedMapNearCacheTest::instance = NULL;
-            HazelcastServer *ClientReplicatedMapNearCacheTest::instance2 = NULL;
+            HazelcastServer *ClientReplicatedMapNearCacheTest::instance = nullptr;
+            HazelcastServer *ClientReplicatedMapNearCacheTest::instance2 = nullptr;
 
             TEST_F(ClientReplicatedMapNearCacheTest, testGetAllChecksNearCacheFirst) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(
-                        newNoInvalidationNearCacheConfig());
+                auto map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
 
                 int size = 1003;
                 for (int i = 0; i < size; i++) {
-                    map->put(i, i);
+                    map->put(i, i).get();
                 }
                 // populate Near Cache
                 for (int i = 0; i < size; i++) {
-                    map->get(i);
+                    map->get<int, int>(i).get();
                 }
                 // getAll() generates the Near Cache hits
                 for (int i = 0; i < size; i++) {
-                    map->get(i);
+                    map->get<int, int>(i).get();
                 }
 
-                monitor::NearCacheStats *stats = getNearCacheStats(*map);
+                auto stats = getNearCacheStats(*map);
                 ASSERT_EQ(size, stats->getOwnedEntryCount());
                 ASSERT_EQ(size, stats->getHits());
             }
 
             TEST_F(ClientReplicatedMapNearCacheTest, testGetAllPopulatesNearCache) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(
-                        newNoInvalidationNearCacheConfig());
+                auto map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
 
                 int size = 1214;
                 for (int i = 0; i < size; i++) {
-                    map->put(i, i);
+                    map->put(i, i).get();
                 }
-// populate Near Cache
+                // populate Near Cache
                 for (int i = 0; i < size; i++) {
-                    map->get(i);
+                    map->get<int, int>(i).get();
                 }
-// getAll() generates the Near Cache hits
+                // getAll() generates the Near Cache hits
                 for (int i = 0; i < size; i++) {
-                    map->get(i);
+                    map->get<int, int>(i).get();
                 }
 
                 assertThatOwnedEntryCountEquals(*map, size);
             }
 
             TEST_F(ClientReplicatedMapNearCacheTest, testRemoveAllNearCache) {
-                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNearCacheConfig());
-
+                auto map = getNearCachedMapFromClient(newNearCacheConfig());
 
                 int size = 1214;
                 for (int i = 0; i < size; i++) {
-                    map->put(i, i);
+                    map->put(i, i).get();
                 }
-// populate Near Cache
+                // populate Near Cache
                 for (int i = 0; i < size; i++) {
-                    map->get(i);
+                    map->get<int, int>(i).get();
                 }
 
                 for (int i = 0; i < size; i++) {
-                    map->remove(i);
+                    map->remove<int, int>(i).get();
                 }
 
                 assertThatOwnedEntryCountEquals(*map, 0);
@@ -1610,108 +1364,34 @@ namespace hazelcast {
     }
 }
 
-
-
-
 namespace hazelcast {
     namespace client {
-
         namespace test {
             class ClientTopicTest : public ClientTestSupport {
             public:
                 ClientTopicTest();
-
             protected:
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 HazelcastClient client;
-                ITopic<std::string> topic;
+                std::shared_ptr<ITopic> topic;
             };
 
             ClientTopicTest::ClientTopicTest() : instance(*g_srvFactory), client(getNewClient()),
-                                                 topic(client.getTopic<std::string>("ClientTopicTest")) {
-            }
-
-            class MyMessageListener : public topic::MessageListener<std::string> {
-            public:
-                MyMessageListener(boost::latch &latch1)
-                        : latch1(latch1) {
-                }
-
-                void onMessage(std::unique_ptr<topic::Message<std::string> > &&message) {
-                    latch1.count_down();
-                }
-
-            private:
-                boost::latch &latch1;
-            };
+                                                 topic(client.getTopic("ClientTopicTest")) {}
 
             TEST_F(ClientTopicTest, testTopicListeners) {
                 boost::latch latch1(10);
-                MyMessageListener listener(latch1);
-                std::string id = topic.addMessageListener(listener);
-
-                for (int i = 0; i < 10; i++) {
-                    topic.publish(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
-                }
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
-                topic.removeMessageListener(id);
-            }
-        }
-    }
-}
-
-
-
-
-
-namespace hazelcast {
-    namespace client {
-
-        class HazelcastClient;
-
-        namespace test {
-            class MixedTopicTest : public ClientTestSupport {
-            public:
-                MixedTopicTest();
-
-            protected:
-                HazelcastServer instance;
-                ClientConfig clientConfig;
-                HazelcastClient client;
-                mixedtype::ITopic topic;
-            };
-
-            class MixedMessageListener : public hazelcast::client::mixedtype::topic::MessageListener {
-            public:
-                MixedMessageListener(boost::latch &latch1)
-                        : latch1(latch1) {
-                }
-
-                void onMessage(std::unique_ptr<client::topic::Message<TypedData> > &&message) {
+                std::string id = topic->addMessageListener([&] (topic::Message &&message) {
                     latch1.count_down();
-                }
-
-            private:
-                boost::latch &latch1;
-            };
-
-
-            MixedTopicTest::MixedTopicTest()
-                    : instance(*g_srvFactory), client(getNewClient()),
-                      topic(client.toMixedType().getTopic("MixedTopicTest")) {
-            }
-
-            TEST_F(MixedTopicTest, testTopicListeners) {
-                boost::latch latch1(10);
-                MixedMessageListener listener(latch1);
-                std::string id = topic.addMessageListener(listener);
+                }).get();
 
                 for (int i = 0; i < 10; i++) {
-                    topic.publish<std::string>(std::string("naber") + hazelcast::util::IOUtil::to_string(i));
+                    topic->publish(std::string("naber") + std::to_string(i)).get();
                 }
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
-                topic.removeMessageListener(id);
+
+                ASSERT_OPEN_EVENTUALLY(latch1);
+                topic->removeMessageListener(id).get();
             }
         }
     }

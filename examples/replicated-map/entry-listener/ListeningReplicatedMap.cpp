@@ -15,29 +15,29 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 
-class MyEntryListener : public hazelcast::client::EntryListener<std::string, std::string> {
+class MyEntryListener : public hazelcast::client::EntryListener {
 public:
-    void entryAdded(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryAdded(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryRemoved(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryRemoved(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryRemoved] " << event << std::endl;
     }
 
-    void entryUpdated(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryUpdated(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryEvicted(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryEvicted(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryUpdated] " << event << std::endl;
     }
 
-    void entryExpired(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryExpired(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryExpired] " << event << std::endl;
     }
 
-    void entryMerged(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryMerged(const hazelcast::client::EntryEvent &event) {
         std::cout << "[entryMerged] " << event << std::endl;
     }
 
@@ -53,12 +53,9 @@ public:
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    std::shared_ptr<hazelcast::client::ReplicatedMap<std::string, std::string> > map = hz.getReplicatedMap<std::string, std::string>(
-            "map");
+    auto map = hz.getReplicatedMap("map");
 
-    std::shared_ptr<hazelcast::client::EntryListener<std::string, std::string> > listener(new MyEntryListener());
-
-    std::string listenerId = map->addEntryListener(listener);
+    std::string listenerId = map->addEntryListener(MyEntryListener()).get();
 
     std::cout << "EntryListener registered with id " << listenerId << std::endl;
 

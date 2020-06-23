@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/post.hpp>
@@ -115,4 +116,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

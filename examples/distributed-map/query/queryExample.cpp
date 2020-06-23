@@ -13,177 +13,104 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/query/PagingPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
-#include <hazelcast/client/query/GreaterLessPredicate.h>
-#include <hazelcast/client/query/SqlPredicate.h>
-#include <hazelcast/client/query/EqualPredicate.h>
-#include <hazelcast/client/query/NotEqualPredicate.h>
-#include <hazelcast/client/query/TruePredicate.h>
-#include <hazelcast/client/query/FalsePredicate.h>
-#include <hazelcast/client/query/BetweenPredicate.h>
-#include <hazelcast/client/query/InPredicate.h>
-#include <hazelcast/client/query/InstanceOfPredicate.h>
-#include <hazelcast/client/query/NotPredicate.h>
-#include <hazelcast/client/query/AndPredicate.h>
-#include <hazelcast/client/query/OrPredicate.h>
-#include <hazelcast/client/query/LikePredicate.h>
-#include <hazelcast/client/query/ILikePredicate.h>
-#include <hazelcast/client/query/RegexPredicate.h>
-#include <hazelcast/client/adaptor/RawPointerMap.h>
+#include <hazelcast/client/query/Predicates.h>
 #include "Employee.h"
 
-using namespace hazelcast::client::examples::criteriaapi;
 using namespace hazelcast::client;
+using namespace examples;
 
-class Person : public hazelcast::client::serialization::IdentifiedDataSerializable {
-public:
-    Person() { }
+struct Person {
+    friend std::ostream &operator<<(std::ostream &os, const Person &person);
 
-    Person(const Person &p) : male(p.male), age(p.age) {
-        if (NULL != p.name.get()) {
-            name = std::unique_ptr<std::string>(new std::string(*p.name));
-        }
-    }
-
-    Person &operator=(const Person &p) {
-        if (NULL != p.name.get()) {
-            name = std::unique_ptr<std::string>(new std::string(*p.name));
-        }
-        male = p.male;
-        age = p.age;
-
-        return *this;
-    }
-
-    Person(const char *n, bool male, int age)
-            : name(std::unique_ptr<std::string>(new std::string(n))), male(male), age(age) { }
-
-    int getFactoryId() const {
-        return 1;
-    }
-
-    int getClassId() const {
-        return 3;
-    }
-
-    void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
-        out.writeUTF(name.get());
-        out.writeBoolean(male);
-        out.writeInt(age);
-    }
-
-    void readData(hazelcast::client::serialization::ObjectDataInput &in) {
-        name = in.readUTF();
-        male = in.readBoolean();
-        age = in.readInt();
-    }
-
-
-    const std::string *getName() const {
-        return name.get();
-    }
-
-    bool isMale() const {
-        return male;
-    }
-
-    int getAge() const {
-        return age;
-    }
-
-private:
-    std::unique_ptr<std::string> name;
+    std::string name;
     bool male;
-    int age;
+    int32_t age;
 };
 
-std::ostream &operator<<(std::ostream &out, const Person &p) {
-    const std::string *n = p.getName();
-    out << "Person{"
-    << "male=" << p.isMale()
-    << ", name='" << (NULL == n ? "No name" : n->c_str()) << "\'"
-    << ", age=" << p.getAge()
-    << '}';
-    return out;
+std::ostream &operator<<(std::ostream &os, const Person &person) {
+    os << "name: " << person.name << " male: " << person.male << " age: " << person.age;
+    return os;
+}
+
+namespace hazelcast {
+    namespace client {
+        namespace serialization {
+            template<>
+            struct hz_serializer<Person> : identified_data_serializer {
+                static int32_t getFactoryId() noexcept {
+                    return 1;
+                }
+
+                static int32_t getClassId() noexcept {
+                    return 3;
+                }
+
+                static void writeData(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                    out.write(object.name);
+                    out.write(object.male);
+                    out.write(object.age);
+                }
+
+                static Person readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                    return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
+                }
+            };
+        }
+    }
 }
 
 class PredicateMember {
 public:
-    std::vector<Person> getWithName(const char *name, hazelcast::client::IMap<std::string, Person> &personMap) {
-        char buf[200];
-        hazelcast::util::hz_snprintf(buf, 200, "name == %s", name);
-        hazelcast::client::query::SqlPredicate predicate(buf);
-
-        return personMap.values(predicate);
+    std::vector<Person> getWithName(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &personMap) {
+        return personMap.values<Person>(query::SqlPredicate(hz, std::string("name==") + name)).get();
     }
 
-    std::vector<Person> getNotWithName(const char *name, hazelcast::client::IMap<std::string, Person> &personMap) {
-        char buf[200];
-        hazelcast::util::hz_snprintf(buf, 200, "name != %s", name);
-        hazelcast::client::query::SqlPredicate predicate(buf);
-
-        return personMap.values(predicate);
+    std::vector<Person>
+    getNotWithName(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &personMap) {
+        return personMap.values<Person>(query::SqlPredicate(hz, std::string("name!=") + name)).get();
     }
 
-    std::vector<Person> getWithNameAndAge(const char *name, int age,
-                                          hazelcast::client::IMap<std::string, Person> &personMap) {
-        char buf[300];
-        hazelcast::util::hz_snprintf(buf, 300, "name == %s AND age == %d", name, age);
-        hazelcast::client::query::SqlPredicate predicate(buf);
-
-        return personMap.values(predicate);
+    std::vector<Person> getWithNameAndAge(HazelcastClient &hz, const std::string &name, int32_t age,
+                                          hazelcast::client::IMap &personMap) {
+        return personMap.values<Person>(
+                query::SqlPredicate(hz, (boost::format("name == %1% AND age == %2%") % name % age).str())).get();
     }
 
     void run() {
         hazelcast::client::HazelcastClient hz;
 
-        hazelcast::client::IMap<std::string, Person> personMap = hz.getMap<std::string, Person>("personMap");
+        auto personMap = hz.getMap("personMap");
 
-        Person p1("Peter", true, 36);
-        Person p2("John", true, 50);
-        Person p3("Marry", false, 20);
-        Person p4("Mike", true, 35);
-        Person p5("Rob", true, 60);
-        Person p6("Jane", false, 43);
-        personMap.put("1", p1);
-        personMap.put("2", p2);
-        personMap.put("3", p3);
-        personMap.put("4", p4);
-        personMap.put("5", p5);
-        personMap.put("6", p6);
+        personMap->putAll<std::string, Person>({{"1", Person{"Peter", true, 36}},
+                                                {"2", Person{"John", true, 50}},
+                                                {"3", Person{"Marry", false, 20}},
+                                                {"4", Person{"Mike", true, 35}},
+                                                {"5", Person{"Rob", true, 60}},
+                                                {"6", Person{"Jane", false, 43}}}).get();
 
-        hazelcast::client::ISet<Person> s = hz.getSet<Person>("foo");
-        Person p("Peter", true, 37);
-        s.add(p);
-        std::vector<Person> personsInSet = s.toArray();
+        auto s = hz.getSet("foo");
+        s->add(Person{"Peter", true, 37});
+        auto personsInSet = s->toArray<Person>().get();
 
         std::cout << "Get with name Peter" << std::endl;
-        std::vector<Person> values = getWithName("Peter", personMap);
-        for (std::vector<Person>::iterator it = values.begin(); it != values.end(); ++it) {
-            std::cout << *it << std::endl;
+        for (auto &p : getWithName(hz, "Peter", *personMap)) {
+            std::cout << p << std::endl;
         }
 
         std::cout << "Get not with name Peter" << std::endl;
-        values = getNotWithName("Peter", personMap);
-        for (std::vector<Person>::const_iterator it = values.begin(); it != values.end(); ++it) {
-            std::cout << *it << std::endl;
+        for (auto &p : getNotWithName(hz, "Peter", *personMap)) {
+            std::cout << p << std::endl;
         }
 
         std::cout << "Find name Peter and age 36" << std::endl;
-        values = getWithNameAndAge("Peter", 36, personMap);
-        for (std::vector<Person>::const_iterator it = values.begin(); it != values.end(); ++it) {
-            std::cout << *it << std::endl;
+        for (auto &p : getWithNameAndAge(hz, "Peter", 36, *personMap)) {
+            std::cout << p << std::endl;
         }
 
         std::cout << "Find name Peter and age 37" << std::endl;
-        values = getWithNameAndAge("Peter", 37, personMap);
-        for (std::vector<Person>::const_iterator it = values.begin(); it != values.end(); ++it) {
-            std::cout << *it << std::endl;
+        for (auto &p : getWithNameAndAge(hz, "Peter", 37, *personMap)) {
+            std::cout << p << std::endl;
         }
     }
 };
@@ -191,252 +118,186 @@ public:
 void queryMapUsingPagingPredicate() {
     hazelcast::client::HazelcastClient client;
 
-    IMap<int, int> intMap = client.getMap<int, int>("testIntMapValuesWithPagingPredicate");
+    auto intMap = client.getMap("testIntMapValuesWithPagingPredicate");
 
     int predSize = 5;
     const int totalEntries = 25;
 
     for (int i = 0; i < totalEntries; ++i) {
-        intMap.put(i, i);
+        intMap->put(i, i).get();
     }
 
-    query::PagingPredicate<int, int> predicate((size_t)predSize);
+    auto predicate = intMap->newPagingPredicate<int, int>((size_t) predSize);
 
-    std::vector<int> values = intMap.values(predicate);
+    auto values = intMap->values<int>(predicate).get();
     std::sort(values.begin(), values.end());
 
     predicate.nextPage();
-    values = intMap.values(predicate);
+    values = intMap->values<int>(predicate).get();
 
     predicate.setPage(4);
 
-    values = intMap.values(predicate);
+    values = intMap->values<int>(predicate).get();
 
     predicate.previousPage();
-    values = intMap.values(predicate);
+    values = intMap->values<int>(predicate).get();
 
     // PagingPredicate with inner predicate (value < 10)
-    std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
-            new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false, true)));
-    query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
-    values = intMap.values(predicate2);
+    auto predicate2 = intMap->newPagingPredicate<int, int>(5,
+            query::GreaterLessPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true));
+    values = intMap->values<int>(predicate2).get();
 
     predicate2.nextPage();
     // match values 5,6, 7, 8
-    values = intMap.values(predicate2);
+    values = intMap->values<int>(predicate2).get();
 
     predicate2.nextPage();
-    values = intMap.values(predicate2);
+    values = intMap->values<int>(predicate2).get();
 
     // test paging predicate with comparator
-    IMap<int, Employee> employees = client.getMap<int, Employee>("testComplexObjectWithPagingPredicate");
-
-    Employee empl1("ahmet", 35);
-    Employee empl2("mehmet", 21);
-    Employee empl3("deniz", 25);
-    Employee empl4("ali", 33);
-    Employee empl5("veli", 44);
-    Employee empl6("aylin", 5);
-
-    employees.put(3, empl1);
-    employees.put(4, empl2);
-    employees.put(5, empl3);
-    employees.put(6, empl4);
-    employees.put(7, empl5);
-    employees.put(8, empl6);
+    auto employees = client.getMap("testComplexObjectWithPagingPredicate");
+    employees->putAll<int32_t, Employee>({
+                                                 {3, Employee("ahmet", 35)},
+                                                 {4, Employee("mehmet", 21)},
+                                                 {5, Employee("deniz", 25)},
+                                                 {6, Employee("ali", 33)},
+                                                 {7, Employee("veli", 44)},
+                                                 {8, Employee("aylin", 5)}
+                                         }).get();
 
     predSize = 2;
     std::unique_ptr<query::EntryComparator<int, Employee> > comparator(new EmployeeEntryComparator());
-    query::PagingPredicate<int, Employee> predicate3(comparator, (size_t)predSize);
-    std::vector<Employee> result = employees.values(predicate3);
+    auto predicate3 = employees->newPagingPredicate<int, Employee>(EmployeeEntryComparator(), (size_t) predSize);
+    auto result = employees->values(predicate3).get();
 
     predicate3.nextPage();
-    result = employees.values(predicate3);
-
+    result = employees->values(predicate3).get();
 }
 
 void queryMapUsingDifferentPredicates() {
     hazelcast::client::HazelcastClient client;
-    
-    IMap<int, int> intMap = client.getMap<int, int>("testValuesWithPredicateIntMap");
-    adaptor::RawPointerMap<int, int> rawMap(intMap);
+
+    auto intMap = client.getMap("testValuesWithPredicateIntMap");
 
     const int numItems = 20;
     for (int i = 0; i < numItems; ++i) {
-        intMap.put(i, 2 * i);
+        intMap->put(i, 2 * i);
     }
 
-    std::vector<int> values = intMap.values();
-    std::unique_ptr<DataArray<int> > valuesArray = rawMap.values();
+    auto values = intMap->values<int>().get();
 
     // EqualPredicate
     // key == 5
-    values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+    values = intMap->values<int, query::EqualPredicate>(
+            query::EqualPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5)).get();
 
-    valuesArray = rawMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
-    size_t numberOfValues = valuesArray->size();
+    size_t numberOfValues = values.size();
     if (numberOfValues > 0) {
-        const int *firstValue = valuesArray->get(0);
-        const int *firstValueAsArrayIndex = (*valuesArray)[0];
-	if (NULL != firstValue) {
-		std::cout << "First value:" << *firstValue << std::endl;
-		std::cout << "Pointer addresses:" << firstValue << ", as array index:" << firstValueAsArrayIndex << std::endl;
-	}
-        std::unique_ptr<int> firstValueWithMemoryOwnership = valuesArray->release(0);
-	if (NULL != firstValueWithMemoryOwnership.get()) {
-		std::cout << "First value:" << *firstValueWithMemoryOwnership << std::endl;
-	}
+        std::cout << "First value:" << values[0] << std::endl;
     }
 
     // value == 8
-    values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
-    valuesArray = rawMap.values(query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+    values = intMap->values<int, query::EqualPredicate>(
+            query::EqualPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 8)).get();
 
     // key == numItems
-    values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
-    valuesArray = rawMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
+    values = intMap->values<int, query::EqualPredicate>(
+            query::EqualPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, numItems)).get();
 
     // NotEqual Predicate
     // key != 5
-    values = intMap.values(query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
-    valuesArray = rawMap.values(query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+    values = intMap->values<int, query::NotEqualPredicate>(
+            query::NotEqualPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5)).get();
 
     // this(value) != 8
-    valuesArray = rawMap.values(query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
-    values = intMap.values(query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+    values = intMap->values<int, query::NotEqualPredicate>(
+            query::NotEqualPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 8)).get();
 
     // TruePredicate
-    valuesArray = rawMap.values(query::TruePredicate());
-    values = intMap.values(query::TruePredicate());
+    values = intMap->values<int, query::TruePredicate>(query::TruePredicate(client)).get();
 
     // FalsePredicate
-    valuesArray = rawMap.values(query::FalsePredicate());
-    values = intMap.values(query::FalsePredicate());
+    values = intMap->values<int, query::FalsePredicate>(query::FalsePredicate(client)).get();
 
     // BetweenPredicate
     // 5 <= key <= 10
-    valuesArray = rawMap.values(query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    values = intMap.values(query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    std::sort(values.begin(), values.end());
-
-    // 20 <= key <=30
-    valuesArray = rawMap.values(query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
-    values = intMap.values(query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
+    values = intMap->values<int, query::BetweenPredicate>(
+            query::BetweenPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10)).get();
 
     // GreaterLessPredicate
     // value <= 10
-    valuesArray = rawMap.values(
-            query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true, true));
-    values = intMap.values(
-            query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true, true));
-    std::sort(values.begin(), values.end());
+    values = intMap->values<int, query::GreaterLessPredicate>(
+            query::GreaterLessPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 10, true, true)).get();
 
     // key < 7
-    valuesArray = rawMap.values(
-            query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
-    values = intMap.values(
-            query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
-
-    // value >= 15
-    valuesArray = rawMap.values(
-            query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true, false));
-    values = intMap.values(
-            query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true, false));
-
-    // key > 5
-    valuesArray = rawMap.values(
-            query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false, false));
-    values = intMap.values(
-            query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false, false));
+    values = intMap->values<int, query::GreaterLessPredicate>(
+            query::GreaterLessPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, false, true)).get();
 
     // InPredicate
     // key in {4, 10, 19}
-    std::vector<int> inVals(3);
-    inVals[0] = 4;
-    inVals[1] = 10;
-    inVals[2] = 19;
-    valuesArray = rawMap.values(query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
-    values = intMap.values(query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
+    std::vector<int> inVals{4, 10, 19};
+    values = intMap->values<int, query::InPredicate>(
+            query::InPredicate(client, query::QueryConstants::KEY_ATTRIBUTE_NAME, inVals)).get();
 
     // value in {4, 10, 19}
-    valuesArray = rawMap.values(query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-    values = intMap.values(query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
+    values = intMap->values<int, query::InPredicate>(
+            query::InPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals)).get();
 
     // InstanceOfPredicate
     // value instanceof Integer
-    valuesArray = rawMap.values(query::InstanceOfPredicate("java.lang.Integer"));
-    values = intMap.values(query::InstanceOfPredicate("java.lang.Integer"));
-
-    valuesArray = rawMap.values(query::InstanceOfPredicate("java.lang.String"));
-    values = intMap.values(query::InstanceOfPredicate("java.lang.String"));
+    values = intMap->values<int>(query::InstanceOfPredicate(client, "java.lang.Integer")).get();
 
     // NotPredicate
     // !(5 <= key <= 10)
-    std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>(
-            query::QueryConstants::getKeyAttributeName(), 5, 10));
-    query::NotPredicate notPredicate(bp);
-    valuesArray = rawMap.values(notPredicate);
-    bp = std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    query::NotPredicate notPredicate2(bp);
-    values = intMap.values(notPredicate2);
+    values = intMap->values<int>(query::NotPredicate(client, query::BetweenPredicate(client,
+                                                                                     query::QueryConstants::KEY_ATTRIBUTE_NAME,
+                                                                                     5, 10))).get();
 
     // AndPredicate
     // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
-    bp = std::unique_ptr<query::Predicate>(
-            new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
-            new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-    valuesArray = rawMap.values(query::AndPredicate().add(bp).add(inPred));
-
-    bp = std::unique_ptr<query::Predicate>(
-            new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    inPred = std::unique_ptr<query::Predicate>(
-            new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-    values = intMap.values(query::AndPredicate().add(bp).add(inPred));
+    values = intMap->values<int>(query::AndPredicate(client,
+                                                     query::BetweenPredicate(client,
+                                                                             query::QueryConstants::KEY_ATTRIBUTE_NAME,
+                                                                             5, 10),
+                                                     query::InPredicate(client,
+                                                                        query::QueryConstants::THIS_ATTRIBUTE_NAME,
+                                                                        inVals))).get();
 
     // OrPredicate
     // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
-    bp = std::unique_ptr<query::Predicate>(
-            new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    inPred = std::unique_ptr<query::Predicate>(
-            new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-    valuesArray = rawMap.values(query::OrPredicate().add(bp).add(inPred));
+    values = intMap->values<int>(query::OrPredicate(client,
+                                                    query::BetweenPredicate(client,
+                                                                            query::QueryConstants::KEY_ATTRIBUTE_NAME,
+                                                                            5, 10),
+                                                    query::InPredicate(client,
+                                                                       query::QueryConstants::THIS_ATTRIBUTE_NAME,
+                                                                       inVals))).get();
 
-    bp = std::unique_ptr<query::Predicate>(
-            new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    inPred = std::unique_ptr<query::Predicate>(
-            new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-    values = intMap.values(query::OrPredicate().add(bp).add(inPred));
+    auto imap = client.getMap("StringMap");
 
-    IMap<std::string, std::string> imap = client.getMap<std::string, std::string>("StringMap");
-    
     // LikePredicate
     // value LIKE "value1" : {"value1"}
-    std::unique_ptr<DataArray<int> > strValuesArray = rawMap.values(query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
-    std::vector<std::string> strValues = imap.values(query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
+    auto strValues = imap->values<std::string>(
+            query::LikePredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1")).get();
 
     // ILikePredicate
     // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
-    strValuesArray = rawMap.values(query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
-    strValues = imap.values(query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
-    std::sort(strValues.begin(), strValues.end());
+    strValues = imap->values<std::string>(
+            query::ILikePredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VALue%1%")).get();
 
     // value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
-    strValuesArray = rawMap.values(query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
-    strValues = imap.values(query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
-    std::sort(strValues.begin(), strValues.end());
+    strValues = imap->values<std::string>(
+            query::ILikePredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VAL%2%")).get();
 
     // SqlPredicate
     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
-    char sql[100];
-    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
-    valuesArray = rawMap.values(query::SqlPredicate(sql));
-    values = intMap.values(query::SqlPredicate(sql));
+    auto sql = (boost::format("%1% BETWEEN 4 and 7") % query::QueryConstants::KEY_ATTRIBUTE_NAME).str();
+    values = intMap->values<int>(query::SqlPredicate(client, sql)).get();
 
     // RegexPredicate
     // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
-    strValuesArray = rawMap.values(query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
-    strValues = imap.values(query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
+    strValues = imap->values<std::string>(
+            query::RegexPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*")).get();
 }
 
 int main() {

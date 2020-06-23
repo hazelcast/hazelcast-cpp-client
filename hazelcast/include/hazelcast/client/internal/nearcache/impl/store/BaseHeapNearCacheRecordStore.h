@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <memory>
 
 #include "hazelcast/client/internal/nearcache/impl/store/HeapNearCacheRecordMap.h"
@@ -54,7 +55,7 @@ namespace hazelcast {
                                 ANCRS::onEvict(key,
                                                record,
                                                wasExpired);
-                                ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
+                                ANCRS::nearCacheStats->decrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
                             }
 
@@ -103,10 +104,10 @@ namespace hazelcast {
                             std::shared_ptr<R> putRecord(const std::shared_ptr<KS> &key,
                                                            const std::shared_ptr<R> &record) {
                                 std::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
-                                ANCRS::nearCacheStats.incrementOwnedEntryMemoryCost(
+                                ANCRS::nearCacheStats->incrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
                                 if (oldRecord.get() != NULL) {
-                                    ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
+                                    ANCRS::nearCacheStats->decrementOwnedEntryMemoryCost(
                                             ANCRS::getTotalStorageMemoryCost(key, oldRecord));
                                 }
                                 return oldRecord;
@@ -134,5 +135,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

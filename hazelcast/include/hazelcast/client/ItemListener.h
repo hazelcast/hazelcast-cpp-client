@@ -13,14 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 04/09/14.
-//
-
-
 #pragma once
+
 #include "hazelcast/client/ItemEvent.h"
-#include "hazelcast/client/TypedData.h"
 
 namespace hazelcast {
     namespace client {
@@ -33,33 +28,24 @@ namespace hazelcast {
         *
         * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
         *
-        * @param <E> item
         */
-        template<typename E>
-        class ItemListener {
+        class HAZELCAST_API ItemListener {
         public:
-            virtual ~ItemListener() {
-            }
+            virtual ~ItemListener() {}
 
             /**
             * Invoked when an item is added.
             *
             * @param item added item
             */
-            virtual void itemAdded(const ItemEvent<E>& item) = 0;
+            virtual void itemAdded(const ItemEvent &item) = 0;
 
             /**
             * Invoked when an item is removed.
             *
             * @param item removed item.
             */
-            virtual void itemRemoved(const ItemEvent<E>& item) = 0;
+            virtual void itemRemoved(const ItemEvent &item) = 0;
         };
-
-        namespace mixedtype {
-            typedef ItemListener<TypedData> MixedItemListener;
-        }
     }
 }
-
-

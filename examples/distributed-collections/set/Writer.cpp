@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::ISet<std::string> set = hz.getSet<std::string>("set");
+    auto set = hz.getSet("set");
 
-    set.add("Tokyo");
-    set.add("Paris");
-    set.add("London");
-    set.add("New York");
+    set->add("Tokyo").get();
+    set->add("Paris").get();
+    set->add("London").get();
+    set->add("New York").get();
 
     std::cout << "Putting finished!" << std::endl;
 

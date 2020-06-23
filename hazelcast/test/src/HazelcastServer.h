@@ -13,15 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-//  hazelcastInstance.h
-//  hazelcast
-//
-//  Created by Sancar on 14.08.2013.
-//  Copyright (c) 2013 Sancar. All rights reserved.
-//
 
 #pragma once
+
 #include <atomic>
 
 #include "HazelcastServerFactory.h"
@@ -62,5 +56,4 @@ namespace hazelcast {
         }
     }
 }
-
 

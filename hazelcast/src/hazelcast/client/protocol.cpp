@@ -35,7 +35,6 @@
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include <hazelcast/client/protocol/codec/UUIDCodec.h>
 #include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
-#include "hazelcast/client/Socket.h"
 #include "hazelcast/client/protocol/codec/AddressCodec.h"
 #include "hazelcast/client/protocol/codec/MemberCodec.h"
 #include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
@@ -49,17 +48,11 @@
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/protocol/ClientExceptionFactory.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/protocol/Principal.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
-#include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
-#include "hazelcast/client/impl/ClientMessageDecoder.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
 
 namespace hazelcast {
     namespace client {
@@ -263,13 +256,10 @@ namespace hazelcast {
                 assert(checkReadAvailable(len));
 
                 byte *start = ix();
-                std::unique_ptr<std::vector<byte>> bytes = std::unique_ptr<std::vector<byte> >(
-                        new std::vector<byte>(start,
-                                              start +
-                                              len));
+                std::vector<byte> bytes(start,start + len);
                 index += len;
 
-                return serialization::pimpl::Data(bytes);
+                return serialization::pimpl::Data(std::move(bytes));
             }
 
             template<>
@@ -393,8 +383,8 @@ namespace hazelcast {
                 return operationName;
             }
 
-            void ClientMessage::setOperationName(const std::string &operationName) {
-                this->operationName = operationName;
+            void ClientMessage::setOperationName(const std::string &name) {
+                this->operationName = name;
             }
 
             bool ClientMessage::isComplete() const {
@@ -533,7 +523,7 @@ namespace hazelcast {
 
             ClientExceptionFactory::~ClientExceptionFactory() {
                 // release memory for the factories
-                for (std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it =
+                for (std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it =
                         errorCodeToFactory.begin(); errorCodeToFactory.end() != it; ++it) {
                     delete (it->second);
                 }
@@ -542,7 +532,7 @@ namespace hazelcast {
             void ClientExceptionFactory::throwException(const std::string &source,
                                                         protocol::ClientMessage &clientMessage) const {
                 codec::ErrorCodec error = codec::ErrorCodec::decode(clientMessage);
-                std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
+                std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
                         error.errorCode);
                 if (errorCodeToFactory.end() == it) {
                     it = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
@@ -552,7 +542,7 @@ namespace hazelcast {
             }
 
             void ClientExceptionFactory::throwException(int32_t errorCode) const {
-                std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
+                std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
                         errorCode);
                 if (errorCodeToFactory.end() == it) {
                     it = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
@@ -561,7 +551,7 @@ namespace hazelcast {
             }
 
             void ClientExceptionFactory::registerException(int32_t errorCode, ExceptionFactory *factory) {
-                std::map<int, hazelcast::client::protocol::ExceptionFactory *>::iterator it = errorCodeToFactory.find(
+                std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::iterator it = errorCodeToFactory.find(
                         errorCode);
                 if (errorCodeToFactory.end() != it) {
                     char msg[100];
@@ -651,18 +641,18 @@ namespace hazelcast {
                 return isCompleted;
             }
 
-            void ClientMessageBuilder::addToPartialMessages(std::unique_ptr<ClientMessage> &message) {
+            void ClientMessageBuilder::addToPartialMessages(std::unique_ptr<ClientMessage> &msg) {
                 int64_t id = message->getCorrelationId();
-                partialMessages[id] = std::move(message);
+                partialMessages[id] = std::move(msg);
             }
 
-            bool ClientMessageBuilder::appendExistingPartialMessage(std::unique_ptr<ClientMessage> &message) {
+            bool ClientMessageBuilder::appendExistingPartialMessage(std::unique_ptr<ClientMessage> &msg) {
                 bool result = false;
 
-                MessageMap::iterator foundItemIter = partialMessages.find(message->getCorrelationId());
+                MessageMap::iterator foundItemIter = partialMessages.find(msg->getCorrelationId());
                 if (partialMessages.end() != foundItemIter) {
-                    foundItemIter->second->append(message.get());
-                    if (message->isFlagSet(ClientMessage::END_FLAG)) {
+                    foundItemIter->second->append(msg.get());
+                    if (msg->isFlagSet(ClientMessage::END_FLAG)) {
                         // remove from message from map
                         std::shared_ptr<ClientMessage> foundMessage(foundItemIter->second);
 
@@ -828,7 +818,7 @@ namespace hazelcast {
                     std::string uuid = clientMessage.get<std::string>();
                     bool liteMember = clientMessage.get<bool>();
                     int32_t attributeSize = clientMessage.get<int32_t>();
-                    std::map<std::string, std::string> attributes;
+                    std::unordered_map<std::string, std::string> attributes;
                     for (int i = 0; i < attributeSize; i++) {
                         std::string key = clientMessage.get<std::string>();
                         std::string value = clientMessage.get<std::string>();
@@ -900,19 +890,6 @@ namespace hazelcast {
                            + ClientMessage::INT64_SIZE * 10;
                 }
 
-            }
-        }
-
-        namespace impl {
-            std::shared_ptr<void>
-            VoidMessageDecoder::decodeClientMessage(protocol::ClientMessage &&clientMessage,
-                                                    serialization::pimpl::SerializationService &serializationService) {
-                return std::shared_ptr<void>();
-            }
-
-            const std::shared_ptr<ClientMessageDecoder<void>> &VoidMessageDecoder::instance() {
-                static std::shared_ptr<ClientMessageDecoder<void>> singleton(new VoidMessageDecoder);
-                return singleton;
             }
         }
     }

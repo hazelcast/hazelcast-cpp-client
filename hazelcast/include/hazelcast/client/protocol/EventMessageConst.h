@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -43,4 +44,5 @@ namespace hazelcast {
         }
     }
 }
+
 

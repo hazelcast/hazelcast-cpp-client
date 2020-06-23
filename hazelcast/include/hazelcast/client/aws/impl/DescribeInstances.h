@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -24,7 +25,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -56,7 +57,7 @@ namespace hazelcast {
                      * @return map from private to public IP or empty map in case of failed response unmarshalling
                      * @throws IException if there is an exception invoking the service
                      */
-                    std::map<std::string, std::string> execute();
+                    std::unordered_map<std::string, std::string> execute();
                 private:
                     static std::string getFormattedTimestamp();
 
@@ -76,7 +77,7 @@ namespace hazelcast {
                     std::unique_ptr<security::EC2RequestSigner> rs;
                     config::ClientAwsConfig &awsConfig;
                     const std::string &endpoint;
-                    std::map<std::string, std::string> attributes;
+                    std::unordered_map<std::string, std::string> attributes;
                     std::unique_ptr<util::SyncHttpsClient> httpsClient;
                     util::ILogger &logger;
 
@@ -93,4 +94,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

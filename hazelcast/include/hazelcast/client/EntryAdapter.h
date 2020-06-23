@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 04/09/14.
-//
 #pragma once
+
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/EntryListener.h"
 
@@ -31,47 +29,25 @@ namespace hazelcast {
         * @param <V> value of the map entry.
         * @see EntryListener
         */
-        template<typename K, typename V>
-        class EntryAdapter : public EntryListener<K, V> {
+        class HAZELCAST_API EntryAdapter : public EntryListener {
         public:
-            virtual ~EntryAdapter() {
+            virtual ~EntryAdapter() {}
 
-            }
+            virtual void entryAdded(const EntryEvent& event) {}
 
-            virtual void entryAdded(const EntryEvent<K, V>& event) {
+            virtual void entryRemoved(const EntryEvent& event) {}
 
-            }
+            virtual void entryUpdated(const EntryEvent& event) {}
 
-            virtual void entryRemoved(const EntryEvent<K, V>& event) {
+            virtual void entryEvicted(const EntryEvent& event) {}
 
-            }
+            virtual void entryExpired(const EntryEvent& event) {}
 
-            virtual void entryUpdated(const EntryEvent<K, V>& event) {
+            virtual void entryMerged(const EntryEvent& event) {}
 
-            }
+            virtual void mapEvicted(const MapEvent& event) {}
 
-            virtual void entryEvicted(const EntryEvent<K, V>& event) {
-
-            }
-
-
-            virtual void entryExpired(const EntryEvent<K, V>& event){
-
-            }
-
-            virtual void entryMerged(const EntryEvent<K, V>& event){
-
-            }
-
-            virtual void mapEvicted(const MapEvent& event) {
-
-            }
-
-            virtual void mapCleared(const MapEvent& event) {
-
-            }
+            virtual void mapCleared(const MapEvent& event) {}
         };
     }
 }
-
-

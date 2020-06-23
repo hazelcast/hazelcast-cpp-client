@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include "hazelcast/client/internal/eviction/Expirable.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Iterator.h"
@@ -22,7 +23,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -33,8 +34,8 @@ namespace hazelcast {
          * @param <K> Type of the key
          * @param <V> Type of the value
          */
-        template<typename K, typename V, typename KS, typename VS, typename Comparator  = std::less<std::shared_ptr<KS> > >
-        class SampleableConcurrentHashMap : public SynchronizedMap<std::shared_ptr<KS>, VS, Comparator> {
+        template<typename K, typename V, typename KS, typename VS>
+        class SampleableConcurrentHashMap : public SynchronizedMap<std::shared_ptr<KS>, VS> {
         public:
             SampleableConcurrentHashMap(int32_t initialCapacity) {
             }
@@ -306,5 +307,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

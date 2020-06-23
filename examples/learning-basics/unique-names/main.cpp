@@ -20,8 +20,8 @@ int main() {
 
     auto flakeIdGenerator = hz.getFlakeIdGenerator("idGenerator");
     std::ostringstream out("somemap");
-    out << flakeIdGenerator.newId();
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>(out.str());
+    out << flakeIdGenerator->newId().get();
+    auto map = hz.getMap(out.str());
 
     std::cout << "Finished" << std::endl;
 

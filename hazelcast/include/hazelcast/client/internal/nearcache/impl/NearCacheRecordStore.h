@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <assert.h>
 #include <memory>
 
@@ -79,10 +80,12 @@ namespace hazelcast {
                          * @param key   the key to which the given value will be associated.
                          * @param value the value that will be associated with the key.
                          */
+/*
                         virtual void put(const std::shared_ptr<K> &key,
                                          const std::shared_ptr<serialization::pimpl::Data> &value) {
                             assert(0);
                         }
+*/
 
                         /**
                          * Removes the value associated with the given {@code key}
@@ -114,7 +117,7 @@ namespace hazelcast {
                          *
                          * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this record store.
                          */
-                        virtual monitor::NearCacheStats &getNearCacheStats() = 0;
+                        virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const = 0;
 
                         /**
                          * Selects the best candidate object to store from the given {@code candidates}.
@@ -177,5 +180,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

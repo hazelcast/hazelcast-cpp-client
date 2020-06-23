@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/21/13.
 #pragma once
+
 #include <memory>
 #include <ostream>
 #include <stdint.h>
@@ -100,7 +99,7 @@ namespace hazelcast {
 
                 int getConnectionId() const;
 
-                bool isAlive();
+                bool isAlive() const;
 
                 const std::chrono::steady_clock::time_point lastReadTime() const;
 
@@ -122,7 +121,7 @@ namespace hazelcast {
 
                 std::chrono::steady_clock::time_point getStartTime() const;
 
-                const Socket &getSocket() const;
+                Socket &getSocket();
 
                 void deregisterListenerInvocation(int64_t callId);
 
@@ -165,8 +164,16 @@ namespace hazelcast {
     }
 }
 
+namespace std {
+    template<>
+    struct hash<std::shared_ptr<hazelcast::client::connection::Connection>> {
+        std::size_t operator()(const std::shared_ptr<hazelcast::client::connection::Connection> &conn) const noexcept;
+    };
+}
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 

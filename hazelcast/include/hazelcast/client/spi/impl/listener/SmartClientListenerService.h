@@ -15,6 +15,7 @@
  */
 
 #pragma once
+
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
 #include "hazelcast/client/spi/EventHandler.h"
 
@@ -35,9 +36,9 @@ namespace hazelcast {
 
                         void shutdown() override;
 
-                        std::string
-                        registerListener(const std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
-                                         const std::shared_ptr<EventHandler < protocol::ClientMessage>> handler) override;
+                        boost::future<std::string>
+                        registerListener(std::unique_ptr<impl::ListenerMessageCodec> &&listenerMessageCodec,
+                                         std::unique_ptr<client::impl::BaseEventHandler> &&handler) override;
 
                         void asyncConnectToAllMembersInternal();
 
@@ -67,4 +68,5 @@ namespace hazelcast {
         }
     }
 }
+
 

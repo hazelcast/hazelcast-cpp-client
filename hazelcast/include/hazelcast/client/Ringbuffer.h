@@ -13,14 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 16/20/13.
 #pragma once
-#include <memory>
-#include <stdint.h>
 
-#include "hazelcast/client/DistributedObject.h"
-#include "hazelcast/client/ringbuffer/ReadResultSet.h"
+#include "hazelcast/client/proxy/RingbufferImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -60,98 +55,10 @@ namespace hazelcast {
          * The Ringbuffer is the backing data-structure for the reliable {@link com.hazelcast.core.ITopic} implementation. See
          * {@link com.hazelcast.config.ReliableTopicConfig}.
          *
-         * @param <E>
          */
-        template<typename E>
-        class Ringbuffer : public virtual DistributedObject {
+        class HAZELCAST_API Ringbuffer : public proxy::RingbufferImpl {
+            friend class spi::ProxyManager;
         public:
-            /**
-             * Using this policy one can control the behavior what should to be done when an item is about to be added to the ringbuffer,
-             * but there is 0 remaining capacity.
-             *
-             * Overflowing happens when a time-to-live is set and the oldest item in the ringbuffer (the head) is not old enough to expire.
-             *
-             * @see Ringbuffer#addAsync(const E &, OverflowPolicy)
-             * @see Ringbuffer#addAllAsync(const std::vector<E> &, OverflowPolicy)
-             */
-            enum OverflowPolicy {
-
-                /**
-                 * Using this policy the oldest item is overwritten no matter it is not old enough to retire. Using this policy you are
-                 * sacrificing the time-to-live in favor of being able to write.
-                 *
-                 * Example: if there is a time-to-live of 30 seconds, the buffer is full and the oldest item in the ring has been placed a
-                 * second ago, then there are 29 seconds remaining for that item. Using this policy you are going to overwrite no matter
-                 * what.
-                 */
-                        OVERWRITE = 0,
-
-                /**
-                 * Using this policy the call will fail immediately and the oldest item will not be overwritten before it is old enough
-                 * to retire. So this policy sacrificing the ability to write in favor of time-to-live.
-                 *
-                 * The advantage of fail is that the caller can decide what to do since it doesn't trap the thread due to backoff.
-                 *
-                 * Example: if there is a time-to-live of 30 seconds, the buffer is full and the oldest item in the ring has been placed a
-                 * second ago, then there are 29 seconds remaining for that item. Using this policy you are not going to overwrite that
-                 * item for the next 29 seconds.
-                 */
-                        FAIL = 1
-            };
-
-
-            virtual ~Ringbuffer() {
-            }
-
-            /**
-             * Returns the capacity of this Ringbuffer.
-             *
-             * @return the capacity.
-             */
-            virtual int64_t capacity() = 0;
-
-            /**
-             * Returns number of items in the ringbuffer.
-             *
-             * If no ttl is set, the size will always be equal to capacity after the head completed the first loop
-             * around the ring. This is because no items are getting retired.
-             *
-             * @return the size.
-             */
-            virtual int64_t size() = 0;
-
-            /**
-             * Returns the sequence of the tail. The tail is the side of the ringbuffer where the items are added to.
-             *
-             * The initial value of the tail is -1.
-             *
-             * @return the sequence of the tail.
-             */
-            virtual int64_t tailSequence() = 0;
-
-            /**
-             * Returns the sequence of the head. The head is the side of the ringbuffer where the oldest items in the
-             * ringbuffer are found.
-             *
-             * If the RingBuffer is empty, the head will be one more than the tail.
-             *
-             * The initial value of the head is 0 (1 more than tail).
-             *
-             * @return the sequence of the head.
-             */
-            virtual int64_t headSequence() = 0;
-
-            /**
-             * Returns the remaining capacity of the ringbuffer.
-             *
-             * The returned value could be stale as soon as it is returned.
-             *
-             * If ttl is not set, the remaining capacity will always be the capacity.
-             *
-             * @return the remaining capacity.
-             */
-            virtual int64_t remainingCapacity() = 0;
-
             /**
              * Adds an item to the tail of the Ringbuffer. If there is no space in the Ringbuffer, the add will overwrite the oldest
              * item in the ringbuffer no matter what the ttl is. For more control on this behavior.
@@ -169,7 +76,10 @@ namespace hazelcast {
              * @param item the item to add.
              * @return the sequence of the added item.
              */
-            virtual int64_t add(const E &item) = 0;
+            template<typename E>
+            boost::future<int64_t> add(const E &item) {
+                return addData(toData(item));
+            }
 
             /**
              * Reads one item from the Ringbuffer.
@@ -204,18 +114,21 @@ namespace hazelcast {
              * @throws IllegalArgumentException if sequence is smaller than 0 or larger than {@link #tailSequence()}+1.
              * @throws InterruptedException               if the call is interrupted while blocking.
              */
-            virtual std::unique_ptr<E> readOne(int64_t sequence) = 0;
+            template<typename E>
+            boost::future<boost::optional<E>> readOne(int64_t sequence) {
+                return toObject<E>(readOneData(sequence));
+            }
 
             /**
-             * Asynchronously writes an item with a configurable {@link OverflowPolicy}.
+             * Asynchronously writes an item with a configurable {@link ringbuffer::OverflowPolicy}.
              * <p>
              * If there is space in the Ringbuffer, the call will return the sequence
              * of the written item. If there is no space, it depends on the overflow
              * policy what happens:
              * <ol>
-             * <li>{@link OverflowPolicy#OVERWRITE}: we just overwrite the oldest item
+             * <li>{@link ringbuffer::OverflowPolicy#OVERWRITE}: we just overwrite the oldest item
              * in the Ringbuffer and we violate the ttl</li>
-             * <li>{@link OverflowPolicy#FAIL}: we return -1 </li>
+             * <li>{@link ringbuffer::OverflowPolicy#FAIL}: we return -1 </li>
              * </ol>
              * <p>
              * The reason that FAIL exist is to give the opportunity to obey the ttl.
@@ -235,11 +148,13 @@ namespace hazelcast {
              * <p>
              *
              * @param item           the item to add
-             * @param overflowPolicy the OverflowPolicy to use.
+             * @param overflowPolicy the ringbuffer::OverflowPolicy to use.
              * @return the sequenceId of the added item, or -1 if the add failed.
              */
-            virtual boost::future<std::shared_ptr<int64_t>>
-            addAsync(const E &item, OverflowPolicy overflowPolicy) = 0;
+            template<typename E>
+            boost::future<int64_t> add(const E &item, ringbuffer::OverflowPolicy overflowPolicy) {
+                return addData(toData(item), overflowPolicy);
+            }
 
             /**
              * Adds all the items of a collection to the tail of the Ringbuffer.
@@ -262,11 +177,15 @@ namespace hazelcast {
              * <p>
              *
              * @param collection the batch of items to add.
-             * @return the ICompletableFuture to synchronize on completion.
+             * @return the future to synchronize on completion. The result of the future contains the sequenceId of
+             * the last written item.
              * @throws IllegalArgumentException if items is empty
              */
-            virtual boost::future<std::shared_ptr<int64_t>>
-            addAllAsync(const std::vector<E> &items, OverflowPolicy overflowPolicy) = 0;
+            template<typename E>
+            boost::future<int64_t>
+            addAll(const std::vector<E> &items, ringbuffer::OverflowPolicy overflowPolicy) { 
+                return addAllData(toDataCollection(items), overflowPolicy);
+            }
 
             /**
              * Reads a batch of items from the Ringbuffer. If the number of available
@@ -308,18 +227,32 @@ namespace hazelcast {
              *                                  or if maxCount larger than 1000 (to prevent overload)
              */
             template<typename IFUNCTION>
-            boost::future<std::shared_ptr<ringbuffer::ReadResultSet<E>>>
-            readManyAsync(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter) {
-                return readManyAsyncInternal(startSequence, minCount, maxCount,
-                                             getSerializationService().template toData<IFUNCTION>(filter));
+            boost::future<ringbuffer::ReadResultSet>
+            readMany(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter = nullptr) {
+                auto filterData = toData<IFUNCTION>(filter);
+                return readManyData(startSequence, minCount, maxCount, &filterData).then([=] (boost::future<protocol::ClientMessage> f) {
+                    auto params = protocol::codec::RingbufferReadManyCodec::ResponseParameters::decode(f.get());
+                    return ringbuffer::ReadResultSet(params.readCount, std::move(params.items), getSerializationService(),
+                                                     params.itemSeqs, params.itemSeqsExist,
+                                                     (params.nextSeqExist ? params.nextSeq
+                                                                          : ringbuffer::ReadResultSet::SEQUENCE_UNAVAILABLE));
+                });
             }
 
-        protected:
-            virtual boost::future<std::shared_ptr<ringbuffer::ReadResultSet<E>>>
-            readManyAsyncInternal(int64_t startSequence, int32_t minCount, int32_t maxCount,
-                                  const serialization::pimpl::Data &filterData) = 0;
+            boost::future<ringbuffer::ReadResultSet>
+            readMany(int64_t startSequence, int32_t minCount, int32_t maxCount) {
+                return readManyData(startSequence, minCount, maxCount, nullptr).then([=] (boost::future<protocol::ClientMessage> f) {
+                    auto params = protocol::codec::RingbufferReadManyCodec::ResponseParameters::decode(f.get());
+                    return ringbuffer::ReadResultSet(params.readCount, std::move(params.items), getSerializationService(),
+                                                     params.itemSeqs, params.itemSeqsExist,
+                                                     (params.nextSeqExist ? params.nextSeq
+                                                                          : ringbuffer::ReadResultSet::SEQUENCE_UNAVAILABLE));
+                });
+            }
 
-            virtual serialization::pimpl::SerializationService &getSerializationService() = 0;
+        private:
+            Ringbuffer(const std::string &objectName, spi::ClientContext *context) : RingbufferImpl(objectName,
+                                                                                                    context) {}
         };
     }
 }
@@ -327,5 +260,4 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
 

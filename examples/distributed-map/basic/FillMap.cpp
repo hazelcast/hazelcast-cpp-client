@@ -13,28 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("map");
-    map.put("1", "Tokyo");
-    map.put("2", "Paris");
-    map.put("3", "New York");
+    auto map = hz.getMap("map");
+    map->put<std::string, std::string>("1", "Tokyo").get();
+    map->put<std::string, std::string>("2", "Paris").get();
+    map->put<std::string, std::string>("3", "New York").get();
     std::cout << "Finished loading map" << std::endl;
 
-    hazelcast::client::IMap<int, std::vector<char> > binaryMap = hz.getMap<int, std::vector<char> >("MyBinaryMap");
+    auto binaryMap = hz.getMap("MyBinaryMap");
     std::vector<char> value(100);
-    int key = 3;
-    binaryMap.put(key, value);
-    std::cout << "Inserted an entry with key 3 and a binary value to the binary map." << std::endl;
+    binaryMap->put(3, value).get();
+    std::cout << "Inserted an entry with key 3 and a binary value to the binary map->" << std::endl;
 
-    std::shared_ptr<std::vector<char> > valueFromMap = binaryMap.get(key);
-    if (NULL != valueFromMap.get()) {
+    auto valueFromMap = binaryMap->get<int32_t, std::vector<char>>(3).get();
+    if (valueFromMap) {
         std::cout << "The binary map returned a binary array of size " << valueFromMap->size() << std::endl;
     }
 

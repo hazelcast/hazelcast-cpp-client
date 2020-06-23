@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #pragma once
+
 #include <memory>
 #include <stdint.h>
 
@@ -24,7 +25,7 @@
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 namespace hazelcast {
@@ -53,11 +54,11 @@ namespace hazelcast {
                 /**
                  * Sets the {@link SSLConfig}.
                  *
-                 * @param sslConfig the SSLConfig.
+                 * @param config the SSLConfig.
                  * @return the updated ClientNetworkConfig.
                  * @see #getSSLConfig()
                  */
-                ClientNetworkConfig &setSSLConfig(const config::SSLConfig &sslConfig);
+                ClientNetworkConfig &setSSLConfig(const config::SSLConfig &config);
 
                 /**
                 * @param connectionTimeout Timeout value in millis for nodes to accept client connection requests.
@@ -204,4 +205,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 

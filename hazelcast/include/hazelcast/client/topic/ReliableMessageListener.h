@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 26 May 2016.
-
 #pragma once
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -59,12 +57,10 @@ namespace hazelcast {
              * sequence, then an at-least-once delivery is implemented since the same item is now being processed twice. To implement
              * an at-most-once delivery guarantee, add 1 to the stored sequence when the {@link #retrieveInitialSequence()} is called.
              *
-             * @param <E>
              *
              * @Beta
              */
-            template<typename E>
-            class ReliableMessageListener : public MessageListener<E> {
+            class HAZELCAST_API ReliableMessageListener : public MessageListener {
             public:
                 /**
                  * Retrieves the initial sequence from which this ReliableMessageListener should start.
@@ -115,5 +111,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
 
 
