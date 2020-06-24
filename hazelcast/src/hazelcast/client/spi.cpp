@@ -36,6 +36,7 @@
 #endif
 
 #include <boost/range/algorithm/find_if.hpp>
+#include <utility>
 
 #include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/client/HazelcastClient.h"
@@ -1293,7 +1294,7 @@ namespace hazelcast {
 
                 void ClientInvocation::setException(const exception::IException &e, boost::exception_ptr exceptionPtr) {
                     try {
-                        invocationPromise.set_exception(exceptionPtr);
+                        invocationPromise.set_exception(std::move(exceptionPtr));
                     } catch (boost::promise_already_satisfied &se) {
                         if (!eventHandler) {
                             logger.warning("Failed to set the exception for invocation. ", se.what(), ", ", *this,
@@ -1344,19 +1345,14 @@ namespace hazelcast {
 
                             auto timeoutException = (exception::ExceptionBuilder<exception::OperationTimeoutException>(
                                     "ClientInvocation::newOperationTimeoutException") << *this
-                                                                                      << " timed out because exception occurred after client invocation timeout "
-                                                                                      << std::chrono::duration_cast<std::chrono::milliseconds>(
-                                                                                              invocationService.getInvocationTimeout()).count()
-                                                                                      << "msecs. Current time :"
-                                                                                      << util::StringUtil::timeToString(
-                                                                                              now) << ". "
-                                                                                      << "Start time: "
-                                                                                      << util::StringUtil::timeToString(
-                                                                                              startTime)
-                                                                                      << ". Total elapsed time: "
-                                                                                      << std::chrono::duration_cast<std::chrono::milliseconds>(
-                                                                                              now - startTime).count()
-                                                                                      << " ms. ").build();
+                                            << " timed out because exception occurred after client invocation timeout "
+                                            << std::chrono::duration_cast<std::chrono::milliseconds>(invocationService.getInvocationTimeout()).count()
+                                            << "msecs. Last exception:" << iex
+                                            << " Current time :" << util::StringUtil::timeToString(now) << ". "
+                                            << "Start time: " << util::StringUtil::timeToString(startTime)
+                                            << ". Total elapsed time: " <<
+                                            std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count()
+                                            << " ms. ").build();
                             try {
                                 BOOST_THROW_EXCEPTION(timeoutException);
                             } catch (...) {
@@ -1399,23 +1395,6 @@ namespace hazelcast {
                     }
 
                     return false;
-                }
-
-                std::exception_ptr
-                ClientInvocation::newOperationTimeoutException(std::exception_ptr exception) {
-                    auto now = std::chrono::steady_clock::now();
-                    return std::make_exception_ptr((exception::ExceptionBuilder<exception::OperationTimeoutException>(
-                            "ClientInvocation::newOperationTimeoutException") << *this
-                                                                              << " timed out because exception occurred after client invocation timeout "
-                                                                              << std::chrono::duration_cast<std::chrono::milliseconds>(
-                                                                                      invocationService.getInvocationTimeout()).count()
-                                                                              << "msecs. Current time :"
-                                                                              << util::StringUtil::timeToString(now)
-                                                                              << ". Start time: "
-                                                                              << util::StringUtil::timeToString(
-                                                                                      std::chrono::steady_clock::now())
-                                                                              << ". Total elapsed time: "
-                                                                              << std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count() << " msecs. ").build());
                 }
 
                 std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation) {

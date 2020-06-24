@@ -159,8 +159,6 @@ namespace hazelcast {
 
                     bool isNotAllowedToRetryOnSelection(exception::IException &exception);
 
-                    std::exception_ptr newOperationTimeoutException(std::exception_ptr exception);
-
                     void execute();
 
                     ClientInvocation(const ClientInvocation &rhs);
