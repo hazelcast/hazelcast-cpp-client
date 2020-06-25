@@ -499,7 +499,7 @@ namespace hazelcast {
 
                 void removeNearCacheInvalidationListener() {
                     if (nearCache) {
-                        deregisterListener(invalidationListenerId);
+                        deregisterListener(invalidationListenerId).get();
                     }
                 }
 
