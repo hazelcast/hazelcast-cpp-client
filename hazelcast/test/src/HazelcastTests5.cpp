@@ -60,7 +60,6 @@
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
-#include "hazelcast/util/Runnable.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/AtomicInt.h"
@@ -394,7 +393,7 @@ namespace hazelcast {
                 CallIdSequenceWithBackpressureTest() {}
 
             protected:
-                class ThreeSecondDelayCompleteOperation : public hazelcast::util::Runnable {
+                class ThreeSecondDelayCompleteOperation {
                 public:
                     ThreeSecondDelayCompleteOperation(spi::impl::sequence::CallIdSequenceWithBackpressure &sequence,
                                                       boost::latch &nextCalledLatch) : sequence(

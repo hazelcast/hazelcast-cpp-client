@@ -734,8 +734,7 @@ namespace hazelcast {
                 inline writeObject(const T &object);
 
                 template<typename T>
-                typename std::enable_if<!(std::is_base_of<custom_serializer, hz_serializer<T>>::value ||
-                                          std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
+                typename std::enable_if<!(std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
                                           std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
                                           std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
                                           std::is_base_of<custom_serializer, hz_serializer<T>>::value ||
@@ -1707,8 +1706,7 @@ namespace hazelcast {
              * @return
              */
             template<typename T>
-            typename std::enable_if<!(std::is_base_of<custom_serializer, hz_serializer<T>>::value ||
-                                      std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
+            typename std::enable_if<!(std::is_base_of<builtin_serializer, hz_serializer<T>>::value ||
                                       std::is_base_of<identified_data_serializer, hz_serializer<T>>::value ||
                                       std::is_base_of<portable_serializer, hz_serializer<T>>::value ||
                                       std::is_base_of<custom_serializer, hz_serializer<T>>::value ||

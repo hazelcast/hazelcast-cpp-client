@@ -97,7 +97,6 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"

@@ -23,7 +23,6 @@
 #include <stdint.h>
 
 #include <TestHelperFunctions.h>
-#include <hazelcast/util/Runnable.h>
 #include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/Member.h>
 #include <hazelcast/client/spi/ClientContext.h>
@@ -75,7 +74,7 @@ namespace hazelcast {
         };
 
 
-        class StartedThread : util::Runnable {
+        class StartedThread {
         public:
             StartedThread(const std::string &name, void (*func)(ThreadArgs &),
                           void *arg0 = nullptr, void *arg1 = nullptr, void *arg2 = nullptr, void *arg3 = nullptr);

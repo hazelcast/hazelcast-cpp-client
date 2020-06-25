@@ -511,30 +511,28 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::disconnectFromCluster(const std::shared_ptr<Connection> connection) {
-                boost::asio::post(clusterConnectionExecutor->get_executor(), [=]() {
-                    std::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
-                    // it may be possible that while waiting on executor queue, the client got connected (another connection),
-                    // then we do not need to do anything for cluster disconnect.
-                    std::shared_ptr<Address> ownerAddress = ownerConnectionAddress;
-                    if (ownerAddress.get() && (endpoint.get() && *endpoint != *ownerAddress)) {
-                        return;
+                std::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
+                // it may be possible that while waiting on executor queue, the client got connected (another connection),
+                // then we do not need to do anything for cluster disconnect.
+                std::shared_ptr<Address> ownerAddress = ownerConnectionAddress;
+                if (ownerAddress.get() && (endpoint.get() && *endpoint != *ownerAddress)) {
+                    return;
+                }
+
+                setOwnerConnectionAddress(std::shared_ptr<Address>());
+
+                try {
+                    connectionStrategy->onDisconnectFromCluster();
+
+                    if (client.getLifecycleService().isRunning()) {
+                        fireConnectionEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                     }
-
-                    setOwnerConnectionAddress(std::shared_ptr<Address>());
-
-                    try {
-                        connectionStrategy->onDisconnectFromCluster();
-
-                        if (client.getLifecycleService().isRunning()) {
-                            fireConnectionEvent(LifecycleEvent::CLIENT_DISCONNECTED);
-                        }
-                    } catch (exception::IException &e) {
-                        if (client.getLifecycleService().isRunning()) {
-                            logger.warning("ClientConnectionManagerImpl::disconnectFromCluster. Exception occured: ",
-                                        e.what());
-                        }
+                } catch (exception::IException &e) {
+                    if (client.getLifecycleService().isRunning()) {
+                        logger.warning("ClientConnectionManagerImpl::disconnectFromCluster. Exception occured: ",
+                                       e.what());
                     }
-                });
+                }
             }
 
             void
