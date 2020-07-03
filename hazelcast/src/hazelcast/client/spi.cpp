@@ -37,6 +37,7 @@
 
 #include <boost/range/algorithm/find_if.hpp>
 #include <utility>
+#include <string>
 
 #include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/client/HazelcastClient.h"
@@ -69,6 +70,7 @@
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/HashUtil.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
+#include "hazelcast/util/UuidUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -332,10 +334,13 @@ namespace hazelcast {
             }
 
             LifecycleService::LifecycleService(ClientContext &clientContext,
-                                               const std::unordered_set<LifecycleListener *> &lifecycleListeners,
+                                               const std::vector<LifecycleListener> &lifecycleListeners,
                                                LoadBalancer *const loadBalancer, Cluster &cluster) : clientContext(
                     clientContext), loadBalancer(loadBalancer), cluster(cluster), shutdownCompletedLatch(1) {
-                listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
+
+                for (const auto &listener: lifecycleListeners) {
+                    addLifecycleListener(listener);
+                }
             }
 
             bool LifecycleService::start() {
@@ -395,14 +400,9 @@ namespace hazelcast {
                 }
             }
 
-            void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
+            bool LifecycleService::removeLifecycleListener(const std::string &registrationId) {
                 std::lock_guard<std::mutex> lg(listenerLock);
-                listeners.insert(lifecycleListener);
-            }
-
-            bool LifecycleService::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-                std::lock_guard<std::mutex> lg(listenerLock);
-                return listeners.erase(lifecycleListener) == 1;
+                return listeners.erase(registrationId) == 1;
             }
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
@@ -438,10 +438,10 @@ namespace hazelcast {
                         break;
                 }
 
-                for (std::unordered_set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                    (*it)->stateChanged(lifecycleEvent);
+                for (const auto &it: listeners) {
+                    auto& listener = it.second;
+                    listener(lifecycleEvent);
                 }
-
             }
 
             bool LifecycleService::isRunning() {

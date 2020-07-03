@@ -173,14 +173,16 @@ namespace hazelcast {
                 *
                 * @param lifecycleListener Listener object
                 */
-                void addLifecycleListener(LifecycleListener *lifecycleListener);
-
+                template<typename T>
+                std::string addLifecycleListener(T &&lifecycleListener) {
+                    return lifecycleService.addLifecycleListener(std::forward<T>(lifecycleListener));
+                }
                 /**
                 * Remove lifecycle listener
                 * @param lifecycleListener
                 * @return true if removed successfully
                 */
-                bool removeLifecycleListener(LifecycleListener *lifecycleListener);
+                bool removeLifecycleListener(const std::string &registrationId);
 
                 /**
                 * Shuts down this HazelcastClient.

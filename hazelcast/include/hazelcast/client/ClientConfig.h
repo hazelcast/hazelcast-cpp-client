@@ -38,6 +38,7 @@
 #include "hazelcast/client/internal/config/ConfigUtils.h"
 #include "hazelcast/client/config/LoggerConfig.h"
 #include "hazelcast/client/serialization/serialization.h"
+#include "hazelcast/client/LifecycleListener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -49,8 +50,6 @@ namespace hazelcast {
         class MembershipListener;
 
         class InitialMembershipListener;
-
-        class LifecycleListener;
 
         class InitialMembershipEvent;
 
@@ -259,13 +258,17 @@ namespace hazelcast {
             * @param listener LifecycleListener *listener
             * @return itself ClientConfig
             */
-            ClientConfig &addListener(LifecycleListener *listener);
+            template<typename T>
+            ClientConfig &addLifecycleListener(T &&listener) {
+                lifecycleListeners.emplace_back(std::forward<T>(listener));
+                return *this;
+            }
 
             /**
             *
             * @return registered lifecycleListeners
             */
-            const std::unordered_set<LifecycleListener *> &getLifecycleListeners() const;
+            const std::vector<LifecycleListener> &getLifecycleListeners() const;
 
             /**
             * @deprecated Please use addListener(const std::shared_ptr<MembershipListener> &listener) instead.
@@ -554,7 +557,7 @@ namespace hazelcast {
             std::unordered_set<MembershipListener *> membershipListeners;
             std::unordered_set<std::shared_ptr<MembershipListener> > managedMembershipListeners;
 
-            std::unordered_set<LifecycleListener *> lifecycleListeners;
+            std::vector<LifecycleListener> lifecycleListeners;
 
             std::unordered_map<std::string, std::string> properties;
 

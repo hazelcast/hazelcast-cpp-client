@@ -266,14 +266,16 @@ namespace hazelcast {
             *
             * @param lifecycleListener Listener object
             */
-            void addLifecycleListener(LifecycleListener *lifecycleListener);
-
+            template<typename T>
+            std::string addLifecycleListener(T &&lifecycleListener) {
+                return clientImpl->addLifecycleListener(std::forward<T>(lifecycleListener));
+            }
             /**
             * Remove lifecycle listener
             * @param lifecycleListener
             * @return true if removed successfully
             */
-            bool removeLifecycleListener(LifecycleListener *lifecycleListener);
+            bool removeLifecycleListener(const std::string &lifecycleListener);
 
             /**
             * Shuts down this HazelcastClient.

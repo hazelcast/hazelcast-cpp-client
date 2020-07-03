@@ -101,12 +101,8 @@ namespace hazelcast {
             return clientImpl->getCluster();
         }
 
-        void HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener) {
-            clientImpl->addLifecycleListener(lifecycleListener);
-        }
-
-        bool HazelcastClient::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-            return clientImpl->removeLifecycleListener(lifecycleListener);
+        bool HazelcastClient::removeLifecycleListener(const std::string &registrationId) {
+            return clientImpl->removeLifecycleListener(registrationId);
         }
 
         void HazelcastClient::shutdown() {
@@ -218,12 +214,8 @@ namespace hazelcast {
                 return cluster;
             }
 
-            void HazelcastClientInstanceImpl::addLifecycleListener(LifecycleListener *lifecycleListener) {
-                lifecycleService.addLifecycleListener(lifecycleListener);
-            }
-
-            bool HazelcastClientInstanceImpl::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-                return lifecycleService.removeLifecycleListener(lifecycleListener);
+            bool HazelcastClientInstanceImpl::removeLifecycleListener(const std::string &registrationId) {
+                return lifecycleService.removeLifecycleListener(registrationId);
             }
 
             void HazelcastClientInstanceImpl::shutdown() {
@@ -505,9 +497,6 @@ namespace hazelcast {
                 object.host = in.read<std::string>();
                 return object;
             }
-        }
-
-        LifecycleListener::~LifecycleListener() {
         }
 
         const std::string IExecutorService::SERVICE_NAME = "hz:impl:executorService";

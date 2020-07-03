@@ -18,31 +18,7 @@
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/config/ClientConnectionStrategyConfig.h>
 #include <hazelcast/client/LifecycleListener.h>
-
-class DisconnectedListener : public hazelcast::client::LifecycleListener {
-public:
-    DisconnectedListener() : disconnectedLatch(1), connectedLatch(1) {}
-
-    virtual void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) {
-        if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_DISCONNECTED) {
-            disconnectedLatch.count_down();
-        } else if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
-            connectedLatch.count_down();
-        }
-    }
-
-    void waitForDisconnection() {
-        disconnectedLatch.wait();
-    }
-
-    bool awaitReconnection(int seconds) {
-        return connectedLatch.wait_for(boost::chrono::seconds(seconds)) == boost::cv_status::no_timeout;
-    }
-
-private:
-    boost::latch disconnectedLatch;
-    boost::latch connectedLatch;
-};
+#include <hazelcast/client/LifecycleEvent.h>
 
 
 int main() {
@@ -63,15 +39,23 @@ int main() {
 
     map->put(1, 100);
 
-    DisconnectedListener listener;
-    hz.addLifecycleListener(&listener);
+    boost::latch disconnectedLatch(1);
+    boost::latch connectedLatch(1);
+
+    hz.addLifecycleListener([&](const hazelcast::client::LifecycleEvent &lifecycleEvent) {
+        if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_DISCONNECTED) {
+            disconnectedLatch.count_down();
+        } else if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
+            connectedLatch.count_down();
+        }
+    });
 
     // Please shut down the cluster at this point.
-    listener.waitForDisconnection();
+    disconnectedLatch.wait();
 
     std::cout << "Client is disconnected from the cluster now." << std::endl;
 
-    if (!listener.awaitReconnection(10)) {
+    if (connectedLatch.wait_for(boost::chrono::seconds(10)) != boost::cv_status::no_timeout) {
         std::cout << "The client did not connect to the cluster 10 seconds after disconnection as expected." << std::endl;
     }
 

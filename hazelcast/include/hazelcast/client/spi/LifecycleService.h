@@ -20,8 +20,10 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/util/UuidUtil.h"
 
-#include <unordered_set>
+#include <unordered_map>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,8 +32,6 @@
 
 namespace hazelcast {
     namespace client {
-        class LifecycleListener;
-
         class LifecycleEvent;
 
         class ClientConfig;
@@ -47,7 +47,7 @@ namespace hazelcast {
             class HAZELCAST_API LifecycleService {
             public:
 
-                LifecycleService(ClientContext &clientContext, const std::unordered_set<LifecycleListener *> &lifecycleListeners,
+                LifecycleService(ClientContext &clientContext, const std::vector<LifecycleListener> &lifecycleListeners,
                                  LoadBalancer *const loadBalancer, Cluster &cluster);
 
                 virtual ~LifecycleService();
@@ -58,15 +58,23 @@ namespace hazelcast {
 
                 void shutdown();
 
-                void addLifecycleListener(LifecycleListener *lifecycleListener);
+                template<typename T>
+                std::string addLifecycleListener(T &&lifecycleListener) {
+                    std::lock_guard<std::mutex> lg(listenerLock);
 
-                bool removeLifecycleListener(LifecycleListener *lifecycleListener);
+                    const std::string registrationId = util::UuidUtil::newUnsecureUuidString();
+
+                    listeners.emplace(registrationId, std::forward<T>(lifecycleListener));
+                    return registrationId;
+                }
+
+                bool removeLifecycleListener(const std::string &registrationId);
 
                 bool isRunning();
 
             private:
                 ClientContext &clientContext;
-                std::unordered_set<LifecycleListener *> listeners;
+                std::unordered_map<std::string, LifecycleListener> listeners;
                 std::mutex listenerLock;
                 util::AtomicBoolean active;
                 LoadBalancer *loadBalancer;

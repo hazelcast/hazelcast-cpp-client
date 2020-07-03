@@ -639,11 +639,6 @@ namespace hazelcast {
             return loggerConfig;
         }
 
-        ClientConfig &ClientConfig::addListener(LifecycleListener *listener) {
-            lifecycleListeners.insert(listener);
-            return *this;
-        }
-
         ClientConfig &ClientConfig::addListener(MembershipListener *listener) {
             if (listener == NULL) {
                 BOOST_THROW_EXCEPTION(exception::NullPointerException("ClientConfig::addListener(MembershipListener *)",
@@ -681,7 +676,7 @@ namespace hazelcast {
             return *this;
         }
 
-        const std::unordered_set<LifecycleListener *> &ClientConfig::getLifecycleListeners() const {
+        const std::vector<LifecycleListener> &ClientConfig::getLifecycleListeners() const {
             return lifecycleListeners;
         }
 

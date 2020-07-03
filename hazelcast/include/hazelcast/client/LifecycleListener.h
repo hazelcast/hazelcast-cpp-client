@@ -16,7 +16,6 @@
 #pragma once
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/LifecycleEvent.h"
 
 namespace hazelcast {
     namespace client {
@@ -33,17 +32,8 @@ namespace hazelcast {
          * @see HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener)
          *
          */
-        class HAZELCAST_API LifecycleListener {
-        public:
-            /**
-             * Called when instance's state changes
-             * @param lifecycleEvent LifecycleEvent
-             *
-             */
-            virtual void stateChanged(const LifecycleEvent &lifecycleEvent) = 0;
-
-            virtual ~LifecycleListener();
-        };
+        class LifecycleEvent;
+        typedef std::function<void(const LifecycleEvent&)> LifecycleListener;
     }
 }
 
