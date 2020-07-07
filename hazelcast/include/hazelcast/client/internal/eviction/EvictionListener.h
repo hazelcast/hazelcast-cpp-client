@@ -36,7 +36,7 @@ namespace hazelcast {
                 template <typename A, typename E>
                 class EvictionListener {
                 public:
-                    virtual ~EvictionListener() { }
+                    virtual ~EvictionListener() = default;
 
                     /**
                      * Empty {@link} EvictionListener

@@ -33,7 +33,7 @@ namespace hazelcast {
                 template <typename V>
                 class Evictable {
                 public:
-                    virtual ~Evictable() { }
+                    virtual ~Evictable() = default;
 
                     /**
                      * Gets the creation time of this {@link Evictable} in milliseconds.

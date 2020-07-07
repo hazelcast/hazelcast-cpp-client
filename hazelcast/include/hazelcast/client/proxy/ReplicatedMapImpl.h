@@ -252,23 +252,23 @@ namespace hazelcast {
                 public:
                     NearCacheInvalidationListenerMessageCodec(const std::string &name) : name(name) {}
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const {
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override {
                         return protocol::codec::ReplicatedMapAddNearCacheEntryListenerCodec::encodeRequest(name, false,
                                                                                                            localOnly);
                     }
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override {
                         return protocol::codec::ReplicatedMapAddNearCacheEntryListenerCodec::ResponseParameters::decode(
                                 std::move(responseMessage)).response;
                     }
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const {
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::encodeRequest(name,
                                                                                                      realRegistrationId);
                     }
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
                                 std::move(clientMessage)).response;
                     }
@@ -285,23 +285,23 @@ namespace hazelcast {
                                                                                 serialization::pimpl::Data &&predicateData)
                             : name(name), keyData(keyData), predicateData(predicateData) {}
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const {
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override {
                         return protocol::codec::ReplicatedMapAddEntryListenerToKeyWithPredicateCodec::encodeRequest(
                                 name, keyData, predicateData, localOnly);
                     }
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override {
                         return protocol::codec::ReplicatedMapAddEntryListenerToKeyWithPredicateCodec::ResponseParameters::decode(
                                 std::move(responseMessage)).response;
                     }
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const {
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::encodeRequest(name,
                                                                                                      realRegistrationId);
                     }
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
                                 std::move(clientMessage)).response;
                     }
@@ -318,24 +318,24 @@ namespace hazelcast {
                                                                           serialization::pimpl::Data &&keyData)
                             : name(name), predicateData(keyData) {}
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const {
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override {
                         return protocol::codec::ReplicatedMapAddEntryListenerWithPredicateCodec::encodeRequest(name,
                                                                                                                predicateData,
                                                                                                                localOnly);
                     }
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override {
                         return protocol::codec::ReplicatedMapAddEntryListenerWithPredicateCodec::ResponseParameters::decode(
                                 std::move(responseMessage)).response;
                     }
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const {
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::encodeRequest(name,
                                                                                                      realRegistrationId);
                     }
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
                                 std::move(clientMessage)).response;
                     }
@@ -350,23 +350,23 @@ namespace hazelcast {
                     ReplicatedMapAddEntryListenerToKeyMessageCodec(const std::string &name,
                                                                    serialization::pimpl::Data &&keyData) : name(name), keyData(keyData) {}
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const {
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override {
                         return protocol::codec::ReplicatedMapAddEntryListenerToKeyCodec::encodeRequest(name, keyData,
                                                                                                        localOnly);
                     }
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override {
                         return protocol::codec::ReplicatedMapAddEntryListenerToKeyCodec::ResponseParameters::decode(
                                 std::move(responseMessage)).response;
                     }
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const {
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::encodeRequest(name,
                                                                                                      realRegistrationId);
                     }
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
                                 std::move(clientMessage)).response;
                     }
@@ -380,22 +380,22 @@ namespace hazelcast {
                 public:
                     ReplicatedMapListenerMessageCodec(const std::string &name) : name(name) {}
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const {
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override {
                         return protocol::codec::ReplicatedMapAddEntryListenerCodec::encodeRequest(name, localOnly);
                     }
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override {
                         return protocol::codec::ReplicatedMapAddEntryListenerCodec::ResponseParameters::decode(
                                 std::move(responseMessage)).response;
                     }
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const {
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::encodeRequest(name,
                                                                                                      realRegistrationId);
                     }
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override {
                         return protocol::codec::ReplicatedMapRemoveEntryListenerCodec::ResponseParameters::decode(
                                 std::move(clientMessage)).response;
                     }
@@ -410,11 +410,11 @@ namespace hazelcast {
                     ReplicatedMapAddNearCacheEventHandler(
                             const std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> &nearCache) : nearCache(nearCache) {}
 
-                    void beforeListenerRegister() {
+                    void beforeListenerRegister() override {
                         nearCache->clear();
                     }
 
-                    void onListenerRegister() {
+                    void onListenerRegister() override {
                         nearCache->clear();
                     }
 
@@ -423,7 +423,7 @@ namespace hazelcast {
                                              std::unique_ptr<serialization::pimpl::Data> &oldValue,
                                              std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                              const int32_t &eventType, const std::string &uuid,
-                                             const int32_t &numberOfAffectedEntries) {
+                                             const int32_t &numberOfAffectedEntries) override {
                         switch (eventType) {
                             case static_cast<int32_t>(EntryEvent::type::ADDED):
                             case static_cast<int32_t>(EntryEvent::type::REMOVED):

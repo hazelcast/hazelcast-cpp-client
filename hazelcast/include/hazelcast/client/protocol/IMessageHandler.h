@@ -35,7 +35,7 @@ namespace hazelcast {
         namespace protocol {
             class HAZELCAST_API IMessageHandler {
             public:
-                virtual ~IMessageHandler() {}
+                virtual ~IMessageHandler() = default;
 
                 virtual void handleClientMessage(const std::shared_ptr<spi::impl::ClientInvocation> invocation,
                                                  const std::shared_ptr<ClientMessage> response) = 0;

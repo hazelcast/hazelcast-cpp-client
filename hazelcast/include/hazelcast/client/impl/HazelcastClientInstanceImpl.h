@@ -227,9 +227,9 @@ namespace hazelcast {
                 int32_t id;
                 std::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
                 std::shared_ptr<util::ILogger> logger;
-                HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs);
+                HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs) = delete;
 
-                void operator=(const HazelcastClientInstanceImpl& rhs);
+                void operator=(const HazelcastClientInstanceImpl& rhs) = delete;
 
                 std::shared_ptr<spi::ClientListenerService> initListenerService();
 

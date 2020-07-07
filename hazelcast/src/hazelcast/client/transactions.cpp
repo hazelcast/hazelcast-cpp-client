@@ -529,7 +529,7 @@ namespace hazelcast {
                     : proxy::SerializingProxy(context.getClientContext(), objectName), serviceName(serviceName),
                       name(objectName), context(context) {}
 
-            TransactionalObject::~TransactionalObject() {}
+            TransactionalObject::~TransactionalObject() = default;
 
             const std::string &TransactionalObject::getServiceName() {
                 return serviceName;

@@ -37,16 +37,16 @@ namespace hazelcast {
                 public:
                     NearCacheStatsImpl();
 
-                    virtual int64_t getCreationTime();
+                    int64_t getCreationTime() override;
 
-                    virtual int64_t getOwnedEntryCount();
+                    int64_t getOwnedEntryCount() override;
 
                     void setOwnedEntryCount(int64_t ownedEntryCount);
 
                     void incrementOwnedEntryCount();
                     void decrementOwnedEntryCount();
 
-                    virtual int64_t getOwnedEntryMemoryCost();
+                    int64_t getOwnedEntryMemoryCost() override;
 
                     void setOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost);
 
@@ -54,31 +54,31 @@ namespace hazelcast {
 
                     void decrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost);
 
-                    virtual int64_t getHits();
+                    int64_t getHits() override;
 
                     // just for testing
                     void setHits(int64_t hits);
 
                     void incrementHits();
 
-                    virtual int64_t getMisses();
+                    int64_t getMisses() override;
 
                     // just for testing
                     void setMisses(int64_t misses);
 
                     void incrementMisses();
 
-                    virtual double getRatio();
+                    double getRatio() override;
 
-                    virtual int64_t getEvictions();
+                    int64_t getEvictions() override;
 
                     void incrementEvictions();
 
-                    virtual int64_t getExpirations();
+                    int64_t getExpirations() override;
 
                     void incrementExpirations();
 
-                    int64_t getInvalidations();
+                    int64_t getInvalidations() override;
 
                     void incrementInvalidations();
 
@@ -88,21 +88,21 @@ namespace hazelcast {
 
                     void resetInvalidationEvents();
 
-                    virtual int64_t getPersistenceCount();
+                    int64_t getPersistenceCount() override;
 
                     void addPersistence(int64_t duration, int32_t writtenBytes, int32_t keyCount);
 
-                    virtual int64_t getLastPersistenceTime();
+                    int64_t getLastPersistenceTime() override;
 
-                    virtual int64_t getLastPersistenceDuration();
+                    int64_t getLastPersistenceDuration() override;
 
-                    virtual int64_t getLastPersistenceWrittenBytes();
+                    int64_t getLastPersistenceWrittenBytes() override;
 
-                    virtual int64_t getLastPersistenceKeyCount();
+                    int64_t getLastPersistenceKeyCount() override;
 
-                    virtual std::string getLastPersistenceFailure();
+                    std::string getLastPersistenceFailure() override;
 
-                    virtual std::string toString();
+                    std::string toString() override;
 
                 private:
                     std::atomic<int64_t> creationTime;

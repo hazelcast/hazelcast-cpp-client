@@ -41,8 +41,7 @@ namespace hazelcast {
         template <typename K, typename V>
         class SynchronizedMap {
         public:
-            SynchronizedMap() {
-            }
+            SynchronizedMap() = default;
 
             SynchronizedMap(const SynchronizedMap<K, V> &rhs) {
                 *this = rhs;

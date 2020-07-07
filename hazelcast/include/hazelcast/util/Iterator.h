@@ -23,8 +23,7 @@ namespace hazelcast {
         template <typename E>
         class Iterator {
         public:
-            virtual ~Iterator() {
-            }
+            virtual ~Iterator() = default;
 
             /**
              * Returns <tt>true</tt> if the iteration has more elements. (In other

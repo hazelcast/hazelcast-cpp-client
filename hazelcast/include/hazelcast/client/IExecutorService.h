@@ -510,7 +510,7 @@ namespace hazelcast {
                 }
 
             public:
-                virtual void onResponse(const Member &member, const boost::optional<T> &value) {
+                void onResponse(const Member &member, const boost::optional<T> &value) override {
                     multiExecutionCallback->onResponse(member, value);
 
                     std::lock_guard<std::mutex> guard(lock);
@@ -521,8 +521,8 @@ namespace hazelcast {
                     }
                 }
 
-                virtual void
-                onFailure(const Member &member, std::exception_ptr exception) {
+                void
+                onFailure(const Member &member, std::exception_ptr exception) override {
                     multiExecutionCallback->onFailure(member, exception);
 
                     std::lock_guard<std::mutex> guard(lock);
@@ -533,8 +533,8 @@ namespace hazelcast {
                     }
                 }
 
-                virtual void onComplete(const std::unordered_map<Member, boost::optional<T> > &vals,
-                                        const std::unordered_map<Member, std::exception_ptr> &excs) {
+                void onComplete(const std::unordered_map<Member, boost::optional<T> > &vals,
+                                        const std::unordered_map<Member, std::exception_ptr> &excs) override {
                     multiExecutionCallback->onComplete(vals, excs);
                 }
 
@@ -556,11 +556,11 @@ namespace hazelcast {
                         Member member) : multiExecutionCallbackWrapper(multiExecutionCallbackWrapper),
                                                 member(std::move(member)) {}
 
-                virtual void onResponse(const boost::optional<T> &response) {
+                void onResponse(const boost::optional<T> &response) override {
                     multiExecutionCallbackWrapper->onResponse(member, response);
                 }
 
-                virtual void onFailure(std::exception_ptr e) {
+                void onFailure(std::exception_ptr e) override {
                     multiExecutionCallbackWrapper->onFailure(member, e);
                 }
 

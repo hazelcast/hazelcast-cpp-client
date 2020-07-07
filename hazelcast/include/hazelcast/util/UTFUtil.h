@@ -77,9 +77,9 @@ namespace hazelcast {
             }
 
         private:
-            UTFUtil();
+            UTFUtil() = delete;
 
-            UTFUtil(const UTFUtil &);
+            UTFUtil(const UTFUtil &) = delete;
         };
     }
 }

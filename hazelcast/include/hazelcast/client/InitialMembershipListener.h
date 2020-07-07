@@ -55,7 +55,7 @@ namespace hazelcast {
             friend class spi::impl::ClientClusterServiceImpl;
             friend class InitialMembershipListenerDelegator;
         public:
-            virtual ~InitialMembershipListener();
+            ~InitialMembershipListener() override;
 
             /**
              * Is called when this listener is registered.
@@ -65,27 +65,27 @@ namespace hazelcast {
             virtual void init(const InitialMembershipEvent &event) = 0;
 
         private:
-            virtual bool shouldRequestInitialMembers() const;
+            bool shouldRequestInitialMembers() const override;
         };
 
         class InitialMembershipListenerDelegator : public InitialMembershipListener {
         public:
             InitialMembershipListenerDelegator(InitialMembershipListener *listener);
 
-            virtual void init(const InitialMembershipEvent &event);
+            void init(const InitialMembershipEvent &event) override;
 
-            virtual void memberRemoved(const MembershipEvent &membershipEvent);
+            void memberRemoved(const MembershipEvent &membershipEvent) override;
 
-            virtual void memberAdded(const MembershipEvent &membershipEvent);
+            void memberAdded(const MembershipEvent &membershipEvent) override;
 
-            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
+            void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) override;
 
         private:
-            virtual bool shouldRequestInitialMembers() const;
+            bool shouldRequestInitialMembers() const override;
 
-            virtual const std::string &getRegistrationId() const;
+            const std::string &getRegistrationId() const override;
 
-            virtual void setRegistrationId(const std::string &registrationId);
+            void setRegistrationId(const std::string &registrationId) override;
 
             InitialMembershipListener *listener;
         };

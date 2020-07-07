@@ -247,8 +247,7 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        Clearable::~Clearable() {
-        }
+        Clearable::~Clearable() = default;
     }
 }
 
@@ -271,8 +270,7 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        Destroyable::~Destroyable() {
-        }
+        Destroyable::~Destroyable() = default;
     }
 }
 
@@ -297,8 +295,7 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        Closeable::~Closeable() {
-        }
+        Closeable::~Closeable() = default;
     }
 }
 
@@ -316,8 +313,7 @@ namespace hazelcast {
             easyLogger = el::Loggers::getLogger(instanceName);
         }
 
-        ILogger::~ILogger() {
-        }
+        ILogger::~ILogger() = default;
 
         bool ILogger::start() {
             std::string configurationFileName = loggerConfig.getConfigurationFileName();
@@ -1378,8 +1374,7 @@ namespace hazelcast {
             return hazelcastExceptionFactory;
         }
 
-        ExceptionUtil::RuntimeExceptionFactory::~RuntimeExceptionFactory() {
-        }
+        ExceptionUtil::RuntimeExceptionFactory::~RuntimeExceptionFactory() = default;
 
         void ExceptionUtil::HazelcastExceptionFactory::rethrow(
                 std::exception_ptr throwable, const std::string &message) {

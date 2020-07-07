@@ -25,7 +25,7 @@ namespace hazelcast {
             protected:
                 ProxyImpl(const std::string &serviceName, const std::string &objectName, spi::ClientContext *context);
 
-                virtual ~ProxyImpl();
+                ~ProxyImpl() override;
             };
         }
     }

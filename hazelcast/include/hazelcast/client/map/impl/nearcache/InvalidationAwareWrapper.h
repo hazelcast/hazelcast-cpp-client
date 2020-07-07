@@ -53,25 +53,20 @@ namespace hazelcast {
                                   keyStateMarker(new internal::nearcache::impl::KeyStateMarkerImpl(partitionCount)) {
                         }
 
-                        virtual ~InvalidationAwareWrapper() {
-                        }
+                        ~InvalidationAwareWrapper() override = default;
 
-                        //@Override
                         void initialize() override {
                             nearCache->initialize();
                         }
 
-                        //@Override
                         const std::string &getName() const override {
                             return nearCache->getName();
                         }
 
-                        //@Override
                         std::shared_ptr<V> get(const std::shared_ptr<K> &key) override {
                             return nearCache->get(key);
                         }
 
-                        //@Override
                         void put(const std::shared_ptr<K> &key, const std::shared_ptr<V> &value) override {
                             nearCache->put(key, value);
                         }
@@ -84,30 +79,25 @@ namespace hazelcast {
                         }
 */
 
-                        //@Override
                         bool invalidate(const std::shared_ptr<K> &key) override {
                             keyStateMarker->tryRemove(*key);
                             return nearCache->invalidate(key);
                         }
 
-                        //@Override
                         bool isInvalidatedOnChange() const override {
                             return nearCache->isInvalidatedOnChange();
                         }
 
-                        //@Override
                         void clear() override {
                             keyStateMarker->init();
                             nearCache->clear();
                         }
 
-                        //@Override
                         void destroy() override {
                             keyStateMarker->init();
                             nearCache->destroy();
                         }
 
-                        //@Override
                         const config::InMemoryFormat getInMemoryFormat() const override {
                             return nearCache->getInMemoryFormat();
                         }
@@ -116,7 +106,6 @@ namespace hazelcast {
                             return nearCache->getNearCacheStats();
                         }
 
-                        //@Override
                         int size() const override {
                             return nearCache->size();
                         }

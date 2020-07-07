@@ -51,84 +51,68 @@ namespace hazelcast {
                                       accessTime(NearCacheRecord<V>::TIME_NOT_SET), accessHit(0) {
                             }
 
-                            //@Override
-                            std::shared_ptr<V> getValue() const {
+                            std::shared_ptr<V> getValue() const override {
                                 return value;
                             }
 
-                            //@Override
-                            void setValue(const std::shared_ptr<V> &value) {
+                            void setValue(const std::shared_ptr<V> &value) override {
                                 AbstractNearCacheRecord::value = value;
                             }
 
-                            //@Override
-                            int64_t getCreationTime() const {
+                            int64_t getCreationTime() const override {
                                 return creationTime;
                             }
 
-                            //@Override
-                            void setCreationTime(int64_t creationTime) {
+                            void setCreationTime(int64_t creationTime) override {
                                 AbstractNearCacheRecord::creationTime = creationTime;
                             }
 
-                            //@Override
                             const std::shared_ptr<util::UUID> &getUuid() const {
                                 return uuid;
                             }
 
-                            //@Override
-                            void setUuid(const std::shared_ptr<util::UUID> &uuid) {
+                            void setUuid(const std::shared_ptr<util::UUID> &uuid) override {
                                 AbstractNearCacheRecord::uuid = uuid;
                             }
 
-                            //@Override
-                            int64_t getExpirationTime() {
+                            int64_t getExpirationTime() override {
                                 return expirationTime;
                             }
 
-                            //@Override
-                            void setExpirationTime(int64_t expirationTime) {
+                            void setExpirationTime(int64_t expirationTime) override {
                                 AbstractNearCacheRecord::expirationTime = expirationTime;
                             }
 
-                            //@Override
-                            int64_t getLastAccessTime() {
+                            int64_t getLastAccessTime() override {
                                 return accessTime;
                             }
 
-                            //@Override
-                            void setAccessTime(int64_t accessTime) {
+                            void setAccessTime(int64_t accessTime) override {
                                 AbstractNearCacheRecord::accessTime = accessTime;
                             }
 
-                            //@Override
-                            int32_t getAccessHit() {
+                            int32_t getAccessHit() override {
                                 return accessHit;
                             }
 
-                            //@Override
-                            void setAccessHit(int32_t accessHit) {
+                            void setAccessHit(int32_t accessHit) override {
                                 AbstractNearCacheRecord::accessHit = accessHit;
                             }
 
-                            //@Override
-                            bool isExpiredAt(int64_t now) {
+                            bool isExpiredAt(int64_t now) override {
                                 int64_t expiration = expirationTime;
                                 return (expiration > NearCacheRecord<V>::TIME_NOT_SET) && (expiration <= now);
                             }
 
-                            //@Override
-                            void incrementAccessHit() {
+                            void incrementAccessHit() override {
                                 ++accessHit;
                             }
 
-                            //@Override
-                            void resetAccessHit() {
+                            void resetAccessHit() override {
                                 accessHit = 0;
                             }
 
-                            //@Override
-                            bool isIdleAt(int64_t maxIdleMilliSeconds, int64_t now) {
+                            bool isIdleAt(int64_t maxIdleMilliSeconds, int64_t now) override {
                                 if (maxIdleMilliSeconds > 0) {
                                     if (accessTime > NearCacheRecord<V>::TIME_NOT_SET) {
                                         return accessTime + maxIdleMilliSeconds < now;
@@ -140,18 +124,15 @@ namespace hazelcast {
                                 }
                             }
 
-                            //@Override
-                            int64_t getInvalidationSequence() const {
+                            int64_t getInvalidationSequence() const override {
                                 return sequence;
                             }
 
-                            //@Override
-                            void setInvalidationSequence(int64_t seq) {
+                            void setInvalidationSequence(int64_t seq) override {
                                 this->sequence = seq;
                             }
 
-                            //@Override
-                            bool hasSameUuid(const std::shared_ptr<util::UUID> &thatUuid) const {
+                            bool hasSameUuid(const std::shared_ptr<util::UUID> &thatUuid) const override {
                                 if (uuid.get() == NULL || thatUuid.get() == NULL) {
                                     return false;
                                 }

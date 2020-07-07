@@ -31,7 +31,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API MaxSizeChecker {
                 public:
-                    virtual ~MaxSizeChecker() { }
+                    virtual ~MaxSizeChecker() = default;
 
                     /**
                      * Checks the state to see if it has reached its maximum configured size

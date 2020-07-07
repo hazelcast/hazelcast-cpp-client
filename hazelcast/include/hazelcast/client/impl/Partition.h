@@ -51,7 +51,7 @@ namespace hazelcast {
                  */
                 virtual boost::optional<Member> getOwner() const = 0;
 
-                virtual ~Partition(){};
+                virtual ~Partition() = default;
             };
         }
     }

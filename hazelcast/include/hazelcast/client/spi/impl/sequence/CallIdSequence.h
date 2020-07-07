@@ -52,8 +52,7 @@ namespace hazelcast {
                         /**
                          * Destructor
                          */
-                        virtual ~CallIdSequence() {
-                        }
+                        virtual ~CallIdSequence() = default;
 
                         /**
                          * Returns the maximum concurrent invocations supported. INT32_MAX means there is no max.

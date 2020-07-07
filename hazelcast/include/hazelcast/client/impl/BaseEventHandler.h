@@ -38,12 +38,12 @@ namespace hazelcast {
             public:
                 BaseEventHandler();
 
-                virtual ~BaseEventHandler();
+                ~BaseEventHandler() override;
                 
                 virtual void handle(std::unique_ptr<protocol::ClientMessage> message) = 0;
 
                 // TODO: Remove the above method after changing and regenerating the codecs
-                virtual void handle(const std::shared_ptr<protocol::ClientMessage> &event);
+                void handle(const std::shared_ptr<protocol::ClientMessage> &event) override;
 
                 std::string registrationId;
 
@@ -53,7 +53,7 @@ namespace hazelcast {
                  *  Note that this method will also be called while first registered node is dead
                  *  and re-registering to a second node.
                  */
-                virtual void beforeListenerRegister() {
+                void beforeListenerRegister() override {
                 }
 
                 /**
@@ -62,7 +62,7 @@ namespace hazelcast {
                  *  Note that this method will also be called while first registered node is dead
                  *  and re-registering to a second node.
                  */
-                virtual void onListenerRegister() {
+                void onListenerRegister() override {
                 }
 
                 void setLogger(util::ILogger *iLogger);

@@ -474,7 +474,7 @@ namespace hazelcast {
             ClientProxy::ClientProxy(const std::string &name, const std::string &serviceName, ClientContext &context)
                     : name(name), serviceName(serviceName), context(context) {}
 
-            ClientProxy::~ClientProxy() {}
+            ClientProxy::~ClientProxy() = default;
 
             const std::string &ClientProxy::getName() const {
                 return name;
@@ -605,8 +605,7 @@ namespace hazelcast {
                     connection.write(clientInvocation);
                 }
 
-                AbstractClientInvocationService::~AbstractClientInvocationService() {
-                }
+                AbstractClientInvocationService::~AbstractClientInvocationService() = default;
 
                 AbstractClientInvocationService::ResponseProcessor::ResponseProcessor(util::ILogger &invocationLogger,
                                                                                       AbstractClientInvocationService &invocationService,
@@ -1224,8 +1223,7 @@ namespace hazelcast {
                         invokeCount(0) {
                 }
 
-                ClientInvocation::~ClientInvocation() {
-                }
+                ClientInvocation::~ClientInvocation() = default;
 
                 boost::future<protocol::ClientMessage> ClientInvocation::invoke() {
                     assert (clientMessage.get() != NULL);
@@ -1693,8 +1691,7 @@ namespace hazelcast {
                     return privateToPublic;
                 }
 
-                AwsAddressProvider::~AwsAddressProvider() {
-                }
+                AwsAddressProvider::~AwsAddressProvider() = default;
 
                 Address DefaultAddressTranslator::translate(const Address &address) {
                     return address;
@@ -1895,8 +1892,7 @@ namespace hazelcast {
                 namespace sequence {
                     CallIdSequenceWithoutBackpressure::CallIdSequenceWithoutBackpressure() : head(0) {}
 
-                    CallIdSequenceWithoutBackpressure::~CallIdSequenceWithoutBackpressure() {
-                    }
+                    CallIdSequenceWithoutBackpressure::~CallIdSequenceWithoutBackpressure() = default;
 
                     int32_t CallIdSequenceWithoutBackpressure::getMaxConcurrentInvocations() const {
                         return INT32_MAX;
@@ -1931,8 +1927,7 @@ namespace hazelcast {
                         }
                     }
 
-                    AbstractCallIdSequence::~AbstractCallIdSequence() {
-                    }
+                    AbstractCallIdSequence::~AbstractCallIdSequence() = default;
 
                     int32_t AbstractCallIdSequence::getMaxConcurrentInvocations() const {
                         return maxConcurrentInvocations;
@@ -2047,8 +2042,7 @@ namespace hazelcast {
                         invocationRetryPause = invocationService.getInvocationRetryPause();
                     }
 
-                    AbstractClientListenerService::~AbstractClientListenerService() {
-                    }
+                    AbstractClientListenerService::~AbstractClientListenerService() = default;
 
                     boost::future<std::string>
                     AbstractClientListenerService::registerListener(
@@ -2321,7 +2315,7 @@ namespace hazelcast {
                         return serverRegistrationId < rhs.serverRegistrationId;
                     }
 
-                    ClientEventRegistration::ClientEventRegistration() {}
+                    ClientEventRegistration::ClientEventRegistration() = default;
 
                     SmartClientListenerService::SmartClientListenerService(ClientContext &clientContext,
                                                                            int32_t eventThreadCount)
@@ -2477,7 +2471,7 @@ namespace hazelcast {
                         return os;
                     }
 
-                    ClientRegistrationKey::ClientRegistrationKey() {}
+                    ClientRegistrationKey::ClientRegistrationKey() = default;
 
                     bool operator==(const ClientRegistrationKey &lhs, const ClientRegistrationKey &rhs) {
                         return lhs.userRegistrationId == rhs.userRegistrationId;

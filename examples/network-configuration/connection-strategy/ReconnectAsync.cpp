@@ -23,7 +23,7 @@ class DisconnectedListener : public hazelcast::client::LifecycleListener {
 public:
     DisconnectedListener() : disconnectedLatch(1), connectedLatch(1) {}
 
-    virtual void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) {
+    void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) override {
         if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_DISCONNECTED) {
             disconnectedLatch.count_down();
         } else if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {

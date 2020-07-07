@@ -22,7 +22,7 @@ class ConnectedListener : public hazelcast::client::LifecycleListener {
 public:
     ConnectedListener() : l(1) {}
 
-    virtual void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) {
+    void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) override {
         if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
             l.count_down();
         }

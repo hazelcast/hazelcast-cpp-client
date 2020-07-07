@@ -47,12 +47,12 @@ namespace hazelcast {
                      *
                      * @throws IOException if the address can not be translated.
                      */
-                    Address translate(const Address &address);
+                    Address translate(const Address &address) override;
 
                     /**
                      * Update the internal lookup table from AWS.
                      */
-                    void refresh();
+                    void refresh() override;
 
                 private:
                     bool findFromCache(const Address &address, Address &translatedAddress);

@@ -46,8 +46,7 @@ namespace hazelcast {
                 template <typename MAPKEY, typename MAPVALUE,typename A, typename E, typename S>
                 class EvictionStrategy {
                 public:
-                    virtual ~EvictionStrategy() {
-                    }
+                    virtual ~EvictionStrategy() = default;
 
                     /**
                      * Does eviction if eviction is required by given {@link EvictionChecker}.

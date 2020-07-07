@@ -53,13 +53,13 @@ namespace hazelcast {
                 IException(const std::string &exceptionName, const std::string &source, const std::string &message,
                            const std::string &details, int32_t errorNo, bool isRuntime = false, bool retryable = false);
 
-                virtual ~IException() noexcept;
+                ~IException() noexcept override;
 
                 /**
                  *
                  * return  pointer to the explanation string.
                  */
-                virtual char const *what() const noexcept;
+                char const *what() const noexcept override;
 
                 const std::string &getSource() const;
 

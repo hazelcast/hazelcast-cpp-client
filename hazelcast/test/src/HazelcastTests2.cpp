@@ -351,14 +351,14 @@ namespace hazelcast {
                 }
 
             protected:
-                virtual void SetUp() {
+                void SetUp() override {
                     ASSERT_TRUE(testLogger->start());
 
                     originalStdout = std::cout.rdbuf();
                     std::cout.rdbuf(buffer.rdbuf());
                 }
 
-                virtual void TearDown() {
+                void TearDown() override {
                     std::cout.rdbuf(originalStdout);
                 }
 
@@ -488,13 +488,13 @@ namespace hazelcast {
                 }
 
             protected:
-                virtual void SetUp() {
+                void SetUp() override {
                     originalStdout = std::cout.rdbuf();
 
                     std::cout.rdbuf(buffer.rdbuf());
                 }
 
-                virtual void TearDown() {
+                void TearDown() override {
                     std::cout.rdbuf(originalStdout);
                 }
 
@@ -819,7 +819,7 @@ namespace hazelcast {
                                                const LifecycleEvent::LifeCycleState expectedState)
                                 : connectedLatch(connectedLatch), expectedState(expectedState) {}
 
-                        virtual void stateChanged(const LifecycleEvent &event) {
+                        void stateChanged(const LifecycleEvent &event) override {
                             if (event.getState() == expectedState) {
                                 connectedLatch.try_count_down();
                             }
@@ -1114,7 +1114,7 @@ namespace hazelcast {
             public:
                 class Child {
                 public:
-                    Child() {}
+                    Child() = default;
 
                     Child(std::string name) : name(name) {}
 
@@ -1136,7 +1136,7 @@ namespace hazelcast {
                         return lhs.child == rhs.child;
                     }
 
-                    Parent() {}
+                    Parent() = default;
 
                     Parent(Child child) : child(child) {}
 
@@ -1223,7 +1223,7 @@ namespace hazelcast {
                 public:
                     SimplePartitionAwareObject() : testKey(5) {}
 
-                    virtual const int *getPartitionKey() const {
+                    const int *getPartitionKey() const override {
                         return &testKey;
                     }
 

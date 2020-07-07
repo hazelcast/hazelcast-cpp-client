@@ -35,15 +35,15 @@ namespace hazelcast {
                     SmartClientInvocationService(ClientContext &client);
 
                     void invokeOnConnection(std::shared_ptr<impl::ClientInvocation> invocation,
-                                            std::shared_ptr<connection::Connection> connection);
+                                            std::shared_ptr<connection::Connection> connection) override;
 
                     void invokeOnPartitionOwner(std::shared_ptr<impl::ClientInvocation> invocation,
-                                                int partitionId);
+                                                int partitionId) override;
 
-                    void invokeOnRandomTarget(std::shared_ptr<impl::ClientInvocation> invocation);
+                    void invokeOnRandomTarget(std::shared_ptr<impl::ClientInvocation> invocation) override;
 
                     void invokeOnTarget(std::shared_ptr<impl::ClientInvocation> invocation,
-                                        const std::shared_ptr<Address> &target);
+                                        const std::shared_ptr<Address> &target) override;
 
 
                 private:

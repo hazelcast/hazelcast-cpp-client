@@ -34,8 +34,7 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API LittleEndianBufferWrapper {
         public:
-            virtual ~LittleEndianBufferWrapper() {
-            }
+            virtual ~LittleEndianBufferWrapper() = default;
 
             enum TypeSizes {
                 INT8_SIZE = 1,

@@ -63,8 +63,7 @@ namespace hazelcast {
                 setFrameLength(size);
             }
 
-            ClientMessage::~ClientMessage() {
-            }
+            ClientMessage::~ClientMessage() = default;
 
             void ClientMessage::wrapForEncode(int32_t size) {
                 wrapForWrite(size, HEADER_SIZE);
@@ -409,8 +408,7 @@ namespace hazelcast {
                 return codec::AddressCodec::calculateDataSize(param);
             }
 
-            ExceptionFactory::~ExceptionFactory() {
-            }
+            ExceptionFactory::~ExceptionFactory() = default;
 
             ClientExceptionFactory::ClientExceptionFactory() {
                 registerException(UNDEFINED,
@@ -601,8 +599,7 @@ namespace hazelcast {
                     : connection(connection) {
             }
 
-            ClientMessageBuilder::~ClientMessageBuilder() {
-            }
+            ClientMessageBuilder::~ClientMessageBuilder() = default;
 
             bool ClientMessageBuilder::onData(util::ByteBuffer &buffer) {
                 bool isCompleted = false;
