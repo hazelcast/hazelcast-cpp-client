@@ -46,8 +46,7 @@ namespace hazelcast {
                                     nearCacheRecordMap(recordMap), maxSize(size) {
                             }
 
-                            //@Override
-                            bool isReachedToMaxSize() const {
+                            bool isReachedToMaxSize() const override {
                                 return (int32_t) nearCacheRecordMap.size() >= maxSize;
                             }
                         private:

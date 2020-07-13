@@ -102,20 +102,20 @@ namespace hazelcast {
 
                 boost::future<void> forceUnlock(const serialization::pimpl::Data& key);
 
-                virtual void onInitialize();
+                void onInitialize() override;
             private:
                 class MultiMapEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     MultiMapEntryListenerMessageCodec(std::string name, bool includeValue);
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override;
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override;
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override;
                 private:
                     std::string name;
                     bool includeValue;
@@ -126,14 +126,14 @@ namespace hazelcast {
                     MultiMapEntryListenerToKeyCodec(std::string name, bool includeValue,
                                                     serialization::pimpl::Data &&key);
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override;
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override;
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override;
                 private:
                     std::string  name;
                     bool includeValue;

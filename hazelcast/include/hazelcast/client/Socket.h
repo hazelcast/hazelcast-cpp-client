@@ -41,8 +41,7 @@ namespace hazelcast {
 
         class HAZELCAST_API Socket {
         public:
-            virtual ~Socket() {
-            }
+            virtual ~Socket() = default;
 
             virtual void
             asyncStart(const std::shared_ptr<connection::Connection> connection,

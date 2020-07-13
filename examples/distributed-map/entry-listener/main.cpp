@@ -17,35 +17,35 @@
 
 class MyEntryListener : public hazelcast::client::EntryListener {
 public:
-    void entryAdded(const hazelcast::client::EntryEvent &event) {
+    void entryAdded(const hazelcast::client::EntryEvent &event) override {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryRemoved(const hazelcast::client::EntryEvent &event) {
+    void entryRemoved(const hazelcast::client::EntryEvent &event) override {
         std::cout << "[entryRemoved] " << event << std::endl;
     }
 
-    void entryUpdated(const hazelcast::client::EntryEvent &event) {
+    void entryUpdated(const hazelcast::client::EntryEvent &event) override {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryEvicted(const hazelcast::client::EntryEvent &event) {
+    void entryEvicted(const hazelcast::client::EntryEvent &event) override {
         std::cout << "[entryUpdated] " << event << std::endl;
     }
 
-    void entryExpired(const hazelcast::client::EntryEvent &event) {
+    void entryExpired(const hazelcast::client::EntryEvent &event) override {
         std::cout << "[entryExpired] " << event << std::endl;
     }
 
-    void entryMerged(const hazelcast::client::EntryEvent &event) {
+    void entryMerged(const hazelcast::client::EntryEvent &event) override {
         std::cout << "[entryMerged] " << event << std::endl;
     }
 
-    void mapEvicted(const hazelcast::client::MapEvent &event) {
+    void mapEvicted(const hazelcast::client::MapEvent &event) override {
         std::cout << "[mapEvicted] " << event << std::endl;
     }
 
-    void mapCleared(const hazelcast::client::MapEvent &event) {
+    void mapCleared(const hazelcast::client::MapEvent &event) override {
         std::cout << "[mapCleared] " << event << std::endl;
     }
 };

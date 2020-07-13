@@ -50,8 +50,7 @@ namespace hazelcast {
                     template<typename K, typename V>
                     class NearCacheRecordStore : public spi::InitializingObject {
                     public:
-                        virtual ~NearCacheRecordStore() {
-                        }
+                        ~NearCacheRecordStore() override = default;
 
                         /**
                          * Gets the value associated with the given {@code key}.

@@ -29,7 +29,7 @@ namespace hazelcast {
                 PartitionSpecificClientProxy(const std::string &serviceName, const std::string &objectName,
                                              spi::ClientContext *context);
 
-                virtual void onInitialize();
+                void onInitialize() override;
 
                 int partitionId;
             };

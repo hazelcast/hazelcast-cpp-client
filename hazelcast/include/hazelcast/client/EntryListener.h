@@ -40,7 +40,7 @@ namespace hazelcast {
         */
         class EntryListener {
         public:
-            virtual ~EntryListener() {}
+            virtual ~EntryListener() = default;
 
             /**
             * Invoked when an entry is added.

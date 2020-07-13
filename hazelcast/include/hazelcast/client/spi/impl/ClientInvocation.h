@@ -161,9 +161,9 @@ namespace hazelcast {
 
                     void execute();
 
-                    ClientInvocation(const ClientInvocation &rhs);
+                    ClientInvocation(const ClientInvocation &rhs) = delete;
 
-                    void operator=(const ClientInvocation &rhs);
+                    void operator=(const ClientInvocation &rhs) = delete;
 
                     std::shared_ptr<protocol::ClientMessage> copyMessage();
 

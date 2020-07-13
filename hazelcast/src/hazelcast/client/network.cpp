@@ -67,7 +67,7 @@
 
 namespace hazelcast {
     namespace client {
-        SocketInterceptor::~SocketInterceptor() {}
+        SocketInterceptor::~SocketInterceptor() = default;
 
         namespace connection {
             int ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC = 2;
@@ -814,8 +814,7 @@ namespace hazelcast {
                 }
             }
 
-            ClientConnectionManagerImpl::AuthCallback::~AuthCallback() {
-            }
+            ClientConnectionManagerImpl::AuthCallback::~AuthCallback() = default;
 
             AuthenticationFuture::AuthenticationFuture(const Address &address,
                                                        util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress)
@@ -912,8 +911,7 @@ namespace hazelcast {
                 socket = socketFactory.create(address, connectTimeoutInMillis);
             }
 
-            Connection::~Connection() {
-            }
+            Connection::~Connection() = default;
 
             void Connection::authenticate() {
                 auto thisConnection = shared_from_this();
@@ -1142,8 +1140,7 @@ namespace hazelcast {
                       clientConnectionStrategyConfig(clientConnectionStrategyConfig) {
             }
 
-            ClientConnectionStrategy::~ClientConnectionStrategy() {
-            }
+            ClientConnectionStrategy::~ClientConnectionStrategy() = default;
 
             HeartbeatManager::HeartbeatManager(spi::ClientContext &client,
                                                ClientConnectionManagerImpl &connectionManager)

@@ -69,8 +69,7 @@ namespace hazelcast {
                                                                                   endpoint(endpoint) {
                 }
 
-                EC2RequestSigner::~EC2RequestSigner() {
-                }
+                EC2RequestSigner::~EC2RequestSigner() = default;
 
                 std::string EC2RequestSigner::sign(const std::unordered_map<std::string, std::string> &attributes) {
                     std::string canonicalRequest = getCanonicalizedRequest(attributes);
@@ -294,8 +293,7 @@ namespace hazelcast {
                 const char *Constants::GET = "GET";
                 const char *Constants::ECS_CREDENTIALS_ENV_VAR_NAME = "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI";
 
-                Filter::Filter() {
-                }
+                Filter::Filter() = default;
 
                 /**
                  *
@@ -401,8 +399,7 @@ namespace hazelcast {
                     addFilters();
                 }
 
-                DescribeInstances::~DescribeInstances() {
-                }
+                DescribeInstances::~DescribeInstances() = default;
 
                 std::unordered_map<std::string, std::string> DescribeInstances::execute() {
                     std::string signature = rs->sign(attributes);

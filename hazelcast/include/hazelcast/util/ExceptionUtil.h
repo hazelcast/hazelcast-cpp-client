@@ -45,7 +45,7 @@ namespace hazelcast {
 
         private:
             class HazelcastExceptionFactory : public RuntimeExceptionFactory {
-                virtual void rethrow(std::exception_ptr throwable, const std::string &message);
+                void rethrow(std::exception_ptr throwable, const std::string &message) override;
             };
 
             static const std::shared_ptr<RuntimeExceptionFactory> &HAZELCAST_EXCEPTION_FACTORY();

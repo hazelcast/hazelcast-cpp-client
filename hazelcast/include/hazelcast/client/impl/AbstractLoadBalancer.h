@@ -44,17 +44,17 @@ namespace hazelcast {
 
                 std::vector<Member> getMembers();
 
-                virtual void init(Cluster &cluster);
+                void init(Cluster &cluster) override;
 
-                void memberAdded(const MembershipEvent &membershipEvent);
+                void memberAdded(const MembershipEvent &membershipEvent) override;
 
-                void memberRemoved(const MembershipEvent &membershipEvent);
+                void memberRemoved(const MembershipEvent &membershipEvent) override;
 
-                virtual void init(const InitialMembershipEvent &event);
+                void init(const InitialMembershipEvent &event) override;
 
-                void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
+                void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) override;
 
-                virtual ~AbstractLoadBalancer();
+                ~AbstractLoadBalancer() override;
 
             private:
                 std::mutex membersLock;

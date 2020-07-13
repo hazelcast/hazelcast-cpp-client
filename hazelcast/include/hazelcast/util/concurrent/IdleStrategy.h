@@ -35,8 +35,7 @@ namespace hazelcast {
                 /**
                  * Destructor
                  */
-                virtual ~IdleStrategy() {
-                }
+                virtual ~IdleStrategy() = default;
 
                 /**
                  * Perform current idle strategy's step <i>n</i>.

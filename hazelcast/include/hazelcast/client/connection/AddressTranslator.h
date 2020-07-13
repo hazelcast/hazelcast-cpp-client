@@ -29,8 +29,7 @@ namespace hazelcast {
         namespace connection {
             class HAZELCAST_API AddressTranslator {
             public:
-                virtual ~AddressTranslator() {
-                }
+                virtual ~AddressTranslator() = default;
 
                 /**
                  * Translates the given address to another address specific to

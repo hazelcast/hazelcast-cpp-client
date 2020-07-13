@@ -39,9 +39,9 @@ namespace hazelcast {
                 public:
                     AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort, util::ILogger &logger);
 
-                    virtual ~AwsAddressProvider();
+                    ~AwsAddressProvider() override;
 
-                    virtual std::vector<Address> loadAddresses();
+                    std::vector<Address> loadAddresses() override;
 
                 private:
                     std::string awsMemberPort;

@@ -36,8 +36,7 @@ namespace hazelcast {
                         template<typename A, typename E>
                         class RandomEvictionPolicyComparator : public EvictionPolicyComparator<A, E> {
                         public:
-                            //@Override
-                            int compare(const EvictableEntryView<A, E> *e1, const EvictableEntryView<A, E> *e2) const {
+                            int compare(const EvictableEntryView<A, E> *e1, const EvictableEntryView<A, E> *e2) const override {
                                 return 0;
                             }
                         };

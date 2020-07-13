@@ -148,7 +148,7 @@ namespace hazelcast {
 
                 void onClose(Connection &connection);
 
-                virtual void addConnectionListener(const std::shared_ptr<ConnectionListener> &connectionListener);
+                void addConnectionListener(const std::shared_ptr<ConnectionListener> &connectionListener) override;
 
                 util::ILogger &getLogger();
 

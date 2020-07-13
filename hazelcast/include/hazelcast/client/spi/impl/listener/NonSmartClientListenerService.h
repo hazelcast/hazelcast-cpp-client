@@ -28,7 +28,7 @@ namespace hazelcast {
                         NonSmartClientListenerService(ClientContext &clientContext, int32_t eventThreadCount);
 
                     protected:
-                        virtual bool registersLocalOnly() const;
+                        bool registersLocalOnly() const override;
 
                     };
                 }

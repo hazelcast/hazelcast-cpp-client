@@ -91,12 +91,12 @@ namespace hazelcast {
 
 class PrinterCallback : public ExecutionCallback<std::string> {
 public:
-    virtual void onResponse(const boost::optional<std::string> &response) {
+    void onResponse(const boost::optional<std::string> &response) override {
         std::cout << "The execution of the task is completed successfully and server returned:" << *response
                   << std::endl;
     }
 
-    virtual void onFailure(std::exception_ptr e) {
+    void onFailure(std::exception_ptr e) override {
         try {
             std::rethrow_exception(e);
         } catch (hazelcast::client::exception::IException &e) {
@@ -107,7 +107,7 @@ public:
 
 class MyMemberSelector : public hazelcast::client::cluster::memberselector::MemberSelector {
 public:
-    virtual bool select(const Member &member) const {
+    bool select(const Member &member) const override {
         const std::string *attribute = member.getAttribute("my.special.executor");
         if (attribute == NULL) {
             return false;
@@ -116,7 +116,7 @@ public:
         return *attribute == "true";
     }
 
-    virtual void toString(std::ostream &os) const {
+    void toString(std::ostream &os) const override {
         os << "MyMemberSelector";
     }
 };

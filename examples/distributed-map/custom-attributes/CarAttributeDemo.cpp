@@ -20,7 +20,7 @@
 #include <ostream>
 
 struct Car {
-    Car() {}
+    Car() = default;
 
     explicit Car(const char *name) {
         attributes["name"] = name;

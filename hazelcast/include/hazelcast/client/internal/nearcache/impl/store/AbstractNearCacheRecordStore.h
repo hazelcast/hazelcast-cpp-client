@@ -61,8 +61,7 @@ namespace hazelcast {
                                 }
                             }
 
-                            //@override
-                            void initialize() {
+                            void initialize() override {
                                 const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = nearCacheConfig.getEvictionConfig();
                                 this->records = createNearCacheRecordMap(nearCacheConfig);
                                 this->maxSizeChecker = createNearCacheMaxSizeChecker(evictionConfig, nearCacheConfig);
@@ -88,9 +87,8 @@ namespace hazelcast {
                                 return std::shared_ptr<R>();
                             }
 
-                            //@Override
-                            virtual void onEvict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
-                                                 bool wasExpired) {
+                            void onEvict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
+                                                 bool wasExpired) override {
                                 if (wasExpired) {
                                     nearCacheStats->incrementExpirations();
                                 } else {
@@ -99,8 +97,7 @@ namespace hazelcast {
                                 nearCacheStats->decrementOwnedEntryCount();
                             }
 
-                            //@Override
-                            std::shared_ptr<V> get(const std::shared_ptr<KS> &key) {
+                            std::shared_ptr<V> get(const std::shared_ptr<KS> &key) override {
                                 checkAvailable();
 
                                 std::shared_ptr<R> record;
@@ -129,8 +126,7 @@ namespace hazelcast {
                             }
 
 
-                            //@Override
-                            void put(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value) {
+                            void put(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value) override {
                                 putInternal<V>(key, value);
                             }
 
@@ -142,8 +138,7 @@ namespace hazelcast {
                             }
 */
 
-                            //@Override
-                            bool invalidate(const std::shared_ptr<KS> &key) {
+                            bool invalidate(const std::shared_ptr<KS> &key) override {
                                 checkAvailable();
 
                                 std::shared_ptr<R> record;
@@ -166,8 +161,7 @@ namespace hazelcast {
                                 }
                             }
 
-                            //@Override
-                            void clear() {
+                            void clear() override {
                                 checkAvailable();
 
                                 clearRecords();
@@ -175,8 +169,7 @@ namespace hazelcast {
                                 nearCacheStats->setOwnedEntryMemoryCost(0L);
                             }
 
-                            //@Override
-                            void destroy() {
+                            void destroy() override {
                                 checkAvailable();
 
                                 destroyStore();
@@ -184,20 +177,17 @@ namespace hazelcast {
                                 nearCacheStats->setOwnedEntryMemoryCost(0L);
                             }
 
-                            //@Override
-                            int size() const {
+                            int size() const override {
                                 checkAvailable();
                                 return (int) records->size();
                             }
 
-                            //@Override
-                            virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const {
+                            std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const override {
                                 checkAvailable();
                                 return nearCacheStats;
                             }
 
-                            //@Override
-                            void doEvictionIfRequired() {
+                            void doEvictionIfRequired() override {
                                 checkAvailable();
                                 if (isEvictionEnabled()) {
                                     evictionStrategy->evict(records.get(), evictionPolicyEvaluator.get(),
@@ -205,8 +195,7 @@ namespace hazelcast {
                                 }
                             }
 
-                            //@Override
-                            void doEviction() {
+                            void doEviction() override {
                                 checkAvailable();
 
                                 if (isEvictionEnabled()) {
@@ -475,8 +464,7 @@ namespace hazelcast {
                                 MaxSizeEvictionChecker(const eviction::MaxSizeChecker *maxSizeChecker) : maxSizeChecker(
                                         maxSizeChecker) { }
 
-                                //@Override
-                                bool isEvictionRequired() const {
+                                bool isEvictionRequired() const override {
                                     return maxSizeChecker != NULL && maxSizeChecker->isReachedToMaxSize();
                                 }
 

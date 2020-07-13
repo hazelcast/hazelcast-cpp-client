@@ -166,21 +166,21 @@ namespace hazelcast {
              */
             class HAZELCAST_API NanoSeconds : public TimeUnit {
             public:
-                virtual int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const;
+                int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const override;
 
-                virtual int64_t toNanos(int64_t duration) const;
+                int64_t toNanos(int64_t duration) const override;
 
-                virtual int64_t toMicros(int64_t duration) const;
+                int64_t toMicros(int64_t duration) const override;
 
-                virtual int64_t toMillis(int64_t duration) const;
+                int64_t toMillis(int64_t duration) const override;
 
-                virtual int64_t toSeconds(int64_t duration) const;
+                int64_t toSeconds(int64_t duration) const override;
 
-                virtual int64_t toMinutes(int64_t duration) const;
+                int64_t toMinutes(int64_t duration) const override;
 
-                virtual int64_t toHours(int64_t duration) const;
+                int64_t toHours(int64_t duration) const override;
 
-                virtual int64_t toDays(int64_t duration) const;
+                int64_t toDays(int64_t duration) const override;
             };
 
             /**
@@ -188,21 +188,21 @@ namespace hazelcast {
              */
             class HAZELCAST_API MicroSeconds : public TimeUnit {
             public:
-                virtual int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const;
+                int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const override;
 
-                virtual int64_t toNanos(int64_t duration) const;
+                int64_t toNanos(int64_t duration) const override;
 
-                virtual int64_t toMicros(int64_t duration) const;
+                int64_t toMicros(int64_t duration) const override;
 
-                virtual int64_t toMillis(int64_t duration) const;
+                int64_t toMillis(int64_t duration) const override;
 
-                virtual int64_t toSeconds(int64_t duration) const;
+                int64_t toSeconds(int64_t duration) const override;
 
-                virtual int64_t toMinutes(int64_t duration) const;
+                int64_t toMinutes(int64_t duration) const override;
 
-                virtual int64_t toHours(int64_t duration) const;
+                int64_t toHours(int64_t duration) const override;
 
-                virtual int64_t toDays(int64_t duration) const;
+                int64_t toDays(int64_t duration) const override;
             };
 
             /**
@@ -210,21 +210,21 @@ namespace hazelcast {
              */
             class HAZELCAST_API MilliSeconds : public TimeUnit {
             public:
-                virtual int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const;
+                int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const override;
 
-                virtual int64_t toNanos(int64_t duration) const;
+                int64_t toNanos(int64_t duration) const override;
 
-                virtual int64_t toMicros(int64_t duration) const;
+                int64_t toMicros(int64_t duration) const override;
 
-                virtual int64_t toMillis(int64_t duration) const;
+                int64_t toMillis(int64_t duration) const override;
 
-                virtual int64_t toSeconds(int64_t duration) const;
+                int64_t toSeconds(int64_t duration) const override;
 
-                virtual int64_t toMinutes(int64_t duration) const;
+                int64_t toMinutes(int64_t duration) const override;
 
-                virtual int64_t toHours(int64_t duration) const;
+                int64_t toHours(int64_t duration) const override;
 
-                virtual int64_t toDays(int64_t duration) const;
+                int64_t toDays(int64_t duration) const override;
             };
 
             /**
@@ -232,21 +232,21 @@ namespace hazelcast {
              */
             class HAZELCAST_API Seconds : public TimeUnit {
             public:
-                virtual int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const;
+                int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const override;
 
-                virtual int64_t toNanos(int64_t duration) const;
+                int64_t toNanos(int64_t duration) const override;
 
-                virtual int64_t toMicros(int64_t duration) const;
+                int64_t toMicros(int64_t duration) const override;
 
-                virtual int64_t toMillis(int64_t duration) const;
+                int64_t toMillis(int64_t duration) const override;
 
-                virtual int64_t toSeconds(int64_t duration) const;
+                int64_t toSeconds(int64_t duration) const override;
 
-                virtual int64_t toMinutes(int64_t duration) const;
+                int64_t toMinutes(int64_t duration) const override;
 
-                virtual int64_t toHours(int64_t duration) const;
+                int64_t toHours(int64_t duration) const override;
 
-                virtual int64_t toDays(int64_t duration) const;
+                int64_t toDays(int64_t duration) const override;
             };
 
             /**
@@ -254,21 +254,21 @@ namespace hazelcast {
              */
             class HAZELCAST_API Minutes : public TimeUnit {
             public:
-                virtual int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const;
+                int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const override;
 
-                virtual int64_t toNanos(int64_t duration) const;
+                int64_t toNanos(int64_t duration) const override;
 
-                virtual int64_t toMicros(int64_t duration) const;
+                int64_t toMicros(int64_t duration) const override;
 
-                virtual int64_t toMillis(int64_t duration) const;
+                int64_t toMillis(int64_t duration) const override;
 
-                virtual int64_t toSeconds(int64_t duration) const;
+                int64_t toSeconds(int64_t duration) const override;
 
-                virtual int64_t toMinutes(int64_t duration) const;
+                int64_t toMinutes(int64_t duration) const override;
 
-                virtual int64_t toHours(int64_t duration) const;
+                int64_t toHours(int64_t duration) const override;
 
-                virtual int64_t toDays(int64_t duration) const;
+                int64_t toDays(int64_t duration) const override;
             };
 
             /**
@@ -276,21 +276,21 @@ namespace hazelcast {
              */
             class HAZELCAST_API Hours : public TimeUnit {
             public:
-                virtual int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const;
+                int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const override;
 
-                virtual int64_t toNanos(int64_t duration) const;
+                int64_t toNanos(int64_t duration) const override;
 
-                virtual int64_t toMicros(int64_t duration) const;
+                int64_t toMicros(int64_t duration) const override;
 
-                virtual int64_t toMillis(int64_t duration) const;
+                int64_t toMillis(int64_t duration) const override;
 
-                virtual int64_t toSeconds(int64_t duration) const;
+                int64_t toSeconds(int64_t duration) const override;
 
-                virtual int64_t toMinutes(int64_t duration) const;
+                int64_t toMinutes(int64_t duration) const override;
 
-                virtual int64_t toHours(int64_t duration) const;
+                int64_t toHours(int64_t duration) const override;
 
-                virtual int64_t toDays(int64_t duration) const;
+                int64_t toDays(int64_t duration) const override;
             };
 
             /**
@@ -298,21 +298,21 @@ namespace hazelcast {
              */
             class HAZELCAST_API Days : public TimeUnit {
             public:
-                virtual int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const;
+                int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const override;
 
-                virtual int64_t toNanos(int64_t duration) const;
+                int64_t toNanos(int64_t duration) const override;
 
-                virtual int64_t toMicros(int64_t duration) const;
+                int64_t toMicros(int64_t duration) const override;
 
-                virtual int64_t toMillis(int64_t duration) const;
+                int64_t toMillis(int64_t duration) const override;
 
-                virtual int64_t toSeconds(int64_t duration) const;
+                int64_t toSeconds(int64_t duration) const override;
 
-                virtual int64_t toMinutes(int64_t duration) const;
+                int64_t toMinutes(int64_t duration) const override;
 
-                virtual int64_t toHours(int64_t duration) const;
+                int64_t toHours(int64_t duration) const override;
 
-                virtual int64_t toDays(int64_t duration) const;
+                int64_t toDays(int64_t duration) const override;
             };
         }
     }

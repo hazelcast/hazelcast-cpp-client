@@ -31,23 +31,23 @@ namespace hazelcast {
         */
         class HAZELCAST_API EntryAdapter : public EntryListener {
         public:
-            virtual ~EntryAdapter() {}
+            ~EntryAdapter() override = default;
 
-            virtual void entryAdded(const EntryEvent& event) {}
+            void entryAdded(const EntryEvent& event) override {}
 
-            virtual void entryRemoved(const EntryEvent& event) {}
+            void entryRemoved(const EntryEvent& event) override {}
 
-            virtual void entryUpdated(const EntryEvent& event) {}
+            void entryUpdated(const EntryEvent& event) override {}
 
-            virtual void entryEvicted(const EntryEvent& event) {}
+            void entryEvicted(const EntryEvent& event) override {}
 
-            virtual void entryExpired(const EntryEvent& event) {}
+            void entryExpired(const EntryEvent& event) override {}
 
-            virtual void entryMerged(const EntryEvent& event) {}
+            void entryMerged(const EntryEvent& event) override {}
 
-            virtual void mapEvicted(const MapEvent& event) {}
+            void mapEvicted(const MapEvent& event) override {}
 
-            virtual void mapCleared(const MapEvent& event) {}
+            void mapCleared(const MapEvent& event) override {}
         };
     }
 }

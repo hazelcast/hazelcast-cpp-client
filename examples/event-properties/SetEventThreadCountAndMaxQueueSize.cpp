@@ -17,35 +17,35 @@
 
 class MapChangeListener : public hazelcast::client::EntryListener {
 public:
-    virtual void entryAdded(const hazelcast::client::EntryEvent &event) {
+    void entryAdded(const hazelcast::client::EntryEvent &event) override {
             std::cout << "Entry added:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryRemoved(const hazelcast::client::EntryEvent &event) {
+    void entryRemoved(const hazelcast::client::EntryEvent &event) override {
         std::cout << "Entry removed:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryUpdated(const hazelcast::client::EntryEvent &event) {
+    void entryUpdated(const hazelcast::client::EntryEvent &event) override {
         std::cout << "Entry updated:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryEvicted(const hazelcast::client::EntryEvent &event) {
+    void entryEvicted(const hazelcast::client::EntryEvent &event) override {
         std::cout << "Entry evicted:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryExpired(const hazelcast::client::EntryEvent &event) {
+    void entryExpired(const hazelcast::client::EntryEvent &event) override {
         std::cout << "Entry expired:" << event.getKey().get<int>().value();
     }
 
-    virtual void entryMerged(const hazelcast::client::EntryEvent &event) {
+    void entryMerged(const hazelcast::client::EntryEvent &event) override {
         std::cout << "Entry merged:" << event.getKey().get<int>().value();
     }
 
-    virtual void mapEvicted(const hazelcast::client::MapEvent &event) {
+    void mapEvicted(const hazelcast::client::MapEvent &event) override {
         std::cout << "Map evicted:" << event.getName();
     }
 
-    virtual void mapCleared(const hazelcast::client::MapEvent &event) {
+    void mapCleared(const hazelcast::client::MapEvent &event) override {
         std::cout << "Map cleared:" << event.getName();
     }
 };
