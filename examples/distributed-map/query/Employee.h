@@ -78,7 +78,7 @@ namespace hazelcast {
             class EmployeeEntryKeyComparator : public EmployeeEntryComparator {
             public:
                 int compare(const std::pair<const int32_t *, const Employee *> *lhs,
-                            const std::pair<const int32_t *, const Employee *> *rhs) const;
+                            const std::pair<const int32_t *, const Employee *> *rhs) const override;
             };
 
             std::ostream &operator<<(std::ostream &out, const Employee &employee);

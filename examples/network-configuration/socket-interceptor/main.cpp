@@ -18,7 +18,7 @@
 
 class MyInterceptor : public hazelcast::client::SocketInterceptor {
 public:
-    void onConnect(const hazelcast::client::Socket &connectedSocket) {
+    void onConnect(const hazelcast::client::Socket &connectedSocket) override {
         std::cout << "[MyInterceptor::onConnect] Connected to remote host " <<
         connectedSocket.getAddress() << std::endl;
     }

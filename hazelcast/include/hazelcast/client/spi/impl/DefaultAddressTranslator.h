@@ -29,9 +29,9 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API DefaultAddressTranslator : public connection::AddressTranslator {
                 public:
-                    virtual Address translate(const Address &address);
+                    Address translate(const Address &address) override;
 
-                    virtual void refresh();
+                    void refresh() override;
                 };
             }
         }

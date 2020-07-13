@@ -368,7 +368,7 @@ namespace hazelcast {
                 public:
                     MyListItemListener(boost::latch &latch1) : latch1(latch1) {}
 
-                    void itemAdded(const ItemEvent &itemEvent) {
+                    void itemAdded(const ItemEvent &itemEvent) override {
                         auto type = itemEvent.getEventType();
                         ASSERT_EQ(ItemEventType::ADDED, type);
                         ASSERT_EQ("MyList", itemEvent.getName());
@@ -379,12 +379,12 @@ namespace hazelcast {
                         latch1.count_down();
                     }
 
-                    void itemRemoved(const ItemEvent &item) {}
+                    void itemRemoved(const ItemEvent &item) override {}
                 private:
                     boost::latch &latch1;
                 };
 
-                virtual void TearDown() {
+                void TearDown() override {
                     // clear list
                     list->clear();
                 }
@@ -587,7 +587,7 @@ namespace hazelcast {
                     }
                 }
                 
-                virtual void TearDown() {
+                void TearDown() override {
                     q->clear();
                 }
                 
@@ -877,7 +877,7 @@ namespace hazelcast {
 
                 static const size_t numberOfMembers;
 
-                virtual void TearDown() {
+                void TearDown() override {
                 }
 
                 static void SetUpTestCase() {
@@ -904,10 +904,10 @@ namespace hazelcast {
                     FailingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(
                             latch1) {}
 
-                    virtual void onResponse(const boost::optional<std::string> &response) {
+                    void onResponse(const boost::optional<std::string> &response) override {
                     }
 
-                    virtual void onFailure(std::exception_ptr e) {
+                    void onFailure(std::exception_ptr e) override {
                         exception = e;
                         latch1->count_down();
                     }
@@ -925,11 +925,11 @@ namespace hazelcast {
                 public:
                     SuccessfullExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
 
-                    virtual void onResponse(const boost::optional<std::string> &response) {
+                    void onResponse(const boost::optional<std::string> &response) override {
                         latch1->count_down();
                     }
 
-                    virtual void onFailure(std::exception_ptr e) {
+                    void onFailure(std::exception_ptr e) override {
                     }
 
                 private:
@@ -940,12 +940,12 @@ namespace hazelcast {
                 public:
                     ResultSettingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
 
-                    virtual void onResponse(const boost::optional<std::string> &response) {
+                    void onResponse(const boost::optional<std::string> &response) override {
                         result.set(std::move(response));
                         latch1->count_down();
                     }
 
-                    virtual void onFailure(std::exception_ptr e) {
+                    void onFailure(std::exception_ptr e) override {
                     }
 
                     boost::optional<std::string> getResult() {
@@ -967,18 +967,18 @@ namespace hazelcast {
                                                                                                            completeLatch(
                                                                                                                    completeLatch) {}
 
-                    virtual void onResponse(const Member &member, const boost::optional<std::string> &response) {
+                    void onResponse(const Member &member, const boost::optional<std::string> &response) override {
                         if (response && *response == msg + APPENDAGE) {
                             responseLatch->count_down();
                         }
                     }
 
-                    virtual void
-                    onFailure(const Member &member, std::exception_ptr exception) {
+                    void
+                    onFailure(const Member &member, std::exception_ptr exception) override {
                     }
 
-                    virtual void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
-                                            const std::unordered_map<Member, std::exception_ptr> &exceptions) {
+                    void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
+                                            const std::unordered_map<Member, std::exception_ptr> &exceptions) override {
                         typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
                         std::string expectedValue(msg + APPENDAGE);
                         for (const VALUE_MAP::value_type &entry  : values) {
@@ -1000,18 +1000,18 @@ namespace hazelcast {
                                                std::shared_ptr<boost::latch> completeLatch)
                             : responseLatch(std::move(responseLatch)), completeLatch(std::move(completeLatch)) {}
 
-                    virtual void onResponse(const Member &member, const boost::optional<std::string> &response) {
+                    void onResponse(const Member &member, const boost::optional<std::string> &response) override {
                         if (!response) {
                             responseLatch->count_down();
                         }
                     }
 
-                    virtual void
-                    onFailure(const Member &member, std::exception_ptr exception) {
+                    void
+                    onFailure(const Member &member, std::exception_ptr exception) override {
                     }
 
-                    virtual void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
-                                            const std::unordered_map<Member, std::exception_ptr> &exceptions) {
+                    void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
+                                            const std::unordered_map<Member, std::exception_ptr> &exceptions) override {
                         typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
                         for (const VALUE_MAP::value_type &entry  : values) {
                             if (!entry.second) {

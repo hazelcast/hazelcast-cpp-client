@@ -44,19 +44,19 @@ namespace hazelcast {
                      */
                     class HAZELCAST_API AbstractCallIdSequence : public CallIdSequence {
                     public:
-                        virtual ~AbstractCallIdSequence();
+                        ~AbstractCallIdSequence() override;
 
                         AbstractCallIdSequence(int32_t maxConcurrentInvocations);
 
-                        virtual int32_t getMaxConcurrentInvocations() const;
+                        int32_t getMaxConcurrentInvocations() const override;
 
-                        virtual int64_t next();
+                        int64_t next() override;
 
-                        virtual int64_t forceNext();
+                        int64_t forceNext() override;
 
-                        virtual void complete();
+                        void complete() override;
 
-                        virtual int64_t getLastCallId();
+                        int64_t getLastCallId() override;
 
                         int64_t getTail();
 

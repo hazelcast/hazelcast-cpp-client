@@ -790,11 +790,11 @@ namespace hazelcast {
             public:
                 MySetItemListener(boost::latch &latch1) : latch1(latch1) {}
 
-                void itemAdded(const ItemEvent &itemEvent) {
+                void itemAdded(const ItemEvent &itemEvent) override {
                     latch1.count_down();
                 }
 
-                void itemRemoved(const ItemEvent &item) {}
+                void itemRemoved(const ItemEvent &item) override {}
 
             private:
                 boost::latch &latch1;
@@ -808,7 +808,7 @@ namespace hazelcast {
                     }
                 }
 
-                virtual void TearDown() {
+                void TearDown() override {
                     set->clear();
                 }
 
@@ -1004,7 +1004,7 @@ namespace hazelcast {
                 };
 
             protected:
-                virtual void TearDown() {
+                void TearDown() override {
                     if (topic) {
                         topic->destroy();
                     }

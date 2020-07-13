@@ -48,7 +48,7 @@ namespace hazelcast {
                 public:
                     static const int TIME_NOT_SET = -1;
 
-                    virtual ~NearCacheRecord() { }
+                    ~NearCacheRecord() override = default;
 
                     /**
                      * Sets the value of this {@link NearCacheRecord}.

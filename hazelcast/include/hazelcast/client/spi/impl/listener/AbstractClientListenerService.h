@@ -64,15 +64,15 @@ namespace hazelcast {
                         void handleClientMessage(const std::shared_ptr<ClientInvocation> invocation,
                                                  const std::shared_ptr<protocol::ClientMessage> response);
 
-                        virtual boost::future<std::string>
+                        boost::future<std::string>
                         registerListener(std::unique_ptr<ListenerMessageCodec> &&listenerMessageCodec,
-                                         std::unique_ptr<client::impl::BaseEventHandler> &&handler);
+                                         std::unique_ptr<client::impl::BaseEventHandler> &&handler) override;
 
-                        virtual boost::future<bool> deregisterListener(const std::string registrationId);
+                        boost::future<bool> deregisterListener(const std::string registrationId) override;
 
-                        virtual void connectionAdded(const std::shared_ptr<connection::Connection> connection);
+                        void connectionAdded(const std::shared_ptr<connection::Connection> connection) override;
 
-                        virtual void connectionRemoved(const std::shared_ptr<connection::Connection> connection);
+                        void connectionRemoved(const std::shared_ptr<connection::Connection> connection) override;
 
                     protected:
                         AbstractClientListenerService(ClientContext &clientContext, int32_t eventThreadCount);

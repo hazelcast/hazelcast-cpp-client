@@ -88,9 +88,9 @@ namespace hazelcast {
             std::once_flag elOnceflag;
             std::mutex mutex_;
 
-            ILogger(const ILogger &);
+            ILogger(const ILogger &) = delete;
 
-            ILogger &operator=(const ILogger &);
+            ILogger &operator=(const ILogger &) = delete;
 
             void composeMessage(std::ostringstream &out) {}
 

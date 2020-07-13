@@ -40,7 +40,7 @@ namespace hazelcast {
         template<typename V>
         class MultiExecutionCallback {
         public:
-            virtual ~MultiExecutionCallback() {}
+            virtual ~MultiExecutionCallback() = default;
 
             /**
              * Called when an execution is completed on a member.

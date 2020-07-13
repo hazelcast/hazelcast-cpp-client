@@ -390,7 +390,7 @@ namespace hazelcast {
         namespace test {
             class CallIdSequenceWithBackpressureTest : public ClientTestSupport {
             public:
-                CallIdSequenceWithBackpressureTest() {}
+                CallIdSequenceWithBackpressureTest() = default;
 
             protected:
                 class ThreeSecondDelayCompleteOperation {
@@ -726,7 +726,7 @@ namespace hazelcast {
         namespace test {
             class ClientExpirationListenerTest : public ClientTestSupport {
             protected:
-                virtual void TearDown() {
+                void TearDown() override {
                     // clear maps
                     imap->clear().get();
                 }
@@ -769,7 +769,7 @@ namespace hazelcast {
 
                 }
 
-                void entryExpired(const EntryEvent &event) {
+                void entryExpired(const EntryEvent &event) override {
                     latch1.count_down();
                 }
 
@@ -809,11 +809,11 @@ namespace hazelcast {
 
                 }
 
-                void entryEvicted(const EntryEvent &event) {
+                void entryEvicted(const EntryEvent &event) override {
                     evictedLatch.count_down();
                 }
 
-                void entryExpired(const EntryEvent &event) {
+                void entryExpired(const EntryEvent &event) override {
                     expiredLatch.count_down();
                 }
 
@@ -862,7 +862,7 @@ namespace hazelcast {
                 PartitionAwareInt(int partitionKey, int actualKey)
                         : partitionKey(partitionKey), actualKey(actualKey) {}
 
-                virtual const int *getPartitionKey() const {
+                const int *getPartitionKey() const override {
                     return &partitionKey;
                 }
 
@@ -885,8 +885,7 @@ namespace hazelcast {
                     addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                 }
 
-                virtual ~MapClientConfig() {
-                }
+                virtual ~MapClientConfig() = default;
             };
 
             class NearCachedDataMapClientConfig : public MapClientConfig {
@@ -968,7 +967,7 @@ namespace hazelcast {
                     int multiplier;
                 };
             protected:
-                virtual void TearDown() {
+                void TearDown() override {
                     // clear maps
                     employees->destroy();
                     intMap->destroy();
@@ -1058,7 +1057,7 @@ namespace hazelcast {
                     EvictedEntryListener(const std::shared_ptr<boost::latch> &evictLatch) : evictLatch(
                             evictLatch) {}
 
-                    virtual void entryEvicted(const EntryEvent &event) {
+                    void entryEvicted(const EntryEvent &event) override {
                         evictLatch->count_down();
                     }
                 private:
@@ -1074,19 +1073,19 @@ namespace hazelcast {
                             : addLatch(addLatch), removeLatch(removeLatch), updateLatch(updateLatch),
                               evictLatch(evictLatch) {}
 
-                    void entryAdded(const EntryEvent &event) {
+                    void entryAdded(const EntryEvent &event) override {
                         addLatch.count_down();
                     }
 
-                    void entryRemoved(const EntryEvent &event) {
+                    void entryRemoved(const EntryEvent &event) override {
                         removeLatch.count_down();
                     }
 
-                    void entryUpdated(const EntryEvent &event) {
+                    void entryUpdated(const EntryEvent &event) override {
                         updateLatch.count_down();
                     }
 
-                    void entryEvicted(const EntryEvent &event) {
+                    void entryEvicted(const EntryEvent &event) override {
                         evictLatch.count_down();
                     }
                 private:
@@ -1101,11 +1100,11 @@ namespace hazelcast {
                     MyListener(boost::latch &latch1, boost::latch &nullLatch)
                             : latch1(latch1), nullLatch(nullLatch) {}
 
-                    void entryAdded(const EntryEvent &event) {
+                    void entryAdded(const EntryEvent &event) override {
                         latch1.count_down();
                     }
 
-                    void entryEvicted(const EntryEvent &event) {
+                    void entryEvicted(const EntryEvent &event) override {
                         auto oldValue = event.getOldValue().get<std::string>();
                         if (!oldValue.has_value() || oldValue.value().compare("")) {
                             nullLatch.count_down();
@@ -1121,7 +1120,7 @@ namespace hazelcast {
                 public:
                     ClearListener(boost::latch &latch1) : latch1(latch1) {}
 
-                    void mapCleared(const MapEvent &event) {
+                    void mapCleared(const MapEvent &event) override {
                         latch1.count_down();
                     }
                 private:
@@ -1132,7 +1131,7 @@ namespace hazelcast {
                 public:
                     EvictListener(boost::latch &latch1) : latch1(latch1) {}
 
-                    void mapEvicted(const MapEvent &event) {
+                    void mapEvicted(const MapEvent &event) override {
                         latch1.count_down();
                     }
                 private:
@@ -1145,7 +1144,7 @@ namespace hazelcast {
                                                       hazelcast::util::AtomicInt &atomicInteger)
                             : latch1(latch1), atomicInteger(atomicInteger) {}
 
-                    void entryAdded(const EntryEvent &event) {
+                    void entryAdded(const EntryEvent &event) override {
                         ++atomicInteger;
                         latch1.count_down();
                     }

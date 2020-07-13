@@ -55,18 +55,18 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    virtual boost::optional<Member> getMember(const Address &address);
+                    boost::optional<Member> getMember(const Address &address) override;
 
-                    virtual boost::optional<Member> getMember(const std::string &uuid);
+                    boost::optional<Member> getMember(const std::string &uuid) override;
 
-                    virtual std::vector<Member> getMemberList();
+                    std::vector<Member> getMemberList() override;
 
-                    virtual std::vector<Member> getMembers(
-                            const cluster::memberselector::MemberSelector &selector);
+                    std::vector<Member> getMembers(
+                            const cluster::memberselector::MemberSelector &selector) override;
 
-                    virtual std::string addMembershipListener(const std::shared_ptr<MembershipListener> &listener);
+                    std::string addMembershipListener(const std::shared_ptr<MembershipListener> &listener) override;
 
-                    virtual bool removeMembershipListener(const std::string &registrationId);
+                    bool removeMembershipListener(const std::string &registrationId) override;
 
                     void handleMembershipEvent(const MembershipEvent &event);
 
@@ -76,7 +76,7 @@ namespace hazelcast {
 
                     void fireMemberAttributeEvent(const MemberAttributeEvent &event);
 
-                    virtual int getSize();
+                    int getSize() override;
 
                     Client getLocalClient() const;
 

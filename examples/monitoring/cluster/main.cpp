@@ -21,7 +21,7 @@
 class MyInitialMemberListener : public hazelcast::client::InitialMembershipListener {
 
 public:
-    void init(const hazelcast::client::InitialMembershipEvent &event) {
+    void init(const hazelcast::client::InitialMembershipEvent &event) override {
         std::vector<hazelcast::client::Member> members = event.getMembers();
         std::cout << "The following are the initial members in the cluster:" << std::endl;
         for (std::vector<hazelcast::client::Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
@@ -29,17 +29,17 @@ public:
         }
     }
 
-    void memberAdded(const hazelcast::client::MembershipEvent &membershipEvent) {
+    void memberAdded(const hazelcast::client::MembershipEvent &membershipEvent) override {
         std::cout << "[MyInitialMemberListener::memberAdded] New member joined:" <<
         membershipEvent.getMember().getAddress() << std::endl;
     }
 
-    void memberRemoved(const hazelcast::client::MembershipEvent &membershipEvent) {
+    void memberRemoved(const hazelcast::client::MembershipEvent &membershipEvent) override {
         std::cout << "[MyInitialMemberListener::memberRemoved] Member left:" <<
         membershipEvent.getMember().getAddress() << std::endl;
     }
 
-    void memberAttributeChanged(const hazelcast::client::MemberAttributeEvent &memberAttributeEvent) {
+    void memberAttributeChanged(const hazelcast::client::MemberAttributeEvent &memberAttributeEvent) override {
         std::cout << "[MyInitialMemberListener::memberAttributeChanged] Member attribute:" <<
         memberAttributeEvent.getKey()
         << " changed. Value:" << memberAttributeEvent.getValue() << " for member:" <<
@@ -50,17 +50,17 @@ public:
 class MyMemberListener : public hazelcast::client::MembershipListener {
 
 public:
-    void memberAdded(const hazelcast::client::MembershipEvent &membershipEvent) {
+    void memberAdded(const hazelcast::client::MembershipEvent &membershipEvent) override {
         std::cout << "[MyMemberListener::memberAdded] New member joined:" << membershipEvent.getMember().getAddress() <<
         std::endl;
     }
 
-    void memberRemoved(const hazelcast::client::MembershipEvent &membershipEvent) {
+    void memberRemoved(const hazelcast::client::MembershipEvent &membershipEvent) override {
         std::cout << "[MyMemberListener::memberRemoved] Member left:" <<
         membershipEvent.getMember().getAddress() << std::endl;
     }
 
-    void memberAttributeChanged(const hazelcast::client::MemberAttributeEvent &memberAttributeEvent) {
+    void memberAttributeChanged(const hazelcast::client::MemberAttributeEvent &memberAttributeEvent) override {
         std::cout << "[MyMemberListener::memberAttributeChanged] Member attribute:" << memberAttributeEvent.getKey()
         << " changed. Value:" << memberAttributeEvent.getValue() << " for member:" <<
         memberAttributeEvent.getMember().getAddress() << std::endl;

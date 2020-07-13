@@ -53,7 +53,7 @@ namespace hazelcast {
                  */
                 virtual void onListenerRegister() = 0;
 
-                virtual ~EventHandler(){};
+                virtual ~EventHandler() = default;
             };
         }
     }

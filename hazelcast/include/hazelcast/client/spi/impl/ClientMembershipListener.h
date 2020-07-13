@@ -60,13 +60,13 @@ namespace hazelcast {
                 public:
                     ClientMembershipListener(ClientContext &client);
 
-                    virtual void handleMemberEventV10(const Member &member, const int32_t &eventType);
+                    void handleMemberEventV10(const Member &member, const int32_t &eventType) override;
 
-                    virtual void handleMemberListEventV10(const std::vector<Member> &members);
+                    void handleMemberListEventV10(const std::vector<Member> &members) override;
 
-                    virtual void handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
+                    void handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
                                                                      const int32_t &operationType,
-                                                                     std::unique_ptr<std::string> &value);
+                                                                     std::unique_ptr<std::string> &value) override;
 
                     void listenMembershipEvents(const std::shared_ptr<connection::Connection> &ownerConnection);
 

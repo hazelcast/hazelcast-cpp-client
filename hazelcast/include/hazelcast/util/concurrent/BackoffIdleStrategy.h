@@ -47,7 +47,7 @@ namespace hazelcast {
                 BackoffIdleStrategy(int64_t maxSpins, int64_t maxYields, int64_t minParkPeriodNs,
                                     int64_t maxParkPeriodNs);
 
-                virtual bool idle(int64_t n);
+                bool idle(int64_t n) override;
 
             private:
                 int64_t parkTime(int64_t n) const;

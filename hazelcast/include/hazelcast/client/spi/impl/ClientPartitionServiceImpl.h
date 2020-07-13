@@ -61,21 +61,21 @@ namespace hazelcast {
 
                     void listenPartitionTable(const std::shared_ptr<connection::Connection> &ownerConnection);
 
-                    virtual void
+                    void
                     handlePartitionsEventV15(const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
-                                             const int32_t &partitionStateVersion);
+                                             const int32_t &partitionStateVersion) override;
 
-                    virtual void beforeListenerRegister();
+                    void beforeListenerRegister() override;
 
-                    virtual void onListenerRegister();
+                    void onListenerRegister() override;
 
-                    virtual std::shared_ptr<Address> getPartitionOwner(int partitionId);
+                    std::shared_ptr<Address> getPartitionOwner(int partitionId) override;
 
-                    virtual int getPartitionId(const serialization::pimpl::Data &key);
+                    int getPartitionId(const serialization::pimpl::Data &key) override;
 
-                    virtual int getPartitionCount();
+                    int getPartitionCount() override;
 
-                    virtual std::shared_ptr<client::impl::Partition> getPartition(int partitionId);
+                    std::shared_ptr<client::impl::Partition> getPartition(int partitionId) override;
 
                 private:
                     class PartitionImpl : public client::impl::Partition {
@@ -83,9 +83,9 @@ namespace hazelcast {
                         PartitionImpl(int partitionId, ClientContext &client,
                                       ClientPartitionServiceImpl &partitionService);
 
-                        virtual int getPartitionId() const;
+                        int getPartitionId() const override;
 
-                        virtual boost::optional<Member> getOwner() const;
+                        boost::optional<Member> getOwner() const override;
 
                     private:
                         int partitionId;

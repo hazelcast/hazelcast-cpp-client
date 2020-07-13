@@ -33,7 +33,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API EvictionChecker {
                 public:
-                    virtual ~EvictionChecker() { }
+                    virtual ~EvictionChecker() = default;
 
                     /**
                      * Empty {@link} EvictionChecker to allow eviction always.
@@ -50,8 +50,7 @@ namespace hazelcast {
 
                 class HAZELCAST_API EvictAlways : public EvictionChecker {
                 public:
-                    //@override
-                    bool isEvictionRequired() const;
+                    bool isEvictionRequired() const override;
                 };
             }
         }

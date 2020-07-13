@@ -30,8 +30,7 @@ namespace hazelcast {
 
             class HAZELCAST_API LocalMapStats {
             public:
-                virtual ~LocalMapStats() {
-                }
+                virtual ~LocalMapStats() = default;
 
                 /**
                  * Returns statistics related to the Near Cache.

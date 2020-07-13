@@ -30,8 +30,7 @@ namespace hazelcast {
         namespace monitor {
             class HAZELCAST_API LocalInstanceStats {
             public:
-                virtual ~LocalInstanceStats() {
-                }
+                virtual ~LocalInstanceStats() = default;
 
                 /**
                  * Fill a stat value with this if it is not available
@@ -48,8 +47,7 @@ namespace hazelcast {
                  *
                  * @return creation time of this Near Cache on this member.
                  */
-                //@Override
-                virtual int64_t getCreationTime() = 0;
+                int64_t getCreationTime() override = 0;
 
                 /**
                  * Returns the number of Near Cache entries owned by this member.

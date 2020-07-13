@@ -37,21 +37,21 @@ namespace hazelcast {
                                                 const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig);
 
 
-                virtual void start();
+                void start() override;
 
-                virtual void beforeGetConnection(const Address &target);
+                void beforeGetConnection(const Address &target) override;
 
-                virtual void beforeOpenConnection(const Address &target);
+                void beforeOpenConnection(const Address &target) override;
 
-                virtual void onConnectToCluster();
+                void onConnectToCluster() override;
 
-                virtual void onDisconnectFromCluster();
+                void onDisconnectFromCluster() override;
 
-                virtual void onConnect(const std::shared_ptr<Connection> &connection);
+                void onConnect(const std::shared_ptr<Connection> &connection) override;
 
-                virtual void onDisconnect(const std::shared_ptr<Connection> &connection);
+                void onDisconnect(const std::shared_ptr<Connection> &connection) override;
 
-                virtual void shutdown();
+                void shutdown() override;
 
                 static void
                 shutdownWithExternalThread(std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl);

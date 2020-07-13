@@ -26,8 +26,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API Disposable {
         public:
-            virtual ~Disposable() {
-            }
+            virtual ~Disposable() = default;
 
             /**
              * Disposes this object and releases any data and/or resources associated

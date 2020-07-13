@@ -44,7 +44,7 @@ namespace hazelcast {
                 template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
                 class EvictableStore {
                 public:
-                    virtual ~EvictableStore() { }
+                    virtual ~EvictableStore() = default;
 
                     /**
                      * The evict method is called by the {@link EvictionStrategy} to eventually evict, by the policy, selected

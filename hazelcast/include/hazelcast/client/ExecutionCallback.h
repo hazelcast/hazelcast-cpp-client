@@ -39,7 +39,7 @@ namespace hazelcast {
         template <typename V>
         class ExecutionCallback {
         public:
-            virtual ~ExecutionCallback() { }
+            virtual ~ExecutionCallback() = default;
 
             /**
              * Called when an execution is completed successfully.

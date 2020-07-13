@@ -33,8 +33,7 @@ namespace hazelcast {
         template <typename T>
         class ConcurrentSet {
         public:
-            ConcurrentSet() {
-            }
+            ConcurrentSet() = default;
 
             /**
              * Adds the specified element to this set if it is not already present

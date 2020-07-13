@@ -574,9 +574,9 @@ namespace hazelcast {
                 int classId;
                 int version;
 
-                ClassDefinition(const ClassDefinition &);
+                ClassDefinition(const ClassDefinition &) = delete;
 
-                ClassDefinition &operator=(const ClassDefinition &rhs);
+                ClassDefinition &operator=(const ClassDefinition &rhs) = delete;
 
                 std::unordered_map<std::string, FieldDefinition> fieldDefinitionsMap;
 
@@ -867,11 +867,11 @@ namespace hazelcast {
                     static getType() { return FieldType::TYPE_UTF_ARRAY; }
 
                 private:
-                    PortableContext(const PortableContext &);
+                    PortableContext(const PortableContext &) = delete;
 
                     ClassDefinitionContext &getClassDefinitionContext(int factoryId);
 
-                    void operator=(const PortableContext &);
+                    void operator=(const PortableContext &) = delete;
 
                     util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
                     const SerializationConfig &serializationConfig;
@@ -1388,9 +1388,9 @@ namespace hazelcast {
 
                     ObjectDataOutput newOutputStream();
                 private:
-                    SerializationService(const SerializationService &);
+                    SerializationService(const SerializationService &) = delete;
 
-                    SerializationService &operator=(const SerializationService &);
+                    SerializationService &operator=(const SerializationService &) = delete;
 
                     const SerializationConfig &serializationConfig;
                     PortableContext portableContext;
