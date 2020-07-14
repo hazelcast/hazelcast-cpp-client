@@ -173,8 +173,7 @@ namespace hazelcast {
                 statistics.reset(new statistics::Statistics(clientContext));
             }
 
-            HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() {
-            }
+            HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() = default;
 
             void HazelcastClientInstanceImpl::start() {
                 startLogger();
@@ -364,8 +363,7 @@ namespace hazelcast {
                 return logger;
             }
 
-            BaseEventHandler::~BaseEventHandler() {
-            }
+            BaseEventHandler::~BaseEventHandler() = default;
 
             void BaseEventHandler::handle(const std::shared_ptr<protocol::ClientMessage> &event) {
                 std::unique_ptr<protocol::ClientMessage> e(new protocol::ClientMessage(*event));
@@ -406,8 +404,7 @@ namespace hazelcast {
             }
         }
 
-        LoadBalancer::~LoadBalancer() {
-        }
+        LoadBalancer::~LoadBalancer() = default;
 
         const int Address::ID = cluster::impl::ADDRESS;
 
@@ -779,8 +776,7 @@ namespace hazelcast {
                                                     details % source).str()) {
             }
 
-            IException::~IException() noexcept {
-            }
+            IException::~IException() noexcept = default;
 
             char const *IException::what() const noexcept {
                 return report.c_str();
@@ -815,7 +811,7 @@ namespace hazelcast {
                 return retryable;
             }
 
-            IException::IException() {}
+            IException::IException() = default;
 
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message,

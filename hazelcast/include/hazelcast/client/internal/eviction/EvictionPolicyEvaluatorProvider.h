@@ -93,9 +93,9 @@ namespace hazelcast {
                     }
 
                     //Non-constructable class
-                    EvictionPolicyEvaluatorProvider();
+                    EvictionPolicyEvaluatorProvider() = delete;
 
-                    ~EvictionPolicyEvaluatorProvider();
+                    ~EvictionPolicyEvaluatorProvider() = delete;
                 };
 
             }

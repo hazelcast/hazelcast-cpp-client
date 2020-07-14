@@ -51,7 +51,7 @@ namespace hazelcast {
             public:
                 ClientProxy(const std::string &name, const std::string &serviceName, ClientContext &context);
 
-                virtual ~ClientProxy();
+                ~ClientProxy() override;
 
                 /**
                  * Internal API.
@@ -68,9 +68,9 @@ namespace hazelcast {
                  */
                 virtual void onShutdown();
 
-                virtual const std::string &getName() const;
+                const std::string &getName() const override;
 
-                virtual const std::string &getServiceName() const;
+                const std::string &getServiceName() const override;
 
                 /**
                  * Internal API.
@@ -82,7 +82,7 @@ namespace hazelcast {
                 * Destroys this object cluster-wide.
                 * Clears and releases all resources for this object.
                 */
-                boost::future<void> destroy();
+                boost::future<void> destroy() override;
 
                 /**
                  * Internal API.

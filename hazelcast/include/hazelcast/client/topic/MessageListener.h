@@ -37,7 +37,7 @@ namespace hazelcast {
              */
             class HAZELCAST_API MessageListener {
             public:
-                virtual ~MessageListener() { }
+                virtual ~MessageListener() = default;
 
                 /**
                 * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.

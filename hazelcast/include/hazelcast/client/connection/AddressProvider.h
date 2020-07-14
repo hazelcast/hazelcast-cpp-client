@@ -34,7 +34,7 @@ namespace hazelcast {
                  */
                 virtual std::vector<Address> loadAddresses() = 0;
 
-                virtual ~AddressProvider(){};
+                virtual ~AddressProvider() = default;
             };
         }
     }

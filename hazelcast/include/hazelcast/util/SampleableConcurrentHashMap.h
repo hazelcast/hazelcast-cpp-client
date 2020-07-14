@@ -227,8 +227,7 @@ namespace hazelcast {
                     }
                 }
 
-                //@Override
-                util::Iterator<E> *iterator() {
+                util::Iterator<E> *iterator() override {
                     return this;
                 }
 
@@ -268,14 +267,12 @@ namespace hazelcast {
                     currentSample.reset();
                 }
 
-                //@Override
-                bool hasNext() {
+                bool hasNext() override {
                     iterate();
                     return currentSample.get() != NULL;
                 }
 
-                //@Override
-                std::shared_ptr<E> next() {
+                std::shared_ptr<E> next() override {
                     if (currentSample.get() != NULL) {
                         return currentSample;
                     } else {
@@ -284,8 +281,7 @@ namespace hazelcast {
                     }
                 }
 
-                //@Override
-                void remove() {
+                void remove() override {
                     throw client::exception::UnsupportedOperationException("Removing is not supported");
                 }
 

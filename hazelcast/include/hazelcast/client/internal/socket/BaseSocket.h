@@ -52,7 +52,7 @@ namespace hazelcast {
                               socket_(socketStrand, context) {
                     }
 
-                    ~BaseSocket() {
+                    ~BaseSocket() override {
                         close();
                     }
 
@@ -169,7 +169,7 @@ namespace hazelcast {
                         socket_.lowest_layer().close(ignored);
                     }
 
-                    virtual Address getAddress() const override {
+                    Address getAddress() const override {
                         return Address(socket_.lowest_layer().remote_endpoint().address().to_string(),
                                        remoteEndpoint.getPort());
                     }
@@ -180,7 +180,7 @@ namespace hazelcast {
                      *
                      * @returns An address that represents the local endpoint of the socket.
                      */
-                    virtual std::unique_ptr<Address> localSocketAddress() const override {
+                    std::unique_ptr<Address> localSocketAddress() const override {
                         boost::system::error_code ec;
                         boost::asio::ip::basic_endpoint<boost::asio::ip::tcp> localEndpoint = socket_.lowest_layer().local_endpoint(
                                 ec);

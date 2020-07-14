@@ -72,7 +72,7 @@ namespace hazelcast {
             /**
             * Destructor
             */
-            virtual ~DistributedObject() {}
+            virtual ~DistributedObject() = default;
         };
 
     }

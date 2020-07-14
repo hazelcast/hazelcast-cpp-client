@@ -268,14 +268,14 @@ namespace hazelcast {
                                                               EntryEvent::type listenerFlags,
                                                               serialization::pimpl::Data &&predicate);
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override;
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override;
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override;
                 private:
                     std::string name;
                     bool includeValue;
@@ -287,14 +287,14 @@ namespace hazelcast {
                 public:
                     MapEntryListenerMessageCodec(std::string name, bool includeValue, EntryEvent::type listenerFlags);
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override;
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override;
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override;
                 private:
                     std::string name;
                     bool includeValue;
@@ -306,14 +306,14 @@ namespace hazelcast {
                     MapEntryListenerToKeyCodec(std::string name, bool includeValue, EntryEvent::type listenerFlags,
                                                serialization::pimpl::Data key);
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override;
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+                    std::unique_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override;
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override;
                 private:
                     std::string name;
                     bool includeValue;

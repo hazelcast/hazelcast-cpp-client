@@ -35,17 +35,17 @@ namespace hazelcast {
                     public:
                         KeyStateMarkerImpl(int count);
 
-                        virtual ~KeyStateMarkerImpl();
+                        ~KeyStateMarkerImpl() override;
 
-                        bool tryMark(const serialization::pimpl::Data &key);
+                        bool tryMark(const serialization::pimpl::Data &key) override;
 
-                        bool tryUnmark(const serialization::pimpl::Data &key);
+                        bool tryUnmark(const serialization::pimpl::Data &key) override;
 
-                        bool tryRemove(const serialization::pimpl::Data &key);
+                        bool tryRemove(const serialization::pimpl::Data &key) override;
 
-                        void forceUnmark(const serialization::pimpl::Data &key);
+                        void forceUnmark(const serialization::pimpl::Data &key) override;
 
-                        void init();
+                        void init() override;
                     private:
                         bool casState(const serialization::pimpl::Data &key, STATE expect, STATE update);
 

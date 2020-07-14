@@ -265,12 +265,12 @@ namespace hazelcast {
                         : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
                         , listener(listener), logger(log) {}
 
-                virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
+                void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                  std::unique_ptr<serialization::pimpl::Data> &value,
                                                  std::unique_ptr<serialization::pimpl::Data> &oldValue,
                                                  std::unique_ptr<serialization::pimpl::Data> &mergingValue,
                                                  const int32_t &eventType, const std::string &uuid,
-                                                 const int32_t &numberOfAffectedEntries) {
+                                                 const int32_t &numberOfAffectedEntries) override {
                     if (eventType == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
                         fireMapWideEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;

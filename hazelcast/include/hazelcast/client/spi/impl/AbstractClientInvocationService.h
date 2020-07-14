@@ -36,20 +36,20 @@ namespace hazelcast {
                 public:
                     AbstractClientInvocationService(ClientContext &client);
 
-                    virtual ~AbstractClientInvocationService();
+                    ~AbstractClientInvocationService() override;
 
                     bool start();
 
                     void shutdown();
 
-                    std::chrono::steady_clock::duration getInvocationTimeout() const;
+                    std::chrono::steady_clock::duration getInvocationTimeout() const override;
 
-                    std::chrono::steady_clock::duration getInvocationRetryPause() const;
+                    std::chrono::steady_clock::duration getInvocationRetryPause() const override;
 
-                    bool isRedoOperation();
+                    bool isRedoOperation() override;
 
                     void handleClientMessage(const std::shared_ptr<ClientInvocation> invocation,
-                                             const std::shared_ptr<protocol::ClientMessage> response);
+                                             const std::shared_ptr<protocol::ClientMessage> response) override;
 
                 protected:
 

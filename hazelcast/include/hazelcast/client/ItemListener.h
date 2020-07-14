@@ -31,7 +31,7 @@ namespace hazelcast {
         */
         class HAZELCAST_API ItemListener {
         public:
-            virtual ~ItemListener() {}
+            virtual ~ItemListener() = default;
 
             /**
             * Invoked when an item is added.

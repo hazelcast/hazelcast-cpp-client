@@ -176,8 +176,7 @@ namespace hazelcast {
                 cluster(&cluster), member(member), eventType(eventType), members(membersList) {
         }
 
-        MembershipEvent::~MembershipEvent() {
-        }
+        MembershipEvent::~MembershipEvent() = default;
 
         const std::vector<Member> MembershipEvent::getMembers() const {
             return members;
@@ -221,8 +220,7 @@ namespace hazelcast {
             return name;
         }
 
-        MembershipListener::~MembershipListener() {
-        }
+        MembershipListener::~MembershipListener() = default;
 
         const std::string &MembershipListener::getRegistrationId() const {
             return registrationId;
@@ -266,8 +264,7 @@ namespace hazelcast {
             return listener->getRegistrationId();
         }
 
-        InitialMembershipListener::~InitialMembershipListener() {
-        }
+        InitialMembershipListener::~InitialMembershipListener() = default;
 
         bool InitialMembershipListener::shouldRequestInitialMembers() const {
             return true;
@@ -332,9 +329,7 @@ namespace hazelcast {
                 index.store(const_cast<RoundRobinLB &>(rhs).index.load());
             }
 
-            MemberAttributeChange::MemberAttributeChange() {
-
-            }
+            MemberAttributeChange::MemberAttributeChange() = default;
 
             MemberAttributeChange::MemberAttributeChange(std::unique_ptr<std::string> &uuid,
                                                          MemberAttributeEvent::MemberAttributeOperationType const &operationType,
@@ -400,8 +395,7 @@ namespace hazelcast {
                 return membersRef;
             }
 
-            AbstractLoadBalancer::~AbstractLoadBalancer() {
-            }
+            AbstractLoadBalancer::~AbstractLoadBalancer() = default;
 
             AbstractLoadBalancer::AbstractLoadBalancer() : cluster(NULL) {
             }
@@ -426,7 +420,7 @@ namespace hazelcast {
             }
 
             namespace impl {
-                VectorClock::VectorClock() {}
+                VectorClock::VectorClock() = default;
 
                 VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps)
                         : replicaTimestampEntries(replicaLogicalTimestamps) {

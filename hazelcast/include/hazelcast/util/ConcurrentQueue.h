@@ -32,9 +32,7 @@ namespace hazelcast {
         /* Non blocking - synchronized queue - does not delete memory ever */
         class ConcurrentQueue {
         public:
-            ConcurrentQueue() {
-
-            }
+            ConcurrentQueue() = default;
 
             void offer(T *e) {
                 std::lock_guard<std::mutex> lg(m);

@@ -36,8 +36,7 @@ namespace hazelcast {
                         template<typename A, typename E>
                         class LRUEvictionPolicyComparator : public EvictionPolicyComparator<A, E> {
                         public:
-                            //@Override
-                            int compare(const EvictableEntryView<A, E> *e1, const EvictableEntryView<A, E> *e2) const {
+                            int compare(const EvictableEntryView<A, E> *e1, const EvictableEntryView<A, E> *e2) const override {
                                 int64_t accessTime1 = e1->getLastAccessTime();
                                 int64_t accessTime2 = e2->getLastAccessTime();
                                 if (accessTime2 < accessTime1) {

@@ -20,7 +20,7 @@ namespace hazelcast {
         template <typename T>
         class Comparator {
         public:
-            virtual ~Comparator() { }
+            virtual ~Comparator() = default;
 
             /**
              * @lhs First value to compare

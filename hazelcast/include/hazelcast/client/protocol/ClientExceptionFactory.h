@@ -71,7 +71,7 @@ namespace hazelcast {
             public:
                 void throwException(const ClientExceptionFactory &clientExceptionFactory, const std::string &source,
                                     const std::string &message,
-                                    const std::string &details = nullptr, int32_t causeErrorCode = -1) const {
+                                    const std::string &details = nullptr, int32_t causeErrorCode = -1) const override {
                     EXCEPTION e(source, message, details);
                     if (causeErrorCode < 0) {
                         throw boost::enable_current_exception(e);
@@ -84,7 +84,7 @@ namespace hazelcast {
                     }
                 }
 
-                void throwException() const {
+                void throwException() const override {
                     return BOOST_THROW_EXCEPTION(EXCEPTION());
                 }
             };

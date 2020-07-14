@@ -47,8 +47,7 @@ namespace hazelcast {
              */
             class HAZELCAST_API ClientClusterService {
             public:
-                virtual ~ClientClusterService() {
-                }
+                virtual ~ClientClusterService() = default;
 
                 /**
                  * Gets the member for the given address.

@@ -96,20 +96,20 @@ namespace hazelcast {
         public:
             MembershipListenerDelegator(MembershipListener *listener);
 
-            virtual void memberAdded(const MembershipEvent &membershipEvent);
+            void memberAdded(const MembershipEvent &membershipEvent) override;
 
-            virtual void memberRemoved(const MembershipEvent &membershipEvent);
+            void memberRemoved(const MembershipEvent &membershipEvent) override;
 
-            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
+            void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) override;
 
         protected:
             MembershipListener *listener;
 
-            virtual bool shouldRequestInitialMembers() const;
+            bool shouldRequestInitialMembers() const override;
 
-            virtual void setRegistrationId(const std::string &registrationId);
+            void setRegistrationId(const std::string &registrationId) override;
 
-            virtual const std::string &getRegistrationId() const;
+            const std::string &getRegistrationId() const override;
         };
     }
 }

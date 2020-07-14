@@ -17,31 +17,9 @@
 
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/LifecycleListener.h>
-
-class ConnectedListener : public hazelcast::client::LifecycleListener {
-public:
-    ConnectedListener() : l(1) {}
-
-    virtual void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) {
-        if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
-            l.count_down();
-        }
-    }
-
-    bool isConnected() {
-        return l.wait_for(boost::chrono::seconds(0)) == boost::cv_status::no_timeout;
-    }
-
-    void waitForConnection() {
-        l.wait();
-    }
-private:
-    boost::latch l;
-};
+#include <hazelcast/client/LifecycleEvent.h>
 
 int main() {
-    ConnectedListener listener;
-
     hazelcast::client::ClientConfig config;
 
     /**
@@ -54,17 +32,22 @@ int main() {
      */
     config.getConnectionStrategyConfig().setAsyncStart(true);
 
+    boost::latch connectedLatch(1);
     // Added a lifecycle listener so that we can track when the client is connected
-    config.addListener(&listener);
+    config.addLifecycleListener([&connectedLatch](const hazelcast::client::LifecycleEvent &lifecycleEvent) {
+        if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
+            connectedLatch.count_down();
+        }
+    });
 
     hazelcast::client::HazelcastClient hz(config);
 
     // the client may not have connected to the cluster yet at this point since the cluster connection is async!!!
-    if (!listener.isConnected()) {
+    if (connectedLatch.wait_for(boost::chrono::seconds(0)) != boost::cv_status::no_timeout) {
         std::cout << "Async client is not connected yet." << std::endl;
     }
 
-    listener.waitForConnection();
+    connectedLatch.wait();
 
     std::cout << "Async client is connected now." << std::endl;
 

@@ -424,18 +424,15 @@ namespace hazelcast {
                             : nearCache(cache) {
                     }
 
-                    //@Override
-                    void beforeListenerRegister() {
+                    void beforeListenerRegister() override {
                         nearCache->clear();
                     }
 
-                    //@Override
-                    void onListenerRegister() {
+                    void onListenerRegister() override {
                         nearCache->clear();
                     }
 
-                    //@Override
-                    virtual void handleIMapInvalidationEventV10(std::unique_ptr<Data> &key) {
+                    void handleIMapInvalidationEventV10(std::unique_ptr<Data> &key) override {
                         // null key means Near Cache has to remove all entries in it (see MapAddNearCacheEntryListenerMessageTask)
                         if (key.get() == NULL) {
                             nearCache->clear();
@@ -444,8 +441,7 @@ namespace hazelcast {
                         }
                     }
 
-                    //@Override
-                    virtual void handleIMapBatchInvalidationEventV10(const std::vector<Data> &keys) {
+                    void handleIMapBatchInvalidationEventV10(const std::vector<Data> &keys) override {
                         for (std::vector<serialization::pimpl::Data>::const_iterator it = keys.begin();
                              it != keys.end(); ++it) {
                             nearCache->invalidate(std::shared_ptr<serialization::pimpl::Data>(
@@ -453,21 +449,19 @@ namespace hazelcast {
                         }
                     }
 
-                    //@Override
-                    virtual void handleIMapInvalidationEventV14(std::unique_ptr<serialization::pimpl::Data> &key,
+                    void handleIMapInvalidationEventV14(std::unique_ptr<serialization::pimpl::Data> &key,
                                                                 const std::string &sourceUuid,
                                                                 const util::UUID &partitionUuid,
-                                                                const int64_t &sequence) {
+                                                                const int64_t &sequence) override {
                         // TODO: change with the new near cache impl.
                         handleIMapInvalidationEventV10(key);
                     }
 
-                    //@Override
-                    virtual void
+                    void
                     handleIMapBatchInvalidationEventV14(const std::vector<serialization::pimpl::Data> &keys,
                                                         const std::vector<std::string> &sourceUuids,
                                                         const std::vector<util::UUID> &partitionUuids,
-                                                        const std::vector<int64_t> &sequences) {
+                                                        const std::vector<int64_t> &sequences) override {
                         // TODO: change with the new near cache impl.
                         handleIMapBatchInvalidationEventV10(keys);
                     }
@@ -478,23 +472,23 @@ namespace hazelcast {
 
                 class NearCacheEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const {
+                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override {
                         return protocol::codec::MapAddNearCacheEntryListenerCodec::encodeRequest(name,
                                                                                                  static_cast<int32_t>(listenerFlags),
                                                                                                  localOnly);
                     }
 
-                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override {
                         return protocol::codec::MapAddNearCacheEntryListenerCodec::ResponseParameters::decode(
                                 std::move(responseMessage)).response;
                     }
 
                     std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const {
+                    encodeRemoveRequest(const std::string &realRegistrationId) const override {
                         return protocol::codec::MapRemoveEntryListenerCodec::encodeRequest(name, realRegistrationId);
                     }
 
-                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override {
                         return protocol::codec::MapRemoveEntryListenerCodec::ResponseParameters::decode(
                                 std::move(clientMessage)).response;
                     }

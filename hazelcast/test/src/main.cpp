@@ -37,13 +37,12 @@ namespace hazelcast {
 
 class ServerFactoryEnvironment : public ::testing::Environment {
 public:
-    ServerFactoryEnvironment() {
+    ServerFactoryEnvironment() = default;
+
+    void SetUp() override {
     }
 
-    void SetUp() {
-    }
-
-    void TearDown() {
+    void TearDown() override {
         delete hazelcast::client::test::g_srvFactory;
     }
 };

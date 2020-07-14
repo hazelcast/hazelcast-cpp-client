@@ -44,14 +44,12 @@ namespace hazelcast {
                             ) : ANCRS(nearCacheConfig, serializationService) {
                             }
 
-                            //@Override
-                            const std::shared_ptr<R> getRecord(const std::shared_ptr<KS> &key) {
+                            const std::shared_ptr<R> getRecord(const std::shared_ptr<KS> &key) override {
                                 return ANCRS::records->get(key);
                             }
 
-                            //@Override
                             void onEvict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
-                                         bool wasExpired) {
+                                         bool wasExpired) override {
                                 ANCRS::onEvict(key,
                                                record,
                                                wasExpired);
@@ -59,8 +57,7 @@ namespace hazelcast {
                                         ANCRS::getTotalStorageMemoryCost(key, record));
                             }
 
-                            //@Override
-                            void doExpiration() {
+                            void doExpiration() override {
                                 std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > > entries = ANCRS::records->entrySet();
                                 for (typename std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > >::const_iterator it = entries.begin();
                                      it != entries.end(); ++it) {
@@ -74,10 +71,9 @@ namespace hazelcast {
                                 }
                             }
                         protected:
-                            //@Override
                             std::unique_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
                                     const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
-                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) override {
                                 typename client::config::EvictionConfig<K, V>::MaxSizePolicy maxSizePolicy = evictionConfig->getMaximumSizePolicy();
                                 if (maxSizePolicy == client::config::EvictionConfig<K, V>::ENTRY_COUNT) {
                                     return std::unique_ptr<eviction::MaxSizeChecker>(
@@ -92,17 +88,15 @@ namespace hazelcast {
                                 BOOST_THROW_EXCEPTION(exception::IllegalArgumentException(out.str()));
                             }
 
-                            //@Override
                             std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > createNearCacheRecordMap(
-                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) override {
                                 return std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
                                         new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serializationService,
                                                                                 DEFAULT_INITIAL_CAPACITY));
                             }
 
-                            //@Override
                             std::shared_ptr<R> putRecord(const std::shared_ptr<KS> &key,
-                                                           const std::shared_ptr<R> &record) {
+                                                           const std::shared_ptr<R> &record) override {
                                 std::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
                                 ANCRS::nearCacheStats->incrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
@@ -113,13 +107,11 @@ namespace hazelcast {
                                 return oldRecord;
                             }
 
-                            //@OverrideR
-                            std::shared_ptr<R> removeRecord(const std::shared_ptr<KS> &key) {
+                            std::shared_ptr<R> removeRecord(const std::shared_ptr<KS> &key) override {
                                 return ANCRS::records->remove(key);
                             }
 
-                            //@Override
-                            bool containsRecordKey(const std::shared_ptr<KS> &key) const {
+                            bool containsRecordKey(const std::shared_ptr<KS> &key) const override {
                                 return ANCRS::records->containsKey(key);
                             }
 

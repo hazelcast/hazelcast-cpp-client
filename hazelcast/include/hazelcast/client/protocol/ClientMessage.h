@@ -139,7 +139,7 @@ namespace hazelcast {
                 */
                 static const uint16_t HEADER_SIZE = DATA_OFFSET_FIELD_OFFSET + UINT16_SIZE;
 
-                virtual ~ClientMessage();
+                ~ClientMessage() override;
 
                 static std::unique_ptr<ClientMessage> createForEncode(int32_t size);
 

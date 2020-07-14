@@ -18,7 +18,7 @@
 namespace hazelcast {
     namespace client {
         namespace examples {
-            Employee::Employee() {}
+            Employee::Employee() = default;
 
             Employee::Employee(std::string name, int32_t age) : age(age), name(name) {
                 by = 2;

@@ -34,8 +34,8 @@ namespace hazelcast {
                         : instanceName(instanceName), clusterService(clusterService),
                           serializationService(serializationService), listener(listener), includeValue(includeValue) {};
 
-                virtual void handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
-                                        const int32_t &eventType) {
+                void handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
+                                        const int32_t &eventType) override {
                     TypedData val;
                     if (includeValue) {
                         val = TypedData(std::move(*item), serializationService);

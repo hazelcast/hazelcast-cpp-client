@@ -122,8 +122,7 @@ namespace hazelcast {
                     }
                 }
 
-                virtual ~NearCacheConfig() {
-                }
+                virtual ~NearCacheConfig() = default;
 
                 /**
                  * Gets the name of the Near Cache.

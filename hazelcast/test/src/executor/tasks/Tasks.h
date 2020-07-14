@@ -67,15 +67,15 @@ namespace hazelcast {
                     };
 
                     struct SelectAllMembers : public cluster::memberselector::MemberSelector {
-                        virtual bool select(const Member &member) const;
+                        bool select(const Member &member) const override;
 
-                        virtual void toString(std::ostream &os) const;
+                        void toString(std::ostream &os) const override;
                     };
 
                     struct SelectNoMembers : public cluster::memberselector::MemberSelector {
-                        virtual bool select(const Member &member) const;
+                        bool select(const Member &member) const override;
 
-                        virtual void toString(std::ostream &os) const;
+                        void toString(std::ostream &os) const override;
                     };
 
                     struct SerializedCounterCallable {

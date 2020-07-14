@@ -995,7 +995,7 @@ namespace hazelcast {
                                  spi::ClientContext *context)
                     : ClientProxy(objectName, serviceName, *context), SerializingProxy(*context, objectName) {}
 
-            ProxyImpl::~ProxyImpl() {}
+            ProxyImpl::~ProxyImpl() = default;
 
             SerializingProxy::SerializingProxy(spi::ClientContext &context, const std::string &objectName)
                     : serializationService_(context.getSerializationService()),
@@ -1987,7 +1987,7 @@ namespace hazelcast {
             return name;
         }
 
-        ItemEventBase::~ItemEventBase() {}
+        ItemEventBase::~ItemEventBase() = default;
 
         FlakeIdGenerator::FlakeIdGenerator(const std::string &objectName, spi::ClientContext *context)
                 : FlakeIdGeneratorImpl(SERVICE_NAME, objectName, context) {}

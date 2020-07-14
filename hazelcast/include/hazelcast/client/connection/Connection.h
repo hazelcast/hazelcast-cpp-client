@@ -75,13 +75,13 @@ namespace hazelcast {
                            std::chrono::steady_clock::duration &connectTimeoutInMillis,
                            boost::asio::ip::tcp::resolver &resolver);
 
-                virtual ~Connection();
+                ~Connection() override;
 
                 void asyncStart();
 
                 void close();
 
-                void close(const std::string &reason);
+                void close(const std::string &reason) override;
 
                 void close(const std::string &reason, std::exception_ptr cause);
 

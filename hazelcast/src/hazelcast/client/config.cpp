@@ -293,9 +293,7 @@ namespace hazelcast {
 
             const int ReliableTopicConfig::DEFAULT_READ_BATCH_SIZE = 10;
 
-            ReliableTopicConfig::ReliableTopicConfig() {
-
-            }
+            ReliableTopicConfig::ReliableTopicConfig() = default;
 
             ReliableTopicConfig::ReliableTopicConfig(const char *topicName) : readBatchSize(DEFAULT_READ_BATCH_SIZE),
                                                                               name(topicName) {

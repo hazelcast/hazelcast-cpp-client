@@ -40,9 +40,9 @@ namespace hazelcast {
 
                 RoundRobinLB(const RoundRobinLB &rhs);
 
-                void init(Cluster &cluster);
+                void init(Cluster &cluster) override;
 
-                const Member next();
+                const Member next() override;
 
             private:
                 util::AtomicInt index;

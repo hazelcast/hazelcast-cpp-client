@@ -37,17 +37,17 @@ namespace hazelcast {
                     public:
                         CallIdSequenceWithoutBackpressure();
 
-                        virtual ~CallIdSequenceWithoutBackpressure();
+                        ~CallIdSequenceWithoutBackpressure() override;
 
-                        virtual int32_t getMaxConcurrentInvocations() const;
+                        int32_t getMaxConcurrentInvocations() const override;
 
-                        virtual int64_t next();
+                        int64_t next() override;
 
-                        virtual int64_t forceNext();
+                        int64_t forceNext() override;
 
-                        virtual void complete();
+                        void complete() override;
 
-                        virtual int64_t getLastCallId();
+                        int64_t getLastCallId() override;
 
                     private:
                         std::atomic<int64_t> head;
