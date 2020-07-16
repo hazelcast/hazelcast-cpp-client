@@ -29,25 +29,25 @@ namespace hazelcast {
         * @param <V> value of the map entry.
         * @see EntryListener
         */
-        class HAZELCAST_API EntryAdapter : public EntryListener {
+        class HAZELCAST_API EntryAdapter {
         public:
-            ~EntryAdapter() override = default;
+            virtual ~EntryAdapter() = default;
 
-            void entryAdded(const EntryEvent& event) override {}
+            virtual void entryAdded(const EntryEvent& event) {}
 
-            void entryRemoved(const EntryEvent& event) override {}
+            virtual void entryRemoved(const EntryEvent& event) {}
 
-            void entryUpdated(const EntryEvent& event) override {}
+            virtual void entryUpdated(const EntryEvent& event) {}
 
-            void entryEvicted(const EntryEvent& event) override {}
+            virtual void entryEvicted(const EntryEvent& event) {}
 
-            void entryExpired(const EntryEvent& event) override {}
+            virtual void entryExpired(const EntryEvent& event) {}
 
-            void entryMerged(const EntryEvent& event) override {}
+            virtual void entryMerged(const EntryEvent& event) {}
 
-            void mapEvicted(const MapEvent& event) override {}
+            virtual void mapEvicted(const MapEvent& event) {}
 
-            void mapCleared(const MapEvent& event) override {}
+            virtual void mapCleared(const MapEvent& event) {}
         };
     }
 }

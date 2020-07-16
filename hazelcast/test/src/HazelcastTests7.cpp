@@ -364,26 +364,7 @@ namespace hazelcast {
         namespace test {
             class ClientListTest : public ClientTestSupport {
             protected:
-                class MyListItemListener : public ItemListener {
-                public:
-                    MyListItemListener(boost::latch &latch1) : latch1(latch1) {}
-
-                    void itemAdded(const ItemEvent &itemEvent) override {
-                        auto type = itemEvent.getEventType();
-                        ASSERT_EQ(ItemEventType::ADDED, type);
-                        ASSERT_EQ("MyList", itemEvent.getName());
-                        std::string host = itemEvent.getMember().getAddress().getHost();
-                        ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
-                        ASSERT_EQ(5701, itemEvent.getMember().getAddress().getPort());
-                        ASSERT_EQ("item-1", itemEvent.getItem().get<std::string>().value());
-                        latch1.count_down();
-                    }
-
-                    void itemRemoved(const ItemEvent &item) override {}
-                private:
-                    boost::latch &latch1;
-                };
-
+                
                 void TearDown() override {
                     // clear list
                     list->clear();
@@ -557,7 +538,20 @@ namespace hazelcast {
             TEST_F(ClientListTest, testListener) {
                 boost::latch latch1(1);
 
-                MyListItemListener listener(latch1);
+                ItemListener listener(
+                    [&latch1](const ItemEvent &itemEvent) {
+                        auto type = itemEvent.getEventType();
+                        ASSERT_EQ(ItemEventType::ADDED, type);
+                        ASSERT_EQ("MyList", itemEvent.getName());
+                        std::string host = itemEvent.getMember().getAddress().getHost();
+                        ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
+                        ASSERT_EQ(5701, itemEvent.getMember().getAddress().getPort());
+                        ASSERT_EQ("item-1", itemEvent.getItem().get<std::string>().value());
+                        latch1.count_down();
+                    },
+                    [](const ItemEvent &) {}
+                );
+                
                 std::string registrationId = list->addItemListener(listener, true).get();
 
                 list->add("item-1").get();
@@ -615,25 +609,17 @@ namespace hazelcast {
             HazelcastClient *ClientQueueTest::client = nullptr;
             std::shared_ptr<IQueue> ClientQueueTest::q;
 
-            class QueueTestItemListener : public ItemListener {
-            public:
-                explicit QueueTestItemListener(boost::latch &latch1) : latch1(latch1) {}
-
-                void itemAdded(const ItemEvent &itemEvent) override {
-                    latch1.count_down();
-                }
-
-                void itemRemoved(const ItemEvent &item) override {}
-            private:
-                boost::latch &latch1;
-            };
-
             TEST_F(ClientQueueTest, testListener) {
                 ASSERT_EQ(0, q->size().get());
 
                 boost::latch latch1(5);
 
-                std::string id = q->addItemListener(QueueTestItemListener(latch1), true).get();
+                std::string id = q->addItemListener(ItemListener {
+                    [&latch1](const ItemEvent &itemEvent) {
+                        latch1.count_down();
+                    },
+                    [](const ItemEvent &) {}
+                }, true).get();
                 
                 for (int i = 0; i < 5; i++) {
                     ASSERT_TRUE(q->offer(std::string("event_item") + std::to_string(i)).get());

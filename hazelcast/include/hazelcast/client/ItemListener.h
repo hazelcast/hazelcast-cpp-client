@@ -15,10 +15,15 @@
  */
 #pragma once
 
-#include "hazelcast/client/ItemEvent.h"
+#include <utility>
+#include <functional>
+
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
+        class ItemEvent;
+        class ItemListener;
 
         /**
         * Item listener for  IQueue, ISet and IList
@@ -26,26 +31,27 @@ namespace hazelcast {
         * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
         * otherwise it will slow down the system.
         *
-        * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+        * Warning 2: Do not make a call to hazelcast. It can cause a deadlock.
         *
         */
-        class HAZELCAST_API ItemListener {
+        class HAZELCAST_API ItemListener final {
         public:
-            virtual ~ItemListener() = default;
+            template <typename ItemAddedHandlerT, typename ItemRemovedHandlerT>
+            explicit ItemListener(ItemAddedHandlerT &&itemAdded, 
+                                  ItemRemovedHandlerT &&itemRemoved)
+                : itemAdded_(std::forward<ItemAddedHandlerT>(itemAdded)),
+                  itemRemoved_(std::forward<ItemRemovedHandlerT>(itemRemoved)) {}
 
-            /**
-            * Invoked when an item is added.
-            *
-            * @param item added item
-            */
-            virtual void itemAdded(const ItemEvent &item) = 0;
+            void itemAdded(const ItemEvent &event) { 
+                itemAdded_(event); 
+            }
 
-            /**
-            * Invoked when an item is removed.
-            *
-            * @param item removed item.
-            */
-            virtual void itemRemoved(const ItemEvent &item) = 0;
+            void itemRemoved(const ItemEvent &event) { 
+                itemRemoved_(event); 
+            }
+        private:
+            using HandlerType = std::function<void(const ItemEvent &)>;
+            HandlerType itemAdded_, itemRemoved_;
         };
     }
 }

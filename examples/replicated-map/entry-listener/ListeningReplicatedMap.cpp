@@ -15,47 +15,39 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 
-class MyEntryListener : public hazelcast::client::EntryListener {
-public:
-    void entryAdded(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryAdded] " << event << std::endl;
-    }
-
-    void entryRemoved(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryRemoved] " << event << std::endl;
-    }
-
-    void entryUpdated(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryAdded] " << event << std::endl;
-    }
-
-    void entryEvicted(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryUpdated] " << event << std::endl;
-    }
-
-    void entryExpired(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryExpired] " << event << std::endl;
-    }
-
-    void entryMerged(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryMerged] " << event << std::endl;
-    }
-
-    void mapEvicted(const hazelcast::client::MapEvent &event) override {
-        std::cout << "[mapEvicted] " << event << std::endl;
-    }
-
-    void mapCleared(const hazelcast::client::MapEvent &event) override {
-        std::cout << "[mapCleared] " << event << std::endl;
-    }
-};
-
 int main() {
     hazelcast::client::HazelcastClient hz;
 
     auto map = hz.getReplicatedMap("map");
 
-    std::string listenerId = map->addEntryListener(MyEntryListener()).get();
+    std::string listenerId = map->addEntryListener(
+        hazelcast::client::EntryListener {
+            /*entryAdded = */ [](const hazelcast::client::EntryEvent &event) {
+                std::cout << "[entryAdded] " << event << std::endl;
+            },
+            /*entryRemoved = */ [](const hazelcast::client::EntryEvent &event) {
+                std::cout << "[entryRemoved] " << event << std::endl;
+            },
+            /*entryUpdated = */ [](const hazelcast::client::EntryEvent &event) {
+                std::cout << "[entryAdded] " << event << std::endl;
+            },
+            /*entryEvicted = */ [](const hazelcast::client::EntryEvent &event) {
+                std::cout << "[entryUpdated] " << event << std::endl;
+            },
+            /*entryExpired = */ [](const hazelcast::client::EntryEvent &event) {
+                std::cout << "[entryExpired] " << event << std::endl;
+            },
+            /*entryMerged = */ [](const hazelcast::client::EntryEvent &event) {
+                std::cout << "[entryMerged] " << event << std::endl;
+            },
+            /*mapEvicted = */ [](const hazelcast::client::MapEvent &event) {
+                std::cout << "[mapEvicted] " << event << std::endl;
+            },
+            /*mapCleared = */ [](const hazelcast::client::MapEvent &event) {
+                std::cout << "[mapCleared] " << event << std::endl;
+            }
+        }
+    ).get();
 
     std::cout << "EntryListener registered with id " << listenerId << std::endl;
 

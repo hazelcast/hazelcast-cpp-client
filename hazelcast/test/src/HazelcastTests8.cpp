@@ -786,20 +786,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class MySetItemListener : public ItemListener {
-            public:
-                MySetItemListener(boost::latch &latch1) : latch1(latch1) {}
-
-                void itemAdded(const ItemEvent &itemEvent) override {
-                    latch1.count_down();
-                }
-
-                void itemRemoved(const ItemEvent &item) override {}
-
-            private:
-                boost::latch &latch1;
-            };
-
+            
             class ClientSetTest : public ClientTestSupport {
             protected:
                 void addItems(int count) {
@@ -922,7 +909,14 @@ namespace hazelcast {
 
             TEST_F(ClientSetTest, testListener) {
                 boost::latch latch1(6);
-                MySetItemListener listener(latch1);
+
+                ItemListener listener(
+                    [&latch1](const ItemEvent &itemEvent) {
+                        latch1.count_down();
+                    },
+                    [](const ItemEvent &itemEvent) {}
+                );
+
                 std::string registrationId = set->addItemListener(listener, true).get();
                 addItems(5);
                 set->add("done").get();
