@@ -40,32 +40,33 @@ int main() {
 
     auto map = hz.getMap("MyMap");
 
-    hazelcast::client::EntryListener listener(
-        /*entryAdded = */ [](const hazelcast::client::EntryEvent &event) {
+    hazelcast::client::EntryListener listener;
+
+    listener.
+        onEntryAdded([](const hazelcast::client::EntryEvent &event) {
             std::cout << "Entry added:" << event.getKey().get<int>().value();
-        },
-        /*entryRemoved = */ [](const hazelcast::client::EntryEvent &event) {
+        }).
+        onEntryRemoved([](const hazelcast::client::EntryEvent &event) {
             std::cout << "Entry removed:" << event.getKey().get<int>().value();
-        },
-        /*entryUpdated = */ [](const hazelcast::client::EntryEvent &event) {
+        }).
+        onEntryUpdated([](const hazelcast::client::EntryEvent &event) {
             std::cout << "Entry updated:" << event.getKey().get<int>().value();
-        },
-        /*entryEvicted = */ [](const hazelcast::client::EntryEvent &event) {
+        }).
+        onEntryEvicted([](const hazelcast::client::EntryEvent &event) {
             std::cout << "Entry evicted:" << event.getKey().get<int>().value();
-        },
-        /*entryExpired = */ [](const hazelcast::client::EntryEvent &event) {
+        }).
+        onEntryExpired([](const hazelcast::client::EntryEvent &event) {
             std::cout << "Entry expired:" << event.getKey().get<int>().value();
-        },
-        /*entryMerged = */ [](const hazelcast::client::EntryEvent &event) {
+        }).
+        onEntryMerged([](const hazelcast::client::EntryEvent &event) {
             std::cout << "Entry merged:" << event.getKey().get<int>().value();
-        },
-        /*mapEvicted = */ [](const hazelcast::client::MapEvent &event) {
+        }).
+        onMapEvicted([](const hazelcast::client::MapEvent &event) {
             std::cout << "Map evicted:" << event.getName();
-        },
-        /*mapCleared = */ [](const hazelcast::client::MapEvent &event) {
+        }).
+        onMapCleared([](const hazelcast::client::MapEvent &event) {
             std::cout << "Map cleared:" << event.getName();
-        }
-    );
+        });
 
     map->addEntryListener(std::move(listener), false).get();
 

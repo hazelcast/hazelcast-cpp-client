@@ -13,27 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <hazelcast/client/HazelcastClient.h>
-
-class ItemListenerImpl {
-public:
-    ItemListenerImpl(std::atomic<int> &numAdded, std::atomic<int> &numRemoved) : numAdded(numAdded),
-                                                                                 numRemoved(numRemoved) {}
-
-    void itemAdded(const hazelcast::client::ItemEvent &item) {
-        std::cout << "Item added:" << item.getItem().get<std::string>().value() << std::endl;
-        ++numAdded;
-    }
-
-    void itemRemoved(const hazelcast::client::ItemEvent &item) {
-        std::cout << "Item removed:" << item.getItem().get<std::string>().value() << std::endl;
-        ++numRemoved;
-    }
-
-private:
-    std::atomic<int> &numAdded;
-    std::atomic<int> &numRemoved;
-};
+#include <hazelcast/client/ItemListener.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
@@ -43,7 +25,18 @@ int main() {
     std::atomic<int> numAdded(0);
     std::atomic<int> numRemoved(0);
 
-    std::string registrationId = queue->addItemListener(ItemListenerImpl(numAdded, numRemoved), true).get();
+    hazelcast::client::ItemListener listener;
+    listener.
+        onItemAdded([&numAdded](const hazelcast::client::ItemEvent &event) {
+            std::cout << "Item added:" << event.getItem().get<std::string>().value() << std::endl;
+            ++numAdded;
+        }).
+        onItemRemoved([&numRemoved](const hazelcast::client::ItemEvent &event) {
+            std::cout << "Item removed:" << event.getItem().get<std::string>().value() << std::endl;
+            ++numRemoved;
+        });
+
+    std::string registrationId = queue->addItemListener(std::move(listener), true).get();
 
     std::cout << "Registered the listener with registration id:" << registrationId <<
     "Waiting for the listener events!" << std::endl;

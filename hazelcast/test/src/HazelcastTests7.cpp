@@ -20,6 +20,7 @@
 #include "ClientTestSupport.h"
 #include <regex>
 #include <vector>
+#include "hazelcast/client/EntryListener.h"
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/ClientConfig.h>
@@ -95,7 +96,6 @@
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
@@ -120,23 +120,16 @@ namespace hazelcast {
         namespace test {
             class ClientMultiMapTest : public ClientTestSupport {
             protected:
-                class MyMultiMapListener : public EntryAdapter {
-                public:
-                    MyMultiMapListener(boost::latch &addedLatch, boost::latch &removedLatch) : addedLatch(addedLatch),
-                                                                                               removedLatch(removedLatch) {}
 
-                    void entryAdded(const EntryEvent &event) override {
-                        addedLatch.count_down();
-                    }
-
-                    void entryRemoved(const EntryEvent &event) override {
-                        removedLatch.count_down();
-                    }
-
-                private:
-                    boost::latch &addedLatch;
-                    boost::latch &removedLatch;
-                };
+                EntryListener makeAddRemoveListener(boost::latch &addedLatch, boost::latch &removedLatch) {
+                    return EntryListener().
+                        onEntryAdded([&addedLatch](const EntryEvent &) {
+                            addedLatch.count_down();
+                        }).
+                        onEntryRemoved([&removedLatch](const EntryEvent &) {
+                            removedLatch.count_down();
+                        });
+                }
 
                 static void fillData() {
                     ASSERT_TRUE(mm->put("key1", "value1").get());
@@ -228,8 +221,8 @@ namespace hazelcast {
                 boost::latch latch1Remove(4);
                 boost::latch latch2Add(3);
                 boost::latch latch2Remove(3);
-                MyMultiMapListener listener1(latch1Add, latch1Remove);
-                MyMultiMapListener listener2(latch2Add, latch2Remove);
+                auto listener1 = makeAddRemoveListener(latch1Add, latch1Remove);
+                auto listener2 = makeAddRemoveListener(latch2Add, latch2Remove);
 
                 std::string id1 = mm->addEntryListener(listener1, true).get();
                 std::string id2 = mm->addEntryListener(listener2, "key3", true).get();
@@ -538,19 +531,18 @@ namespace hazelcast {
             TEST_F(ClientListTest, testListener) {
                 boost::latch latch1(1);
 
-                ItemListener listener(
-                    [&latch1](const ItemEvent &itemEvent) {
-                        auto type = itemEvent.getEventType();
-                        ASSERT_EQ(ItemEventType::ADDED, type);
-                        ASSERT_EQ("MyList", itemEvent.getName());
-                        std::string host = itemEvent.getMember().getAddress().getHost();
-                        ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
-                        ASSERT_EQ(5701, itemEvent.getMember().getAddress().getPort());
-                        ASSERT_EQ("item-1", itemEvent.getItem().get<std::string>().value());
-                        latch1.count_down();
-                    },
-                    [](const ItemEvent &) {}
-                );
+                ItemListener listener;
+
+                listener.onItemAdded([&latch1](const ItemEvent &itemEvent) {
+                    auto type = itemEvent.getEventType();
+                    ASSERT_EQ(ItemEventType::ADDED, type);
+                    ASSERT_EQ("MyList", itemEvent.getName());
+                    std::string host = itemEvent.getMember().getAddress().getHost();
+                    ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
+                    ASSERT_EQ(5701, itemEvent.getMember().getAddress().getPort());
+                    ASSERT_EQ("item-1", itemEvent.getItem().get<std::string>().value());
+                    latch1.count_down();
+                });
                 
                 std::string registrationId = list->addItemListener(listener, true).get();
 
@@ -614,12 +606,12 @@ namespace hazelcast {
 
                 boost::latch latch1(5);
 
-                std::string id = q->addItemListener(ItemListener {
-                    [&latch1](const ItemEvent &itemEvent) {
+                auto listener = ItemListener()
+                    .onItemAdded([&latch1](const ItemEvent &itemEvent) {
                         latch1.count_down();
-                    },
-                    [](const ItemEvent &) {}
-                }, true).get();
+                    });
+
+                std::string id = q->addItemListener(listener, true).get();
                 
                 for (int i = 0; i < 5; i++) {
                     ASSERT_TRUE(q->offer(std::string("event_item") + std::to_string(i)).get());

@@ -16,7 +16,6 @@
 #pragma once
 
 #include "hazelcast/client/proxy/IQueueImpl.h"
-#include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 

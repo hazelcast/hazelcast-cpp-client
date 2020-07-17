@@ -19,39 +19,60 @@
 #include <functional>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/null_event_handler.h"
 
 namespace hazelcast {
     namespace client {
         class ItemEvent;
-        class ItemListener;
+
+        namespace impl {
+            template<typename, typename> class ItemEventHandler;
+        }
 
         /**
-        * Item listener for  IQueue, ISet and IList
+        * Item listener for IQueue, ISet and IList
         *
-        * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
-        * otherwise it will slow down the system.
-        *
-        * Warning 2: Do not make a call to hazelcast. It can cause a deadlock.
-        *
+        * \warning 
+        * 1 - If listener should do a time consuming operation, off-load the operation to another thread.
+        * Otherwise it will slow down the system.
+        * \warning
+        * 2 - Do not make a call to hazelcast. It can cause a deadlock.
+        * \see IList::addItemListener
+        * \see IQueue::addItemListener
+        * \see ISet::addItemListener
         */
         class HAZELCAST_API ItemListener final {
         public:
-            template <typename ItemAddedHandlerT, typename ItemRemovedHandlerT>
-            explicit ItemListener(ItemAddedHandlerT &&itemAdded, 
-                                  ItemRemovedHandlerT &&itemRemoved)
-                : itemAdded_(std::forward<ItemAddedHandlerT>(itemAdded)),
-                  itemRemoved_(std::forward<ItemRemovedHandlerT>(itemRemoved)) {}
-
-            void itemAdded(const ItemEvent &event) { 
-                itemAdded_(event); 
+            /**
+             * Set an handler function to be invoked when an item is added
+             * \param h a `void` function object that is callable with a single parameter of type `const ItemEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            ItemListener &onItemAdded(Handler &&h) {
+                itemAdded = std::forward<Handler>(h);
+                return *this;
             }
 
-            void itemRemoved(const ItemEvent &event) { 
-                itemRemoved_(event); 
+            /**
+             * Set an handler function to be invoked when an item is removed
+             * \param h a `void` function object that is callable with a single parameter of type `const ItemEvent &`
+             */
+            template<typename Handler>
+            ItemListener &onItemRemoved(Handler &&h) {
+                itemRemoved = std::forward<Handler>(h);
+                return *this;
             }
+
         private:
             using HandlerType = std::function<void(const ItemEvent &)>;
-            HandlerType itemAdded_, itemRemoved_;
+            static constexpr auto nullItemEventHandler = util::nullEventHandler<ItemEvent>;
+
+            HandlerType itemAdded = nullItemEventHandler,
+                        itemRemoved = nullItemEventHandler;
+
+            template<typename, typename>
+            friend class impl::ItemEventHandler;
         };
     }
 }

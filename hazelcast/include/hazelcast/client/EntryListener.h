@@ -17,132 +17,141 @@
 #pragma once
 
 #include <functional>
+#include <utility>
+
+#include "hazelcast/util/null_event_handler.h"
 
 namespace hazelcast {
     namespace client {
         class MapEvent;
         class EntryEvent;
+        class ReplicatedMap;
+        namespace impl {
+            template<typename, typename> class EntryEventHandler;
+        }
 
         /**
-        * Map Entry listener to get notified when a map entry
-        * is added, removed, updated or evicted.  Events will fire as a result
+        * Map entry listener to get notified when a map entry
+        * is added, removed, updated, evicted, or expired. 
+        * Events will fire as a result
         * of operations carried out via the IMap.
         *
-        * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+        * \warning
+        * 1 - If listener should do a time consuming operation, off-load the operation to another thread.
         * otherwise it will slow down the system.
+        * \warning
+        * 2 - Do not make a call to hazelcast. It can cause deadlock.
         *
-        * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
-        *
-        * @param <K> key of the map entry
-        * @param <V> value of the map entry.
-        * @see IMap#addEntryListener(EntryListener, boolean)
+        * \see IMap::addEntryListener
         */
         class EntryListener final {
         public:
-            template<typename EntryAddedHandlerT, 
-                     typename EntryRemovedHandlerT,
-                     typename EntryUpdatedHandlerT,
-                     typename EntryEvictedHandlerT,
-                     typename EntryExpiredHandlerT,
-                     typename EntryMergedHandlerT,
-                     typename MapEvictedHandlerT,
-                     typename MapClearedHandlerT>
-            explicit EntryListener(EntryAddedHandlerT entryAdded, 
-                        EntryRemovedHandlerT entryRemoved,
-                        EntryUpdatedHandlerT entryUpdated,
-                        EntryEvictedHandlerT entryEvicted,
-                        EntryExpiredHandlerT entryExpired,
-                        EntryMergedHandlerT entryMerged,
-                        MapEvictedHandlerT mapEvicted,
-                        MapClearedHandlerT mapCleared)
-                    : entryAdded_(entryAdded),
-                      entryRemoved_(entryRemoved),
-                      entryEvicted_(entryEvicted),
-                      entryExpired_(entryExpired),
-                      entryMerged_(entryMerged),
-                      mapEvicted_(mapEvicted),
-                      mapCleared_(mapCleared) {}
-
             /**
-            * Invoked when an entry is added.
-            *
-            * @param event entry event
-            */
-            void entryAdded(const EntryEvent &event) {
-                entryAdded_(event);
+             * Set an handler function to be invoked when an entry is added.
+             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            EntryListener &onEntryAdded(Handler &&h) {
+                entryAdded = std::forward<Handler>(h);
+                return *this;
             }
 
             /**
-            * Invoked when an entry is removed.
-            *
-            * @param event entry event
-            */
-            void entryRemoved(const EntryEvent &event) {
-                entryRemoved_(event);
+             * Set an handler function to be invoked when an entry is removed.
+             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            EntryListener &onEntryRemoved(Handler &&h) {
+                entryRemoved = std::forward<Handler>(h);
+                return *this;
+            }
+            
+            /**
+             * Set an handler function to be invoked when an entry is updated.
+             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            EntryListener &onEntryUpdated(Handler &&h) {
+                entryUpdated = std::forward<Handler>(h);
+                return *this;
             }
 
             /**
-            * Invoked when an entry is removed.
-            *
-            * @param event entry event
-            */
-            void entryUpdated(const EntryEvent &event) {
-                entryUpdated_(event);
+             * Set an handler function to be invoked when an entry is evicted.
+             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            EntryListener &onEntryEvicted(Handler &&h) {
+                entryEvicted = std::forward<Handler>(h);
+                return *this;
             }
 
             /**
-            * Invoked when an entry is evicted.
-            *
-            * @param event entry event
-            */
-            void entryEvicted(const EntryEvent &event) {
-                entryEvicted_(event);
+             * Set an handler function to be invoked when an entry is expired.
+             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            EntryListener &onEntryExpired(Handler &&h) {
+                entryExpired = std::forward<Handler>(h);
+                return *this;
             }
 
             /**
-            * Invoked upon expiration of an entry.
-            *
-            * @param event the event invoked when an entry is expired.
-            */
-            void entryExpired(const EntryEvent &event) {
-                entryExpired_(event);
+             * Set an handler function to be invoked after a WAN replicated entry is merged.
+             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            EntryListener &onEntryMerged(Handler &&h) {
+                entryMerged = std::forward<Handler>(h);
+                return *this;
             }
 
             /**
-            *  Invoked after WAN replicated entry is merged.
-            *
-            * @param event the event invoked when an entry is expired.
-            */
-            void entryMerged(const EntryEvent &event) {
-                entryMerged_(event);
+             * Set an handler function to be invoked when all entries are evicted by IMap::evictAll
+             * \param h a `void` function object that is callable with a single parameter of type `const MapEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            EntryListener &onMapEvicted(Handler &&h) {
+                mapEvicted = std::forward<Handler>(h);
+                return *this;
             }
 
             /**
-            * Invoked when all entries evicted by {@link IMap#evictAll()}.
-            *
-            * @param event map event
-            */
-            void mapEvicted(const MapEvent &event) {
-                mapEvicted_(event);
+             * Set an handler function to be invoked when all entries are removed by IMap::clear
+             * \param h a `void` function object that is callable with a single parameter of type `const MapEvent &`
+             * \return `*this`
+             */
+            template<typename Handler>
+            EntryListener &onMapCleared(Handler &&h) {
+                mapCleared = std::forward<Handler>(h);
+                return *this;
             }
 
-            /**
-            * Invoked when all entries are removed by {@link IMap#clear()}.}
-            */
-            void mapCleared(const MapEvent &event) {
-                mapCleared_(event);
-            }
-        private:
+        private: 
             using EntryHandlerType = std::function<void(const EntryEvent &)>;
+            static constexpr auto nullEntryEventHandler = util::nullEventHandler<EntryEvent>;
+            EntryHandlerType entryAdded = nullEntryEventHandler,
+                             entryRemoved = nullEntryEventHandler,
+                             entryUpdated = nullEntryEventHandler,
+                             entryEvicted = nullEntryEventHandler, 
+                             entryExpired = nullEntryEventHandler,
+                             entryMerged = nullEntryEventHandler;
+
             using MapHandlerType = std::function<void(const MapEvent &)>;
+            static constexpr auto nullMapEventHandler = util::nullEventHandler<MapEvent>;
+            MapHandlerType mapEvicted = nullMapEventHandler,
+                           mapCleared = nullMapEventHandler;
 
-            EntryHandlerType entryAdded_, entryRemoved_, entryUpdated_, entryEvicted_, 
-                            entryExpired_, entryMerged_;
-
-            MapHandlerType mapEvicted_, mapCleared_;
+            template<typename, typename>
+            friend class impl::EntryEventHandler;
+            friend class ReplicatedMap;
         };
     }
 }
-
-
-
