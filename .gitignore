@@ -12,7 +12,10 @@
 build*/*
 cpp/*
 .DS_Store
+
+# IDE configs
 .idea/*
+.vscode/
 
 # Compiled Dynamic libraries
 *.so
@@ -38,3 +41,16 @@ Release*/*
 *.iml
 java/.idea
 java/target/*
+*.jar
+
+# Clangd
+.clangd
+compile_commands.json
+
+# Doxygen generated docs
+docs/
+
+# Log files
+testLog.txt
+*.log
+
