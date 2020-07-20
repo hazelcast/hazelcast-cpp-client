@@ -1884,109 +1884,62 @@ You can add event listeners to the distributed data structures.
 
 #### 7.5.2.1. Listening for Map Events
 
-You can listen to map-wide or entry-based events by using the functions in the `EntryListener` interface. To listen to these events, you need to implement the relevant `EntryListener` interface. 
+You can listen to map-wide or entry-based events by registering an instance of the `EntryListener` class. You should provide the `EntryListener` instance with function objects for each type of event you want to listen to and then use `IMap::addEntryListener` to register it.
 
-An entry-based event is fired after the operations that affect a specific entry. For example, `IMap::put()`, `IMap::remove()` or `IMap::evict()`. You should use the `EntryListener` type to listen these events. An `EntryEvent` object is passed to the listener callback method.
+An entry-based event is fired after operations that affect a specific entry. For example, `IMap::put()`, `IMap::remove()` or `IMap::evict()`. The corresponding function that you provided to the listener will be called with an `EntryEvent` when an entry-based event occurs.
 
 See the following example.
 
 ```C++
-class MyEntryListener : public hazelcast::client::EntryListener<int, std::string> {
-public:
-    virtual void entryAdded(const hazelcast::client::EntryEvent<int, std::string> &event) {
-        std::cout << "Entry added:" << event.getKey() << " --> " << event.getValue() << std::endl;
-    }
-
-    virtual void entryRemoved(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryUpdated(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryEvicted(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryExpired(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryMerged(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void mapEvicted(const hazelcast::client::MapEvent &event) {
-    }
-
-    virtual void mapCleared(const hazelcast::client::MapEvent &event) {
-    }
-
-};
-
-...
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::HazelcastClient hz(config);
+    auto map = hz.getMap("EntryListenerExampleMap");
 
-    hazelcast::client::IMap<int, std::string> map = hz.getMap<int, std::string>("EntryListenerExampleMap");
-    MyEntryListener entryListener;
-    map.addEntryListener(entryListener, false);
+    auto registrationId = map.addEntryListener(
+        EntryListener().
+            onEntryAdded([](const hazelcast::client::EntryEvent &event) {
+                std::cout << "Entry added:" << event.getKey().get<int>().value() 
+                    << " --> " << event.getValue().get<std::string>().value() << std::endl;
+            }).
+            onEntryRemoved([](const hazelcast::client::EntryEvent &event) {
+                std::cout << "Entry removed:" << event.getKey().get<int>().value() 
+                    << " --> " << event.getValue().get<std::string>().value() << std::endl;
+            })
+        , true).get();
     
     map.put(1, "My new entry");
+    map.remove<int, std::string>(1);
     
-    ...
+    /* ... */
 
     return 0;
 }
 ```
 
-A map-wide event is fired as a result of a map-wide operation. For example, `IMap::clear()` or `IMap::evictAll()`. You should use the `EntryListener` type to listen to these events. A `MapEvent` object is passed to the listener method.
+A map-wide event is fired as a result of a map-wide operation (e.g.: `IMap::clear()`, `IMap::evictAll()`) which can also be listened to via an `EntryListener`. The functions you provided to the listener will be called with a `MapEvent` when a map-wide event occurs.
 
-See the following example.
+See the example below.
 
 ```C++
-class MyEntryListener : public hazelcast::client::EntryListener<int, std::string> {
-public:
-    virtual void entryAdded(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryRemoved(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryUpdated(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryEvicted(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryExpired(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void entryMerged(const hazelcast::client::EntryEvent<int, std::string> &event) {
-    }
-
-    virtual void mapEvicted(const hazelcast::client::MapEvent &event) {
-    }
-
-    virtual void mapCleared(const hazelcast::client::MapEvent &event) {
-        std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
-    }
-
-};
-
 int main() {
-    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz;
 
-    hazelcast::client::HazelcastClient hz(config);
+    auto map = hz.getMap("EntryListenerExampleMap");
 
-    hazelcast::client::IMap<int, std::string> map = hz.getMap<int, std::string>("EntryListenerExampleMap");
-    MyEntryListener entryListener;
-    map.addEntryListener(entryListener, false);
+    auto registrationId = map.addEntryListener(
+        EntryListener().
+            onMapCleared([](const hazelcast::client::MapEvent &event) {
+                std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
+            })    
+        , false).get();
 
     map.put(1, "Mali");
     map.put(2, "Ahmet");
     map.put(3, "Furkan");
     map.clear();
 
-    ...
+    /* ... */
 
     return 0;
 }
