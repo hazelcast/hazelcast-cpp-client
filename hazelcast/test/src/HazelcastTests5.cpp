@@ -1224,7 +1224,7 @@ namespace hazelcast {
                 fillMap();
                 boost::optional<std::string> temp = imap->remove<std::string, std::string>("key10").get();
                 ASSERT_FALSE(temp.has_value());
-                imap->deleteEntry("key9");
+                imap->deleteEntry("key9").get();
                 ASSERT_EQ(imap->size().get(), 9);
                 for (int i = 0; i < 9; i++) {
                     std::string key = "key";
