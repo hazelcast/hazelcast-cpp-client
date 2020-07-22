@@ -16,8 +16,8 @@
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
-#include "hazelcast/client/EntryListener.h"
-#include "hazelcast/client/ItemListener.h"
+#include <hazelcast/client/EntryListener.h>
+#include <hazelcast/client/ItemListener.h>
 #include "serialization/Serializables.h"
 #include <regex>
 #include <vector>
@@ -830,6 +830,142 @@ namespace hazelcast {
     }
 }
 
+namespace hazelcast {
+    namespace client {
+        namespace test {
+            class ClientListenerFunctionObjectsTest : public ClientTestSupport {
+            public:
+                static void SetUpTestSuite() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    ClientConfig clientConfig(getConfig());
+                    clientConfig.getProperties()[ClientProperties::PROP_HEARTBEAT_TIMEOUT] = "20";
+                    client = new HazelcastClient(clientConfig);
+                    map = client->getMap("map");
+                }
+
+                static void TearDownTestSuite() {
+                    delete client;
+                    delete instance;
+
+                    map.reset();
+                    instance = nullptr;
+                    client = nullptr;
+                }
+
+                void TearDown() override {
+                    map->clear().get();
+                }
+
+                static HazelcastServer *instance;
+                static HazelcastClient *client;
+                static std::shared_ptr<IMap> map;
+            };
+
+            HazelcastServer *ClientListenerFunctionObjectsTest::instance = nullptr;
+            HazelcastClient *ClientListenerFunctionObjectsTest::client = nullptr;
+            std::shared_ptr<IMap> ClientListenerFunctionObjectsTest::map = nullptr;
+
+            TEST_F(ClientListenerFunctionObjectsTest, lambda) {
+                boost::latch called {1};
+
+                EntryListener listener;
+                listener.
+                    onEntryAdded([&called](const EntryEvent &e) {
+                        ASSERT_EQ(1, e.getKey().get<int>().get());
+                        ASSERT_EQ(2, e.getValue().get<int>().get());
+                        called.count_down();                        
+                    });
+
+                auto id = map->addEntryListener(listener, true).get();
+
+                map->put(1, 2).get();
+
+                ASSERT_OPEN_EVENTUALLY(called);
+
+                map->removeEntryListener(id).get();
+            }
+
+            TEST_F(ClientListenerFunctionObjectsTest, functor) {
+                struct OnEntryAdded {
+                    boost::latch& latch;
+
+                    void operator()(const EntryEvent &e) {
+                        ASSERT_EQ(1, e.getKey().get<int>().get());
+                        ASSERT_EQ(2, e.getValue().get<int>().get());
+                        latch.count_down();
+                    }
+                };
+
+                boost::latch called {1};
+                OnEntryAdded handler {called};
+
+                EntryListener listener;
+                listener.onEntryAdded(handler);
+
+                auto id = map->addEntryListener(listener, true).get();
+
+                map->put(1, 2).get();
+
+                ASSERT_OPEN_EVENTUALLY(called);
+
+                map->removeEntryListener(id).get();
+            }
+
+            TEST_F(ClientListenerFunctionObjectsTest, staticFunction) {
+                static boost::latch called {1};
+
+                struct OnEntryAdded {
+                    static void handler(const EntryEvent &e) {
+                        ASSERT_EQ(1, e.getKey().get<int>().get());
+                        ASSERT_EQ(2, e.getValue().get<int>().get());
+                        called.count_down();
+                    }
+                };
+
+                EntryListener listener;
+                listener.onEntryAdded(&OnEntryAdded::handler);
+
+                auto id = map->addEntryListener(listener, true).get();
+
+                map->put(1, 2).get();
+
+                ASSERT_OPEN_EVENTUALLY(called);
+
+                map->removeEntryListener(id).get();
+            }
+
+            TEST_F(ClientListenerFunctionObjectsTest, bind) {
+                boost::latch called {1};
+
+                struct MyListener {
+                    boost::latch &latch;
+
+                    void entryAdded(const EntryEvent &e) {
+                        ASSERT_EQ(1, e.getKey().get<int>().get());
+                        ASSERT_EQ(2, e.getValue().get<int>().get());
+                        latch.count_down();
+                    }
+                };
+
+                MyListener listener {called};
+                auto handler = std::bind(&MyListener::entryAdded, &listener, std::placeholders::_1);
+                
+                EntryListener eListener;
+                eListener.onEntryAdded(handler);
+
+                auto id = map->addEntryListener(
+                    eListener
+                , true).get();
+
+                map->put(1, 2).get();
+
+                ASSERT_OPEN_EVENTUALLY(called);
+
+                map->removeEntryListener(id).get();
+            }
+        }
+    }
+}
 
 namespace hazelcast {
     namespace client {
