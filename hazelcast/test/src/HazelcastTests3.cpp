@@ -571,44 +571,36 @@ namespace hazelcast {
                     hazelcast::util::AtomicInt mapClearCount;
                     hazelcast::util::AtomicInt mapEvictCount;
                 };
-                
-                struct EventCountingListener {
-                    explicit EventCountingListener(ListenerState &state) : state_(state) {}
-                              
-                    void entryAdded(const EntryEvent &event) {
-                        state_.keys.push(event.getKey().get<int>().value());
-                        ++state_.addCount;
-                    }
 
-                    void entryRemoved(const EntryEvent &event) {
-                        state_.keys.push(event.getKey().get<int>().value());
-                        ++state_.removeCount;
-                    }
+                EntryListener makeEventCountingListener(ListenerState &state) {
+                    const auto pushKey = [&state](const EntryEvent &event) {
+                        state.keys.push(event.getKey().get<int>().value());
+                    };
 
-                    void entryUpdated(const EntryEvent &event) {
-                        state_.keys.push(event.getKey().get<int>().value());
-                        ++state_.updateCount;
-                    }
-
-                    void entryEvicted(const EntryEvent &event) {
-                        state_.keys.push(event.getKey().get<int>().value());
-                        ++state_.evictCount;
-                    }
-
-                    void entryExpired(const EntryEvent &event) {}
-
-                    void entryMerged(const EntryEvent &event) {}
-
-                    void mapEvicted(const MapEvent &event) {
-                        ++state_.mapEvictCount;
-                    }
-
-                    virtual void mapCleared(const MapEvent &event) {
-                        ++state_.mapClearCount;
-                    }
-
-                    ListenerState &state_;
-                };
+                    return EntryListener().
+                            onEntryAdded([&state, pushKey](const EntryEvent &event) {
+                                pushKey(event);
+                                ++state.addCount;
+                            }).
+                            onEntryRemoved([&state, pushKey](const EntryEvent &event) {
+                                pushKey(event);
+                                ++state.removeCount;
+                            }).
+                            onEntryUpdated([&state, pushKey](const EntryEvent &event) {
+                                pushKey(event);
+                                ++state.updateCount;
+                            }).
+                            onEntryEvicted([&state, pushKey](const EntryEvent &event) {
+                                pushKey(event);
+                                ++state.evictCount;
+                            }).
+                            onMapEvicted([&state](const MapEvent &) {
+                                ++state.mapEvictCount;
+                            }).
+                            onMapCleared([&state](const MapEvent &) {
+                                ++state.mapClearCount;
+                            });
+                }
 
                 static void SetUpTestCase() {
                     instance1 = new HazelcastServer(*g_srvFactory);
@@ -643,14 +635,14 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryAdded) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state)).get();
+                replicatedMap->addEntryListener(makeEventCountingListener(state)).get();
                 replicatedMap->put(1, 1).get();
                 ASSERT_EQ_EVENTUALLY(1, state.addCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryUpdated) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state)).get();
+                replicatedMap->addEntryListener(makeEventCountingListener(state)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->put(1, 2).get();
                 ASSERT_EQ_EVENTUALLY(1, state.updateCount.load());
@@ -658,7 +650,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryRemoved) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state)).get();
+                replicatedMap->addEntryListener(makeEventCountingListener(state)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->remove<int, int>(1).get();
                 ASSERT_EQ_EVENTUALLY(1, state.removeCount.load());
@@ -666,7 +658,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testMapClear) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state)).get();
+                replicatedMap->addEntryListener(makeEventCountingListener(state)).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->clear().get();
                 ASSERT_EQ_EVENTUALLY(1, state.mapClearCount.load());
@@ -674,7 +666,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testListenToKeyForEntryAdded) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state), 1).get();
+                replicatedMap->addEntryListener(makeEventCountingListener(state), 1).get();
                 replicatedMap->put(1, 1).get();
                 replicatedMap->put(2, 2).get();
                 ASSERT_TRUE_EVENTUALLY(
@@ -683,7 +675,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate) {
                 auto replicatedMap = client->getReplicatedMap(getTestName());
-                replicatedMap->addEntryListener(EventCountingListener(state), query::FalsePredicate(*client)).get();
+                replicatedMap->addEntryListener(makeEventCountingListener(state), query::FalsePredicate(*client)).get();
                 replicatedMap->put(2, 2).get();
                 ASSERT_TRUE_ALL_THE_TIME((state.addCount.load() == 0), 1);
             }

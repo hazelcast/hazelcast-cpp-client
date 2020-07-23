@@ -28,6 +28,10 @@
 
 namespace hazelcast {
     namespace client {
+        namespace impl {
+            class ClientLockReferenceIdGenerator;
+        }
+
         namespace proxy {
             class HAZELCAST_API MultiMapImpl : public ProxyImpl {
             public:

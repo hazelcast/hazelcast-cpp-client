@@ -20,7 +20,10 @@
 
 #include "hazelcast/client/proxy/ReplicatedMapImpl.h"
 #include "hazelcast/client/EntryListener.h"
+#include "hazelcast/client/EntryEvent.h"
+#include "hazelcast/client/MapEvent.h"
 #include "hazelcast/client/query/Predicates.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -84,12 +87,11 @@ namespace hazelcast {
              *
              * @param listener entry listener
              */
-            template<typename Listener>
-            boost::future<std::string> addEntryListener(Listener &&listener) {
+            boost::future<std::string> addEntryListener(EntryListener &&listener) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
-                                        getContext().getSerializationService(), std::forward<Listener>(listener), getContext().getLogger())));
+                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                                        getContext().getSerializationService(), std::move(listener), getContext().getLogger())));
             }
 
             /**
@@ -104,14 +106,14 @@ namespace hazelcast {
              * @param listener the entry listener to add
              * @param key      the key to listen to
              */
-            template<typename Listener, typename K>
+            template<typename K>
             typename std::enable_if<!std::is_base_of<query::Predicate, K>::value, boost::future<std::string>>::type
-            addEntryListener(Listener &&listener, const K &key) {
+            addEntryListener(EntryListener &&listener, const K &key) {
                 return proxy::ReplicatedMapImpl::addEntryListenerToKey(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
-                                                                getContext().getSerializationService(), std::forward<Listener>(listener),
-                                                                getContext().getLogger())), toData(key));
+                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                                                      getContext().getSerializationService(), std::move(listener),
+                                                      getContext().getLogger())), toData(key));
             }
 
             /**
@@ -121,14 +123,14 @@ namespace hazelcast {
              * @param listener  the entry listener to add
              * @param predicate the predicate for filtering entries
              */
-            template<typename Listener, typename P>
+            template<typename P>
             typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<std::string>>::type
-            addEntryListener(Listener &&listener, const P &predicate) {
+            addEntryListener(EntryListener &&listener, const P &predicate) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
-                                                                getContext().getSerializationService(), std::forward<Listener>(listener),
-                                                                getContext().getLogger())), toData(predicate));
+                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                                                      getContext().getSerializationService(), std::move(listener),
+                                                      getContext().getLogger())), toData(predicate));
             }
 
             /**
@@ -139,14 +141,14 @@ namespace hazelcast {
              * @param predicate the predicate for filtering entries
              * @param key       the key to listen to
              */
-            template<typename Listener, typename K, typename P>
+            template<typename K, typename P>
             typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<std::string>>::type
-            addEntryListener(Listener &&listener, const P &predicate, const K &key) {
+            addEntryListener(EntryListener &&listener, const P &predicate, const K &key) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler<Listener>(getName(), getContext().getClientClusterService(),
-                                                                getContext().getSerializationService(), std::forward<Listener>(listener),
-                                                                getContext().getLogger())), toData(key), toData(predicate));
+                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                                                      getContext().getSerializationService(), std::move(listener),
+                                                      getContext().getLogger())), toData(key), toData(predicate));
             }
 
             /**
@@ -256,14 +258,13 @@ namespace hazelcast {
                     SERVICE_NAME, objectName, context) {
             }
 
-            template<typename Listener>
             class EntryEventHandler : public protocol::codec::ReplicatedMapAddEntryListenerCodec::AbstractEventHandler {
             public:
                 EntryEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,
-                                  Listener &&listener, util::ILogger &log)
+                                  EntryListener &&listener, util::ILogger &log)
                         : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
-                        , listener(listener), logger(log) {}
+                        , listener(std::move(listener)), logger(log) {}
 
                 void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                                  std::unique_ptr<serialization::pimpl::Data> &value,
@@ -340,7 +341,7 @@ namespace hazelcast {
                 const std::string& instanceName;
                 spi::ClientClusterService &clusterService;
                 serialization::pimpl::SerializationService& serializationService;
-                Listener listener;
+                EntryListener listener;
                 util::ILogger &logger;
             };
         };

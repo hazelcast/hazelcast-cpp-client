@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "hazelcast/util/null_event_handler.h"
+#include "hazelcast/util/type_traits.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,7 +28,7 @@ namespace hazelcast {
         class EntryEvent;
         class ReplicatedMap;
         namespace impl {
-            template<typename, typename> class EntryEventHandler;
+            template<typename> class EntryEventHandler;
         }
 
         /**
@@ -51,10 +52,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            EntryListener &onEntryAdded(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &onEntryAdded(Handler &&h) & {
                 entryAdded = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc EntryListener::onEntryAdded
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &&onEntryAdded(Handler &&h) && {
+                onEntryAdded(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
             /**
@@ -62,10 +74,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            EntryListener &onEntryRemoved(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &onEntryRemoved(Handler &&h) & {
                 entryRemoved = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc EntryListener::onEntryRemoved
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &&onEntryRemoved(Handler &&h) && {
+                onEntryRemoved(std::forward<Handler>(h));
+                return std::move(*this);
             }
             
             /**
@@ -73,10 +96,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            EntryListener &onEntryUpdated(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &onEntryUpdated(Handler &&h) & {
                 entryUpdated = std::forward<Handler>(h);
                 return *this;
+            }
+            
+            /**
+             * \copydoc EntryListener::onEntryUpdated
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &&onEntryUpdated(Handler &&h) && {
+                onEntryUpdated(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
             /**
@@ -84,10 +118,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            EntryListener &onEntryEvicted(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &onEntryEvicted(Handler &&h) & {
                 entryEvicted = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc EntryListener::onEntryEvicted
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &&onEntryEvicted(Handler &&h) && {
+                onEntryEvicted(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
             /**
@@ -95,10 +140,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            EntryListener &onEntryExpired(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &onEntryExpired(Handler &&h) & {
                 entryExpired = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc EntryListener::onEntryExpired
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &&onEntryExpired(Handler &&h) && {
+                onEntryExpired(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
             /**
@@ -106,10 +162,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            EntryListener &onEntryMerged(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &onEntryMerged(Handler &&h) & {
                 entryMerged = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc EntryListener::onEntryMerged
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &&onEntryMerged(Handler &&h) && {
+                onEntryMerged(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
             /**
@@ -117,10 +184,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const MapEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            EntryListener &onMapEvicted(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &onMapEvicted(Handler &&h) & {
                 mapEvicted = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc EntryListener::onMapEvicted
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &&onMapEvicted(Handler &&h) && {
+                onMapEvicted(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
             /**
@@ -128,10 +206,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const MapEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            EntryListener &onMapCleared(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &onMapCleared(Handler &&h) & {
                 mapCleared = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc EntryListener::onMapCleared
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            EntryListener &&onMapCleared(Handler &&h) && {
+                onMapCleared(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
         private: 
@@ -149,7 +238,7 @@ namespace hazelcast {
             MapHandlerType mapEvicted = nullMapEventHandler,
                            mapCleared = nullMapEventHandler;
 
-            template<typename, typename>
+            template<typename>
             friend class impl::EntryEventHandler;
             friend class ReplicatedMap;
         };

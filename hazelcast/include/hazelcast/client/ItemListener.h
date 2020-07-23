@@ -20,13 +20,14 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/null_event_handler.h"
+#include "hazelcast/util/type_traits.h"
 
 namespace hazelcast {
     namespace client {
         class ItemEvent;
 
         namespace impl {
-            template<typename, typename> class ItemEventHandler;
+            template<typename> class ItemEventHandler;
         }
 
         /**
@@ -37,6 +38,7 @@ namespace hazelcast {
         * Otherwise it will slow down the system.
         * \warning
         * 2 - Do not make a call to hazelcast. It can cause a deadlock.
+        *
         * \see IList::addItemListener
         * \see IQueue::addItemListener
         * \see ISet::addItemListener
@@ -48,10 +50,21 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const ItemEvent &`
              * \return `*this`
              */
-            template<typename Handler>
-            ItemListener &onItemAdded(Handler &&h) {
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            ItemListener &onItemAdded(Handler &&h) & {
                 itemAdded = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc ItemListener::onItemAdded
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            ItemListener &&onItemAdded(Handler &&h) && {
+                onItemAdded(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
             /**
@@ -59,9 +72,18 @@ namespace hazelcast {
              * \param h a `void` function object that is callable with a single parameter of type `const ItemEvent &`
              */
             template<typename Handler>
-            ItemListener &onItemRemoved(Handler &&h) {
+            ItemListener &onItemRemoved(Handler &&h) & {
                 itemRemoved = std::forward<Handler>(h);
                 return *this;
+            }
+
+            /**
+             * \copydoc ItemListener::onItemRemoved
+             */
+            template<typename Handler>
+            ItemListener &&onItemRemoved(Handler &&h) && {
+                onItemRemoved(std::forward<Handler>(h));
+                return std::move(*this);
             }
 
         private:
@@ -71,7 +93,7 @@ namespace hazelcast {
             HandlerType itemAdded = nullItemEventHandler,
                         itemRemoved = nullItemEventHandler;
 
-            template<typename, typename>
+            template<typename>
             friend class impl::ItemEventHandler;
         };
     }

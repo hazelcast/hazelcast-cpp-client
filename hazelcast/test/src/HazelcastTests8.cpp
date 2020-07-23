@@ -909,12 +909,13 @@ namespace hazelcast {
             TEST_F(ClientSetTest, testListener) {
                 boost::latch latch1(6);
 
-                auto listener = ItemListener()
-                    .onItemAdded([&latch1](const ItemEvent &itemEvent) {
-                        latch1.count_down();
-                    });
+                std::string registrationId = set->addItemListener(
+                    ItemListener()
+                        .onItemAdded([&latch1](const ItemEvent &itemEvent) {
+                            latch1.count_down();
+                        })
+                    , true).get();
 
-                std::string registrationId = set->addItemListener(listener, true).get();
                 addItems(5);
                 set->add("done").get();
                 ASSERT_OPEN_EVENTUALLY(latch1);
@@ -1481,7 +1482,7 @@ namespace hazelcast {
                 auto map = client.getMap("IssueTest_map");
 
                 // 4. Subscribe client to entry added event
-                map->addEntryListener(issue864MapListener, true).get();
+                map->addEntryListener(std::move(issue864MapListener), true).get();
 
                 // Put a key, value to the map
                 ASSERT_FALSE(map->put(1, 10).get().has_value());

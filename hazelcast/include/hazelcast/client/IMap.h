@@ -472,14 +472,13 @@ namespace hazelcast {
             *
             * @return registrationId of added listener that can be used to remove the entry listener.
             */
-            template<typename Listener>
-            boost::future<std::string> addEntryListener(Listener &&listener, bool includeValue) {
+            boost::future<std::string> addEntryListener(EntryListener &&listener, bool includeValue) {
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new impl::EntryEventHandler<Listener, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
+                                new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
-                                        std::forward<Listener>(listener),
+                                        std::move(listener),
                                         includeValue, getContext().getLogger())), includeValue);
             }
 
@@ -498,15 +497,15 @@ namespace hazelcast {
             *
             * @return registrationId of added listener that can be used to remove the entry listener.
             */
-            template<typename Listener, typename P>
+            template<typename P>
             boost::future<std::string>
-            addEntryListener(Listener &&listener, const P &predicate, bool includeValue) {
+            addEntryListener(EntryListener &&listener, const P &predicate, bool includeValue) {
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new impl::EntryEventHandler<Listener, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
+                                new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
-                                        std::forward<Listener>(listener),
+                                        std::move(listener),
                                         includeValue, getContext().getLogger())), toData<P>(predicate), includeValue);
             }
 
@@ -523,14 +522,14 @@ namespace hazelcast {
             * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
             *                     contain the value.
             */
-            template<typename Listener, typename K>
-            boost::future<std::string> addEntryListener(Listener &&listener, bool includeValue, const K &key) {
+            template<typename K>
+            boost::future<std::string> addEntryListener(EntryListener &&listener, bool includeValue, const K &key) {
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new impl::EntryEventHandler<Listener, protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler>(
+                                new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
-                                        std::forward<Listener>(listener),
+                                        std::move(listener),
                                         includeValue, getContext().getLogger())), includeValue, toData<K>(key));
             }
 

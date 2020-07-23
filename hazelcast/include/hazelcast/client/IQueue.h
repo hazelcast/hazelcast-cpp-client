@@ -15,9 +15,11 @@
  */
 #pragma once
 
+#include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
@@ -44,14 +46,14 @@ namespace hazelcast {
             *                     to the item listener, <tt>false</tt> otherwise.
             * @return returns registration id.
             */
-            template<typename Listener>
-            boost::future<std::string> addItemListener(Listener &&listener, bool includeValue) {
-                std::unique_ptr<impl::ItemEventHandler<Listener, protocol::codec::QueueAddListenerCodec::AbstractEventHandler>> itemEventHandler(
-                        new impl::ItemEventHandler<Listener, protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(
+            boost::future<std::string> addItemListener(ItemListener &&listener, bool includeValue) {
+                std::unique_ptr<impl::ItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler>> itemEventHandler(
+                        new impl::ItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(
                                 getName(), getContext().getClientClusterService(),
                                 getContext().getSerializationService(),
-                                std::forward<Listener>(listener),
+                                std::move(listener),
                                 includeValue));
+                                
                 return proxy::IQueueImpl::addItemListener(std::move(itemEventHandler), includeValue);
             }
 

@@ -224,8 +224,8 @@ namespace hazelcast {
                 auto listener1 = makeAddRemoveListener(latch1Add, latch1Remove);
                 auto listener2 = makeAddRemoveListener(latch2Add, latch2Remove);
 
-                std::string id1 = mm->addEntryListener(listener1, true).get();
-                std::string id2 = mm->addEntryListener(listener2, "key3", true).get();
+                std::string id1 = mm->addEntryListener(std::move(listener1), true).get();
+                std::string id2 = mm->addEntryListener(std::move(listener2), "key3", true).get();
 
                 fillData();
 
@@ -544,7 +544,7 @@ namespace hazelcast {
                     latch1.count_down();
                 });
                 
-                std::string registrationId = list->addItemListener(listener, true).get();
+                std::string registrationId = list->addItemListener(std::move(listener), true).get();
 
                 list->add("item-1").get();
 
@@ -611,7 +611,7 @@ namespace hazelcast {
                         latch1.count_down();
                     });
 
-                std::string id = q->addItemListener(listener, true).get();
+                std::string id = q->addItemListener(std::move(listener), true).get();
                 
                 for (int i = 0; i < 5; i++) {
                     ASSERT_TRUE(q->offer(std::string("event_item") + std::to_string(i)).get());

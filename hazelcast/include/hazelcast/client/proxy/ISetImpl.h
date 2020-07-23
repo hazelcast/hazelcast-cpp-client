@@ -53,9 +53,8 @@ namespace hazelcast {
             protected:
                 ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext);
 
-                template<typename Listener>
                 boost::future<std::string>
-                addItemListener(std::unique_ptr<impl::ItemEventHandler<Listener, protocol::codec::SetAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
+                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::SetAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
                     return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
                 }
 
