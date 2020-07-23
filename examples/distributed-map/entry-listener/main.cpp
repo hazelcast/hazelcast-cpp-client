@@ -17,12 +17,8 @@
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/EntryListener.h>
 
-int main() {
-    hazelcast::client::HazelcastClient hz;
-
-    auto map = hz.getMap("somemap");
-
-    auto listener = hazelcast::client::EntryListener()
+hazelcast::client::EntryListener makeListener() {
+    return hazelcast::client::EntryListener()
         .onEntryAdded([](const hazelcast::client::EntryEvent &event) {
             std::cout << "[entryAdded] " << event << std::endl;
         })
@@ -47,8 +43,15 @@ int main() {
         .onMapCleared([](const hazelcast::client::MapEvent &event) {
             std::cout << "[mapCleared] " << event << std::endl;
         });
+}
 
-    std::string listenerId = map->addEntryListener(listener, true).get();
+int main() {
+    hazelcast::client::HazelcastClient hz;
+
+    auto map = hz.getMap("somemap");
+
+
+    std::string listenerId = map->addEntryListener(makeListener(), true).get();
 
     std::cout << "EntryListener registered" << std::endl;
 
@@ -60,7 +63,7 @@ int main() {
     // Continuous Query example
     // Register listener with predicate
     // Only listen events for entries with key >= 7
-    listenerId = map->addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate(hz,
+    listenerId = map->addEntryListener(makeListener(), hazelcast::client::query::GreaterLessPredicate(hz,
             hazelcast::client::query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, true, false), true).get();
 
     // wait for modifymap executable to run
