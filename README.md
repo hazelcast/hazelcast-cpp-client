@@ -1908,8 +1908,8 @@ int main() {
             })
         , true).get();
     
-    map.put(1, "My new entry");
-    map.remove<int, std::string>(1);
+    map.put(1, "My new entry").get();
+    map.remove<int, std::string>(1).get();
     
     /* ... */
 
@@ -1934,10 +1934,10 @@ int main() {
             })    
         , false).get();
 
-    map.put(1, "Mali");
-    map.put(2, "Ahmet");
-    map.put(3, "Furkan");
-    map.clear();
+    map.put(1, "Mali").get();
+    map.put(2, "Ahmet").get();
+    map.put(3, "Furkan").get();
+    map.clear().get();
 
     /* ... */
 
