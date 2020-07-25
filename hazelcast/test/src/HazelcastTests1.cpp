@@ -16,6 +16,8 @@
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
+#include <chrono>
+#include <functional>
 #include <regex>
 #include <vector>
 #include "ringbuffer/StartsWithStringFilter.h"
@@ -78,7 +80,6 @@
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/Cluster.h"
@@ -90,7 +91,6 @@
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/MultiMap.h"
 #include "hazelcast/client/EntryEvent.h"
-
 #include "hazelcast/client/ReliableTopic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -1656,25 +1656,6 @@ namespace hazelcast {
                 SimpleListenerTest() = default;
 
             protected:
-                class MyEntryListener : public EntryAdapter {
-                public:
-                    MyEntryListener(boost::latch &mapClearedLatch) : mapClearedLatch(mapClearedLatch) {}
-
-                    void mapCleared(const MapEvent &event) override {
-                        ASSERT_EQ("testDeregisterListener", event.getName());
-                        ASSERT_EQ(EntryEvent::type::CLEAR_ALL, event.getEventType());
-                        const std::string &hostName = event.getMember().getAddress().getHost();
-                        ASSERT_TRUE(hostName == "127.0.0.1" || hostName == "localhost");
-                        ASSERT_EQ(5701, event.getMember().getAddress().getPort());
-                        ASSERT_EQ(1, event.getNumberOfEntriesAffected());
-                        std::cout << "Map cleared event received:" << event << std::endl;
-                        mapClearedLatch.count_down();
-                    }
-
-                private:
-                    boost::latch &mapClearedLatch;
-                };
-
                 class SampleInitialListener : public InitialMembershipListener {
                 public:
                     SampleInitialListener(boost::latch &_memberAdded, boost::latch &_attributeLatch,
@@ -1868,10 +1849,51 @@ namespace hazelcast {
                 ASSERT_FALSE(map->removeEntryListener("Unknown").get());
 
                 boost::latch mapClearedLatch(1);
-                std::string listenerRegistrationId = map->addEntryListener(MyEntryListener(mapClearedLatch), true).get();
+
+                EntryListener listener;
+
+                listener.onMapCleared([&mapClearedLatch](const MapEvent &event) {
+                    ASSERT_EQ("testDeregisterListener", event.getName());
+                    ASSERT_EQ(EntryEvent::type::CLEAR_ALL, event.getEventType());
+                    const std::string &hostName = event.getMember().getAddress().getHost();
+                    ASSERT_TRUE(hostName == "127.0.0.1" || hostName == "localhost");
+                    ASSERT_EQ(5701, event.getMember().getAddress().getPort());
+                    ASSERT_EQ(1, event.getNumberOfEntriesAffected());
+                    std::cout << "Map cleared event received:" << event << std::endl;
+                    mapClearedLatch.count_down();
+                });
+
+                std::string listenerRegistrationId = map->addEntryListener(std::move(listener), true).get();
                 map->put(1, 1).get();
                 map->clear().get();
                 ASSERT_OPEN_EVENTUALLY(mapClearedLatch);
+                ASSERT_TRUE(map->removeEntryListener(listenerRegistrationId).get());
+            }
+
+            TEST_P(SimpleListenerTest, testEmptyListener) {
+                HazelcastServer instance(*g_srvFactory);
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                HazelcastClient hazelcastClient(clientConfig);
+
+                auto map = hazelcastClient.getMap("testEmptyListener");
+
+                // empty listener with no handlers
+                EntryListener listener;
+
+                std::string listenerRegistrationId = map->addEntryListener(std::move(listener), true).get();
+                
+                // entry added
+                ASSERT_EQ(boost::none, map->put(1, 1).get()); 
+                // entry updated
+                ASSERT_EQ(1, map->put(1, 2).get()); 
+                // entry removed
+                ASSERT_EQ(2, (map->remove<int, int>(1).get()));
+                // map cleared
+                map->clear().get();
+
+                // wait to ensure events are triggered
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
                 ASSERT_TRUE(map->removeEntryListener(listenerRegistrationId).get());
             }
 

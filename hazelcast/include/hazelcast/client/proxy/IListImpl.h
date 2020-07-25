@@ -16,8 +16,10 @@
 
 #pragma once
 
-#include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
+
+#include "hazelcast/client/proxy/ProxyImpl.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -53,9 +55,8 @@ namespace hazelcast {
             protected:
                 IListImpl(const std::string& instanceName, spi::ClientContext *context);
 
-                template<typename Listener>
                 boost::future<std::string>
-                addItemListener(std::unique_ptr<impl::ItemEventHandler<Listener, protocol::codec::ListAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
+                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
                     return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
                 }
 

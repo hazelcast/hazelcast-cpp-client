@@ -13,42 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <hazelcast/client/EntryListener.h>
 #include <hazelcast/client/HazelcastClient.h>
-
-class MapChangeListener : public hazelcast::client::EntryListener {
-public:
-    void entryAdded(const hazelcast::client::EntryEvent &event) override {
-            std::cout << "Entry added:" << event.getKey().get<int>().value();
-    }
-
-    void entryRemoved(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "Entry removed:" << event.getKey().get<int>().value();
-    }
-
-    void entryUpdated(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "Entry updated:" << event.getKey().get<int>().value();
-    }
-
-    void entryEvicted(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "Entry evicted:" << event.getKey().get<int>().value();
-    }
-
-    void entryExpired(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "Entry expired:" << event.getKey().get<int>().value();
-    }
-
-    void entryMerged(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "Entry merged:" << event.getKey().get<int>().value();
-    }
-
-    void mapEvicted(const hazelcast::client::MapEvent &event) override {
-        std::cout << "Map evicted:" << event.getName();
-    }
-
-    void mapCleared(const hazelcast::client::MapEvent &event) override {
-        std::cout << "Map cleared:" << event.getName();
-    }
-};
 
 int main() {
     hazelcast::client::ClientConfig config;
@@ -74,7 +40,35 @@ int main() {
 
     auto map = hz.getMap("MyMap");
 
-    map->addEntryListener(MapChangeListener(), false).get();
+    hazelcast::client::EntryListener listener;
+
+    listener.
+        onEntryAdded([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "Entry added:" << event.getKey().get<int>().value();
+        }).
+        onEntryRemoved([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "Entry removed:" << event.getKey().get<int>().value();
+        }).
+        onEntryUpdated([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "Entry updated:" << event.getKey().get<int>().value();
+        }).
+        onEntryEvicted([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "Entry evicted:" << event.getKey().get<int>().value();
+        }).
+        onEntryExpired([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "Entry expired:" << event.getKey().get<int>().value();
+        }).
+        onEntryMerged([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "Entry merged:" << event.getKey().get<int>().value();
+        }).
+        onMapEvicted([](const hazelcast::client::MapEvent &event) {
+            std::cout << "Map evicted:" << event.getName();
+        }).
+        onMapCleared([](const hazelcast::client::MapEvent &event) {
+            std::cout << "Map cleared:" << event.getName();
+        });
+
+    map->addEntryListener(std::move(listener), false).get();
 
     // Now we put two entries, and since there is only one event thread, they will be delivered to the entry listener,
     // from within the same thread, hence it will be a sequential delivery. Hence we should see that "Entry added:100"

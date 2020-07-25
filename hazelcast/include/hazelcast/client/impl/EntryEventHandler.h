@@ -34,14 +34,14 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            template<typename Listener, typename BaseType>
+            template<typename BaseType>
             class EntryEventHandler : public BaseType {
             public:
                 EntryEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,
-                                  Listener &&listener, bool includeValue, util::ILogger &log)
+                                  EntryListener &&listener, bool includeValue, util::ILogger &log)
                 : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
-                , listener(listener), includeValue(includeValue), logger(log) {}
+                , listener(std::move(listener)), includeValue(includeValue), logger(log) {}
 
                 void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
                                          std::unique_ptr<serialization::pimpl::Data> &value,
@@ -131,7 +131,7 @@ namespace hazelcast {
                 const std::string& instanceName;
                 spi::ClientClusterService &clusterService;
                 serialization::pimpl::SerializationService& serializationService;
-                Listener listener;
+                EntryListener listener;
                 bool includeValue;
                 util::ILogger &logger;
             };

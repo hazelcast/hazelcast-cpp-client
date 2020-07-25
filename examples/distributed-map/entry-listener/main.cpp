@@ -13,51 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/EntryListener.h>
 
-class MyEntryListener : public hazelcast::client::EntryListener {
-public:
-    void entryAdded(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryAdded] " << event << std::endl;
-    }
-
-    void entryRemoved(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryRemoved] " << event << std::endl;
-    }
-
-    void entryUpdated(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryAdded] " << event << std::endl;
-    }
-
-    void entryEvicted(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryUpdated] " << event << std::endl;
-    }
-
-    void entryExpired(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryExpired] " << event << std::endl;
-    }
-
-    void entryMerged(const hazelcast::client::EntryEvent &event) override {
-        std::cout << "[entryMerged] " << event << std::endl;
-    }
-
-    void mapEvicted(const hazelcast::client::MapEvent &event) override {
-        std::cout << "[mapEvicted] " << event << std::endl;
-    }
-
-    void mapCleared(const hazelcast::client::MapEvent &event) override {
-        std::cout << "[mapCleared] " << event << std::endl;
-    }
-};
+hazelcast::client::EntryListener makeListener() {
+    return hazelcast::client::EntryListener()
+        .onEntryAdded([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "[entryAdded] " << event << std::endl;
+        })
+        .onEntryRemoved([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "[entryRemoved] " << event << std::endl;
+        })
+        .onEntryUpdated([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "[entryAdded] " << event << std::endl;
+        })
+        .onEntryEvicted([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "[entryUpdated] " << event << std::endl;
+        })
+        .onEntryExpired([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "[entryExpired] " << event << std::endl;
+        })
+        .onEntryMerged([](const hazelcast::client::EntryEvent &event) {
+            std::cout << "[entryMerged] " << event << std::endl;
+        })
+        .onMapEvicted([](const hazelcast::client::MapEvent &event) {
+            std::cout << "[mapEvicted] " << event << std::endl;
+        })
+        .onMapCleared([](const hazelcast::client::MapEvent &event) {
+            std::cout << "[mapCleared] " << event << std::endl;
+        });
+}
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
     auto map = hz.getMap("somemap");
 
-    MyEntryListener listener;
 
-    std::string listenerId = map->addEntryListener(listener, true).get();
+    std::string listenerId = map->addEntryListener(makeListener(), true).get();
 
     std::cout << "EntryListener registered" << std::endl;
 
@@ -69,7 +63,7 @@ int main() {
     // Continuous Query example
     // Register listener with predicate
     // Only listen events for entries with key >= 7
-    listenerId = map->addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate(hz,
+    listenerId = map->addEntryListener(makeListener(), hazelcast::client::query::GreaterLessPredicate(hz,
             hazelcast::client::query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, true, false), true).get();
 
     // wait for modifymap executable to run

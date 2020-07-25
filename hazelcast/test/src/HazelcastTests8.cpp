@@ -66,7 +66,6 @@
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/MemberAttributeEvent.h"
-#include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
@@ -786,20 +785,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class MySetItemListener : public ItemListener {
-            public:
-                MySetItemListener(boost::latch &latch1) : latch1(latch1) {}
-
-                void itemAdded(const ItemEvent &itemEvent) override {
-                    latch1.count_down();
-                }
-
-                void itemRemoved(const ItemEvent &item) override {}
-
-            private:
-                boost::latch &latch1;
-            };
-
+            
             class ClientSetTest : public ClientTestSupport {
             protected:
                 void addItems(int count) {
@@ -922,8 +908,14 @@ namespace hazelcast {
 
             TEST_F(ClientSetTest, testListener) {
                 boost::latch latch1(6);
-                MySetItemListener listener(latch1);
-                std::string registrationId = set->addItemListener(listener, true).get();
+
+                std::string registrationId = set->addItemListener(
+                    ItemListener()
+                        .onItemAdded([&latch1](const ItemEvent &itemEvent) {
+                            latch1.count_down();
+                        })
+                    , true).get();
+
                 addItems(5);
                 set->add("done").get();
                 ASSERT_OPEN_EVENTUALLY(latch1);
@@ -1424,25 +1416,33 @@ namespace hazelcast {
             public:
                 IssueTest();
             protected:
-                class Issue864MapListener : public hazelcast::client::EntryAdapter {
-                public:
-                    Issue864MapListener(boost::latch &l1, boost::latch &l2);
-
-                    void entryAdded(const EntryEvent &event) override;
-
-                    void entryUpdated(const EntryEvent &event) override;
-
-                private:
-                    boost::latch &latch1;
-                    boost::latch &latch2;
-                };
 
                 boost::latch latch1;
                 boost::latch latch2;
-                Issue864MapListener listener;
+                EntryListener issue864MapListener;
             };
 
-            IssueTest::IssueTest() : latch1(1), latch2(1), listener(latch1, latch2) {}
+            IssueTest::IssueTest() : latch1(1), latch2(1), issue864MapListener() {
+                issue864MapListener.
+                    onEntryAdded([this](const EntryEvent &event) {
+                        auto key = event.getKey().get<int>().value();
+                        ASSERT_TRUE(1 == key || 2 == key);
+                        if (key == 1) {
+                            // The received event should be the addition of key value: 1, 10
+                            ASSERT_EQ(10, event.getValue().get<int>().value());
+                            this->latch1.count_down();
+                        } else {
+                            // The received event should be the addition of key value: 2, 20
+                            ASSERT_EQ(20, event.getValue().get<int>().value());
+                            this->latch2.count_down();
+                        }
+                    }).
+                    onEntryUpdated([this](const EntryEvent &event) {
+                        ASSERT_EQ(2, event.getKey().get<int>().value());
+                        ASSERT_EQ(20, event.getValue().get<int>().value());
+                        this->latch1.count_down();
+                    });
+            }
 
             TEST_F(IssueTest, testOperationRedo_smartRoutingDisabled) {
                 HazelcastServer hz1(*g_srvFactory);
@@ -1482,7 +1482,7 @@ namespace hazelcast {
                 auto map = client.getMap("IssueTest_map");
 
                 // 4. Subscribe client to entry added event
-                map->addEntryListener(listener, true).get();
+                map->addEntryListener(std::move(issue864MapListener), true).get();
 
                 // Put a key, value to the map
                 ASSERT_FALSE(map->put(1, 10).get().has_value());
@@ -1523,30 +1523,6 @@ namespace hazelcast {
                 server.shutdown();
 
                 ASSERT_THROW((map->get<int, int>(1).get()), exception::HazelcastClientNotActiveException);
-            }
-
-            void IssueTest::Issue864MapListener::entryAdded(const EntryEvent &event) {
-                auto key = event.getKey().get<int>().value();
-                ASSERT_TRUE(1 == key || 2 == key);
-                if (key == 1) {
-                    // The received event should be the addition of key value: 1, 10
-                    ASSERT_EQ(10, event.getValue().get<int>().value());
-                    latch1.count_down();
-                } else {
-                    // The received event should be the addition of key value: 2, 20
-                    ASSERT_EQ(20, event.getValue().get<int>().value());
-                    latch2.count_down();
-                }
-            }
-
-            void IssueTest::Issue864MapListener::entryUpdated(const EntryEvent &event) {
-                ASSERT_EQ(2, event.getKey().get<int>().value());
-                ASSERT_EQ(20, event.getValue().get<int>().value());
-                latch1.count_down();
-            }
-
-            IssueTest::Issue864MapListener::Issue864MapListener(boost::latch &l1, boost::latch &l2) : latch1(l1),
-                                                                                                      latch2(l2) {
             }
         }
     }

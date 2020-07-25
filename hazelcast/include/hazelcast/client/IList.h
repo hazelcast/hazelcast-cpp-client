@@ -15,10 +15,10 @@
  */
 #pragma once
 
-#include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/proxy/IListImpl.h"
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
@@ -42,14 +42,14 @@ namespace hazelcast {
             *  @param includeValue bool value representing value should be included in ItemEvent or not.
             *  @returns registrationId that can be used to remove item listener
             */
-            template<typename Listener>
-            boost::future<std::string> addItemListener(Listener &&listener, bool includeValue) {
-                std::unique_ptr<impl::ItemEventHandler<Listener, protocol::codec::ListAddListenerCodec::AbstractEventHandler>> itemEventHandler(
-                        new impl::ItemEventHandler<Listener, protocol::codec::ListAddListenerCodec::AbstractEventHandler>(
+            boost::future<std::string> addItemListener(ItemListener &&listener, bool includeValue) {
+                std::unique_ptr<impl::ItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler>> itemEventHandler(
+                        new impl::ItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler>(
                                 getName(), getContext().getClientClusterService(),
                                 getContext().getSerializationService(),
-                                listener,
+                                std::move(listener),
                                 includeValue));
+
                 return proxy::IListImpl::addItemListener(std::move(itemEventHandler), includeValue);
             }
 

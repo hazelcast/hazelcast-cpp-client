@@ -20,6 +20,8 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/internal/nearcache/NearCache.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 namespace hazelcast {
     namespace client {
