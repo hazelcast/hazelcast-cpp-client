@@ -1371,9 +1371,12 @@ namespace hazelcast {
 
             TEST_F(ClientTopicTest, testTopicListeners) {
                 boost::latch latch1(10);
-                std::string id = topic->addMessageListener([&] (topic::Message &&message) {
-                    latch1.count_down();
-                }).get();
+                std::string id = topic->addMessageListener(
+                    topic::MessageListener().
+                        on_received([&latch1](const topic::Message &message) {
+                            latch1.count_down();
+                        })
+                ).get();
 
                 for (int i = 0; i < 10; i++) {
                     topic->publish(std::string("naber") + std::to_string(i)).get();

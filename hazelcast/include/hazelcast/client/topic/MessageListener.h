@@ -15,10 +15,11 @@
  */
 #pragma once
 
-#include "hazelcast/client/topic/Message.h"
-#include "hazelcast/client/serialization/serialization.h"
+#include <functional>
 
-#include <memory>
+#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/type_traits.h"
+#include "hazelcast/util/null_event_handler.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -28,27 +29,50 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
+            class Message;
+            namespace impl {
+                class TopicEventHandlerImpl;
+            }
+
             /**
-             * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.
-             * Therefore there is only one thread invoking onMessage. The user should not keep the thread busy, but preferably
-             * should dispatch it via an Executor. This will increase the performance of the topic.
-             *
-             * @param message the message that is received for the added topic
+             * Listen to messages from an ITopic
+             * \see ITopic::addMessageListener
              */
-            class HAZELCAST_API MessageListener {
+            class HAZELCAST_API MessageListener final {
             public:
-                virtual ~MessageListener() = default;
+                /**
+                 * Set an handler function to be invoked when a message is received for the subscribed topic.
+                 *
+                 * \warning 
+                 * In order to guarantee message ordering, there is only one thread that invokes the given function.
+                 * The user should off-load any time consuming operation to another thread.
+                 *
+                 * \param h a `void` function object that is callable with a single parameter of type `const Message &`
+                 */
+                template<typename Handler,
+                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
+                MessageListener &on_received(Handler &&h) & {
+                    received = std::move(h);
+                    return *this;
+                }
 
                 /**
-                * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.
-                * Therefore there is only one thread invoking onMessage. The user should not keep the thread busy, but preferably
-                * should dispatch it via an Executor. This will increase the performance of the topic.
-                *
-                * @param message the message that is received for the added topic
-                */
-                virtual void onMessage(Message &&message) = 0;
-            };
+                 * \copydoc MessageListener::on_received
+                 */
+                template<typename Handler,
+                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
+                MessageListener &&on_received(Handler &&h) && {
+                    on_received(std::move(h));
+                    return std::move(*this);
+                }
 
+            private:
+                using HandlerType = std::function<void(const Message &)>;
+
+                HandlerType received = util::nullEventHandler<Message>;
+
+                friend class impl::TopicEventHandlerImpl;
+            };
         }
     }
 }
