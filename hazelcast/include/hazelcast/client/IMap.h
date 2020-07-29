@@ -479,7 +479,7 @@ namespace hazelcast {
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), includeValue);
+                                        includeValue, getContext().getLogger())), includeValue, listener.flags);
             }
 
             /**
@@ -506,7 +506,7 @@ namespace hazelcast {
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), toData<P>(predicate), includeValue);
+                                        includeValue, getContext().getLogger())), toData<P>(predicate), includeValue, listener.flags);
             }
 
             /**
@@ -530,7 +530,7 @@ namespace hazelcast {
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), includeValue, toData<K>(key));
+                                        includeValue, getContext().getLogger())), includeValue, toData<K>(key), listener.flags);
             }
 
             /**
