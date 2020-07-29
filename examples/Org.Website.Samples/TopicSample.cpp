@@ -25,7 +25,7 @@ int main() {
     // Add a Listener to the Topic
     topic->addMessageListener(
         topic::MessageListener().
-            on_received([](const topic::Message &message) {
+            on_received([](topic::Message &&message) {
                 std::cout << "Got message " << message.getMessageObject().get<std::string>().value_or("null") << std::endl;
             })
     ).get();

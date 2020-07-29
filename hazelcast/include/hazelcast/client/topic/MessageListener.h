@@ -19,7 +19,7 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/type_traits.h"
-#include "hazelcast/util/null_event_handler.h"
+#include "hazelcast/util/empty_function.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -47,7 +47,7 @@ namespace hazelcast {
                  * In order to guarantee message ordering, there is only one thread that invokes the given function.
                  * The user should off-load any time consuming operation to another thread.
                  *
-                 * \param h a `void` function object that is callable with a single parameter of type `const Message &`
+                 * \param h a `void` function object that is callable with a single parameter of type `Message &&`
                  */
                 template<typename Handler,
                          typename = util::enable_if_rvalue_ref_t<Handler &&>>
@@ -67,9 +67,9 @@ namespace hazelcast {
                 }
 
             private:
-                using HandlerType = std::function<void(const Message &)>;
+                using HandlerType = std::function<void(Message &&)>;
 
-                HandlerType received = util::nullEventHandler<Message>;
+                HandlerType received = util::empty_function<void, Message &&>;
 
                 friend class impl::TopicEventHandlerImpl;
             };

@@ -24,7 +24,7 @@ int main() {
 
     topic->addMessageListener(
         hazelcast::client::topic::MessageListener().
-            on_received([](const hazelcast::client::topic::Message &msg) {
+            on_received([](hazelcast::client::topic::Message &&msg) {
                 std::cout << "Message received:"
                     << msg.getMessageObject().get<std::string>().value() << std::endl;
             })

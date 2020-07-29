@@ -1373,7 +1373,7 @@ namespace hazelcast {
                 boost::latch latch1(10);
                 std::string id = topic->addMessageListener(
                     topic::MessageListener().
-                        on_received([&latch1](const topic::Message &message) {
+                        on_received([&latch1](topic::Message &&) {
                             latch1.count_down();
                         })
                 ).get();
