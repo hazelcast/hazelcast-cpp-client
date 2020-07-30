@@ -290,7 +290,7 @@ namespace hazelcast {
                     auto member = clusterService.getMember(uuid);
                     auto mapEventType = static_cast<EntryEvent::type>(eventType);
                     MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName, numberOfAffectedEntries);
-                    listener.mapCleared(mapEvent);
+                    listener.map_cleared(std::move(mapEvent));
                 }
 
                 void fireEntryEvent(std::unique_ptr<serialization::pimpl::Data> &key,
@@ -321,16 +321,16 @@ namespace hazelcast {
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
                         case EntryEvent::type::ADDED:
-                            listener.entryAdded(entryEvent);
+                            listener.added(std::move(entryEvent));
                             break;
                         case EntryEvent::type::REMOVED:
-                            listener.entryRemoved(entryEvent);
+                            listener.removed(std::move(entryEvent));
                             break;
                         case EntryEvent::type::UPDATED:
-                            listener.entryUpdated(entryEvent);
+                            listener.updated(std::move(entryEvent));
                             break;
                         case EntryEvent::type::EVICTED:
-                            listener.entryEvicted(entryEvent);
+                            listener.evicted(std::move(entryEvent));
                             break;
                         default:
                             logger.warning("Received unrecognized event with type: ", static_cast<int>(type),

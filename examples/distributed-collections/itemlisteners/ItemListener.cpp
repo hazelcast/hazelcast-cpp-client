@@ -27,11 +27,11 @@ int main() {
 
     hazelcast::client::ItemListener listener;
     listener.
-        onItemAdded([&numAdded](const hazelcast::client::ItemEvent &event) {
+        on_added([&numAdded](hazelcast::client::ItemEvent &&event) {
             std::cout << "Item added:" << event.getItem().get<std::string>().value() << std::endl;
             ++numAdded;
         }).
-        onItemRemoved([&numRemoved](const hazelcast::client::ItemEvent &event) {
+        on_removed([&numRemoved](hazelcast::client::ItemEvent &&event) {
             std::cout << "Item removed:" << event.getItem().get<std::string>().value() << std::endl;
             ++numRemoved;
         });

@@ -43,28 +43,28 @@ int main() {
     hazelcast::client::EntryListener listener;
 
     listener.
-        onEntryAdded([](const hazelcast::client::EntryEvent &event) {
+        on_added([](hazelcast::client::EntryEvent &&event) {
             std::cout << "Entry added:" << event.getKey().get<int>().value();
         }).
-        onEntryRemoved([](const hazelcast::client::EntryEvent &event) {
+        on_removed([](hazelcast::client::EntryEvent &&event) {
             std::cout << "Entry removed:" << event.getKey().get<int>().value();
         }).
-        onEntryUpdated([](const hazelcast::client::EntryEvent &event) {
+        on_updated([](hazelcast::client::EntryEvent &&event) {
             std::cout << "Entry updated:" << event.getKey().get<int>().value();
         }).
-        onEntryEvicted([](const hazelcast::client::EntryEvent &event) {
+        on_evicted([](hazelcast::client::EntryEvent &&event) {
             std::cout << "Entry evicted:" << event.getKey().get<int>().value();
         }).
-        onEntryExpired([](const hazelcast::client::EntryEvent &event) {
+        on_expired([](hazelcast::client::EntryEvent &&event) {
             std::cout << "Entry expired:" << event.getKey().get<int>().value();
         }).
-        onEntryMerged([](const hazelcast::client::EntryEvent &event) {
+        on_merged([](hazelcast::client::EntryEvent &&event) {
             std::cout << "Entry merged:" << event.getKey().get<int>().value();
         }).
-        onMapEvicted([](const hazelcast::client::MapEvent &event) {
+        on_map_evicted([](hazelcast::client::MapEvent &&event) {
             std::cout << "Map evicted:" << event.getName();
         }).
-        onMapCleared([](const hazelcast::client::MapEvent &event) {
+        on_map_cleared([](hazelcast::client::MapEvent &&event) {
             std::cout << "Map cleared:" << event.getName();
         });
 

@@ -47,51 +47,51 @@ namespace hazelcast {
         public:
             /**
              * Set an handler function to be invoked when an item is added
-             * \param h a `void` function object that is callable with a single parameter of type `const ItemEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `ItemEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            ItemListener &onItemAdded(Handler &&h) & {
-                itemAdded = std::forward<Handler>(h);
+            ItemListener &on_added(Handler &&h) & {
+                added = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc ItemListener::onItemAdded
+             * \copydoc ItemListener::on_added
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            ItemListener &&onItemAdded(Handler &&h) && {
-                onItemAdded(std::forward<Handler>(h));
+            ItemListener &&on_added(Handler &&h) && {
+                on_added(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
             /**
              * Set an handler function to be invoked when an item is removed
-             * \param h a `void` function object that is callable with a single parameter of type `const ItemEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `ItemEvent &&`
              */
             template<typename Handler>
-            ItemListener &onItemRemoved(Handler &&h) & {
-                itemRemoved = std::forward<Handler>(h);
+            ItemListener &on_removed(Handler &&h) & {
+                removed = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc ItemListener::onItemRemoved
+             * \copydoc ItemListener::on_removed
              */
             template<typename Handler>
-            ItemListener &&onItemRemoved(Handler &&h) && {
-                onItemRemoved(std::forward<Handler>(h));
+            ItemListener &&on_removed(Handler &&h) && {
+                on_removed(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
         private:
-            using HandlerType = std::function<void(const ItemEvent &)>;
-            static constexpr auto empty_handler = util::empty_function<void, const ItemEvent &>;
+            using HandlerType = std::function<void(ItemEvent &&)>;
+            static constexpr auto empty_handler = util::empty_function<void, ItemEvent &&>;
 
-            HandlerType itemAdded = empty_handler,
-                        itemRemoved = empty_handler;
+            HandlerType added = empty_handler,
+                        removed = empty_handler;
 
             template<typename>
             friend class impl::ItemEventHandler;

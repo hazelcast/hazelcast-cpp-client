@@ -770,7 +770,7 @@ namespace hazelcast {
                 EntryListener expirationListener;
 
                 expirationListener.
-                    onEntryExpired([&expirationEventArrivalCount](const EntryEvent &) {
+                    on_expired([&expirationEventArrivalCount](EntryEvent &&) {
                         expirationEventArrivalCount.count_down();
                     });
 
@@ -800,10 +800,10 @@ namespace hazelcast {
                 EntryListener listener;
 
                 listener.
-                    onEntryEvicted([&evictedCount](const EntryEvent &) {
+                    on_evicted([&evictedCount](EntryEvent &&) {
                         evictedCount.count_down();
                     }).
-                    onEntryExpired([&expiredCount](const EntryEvent &) {
+                    on_expired([&expiredCount](EntryEvent &&) {
                         expiredCount.count_down();
                     });
 
@@ -870,7 +870,7 @@ namespace hazelcast {
 
                 auto id = map->addEntryListener(
                     EntryListener().
-                        onEntryAdded([&called](const EntryEvent &e) {
+                        on_added([&called](EntryEvent &&e) {
                             ASSERT_EQ(1, e.getKey().get<int>().get());
                             ASSERT_EQ(2, e.getValue().get<int>().get());
                             called.count_down();                        
@@ -888,7 +888,7 @@ namespace hazelcast {
                 struct OnEntryAdded {
                     boost::latch& latch;
 
-                    void operator()(const EntryEvent &e) {
+                    void operator()(EntryEvent &&e) {
                         ASSERT_EQ(1, e.getKey().get<int>().get());
                         ASSERT_EQ(2, e.getValue().get<int>().get());
                         latch.count_down();
@@ -899,7 +899,7 @@ namespace hazelcast {
                 OnEntryAdded handler {called};
 
                 auto id = map->addEntryListener(
-                    EntryListener().onEntryAdded(std::move(handler))
+                    EntryListener().on_added(std::move(handler))
                 , true).get();
 
                 map->put(1, 2).get();
@@ -913,7 +913,7 @@ namespace hazelcast {
                 static boost::latch called {1};
 
                 struct OnEntryAdded {
-                    static void handler(const EntryEvent &e) {
+                    static void handler(EntryEvent &&e) {
                         ASSERT_EQ(1, e.getKey().get<int>().get());
                         ASSERT_EQ(2, e.getValue().get<int>().get());
                         called.count_down();
@@ -921,7 +921,7 @@ namespace hazelcast {
                 };
 
                 auto id = map->addEntryListener(
-                    EntryListener().onEntryAdded(&OnEntryAdded::handler)
+                    EntryListener().on_added(&OnEntryAdded::handler)
                 , true).get();
 
                 map->put(1, 2).get();
@@ -937,7 +937,7 @@ namespace hazelcast {
                 struct MyListener {
                     boost::latch &latch;
 
-                    void entryAdded(const EntryEvent &e) {
+                    void added(EntryEvent &&e) {
                         ASSERT_EQ(1, e.getKey().get<int>().get());
                         ASSERT_EQ(2, e.getValue().get<int>().get());
                         latch.count_down();
@@ -945,10 +945,10 @@ namespace hazelcast {
                 };
 
                 MyListener listener {called};
-                auto handler = std::bind(&MyListener::entryAdded, &listener, std::placeholders::_1);
+                auto handler = std::bind(&MyListener::added, &listener, std::placeholders::_1);
                 
                 auto id = map->addEntryListener(
-                    EntryListener().onEntryAdded(std::move(handler))
+                    EntryListener().on_added(std::move(handler))
                 , true).get();
 
                 map->put(1, 2).get();
@@ -1166,16 +1166,16 @@ namespace hazelcast {
                                                     boost::latch &updateLatch,
                                                     boost::latch &evictLatch) {
                     return EntryListener().
-                        onEntryAdded([&addLatch](const EntryEvent &) {
+                        on_added([&addLatch](EntryEvent &&) {
                             addLatch.count_down();
                         }).
-                        onEntryRemoved([&removeLatch](const EntryEvent &) {
+                        on_removed([&removeLatch](EntryEvent &&) {
                             removeLatch.count_down();
                         }).
-                        onEntryUpdated([&updateLatch](const EntryEvent &) {
+                        on_updated([&updateLatch](EntryEvent &&) {
                             updateLatch.count_down();
                         }).
-                        onEntryEvicted([&evictLatch](const EntryEvent &) {
+                        on_evicted([&evictLatch](EntryEvent &&) {
                             evictLatch.count_down();
                         });
                 }
@@ -1203,10 +1203,10 @@ namespace hazelcast {
                 EntryListener listener;
 
                 listener.
-                    onEntryAdded([&latch1](const EntryEvent &) {
+                    on_added([&latch1](EntryEvent &&) {
                         latch1.count_down();
                     }).
-                    onEntryEvicted([&latch1, &nullLatch](const EntryEvent &event) {
+                    on_evicted([&latch1, &nullLatch](EntryEvent &&event) {
                         auto oldValue = event.getOldValue().get<std::string>();
                         if (!oldValue.has_value() || oldValue.value().compare("")) {
                             nullLatch.count_down();
@@ -2874,7 +2874,7 @@ namespace hazelcast {
 
                 EntryListener listener;
                 listener.
-                    onEntryAdded([&countDownLatch, &atomicInteger](const EntryEvent &event) {
+                    on_added([&countDownLatch, &atomicInteger](EntryEvent &&event) {
                         ++atomicInteger;
                         countDownLatch.count_down();
                     });
@@ -3384,7 +3384,7 @@ namespace hazelcast {
 
                 EntryListener clearListener;
                 clearListener.
-                    onMapCleared([&latch1](const MapEvent &) {
+                    on_map_cleared([&latch1](MapEvent &&) {
                         latch1.count_down();
                     });
 
@@ -3400,7 +3400,7 @@ namespace hazelcast {
                 EntryListener evictListener;
 
                 evictListener.
-                    onMapEvicted([&latch1](const MapEvent &event) {
+                    on_map_evicted([&latch1](MapEvent &&event) {
                         latch1.count_down();
                     });
 

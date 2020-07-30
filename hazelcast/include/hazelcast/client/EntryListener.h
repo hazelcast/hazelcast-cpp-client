@@ -49,194 +49,194 @@ namespace hazelcast {
         public:
             /**
              * Set an handler function to be invoked when an entry is added.
-             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `EntryEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &onEntryAdded(Handler &&h) & {
-                entryAdded = std::forward<Handler>(h);
+            EntryListener &on_added(Handler &&h) & {
+                added = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc EntryListener::onEntryAdded
+             * \copydoc EntryListener::on_added
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &&onEntryAdded(Handler &&h) && {
-                onEntryAdded(std::forward<Handler>(h));
+            EntryListener &&on_added(Handler &&h) && {
+                on_added(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
             /**
              * Set an handler function to be invoked when an entry is removed.
-             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `EntryEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &onEntryRemoved(Handler &&h) & {
-                entryRemoved = std::forward<Handler>(h);
+            EntryListener &on_removed(Handler &&h) & {
+                removed = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc EntryListener::onEntryRemoved
+             * \copydoc EntryListener::on_removed
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &&onEntryRemoved(Handler &&h) && {
-                onEntryRemoved(std::forward<Handler>(h));
+            EntryListener &&on_removed(Handler &&h) && {
+                on_removed(std::forward<Handler>(h));
                 return std::move(*this);
             }
             
             /**
              * Set an handler function to be invoked when an entry is updated.
-             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `EntryEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &onEntryUpdated(Handler &&h) & {
-                entryUpdated = std::forward<Handler>(h);
+            EntryListener &on_updated(Handler &&h) & {
+                updated = std::forward<Handler>(h);
                 return *this;
             }
             
             /**
-             * \copydoc EntryListener::onEntryUpdated
+             * \copydoc EntryListener::on_updated
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &&onEntryUpdated(Handler &&h) && {
-                onEntryUpdated(std::forward<Handler>(h));
+            EntryListener &&on_updated(Handler &&h) && {
+                on_updated(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
             /**
              * Set an handler function to be invoked when an entry is evicted.
-             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `EntryEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &onEntryEvicted(Handler &&h) & {
-                entryEvicted = std::forward<Handler>(h);
+            EntryListener &on_evicted(Handler &&h) & {
+                evicted = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc EntryListener::onEntryEvicted
+             * \copydoc EntryListener::on_evicted
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &&onEntryEvicted(Handler &&h) && {
-                onEntryEvicted(std::forward<Handler>(h));
+            EntryListener &&on_evicted(Handler &&h) && {
+                on_evicted(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
             /**
              * Set an handler function to be invoked when an entry is expired.
-             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `EntryEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &onEntryExpired(Handler &&h) & {
-                entryExpired = std::forward<Handler>(h);
+            EntryListener &on_expired(Handler &&h) & {
+                expired = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc EntryListener::onEntryExpired
+             * \copydoc EntryListener::on_expired
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &&onEntryExpired(Handler &&h) && {
-                onEntryExpired(std::forward<Handler>(h));
+            EntryListener &&on_expired(Handler &&h) && {
+                on_expired(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
             /**
              * Set an handler function to be invoked after a WAN replicated entry is merged.
-             * \param h a `void` function object that is callable with a single parameter of type `const EntryEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `EntryEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &onEntryMerged(Handler &&h) & {
-                entryMerged = std::forward<Handler>(h);
+            EntryListener &on_merged(Handler &&h) & {
+                merged = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc EntryListener::onEntryMerged
+             * \copydoc EntryListener::on_merged
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &&onEntryMerged(Handler &&h) && {
-                onEntryMerged(std::forward<Handler>(h));
+            EntryListener &&on_merged(Handler &&h) && {
+                on_merged(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
             /**
              * Set an handler function to be invoked when all entries are evicted by IMap::evictAll
-             * \param h a `void` function object that is callable with a single parameter of type `const MapEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `MapEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &onMapEvicted(Handler &&h) & {
-                mapEvicted = std::forward<Handler>(h);
+            EntryListener &on_map_evicted(Handler &&h) & {
+                map_evicted = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc EntryListener::onMapEvicted
+             * \copydoc EntryListener::on_map_evicted
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &&onMapEvicted(Handler &&h) && {
-                onMapEvicted(std::forward<Handler>(h));
+            EntryListener &&on_map_evicted(Handler &&h) && {
+                on_map_evicted(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
             /**
              * Set an handler function to be invoked when all entries are removed by IMap::clear
-             * \param h a `void` function object that is callable with a single parameter of type `const MapEvent &`
+             * \param h a `void` function object that is callable with a single parameter of type `MapEvent &&`
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &onMapCleared(Handler &&h) & {
-                mapCleared = std::forward<Handler>(h);
+            EntryListener &on_map_cleared(Handler &&h) & {
+                map_cleared = std::forward<Handler>(h);
                 return *this;
             }
 
             /**
-             * \copydoc EntryListener::onMapCleared
+             * \copydoc EntryListener::on_map_cleared
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            EntryListener &&onMapCleared(Handler &&h) && {
-                onMapCleared(std::forward<Handler>(h));
+            EntryListener &&on_map_cleared(Handler &&h) && {
+                on_map_cleared(std::forward<Handler>(h));
                 return std::move(*this);
             }
 
         private: 
-            using EntryHandlerType = std::function<void(const EntryEvent &)>;
-            static constexpr auto empty_entry_event_handler = util::empty_function<void, const EntryEvent &>;
-            EntryHandlerType entryAdded = empty_entry_event_handler,
-                             entryRemoved = empty_entry_event_handler,
-                             entryUpdated = empty_entry_event_handler,
-                             entryEvicted = empty_entry_event_handler, 
-                             entryExpired = empty_entry_event_handler,
-                             entryMerged = empty_entry_event_handler;
+            using EntryHandlerType = std::function<void(EntryEvent &&)>;
+            static constexpr auto empty_entry_event_handler = util::empty_function<void, EntryEvent &&>;
+            EntryHandlerType added = empty_entry_event_handler,
+                             removed = empty_entry_event_handler,
+                             updated = empty_entry_event_handler,
+                             evicted = empty_entry_event_handler, 
+                             expired = empty_entry_event_handler,
+                             merged = empty_entry_event_handler;
 
-            using MapHandlerType = std::function<void(const MapEvent &)>;
-            static constexpr auto empty_map_event_handler = util::empty_function<void, const MapEvent &>;
-            MapHandlerType mapEvicted = empty_map_event_handler,
-                           mapCleared = empty_map_event_handler;
+            using MapHandlerType = std::function<void(MapEvent &&)>;
+            static constexpr auto empty_map_event_handler = util::empty_function<void, MapEvent &&>;
+            MapHandlerType map_evicted = empty_map_event_handler,
+                           map_cleared = empty_map_event_handler;
 
             template<typename>
             friend class impl::EntryEventHandler;
