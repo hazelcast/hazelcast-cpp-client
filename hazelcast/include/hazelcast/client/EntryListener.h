@@ -20,12 +20,13 @@
 #include <utility>
 
 #include "hazelcast/util/empty_function.h"
+#include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/util/type_traits.h"
 
 namespace hazelcast {
     namespace client {
+        class IMap;
         class MapEvent;
-        class EntryEvent;
         class ReplicatedMap;
         namespace impl {
             template<typename> class EntryEventHandler;
@@ -56,6 +57,7 @@ namespace hazelcast {
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &onEntryAdded(Handler &&h) & {
                 entryAdded = std::forward<Handler>(h);
+                add_flag(EntryEvent::type::ADDED);
                 return *this;
             }
 
@@ -78,6 +80,7 @@ namespace hazelcast {
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &onEntryRemoved(Handler &&h) & {
                 entryRemoved = std::forward<Handler>(h);
+                add_flag(EntryEvent::type::REMOVED);
                 return *this;
             }
 
@@ -100,6 +103,7 @@ namespace hazelcast {
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &onEntryUpdated(Handler &&h) & {
                 entryUpdated = std::forward<Handler>(h);
+                add_flag(EntryEvent::type::UPDATED);
                 return *this;
             }
             
@@ -122,6 +126,7 @@ namespace hazelcast {
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &onEntryEvicted(Handler &&h) & {
                 entryEvicted = std::forward<Handler>(h);
+                add_flag(EntryEvent::type::EVICTED);
                 return *this;
             }
 
@@ -144,6 +149,7 @@ namespace hazelcast {
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &onEntryExpired(Handler &&h) & {
                 entryExpired = std::forward<Handler>(h);
+                add_flag(EntryEvent::type::EXPIRED);
                 return *this;
             }
 
@@ -166,6 +172,7 @@ namespace hazelcast {
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &onEntryMerged(Handler &&h) & {
                 entryMerged = std::forward<Handler>(h);
+                add_flag(EntryEvent::type::MERGED);
                 return *this;
             }
 
@@ -188,6 +195,7 @@ namespace hazelcast {
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &onMapEvicted(Handler &&h) & {
                 mapEvicted = std::forward<Handler>(h);
+                add_flag(EntryEvent::type::EVICT_ALL);
                 return *this;
             }
 
@@ -210,6 +218,7 @@ namespace hazelcast {
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &onMapCleared(Handler &&h) & {
                 mapCleared = std::forward<Handler>(h);
+                add_flag(EntryEvent::type::CLEAR_ALL);
                 return *this;
             }
 
@@ -238,9 +247,16 @@ namespace hazelcast {
             MapHandlerType mapEvicted = empty_map_event_handler,
                            mapCleared = empty_map_event_handler;
 
+            int32_t flags = 0;
+
+            void add_flag(EntryEvent::type t) {
+                flags |= static_cast<int32_t>(t);
+            }
+
             template<typename>
             friend class impl::EntryEventHandler;
             friend class ReplicatedMap;
+            friend class IMap;
         };
     }
 }

@@ -158,15 +158,15 @@ namespace hazelcast {
                 boost::future<std::string> addInterceptor(const serialization::pimpl::Data &interceptor);
 
                 boost::future<std::string>
-                addEntryListener(std::unique_ptr<impl::BaseEventHandler> &&entryEventHandler, bool includeValue);
+                addEntryListener(std::unique_ptr<impl::BaseEventHandler> &&entryEventHandler, bool includeValue, int32_t listener_flags);
 
                 boost::future<std::string>
                 addEntryListener(std::unique_ptr<impl::BaseEventHandler> &&entryEventHandler, Data &&predicate,
-                                 bool includeValue);
+                                 bool includeValue, int32_t listener_flags);
 
                 boost::future<std::string>
                 addEntryListener(std::unique_ptr<impl::BaseEventHandler> &&entryEventHandler, bool includeValue,
-                                 Data &&key);
+                                 Data &&key, int32_t listener_flags);
 
                 boost::future<std::unique_ptr<map::DataEntryView>> getEntryViewData(const serialization::pimpl::Data &key);
 
@@ -265,7 +265,7 @@ namespace hazelcast {
                 class MapEntryListenerWithPredicateMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     MapEntryListenerWithPredicateMessageCodec(std::string name, bool includeValue,
-                                                              EntryEvent::type listenerFlags,
+                                                              int32_t listenerFlags,
                                                               serialization::pimpl::Data &&predicate);
 
                     std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
@@ -279,13 +279,13 @@ namespace hazelcast {
                 private:
                     std::string name;
                     bool includeValue;
-                    EntryEvent::type listenerFlags;
+                    int32_t listenerFlags;
                     serialization::pimpl::Data predicate;
                 };
 
                 class MapEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    MapEntryListenerMessageCodec(std::string name, bool includeValue, EntryEvent::type listenerFlags);
+                    MapEntryListenerMessageCodec(std::string name, bool includeValue, int32_t listenerFlags);
 
                     std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
 
@@ -298,12 +298,12 @@ namespace hazelcast {
                 private:
                     std::string name;
                     bool includeValue;
-                    EntryEvent::type listenerFlags;
+                    int32_t listenerFlags;
                 };
 
                 class MapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    MapEntryListenerToKeyCodec(std::string name, bool includeValue, EntryEvent::type listenerFlags,
+                    MapEntryListenerToKeyCodec(std::string name, bool includeValue, int32_t listenerFlags,
                                                serialization::pimpl::Data key);
 
                     std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
@@ -317,19 +317,19 @@ namespace hazelcast {
                 private:
                     std::string name;
                     bool includeValue;
-                    EntryEvent::type listenerFlags;
+                    int32_t listenerFlags;
                     serialization::pimpl::Data key;
                 };
 
                 std::unique_ptr<spi::impl::ListenerMessageCodec>
-                createMapEntryListenerCodec(bool includeValue, EntryEvent::type listenerFlags);
+                createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags);
 
                 std::unique_ptr<spi::impl::ListenerMessageCodec>
                 createMapEntryListenerCodec(bool includeValue, serialization::pimpl::Data &&predicate,
-                                            EntryEvent::type listenerFlags);
+                                            int32_t listenerFlags);
 
                 std::unique_ptr<spi::impl::ListenerMessageCodec>
-                createMapEntryListenerCodec(bool includeValue, EntryEvent::type listenerFlags,
+                createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags,
                                             serialization::pimpl::Data &&key);
             };
         }

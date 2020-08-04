@@ -1240,18 +1240,14 @@ namespace hazelcast {
             }
 
             // TODO: We can use generic template Listener instead of impl::BaseEventHandler to prevent the virtual function calls
-            boost::future<std::string> IMapImpl::addEntryListener(std::unique_ptr<impl::BaseEventHandler> &&entryEventHandler, bool includeValue) {
-                // TODO: Use appropriate flags for the event type as implemented in Java instead of EntryEventType::ALL
-                auto listenerFlags = EntryEvent::type::ALL;
-                return registerListener(createMapEntryListenerCodec(includeValue, listenerFlags), std::move(entryEventHandler));
+            boost::future<std::string> IMapImpl::addEntryListener(std::unique_ptr<impl::BaseEventHandler> &&entryEventHandler, bool includeValue, int32_t listener_flags) {
+                return registerListener(createMapEntryListenerCodec(includeValue, listener_flags), std::move(entryEventHandler));
             }
 
             boost::future<std::string>
             IMapImpl::addEntryListener(std::unique_ptr<impl::BaseEventHandler> &&entryEventHandler,
-                    Data &&predicate, bool includeValue) {
-                // TODO: Use appropriate flags for the event type as implemented in Java instead of EntryEventType::ALL
-                EntryEvent::type listenerFlags = EntryEvent::type::ALL;
-                return registerListener(createMapEntryListenerCodec(includeValue, std::move(predicate), listenerFlags), std::move(entryEventHandler));
+                    Data &&predicate, bool includeValue, int32_t listener_flags) {
+                return registerListener(createMapEntryListenerCodec(includeValue, std::move(predicate), listener_flags), std::move(entryEventHandler));
             }
 
             boost::future<bool> IMapImpl::removeEntryListener(const std::string &registrationId) {
@@ -1259,10 +1255,8 @@ namespace hazelcast {
             }
 
             boost::future<std::string> IMapImpl::addEntryListener(std::unique_ptr<impl::BaseEventHandler> &&entryEventHandler,
-                                                   bool includeValue, Data &&key) {
-                // TODO: Use appropriate flags for the event type as implemented in Java instead of EntryEventType::ALL
-                EntryEvent::type listenerFlags = EntryEvent::type::ALL;
-                return registerListener(createMapEntryListenerCodec(includeValue, listenerFlags, std::move(key)),
+                                                   bool includeValue, Data &&key, int32_t listener_flags) {
+                return registerListener(createMapEntryListenerCodec(includeValue, listener_flags, std::move(key)),
                                         std::move(entryEventHandler));
             }
 
@@ -1425,19 +1419,19 @@ namespace hazelcast {
 
             std::unique_ptr<spi::impl::ListenerMessageCodec>
             IMapImpl::createMapEntryListenerCodec(bool includeValue, serialization::pimpl::Data &&predicate,
-                                                  EntryEvent::type listenerFlags) {
+                                                  int32_t listenerFlags) {
                 return std::unique_ptr<spi::impl::ListenerMessageCodec>(
                         new MapEntryListenerWithPredicateMessageCodec(getName(), includeValue, listenerFlags, std::move(predicate)));
             }
 
             std::unique_ptr<spi::impl::ListenerMessageCodec>
-            IMapImpl::createMapEntryListenerCodec(bool includeValue, EntryEvent::type listenerFlags) {
+            IMapImpl::createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags) {
                 return std::unique_ptr<spi::impl::ListenerMessageCodec>(
                         new MapEntryListenerMessageCodec(getName(), includeValue, listenerFlags));
             }
 
             std::unique_ptr<spi::impl::ListenerMessageCodec>
-            IMapImpl::createMapEntryListenerCodec(bool includeValue, EntryEvent::type listenerFlags,
+            IMapImpl::createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags,
                                                   serialization::pimpl::Data &&key) {
                 return std::unique_ptr<spi::impl::ListenerMessageCodec>(
                         new MapEntryListenerToKeyCodec(getName(), includeValue, listenerFlags, key));
@@ -1450,7 +1444,7 @@ namespace hazelcast {
 
             IMapImpl::MapEntryListenerMessageCodec::MapEntryListenerMessageCodec(std::string name,
                                                                                  bool includeValue,
-                                                                                 EntryEvent::type listenerFlags) : name(std::move(name)),
+                                                                                 int32_t listenerFlags) : name(std::move(name)),
                                                                                                           includeValue(
                                                                                                                   includeValue),
                                                                                                           listenerFlags(
@@ -1501,12 +1495,12 @@ namespace hazelcast {
             }
 
             IMapImpl::MapEntryListenerToKeyCodec::MapEntryListenerToKeyCodec(std::string name, bool includeValue,
-                                                                             EntryEvent::type listenerFlags,
+                                                                             int32_t listenerFlags,
                                                                              serialization::pimpl::Data key)
                     : name(std::move(name)), includeValue(includeValue), listenerFlags(listenerFlags), key(std::move(key)) {}
 
             IMapImpl::MapEntryListenerWithPredicateMessageCodec::MapEntryListenerWithPredicateMessageCodec(
-                    std::string name, bool includeValue, EntryEvent::type listenerFlags,
+                    std::string name, bool includeValue, int32_t listenerFlags,
                     serialization::pimpl::Data &&predicate) : name(std::move(name)), includeValue(includeValue),
                                                              listenerFlags(listenerFlags), predicate(predicate) {}
 
