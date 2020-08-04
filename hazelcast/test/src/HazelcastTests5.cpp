@@ -736,7 +736,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
                     ClientConfig clientConfig(getConfig());
-                    clientConfig.getProperties()[ClientProperties::PROP_HEARTBEAT_TIMEOUT] = "20";
+                    clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "20");
                     client = new HazelcastClient(clientConfig);
                     imap = client->getMap("IntMap");
                 }
@@ -838,7 +838,7 @@ namespace hazelcast {
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(*g_srvFactory);
                     ClientConfig clientConfig(getConfig());
-                    clientConfig.getProperties()[ClientProperties::PROP_HEARTBEAT_TIMEOUT] = "20";
+                    clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "20");
                     client = new HazelcastClient(clientConfig);
                     map = client->getMap("map");
                 }

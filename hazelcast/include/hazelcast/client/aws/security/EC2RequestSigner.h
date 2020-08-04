@@ -55,9 +55,7 @@ namespace hazelcast {
 
                     std::vector<std::string> getListOfEntries(const std::unordered_map<std::string, std::string> &entries) const;
 
-                    void addComponents(std::vector<std::string> &components,
-                                       const std::unordered_map<std::string, std::string> &attributes,
-                                       const std::string &key) const;
+                    static std::string formatAttribute(const std::string &key, const std::string &value);
 
                     /* Task 2 */
                     std::string createStringToSign(const std::string &canonicalRequest) const;

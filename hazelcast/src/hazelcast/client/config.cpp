@@ -720,7 +720,7 @@ namespace hazelcast {
         }
 
 
-        std::unordered_map<std::string, std::string> &ClientConfig::getProperties() {
+        const std::unordered_map<std::string, std::string> &ClientConfig::getProperties() const {
             return properties;
         }
 

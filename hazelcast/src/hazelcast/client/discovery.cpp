@@ -126,20 +126,17 @@ namespace hazelcast {
                 std::vector<std::string> EC2RequestSigner::getListOfEntries(
                         const std::unordered_map<std::string, std::string> &entries) const {
                     std::vector<std::string> components;
-                    for (std::unordered_map<std::string, std::string>::const_iterator it = entries.begin();
-                         it != entries.end(); ++it) {
-                        addComponents(components, entries, it->first);
+                    for (const auto &entry: entries) {
+                        components.push_back(formatAttribute(entry.first, entry.second));
                     }
                     return components;
                 }
 
-                void EC2RequestSigner::addComponents(std::vector<std::string> &components,
-                                                     const std::unordered_map<std::string, std::string> &attributes,
-                                                     const std::string &key) const {
+                std::string EC2RequestSigner::formatAttribute(const std::string &key, const std::string &value) {
                     std::ostringstream out;
-                    out << utility::AwsURLEncoder::urlEncode(key) << '=' << utility::AwsURLEncoder::urlEncode(
-                            (const_cast<std::unordered_map<std::string, std::string> &>(attributes))[key]);
-                    components.push_back(out.str());
+                    out << utility::AwsURLEncoder::urlEncode(key) << '=' 
+                        << utility::AwsURLEncoder::urlEncode(value);
+                    return out.str();
                 }
 
                 /* Task 2 */
