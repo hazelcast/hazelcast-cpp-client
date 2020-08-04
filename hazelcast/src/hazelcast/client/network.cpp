@@ -1406,7 +1406,7 @@ namespace hazelcast {
                     std::vector<CipherInfo> supportedCiphers;
                     for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
                         struct SSLSocket::CipherInfo info;
-                        SSL_CIPHER *cipher = const_cast<SSL_CIPHER *>(sk_SSL_CIPHER_value(ciphers, i));
+                        const SSL_CIPHER *cipher = sk_SSL_CIPHER_value(ciphers, i);
                         info.name = SSL_CIPHER_get_name(cipher);
                         info.numberOfBits = SSL_CIPHER_get_bits(cipher, 0);
                         info.version = SSL_CIPHER_get_version(cipher);
