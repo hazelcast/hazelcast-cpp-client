@@ -1100,9 +1100,8 @@ namespace hazelcast {
             }
 
             std::ostream &operator<<(std::ostream &os, const Connection &connection) {
-                Connection &conn = const_cast<Connection &>(connection);
                 os << "ClientConnection{"
-                   << "alive=" << conn.isAlive()
+                   << "alive=" << connection.isAlive()
                    << ", connectionId=" << connection.getConnectionId()
                    << ", remoteEndpoint=";
                 if (connection.getRemoteEndpoint().get()) {
@@ -1110,9 +1109,9 @@ namespace hazelcast {
                 } else {
                     os << "null";
                 }
-                os << ", lastReadTime=" << util::StringUtil::timeToString(conn.lastReadTime())
-                   << ", closedTime=" << util::StringUtil::timeToString(std::chrono::steady_clock::time_point(conn.closedTimeDuration))
-                   << ", connected server version=" << conn.connectedServerVersionString
+                os << ", lastReadTime=" << util::StringUtil::timeToString(connection.lastReadTime())
+                   << ", closedTime=" << util::StringUtil::timeToString(std::chrono::steady_clock::time_point(connection.closedTimeDuration))
+                   << ", connected server version=" << connection.connectedServerVersionString
                    << '}';
 
                 return os;
@@ -1407,7 +1406,7 @@ namespace hazelcast {
                     std::vector<CipherInfo> supportedCiphers;
                     for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
                         struct SSLSocket::CipherInfo info;
-                        SSL_CIPHER *cipher = const_cast<SSL_CIPHER *>(sk_SSL_CIPHER_value(ciphers, i));
+                        const SSL_CIPHER *cipher = sk_SSL_CIPHER_value(ciphers, i);
                         info.name = SSL_CIPHER_get_name(cipher);
                         info.numberOfBits = SSL_CIPHER_get_bits(cipher, 0);
                         info.version = SSL_CIPHER_get_version(cipher);

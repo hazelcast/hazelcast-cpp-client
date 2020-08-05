@@ -129,7 +129,7 @@ namespace hazelcast {
             std::atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
             HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
-                    : clientConfig(config), clientProperties(const_cast<ClientConfig &>(config).getProperties()),
+                    : clientConfig(config), clientProperties(config.getProperties()),
                       clientContext(*this),
                       serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
                       transactionManager(clientContext, *clientConfig.getLoadBalancer()), cluster(clusterService),

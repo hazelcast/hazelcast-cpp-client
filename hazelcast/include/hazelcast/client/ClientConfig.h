@@ -375,7 +375,7 @@ namespace hazelcast {
             *
             * @return properties map
             */
-            std::unordered_map<std::string, std::string> &getProperties();
+            const std::unordered_map<std::string, std::string> &getProperties() const;
 
             /**
             * Sets the value of a named property

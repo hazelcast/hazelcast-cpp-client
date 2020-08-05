@@ -73,11 +73,11 @@ namespace hazelcast {
                 v = i;
             }
 
-            operator T() {
+            operator T() const {
                 return get();
             }
 
-            T get() {
+            T get() const {
                 std::lock_guard<std::mutex> lockGuard(mutex);
                 return v;
             }
@@ -87,17 +87,17 @@ namespace hazelcast {
                 return --v;
             }
 
-            bool operator<=(const T &i) {
+            bool operator<=(const T &i) const {
                 std::lock_guard<std::mutex> lockGuard(mutex);
                 return v <= i;
             }
 
-            bool operator==(const T &i) {
+            bool operator==(const T &i) const {
                 std::lock_guard<std::mutex> lockGuard(mutex);
                 return i == v;
             }
 
-            bool operator!=(const T &i) {
+            bool operator!=(const T &i) const {
                 std::lock_guard<std::mutex> lockGuard(mutex);
                 return i != v;
             }
@@ -112,8 +112,7 @@ namespace hazelcast {
             }
 
         protected:
-
-            std::mutex mutex;
+            mutable std::mutex mutex;
             T v;
         };
     }

@@ -64,9 +64,7 @@ namespace hazelcast {
                                                                               threadId(rhs.threadId), txnId(rhs.txnId),
                                                                               state(rhs.state),
                                                                               startTime(rhs.startTime) {
-                TransactionProxy &nonConstRhs = const_cast<TransactionProxy &>(rhs);
-
-                TRANSACTION_EXISTS.store(nonConstRhs.TRANSACTION_EXISTS.load());
+                TRANSACTION_EXISTS.store(rhs.TRANSACTION_EXISTS.load());
             }
 
             const std::string &TransactionProxy::getTxnId() const {

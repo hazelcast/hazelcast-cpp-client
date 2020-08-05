@@ -1703,12 +1703,12 @@ namespace hazelcast {
                 TEST_F (AwsConfigTest, testInvalidAwsMemberPortConfig) {
                     ClientConfig clientConfig;
 
-                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "65536";
+                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "65536");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
                             setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
                             setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
 
-                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "-1";
+                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "-1");
 
                     ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig),
                                  exception::InvalidConfigurationException);
@@ -1733,7 +1733,7 @@ namespace hazelcast {
                 TEST_F (AwsClientTest, testClientAwsMemberNonDefaultPortConfig) {
                     ClientConfig clientConfig;
 
-                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
                             setAccessKey(std::getenv("AWS_ACCESS_KEY_ID")).setSecretKey(std::getenv("AWS_SECRET_ACCESS_KEY")).
                             setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
@@ -1753,7 +1753,7 @@ namespace hazelcast {
 
                 TEST_F (AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole) {
                     ClientConfig clientConfig;
-                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
                             setSecurityGroupName("launch-wizard-147");
 
@@ -1778,7 +1778,7 @@ namespace hazelcast {
                                                                                                                                         TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
                     ClientConfig clientConfig;
 
-                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
                             setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
                             setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
@@ -1808,7 +1808,7 @@ namespace hazelcast {
                                                                                                                                         TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
                     ClientConfig clientConfig;
 
-                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setIamRole("cloudbees-role").setTagKey(
                             "aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
 
@@ -1818,7 +1818,7 @@ namespace hazelcast {
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
                     ClientConfig clientConfig;
 
-                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey(
                             "aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
 
