@@ -18,6 +18,8 @@
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/serialization/serialization.h"
+#include "hazelcast/client/topic/MessageListener.h"
+#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -28,25 +30,24 @@ namespace hazelcast {
     namespace client {
         namespace topic {
             namespace impl {
-                template<typename Listener>
                 class TopicEventHandlerImpl : public protocol::codec::TopicAddMessageListenerCodec::AbstractEventHandler {
                 public:
                     TopicEventHandlerImpl(const std::string &instanceName, spi::ClientClusterService &clusterService,
-                                      serialization::pimpl::SerializationService &serializationService,
+                                          serialization::pimpl::SerializationService &serializationService,
                                           Listener &&messageListener)
                             :instanceName(instanceName), clusterService(clusterService),
-                            serializationService(serializationService), listener(messageListener) {}
+                            serializationService(serializationService), listener(std::move(messageListener)) {}
 
                     void handleTopicEventV10(serialization::pimpl::Data &&item, const int64_t &publishTime,
                                              const std::string &uuid) override {
-                        listener(Message(instanceName, TypedData(std::move(item), serializationService), publishTime,
+                        listener.received(Message(instanceName, TypedData(std::move(item), serializationService), publishTime,
                                         clusterService.getMember(uuid)));
                     }
                 private:
                     std::string instanceName;
                     spi::ClientClusterService &clusterService;
                     serialization::pimpl::SerializationService &serializationService;
-                    Listener &listener;
+                    Listener listener;
                 };
             }
         }

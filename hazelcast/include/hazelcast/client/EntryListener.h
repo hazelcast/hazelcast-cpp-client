@@ -19,8 +19,8 @@
 #include <functional>
 #include <utility>
 
+#include "hazelcast/util/empty_function.h"
 #include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/util/null_event_handler.h"
 #include "hazelcast/util/type_traits.h"
 
 namespace hazelcast {
@@ -234,18 +234,18 @@ namespace hazelcast {
 
         private: 
             using EntryHandlerType = std::function<void(const EntryEvent &)>;
-            static constexpr auto nullEntryEventHandler = util::nullEventHandler<EntryEvent>;
-            EntryHandlerType entryAdded = nullEntryEventHandler,
-                             entryRemoved = nullEntryEventHandler,
-                             entryUpdated = nullEntryEventHandler,
-                             entryEvicted = nullEntryEventHandler, 
-                             entryExpired = nullEntryEventHandler,
-                             entryMerged = nullEntryEventHandler;
+            static constexpr auto empty_entry_event_handler = util::empty_function<void, const EntryEvent &>;
+            EntryHandlerType entryAdded = empty_entry_event_handler,
+                             entryRemoved = empty_entry_event_handler,
+                             entryUpdated = empty_entry_event_handler,
+                             entryEvicted = empty_entry_event_handler, 
+                             entryExpired = empty_entry_event_handler,
+                             entryMerged = empty_entry_event_handler;
 
             using MapHandlerType = std::function<void(const MapEvent &)>;
-            static constexpr auto nullMapEventHandler = util::nullEventHandler<MapEvent>;
-            MapHandlerType mapEvicted = nullMapEventHandler,
-                           mapCleared = nullMapEventHandler;
+            static constexpr auto empty_map_event_handler = util::empty_function<void, const MapEvent &>;
+            MapHandlerType mapEvicted = empty_map_event_handler,
+                           mapCleared = empty_map_event_handler;
 
             int32_t flags = 0;
 

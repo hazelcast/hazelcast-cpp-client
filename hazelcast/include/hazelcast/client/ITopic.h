@@ -20,6 +20,9 @@
 
 namespace hazelcast {
     namespace client {
+        namespace topic {
+            class Listener;
+        }
 
         /**
         * Hazelcast provides distribution mechanism for publishing messages that are delivered to multiple subscribers
@@ -50,37 +53,26 @@ namespace hazelcast {
             }
 
             /**
-            * Subscribes to this topic. When someone publishes a message on this topic.
-            * onMessage() function of the given MessageListener is called. More than one message listener can be
-            * added on one instance.
-            * listener class should implement onMessage function like in the following example:
+            * Subscribe to this topic. 
+            * When a message is published on this topic, 
+            * the callback function that was provided to the given Listener object is called.
+            * \see Listener
             *
-            *      class MyMessageListener {
-            *      public:
-            *          //....
-            *
-            *          void onMessage(topic::Message<std::string> message) {
-            *              /....
-            *          }
-            *     }
-            *
-            *  Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+            * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
             * otherwise it will slow down the system.
             *
             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
             *
-            * @param listener
+            * \param listener
             *
-            * @return returns registration id.
+            * \return registration id.
             */
-            template<typename Listener>
-            boost::future<std::string> addMessageListener(Listener &&listener) {
+            boost::future<std::string> addMessageListener(topic::Listener &&listener) {
                 return proxy::ITopicImpl::addMessageListener(
-                        std::unique_ptr<impl::BaseEventHandler>(new topic::impl::TopicEventHandlerImpl<Listener>(getName(),
+                        std::unique_ptr<impl::BaseEventHandler>(new topic::impl::TopicEventHandlerImpl(getName(),
                                                                                                       getContext().getClientClusterService(),
                                                                                                       getContext().getSerializationService(),
-                                                                                                      std::move(
-                                                                                                              listener))));
+                                                                                                      std::move(listener))));
             }
 
         private:
@@ -89,4 +81,3 @@ namespace hazelcast {
         };
     }
 }
-

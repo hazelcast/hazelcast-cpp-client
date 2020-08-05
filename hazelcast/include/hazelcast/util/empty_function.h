@@ -21,10 +21,11 @@
 namespace hazelcast {
     namespace util {
         /**
-        * Generic empty body event handler
-        * \tparam EventT event type
+        * Generic empty body function
+        * \tparam R return type
+        * \tp
         */
-        template<typename EventT>
-        HAZELCAST_API void nullEventHandler(const EventT &) {}
+        template<typename R, typename ...Args>
+        HAZELCAST_API R empty_function(Args...) {}
     }
 }

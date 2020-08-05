@@ -60,8 +60,19 @@ namespace hazelcast {
              *
              * @Beta
              */
-            class HAZELCAST_API ReliableMessageListener : public MessageListener {
+            class HAZELCAST_API ReliableMessageListener {
             public:
+                virtual ~ReliableMessageListener() = default;
+
+                /**
+                * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.
+                * Therefore there is only one thread invoking onMessage. The user should not keep the thread busy, but preferably
+                * should dispatch it via an Executor. This will increase the performance of the topic.
+                *
+                * @param message the message that is received for the added topic
+                */
+                virtual void onMessage(Message &&message) = 0;
+
                 /**
                  * Retrieves the initial sequence from which this ReliableMessageListener should start.
                  *

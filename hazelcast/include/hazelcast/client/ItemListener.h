@@ -19,7 +19,7 @@
 #include <functional>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/null_event_handler.h"
+#include "hazelcast/util/empty_function.h"
 #include "hazelcast/util/type_traits.h"
 
 namespace hazelcast {
@@ -88,10 +88,10 @@ namespace hazelcast {
 
         private:
             using HandlerType = std::function<void(const ItemEvent &)>;
-            static constexpr auto nullItemEventHandler = util::nullEventHandler<ItemEvent>;
+            static constexpr auto empty_handler = util::empty_function<void, const ItemEvent &>;
 
-            HandlerType itemAdded = nullItemEventHandler,
-                        itemRemoved = nullItemEventHandler;
+            HandlerType itemAdded = empty_handler,
+                        itemRemoved = empty_handler;
 
             template<typename>
             friend class impl::ItemEventHandler;
