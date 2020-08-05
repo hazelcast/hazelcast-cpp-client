@@ -104,9 +104,9 @@ namespace hazelcast {
 
                     void notifyException(std::exception_ptr exception);
 
-                    std::shared_ptr<connection::Connection> getSendConnection();
+                    std::shared_ptr<connection::Connection> getSendConnection() const;
 
-                    std::shared_ptr<connection::Connection> getSendConnectionOrWait();
+                    std::shared_ptr<connection::Connection> getSendConnectionOrWait() const;
 
                     void
                     setSendConnection(const std::shared_ptr<connection::Connection> &sendConnection);

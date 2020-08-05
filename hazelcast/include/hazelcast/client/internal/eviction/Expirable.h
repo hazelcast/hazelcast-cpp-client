@@ -42,7 +42,7 @@ namespace hazelcast {
                      * @return expiration time.
                      * @see System#currentTimeMillis()
                      */
-                    virtual int64_t getExpirationTime() = 0;
+                    virtual int64_t getExpirationTime() const = 0;
 
                     /**
                      * Sets the expiration time in milliseconds.
@@ -57,7 +57,7 @@ namespace hazelcast {
                      * @param now time in milliseconds.
                      * @return true if expired.
                      */
-                    virtual bool isExpiredAt(int64_t now) = 0;
+                    virtual bool isExpiredAt(int64_t now) const = 0;
                 };
             }
         }
