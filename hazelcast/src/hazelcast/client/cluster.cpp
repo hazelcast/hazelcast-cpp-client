@@ -322,11 +322,11 @@ namespace hazelcast {
                 return members[++index % members.size()];
             }
 
-            RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index(const_cast<RoundRobinLB &>(rhs).index.load()) {
+            RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index(rhs.index.load()) {
             }
 
             void RoundRobinLB::operator=(const RoundRobinLB &rhs) {
-                index.store(const_cast<RoundRobinLB &>(rhs).index.load());
+                index.store(rhs.index.load());
             }
 
             MemberAttributeChange::MemberAttributeChange() = default;
@@ -362,7 +362,7 @@ namespace hazelcast {
             }
 
             void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
-                std::lock_guard<std::mutex> lg(const_cast<std::mutex &>(rhs.membersLock));
+                std::lock_guard<std::mutex> lg(rhs.membersLock);
                 std::lock_guard<std::mutex> lg2(membersLock);
                 membersRef = rhs.membersRef;
                 cluster = rhs.cluster;

@@ -34,7 +34,7 @@ namespace hazelcast {
                 public:
                     TopicEventHandlerImpl(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                           serialization::pimpl::SerializationService &serializationService,
-                                          MessageListener &&messageListener)
+                                          Listener &&messageListener)
                             :instanceName(instanceName), clusterService(clusterService),
                             serializationService(serializationService), listener(std::move(messageListener)) {}
 
@@ -47,7 +47,7 @@ namespace hazelcast {
                     std::string instanceName;
                     spi::ClientClusterService &clusterService;
                     serialization::pimpl::SerializationService &serializationService;
-                    MessageListener listener;
+                    Listener listener;
                 };
             }
         }

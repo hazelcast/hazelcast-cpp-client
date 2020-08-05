@@ -75,7 +75,7 @@ namespace hazelcast {
                                 AbstractNearCacheRecord::uuid = uuid;
                             }
 
-                            int64_t getExpirationTime() override {
+                            int64_t getExpirationTime() const override {
                                 return expirationTime;
                             }
 
@@ -99,7 +99,7 @@ namespace hazelcast {
                                 AbstractNearCacheRecord::accessHit = accessHit;
                             }
 
-                            bool isExpiredAt(int64_t now) override {
+                            bool isExpiredAt(int64_t now) const override {
                                 int64_t expiration = expirationTime;
                                 return (expiration > NearCacheRecord<V>::TIME_NOT_SET) && (expiration <= now);
                             }

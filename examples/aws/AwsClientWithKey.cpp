@@ -31,7 +31,7 @@ int main() {
 
     // The default is to use port 5701 if this is not explicitely set. You can enable the below line if your hazelcast
     // server is running on another port.
-    //clientConfig.getProperties()[ hazelcast::client::ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+    //clientConfig.setProperty(hazelcast::client::ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
 
     // The following assumes that you provide the environment parameters AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).

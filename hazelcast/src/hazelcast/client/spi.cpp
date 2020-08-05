@@ -1406,11 +1406,10 @@ namespace hazelcast {
                     } else {
                         target << "random";
                     }
-                    ClientInvocation &nonConstInvocation = const_cast<ClientInvocation &>(invocation);
-                    os << "ClientInvocation{" << "requestMessage = " << *nonConstInvocation.clientMessage.get()
+                    os << "ClientInvocation{" << "requestMessage = " << *invocation.clientMessage.get()
                        << ", objectName = "
                        << invocation.objectName << ", target = " << target.str() << ", sendConnection = ";
-                    std::shared_ptr<connection::Connection> sendConnection = nonConstInvocation.getSendConnection();
+                    std::shared_ptr<connection::Connection> sendConnection = invocation.getSendConnection();
                     if (sendConnection.get()) {
                         os << *sendConnection;
                     } else {
@@ -1448,11 +1447,11 @@ namespace hazelcast {
                                                  nullptr, std::make_shared<Address>(address)));
                 }
 
-                std::shared_ptr<connection::Connection> ClientInvocation::getSendConnection() {
+                std::shared_ptr<connection::Connection> ClientInvocation::getSendConnection() const {
                     return sendConnection;
                 }
 
-                std::shared_ptr<connection::Connection> ClientInvocation::getSendConnectionOrWait() {
+                std::shared_ptr<connection::Connection> ClientInvocation::getSendConnectionOrWait() const {
                     while (sendConnection.get().get() == NULL && lifecycleService.isRunning()) {
                         std::this_thread::yield();
                     }

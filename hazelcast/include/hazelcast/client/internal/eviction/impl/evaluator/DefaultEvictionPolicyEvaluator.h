@@ -108,7 +108,7 @@ namespace hazelcast {
                                     const Expirable *expirable = dynamic_cast<const Expirable *>(evictable);
                                     if (expirable != NULL) {
                                         // If there is an expired candidate, let's evict that one immediately
-                                        expired = (const_cast<Expirable *>(expirable))->isExpiredAt(now);
+                                        expired = expirable->isExpiredAt(now);
                                     }
                                 }
                                 return expired;

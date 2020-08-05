@@ -23,7 +23,7 @@ int main() {
     auto topic = hz.getTopic("testtopic");
 
     topic->addMessageListener(
-        hazelcast::client::topic::MessageListener().
+        hazelcast::client::topic::Listener().
             on_received([](hazelcast::client::topic::Message &&msg) {
                 std::cout << "Message received:"
                     << msg.getMessageObject().get<std::string>().value() << std::endl;

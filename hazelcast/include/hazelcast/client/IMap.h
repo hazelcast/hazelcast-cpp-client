@@ -473,13 +473,14 @@ namespace hazelcast {
             * @return registrationId of added listener that can be used to remove the entry listener.
             */
             boost::future<std::string> addEntryListener(EntryListener &&listener, bool includeValue) {
+                const auto listener_flags = listener.flags;
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), includeValue);
+                                        includeValue, getContext().getLogger())), includeValue, listener_flags);
             }
 
             /**
@@ -500,13 +501,14 @@ namespace hazelcast {
             template<typename P>
             boost::future<std::string>
             addEntryListener(EntryListener &&listener, const P &predicate, bool includeValue) {
+                const auto listener_flags = listener.flags;
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), toData<P>(predicate), includeValue);
+                                        includeValue, getContext().getLogger())), toData<P>(predicate), includeValue, listener_flags);
             }
 
             /**
@@ -524,13 +526,14 @@ namespace hazelcast {
             */
             template<typename K>
             boost::future<std::string> addEntryListener(EntryListener &&listener, bool includeValue, const K &key) {
+                const auto listener_flags = listener.flags;
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), includeValue, toData<K>(key));
+                                        includeValue, getContext().getLogger())), includeValue, toData<K>(key), listener_flags);
             }
 
             /**

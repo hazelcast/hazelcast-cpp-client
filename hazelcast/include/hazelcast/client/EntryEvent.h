@@ -48,7 +48,6 @@ namespace hazelcast {
                 MERGED = 1 << 6 ,
                 EXPIRED = 1 << 7,
                 INVALIDATION = 1 << 8,
-                ALL = 0xFF
             };
 
             EntryEvent(const std::string &name, const Member &member, type eventType,
