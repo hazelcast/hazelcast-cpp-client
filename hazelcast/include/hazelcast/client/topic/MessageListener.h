@@ -38,7 +38,7 @@ namespace hazelcast {
              * Listen to messages from an ITopic
              * \see ITopic::addMessageListener
              */
-            class HAZELCAST_API MessageListener final {
+            class HAZELCAST_API Listener final {
             public:
                 /**
                  * Set an handler function to be invoked when a message is received for the subscribed topic.
@@ -51,17 +51,17 @@ namespace hazelcast {
                  */
                 template<typename Handler,
                          typename = util::enable_if_rvalue_ref_t<Handler &&>>
-                MessageListener &on_received(Handler &&h) & {
+                Listener &on_received(Handler &&h) & {
                     received = std::move(h);
                     return *this;
                 }
 
                 /**
-                 * \copydoc MessageListener::on_received
+                 * \copydoc Listener::on_received
                  */
                 template<typename Handler,
                          typename = util::enable_if_rvalue_ref_t<Handler &&>>
-                MessageListener &&on_received(Handler &&h) && {
+                Listener &&on_received(Handler &&h) && {
                     on_received(std::move(h));
                     return std::move(*this);
                 }

@@ -21,7 +21,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class MessageListener;
+            class Listener;
         }
 
         /**
@@ -55,8 +55,8 @@ namespace hazelcast {
             /**
             * Subscribe to this topic. 
             * When a message is published on this topic, 
-            * the callback function that was provided to the given MessageListener object is called.
-            * \see MessageListener
+            * the callback function that was provided to the given Listener object is called.
+            * \see Listener
             *
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
             * otherwise it will slow down the system.
@@ -67,7 +67,7 @@ namespace hazelcast {
             *
             * \return registration id.
             */
-            boost::future<std::string> addMessageListener(topic::MessageListener &&listener) {
+            boost::future<std::string> addMessageListener(topic::Listener &&listener) {
                 return proxy::ITopicImpl::addMessageListener(
                         std::unique_ptr<impl::BaseEventHandler>(new topic::impl::TopicEventHandlerImpl(getName(),
                                                                                                       getContext().getClientClusterService(),

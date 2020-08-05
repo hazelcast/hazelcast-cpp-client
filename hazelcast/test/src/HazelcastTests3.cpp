@@ -1372,7 +1372,7 @@ namespace hazelcast {
             TEST_F(ClientTopicTest, testTopicListeners) {
                 boost::latch latch1(10);
                 std::string id = topic->addMessageListener(
-                    topic::MessageListener().
+                    topic::Listener().
                         on_received([&latch1](topic::Message &&) {
                             latch1.count_down();
                         })
