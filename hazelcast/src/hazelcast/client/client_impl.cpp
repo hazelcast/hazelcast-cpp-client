@@ -97,12 +97,12 @@ namespace hazelcast {
             return clientImpl->getCluster();
         }
 
-        void HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener) {
-            clientImpl->addLifecycleListener(lifecycleListener);
+        boost::uuids::uuid HazelcastClient::addLifecycleListener(LifecycleListener &&lifecycleListener) {
+            return clientImpl->addLifecycleListener(std::move(lifecycleListener));
         }
 
-        bool HazelcastClient::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-            return clientImpl->removeLifecycleListener(lifecycleListener);
+        bool HazelcastClient::removeLifecycleListener(const boost::uuids::uuid &registrationId) {
+            return clientImpl->removeLifecycleListener(registrationId);
         }
 
         void HazelcastClient::shutdown() {
@@ -216,12 +216,12 @@ namespace hazelcast {
                 return cluster;
             }
 
-            void HazelcastClientInstanceImpl::addLifecycleListener(LifecycleListener *lifecycleListener) {
-                lifecycleService.addLifecycleListener(lifecycleListener);
+            boost::uuids::uuid HazelcastClientInstanceImpl::addLifecycleListener(LifecycleListener &&lifecycleListener) {
+                return lifecycleService.addLifecycleListener(std::move(lifecycleListener));
             }
 
-            bool HazelcastClientInstanceImpl::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-                return lifecycleService.removeLifecycleListener(lifecycleListener);
+            bool HazelcastClientInstanceImpl::removeLifecycleListener(const boost::uuids::uuid &registrationId) {
+                return lifecycleService.removeLifecycleListener(registrationId);
             }
 
             void HazelcastClientInstanceImpl::shutdown() {
@@ -465,8 +465,6 @@ namespace hazelcast {
                 return object;
             }
         }
-
-        LifecycleListener::~LifecycleListener() = default;
 
         IExecutorService::IExecutorService(const std::string &name, spi::ClientContext *context) : ProxyImpl(
                 SERVICE_NAME, name, context), consecutiveSubmits(0), lastSubmitTime(0) {

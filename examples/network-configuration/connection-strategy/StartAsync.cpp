@@ -13,35 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <boost/thread/latch.hpp>
+#include <chrono>
+#include <future>
 
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/LifecycleListener.h>
+#include <hazelcast/client/LifecycleEvent.h>
 
-class ConnectedListener : public hazelcast::client::LifecycleListener {
-public:
-    ConnectedListener() : l(1) {}
-
-    void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) override {
-        if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
-            l.count_down();
-        }
-    }
-
-    bool isConnected() {
-        return l.wait_for(boost::chrono::seconds(0)) == boost::cv_status::no_timeout;
-    }
-
-    void waitForConnection() {
-        l.wait();
-    }
-private:
-    boost::latch l;
-};
 
 int main() {
-    ConnectedListener listener;
-
     hazelcast::client::ClientConfig config;
 
     /**
@@ -54,17 +34,26 @@ int main() {
      */
     config.getConnectionStrategyConfig().setAsyncStart(true);
 
-    // Added a lifecycle listener so that we can track when the client is connected
-    config.addListener(&listener);
+    // Add a lifecycle listener so that we can track when the client is connected
+    std::promise<void> connected;
+    config.addListener(
+        hazelcast::client::LifecycleListener().
+            onStateChanged([&connected](const hazelcast::client::LifecycleEvent &ev){
+                if (ev.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
+                    connected.set_value();
+                }
+            })
+    );
 
     hazelcast::client::HazelcastClient hz(config);
 
-    // the client may not have connected to the cluster yet at this point since the cluster connection is async!!!
-    if (!listener.isConnected()) {
+    auto connection_future = connected.get_future();
+    if (connection_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
         std::cout << "Async client is not connected yet." << std::endl;
     }
 
-    listener.waitForConnection();
+    // the client may not have connected to the cluster yet at this point since the cluster connection is async!!!
+    connection_future.wait();
 
     std::cout << "Async client is connected now." << std::endl;
 

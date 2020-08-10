@@ -15,12 +15,16 @@
  */
 #pragma once
 
+#include <unordered_map>
 #include <mutex>
 #include <unordered_set>
 #include <atomic>
 #include <boost/thread/latch.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/container_hash/hash.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/LifecycleListener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,8 +33,6 @@
 
 namespace hazelcast {
     namespace client {
-        class LifecycleListener;
-
         class LifecycleEvent;
 
         class ClientConfig;
@@ -46,7 +48,8 @@ namespace hazelcast {
             class HAZELCAST_API LifecycleService {
             public:
 
-                LifecycleService(ClientContext &clientContext, const std::unordered_set<LifecycleListener *> &lifecycleListeners,
+                LifecycleService(ClientContext &clientContext, 
+                                 const std::vector<LifecycleListener> &lifecycleListeners,
                                  LoadBalancer *const loadBalancer, Cluster &cluster);
 
                 virtual ~LifecycleService();
@@ -57,15 +60,15 @@ namespace hazelcast {
 
                 void shutdown();
 
-                void addLifecycleListener(LifecycleListener *lifecycleListener);
+                boost::uuids::uuid addLifecycleListener(LifecycleListener &&lifecycleListener);
 
-                bool removeLifecycleListener(LifecycleListener *lifecycleListener);
+                bool removeLifecycleListener(const boost::uuids::uuid &registrationId);
 
                 bool isRunning();
 
             private:
                 ClientContext &clientContext;
-                std::unordered_set<LifecycleListener *> listeners;
+                std::unordered_map<boost::uuids::uuid, LifecycleListener, boost::hash<boost::uuids::uuid>> listeners;
                 std::mutex listenerLock;
                 std::atomic<bool> active{ false };
                 LoadBalancer *loadBalancer;

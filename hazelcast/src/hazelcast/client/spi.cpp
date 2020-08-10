@@ -35,6 +35,11 @@
 #include <boost/asio/detail/win_iocp_io_context.hpp>
 #endif
 
+<<<<<<< HEAD
+=======
+#include <boost/range/algorithm/find_if.hpp>
+#include <boost/uuid/random_generator.hpp>
+>>>>>>> Change LifecycleListener API, return boost uuid from addLifecycleListener
 #include <utility>
 
 #include <boost/range/algorithm/find_if.hpp>
@@ -248,10 +253,13 @@ namespace hazelcast {
             }
 
             LifecycleService::LifecycleService(ClientContext &clientContext,
-                                               const std::unordered_set<LifecycleListener *> &lifecycleListeners,
-                                               LoadBalancer *const loadBalancer, Cluster &cluster) : clientContext(
-                    clientContext), loadBalancer(loadBalancer), cluster(cluster), shutdownCompletedLatch(1) {
-                listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
+                                               const std::vector<LifecycleListener> &listeners,
+                                               LoadBalancer *const loadBalancer, Cluster &cluster) : 
+                    clientContext(clientContext), listeners(), loadBalancer(loadBalancer),
+                    cluster(cluster), shutdownCompletedLatch(1) {
+                for (const auto &listener: listeners) {
+                    addLifecycleListener(LifecycleListener(listener));
+                }
             }
 
             bool LifecycleService::start() {
@@ -315,14 +323,16 @@ namespace hazelcast {
                 }
             }
 
-            void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
+            boost::uuids::uuid LifecycleService::addLifecycleListener(LifecycleListener &&lifecycleListener) {
                 std::lock_guard<std::mutex> lg(listenerLock);
-                listeners.insert(lifecycleListener);
+                const auto id = boost::uuids::random_generator()();
+                listeners.emplace(id, std::move(lifecycleListener));
+                return id;
             }
 
-            bool LifecycleService::removeLifecycleListener(LifecycleListener *lifecycleListener) {
+            bool LifecycleService::removeLifecycleListener(const boost::uuids::uuid &registrationId) {
                 std::lock_guard<std::mutex> lg(listenerLock);
-                return listeners.erase(lifecycleListener) == 1;
+                return listeners.erase(registrationId) == 1;
             }
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
@@ -358,10 +368,10 @@ namespace hazelcast {
                         break;
                 }
 
-                for (std::unordered_set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                    (*it)->stateChanged(lifecycleEvent);
+                for (auto &item: listeners) {
+                    auto& listener = item.second;
+                    listener.stateChanged(lifecycleEvent);
                 }
-
             }
 
             bool LifecycleService::isRunning() {
