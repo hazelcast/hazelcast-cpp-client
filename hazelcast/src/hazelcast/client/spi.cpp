@@ -35,11 +35,6 @@
 #include <boost/asio/detail/win_iocp_io_context.hpp>
 #endif
 
-<<<<<<< HEAD
-=======
-#include <boost/range/algorithm/find_if.hpp>
-#include <boost/uuid/random_generator.hpp>
->>>>>>> Change LifecycleListener API, return boost uuid from addLifecycleListener
 #include <utility>
 
 #include <boost/range/algorithm/find_if.hpp>
