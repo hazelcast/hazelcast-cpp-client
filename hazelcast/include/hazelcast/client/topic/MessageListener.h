@@ -19,7 +19,7 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/type_traits.h"
-#include "hazelcast/util/empty_function.h"
+#include "hazelcast/util/noop.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -69,7 +69,7 @@ namespace hazelcast {
             private:
                 using HandlerType = std::function<void(Message &&)>;
 
-                HandlerType received = util::empty_function<void, Message &&>;
+                HandlerType received = util::noop<Message &&>;
 
                 friend class impl::TopicEventHandlerImpl;
             };

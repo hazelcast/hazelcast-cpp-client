@@ -19,7 +19,7 @@
 #include <functional>
 #include <utility>
 
-#include "hazelcast/util/empty_function.h"
+#include "hazelcast/util/noop.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/util/type_traits.h"
 
@@ -234,18 +234,18 @@ namespace hazelcast {
 
         private: 
             using EntryHandlerType = std::function<void(EntryEvent &&)>;
-            static constexpr auto empty_entry_event_handler = util::empty_function<void, EntryEvent &&>;
-            EntryHandlerType added = empty_entry_event_handler,
-                             removed = empty_entry_event_handler,
-                             updated = empty_entry_event_handler,
-                             evicted = empty_entry_event_handler, 
-                             expired = empty_entry_event_handler,
-                             merged = empty_entry_event_handler;
+            static constexpr auto noop_entry_handler = util::noop<EntryEvent &&>;
+            EntryHandlerType added = noop_entry_handler,
+                             removed = noop_entry_handler,
+                             updated = noop_entry_handler,
+                             evicted = noop_entry_handler,
+                             expired = noop_entry_handler,
+                             merged = noop_entry_handler;
 
             using MapHandlerType = std::function<void(MapEvent &&)>;
-            static constexpr auto empty_map_event_handler = util::empty_function<void, MapEvent &&>;
-            MapHandlerType map_evicted = empty_map_event_handler,
-                           map_cleared = empty_map_event_handler;
+            static constexpr auto noop_map_handler = util::noop<MapEvent &&>;
+            MapHandlerType map_evicted = noop_map_handler,
+                           map_cleared = noop_map_handler;
 
             int32_t flags = 0;
 

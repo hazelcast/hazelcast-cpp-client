@@ -19,7 +19,7 @@
 #include <functional>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/empty_function.h"
+#include "hazelcast/util/noop.h"
 #include "hazelcast/util/type_traits.h"
 
 namespace hazelcast {
@@ -88,10 +88,9 @@ namespace hazelcast {
 
         private:
             using HandlerType = std::function<void(ItemEvent &&)>;
-            static constexpr auto empty_handler = util::empty_function<void, ItemEvent &&>;
-
-            HandlerType added = empty_handler,
-                        removed = empty_handler;
+            static constexpr auto noop_handler = util::noop<ItemEvent &&>;
+            HandlerType added = noop_handler,
+                        removed = noop_handler;
 
             template<typename>
             friend class impl::ItemEventHandler;
