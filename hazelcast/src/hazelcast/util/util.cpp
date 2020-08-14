@@ -370,6 +370,25 @@ namespace hazelcast {
         const std::string &ILogger::getInstanceName() const {
             return instanceName;
         }
+
+        void ILogger::log_str(el::Level level, const std::string &s) {
+            switch (level) {
+                case el::Level::Debug:
+                    easyLogger->debug(s);
+                    break;
+                case el::Level::Info:
+                    easyLogger->info(s);
+                    break;
+                case el::Level::Warning:
+                    easyLogger->warn(s);
+                    break;
+                case el::Level::Fatal:
+                    easyLogger->fatal(s);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
 

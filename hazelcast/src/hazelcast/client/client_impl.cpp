@@ -506,8 +506,6 @@ namespace hazelcast {
 
         LifecycleListener::~LifecycleListener() = default;
 
-        const std::string IExecutorService::SERVICE_NAME = "hz:impl:executorService";
-
         IExecutorService::IExecutorService(const std::string &name, spi::ClientContext *context) : ProxyImpl(
                 SERVICE_NAME, name, context), consecutiveSubmits(0), lastSubmitTime(0) {
         }

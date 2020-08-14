@@ -2602,47 +2602,6 @@ namespace hazelcast {
 
         namespace protocol {
             namespace codec {
-                class HAZELCAST_API MapAddPartitionLostListenerCodec {
-                public:
-                    static const MapMessageType REQUEST_TYPE;
-                    static const bool RETRYABLE;
-                    static constexpr const char* OPERATION_NAME = "Map.AddPartitionLostListener";
-                    static const ResponseMessageConst RESPONSE_TYPE;
-
-                    //************************ REQUEST STARTS ******************************************************************//
-                    static std::unique_ptr<ClientMessage> encodeRequest(
-                            const std::string &name,
-                            bool localOnly);
-
-                    static int32_t calculateDataSize(
-                            const std::string &name,
-                            bool localOnly);
-                    //************************ REQUEST ENDS ********************************************************************//
-
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        std::string response;
-                        static ResponseParameters decode(ClientMessage clientMessage);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
-                    //************************ EVENTS START*********************************************************************//
-                    class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
-                    public:
-                        void handle(std::unique_ptr<protocol::ClientMessage> message);
-                        virtual void
-                        handleMapPartitionLostEventV10(const int32_t &partitionId, const std::string &uuid) = 0;
-
-                    };
-
-                    //************************ EVENTS END **********************************************************************//
-                private:
-                    // Preventing public access to constructors
-                    MapAddPartitionLostListenerCodec();
-                };
             }
         }
     }

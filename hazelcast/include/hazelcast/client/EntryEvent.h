@@ -110,7 +110,7 @@ namespace hazelcast {
              */
             const std::string &getName() const;
 
-            friend std::ostream &operator<<(std::ostream &os, const EntryEvent &event);
+            friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const EntryEvent &event);
 
         protected:
             std::string name;

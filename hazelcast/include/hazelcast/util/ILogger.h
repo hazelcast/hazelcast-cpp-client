@@ -43,6 +43,9 @@ namespace hazelcast {
 
             ~ILogger();
 
+            ILogger(const ILogger &) = delete;
+            ILogger &operator=(const ILogger &) = delete;
+
             template <typename T, typename... Targs>
             void severe(const T &value, const Targs&... fargs) {
                 log(el::Level::Fatal, value, fargs...);
@@ -86,11 +89,6 @@ namespace hazelcast {
             el::Logger *easyLogger;
             client::config::LoggerConfig loggerConfig;
             std::once_flag elOnceflag;
-            std::mutex mutex_;
-
-            ILogger(const ILogger &) = delete;
-
-            ILogger &operator=(const ILogger &) = delete;
 
             void composeMessage(std::ostringstream &out) {}
 
@@ -102,29 +100,12 @@ namespace hazelcast {
 
             template <typename T, typename... Targs>
             void log(el::Level level, const T &value, const Targs&... fargs) {
-                if (!easyLogger->enabled(level)) {
-                    return;
-                }
                 std::ostringstream out;
                 composeMessage(out, value, fargs...);
-                std::lock_guard<std::mutex> lock(mutex_);
-                switch (level) {
-                    case el::Level::Debug:
-                        easyLogger->debug(out.str());
-                        break;
-                    case el::Level::Info:
-                        easyLogger->info(out.str());
-                        break;
-                    case el::Level::Warning:
-                        easyLogger->warn(out.str());
-                        break;
-                    case el::Level::Fatal:
-                        easyLogger->fatal(out.str());
-                        break;
-                    default:
-                        break;
-                }
+                log_str(level, out.str());
             }
+
+            void log_str(el::Level level, const std::string &s);
 
         };
 

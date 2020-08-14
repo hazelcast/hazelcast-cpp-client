@@ -67,7 +67,7 @@ namespace hazelcast {
 
                     bool operator<(const Data &rhs) const;
 
-                    friend bool operator==(const Data &lhs, const Data &rhs);
+                    friend bool HAZELCAST_API operator==(const Data &lhs, const Data &rhs);
 
                 private:
                     std::vector<byte> data;
@@ -97,7 +97,7 @@ namespace std {
 
     template<>
     struct equal_to<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>> {
-        bool operator()(const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
+        bool HAZELCAST_API operator()(const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
                 const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept;;
     };
 

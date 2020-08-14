@@ -763,7 +763,7 @@ namespace hazelcast {
             };
 
             template<>
-            void ObjectDataOutput::writeObject(const char *object);
+            void HAZELCAST_API ObjectDataOutput::writeObject(const char *object);
 
             namespace pimpl {
                 class HAZELCAST_API PortableContext {
@@ -1417,7 +1417,7 @@ namespace hazelcast {
                 };
 
                 template<>
-                Data SerializationService::toData(const char *object);
+                Data HAZELCAST_API SerializationService::toData(const char *object);
             }
 
             /**
