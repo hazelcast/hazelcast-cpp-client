@@ -20,7 +20,7 @@
 #include <memory>
 #include <atomic>
 
-#include <hazelcast/util/HazelcastDll.h>
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/util/Sync.h"
 

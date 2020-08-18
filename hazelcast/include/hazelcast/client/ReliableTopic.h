@@ -322,7 +322,7 @@ namespace hazelcast {
             };
 
             util::SynchronizedMap<int, util::concurrent::Cancellable> runnersMap;
-            util::AtomicInt runnerCounter;
+            std::atomic<int> runnerCounter{ 0 };
         };
     }
 }

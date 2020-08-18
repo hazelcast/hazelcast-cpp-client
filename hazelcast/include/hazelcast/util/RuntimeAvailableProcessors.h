@@ -15,7 +15,9 @@
  */
 #pragma once
 
-#include "hazelcast/util/AtomicInt.h"
+#include <atomic>
+
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {
@@ -63,7 +65,7 @@ namespace hazelcast {
         private:
 
             // number of available processors currently configured
-            static util::AtomicInt currentAvailableProcessors;
+            static std::atomic<int> currentAvailableProcessors;
 
         };
     }

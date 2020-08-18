@@ -68,7 +68,6 @@
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
 #include "hazelcast/util/concurrent/CancellationException.h"
 #include "hazelcast/util/UuidUtil.h"
-#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/util/MurmurHash3.h"
@@ -372,6 +371,8 @@ namespace hazelcast {
         }
 
         void ILogger::log_str(el::Level level, const std::string &s) {
+            std::lock_guard<std::mutex> lock(mutex_);
+
             switch (level) {
                 case el::Level::Debug:
                     easyLogger->debug(s);
@@ -388,6 +389,10 @@ namespace hazelcast {
                 default:
                     break;
             }
+        }
+
+        bool ILogger::enabled(el::Level level) const {
+            return easyLogger->enabled(level);
         }
     }
 }
@@ -1070,20 +1075,6 @@ namespace hazelcast {
     }
 }
 
-
-namespace hazelcast {
-    namespace util {
-        AtomicInt::AtomicInt() : atomic<int>(0) {
-        }
-
-        AtomicInt::AtomicInt(const int &value) : atomic<int>(value) {
-        }
-    }
-}
-
-
-
-
 namespace hazelcast {
     namespace util {
         const int AddressHelper::MAX_PORT_TRIES = 3;
@@ -1169,7 +1160,7 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        util::AtomicInt RuntimeAvailableProcessors::currentAvailableProcessors(
+        std::atomic<int> RuntimeAvailableProcessors::currentAvailableProcessors(
                 RuntimeAvailableProcessors::getNumberOfProcessors());
 
         int RuntimeAvailableProcessors::getNumberOfProcessors() {

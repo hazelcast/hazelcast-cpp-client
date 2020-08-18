@@ -74,9 +74,9 @@ namespace hazelcast {
 
 namespace std {
     template<>
-    class hash<hazelcast::client::spi::impl::listener::ClientRegistrationKey> {
+    class HAZELCAST_API hash<hazelcast::client::spi::impl::listener::ClientRegistrationKey> {
     public:
-        std::size_t HAZELCAST_API
+        std::size_t
         operator()(const hazelcast::client::spi::impl::listener::ClientRegistrationKey &val) const noexcept;
     };
 }

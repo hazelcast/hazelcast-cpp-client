@@ -111,8 +111,8 @@ namespace hazelcast {
 
 namespace std {
     template<>
-    struct hash<hazelcast::client::Address> {
-        std::size_t HAZELCAST_API operator()(const hazelcast::client::Address &address) const noexcept;
+    struct HAZELCAST_API hash<hazelcast::client::Address> {
+        std::size_t operator()(const hazelcast::client::Address &address) const noexcept;
     };
 }
 

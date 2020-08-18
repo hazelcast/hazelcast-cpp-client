@@ -77,7 +77,6 @@
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
@@ -946,7 +945,7 @@ namespace hazelcast {
 
                     boost::latch latch1;
                     int64_t startSequence;
-                    hazelcast::util::AtomicInt numberOfMessagesReceived;
+                    std::atomic<int> numberOfMessagesReceived;
                     hazelcast::util::ConcurrentQueue<topic::Message> messages;
                 };
 

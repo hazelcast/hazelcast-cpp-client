@@ -89,6 +89,7 @@ namespace hazelcast {
             el::Logger *easyLogger;
             client::config::LoggerConfig loggerConfig;
             std::once_flag elOnceflag;
+            std::mutex mutex_;
 
             void composeMessage(std::ostringstream &out) {}
 
@@ -100,6 +101,9 @@ namespace hazelcast {
 
             template <typename T, typename... Targs>
             void log(el::Level level, const T &value, const Targs&... fargs) {
+                if (!enabled(level)) {
+                    return;
+                }
                 std::ostringstream out;
                 composeMessage(out, value, fargs...);
                 log_str(level, out.str());
@@ -107,6 +111,7 @@ namespace hazelcast {
 
             void log_str(el::Level level, const std::string &s);
 
+            bool enabled(el::Level level) const;
         };
 
     }
