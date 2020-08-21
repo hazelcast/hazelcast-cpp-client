@@ -175,8 +175,7 @@ namespace hazelcast {
                     }
                 };
 
-                template<typename K, typename V>
-                std::shared_ptr<V> NearCache<K, V>::NULL_OBJECT(new V);
+				template class HAZELCAST_API NearCache<serialization::pimpl::Data, serialization::pimpl::Data>;
 
                 template<typename K, typename V>
                 const int NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS = 5;
