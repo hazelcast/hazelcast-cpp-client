@@ -63,7 +63,6 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/client/Pipelining.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
@@ -2870,7 +2869,7 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testListenerWithPortableKey) {
                 std::shared_ptr<IMap> tradeMap = client.getMap("tradeMap");
                 boost::latch countDownLatch(1);
-                hazelcast::util::AtomicInt atomicInteger(0);
+                std::atomic<int> atomicInteger(0);
 
                 EntryListener listener;
                 listener.

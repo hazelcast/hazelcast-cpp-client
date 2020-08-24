@@ -222,7 +222,7 @@ namespace hazelcast {
                     void scheduleTimeoutTask();
                 };
 
-                util::AtomicBoolean alive;
+                std::atomic<bool> alive{ false };
 
                 util::ILogger &logger;
                 std::chrono::steady_clock::duration connectionTimeoutMillis;

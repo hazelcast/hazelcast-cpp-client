@@ -23,7 +23,6 @@
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h"
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h"
-#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"

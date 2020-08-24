@@ -25,6 +25,6 @@ namespace hazelcast {
         * \tparam Args argument types
         */
         template<typename ...Args>
-        HAZELCAST_API inline void noop(Args...) {}
+        inline void noop(Args...) {}
     }
 }

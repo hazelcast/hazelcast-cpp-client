@@ -31,6 +31,7 @@
  */
 
 #include <unordered_set>
+#include <atomic>
 
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/proxy/PNCounterImpl.h"
@@ -1836,7 +1837,7 @@ namespace hazelcast {
 
                     ReliableTopicExecutor::Task::Task(std::shared_ptr<Ringbuffer> rb,
                                                       util::BlockingConcurrentQueue<ReliableTopicExecutor::Message> &q,
-                                                      util::AtomicBoolean &shutdown) : rb(std::move(rb)), q(q),
+                                                      std::atomic<bool> &shutdown) : rb(std::move(rb)), q(q),
                                                                                        shutdown(shutdown) {}
 
                     ReliableTopicMessage::ReliableTopicMessage() : publishTime(std::chrono::system_clock::now()) {}

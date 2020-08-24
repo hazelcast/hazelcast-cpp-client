@@ -16,8 +16,9 @@
 
 #pragma once
 
+#include <atomic>
+
 #include "hazelcast/util/SynchronizedQueue.h"
-#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/connection/ClientConnectionStrategy.h"
 
@@ -57,7 +58,7 @@ namespace hazelcast {
                 shutdownWithExternalThread(std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl);
 
             private:
-                util::AtomicBoolean disconnectedFromCluster;
+                std::atomic<bool> disconnectedFromCluster{ false };
                 bool clientStartAsync;
                 config::ClientConnectionStrategyConfig::ReconnectMode reconnectMode;
                 std::atomic_bool isShutdown;

@@ -119,7 +119,7 @@ namespace hazelcast {
 
 namespace std {
     template<>
-    struct hash<hazelcast::client::Member> {
+    struct HAZELCAST_API hash<hazelcast::client::Member> {
         std::size_t operator()(const hazelcast::client::Member &k) const noexcept;
     };
 }

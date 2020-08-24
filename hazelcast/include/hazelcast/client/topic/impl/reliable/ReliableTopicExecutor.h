@@ -16,6 +16,7 @@
 #pragma once
 
 #include <memory>
+#include <atomic>
 #include <stdint.h>
 
 #include "hazelcast/client/Ringbuffer.h"
@@ -64,7 +65,7 @@ namespace hazelcast {
                         class Task {
                         public:
                             Task(std::shared_ptr<Ringbuffer> rb, util::BlockingConcurrentQueue<Message> &q,
-                                 util::AtomicBoolean &shutdown);
+                                 std::atomic<bool> &shutdown);
 
                             virtual void run();
 
@@ -73,13 +74,13 @@ namespace hazelcast {
                         private:
                             std::shared_ptr<Ringbuffer> rb;
                             util::BlockingConcurrentQueue<Message> &q;
-                            util::AtomicBoolean &shutdown;
+                            std::atomic<bool> &shutdown;
                         };
 
                         std::shared_ptr<Ringbuffer> ringbuffer;
                         std::thread runnerThread;
                         util::BlockingConcurrentQueue<Message> q;
-                        util::AtomicBoolean shutdown;
+                        std::atomic<bool> shutdown;
                     };
                 }
             }

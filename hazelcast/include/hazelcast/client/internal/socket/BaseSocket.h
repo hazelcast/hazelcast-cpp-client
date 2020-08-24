@@ -30,9 +30,10 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                template<typename T>
+                template<typename T> 
                 class BaseSocket : public Socket {
                 public:
+                    template<typename CONTEXT = void>
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis)

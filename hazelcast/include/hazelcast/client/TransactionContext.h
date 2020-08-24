@@ -31,9 +31,9 @@
 
 namespace std {
     template <>
-    class hash<std::pair<std::string, std::string>> {
+    class HAZELCAST_API hash<std::pair<std::string, std::string>> {
     public:
-        std::size_t HAZELCAST_API operator()(const std::pair<std::string, std::string> &val) const noexcept;
+        std::size_t operator()(const std::pair<std::string, std::string> &val) const noexcept;
     };
 }
 

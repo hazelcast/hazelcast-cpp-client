@@ -39,7 +39,6 @@
 #include <hazelcast/client/proxy/PNCounterImpl.h>
 #include <hazelcast/client/serialization/pimpl/DataInput.h>
 #include <hazelcast/util/AddressUtil.h>
-#include <hazelcast/util/RuntimeAvailableProcessors.h>
 #include <hazelcast/client/serialization/pimpl/DataOutput.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/client/exception/IOException.h>
@@ -86,7 +85,6 @@
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/MultiMap.h"
@@ -2928,41 +2926,7 @@ namespace hazelcast {
     }
 }
 
-
-
-
 using namespace hazelcast::util;
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            class RuntimeAvailableProcessorsTest : public ::testing::Test {
-            protected:
-                void TearDown() override {
-                    RuntimeAvailableProcessors::resetOverride();
-                }
-            };
-
-            TEST_F(RuntimeAvailableProcessorsTest, getAvailableProcessors_withoutOverride) {
-                int availableProcessors = RuntimeAvailableProcessors::getNumberOfProcessors();
-                ASSERT_EQ(availableProcessors, RuntimeAvailableProcessors::get());
-            }
-
-            TEST_F(RuntimeAvailableProcessorsTest, getAvailableProcessors_withOverride) {
-                int customAvailableProcessors = 1234;
-                RuntimeAvailableProcessors::override(customAvailableProcessors);
-                try {
-                    ASSERT_EQ(customAvailableProcessors, RuntimeAvailableProcessors::get());
-                } catch (...) {
-                    RuntimeAvailableProcessors::resetOverride();
-                }
-            }
-        }
-    }
-}
-
-
-
 
 namespace hazelcast {
     namespace client {

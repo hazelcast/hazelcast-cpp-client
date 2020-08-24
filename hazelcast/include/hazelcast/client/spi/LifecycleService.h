@@ -16,12 +16,11 @@
 #pragma once
 
 #include <mutex>
+#include <unordered_set>
+#include <atomic>
 #include <boost/thread/latch.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/AtomicBoolean.h"
-
-#include <unordered_set>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -68,7 +67,7 @@ namespace hazelcast {
                 ClientContext &clientContext;
                 std::unordered_set<LifecycleListener *> listeners;
                 std::mutex listenerLock;
-                util::AtomicBoolean active;
+                std::atomic<bool> active{ false };
                 LoadBalancer *loadBalancer;
                 Cluster &cluster;
                 boost::latch shutdownCompletedLatch;

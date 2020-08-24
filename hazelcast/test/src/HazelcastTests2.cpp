@@ -45,6 +45,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <atomic>
 #include <stdlib.h>
 #include <fstream>
 #include <boost/asio.hpp>
@@ -63,7 +64,6 @@
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
@@ -158,7 +158,7 @@ namespace hazelcast {
                     }
                     static void Pop(hazelcast::util::ThreadArgs &args) {
                         hazelcast::util::BlockingConcurrentQueue<int> *q = (hazelcast::util::BlockingConcurrentQueue<int> *)args.arg0;
-                        hazelcast::util::AtomicInt *val = (hazelcast::util::AtomicInt *)args.arg1;
+                        std::atomic<int> *val = (std::atomic<int> *)args.arg1;
                         val->store(q->pop());
                     }
 
@@ -201,7 +201,7 @@ namespace hazelcast {
                         ASSERT_EQ((int) i, q.pop());
                     }
 
-                    hazelcast::util::AtomicInt val(-1);
+                    std::atomic<int> val(-1);
                     int testValue = 7;
                     unsigned long sleepTime = 3000U;
                     hazelcast::util::StartedThread t(Pop, &q, &val, &sleepTime);
