@@ -15,12 +15,13 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/AtomicBoolean.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/serialization/serialization.h"
 #include <memory>
 #include <vector>
+#include <atomic>
+
+#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/serialization/serialization.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -101,7 +102,7 @@ namespace hazelcast {
                 spi::ClientContext& clientContext;
                 std::shared_ptr<connection::Connection> connection;
 
-                util::AtomicBoolean TRANSACTION_EXISTS;
+                std::atomic<bool> TRANSACTION_EXISTS{ false };
 
                 int64_t threadId;
                 std::string txnId;

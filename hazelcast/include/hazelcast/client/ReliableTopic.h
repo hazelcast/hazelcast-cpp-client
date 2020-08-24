@@ -17,6 +17,7 @@
 
 #include <string>
 #include <memory>
+#include <atomic>
 
 #include "hazelcast/client/proxy/ReliableTopicImpl.h"
 #include "hazelcast/client/Ringbuffer.h"
@@ -313,7 +314,7 @@ namespace hazelcast {
                 int id;
                 std::shared_ptr<Ringbuffer> ringbuffer;
                 int64_t sequence;
-                util::AtomicBoolean cancelled;
+                std::atomic<bool> cancelled;
                 util::ILogger &logger;
                 const std::string &name;
                 topic::impl::reliable::ReliableTopicExecutor executor;

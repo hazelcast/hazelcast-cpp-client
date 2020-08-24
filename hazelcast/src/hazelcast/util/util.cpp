@@ -63,7 +63,6 @@
 #include "hazelcast/util/UUID.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/SyncHttpClient.h"
-#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
 #include "hazelcast/util/concurrent/CancellationException.h"
@@ -749,22 +748,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-
-
-namespace hazelcast {
-    namespace util {
-        AtomicBoolean::AtomicBoolean() : std::atomic<bool>(false) {
-        }
-
-        AtomicBoolean::AtomicBoolean(bool i) : std::atomic<bool>(i) {
-        }
-    }
-}
-
-
-
 
 namespace hazelcast {
     namespace util {

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <atomic>
 #include <signal.h>
 
 #include <hazelcast/client/HazelcastAll.h>
@@ -36,7 +37,7 @@ private:
     auto_ptr<string> value;
 };
 
-AtomicBoolean isCancelled;
+std::atomic<bool> isCancelled{ false };
 
 class SoakTestTask : public Runnable {
 public:

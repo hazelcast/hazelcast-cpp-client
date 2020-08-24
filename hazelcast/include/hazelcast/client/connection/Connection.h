@@ -28,7 +28,6 @@
 
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
@@ -105,7 +104,7 @@ namespace hazelcast {
 
                 const std::string &getCloseReason() const;
 
-                bool operator==(const Connection &rhs) const;
+                bool operator==(const Connection &rhs) const;   
 
                 bool operator!=(const Connection &rhs) const;
 
@@ -144,7 +143,7 @@ namespace hazelcast {
                 protocol::IMessageHandler &invocationService;
                 std::unique_ptr<Socket> socket;
                 std::shared_ptr<AuthenticationFuture> authFuture;
-                util::AtomicBoolean authenticatedAsOwner;
+                std::atomic<bool> authenticatedAsOwner{ false };
 
                 int connectionId;
                 std::string closeReason;

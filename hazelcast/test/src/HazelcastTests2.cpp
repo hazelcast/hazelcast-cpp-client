@@ -45,6 +45,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <atomic>
 #include <stdlib.h>
 #include <fstream>
 #include <boost/asio.hpp>
