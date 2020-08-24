@@ -39,10 +39,8 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace nearcache {
-				template<>
-				std::shared_ptr<serialization::pimpl::Data>
-					NearCache<serialization::pimpl::Data, serialization::pimpl::Data>::NULL_OBJECT(new serialization::pimpl::Data);
-							
+				template class NearCache<serialization::pimpl::Data, serialization::pimpl::Data>;
+		
                 NearCacheManager::NearCacheManager(const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
                                                    serialization::pimpl::SerializationService &ss,
                                                    util::ILogger &logger)
