@@ -69,7 +69,6 @@
 #include "hazelcast/util/concurrent/CancellationException.h"
 #include "hazelcast/util/UuidUtil.h"
 #include "hazelcast/util/AddressHelper.h"
-#include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/ByteBuffer.h"
@@ -1156,37 +1155,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-namespace hazelcast {
-    namespace util {
-        std::atomic<int> RuntimeAvailableProcessors::currentAvailableProcessors(
-                RuntimeAvailableProcessors::getNumberOfProcessors());
-
-        int RuntimeAvailableProcessors::getNumberOfProcessors() {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            SYSTEM_INFO sysinfo;
-            GetSystemInfo(&sysinfo);
-            return sysinfo.dwNumberOfProcessors;
-#else
-            return sysconf(_SC_NPROCESSORS_ONLN);
-#endif
-        }
-
-        int RuntimeAvailableProcessors::get() {
-            return currentAvailableProcessors;
-        }
-
-        void RuntimeAvailableProcessors::override(int availableProcessors) {
-            RuntimeAvailableProcessors::currentAvailableProcessors.store(availableProcessors);
-        }
-
-        void RuntimeAvailableProcessors::resetOverride() {
-            currentAvailableProcessors.store(getNumberOfProcessors());
-        }
-    }
-}
-
 
 //-----------------------------------------------------------------------------
 // MurmurHash3 was written by Austin Appleby, and is placed in the public
