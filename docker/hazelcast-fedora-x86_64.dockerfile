@@ -1,7 +1,7 @@
 FROM fedora:latest
 
 RUN dnf groups install -y "Development Tools"
-RUN dnf install -y gcc-c++ gdb compat-openssl10-devel.x86_64 cmake valgrind
+RUN dnf install -y gcc-c++ gdb compat-openssl10-devel.x86_64 cmake valgrind java-1.8.0-openjdk.x86_64
 
 # needed for test
 RUN dnf install -y maven net-tools gcovr
