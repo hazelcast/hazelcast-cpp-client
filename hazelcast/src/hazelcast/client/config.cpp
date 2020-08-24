@@ -31,7 +31,6 @@
  */
 
 #include "hazelcast/client/ClientConfig.h"
-
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/client/config/SSLConfig.h"
 #include "hazelcast/util/Preconditions.h"
@@ -44,8 +43,10 @@
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/config/LoggerConfig.h"
+#include "hazelcast/client/config/index_config.h"
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
+#include "hazelcast/client/query/Predicates.h"
 
 namespace hazelcast {
     namespace client {
@@ -492,7 +493,7 @@ namespace hazelcast {
                         }
                     }
                     if (duplicate.get() != NULL) {
-                        throw (exception::ExceptionBuilder<exception::ConfigurationException>(
+                        throw (exception::ExceptionBuilder<exception::InvalidConfigurationException>(
                                 "MatchingPointConfigPatternMatcher::matches") << "Configuration " << itemName
                                                                               << " has duplicate configuration. Candidate:"
                                                                               << *candidate << ", duplicate:"
@@ -521,11 +522,23 @@ namespace hazelcast {
                     return (int) (firstPart.length() + secondPart.length());
                 }
             }
+
+            const std::string index_config::bitmap_index_options::DEFAULT_KEY = query::QueryConstants::KEY_ATTRIBUTE_NAME;
+            const index_config::bitmap_index_options::unique_key_transformation index_config::bitmap_index_options::DEFAULT_TRANSFORMATION = index_config::bitmap_index_options::unique_key_transformation::OBJECT;
+
+            index_config::bitmap_index_options::bitmap_index_options() : key(DEFAULT_KEY),
+                                                                         transformation(DEFAULT_TRANSFORMATION) {}
+
+            const index_config::index_type index_config::DEFAULT_TYPE = index_config::index_type::SORTED;
+
+            index_config::index_config() : type(DEFAULT_TYPE) {}
+
+            index_config::index_config(index_config::index_type type) : type(type) {}
+
+            void index_config::add_attributes() {}
         }
 
-        GroupConfig::GroupConfig() : name("dev"), password("dev-pass") {
-
-        }
+        GroupConfig::GroupConfig() {}
 
         GroupConfig::GroupConfig(const std::string &name, const std::string &password)
                 : name(name), password(password) {
@@ -549,8 +562,8 @@ namespace hazelcast {
             return password;
         }
 
-        ClientConfig::ClientConfig()
-                : loadBalancer(NULL), redoOperation(false), socketInterceptor(NULL), executorPoolSize(-1) {}
+        ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(NULL), redoOperation(false),
+                                       socketInterceptor(NULL), executorPoolSize(-1) {}
 
         ClientConfig &ClientConfig::addAddress(const Address &address) {
             networkConfig.addAddress(address);
@@ -618,7 +631,7 @@ namespace hazelcast {
         }
 
         LoadBalancer *const ClientConfig::getLoadBalancer() {
-            if (loadBalancer == NULL)
+            if (!loadBalancer)
                 return &defaultLoadBalancer;
             return loadBalancer;
         }
@@ -685,11 +698,6 @@ namespace hazelcast {
 
         const std::unordered_set<MembershipListener *> &ClientConfig::getMembershipListeners() const {
             return membershipListeners;
-        }
-
-
-        const boost::optional<std::string> &ClientConfig::getPrincipal() const {
-            return principal;
         }
 
         ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor *interceptor) {
@@ -816,6 +824,70 @@ namespace hazelcast {
 
         const std::unordered_set<std::shared_ptr<MembershipListener> > &ClientConfig::getManagedMembershipListeners() const {
             return managedMembershipListeners;
+        }
+
+        const std::string &ClientConfig::getClusterName() const {
+            return cluster_name_;
+        }
+
+        void ClientConfig::setClusterName(const std::string &clusterName) {
+            cluster_name_ = clusterName;
+        }
+
+        const std::unordered_set<std::string> &ClientConfig::getLabels() const {
+            return labels_;
+        }
+
+        ClientConfig &ClientConfig::setLabels(const std::unordered_set<std::string> &labels) {
+            labels_ = labels;
+            return *this;
+        }
+
+        ClientConfig &ClientConfig::addLabel(const std::string &label) {
+            labels_.insert(label);
+            return *this;
+        }
+        
+        namespace security {
+            username_password_credentials::username_password_credentials(const std::string &name,
+                                                                                   const std::string &password) : name_(
+                    name), password_(password) {}
+
+            const std::string &username_password_credentials::get_name() const {
+                return name_;
+            }
+
+            const std::string &username_password_credentials::get_password() const {
+                return password_;
+            }
+
+            const credentials::type username_password_credentials::get_type() const {
+                return credentials::type::username_password;
+            }
+
+            const std::string &token_credentials::get_name() const {
+                return name_;
+            }
+
+            const std::vector<byte> &token_credentials::get_secret() const {
+                return secret_data_;
+            }
+
+            const credentials::type token_credentials::get_type() const {
+                return credentials::type::token;
+            }
+
+            token_credentials::token_credentials(const std::string &name, const std::vector<byte> &secretData) : name_(
+                    name), secret_data_(secretData) {}
+
+            secret_credential::secret_credential(const std::string &name, const std::vector<byte> &secretData)
+                    : token_credentials(name, secretData) {}
+
+            const credentials::type secret_credential::get_type() const {
+                return credentials::type::secret;
+            }
+
+            credentials::~credentials() {}
         }
     }
 }

@@ -32,6 +32,13 @@
 
 namespace hazelcast {
     namespace client {
+        namespace protocol {
+            namespace codec {
+                namespace holder {
+                    struct paging_predicate_holder;
+                }
+            }
+        }
         class IMap;
         namespace query {
             class PagingPredicateMarker {};
@@ -56,6 +63,11 @@ namespace hazelcast {
             };
 
             static const std::string IterationNames[] = {"KEY", "VALUE", "ENTRY"};
+
+            struct anchor_data_list {
+                std::vector<int32_t> page_list;
+                std::vector<std::pair<serialization::pimpl::Data, boost::optional<serialization::pimpl::Data>>> data_list;
+            };
 
             /**
              * NOTE: PagingPredicate can only be used with values(), keySet() and entries() methods!!!
@@ -96,26 +108,18 @@ namespace hazelcast {
             template<typename K, typename V>
             class PagingPredicate : public Predicate, public PagingPredicateMarker {
                 friend IMap;
+                friend protocol::codec::holder::paging_predicate_holder;
+                friend serialization::hz_serializer<query::PagingPredicate<K, V>>;
             public:
-                ~PagingPredicate() {
-                    for (typename std::vector<std::pair<size_t, std::pair<K *, V *> > >::const_iterator it = anchorList.begin();
-                         it != anchorList.end(); ++it) {
-                        delete it->second.first;
-                        delete it->second.second;
-                    }
-                }
+                ~PagingPredicate() = default;
 
                 /**
                  * resets for reuse
                  */
                 void reset() {
                     iterationType = IterationType::VALUE;
-                    for (typename std::vector<std::pair<size_t, std::pair<K *, V *> > >::const_iterator it = anchorList.begin();
-                         it != anchorList.end(); ++it) {
-                        delete it->second.first;
-                        delete it->second.second;
-                    }
-                    anchorList.clear();
+                    anchor_data_list_.page_list.clear();
+                    anchor_data_list_.data_list.clear();
                     page = 0;
                 }
 
@@ -159,87 +163,19 @@ namespace hazelcast {
                     return comparator.get();
                 }
 
-                /**
-                 * Retrieve the anchor object which is the last value object on the previous page.
-                 * <p/>
-                 * Note: This method will return `NULL` on the first page of the query result.
-                 *
-                 * @return std::pair<K *, V *> the anchor object which is the last value object on the previous page
-                 */
-                const std::pair<K *, V *> *getAnchor() const {
-                    if (0 == anchorList.size()) {
-                        return (const std::pair<K *, V *> *)NULL;
-                    }
-
-                    return &anchorList[page].second;
-                }
-
-                /**
-                 * After each query, an anchor entry is set for that page. see {@link #setAnchor(int, Map.Entry)}}
-                 * For the next query user may set an arbitrary page. see {@link #setPage(int)}
-                 * for example: user queried first 5 pages which means first 5 anchor is available
-                 * if the next query is for the 10th page then the nearest anchor belongs to page 5
-                 * but if the next query is for the 3rd page then the nearest anchor belongs to page 2
-                 *
-                 * @return nearest anchored entry for current page
-                 */
-                const std::pair<size_t, std::pair<K *, V *> > *getNearestAnchorEntry() {
-                    size_t anchorCount = anchorList.size();
-
-                    if (page == 0 || anchorCount == 0) {
-                        return (const std::pair<size_t, std::pair<K *, V *> > *) NULL;
-                    }
-
-                    if (page < anchorCount) {
-                        return &anchorList[page - 1];
-                    } else {
-                        return &anchorList[anchorCount - 1];
-                    }
-                }
-
-                /**
-                 * Defines how this class will be written.
-                 * @param writer ObjectDataOutput
-                 */
-                void writeData(serialization::ObjectDataOutput &out) const {
-                    out.writeBytes(outStream.toByteArray());
-                    out.write<int32_t>((int)page);
-                    out.write<int32_t>((int)pageSize);
-                    out.write<std::string>(IterationNames[static_cast<int32_t>(iterationType)]);
-                    out.write<int32_t>((int) anchorList.size());
-                    for (typename std::vector<std::pair<size_t, std::pair<K *, V *> > >::const_iterator it = anchorList.begin();
-                         it != anchorList.end(); ++it) {
-                        out.write<int32_t>((int)it->first);
-                        out.writeObject<K>(it->second.first);
-                        out.writeObject<V>(it->second.second);
-                    }
-                }
-
-                void setAnchor(size_t pageNumber, const std::pair<K *, V *> &anchorEntry) {
-                    size_t anchorCount = anchorList.size();
-                    if (pageNumber < anchorCount) {
-                        // release the previous anchoe entry
-                        delete anchorList[pageNumber].second.first;
-                        delete anchorList[pageNumber].second.second;
-                        anchorList[pageNumber] = std::pair<size_t, std::pair<K *, V *> >(pageNumber, anchorEntry);
-                    } else if (pageNumber == anchorCount) {
-                        anchorList.push_back(std::pair<size_t, std::pair<K *, V *> >(pageNumber, anchorEntry));
-                    } else {
-                        char msg[200];
-                        util::hz_snprintf(msg, 200, "Anchor index is not correct, expected: %d but found: %d", pageNumber,
-                                          anchorCount);
-                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("PagingPredicate::setAnchor", msg));
-                    }
+                void setAnchorDataList(anchor_data_list anchorDataList) {
+                    anchor_data_list_ = std::move(anchorDataList);
                 }
 
             private:
-                // key is the page number, the value is the map entry as the anchor
-                std::vector<std::pair<size_t, std::pair<K *, V *> > > anchorList;
+                anchor_data_list anchor_data_list_;
                 std::shared_ptr<query::EntryComparator<K, V>> comparator;
                 serialization::ObjectDataOutput outStream;
                 size_t pageSize;
                 size_t page;
                 IterationType iterationType;
+                boost::optional<serialization::pimpl::Data> comparator_data_;
+                boost::optional<serialization::pimpl::Data> predicate_data_;
 
                 /**
                  * Construct with a pageSize
@@ -273,6 +209,7 @@ namespace hazelcast {
                         iterationType(IterationType::VALUE) {
                     outStream.writeObject(predicate);
                     outStream.writeObject<bool>(nullptr);
+                    predicate_data_ = serializationService.toData<INNER_PREDICATE>(predicate);
                 }
 
                 /**
@@ -291,7 +228,8 @@ namespace hazelcast {
                         iterationType(IterationType::VALUE) {
                     outStream.writeObject<bool>(nullptr);
                     outStream.writeObject(comp);
-                    comparator = std::make_shared<COMPARATOR>(std::move(comp));
+                    comparator_data_ = serializationService.toData<COMPARATOR>(comp);
+                    comparator = std::make_shared<COMPARATOR>(std::forward<COMPARATOR>(comp));
                 }
 
                 /**
@@ -312,7 +250,9 @@ namespace hazelcast {
                         iterationType(IterationType::VALUE) {
                     outStream.writeObject(predicate);
                     outStream.writeObject(comp);
-                    comparator = std::make_shared<COMPARATOR>(std::move(comp));
+                    predicate_data_ = serializationService.toData<INNER_PREDICATE>(predicate);
+                    comparator_data_ = serializationService.toData<COMPARATOR>(comp);
+                    comparator = std::make_shared<COMPARATOR>(std::forward<COMPARATOR>(comp));
                 }
             };
         }
@@ -338,8 +278,19 @@ namespace hazelcast {
                  * Defines how this class will be written.
                  * @param writer ObjectDataOutput
                  */
-                static void writeData(const query::PagingPredicate<K, V> &object, ObjectDataOutput &out) {
-                    object.writeData(out);
+                static void writeData(const query::PagingPredicate<K, V> &obj, ObjectDataOutput &out) {
+                    out.writeBytes(obj.outStream.toByteArray());
+                    out.write<int32_t>((int32_t) obj.page);
+                    out.write<int32_t>((int32_t) obj.pageSize);
+                    out.write<std::string>(obj.IterationNames[static_cast<int32_t>(obj.iterationType)]);
+                    out.write<int32_t>((int32_t) obj.anchor_data_list_.data_list.size());
+                    const auto &data_list = obj.anchor_data_list_.data_list;
+                    const auto &page_list = obj.anchor_data_list_.page_list;
+                    for (size_t i = 0; i < obj.anchor_data_list_.data_list.size(); ++i) {
+                        out.write<int32_t>(page_list[i]);
+                        out.writeObject<K>(data_list[i].first);
+                        out.writeObject<V>(data_list[i].second);
+                    }
                 }
 
                 /**

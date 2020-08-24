@@ -44,6 +44,8 @@
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
+#include "hazelcast/client/spi/impl/listener/cluster_view_listener.h"
+#include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
 #include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/FlakeIdGenerator.h"
 #include "hazelcast/client/IExecutorService.h"
@@ -68,18 +70,14 @@ namespace hazelcast {
         }
         namespace spi {
             class ClientContext;
-
-            class ClientInvocationService;
-
             class LifecycleService;
-
-            class ClientListenerService;
-
-            class ClientProxyFactory;
 
             namespace impl {
                 class ClientExecutionServiceImpl;
                 class ClientPartitionServiceImpl;
+                namespace listener {
+                    class listener_service_impl;
+                }
             }
         }
 
@@ -90,7 +88,6 @@ namespace hazelcast {
         class TransactionOptions;
 
         class Cluster;
-
 
         namespace impl {
             class ClientLockReferenceIdGenerator;
@@ -104,7 +101,7 @@ namespace hazelcast {
                 * Note: ClientConfig will be copied.
                 * @param config client configuration to start the client with
                 */
-                HazelcastClientInstanceImpl(const ClientConfig &config);
+                explicit HazelcastClientInstanceImpl(const ClientConfig &config);
 
                 /**
                 * Destructor
@@ -195,7 +192,7 @@ namespace hazelcast {
 
                 const protocol::ClientExceptionFactory &getExceptionFactory() const;
 
-                void onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection);
+                void on_cluster_restart();
 
                 const std::shared_ptr<ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator() const;
 
@@ -213,8 +210,8 @@ namespace hazelcast {
                 spi::impl::ClientClusterServiceImpl clusterService;
                 std::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
                 std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
-                std::unique_ptr<spi::ClientInvocationService> invocationService;
-                std::shared_ptr<spi::ClientListenerService> listenerService;
+                std::unique_ptr<spi::impl::ClientInvocationServiceImpl> invocationService;
+                std::shared_ptr<spi::impl::listener::listener_service_impl> listenerService;
                 spi::impl::ClientTransactionManagerServiceImpl transactionManager;
                 Cluster cluster;
                 spi::LifecycleService lifecycleService;
@@ -227,13 +224,13 @@ namespace hazelcast {
                 int32_t id;
                 std::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
                 std::shared_ptr<util::ILogger> logger;
+                std::shared_ptr<spi::impl::listener::cluster_view_listener> cluster_listener_;
+
                 HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs) = delete;
 
                 void operator=(const HazelcastClientInstanceImpl& rhs) = delete;
 
-                std::shared_ptr<spi::ClientListenerService> initListenerService();
-
-                std::unique_ptr<spi::ClientInvocationService> initInvocationService();
+                std::shared_ptr<spi::impl::listener::listener_service_impl> initListenerService();
 
                 std::shared_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
 

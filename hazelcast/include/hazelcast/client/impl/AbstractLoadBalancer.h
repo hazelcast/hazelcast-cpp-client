@@ -50,11 +50,9 @@ namespace hazelcast {
 
                 void memberRemoved(const MembershipEvent &membershipEvent) override;
 
-                void init(const InitialMembershipEvent &event) override;
-
-                void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) override;
-
                 ~AbstractLoadBalancer() override;
+
+                void init(InitialMembershipEvent event) override;
 
             private:
                 mutable std::mutex membersLock;

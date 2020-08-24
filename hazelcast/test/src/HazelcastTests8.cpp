@@ -29,7 +29,6 @@
 #include <thread>
 #include <hazelcast/client/spi/ClientContext.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/protocol/Principal.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/util/Util.h>
@@ -95,7 +94,6 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/MultiMap.h"
-#include "hazelcast/util/LittleEndianBufferWrapper.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
@@ -665,7 +663,7 @@ namespace hazelcast {
 
                 void TearDown() override {
                     if (map) {
-                        map->destroy();
+                        map->destroy().get();
                     }
                 }
 
@@ -784,7 +782,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            
+
             class ClientSetTest : public ClientTestSupport {
             protected:
                 void addItems(int count) {
@@ -794,7 +792,7 @@ namespace hazelcast {
                 }
 
                 void TearDown() override {
-                    set->clear();
+                    set->clear().get();
                 }
 
                 static void SetUpTestCase() {
@@ -908,7 +906,7 @@ namespace hazelcast {
             TEST_F(ClientSetTest, testListener) {
                 boost::latch latch1(6);
 
-                std::string registrationId = set->addItemListener(
+                auto registrationId = set->addItemListener(
                     ItemListener()
                         .on_added([&latch1](ItemEvent &&itemEvent) {
                             latch1.count_down();
@@ -997,7 +995,7 @@ namespace hazelcast {
             protected:
                 void TearDown() override {
                     if (topic) {
-                        topic->destroy();
+                        topic->destroy().get();
                     }
                 }
 
@@ -1606,13 +1604,6 @@ namespace hazelcast {
                 shutdown();
             }
 
-            bool HazelcastServer::setAttributes(int memberStartOrder) {
-                if (!isStarted) {
-                    return false;
-                }
-                return factory.setAttributes(memberStartOrder);
-            }
-
             const remote::Member &HazelcastServer::getMember() const {
                 return member;
             }
@@ -1680,16 +1671,14 @@ namespace hazelcast {
         namespace test {
             class ClientMessageTest: public ClientTestSupport {};
             TEST_F(ClientMessageTest, testOperationNameGetSet) {
-                std::unique_ptr<protocol::ClientMessage> message = protocol::ClientMessage::create(8);
+                protocol::ClientMessage message(8);
                 constexpr const char* operation_name = "OPERATION_NAME";
-                message->setOperationName(operation_name);
-                ASSERT_EQ(message->getOperationName(), operation_name);
+                message.setOperationName(operation_name);
+                ASSERT_EQ(message.getOperationName(), operation_name);
             }
             TEST_F(ClientMessageTest, testOperationNameAfterRequestEncoding) {
-                std::string expected_operation_name = protocol::codec::MapSizeCodec::OPERATION_NAME;
-                std::unique_ptr<protocol::ClientMessage> request =
-                  protocol::codec::MapSizeCodec::encodeRequest("map_name");
-                ASSERT_EQ(request->getOperationName(), expected_operation_name);
+                auto request = protocol::codec::map_size_encode("map_name");
+                ASSERT_EQ(request.getOperationName(), "Map.Size");
             }
         }
     }

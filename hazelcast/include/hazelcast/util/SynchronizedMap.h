@@ -38,7 +38,7 @@ namespace hazelcast {
          * @tparam K The type of the key for the map.
          * @tparam V The type of the value for the map. The shared_ptr<V> is being kept in the map.
          */
-        template <typename K, typename V>
+        template <typename K, typename V, typename Hash = std::hash<K>>
         class SynchronizedMap {
         public:
             SynchronizedMap() = default;
@@ -150,9 +150,9 @@ namespace hazelcast {
             std::vector<std::pair<K, std::shared_ptr<V> > > entrySet() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
-                typename std::unordered_map<K, std::shared_ptr<V>>::iterator it;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries.push_back(std::pair<K, std::shared_ptr<V> >(it->first, it->second));
+                entries.reserve(internalMap.size());
+                for (const auto &v : internalMap) {
+                    entries.emplace_back(v.first, v.second);
                 }
                 return entries;
             }
@@ -160,9 +160,9 @@ namespace hazelcast {
             std::vector<std::pair<K, std::shared_ptr<V> > > clear() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
-                typename std::unordered_map<K, std::shared_ptr<V>>::iterator it;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries.push_back(std::pair<K, std::shared_ptr<V> >(it->first, it->second));
+                entries.reserve(internalMap.size());
+                for (const auto &v : internalMap) {
+                    entries.emplace_back(v.first, v.second);
                 }
                 internalMap.clear();
                 return entries;
@@ -171,9 +171,8 @@ namespace hazelcast {
             std::vector<std::shared_ptr<V> > values() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::vector<std::shared_ptr<V> > valueArray;
-                typename std::unordered_map<K, std::shared_ptr<V>>::iterator it;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    valueArray.push_back(it->second);
+                for (const auto &v : internalMap) {
+                    valueArray.emplace_back(v.second);
                 }
                 return valueArray;
             }
@@ -181,9 +180,8 @@ namespace hazelcast {
             std::vector<K> keys() {
                 std::lock_guard<std::mutex> lg(mapLock);
                 std::vector<K> keysArray;
-                typename std::unordered_map<K, std::shared_ptr<V>>::iterator it;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    keysArray.push_back(it->first);
+                for (const auto &v : internalMap) {
+                    keysArray.emplace_back(v.first);
                 }
                 return keysArray;
             }
@@ -208,15 +206,21 @@ namespace hazelcast {
                 if (index < 0 || index >= internalMap.size()) {
                     return std::unique_ptr<std::pair<K, std::shared_ptr<V> > >();
                 }
-                typename std::unordered_map<K, std::shared_ptr<V> >::const_iterator it = internalMap.begin();
+                auto it = internalMap.begin();
                 for (size_t i = 0; i < index; ++i) {
                     ++it;
                 }
                 return std::unique_ptr<std::pair<K, std::shared_ptr<V> > >(
                         new std::pair<K, std::shared_ptr<V> >(it->first, it->second));
             }
+
+            bool empty() const {
+                std::lock_guard<std::mutex> lg(mapLock);
+                return internalMap.empty();
+            }
+
         private:
-            std::unordered_map<K, std::shared_ptr<V>> internalMap;
+            std::unordered_map<K, std::shared_ptr<V>, Hash> internalMap;
             mutable std::mutex mapLock;
         };
     }

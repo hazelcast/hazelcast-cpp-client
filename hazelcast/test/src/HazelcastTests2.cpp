@@ -21,11 +21,9 @@
 #include <hazelcast/client/ClientConfig.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/util/UuidUtil.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/protocol/Principal.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <hazelcast/client/serialization/pimpl/DataInput.h>
 #include <hazelcast/util/AddressHelper.h>
@@ -58,9 +56,7 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/Socket.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
@@ -229,49 +225,6 @@ namespace hazelcast {
                     finished = true;
                     t.join();
                 }
-            }
-        }
-    }
-}
-
-namespace hazelcast {
-    namespace client {
-        namespace test {
-            class UuidUtilTest : public ::testing::Test {
-            };
-
-            TEST_F(UuidUtilTest, testUnsecureUuid) {
-                hazelcast::util::UUID uuid1 = hazelcast::util::UuidUtil::newUnsecureUUID();
-                hazelcast::util::UUID uuid2 = hazelcast::util::UuidUtil::newUnsecureUUID();
-                ASSERT_NE(uuid1, uuid2);
-
-                std::string uuid1String = uuid1.toString();
-                std::string uuid2String = uuid2.toString();
-                ASSERT_NE(uuid1String, uuid2String);
-                ASSERT_EQ(36U, uuid1String.length());
-                ASSERT_EQ(36U, uuid2String.length());
-
-                std::stringstream ss(uuid1String);
-                std::string token;
-                ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(8U, token.length());
-                ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(4U, token.length());
-                ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(4U, token.length());
-                ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(4U, token.length());
-                ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(12U, token.length());
-                ASSERT_FALSE(std::getline(ss, token, '-'));
-            }
-
-            TEST_F(UuidUtilTest, testUuidToString) {
-                int64_t msb = static_cast<int64_t>(0xfb34567812345678LL);
-                int64_t lsb = static_cast<int64_t>(0xabcd123412345678LL);
-                hazelcast::util::UUID uuid(msb, lsb);
-                std::string uuidString = uuid.toString();
-                ASSERT_EQ("fb345678-1234-5678-abcd-123412345678", uuidString);
             }
         }
     }
@@ -816,7 +769,7 @@ namespace hazelcast {
                     class LifecycleStateListener : public LifecycleListener {
                     public:
                         LifecycleStateListener(boost::latch &connectedLatch,
-                                               const LifecycleEvent::LifeCycleState expectedState)
+                                               const LifecycleEvent::LifecycleState expectedState)
                                 : connectedLatch(connectedLatch), expectedState(expectedState) {}
 
                         void stateChanged(const LifecycleEvent &event) override {
@@ -827,7 +780,7 @@ namespace hazelcast {
 
                     private:
                         boost::latch &connectedLatch;
-                        const LifecycleEvent::LifeCycleState expectedState;
+                        const LifecycleEvent::LifecycleState expectedState;
                     };
 
                     ClientConfig clientConfig;
@@ -847,8 +800,7 @@ namespace hazelcast {
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
                     HazelcastClient client(clientConfig);
                     client.shutdown();
-                    ASSERT_THROW((client.getMap(randomMapName())),
-                                 exception::HazelcastClientOfflineException);
+                    ASSERT_THROW((client.getMap(randomMapName())), exception::HazelcastClientNotActiveException);
 
                     client.shutdown();
                 }
@@ -901,21 +853,22 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFTwoMembers) {
-                    HazelcastServer ownerServer(*g_srvFactory);
+                    HazelcastServer server1(*g_srvFactory);
+                    HazelcastServer server2(*g_srvFactory);
 
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
                     HazelcastClient client(clientConfig);
-                    HazelcastServer hazelcastInstance2(*g_srvFactory);
                     boost::latch shutdownLatch(1);
                     LifecycleStateListener lifecycleListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
                     client.addLifecycleListener(&lifecycleListener);
 
-// no exception at this point
+                    // no exception at this point
                     auto map = client.getMap(randomMapName());
                     map->put(1, 5).get();
 
-                    ownerServer.shutdown();
+                    server1.shutdown();
+                    server2.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
                     ASSERT_THROW(map->put(1, 5).get(), exception::HazelcastClientNotActiveException);
@@ -960,6 +913,8 @@ namespace hazelcast {
 
                     auto map = client.getMap(randomMapName());
                     map->size().get();
+
+                    client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberStartLate) {
@@ -994,11 +949,10 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers) {
-                    HazelcastServer ownerServer(*g_srvFactory);
+                    HazelcastServer server1(*g_srvFactory);
+                    HazelcastServer server2(*g_srvFactory);
 
-                    boost::latch connectedLatch(1);
-                    boost::latch disconnectedLatch(1);
-                    boost::latch reconnectedLatch(1);
+                    boost::latch connectedLatch(1), disconnectedLatch(1), reconnectedLatch(1);
 
                     clientConfig.getNetworkConfig().setConnectionAttemptLimit(10);
                     LifecycleStateListener listener(connectedLatch, LifecycleEvent::CLIENT_CONNECTED);
@@ -1011,8 +965,6 @@ namespace hazelcast {
 
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
-                    HazelcastServer hazelcastInstance2(*g_srvFactory);
-
                     auto map = client.getMap(randomMapName());
                     map->put(1, 5).get();
 
@@ -1022,9 +974,13 @@ namespace hazelcast {
                     LifecycleStateListener reconnectListener(reconnectedLatch, LifecycleEvent::CLIENT_CONNECTED);
                     client.addLifecycleListener(&reconnectListener);
 
-                    ownerServer.shutdown();
+                    server1.shutdown();
+                    server2.shutdown();
 
                     ASSERT_OPEN_EVENTUALLY(disconnectedLatch);
+
+                    HazelcastServer server3(*g_srvFactory);
+
                     ASSERT_OPEN_EVENTUALLY(reconnectedLatch);
 
                     map->get<int, int>(1).get();
@@ -1530,7 +1486,8 @@ namespace hazelcast {
 
             TEST_F(ClientSerializationTest, testStringLiterals) {
                 auto literal = R"delimeter(My example string literal)delimeter";
-                serialization::pimpl::SerializationService serializationService(SerializationConfig{});
+                SerializationConfig config;
+                serialization::pimpl::SerializationService serializationService(config);
                 auto data = serializationService.toData(literal);
                 auto obj = serializationService.toObject<decltype(literal)>(data);
                 ASSERT_TRUE(obj);

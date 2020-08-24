@@ -17,8 +17,7 @@
 
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/proxy/IListImpl.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
 
 namespace hazelcast {
     namespace client {
@@ -42,9 +41,9 @@ namespace hazelcast {
             *  @param includeValue bool value representing value should be included in ItemEvent or not.
             *  @returns registrationId that can be used to remove item listener
             */
-            boost::future<std::string> addItemListener(ItemListener &&listener, bool includeValue) {
-                std::unique_ptr<impl::ItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler>> itemEventHandler(
-                        new impl::ItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler>(
+            boost::future<boost::uuids::uuid> addItemListener(ItemListener &&listener, bool includeValue) {
+                std::unique_ptr<impl::ItemEventHandler<protocol::codec::list_addlistener_handler>> itemEventHandler(
+                        new impl::ItemEventHandler<protocol::codec::list_addlistener_handler>(
                                 getName(), getContext().getClientClusterService(),
                                 getContext().getSerializationService(),
                                 std::move(listener),

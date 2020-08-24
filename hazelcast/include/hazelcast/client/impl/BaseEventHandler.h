@@ -39,11 +39,6 @@ namespace hazelcast {
                 BaseEventHandler();
 
                 ~BaseEventHandler() override;
-                
-                virtual void handle(std::unique_ptr<protocol::ClientMessage> message) = 0;
-
-                // TODO: Remove the above method after changing and regenerating the codecs
-                void handle(const std::shared_ptr<protocol::ClientMessage> &event) override;
 
                 std::string registrationId;
 

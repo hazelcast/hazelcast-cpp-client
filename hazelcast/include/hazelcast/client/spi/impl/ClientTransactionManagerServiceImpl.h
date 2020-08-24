@@ -39,7 +39,7 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API ClientTransactionManagerServiceImpl {
                 public:
-                    ClientTransactionManagerServiceImpl(ClientContext &client, LoadBalancer &loadBalancer);
+                    ClientTransactionManagerServiceImpl(ClientContext &client);
 
                     ClientContext &getClient() const;
 
@@ -47,19 +47,12 @@ namespace hazelcast {
 
                 private:
                     ClientContext &client;
-                    LoadBalancer &loadBalancer;
-
-                    std::shared_ptr<connection::Connection> tryConnectSmart();
-
-                    Address getRandomAddress();
-
-                    std::shared_ptr<connection::Connection> tryConnectUnisocket();
-
-                    std::shared_ptr<connection::Connection> throwException(bool smartRouting);
 
                     std::exception_ptr
                     newOperationTimeoutException(std::exception_ptr cause, std::chrono::steady_clock::duration invocationTimeout,
                                                  std::chrono::steady_clock::time_point startTime);
+
+                    void throw_exception(bool smart_routing);
                 };
             }
         }

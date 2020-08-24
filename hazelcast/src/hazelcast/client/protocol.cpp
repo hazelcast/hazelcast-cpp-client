@@ -32,23 +32,16 @@
 
 #include <assert.h>
 
+#include <boost/uuid/uuid_io.hpp>
+
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include <hazelcast/client/protocol/codec/UUIDCodec.h>
 #include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
-#include "hazelcast/client/protocol/codec/AddressCodec.h"
-#include "hazelcast/client/protocol/codec/MemberCodec.h"
-#include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
 #include "hazelcast/client/Member.h"
-#include "hazelcast/client/map/DataEntryView.h"
-#include "hazelcast/client/protocol/codec/StackTraceElement.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/protocol/Principal.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -59,279 +52,150 @@ namespace hazelcast {
         namespace protocol {
             const std::string ClientTypes::CPP = "CPP";
 
-            ClientMessage::ClientMessage(int32_t size) : LittleEndianBufferWrapper(size), retryable(false) {
-                setFrameLength(size);
+            constexpr size_t ClientMessage::EXPECTED_DATA_BLOCK_SIZE;
+
+            const ClientMessage::frame_header_t ClientMessage::NULL_FRAME{ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS, ClientMessage::IS_NULL_FLAG};
+            const ClientMessage::frame_header_t ClientMessage::BEGIN_FRAME{ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS, ClientMessage::BEGIN_DATA_STRUCTURE_FLAG};
+            const ClientMessage::frame_header_t ClientMessage::END_FRAME{ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS, ClientMessage::END_DATA_STRUCTURE_FLAG};
+
+            ClientMessage::ClientMessage() : retryable(false) {}
+
+            ClientMessage::ClientMessage(size_t initial_frame_size, bool is_fingle_frame) : retryable(false) {
+                auto *initial_frame = reinterpret_cast<frame_header_t *>(wr_ptr(REQUEST_HEADER_LEN));
+                initial_frame->frame_len = initial_frame_size;
+                initial_frame->flags = is_fingle_frame ? static_cast<int16_t>(ClientMessage::UNFRAGMENTED_MESSAGE) |
+                        static_cast<int16_t>(ClientMessage::IS_FINAL_FLAG) : ClientMessage::UNFRAGMENTED_MESSAGE;
             }
 
-            ClientMessage::~ClientMessage() = default;
-
-            void ClientMessage::wrapForEncode(int32_t size) {
-                wrapForWrite(size, HEADER_SIZE);
-
-                setFrameLength(size);
-                setVersion(HAZELCAST_CLIENT_PROTOCOL_VERSION);
-                addFlag(BEGIN_AND_END_FLAGS);
-                setCorrelationId(0);
-                setPartitionId(-1);
-                setDataOffset(HEADER_SIZE);
-            }
-
-            std::unique_ptr<ClientMessage> ClientMessage::createForEncode(int32_t size) {
-                std::unique_ptr<ClientMessage> msg(new ClientMessage(size));
-                msg->wrapForEncode(size);
-                return msg;
-            }
-
-            std::unique_ptr<ClientMessage> ClientMessage::createForDecode(const ClientMessage &msg) {
-                // copy constructor does not do deep copy of underlying buffer but just uses a shared_ptr
-                std::unique_ptr<ClientMessage> copy(new ClientMessage(msg));
-                copy->wrapForRead(copy->getCapacity(), ClientMessage::HEADER_SIZE);
-                return copy;
-            }
-
-            std::unique_ptr<ClientMessage> ClientMessage::create(int32_t size) {
-                return std::unique_ptr<ClientMessage>(new ClientMessage(size));
+            void ClientMessage::wrap_for_read() {
+                buffer_index = 0;
+                offset = 0;
             }
 
             //----- Setter methods begin --------------------------------------
-            void ClientMessage::setFrameLength(int32_t length) {
-                util::Bits::nativeToLittleEndian4(&length, &buffer[FRAME_LENGTH_FIELD_OFFSET]);
-            }
-
-            void ClientMessage::setMessageType(uint16_t type) {
-                util::Bits::nativeToLittleEndian2(&type, &buffer[TYPE_FIELD_OFFSET]);
-            }
-
-            void ClientMessage::setVersion(uint8_t value) {
-                buffer[VERSION_FIELD_OFFSET] = value;
-            }
-
-            uint8_t ClientMessage::getFlags() {
-                return buffer[FLAGS_FIELD_OFFSET];
-            }
-
-            void ClientMessage::addFlag(uint8_t flags) {
-                buffer[FLAGS_FIELD_OFFSET] = getFlags() | flags;
+            void ClientMessage::setMessageType(int32_t type) {
+                boost::endian::store_little_s64(&data_buffer[0][TYPE_FIELD_OFFSET], type);
             }
 
             void ClientMessage::setCorrelationId(int64_t id) {
-                util::Bits::nativeToLittleEndian8(&id, &buffer[CORRELATION_ID_FIELD_OFFSET]);
+                boost::endian::store_little_s64(&data_buffer[0][CORRELATION_ID_FIELD_OFFSET], id);
             }
 
             void ClientMessage::setPartitionId(int32_t partitionId) {
-                util::Bits::nativeToLittleEndian4(&partitionId, &buffer[PARTITION_ID_FIELD_OFFSET]);
+                boost::endian::store_little_s32(&data_buffer[0][PARTITION_ID_FIELD_OFFSET], partitionId);
             }
 
-            void ClientMessage::setDataOffset(uint16_t offset) {
-                util::Bits::nativeToLittleEndian2(&offset, &buffer[DATA_OFFSET_FIELD_OFFSET]);
+            template<>
+            void ClientMessage::set(const std::vector<std::pair<boost::uuids::uuid, int64_t>> &values, bool is_final) {
+                auto *f = reinterpret_cast<frame_header_t *>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+                f->frame_len = values.size() * (UUID_SIZE + INT64_SIZE) + SIZE_OF_FRAME_LENGTH_AND_FLAGS;
+                f->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
+                for(auto &p : values) {
+                    set(p.first);
+                    set(p.second);
+                }
             }
 
-            void ClientMessage::updateFrameLength() {
-                setFrameLength(getIndex());
+            template<>
+            void ClientMessage::set(const std::vector<boost::uuids::uuid> &values, bool is_final) {
+                auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+                h->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * UUID_SIZE;
+                h->flags = is_final ? IS_FINAL_FLAG : DEFAULT_FLAGS;
+                for (auto &v : values) {
+                    set(v);
+                }
             }
 
-            void ClientMessage::set(const std::string *value) {
-                setNullable<std::string>(value);
+            template<>
+            void ClientMessage::set(const std::vector<int32_t> &values, bool is_final) {
+                set_primitive_vector(values, is_final);
             }
 
-
-            void ClientMessage::set(const Address &data) {
-                codec::AddressCodec::encode(data, *this);
+            template<>
+            void ClientMessage::set(const std::vector<int64_t> &values, bool is_final) {
+                set_primitive_vector(values, is_final);
             }
 
-            void ClientMessage::set(const serialization::pimpl::Data &value) {
-                setArray<byte>(value.toByteArray());
+            void ClientMessage::set(const query::anchor_data_list &list, bool is_final) {
+                add_begin_frame();
+                set(list.page_list);
+                set(list.data_list);
+                add_end_frame(is_final);
             }
 
-            void ClientMessage::set(const serialization::pimpl::Data *value) {
-                setNullable<serialization::pimpl::Data>(value);
+            void ClientMessage::set(const codec::holder::paging_predicate_holder &p, bool is_final) {
+                add_begin_frame();
+
+                auto f = reinterpret_cast<frame_header_t *>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+                f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT32_SIZE + INT8_SIZE;
+                f->flags = DEFAULT_FLAGS;
+                set(p.page_size);
+                set(p.page);
+                set(p.iteration_type);
+
+                set(p.anchor_list);
+
+                set(p.predicate_data);
+                set(p.comparator_data);
+                set(static_cast<serialization::pimpl::Data *>(nullptr));
+
+                add_end_frame(is_final);
             }
 
             //----- Setter methods end ---------------------
 
-            int32_t ClientMessage::fillMessageFrom(util::ByteBuffer &byteBuff, int32_t offset, int32_t frameLen) {
-                size_t numToRead = (size_t) (frameLen - offset);
-                size_t numRead = byteBuff.readBytes(&buffer[offset], numToRead);
-
-                if (numRead == numToRead) {
-                    wrapForRead(frameLen, ClientMessage::HEADER_SIZE);
+            void ClientMessage::fillMessageFrom(util::ByteBuffer &byteBuff, bool &is_final, size_t &remaining_bytes_in_frame) {
+                // Calculate the number of messages to read from the buffer first and then do read_bytes
+                // we add the frame sizes including the final frame to find the total.
+                // If there were bytes of a frame (remaining_bytes_in_frame) to read from the previous call, it is read.
+                auto remaining = byteBuff.remaining();
+                if (remaining_bytes_in_frame) {
+                    size_t bytes_to_read = std::min(remaining_bytes_in_frame, remaining);
+                    byteBuff.read_bytes(wr_ptr(bytes_to_read), bytes_to_read);
+                    remaining_bytes_in_frame -= bytes_to_read;
+                    if (remaining_bytes_in_frame > 0 || is_final) {
+                        return;
+                    }
                 }
 
-                return (int32_t) numRead;
+                remaining_bytes_in_frame = 0;
+                // more bytes to read
+                while (remaining_bytes_in_frame == 0 && !is_final && (remaining = byteBuff.remaining()) >= ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS) {
+                    // start of the frame here
+                    auto read_ptr = static_cast<byte *>(byteBuff.ix());
+                    auto *f = reinterpret_cast<frame_header_t *>(read_ptr);
+                    auto frame_len = static_cast<size_t>(static_cast<int32_t>(f->frame_len));
+                    is_final = ClientMessage::is_flag_set(f->flags, ClientMessage::IS_FINAL_FLAG);
+                    auto actual_bytes_to_read = std::min(frame_len, remaining);
+                    byteBuff.read_bytes(wr_ptr(frame_len, actual_bytes_to_read), actual_bytes_to_read);
+                    remaining_bytes_in_frame = frame_len - actual_bytes_to_read;
+                }
             }
 
-            //----- Getter methods begin -------------------
-            int32_t ClientMessage::getFrameLength() const {
-                int32_t result;
-
-                util::Bits::littleEndianToNative4(&buffer[FRAME_LENGTH_FIELD_OFFSET], &result);
-
-                return result;
+            size_t ClientMessage::size() const {
+                size_t len = 0;
+                for (auto &v : data_buffer) {
+                    len += v.size();
+                }
+                return len;
             }
 
-            uint16_t ClientMessage::getMessageType() const {
-                uint16_t type;
-
-                util::Bits::littleEndianToNative2(&buffer[TYPE_FIELD_OFFSET], &type);
-
-                return type;
+            int32_t ClientMessage::getMessageType() const {
+                return boost::endian::load_little_s32(&data_buffer[0][TYPE_FIELD_OFFSET]);
             }
 
-            uint8_t ClientMessage::getVersion() {
-                return buffer[VERSION_FIELD_OFFSET];
+            uint16_t ClientMessage::getHeaderFlags() const {
+                return boost::endian::load_little_u16(&data_buffer[0][FLAGS_FIELD_OFFSET]);
             }
 
             int64_t ClientMessage::getCorrelationId() const {
-                int64_t value;
-                util::Bits::littleEndianToNative8(&buffer[CORRELATION_ID_FIELD_OFFSET], &value);
-                return value;
+                return boost::endian::load_little_s64(&data_buffer[0][CORRELATION_ID_FIELD_OFFSET]);
             }
 
             int32_t ClientMessage::getPartitionId() const {
-                int32_t value;
-                util::Bits::littleEndianToNative4(&buffer[PARTITION_ID_FIELD_OFFSET], &value);
-                return value;
+                return boost::endian::load_little_s32(&data_buffer[0][PARTITION_ID_FIELD_OFFSET]);
             }
-
-            uint16_t ClientMessage::getDataOffset() const {
-                uint16_t value;
-                util::Bits::littleEndianToNative2(&buffer[DATA_OFFSET_FIELD_OFFSET], &value);
-                return value;
-            }
-
-            bool ClientMessage::isFlagSet(uint8_t flag) const {
-                return flag == (buffer[FLAGS_FIELD_OFFSET] & flag);
-            }
-
-            template<>
-            uint8_t ClientMessage::get() {
-                return getUint8();
-            }
-
-            template<>
-            bool ClientMessage::get() {
-                return getBoolean();
-            }
-
-            template<>
-            int32_t ClientMessage::get() {
-                return getInt32();
-            }
-
-            template<>
-            int64_t ClientMessage::get() {
-                return getInt64();
-            }
-
-            template<>
-            std::string ClientMessage::get() {
-                return getStringUtf8();
-            }
-
-            template<>
-            Address ClientMessage::get() {
-                return codec::AddressCodec::decode(*this);
-            }
-
-            template<>
-            util::UUID ClientMessage::get() {
-                return codec::UUIDCodec::decode(*this);
-            }
-
-            template<>
-            Member ClientMessage::get() {
-                return codec::MemberCodec::decode(*this);
-            }
-
-            template<>
-            map::DataEntryView ClientMessage::get() {
-                return codec::DataEntryViewCodec::decode(*this);
-            }
-
-            template<>
-            serialization::pimpl::Data ClientMessage::get() {
-                int32_t len = getInt32();
-
-                assert(checkReadAvailable(len));
-
-                byte *start = ix();
-                std::vector<byte> bytes(start,start + len);
-                index += len;
-
-                return serialization::pimpl::Data(std::move(bytes));
-            }
-
-            template<>
-            codec::StackTraceElement ClientMessage::get() {
-                return codec::StackTraceElementCodec::decode(*this);
-            }
-
-            template<>
-            std::pair<serialization::pimpl::Data, serialization::pimpl::Data> ClientMessage::get() {
-                serialization::pimpl::Data key = get<serialization::pimpl::Data>();
-                serialization::pimpl::Data value = get<serialization::pimpl::Data>();
-
-                return std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(key, value);
-            }
-
-            template<>
-            std::pair<Address, std::vector<int64_t>> ClientMessage::get() {
-                Address address = codec::AddressCodec::decode(*this);
-                std::vector<int64_t> values = getArray<int64_t>();
-                return std::make_pair(address, values);
-            }
-
-            template<>
-            std::pair<Address, std::vector<int32_t>> ClientMessage::get() {
-                Address address = codec::AddressCodec::decode(*this);
-                std::vector<int32_t> partitions = getArray<int32_t>();
-                return std::make_pair(address, partitions);
-            }
-
-            template<>
-            std::pair<std::string, int64_t> ClientMessage::get() {
-                std::string key = get<std::string>();
-                int64_t value = get<int64_t>();
-                return std::make_pair(key, value);
-            }
-            //----- Getter methods end --------------------------
-
-            //----- Data size calculation functions BEGIN -------
-            int32_t ClientMessage::calculateDataSize(uint8_t param) {
-                return UINT8_SIZE;
-            }
-
-            int32_t ClientMessage::calculateDataSize(bool param) {
-                return UINT8_SIZE;
-            }
-
-            int32_t ClientMessage::calculateDataSize(int32_t param) {
-                return INT32_SIZE;
-            }
-
-            int32_t ClientMessage::calculateDataSize(int64_t param) {
-                return INT64_SIZE;
-            }
-
-            int32_t ClientMessage::calculateDataSize(const std::string &param) {
-                return INT32_SIZE +  // bytes for the length field
-                       (int32_t) param.length();
-            }
-
-            int32_t ClientMessage::calculateDataSize(const std::string *param) {
-                return calculateDataSizeNullable<std::string>(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const serialization::pimpl::Data &param) {
-                return INT32_SIZE +  // bytes for the length field
-                       (int32_t) param.totalSize();
-            }
-
-            int32_t ClientMessage::calculateDataSize(const serialization::pimpl::Data *param) {
-                return calculateDataSizeNullable<serialization::pimpl::Data>(param);
-            }
-            //----- Data size calculation functions END ---------
-
+/*
             void ClientMessage::append(const ClientMessage *msg) {
                 // no need to double check if correlation ids match here,
                 // since we make sure that this is guaranteed at the caller that they are matching !
@@ -342,33 +206,7 @@ namespace hazelcast {
                 memcpy(&buffer[existingFrameLen], &msg->buffer[0], (size_t) dataSize);
                 setFrameLength(newFrameLen);
             }
-
-            int32_t ClientMessage::getDataSize() const {
-                return this->getFrameLength() - getDataOffset();
-            }
-
-            void ClientMessage::ensureBufferSize(int32_t requiredCapacity) {
-                int32_t currentCapacity = getCapacity();
-                if (requiredCapacity > currentCapacity) {
-                    // allocate new memory
-                    int32_t newSize = findSuitableCapacity(requiredCapacity, currentCapacity);
-
-                    buffer.resize(newSize, 0);
-                    wrapForWrite(newSize, getIndex());
-                } else {
-                    // Should never be here
-                    assert(0);
-                }
-            }
-
-            int32_t ClientMessage::findSuitableCapacity(int32_t requiredCapacity, int32_t existingCapacity) const {
-                int32_t size = existingCapacity;
-                do {
-                    size <<= 1;
-                } while (size < requiredCapacity);
-
-                return size;
-            }
+*/
 
             bool ClientMessage::isRetryable() const {
                 return retryable;
@@ -386,26 +224,39 @@ namespace hazelcast {
                 this->operationName = name;
             }
 
-            bool ClientMessage::isComplete() const {
-                return (index >= HEADER_SIZE) && (index == getFrameLength());
-            }
-
-            std::ostream &operator<<(std::ostream &os, const ClientMessage &message) {
-                os << "ClientMessage{length=" << message.getIndex()
-                   << ", operation=" << message.getOperationName()
-                   << ", correlationId=" << message.getCorrelationId()
-                   << ", messageType=0x" << std::hex << message.getMessageType() << std::dec
-                   << ", partitionId=" << message.getPartitionId()
-                   << ", isComplete=" << message.isComplete()
-                   << ", isRetryable=" << message.isRetryable()
-                   << ", isEvent=" << message.isFlagSet(message.LISTENER_EVENT_FLAG)
+            std::ostream &operator<<(std::ostream &os, const ClientMessage &msg) {
+                os << "ClientMessage{length=" << msg.size()
+                   << ", operation=" << msg.getOperationName()
+                   << ", correlationId=" << msg.getCorrelationId()
+                   << ", msgType=0x" << std::hex << msg.getMessageType() << std::dec
+                   << ", isRetryable=" << msg.isRetryable()
+                   << ", isEvent=" << ClientMessage::is_flag_set(msg.getHeaderFlags(), ClientMessage::IS_EVENT_FLAG)
                    << "}";
 
                 return os;
             }
 
-            int32_t ClientMessage::calculateDataSize(const Address &param) {
-                return codec::AddressCodec::calculateDataSize(param);
+            void ClientMessage::set(unsigned char *memory, boost::uuids::uuid uuid) {
+                std::memcpy(wr_ptr(uuid.size()), uuid.data, uuid.size());
+            }
+
+            void ClientMessage::fast_forward_to_end_frame() {
+                // We are starting from 1 because of the BEGIN_FRAME we read
+                // in the beginning of the decode method
+                int number_expected_frames = 1;
+                while (number_expected_frames) {
+                    auto *f = reinterpret_cast<frame_header_t *>(rd_ptr(sizeof(frame_header_t)));
+
+                    int16_t flags = f->flags;
+                    if (is_flag_set(flags, END_DATA_STRUCTURE_FLAG)) {
+                        number_expected_frames--;
+                    } else if (is_flag_set(flags, BEGIN_DATA_STRUCTURE_FLAG)) {
+                        number_expected_frames++;
+                    }
+
+                    // skip current frame
+                    rd_ptr(static_cast<int32_t>(f->frame_len) - sizeof(frame_header_t));
+                }
             }
 
             ExceptionFactory::~ExceptionFactory() = default;
@@ -416,7 +267,7 @@ namespace hazelcast {
                 registerException(ARRAY_INDEX_OUT_OF_BOUNDS,
                                   new ExceptionFactoryImpl<exception::ArrayIndexOutOfBoundsException>());
                 registerException(ARRAY_STORE, new ExceptionFactoryImpl<exception::ArrayStoreException>());
-                registerException(AUTHENTICATIONERROR, new ExceptionFactoryImpl<exception::AuthenticationException>());
+                registerException(AUTHENTICATION, new ExceptionFactoryImpl<exception::AuthenticationException>());
                 registerException(CACHE_NOT_EXISTS, new ExceptionFactoryImpl<exception::CacheNotExistsException>());
                 registerException(CALLER_NOT_MEMBER, new ExceptionFactoryImpl<exception::CallerNotMemberException>());
                 registerException(CANCELLATION, new ExceptionFactoryImpl<exception::CancellationException>());
@@ -425,11 +276,8 @@ namespace hazelcast {
                 registerException(CONCURRENT_MODIFICATION,
                                   new ExceptionFactoryImpl<exception::ConcurrentModificationException>());
                 registerException(CONFIG_MISMATCH, new ExceptionFactoryImpl<exception::ConfigMismatchException>());
-                registerException(CONFIGURATION, new ExceptionFactoryImpl<exception::ConfigurationException>());
                 registerException(DISTRIBUTED_OBJECT_DESTROYED,
                                   new ExceptionFactoryImpl<exception::DistributedObjectDestroyedException>());
-                registerException(DUPLICATE_INSTANCE_NAME,
-                                  new ExceptionFactoryImpl<exception::DuplicateInstanceNameException>());
                 registerException(ENDOFFILE, new ExceptionFactoryImpl<exception::EOFException>());
                 registerException(EXECUTION, new ExceptionFactoryImpl<exception::ExecutionException>());
                 registerException(HAZELCAST, new ExceptionFactoryImpl<exception::HazelcastException>());
@@ -467,11 +315,9 @@ namespace hazelcast {
                 registerException(QUERY, new ExceptionFactoryImpl<exception::QueryException>());
                 registerException(QUERY_RESULT_SIZE_EXCEEDED,
                                   new ExceptionFactoryImpl<exception::QueryResultSizeExceededException>());
-                registerException(QUORUM, new ExceptionFactoryImpl<exception::QuorumException>());
                 registerException(REACHED_MAX_SIZE, new ExceptionFactoryImpl<exception::ReachedMaxSizeException>());
                 registerException(REJECTED_EXECUTION,
                                   new ExceptionFactoryImpl<exception::RejectedExecutionException>());
-                registerException(REMOTE_MAP_REDUCE, new ExceptionFactoryImpl<exception::RemoteMapReduceException>());
                 registerException(RESPONSE_ALREADY_SENT,
                                   new ExceptionFactoryImpl<exception::ResponseAlreadySentException>());
                 registerException(RETRYABLE_HAZELCAST,
@@ -486,7 +332,6 @@ namespace hazelcast {
                 registerException(TARGET_NOT_MEMBER, new ExceptionFactoryImpl<exception::TargetNotMemberException>());
                 registerException(TIMEOUT, new ExceptionFactoryImpl<exception::TimeoutException>());
                 registerException(TOPIC_OVERLOAD, new ExceptionFactoryImpl<exception::TopicOverloadException>());
-                registerException(TOPOLOGY_CHANGED, new ExceptionFactoryImpl<exception::TopologyChangedException>());
                 registerException(TRANSACTION, new ExceptionFactoryImpl<exception::TransactionException>());
                 registerException(TRANSACTION_NOT_ACTIVE,
                                   new ExceptionFactoryImpl<exception::TransactionNotActiveException>());
@@ -516,7 +361,7 @@ namespace hazelcast {
                 registerException(NATIVE_OUT_OF_MEMORY_ERROR,
                                   new ExceptionFactoryImpl<exception::NativeOutOfMemoryError>());
                 registerException(SERVICE_NOT_FOUND, new ExceptionFactoryImpl<exception::ServiceNotFoundException>());
-                registerException(CONSISTENCY_LOST, new ExceptionFactoryImpl<exception::ConsistencyLostException>());
+                registerException(CONSISTENCY_LOST_EXCEPTION, new ExceptionFactoryImpl<exception::ConsistencyLostException>());
             }
 
             ClientExceptionFactory::~ClientExceptionFactory() {
@@ -527,30 +372,8 @@ namespace hazelcast {
                 }
             }
 
-            void ClientExceptionFactory::throwException(const std::string &source,
-                                                        protocol::ClientMessage &clientMessage) const {
-                codec::ErrorCodec error = codec::ErrorCodec::decode(clientMessage);
-                std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
-                        error.errorCode);
-                if (errorCodeToFactory.end() == it) {
-                    it = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
-                }
-                it->second->throwException(*this, source, error.message ? *error.message : "nullptr",
-                                           error.toString(), error.causeErrorCode);
-            }
-
-            void ClientExceptionFactory::throwException(int32_t errorCode) const {
-                std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
-                        errorCode);
-                if (errorCodeToFactory.end() == it) {
-                    it = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
-                }
-                return it->second->throwException();
-            }
-
             void ClientExceptionFactory::registerException(int32_t errorCode, ExceptionFactory *factory) {
-                std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::iterator it = errorCodeToFactory.find(
-                        errorCode);
+                auto it = errorCodeToFactory.find(errorCode);
                 if (errorCodeToFactory.end() != it) {
                     char msg[100];
                     util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
@@ -561,63 +384,48 @@ namespace hazelcast {
                 errorCodeToFactory[errorCode] = factory;
             }
 
-            Principal::Principal(std::unique_ptr<std::string> &id, std::unique_ptr<std::string> &owner) : uuid(
-                    std::move(id)),
-                                                                                                          ownerUuid(
-                                                                                                                  std::move(
-                                                                                                                          owner)) {
-            }
-
-            const std::string *Principal::getUuid() const {
-                return uuid.get();
-            }
-
-            const std::string *Principal::getOwnerUuid() const {
-                return ownerUuid.get();
-            }
-
-            bool Principal::operator==(const Principal &rhs) const {
-                if (ownerUuid.get() != NULL ? (rhs.ownerUuid.get() == NULL || *ownerUuid != *rhs.ownerUuid) :
-                    ownerUuid.get() != NULL) {
-                    return false;
+            std::exception_ptr ClientExceptionFactory::create_exception(std::vector<codec::ErrorHolder>::const_iterator begin,
+                                                          std::vector<codec::ErrorHolder>::const_iterator end) const {
+                if (begin == end) {
+                    return nullptr;
                 }
-
-                if (uuid.get() != NULL ? (rhs.uuid.get() == NULL || *uuid != *rhs.uuid) : rhs.uuid.get() != NULL) {
-                    return false;
+                auto factory = errorCodeToFactory.find(begin->errorCode);
+                if (errorCodeToFactory.end() == factory) {
+                    factory = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
                 }
-
-                return true;
+                return factory->second->create_exception(*this, begin->className, begin->message.value_or("nullptr"),
+                                                  begin->toString(), create_exception(++begin, end));
             }
 
-            std::ostream &operator<<(std::ostream &os, const Principal &principal) {
-                os << "uuid: " << (principal.uuid.get() ? *principal.uuid : "null") << " ownerUuid: "
-                   << (principal.ownerUuid ? *principal.ownerUuid : "null");
-                return os;
+            std::exception_ptr ClientExceptionFactory::create_exception(const std::vector<codec::ErrorHolder> &errors) const {
+                return create_exception(errors.begin(), errors.end());
             }
 
             ClientMessageBuilder::ClientMessageBuilder(connection::Connection &connection)
-                    : connection(connection) {
-            }
+                    : connection(connection) {}
 
             ClientMessageBuilder::~ClientMessageBuilder() = default;
 
             bool ClientMessageBuilder::onData(util::ByteBuffer &buffer) {
                 bool isCompleted = false;
 
-                if (NULL == message.get()) {
-                    if (buffer.remaining() >= ClientMessage::HEADER_SIZE) {
-                        util::Bits::littleEndianToNative4(
-                                ((byte *) buffer.ix()) + ClientMessage::FRAME_LENGTH_FIELD_OFFSET, &frameLen);
-
-                        message = ClientMessage::create(frameLen);
-                        offset = 0;
-                    }
+                if (!message) {
+                    message.reset(new ClientMessage());
+                    is_final_frame = false;
+                    remaining_frame_bytes = 0;
                 }
 
-                if (NULL != message.get()) {
-                    offset += message->fillMessageFrom(buffer, offset, frameLen);
+                if (message) {
+                    message->fillMessageFrom(buffer, is_final_frame, remaining_frame_bytes);
+                    isCompleted = is_final_frame && remaining_frame_bytes == 0;
+                    if (isCompleted) {
+                        //MESSAGE IS COMPLETE HERE
+                        message->wrap_for_read();
+                        connection.handleClientMessage(std::move(message));
+                        isCompleted = true;
 
-                    if (offset == frameLen) {
+                        //TODO: add fragmentation later
+/*
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
                             connection.handleClientMessage(std::move(message));
@@ -632,6 +440,7 @@ namespace hazelcast {
                                 isCompleted = true;
                             }
                         }
+*/
                     }
                 }
 
@@ -646,6 +455,7 @@ namespace hazelcast {
             bool ClientMessageBuilder::appendExistingPartialMessage(std::unique_ptr<ClientMessage> &msg) {
                 bool result = false;
 
+/* TODO
                 MessageMap::iterator foundItemIter = partialMessages.find(msg->getCorrelationId());
                 if (partialMessages.end() != foundItemIter) {
                     foundItemIter->second->append(msg.get());
@@ -663,17 +473,18 @@ namespace hazelcast {
                     // Should never be here
                     assert(0);
                 }
+*/
 
                 return result;
             }
 
             UsernamePasswordCredentials::UsernamePasswordCredentials(const std::string &principal,
                                                                      const std::string &password)
-                    : principal(principal), password(password) {
+                    : name(principal), password(password) {
             }
 
-            const std::string &UsernamePasswordCredentials::getPrincipal() const {
-                return principal;
+            const std::string &UsernamePasswordCredentials::getName() const {
+                return name;
             }
 
             const std::string &UsernamePasswordCredentials::getPassword() const {
@@ -681,210 +492,31 @@ namespace hazelcast {
             }
 
             namespace codec {
-                const std::string StackTraceElement::EMPTY_STRING("");
-
-                StackTraceElement::StackTraceElement() : fileName((std::string *) NULL) {
-                }
-
-                StackTraceElement::StackTraceElement(const std::string &className, const std::string &method,
-                                                     std::unique_ptr<std::string> &file, int line) : declaringClass(
-                        className),
-                                                                                                     methodName(
-                                                                                                             method),
-                                                                                                     fileName(
-                                                                                                             std::move(
-                                                                                                                     file)),
-                                                                                                     lineNumber(
-                                                                                                             line) {}
-
-
-                StackTraceElement::StackTraceElement(const StackTraceElement &rhs) {
-                    declaringClass = rhs.declaringClass;
-                    methodName = rhs.methodName;
-                    if (NULL == rhs.fileName.get()) {
-                        fileName = std::unique_ptr<std::string>();
-                    } else {
-                        fileName = std::unique_ptr<std::string>(new std::string(*rhs.fileName));
-                    }
-                    lineNumber = rhs.lineNumber;
-                }
-
-                StackTraceElement &StackTraceElement::operator=(const StackTraceElement &rhs) {
-                    declaringClass = rhs.declaringClass;
-                    methodName = rhs.methodName;
-                    if (NULL == rhs.fileName.get()) {
-                        fileName = std::unique_ptr<std::string>();
-                    } else {
-                        fileName = std::unique_ptr<std::string>(new std::string(*rhs.fileName));
-                    }
-                    lineNumber = rhs.lineNumber;
-                    return *this;
-                }
-
-                const std::string &StackTraceElement::getDeclaringClass() const {
-                    return declaringClass;
-                }
-
-                const std::string &StackTraceElement::getMethodName() const {
-                    return methodName;
-                }
-
-                const std::string &StackTraceElement::getFileName() const {
-                    if (NULL == fileName.get()) {
-                        return EMPTY_STRING;
-                    }
-
-                    return *fileName;
-                }
-
-                int StackTraceElement::getLineNumber() const {
-                    return lineNumber;
-                }
-
                 std::ostream &operator<<(std::ostream &out, const StackTraceElement &trace) {
-                    return out << trace.getFileName() << " line " << trace.getLineNumber() << " :" <<
-                               trace.getDeclaringClass() << "." << trace.getMethodName();
+                    return out << trace.fileName << " line " << trace.lineNumber << " :" << trace.declaringClass
+                    << "." << trace.methodName;
                 }
 
-                Address AddressCodec::decode(ClientMessage &clientMessage) {
-                    std::string host = clientMessage.getStringUtf8();
-                    int32_t port = clientMessage.getInt32();
-                    return Address(host, port);
+                std::vector<ErrorHolder> ErrorCodec::decode(ClientMessage &msg) {
+                    // skip initial message frame
+                    msg.skip_frame();
+
+                    return msg.get<std::vector<ErrorHolder>>();
                 }
 
-                void AddressCodec::encode(const Address &address, ClientMessage &clientMessage) {
-                    clientMessage.set(address.getHost());
-                    clientMessage.set((int32_t) address.getPort());
-                }
-
-                int AddressCodec::calculateDataSize(const Address &address) {
-                    return ClientMessage::calculateDataSize(address.getHost()) + ClientMessage::INT32_SIZE;
-                }
-
-                ErrorCodec ErrorCodec::decode(ClientMessage &clientMessage) {
-                    return ErrorCodec(clientMessage);
-                }
-
-                ErrorCodec::ErrorCodec(ClientMessage &clientMessage) {
-                    assert(ErrorCodec::TYPE == clientMessage.getMessageType());
-
-                    errorCode = clientMessage.getInt32();
-                    className = clientMessage.getStringUtf8();
-                    message = clientMessage.getNullable<std::string>();
-                    stackTrace = clientMessage.getArray<StackTraceElement>();
-                    causeErrorCode = clientMessage.getInt32();
-                    causeClassName = clientMessage.getNullable<std::string>();
-                }
-
-                std::string ErrorCodec::toString() const {
+                std::string ErrorHolder::toString() const {
                     std::ostringstream out;
                     out << "Error code:" << errorCode << ", Class name that generated the error:" << className <<
                         ", ";
-                    if (NULL != message.get()) {
+                    if (message) {
                         out << *message;
                     }
                     out << std::endl;
-                    for (std::vector<StackTraceElement>::const_iterator it = stackTrace.begin();
-                         it != stackTrace.end(); ++it) {
-                        out << "\t" << (*it) << std::endl;
-                    }
-
-                    out << std::endl << "Cause error code:" << causeErrorCode << std::endl;
-                    if (NULL != causeClassName.get()) {
-                        out << "Caused by:" << *causeClassName;
+                    for (auto s : stackTrace) {
+                        out << "\t" << s << std::endl;
                     }
 
                     return out.str();
-                }
-
-                ErrorCodec::ErrorCodec(const ErrorCodec &rhs) {
-                    errorCode = rhs.errorCode;
-                    className = rhs.className;
-                    if (NULL != rhs.message.get()) {
-                        message = std::unique_ptr<std::string>(new std::string(*rhs.message));
-                    }
-                    stackTrace = rhs.stackTrace;
-                    causeErrorCode = rhs.causeErrorCode;
-                    if (NULL != rhs.causeClassName.get()) {
-                        causeClassName = std::unique_ptr<std::string>(new std::string(*rhs.causeClassName));
-                    }
-                }
-
-                Member MemberCodec::decode(ClientMessage &clientMessage) {
-                    Address address = AddressCodec::decode(clientMessage);
-                    std::string uuid = clientMessage.get<std::string>();
-                    bool liteMember = clientMessage.get<bool>();
-                    int32_t attributeSize = clientMessage.get<int32_t>();
-                    std::unordered_map<std::string, std::string> attributes;
-                    for (int i = 0; i < attributeSize; i++) {
-                        std::string key = clientMessage.get<std::string>();
-                        std::string value = clientMessage.get<std::string>();
-                        attributes[key] = value;
-                    }
-
-                    return Member(address, uuid, liteMember, attributes);
-                }
-
-                util::UUID UUIDCodec::decode(ClientMessage &clientMessage) {
-                    return util::UUID(clientMessage.get<int64_t>(), clientMessage.get<int64_t>());
-                }
-
-                void UUIDCodec::encode(const util::UUID &uuid, ClientMessage &clientMessage) {
-                    clientMessage.set(uuid.getMostSignificantBits());
-                    clientMessage.set(uuid.getLeastSignificantBits());
-                }
-
-                int UUIDCodec::calculateDataSize(const util::UUID &uuid) {
-                    return UUID_DATA_SIZE;
-                }
-
-                StackTraceElement StackTraceElementCodec::decode(ClientMessage &clientMessage) {
-                    std::string className = clientMessage.getStringUtf8();
-                    std::string methodName = clientMessage.getStringUtf8();
-                    std::unique_ptr<std::string> fileName = clientMessage.getNullable<std::string>();
-                    int32_t lineNumber = clientMessage.getInt32();
-
-                    return StackTraceElement(className, methodName, fileName, lineNumber);
-                }
-
-                map::DataEntryView DataEntryViewCodec::decode(ClientMessage &clientMessage) {
-                    serialization::pimpl::Data key = clientMessage.get<serialization::pimpl::Data>(); // key
-                    serialization::pimpl::Data value = clientMessage.get<serialization::pimpl::Data>(); // value
-                    int64_t cost = clientMessage.get<int64_t>(); // cost
-                    int64_t creationTime = clientMessage.get<int64_t>(); // creationTime
-                    int64_t expirationTime = clientMessage.get<int64_t>(); // expirationTime
-                    int64_t hits = clientMessage.get<int64_t>(); // hits
-                    int64_t lastAccessTime = clientMessage.get<int64_t>(); // lastAccessTime
-                    int64_t lastStoredTime = clientMessage.get<int64_t>(); // lastStoredTime
-                    int64_t lastUpdateTime = clientMessage.get<int64_t>(); // lastUpdateTime
-                    int64_t version = clientMessage.get<int64_t>(); // version
-                    int64_t evictionCriteria = clientMessage.get<int64_t>(); // evictionCriteriaNumber
-                    int64_t ttl = clientMessage.get<int64_t>();  // ttl
-                    return map::DataEntryView(key, value, cost, creationTime, expirationTime, hits, lastAccessTime,
-                                              lastStoredTime, lastUpdateTime, version, evictionCriteria, ttl);
-                }
-
-                void DataEntryViewCodec::encode(const map::DataEntryView &view, ClientMessage &clientMessage) {
-                    clientMessage.set(view.getKey());
-                    clientMessage.set(view.getValue());
-                    clientMessage.set((int64_t) view.getCost());
-                    clientMessage.set((int64_t) view.getCreationTime());
-                    clientMessage.set((int64_t) view.getExpirationTime());
-                    clientMessage.set((int64_t) view.getHits());
-                    clientMessage.set((int64_t) view.getLastAccessTime());
-                    clientMessage.set((int64_t) view.getLastStoredTime());
-                    clientMessage.set((int64_t) view.getLastUpdateTime());
-                    clientMessage.set((int64_t) view.getVersion());
-                    clientMessage.set((int64_t) view.getEvictionCriteriaNumber());
-                    clientMessage.set((int64_t) view.getTtl());
-                }
-
-                int DataEntryViewCodec::calculateDataSize(const map::DataEntryView &view) {
-                    int32_t dataSize = ClientMessage::HEADER_SIZE;;
-                    return dataSize
-                           + ClientMessage::calculateDataSize(view.getKey())
-                           + ClientMessage::calculateDataSize(view.getValue())
-                           + ClientMessage::INT64_SIZE * 10;
                 }
 
             }

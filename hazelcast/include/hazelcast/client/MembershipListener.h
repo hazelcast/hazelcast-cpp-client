@@ -75,41 +75,32 @@ namespace hazelcast {
              */
             virtual void memberRemoved(const MembershipEvent &membershipEvent) = 0;
 
-            /**
-             * Invoked when an attribute of a member was changed.
-             *
-             * @param memberAttributeEvent member attribute event
-             */
-            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) = 0;
-
-        private:
-            std::string registrationId;
+        protected:
+            boost::uuids::uuid registrationId;
 
             virtual bool shouldRequestInitialMembers() const;
 
-            virtual const std::string &getRegistrationId() const;
+            virtual boost::uuids::uuid  getRegistrationId() const;
 
-            virtual void setRegistrationId(const std::string &registrationId);
+            virtual void setRegistrationId(boost::uuids::uuid registrationId);
         };
 
         class MembershipListenerDelegator : public MembershipListener {
         public:
-            MembershipListenerDelegator(MembershipListener *listener);
+            explicit MembershipListenerDelegator(MembershipListener *listener);
 
             void memberAdded(const MembershipEvent &membershipEvent) override;
 
             void memberRemoved(const MembershipEvent &membershipEvent) override;
-
-            void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) override;
 
         protected:
             MembershipListener *listener;
 
             bool shouldRequestInitialMembers() const override;
 
-            void setRegistrationId(const std::string &registrationId) override;
+            void setRegistrationId(boost::uuids::uuid registrationId) override;
 
-            const std::string &getRegistrationId() const override;
+            boost::uuids::uuid  getRegistrationId() const override;
         };
     }
 }

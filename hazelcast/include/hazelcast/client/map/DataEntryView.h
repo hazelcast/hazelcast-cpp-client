@@ -29,10 +29,10 @@ namespace hazelcast {
         namespace map {
             class HAZELCAST_API DataEntryView {
             public:
-                DataEntryView(serialization::pimpl::Data key, const serialization::pimpl::Data &value, int64_t cost,
-                              int64_t creationTime, int64_t expirationTime, int64_t hits, int64_t lastAccessTime,
-                              int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version, int64_t evictionCriteriaNumber,
-                              int64_t ttl);
+                DataEntryView(serialization::pimpl::Data &&key, serialization::pimpl::Data &&value,
+                              int64_t cost, int64_t creationTime, int64_t expirationTime, int64_t hits,
+                              int64_t lastAccessTime, int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version,
+                              int64_t ttl, int64_t maxIdle);
 
                 const serialization::pimpl::Data &getKey() const;
 
@@ -54,9 +54,10 @@ namespace hazelcast {
 
                 int64_t getVersion() const;
 
-                int64_t getEvictionCriteriaNumber() const;
-
                 int64_t getTtl() const;
+
+                int64_t getMaxIdle() const;
+
             private:
                 serialization::pimpl::Data key;
                 serialization::pimpl::Data value;
@@ -68,8 +69,8 @@ namespace hazelcast {
                 int64_t lastStoredTime;
                 int64_t lastUpdateTime;
                 int64_t version;
-                int64_t evictionCriteriaNumber;
                 int64_t ttl;
+                int64_t maxIdle;
             };
         }
     }

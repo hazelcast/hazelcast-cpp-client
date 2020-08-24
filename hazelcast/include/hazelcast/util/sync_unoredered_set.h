@@ -16,9 +16,11 @@
 
 #pragma once
 
-#include <memory>
+#include <unordered_set>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include <mutex>
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,41 +28,31 @@
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class Address;
+    namespace util {
 
-        namespace impl {
-            class Partition;
-        }
-        namespace serialization {
-            namespace pimpl {
-                class Data;
+        template <typename Key, typename Hash = std::hash<Key>>
+        class sync_unordered_set  {
+        public:
+            std::pair<typename std::unordered_set<Key, Hash>::iterator, bool> insert(const Key& key) {
+                std::lock_guard<std::mutex> g(lock_);
+                return set_.insert(key);
             }
-        }
-
-        namespace spi {
-            /**
-             * Partition service for Hazelcast clients.
-             *
-             * Allows to retrieve information about the partition count, the partition owner or the partitionId of a key.
-             */
-            class HAZELCAST_API ClientPartitionService {
-            public:
-                virtual std::shared_ptr<Address> getPartitionOwner(int partitionId) = 0;
-
-                virtual int getPartitionId(const serialization::pimpl::Data &key) = 0;
-
-                virtual int getPartitionCount() = 0;
-
-                virtual std::shared_ptr<client::impl::Partition> getPartition(int partitionId) = 0;
-            };
-        }
+            typename std::unordered_set<Key, Hash>::size_type erase( const Key& key) {
+                std::lock_guard<std::mutex> g(lock_);
+                return set_.erase(key);
+            }
+        private:
+            std::unordered_set<Key, Hash> set_;
+            std::mutex lock_;
+        };
     }
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
+
 
 
 

@@ -34,12 +34,10 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
-            class HAZELCAST_API AuthenticationFuture {
+            class HAZELCAST_API ConnectionFuture {
             public:
-                typedef std::tuple<std::shared_ptr<AuthenticationFuture>, std::shared_ptr<Connection>> FutureTuple;
-
-                AuthenticationFuture(const Address &address,
-                                     util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress);
+                ConnectionFuture(Address address, std::shared_ptr<Connection> connectionInProgress,
+                                 util::SynchronizedMap<Address, ConnectionFuture> &connectionsInProgress);
 
                 void onSuccess(const std::shared_ptr<Connection> &conn);
 
@@ -47,13 +45,16 @@ namespace hazelcast {
 
                 std::shared_ptr<Connection> get();
 
+                const std::shared_ptr<Connection> &getConnectionInProgress() const;
+
+                std::mutex &getLock();
+
             private:
-                std::shared_ptr<boost::latch> countDownLatch;
-                util::Sync<std::shared_ptr<Connection>> connection;
-                util::Sync<std::exception_ptr> throwable;
-                const Address address;
-                util::SynchronizedMap<Address, FutureTuple> &connectionsInProgress;
-                std::atomic_bool isSet;
+                std::promise<std::shared_ptr<Connection>> promise_;
+                const Address address_;
+                std::shared_ptr<Connection> connection_in_progress_;
+                util::SynchronizedMap<Address, ConnectionFuture> &connections_in_progress_;
+                std::mutex lock_;
             };
         }
     }

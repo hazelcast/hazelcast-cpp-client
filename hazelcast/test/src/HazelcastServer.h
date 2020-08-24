@@ -42,8 +42,6 @@ namespace hazelcast {
 
                 ~HazelcastServer();
 
-                bool setAttributes(int memberStartOrder);
-
                 const remote::Member &getMember() const;
 
             private:

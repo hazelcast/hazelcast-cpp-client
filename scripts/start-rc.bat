@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set HZ_VERSION=3.12.5
+set HZ_VERSION=4.0
 set HAZELCAST_TEST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
-set HAZELCAST_RC_VERSION=0.4-SNAPSHOT
+set HAZELCAST_RC_VERSION="0.7-SNAPSHOT"
 set SNAPSHOT_REPO=https://oss.sonatype.org/content/repositories/snapshots
 set RELEASE_REPO=http://repo1.maven.apache.org/maven2
 set ENTERPRISE_RELEASE_REPO=https://repository.hazelcast.com/release/
@@ -54,4 +54,4 @@ set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-
 echo "Starting Remote Controller ... enterprise ...Using classpath: %CLASSPATH%"
 
 echo "Starting hazelcast-remote-controller"
-start "hazelcast-remote-controller" /MIN cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -Dhazelcast.phone.home.enabled=false -cp %CLASSPATH% com.hazelcast.remotecontroller.Main"
+start "hazelcast-remote-controller" /MIN cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -Dhazelcast.phone.home.enabled=false -cp %CLASSPATH% com.hazelcast.remotecontroller.Main --use-simple-server"

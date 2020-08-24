@@ -57,16 +57,12 @@
 #include <mutex>
 
 #include "hazelcast/util/Destroyable.h"
-#include "hazelcast/util/TimeUtil.h"
-#include "hazelcast/util/concurrent/TimeUnit.h"
 #include "hazelcast/util/Closeable.h"
-#include "hazelcast/util/UUID.h"
+#include <boost/uuid/uuid.hpp>
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/SyncHttpClient.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
-#include "hazelcast/util/concurrent/CancellationException.h"
-#include "hazelcast/util/UuidUtil.h"
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
@@ -271,32 +267,11 @@ namespace hazelcast {
     }
 }
 
-
-
-namespace hazelcast {
-    namespace util {
-        int64_t TimeUtil::timeInMsOrOneIfResultIsZero(int64_t time, const concurrent::TimeUnit &timeunit) {
-            int64_t timeInMillis = timeunit.toMillis(time);
-            if (time > 0 && timeInMillis == 0) {
-                timeInMillis = 1;
-            }
-
-            return timeInMillis;
-        }
-    }
-}
-
-//  Copyright (c) 2015 ihsan demir. All rights reserved.
-//
-
-
 namespace hazelcast {
     namespace util {
         Closeable::~Closeable() = default;
     }
 }
-
-
 
 namespace hazelcast {
     namespace util {
@@ -392,57 +367,6 @@ namespace hazelcast {
         bool ILogger::enabled(el::Level level) const {
             return easyLogger->enabled(level);
         }
-    }
-}
-
-namespace hazelcast {
-    namespace util {
-        UUID::UUID() : mostSigBits(0), leastSigBits(0) {}
-
-        UUID::UUID(int64_t mostBits, int64_t leastBits) : mostSigBits(mostBits), leastSigBits(leastBits) {
-        }
-
-        int64_t UUID::getLeastSignificantBits() const {
-            return leastSigBits;
-        }
-
-        /**
-         * Returns the most significant 64 bits of this UUID's 128 bit value.
-         *
-         * @return the most significant 64 bits of this UUID's 128 bit value.
-         */
-        int64_t UUID::getMostSignificantBits() const {
-            return mostSigBits;
-        }
-
-        bool UUID::equals(const UUID &rhs) const {
-            return (mostSigBits == rhs.mostSigBits && leastSigBits == rhs.leastSigBits);
-        }
-
-        std::string UUID::toString() const {
-            return (digits(mostSigBits >> 32, 8) + "-" +
-                    digits(mostSigBits >> 16, 4) + "-" +
-                    digits(mostSigBits, 4) + "-" +
-                    digits(leastSigBits >> 48, 4) + "-" +
-                    digits(leastSigBits, 12));
-        }
-
-        std::string UUID::digits(int64_t val, int32_t digits) {
-            int64_t hi = 1LL << (digits * 4);
-            std::ostringstream out;
-            out << std::hex << (hi | (val & (hi - 1)));
-            std::string value = out.str();
-            return value.substr(1);
-        }
-
-        bool UUID::operator==(const UUID &rhs) const {
-            return this->equals(rhs);
-        }
-
-        bool UUID::operator!=(const UUID &rhs) const {
-            return !(rhs == *this);
-        }
-
     }
 }
 
@@ -813,185 +737,6 @@ namespace hazelcast {
     }
 }
 
-
-
-namespace hazelcast {
-    namespace util {
-        namespace concurrent {
-            CancellationException::CancellationException(const std::string &source, const std::string &message)
-                    : IllegalStateException("CancellationException", client::protocol::CANCELLATION, source, message,
-                                            "", true) {}
-        }
-    }
-}
-
-
-
-
-namespace hazelcast {
-    namespace util {
-        namespace concurrent {
-            const NanoSeconds TimeUnit::NANOS;
-            const MicroSeconds TimeUnit::MICROS;
-            const MilliSeconds TimeUnit::MILLIS;
-            const Seconds TimeUnit::SECS;
-            const Minutes TimeUnit::MINS;
-            const Hours TimeUnit::HRS;
-            const Days TimeUnit::DS;
-
-            const TimeUnit &TimeUnit::NANOSECONDS() {
-                return TimeUnit::NANOS;
-            }
-
-            const TimeUnit &TimeUnit::MICROSECONDS() {
-                return TimeUnit::MICROS;
-            }
-
-            const TimeUnit &TimeUnit::MILLISECONDS() {
-                return TimeUnit::MILLIS;
-            }
-
-            const TimeUnit &TimeUnit::SECONDS() {
-                return TimeUnit::SECS;
-            }
-
-            const TimeUnit &TimeUnit::MINUTES() {
-                return TimeUnit::MINS;
-            }
-
-            const TimeUnit &TimeUnit::HOURS() {
-                return TimeUnit::HRS;
-            }
-
-            const TimeUnit &TimeUnit::DAYS() {
-                return TimeUnit::DS;
-            }
-
-            /**
-             * Scale d by m, checking for overflow.
-             * This has a short name to make above code more readable.
-             */
-            int64_t TimeUnit::x(int64_t d, int64_t m, int64_t over) {
-                if (d > over) return INT64_MAX;
-                if (d < -over) return INT64_MIN;
-                return d * m;
-            }
-
-            int64_t NanoSeconds::toNanos(int64_t d) const { return d; }
-
-            int64_t NanoSeconds::toMicros(int64_t d) const { return d / (C1 / C0); }
-
-            int64_t NanoSeconds::toMillis(int64_t d) const { return d / (C2 / C0); }
-
-            int64_t NanoSeconds::toSeconds(int64_t d) const { return d / (C3 / C0); }
-
-            int64_t NanoSeconds::toMinutes(int64_t d) const { return d / (C4 / C0); }
-
-            int64_t NanoSeconds::toHours(int64_t d) const { return d / (C5 / C0); }
-
-            int64_t NanoSeconds::toDays(int64_t d) const { return d / (C6 / C0); }
-
-            int64_t NanoSeconds::convert(int64_t d, const TimeUnit &u) const { return u.toNanos(d); }
-
-            int64_t MicroSeconds::toNanos(int64_t d) const { return x(d, C1 / C0, MAX / (C1 / C0)); }
-
-            int64_t MicroSeconds::toMicros(int64_t d) const { return d; }
-
-            int64_t MicroSeconds::toMillis(int64_t d) const { return d / (C2 / C1); }
-
-            int64_t MicroSeconds::toSeconds(int64_t d) const { return d / (C3 / C1); }
-
-            int64_t MicroSeconds::toMinutes(int64_t d) const { return d / (C4 / C1); }
-
-            int64_t MicroSeconds::toHours(int64_t d) const { return d / (C5 / C1); }
-
-            int64_t MicroSeconds::toDays(int64_t d) const { return d / (C6 / C1); }
-
-            int64_t MicroSeconds::convert(int64_t d, const TimeUnit &u) const { return u.toMicros(d); }
-
-            int64_t MilliSeconds::toNanos(int64_t d) const { return x(d, C2 / C0, MAX / (C2 / C0)); }
-
-            int64_t MilliSeconds::toMicros(int64_t d) const { return x(d, C2 / C1, MAX / (C2 / C1)); }
-
-            int64_t MilliSeconds::toMillis(int64_t d) const { return d; }
-
-            int64_t MilliSeconds::toSeconds(int64_t d) const { return d / (C3 / C2); }
-
-            int64_t MilliSeconds::toMinutes(int64_t d) const { return d / (C4 / C2); }
-
-            int64_t MilliSeconds::toHours(int64_t d) const { return d / (C5 / C2); }
-
-            int64_t MilliSeconds::toDays(int64_t d) const { return d / (C6 / C2); }
-
-            int64_t MilliSeconds::convert(int64_t d, const TimeUnit &u) const { return u.toMillis(d); }
-
-            int64_t Seconds::toNanos(int64_t d) const { return x(d, C3 / C0, MAX / (C3 / C0)); }
-
-            int64_t Seconds::toMicros(int64_t d) const { return x(d, C3 / C1, MAX / (C3 / C1)); }
-
-            int64_t Seconds::toMillis(int64_t d) const { return x(d, C3 / C2, MAX / (C3 / C2)); }
-
-            int64_t Seconds::toSeconds(int64_t d) const { return d; }
-
-            int64_t Seconds::toMinutes(int64_t d) const { return d / (C4 / C3); }
-
-            int64_t Seconds::toHours(int64_t d) const { return d / (C5 / C3); }
-
-            int64_t Seconds::toDays(int64_t d) const { return d / (C6 / C3); }
-
-            int64_t Seconds::convert(int64_t d, const TimeUnit &u) const { return u.toSeconds(d); }
-
-            int64_t Minutes::toNanos(int64_t d) const { return x(d, C4 / C0, MAX / (C4 / C0)); }
-
-            int64_t Minutes::toMicros(int64_t d) const { return x(d, C4 / C1, MAX / (C4 / C1)); }
-
-            int64_t Minutes::toMillis(int64_t d) const { return x(d, C4 / C2, MAX / (C4 / C2)); }
-
-            int64_t Minutes::toSeconds(int64_t d) const { return x(d, C4 / C3, MAX / (C4 / C3)); }
-
-            int64_t Minutes::toMinutes(int64_t d) const { return d; }
-
-            int64_t Minutes::toHours(int64_t d) const { return d / (C5 / C4); }
-
-            int64_t Minutes::toDays(int64_t d) const { return d / (C6 / C4); }
-
-            int64_t Minutes::convert(int64_t d, const TimeUnit &u) const { return u.toMinutes(d); }
-
-            int64_t Hours::toNanos(int64_t d) const { return x(d, C5 / C0, MAX / (C5 / C0)); }
-
-            int64_t Hours::toMicros(int64_t d) const { return x(d, C5 / C1, MAX / (C5 / C1)); }
-
-            int64_t Hours::toMillis(int64_t d) const { return x(d, C5 / C2, MAX / (C5 / C2)); }
-
-            int64_t Hours::toSeconds(int64_t d) const { return x(d, C5 / C3, MAX / (C5 / C3)); }
-
-            int64_t Hours::toMinutes(int64_t d) const { return x(d, C5 / C4, MAX / (C5 / C4)); }
-
-            int64_t Hours::toHours(int64_t d) const { return d; }
-
-            int64_t Hours::toDays(int64_t d) const { return d / (C6 / C5); }
-
-            int64_t Hours::convert(int64_t d, const TimeUnit &u) const { return u.toHours(d); }
-
-            int64_t Days::toNanos(int64_t d) const { return x(d, C6 / C0, MAX / (C6 / C0)); }
-
-            int64_t Days::toMicros(int64_t d) const { return x(d, C6 / C1, MAX / (C6 / C1)); }
-
-            int64_t Days::toMillis(int64_t d) const { return x(d, C6 / C2, MAX / (C6 / C2)); }
-
-            int64_t Days::toSeconds(int64_t d) const { return x(d, C6 / C3, MAX / (C6 / C3)); }
-
-            int64_t Days::toMinutes(int64_t d) const { return x(d, C6 / C4, MAX / (C6 / C4)); }
-
-            int64_t Days::toHours(int64_t d) const { return x(d, C6 / C5, MAX / (C6 / C5)); }
-
-            int64_t Days::toDays(int64_t d) const { return d; }
-
-            int64_t Days::convert(int64_t d, const TimeUnit &u) const { return u.toDays(d); }
-        }
-    }
-}
-
 namespace hazelcast {
     namespace util {
         const std::string &Preconditions::checkHasText(const std::string &argument,
@@ -1015,44 +760,6 @@ namespace hazelcast {
             if (!expression) {
                 throw client::exception::IllegalArgumentException(errorMessage);
             }
-        }
-    }
-}
-
-
-
-
-namespace hazelcast {
-    namespace util {
-        std::string UuidUtil::newUnsecureUuidString() {
-            return newUnsecureUUID().toString();
-        }
-
-        UUID UuidUtil::newUnsecureUUID() {
-            byte data[16];
-            // TODO: Use a better random bytes generator
-            for (int j = 0; j < 16; ++j) {
-                data[j] = rand() % 16;
-            }
-
-            // clear version
-            data[6] &= 0x0f;
-            // set to version 4
-            data[6] |= 0x40;
-            // clear variant
-            data[8] &= 0x3f;
-            // set to IETF variant
-            data[8] |= 0x80;
-
-            int64_t mostSigBits = 0;
-            int64_t leastSigBits = 0;
-            for (int i = 0; i < 8; i++) {
-                mostSigBits = (mostSigBits << 8) | (data[i] & 0xff);
-            }
-            for (int i = 8; i < 16; i++) {
-                leastSigBits = (leastSigBits << 8) | (data[i] & 0xff);
-            }
-            return UUID(mostSigBits, leastSigBits);
         }
     }
 }
@@ -1440,13 +1147,6 @@ namespace hazelcast {
             pos += t;
         }
 
-        size_t ByteBuffer::readBytes(byte *target, size_t len) {
-            size_t numBytesToCopy = util::min<size_t>(lim - pos, len);
-            memcpy(target, ix(), numBytesToCopy);
-            pos += numBytesToCopy;
-            return numBytesToCopy;
-        }
-
         hz_thread_pool::hz_thread_pool(size_t numThreads) : pool_(new boost::asio::thread_pool(numThreads)) {}
 
         void hz_thread_pool::shutdown_gracefully() {
@@ -1456,7 +1156,6 @@ namespace hazelcast {
             // needed due to bug https://github.com/chriskohlhoff/asio/issues/431
             boost::asio::use_service<boost::asio::detail::win_iocp_io_context>(*pool_).stop();
 #endif
-            pool_.reset();
         }
 
         boost::asio::thread_pool::executor_type hz_thread_pool::get_executor() const {

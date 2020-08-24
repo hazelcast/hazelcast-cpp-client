@@ -71,6 +71,8 @@ namespace hazelcast {
                 LoadBalancer *loadBalancer;
                 Cluster &cluster;
                 boost::latch shutdownCompletedLatch;
+
+                void wait_for_initial_membership_event() const;
             };
         }
     }

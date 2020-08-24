@@ -24,13 +24,11 @@
 #include <hazelcast/client/exception/IllegalStateException.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/util/UuidUtil.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
 #include <thread>
 #include <hazelcast/client/spi/ClientContext.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/protocol/Principal.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <ClientTestSupport.h>
 #include <memory>
@@ -117,7 +115,6 @@
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/MultiMap.h"
-#include "hazelcast/util/LittleEndianBufferWrapper.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
@@ -225,7 +222,14 @@ namespace hazelcast {
                     }
                     return testValues;
                 }
-                
+
+                virtual void SetUp() {
+                    ASSERT_TRUE(factory);
+                    ASSERT_TRUE(instance1);
+                    ASSERT_TRUE(client);
+                    ASSERT_TRUE(client2);
+                }
+
                 static void SetUpTestCase() {
                     factory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), 
                             "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
@@ -562,12 +566,8 @@ namespace hazelcast {
                 struct ListenerState {
                     ListenerState() : keys(UINT_MAX) {}
                     hazelcast::util::BlockingConcurrentQueue<int> keys;
-                    std::atomic<int> addCount{ 0 };
-                    std::atomic<int> removeCount{ 0 };
-                    std::atomic<int> updateCount{ 0 };
-                    std::atomic<int> evictCount{ 0 };
-                    std::atomic<int> mapClearCount{ 0 };
-                    std::atomic<int> mapEvictCount{ 0 };
+                    std::atomic<int> addCount{ 0 }, removeCount{ 0 }, updateCount{ 0 }, evictCount{ 0 },
+                    mapClearCount{ 0 }, mapEvictCount{ 0 };
                 };
 
                 EntryListener makeEventCountingListener(ListenerState &state) {
@@ -706,10 +706,10 @@ namespace hazelcast {
 
                 void TearDown() override {
                     if (nearCachedMap) {
-                        nearCachedMap->destroy();
+                        nearCachedMap->destroy().get();
                     }
                     if (noNearCacheMap) {
-                        noNearCacheMap->destroy();
+                        noNearCacheMap->destroy().get();
                     }
                     if (client) {
                         client->shutdown();
@@ -1369,7 +1369,7 @@ namespace hazelcast {
 
             TEST_F(ClientTopicTest, testTopicListeners) {
                 boost::latch latch1(10);
-                std::string id = topic->addMessageListener(
+                auto id = topic->addMessageListener(
                     topic::Listener().
                         on_received([&latch1](topic::Message &&) {
                             latch1.count_down();

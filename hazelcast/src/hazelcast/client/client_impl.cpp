@@ -46,13 +46,9 @@
 #include "hazelcast/client/LifecycleListener.h"
 #include <hazelcast/client/cluster/impl/ClusterDataSerializerHook.h>
 #include <hazelcast/client/exception/ProtocolExceptions.h>
-#include "hazelcast/client/proxy/PNCounterImpl.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
-#include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
-#include "hazelcast/client/spi/impl/NonSmartClientInvocationService.h"
-#include "hazelcast/client/spi/impl/listener/NonSmartClientListenerService.h"
-#include "hazelcast/client/spi/impl/listener/SmartClientListenerService.h"
+#include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"
@@ -60,6 +56,7 @@
 #include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
 #include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
+#include "hazelcast/client/spi/impl/listener/listener_service_impl.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/proxy/FlakeIdGeneratorImpl.h"
@@ -132,7 +129,7 @@ namespace hazelcast {
                     : clientConfig(config), clientProperties(config.getProperties()),
                       clientContext(*this),
                       serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
-                      transactionManager(clientContext, *clientConfig.getLoadBalancer()), cluster(clusterService),
+                      transactionManager(clientContext), cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(),
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
                       id(++CLIENT_ID) {
@@ -148,9 +145,9 @@ namespace hazelcast {
                 logger.reset(new util::ILogger(instanceName, clientConfig.getGroupConfig().getName(), HAZELCAST_VERSION,
                                                clientConfig.getLoggerConfig()));
 
-                initalizeNearCacheManager();
-
                 executionService = initExecutionService();
+
+                initalizeNearCacheManager();
 
                 int32_t maxAllowedConcurrentInvocations = clientProperties.getInteger(
                         clientProperties.getMaxConcurrentInvocations());
@@ -165,9 +162,12 @@ namespace hazelcast {
 
                 connectionManager = initConnectionManagerService(addressProviders);
 
-                partitionService.reset(new spi::impl::ClientPartitionServiceImpl(clientContext, *executionService));
+                cluster_listener_.reset(new spi::impl::listener::cluster_view_listener(clientContext));
 
-                invocationService = initInvocationService();
+                partitionService.reset(new spi::impl::ClientPartitionServiceImpl(clientContext));
+
+                invocationService.reset(new spi::impl::ClientInvocationServiceImpl(clientContext));
+
                 listenerService = initListenerService();
 
                 proxyManager.init();
@@ -190,7 +190,7 @@ namespace hazelcast {
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("HazelcastClient",
                                                                                "HazelcastClient could not be started!"));
                     }
-                } catch (exception::IException &) {
+                } catch (std::exception &e) {
                     lifecycleService.shutdown();
                     throw;
                 }
@@ -250,26 +250,9 @@ namespace hazelcast {
                 return exceptionFactory;
             }
 
-            std::shared_ptr<spi::ClientListenerService> HazelcastClientInstanceImpl::initListenerService() {
-                int eventThreadCount = clientProperties.getInteger(clientProperties.getEventThreadCount());
-                config::ClientNetworkConfig &networkConfig = clientConfig.getNetworkConfig();
-                if (networkConfig.isSmartRouting()) {
-                    return std::shared_ptr<spi::ClientListenerService>(
-                            new spi::impl::listener::SmartClientListenerService(clientContext, eventThreadCount));
-                } else {
-                    return std::shared_ptr<spi::ClientListenerService>(
-                            new spi::impl::listener::NonSmartClientListenerService(clientContext, eventThreadCount));
-                }
-            }
-
-            std::unique_ptr<spi::ClientInvocationService> HazelcastClientInstanceImpl::initInvocationService() {
-                if (clientConfig.getNetworkConfig().isSmartRouting()) {
-                    return std::unique_ptr<spi::ClientInvocationService>(
-                            new spi::impl::SmartClientInvocationService(clientContext));
-                } else {
-                    return std::unique_ptr<spi::ClientInvocationService>(
-                            new spi::impl::NonSmartClientInvocationService(clientContext));
-                }
+            std::shared_ptr<spi::impl::listener::listener_service_impl> HazelcastClientInstanceImpl::initListenerService() {
+                auto eventThreadCount = clientProperties.getInteger(clientProperties.getEventThreadCount());
+                return std::make_shared<spi::impl::listener::listener_service_impl>(clientContext, eventThreadCount);
             }
 
             std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
@@ -299,10 +282,12 @@ namespace hazelcast {
 
             }
 
-            void HazelcastClientInstanceImpl::onClusterConnect(
-                    const std::shared_ptr<connection::Connection> &ownerConnection) {
-                partitionService->listenPartitionTable(ownerConnection);
-                clusterService.listenMembershipEvents(ownerConnection);
+            void HazelcastClientInstanceImpl::on_cluster_restart() {
+                logger->info("Clearing local state of the client, because of a cluster restart");
+
+                nearCacheManager->clearAllNearCaches();
+                //clear the member list version
+                clusterService.clear_member_list_version();
             }
 
             std::vector<std::shared_ptr<connection::AddressProvider>>
@@ -372,11 +357,6 @@ namespace hazelcast {
             }
 
             BaseEventHandler::~BaseEventHandler() = default;
-
-            void BaseEventHandler::handle(const std::shared_ptr<protocol::ClientMessage> &event) {
-                std::unique_ptr<protocol::ClientMessage> e(new protocol::ClientMessage(*event));
-                handle(std::move(e));
-            }
 
             BaseEventHandler::BaseEventHandler() : logger(NULL) {}
 
@@ -528,7 +508,7 @@ namespace hazelcast {
         }
 
         std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
-        IExecutorService::invokeOnTarget(std::unique_ptr<protocol::ClientMessage> &request, const Address &target) {
+        IExecutorService::invokeOnTarget(protocol::ClientMessage &&request, boost::uuids::uuid target) {
             try {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         getContext(), request, getName(), target);
@@ -540,7 +520,7 @@ namespace hazelcast {
         }
 
         std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
-        IExecutorService::invokeOnPartitionOwner(std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
+        IExecutorService::invokeOnPartitionOwner(protocol::ClientMessage &&request, int partitionId) {
             try {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         getContext(), request, getName(), partitionId);
@@ -575,20 +555,20 @@ namespace hazelcast {
         }
 
         int IExecutorService::randomPartitionId() {
-            spi::ClientPartitionService &partitionService = getContext().getPartitionService();
+            auto &partitionService = getContext().getPartitionService();
             return rand() % partitionService.getPartitionCount();
         }
 
         void IExecutorService::shutdown() {
-            auto request = protocol::codec::ExecutorServiceShutdownCodec::encodeRequest(
+            auto request = protocol::codec::executorservice_shutdown_encode(
                     getName());
             invoke(request);
         }
 
         boost::future<bool> IExecutorService::isShutdown() {
-            auto request = protocol::codec::ExecutorServiceIsShutdownCodec::encodeRequest(
+            auto request = protocol::codec::executorservice_isshutdown_encode(
                     getName());
-            return invokeAndGetFuture<bool, protocol::codec::ExecutorServiceIsShutdownCodec::ResponseParameters>(
+            return invokeAndGetFuture<bool>(
                     request);
         }
 
@@ -597,9 +577,9 @@ namespace hazelcast {
         }
 
         const std::string ClientProperties::PROP_HEARTBEAT_TIMEOUT = "hazelcast_client_heartbeat_timeout";
-        const std::string ClientProperties::PROP_HEARTBEAT_TIMEOUT_DEFAULT = "60";
+        const std::string ClientProperties::PROP_HEARTBEAT_TIMEOUT_DEFAULT = "60000";
         const std::string ClientProperties::PROP_HEARTBEAT_INTERVAL = "hazelcast_client_heartbeat_interval";
-        const std::string ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT = "10";
+        const std::string ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT = "5000";
         const std::string ClientProperties::PROP_REQUEST_RETRY_COUNT = "hazelcast_client_request_retry_count";
         const std::string ClientProperties::PROP_REQUEST_RETRY_COUNT_DEFAULT = "20";
         const std::string ClientProperties::PROP_REQUEST_RETRY_WAIT_TIME = "hazelcast_client_request_retry_wait_time";
@@ -777,9 +757,9 @@ namespace hazelcast {
         namespace exception {
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, const std::string &details, int32_t errorNo,
-                                   bool isRuntime, bool retryable)
-                    : src(source), msg(message), details(details), errorCode(errorNo), runtimeException(isRuntime),
-                      retryable(retryable), report((boost::format(
+                                   std::exception_ptr cause, bool isRuntime, bool retryable)
+                    : src(source), msg(message), details(details), errorCode(errorNo), cause_(cause),
+                    runtimeException(isRuntime), retryable(retryable), report((boost::format(
                             "%1% {%2%. Error code:%3%, Details:%4%.} at %5%.") % exceptionName % message % errorNo %
                                                     details % source).str()) {
             }
@@ -823,33 +803,34 @@ namespace hazelcast {
 
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message,
-                                                                     const std::string &details)
+                                                                     const std::string &details,
+                                                                     std::exception_ptr cause)
                     : RetryableHazelcastException(
-                    "RetryableHazelcastException", protocol::RETRYABLE_HAZELCAST, source, message, details, true,
+                    "RetryableHazelcastException", protocol::RETRYABLE_HAZELCAST, source, message, details, cause, true,
                     true) {}
 
             RetryableHazelcastException::RetryableHazelcastException(const std::string &errorName, int32_t errorCode,
                                                                      const std::string &source,
                                                                      const std::string &message,
-                                                                     const std::string &details, bool runtime,
-                                                                     bool retryable) : HazelcastException(errorName,
+                                                                     const std::string &details, std::exception_ptr cause,
+                                                                     bool runtime, bool retryable) : HazelcastException(errorName,
                                                                                                           errorCode,
                                                                                                           source,
                                                                                                           message,
                                                                                                           details,
+                                                                                                          cause,
                                                                                                           runtime,
                                                                                                           retryable) {}
 
             MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
-                                                     const std::string &details)
-                    : ExecutionException("MemberLeftException", protocol::MEMBER_LEFT, source, message, details, false,
-                                         true) {}
+                                                     const std::string &details, std::exception_ptr cause)
+                    : ExecutionException("MemberLeftException", protocol::MEMBER_LEFT, source, message, details,
+                                         cause, false,true) {}
 
             ConsistencyLostException::ConsistencyLostException(const std::string &source, const std::string &message,
-                                                               const std::string &details)
-                    : HazelcastException("ConsistencyLostException", protocol::CONSISTENCY_LOST, source, message,
-                                         details, true,
-                                         false) {}
+                                                               const std::string &details, std::exception_ptr cause)
+                    : HazelcastException("ConsistencyLostException", protocol::CONSISTENCY_LOST_EXCEPTION, source, message,
+                                         details, cause, true,false) {}
         }
     }
 }

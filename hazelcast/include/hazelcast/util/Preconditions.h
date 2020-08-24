@@ -17,6 +17,7 @@
 
 #include <string>
 #include <memory>
+#include <boost/uuid/uuid.hpp>
 #include "hazelcast/util/HazelcastDll.h"
 
 #include "hazelcast/client/exception/ProtocolExceptions.h"
@@ -61,6 +62,12 @@ namespace hazelcast {
                     throw client::exception::NullPointerException(errorMessage);
                 }
                 return argument;
+            }
+
+            static void checkNotNill(boost::uuids::uuid id, const std::string &errorMessage) {
+                if (id.is_nil()) {
+                    throw client::exception::NullPointerException(errorMessage);
+                }
             }
 
             /**

@@ -13,23 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * ErrorCodec.h
- *
- *  Created on: Apr 13, 2015
- *      Author: ihsan
- */
-
 #pragma once
 
 #include <string>
 #include <vector>
-#include <memory>
-#include <stdint.h>
-
-#include "hazelcast/client/protocol/ResponseMessageConst.h"
-#include "hazelcast/client/protocol/codec/StackTraceElement.h"
+#include <boost/optional.hpp>
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
@@ -37,35 +26,31 @@ namespace hazelcast {
             class ClientMessage;
 
             namespace codec {
-                class ErrorCodec {
-                public:
+                struct HAZELCAST_API StackTraceElement {
+                    std::string declaringClass;
+                    std::string methodName;
+                    boost::optional<std::string> fileName;
+                    int lineNumber;
+                };
+
+                struct HAZELCAST_API ErrorHolder {
                     int32_t errorCode;
                     std::string className;
-                    std::unique_ptr<std::string> message;
-                    std::vector<StackTraceElement> stackTrace;
-                    int32_t causeErrorCode;
-                    std::unique_ptr<std::string> causeClassName;
-
-                    static const enum ResponseMessageConst TYPE = EXCEPTION;
-
-                    /**
-                    * Decode input byte array data into parameters
-                    *
-                    * @param message
-                    * @return ErrorCodec
-                    */
-                    static ErrorCodec decode(ClientMessage &clientMessage);
-
+                    boost::optional<std::string> message;
+                    std::vector<codec::StackTraceElement> stackTrace;
 
                     std::string toString() const;
+                };
 
-                    ErrorCodec(const ErrorCodec &rhs);
-                private:
-                    ErrorCodec(ClientMessage &clientMessage);
+                std::ostream &operator<<(std::ostream &out, const StackTraceElement &trace);
+
+                struct HAZELCAST_API ErrorCodec {
+                    static constexpr int32_t EXCEPTION_MESSAGE_TYPE = 0;
+
+                    static std::vector<ErrorHolder> decode(ClientMessage &clientMessage);
                 };
             }
         }
     }
 }
-
 

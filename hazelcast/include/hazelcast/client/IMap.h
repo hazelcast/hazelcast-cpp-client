@@ -34,8 +34,7 @@
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/ExceptionUtil.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/spi/ClientContext.h"
 
 class NearCachedClientMapProxy;
@@ -472,11 +471,11 @@ namespace hazelcast {
             *
             * @return registrationId of added listener that can be used to remove the entry listener.
             */
-            boost::future<std::string> addEntryListener(EntryListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener, bool includeValue) {
                 const auto listener_flags = listener.flags;
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
+                                new impl::EntryEventHandler<protocol::codec::map_addentrylistener_handler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
@@ -499,12 +498,12 @@ namespace hazelcast {
             * @return registrationId of added listener that can be used to remove the entry listener.
             */
             template<typename P>
-            boost::future<std::string>
+            boost::future<boost::uuids::uuid>
             addEntryListener(EntryListener &&listener, const P &predicate, bool includeValue) {
                 const auto listener_flags = listener.flags;
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
+                                new impl::EntryEventHandler<protocol::codec::map_addentrylistenerwithpredicate_handler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
@@ -529,7 +528,7 @@ namespace hazelcast {
                 const auto listener_flags = listener.flags;
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new impl::EntryEventHandler<protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler>(
+                                new impl::EntryEventHandler<protocol::codec::map_addentrylistenertokey_handler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),
                                         std::move(listener),
@@ -546,7 +545,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<boost::optional<EntryView<K, V>>> getEntryView(const K &key) {
-                return proxy::IMapImpl::getEntryViewData(toData(key)).then([=] (boost::future<std::unique_ptr<map::DataEntryView>> f) {
+                return proxy::IMapImpl::getEntryViewData(toData(key)).then([=] (boost::future<boost::optional<map::DataEntryView>> f) {
                     auto dataView = f.get();
                     if (!dataView) {
                         return boost::optional<EntryView<K, V>>();
@@ -655,19 +654,19 @@ namespace hazelcast {
             template<typename K, typename V>
             boost::future<std::vector<K>> keySet(query::PagingPredicate<K, V> &predicate) {
                 predicate.setIterationType(query::IterationType::KEY);
-                return toObjectVector<K>(keySetForPagingPredicateData(toData(predicate))).then(boost::launch::deferred, [&](boost::future<std::vector<K>> f) {
-                    auto keys = f.get();
-                    std::vector<std::pair<K, boost::optional<V>>> entries;
-                    for (auto &key : keys) {
-                        entries.push_back(std::make_pair(std::move(key), boost::none));
+                return keySetForPagingPredicateData(
+                        protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
+                        [=, &predicate](
+                                boost::future<std::pair<std::vector<serialization::pimpl::Data>, query::anchor_data_list>> f) {
+                    auto result = f.get();
+                    predicate.setAnchorDataList(std::move(result.second));
+                    const auto &entries = result.first;
+                    std::vector<K> values;
+                    values.reserve(entries.size());
+                    for(const auto &e : entries) {
+                        values.emplace_back(*toObject<K>(e));
                     }
-                    auto resultEntries = sortAndGet(predicate, query::IterationType::KEY, entries);
-                    std::vector<K> result;
-                    result.reserve(resultEntries.size());
-                    for (auto &entry : resultEntries) {
-                        result.push_back(std::move(entry.first));
-                    }
-                    return result;
+                    return values;
                 });
             }
 
@@ -708,15 +707,18 @@ namespace hazelcast {
             template<typename K, typename V>
             boost::future<std::vector<V>> values(query::PagingPredicate<K, V> &predicate) {
                 predicate.setIterationType(query::IterationType::VALUE);
-                return toEntryObjectVector<K, V>(valuesForPagingPredicateData(toData(predicate))).then(boost::launch::deferred, [&](boost::future<std::vector<std::pair<K, V>>> f) {
-                    auto entries = f.get();
-                    auto resultEntries = sortAndGet(predicate, query::IterationType::VALUE, entries);
-                    std::vector<V> result;
-                    result.reserve(resultEntries.size());
-                    for (auto &entry : resultEntries) {
-                        result.push_back(std::move(entry.second.value()));
+                return valuesForPagingPredicateData(
+                        protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
+                        [=, &predicate](boost::future<std::pair<std::vector<serialization::pimpl::Data>, query::anchor_data_list>> f) {
+                    auto result = f.get();
+                    predicate.setAnchorDataList(std::move(result.second));
+                    const auto &entries = result.first;
+                    std::vector<V> values;
+                    values.reserve(entries.size());
+                    for(const auto &e : entries) {
+                        values.emplace_back(*toObject<V>(e));
                     }
-                    return result;
+                    return values;
                 });
             }
 
@@ -759,47 +761,80 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<std::vector<std::pair<K, V>>> entrySet(query::PagingPredicate<K, V> &predicate) {
-                return toSortedEntryObjectVector<K, V>(predicate, query::IterationType::ENTRY);
+                predicate.setIterationType(query::IterationType::ENTRY);
+                return entrySetForPagingPredicateData(
+                        protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
+                        [=, &predicate](boost::future<std::pair<EntryVector, query::anchor_data_list>> f) {
+                    auto result = f.get();
+                    predicate.setAnchorDataList(std::move(result.second));
+                    const auto &entries_data = result.first;
+                    std::vector<std::pair<K, V>> entries;
+                    entries.reserve(entries_data.size());
+                    for(const auto &e : entries_data) {
+                        entries.emplace_back(*toObject<K>(e.first), *toObject<V>(e.second));
+                    }
+                    return entries;
+                });
             }
 
             /**
-            * Adds an index to this map for the specified entries so
-            * that queries can run faster.
-            *
-            * Let's say your map values are Employee objects.
-            *
-            *   class Employee {
-            *       //...
-            *       private:
-            *          bool active;
-            *          int age;
-            *          boost::future<std::string> name;
-            *
-            *   }
-            *
-            *
-            * If you are querying your values mostly based on age and active then
-            * you should consider indexing these fields.
-            *
-            *   auto imap = hazelcastInstance.getMap("employees");
-            *   imap.addIndex("age", true);        // ordered, since we have ranged queries for this field
-            *   imap.addIndex("active", false);    // not ordered, because boolean field cannot have range
-            *
-            *
-            * In the server side, Index  should either have a getter method or be public.
-            * You should also make sure to add the indexes before adding
-            * entries to this map.
-            *
-            * @param attribute attribute of value
-            * @param ordered   <tt>true</tt> if index should be ordered,
-            *                  <tt>false</tt> otherwise.
-            */
-            boost::future<void> addIndex(const std::string &attribute, bool ordered) {
-                return toVoidFuture(proxy::IMapImpl::addIndex(attribute, ordered));
+             * Adds an index to this map for the specified entries so
+             * that queries can run faster.
+             * <p>
+             * Let's say your map values are Employee objects.
+             * <pre>
+             *   struct Employee {
+             *     bool active;
+             *     int32_t age;
+             *     std::string name;
+             *     // other fields
+             *
+             *   }
+             * </pre>
+             * If you are querying your values mostly based on age and active then
+             * you may consider indexing these fields.
+             * <pre>
+             *   auto imap = client.getMap("employees");
+             *   imap.addIndex(config::index_config(config::index_config::index_type::SORTED, "age"));  // Sorted index for range queries
+             *   imap.addIndex(config::index_config(config::index_config::index_type::HASH, "active"));  // Sorted index for range queries
+             * </pre>
+             * Index attribute should either have a getter method or be public.
+             * You should also make sure to add the indexes before adding
+             * entries to this map.
+             * <p>
+             * <b>Time to Index</b>
+             * <p>
+             * Indexing time is executed in parallel on each partition by operation threads. The Map
+             * is not blocked during this operation.
+             * <p>
+             * The time taken in proportional to the size of the Map and the number Members.
+             * <p>
+             * <b>Searches while indexes are being built</b>
+             * <p>
+             * Until the index finishes being created, any searches for the attribute will use a full Map scan,
+             * thus avoiding using a partially built index and returning incorrect results.
+             *
+             * @param config Index configuration.
+             */
+            boost::future<void> addIndex(const config::index_config &config) {
+                return toVoidFuture(proxy::IMapImpl::addIndexData(config));
+            }
+
+            /**
+             * Convenient method to add an index to this map with the given type and attributes.
+             * Attributes are indexed in ascending order.
+             * <p>
+             *
+             * \param type       Index type.
+             * \param attributes Attributes to be indexed.
+             */
+            template<typename ...T>
+            boost::future<void> addIndex(config::index_config::index_type type, T... attributes) {
+                return addIndex(config::index_config(type, std::forward<T>(attributes)...));
             }
 
             boost::future<void> clear() {
-                return toVoidFuture(proxy::IMapImpl::clear());
+                return toVoidFuture(proxy::IMapImpl::clearData());
             }
 
             /**
@@ -970,7 +1005,7 @@ namespace hazelcast {
 
             monitor::impl::LocalMapStatsImpl localMapStats;
 
-            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>> getInternal(const serialization::pimpl::Data &keyData) {
+            virtual boost::future<boost::optional<serialization::pimpl::Data>> getInternal(const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::getData(keyData);
             }
 
@@ -978,7 +1013,7 @@ namespace hazelcast {
                 return proxy::IMapImpl::containsKey(keyData);
             }
 
-            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>> removeInternal(
+            virtual boost::future<boost::optional<serialization::pimpl::Data>> removeInternal(
                     const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::removeData(keyData);
             }
@@ -1005,9 +1040,9 @@ namespace hazelcast {
                 return proxy::IMapImpl::tryPut(keyData, valueData, timeout);
             }
 
-            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>> putInternal(const serialization::pimpl::Data &keyData,
-                                                                          const serialization::pimpl::Data &valueData,
-                                                                          std::chrono::steady_clock::duration ttl) {
+            virtual boost::future<boost::optional<serialization::pimpl::Data>> putInternal(const serialization::pimpl::Data &keyData,
+                                                                                           const serialization::pimpl::Data &valueData,
+                                                                                           std::chrono::steady_clock::duration ttl) {
                 return proxy::IMapImpl::putData(keyData, valueData, ttl);
             }
 
@@ -1016,7 +1051,7 @@ namespace hazelcast {
                 return proxy::IMapImpl::putTransient(keyData, valueData, ttl);
             }
 
-            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>>
+            virtual boost::future<boost::optional<serialization::pimpl::Data>>
             putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                 const serialization::pimpl::Data &valueData,
                                 std::chrono::steady_clock::duration ttl) {
@@ -1029,11 +1064,10 @@ namespace hazelcast {
                 return proxy::IMapImpl::replace(keyData, valueData, newValueData);
             }
 
-            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>>
+            virtual boost::future<boost::optional<serialization::pimpl::Data>>
             replaceInternal(const serialization::pimpl::Data &keyData,
                             const serialization::pimpl::Data &valueData) {
                 return proxy::IMapImpl::replaceData(keyData, valueData);
-
             }
 
             virtual boost::future<protocol::ClientMessage>
@@ -1051,13 +1085,13 @@ namespace hazelcast {
                 return proxy::IMapImpl::getAllData(partitionId, partitionKeys);
             }
 
-            virtual boost::future<std::unique_ptr<serialization::pimpl::Data>>
+            virtual boost::future<boost::optional<serialization::pimpl::Data>>
             executeOnKeyInternal(const serialization::pimpl::Data &keyData,
                                  const serialization::pimpl::Data &processor) {
                 return proxy::IMapImpl::executeOnKeyData(keyData, processor);
             }
 
-            boost::future<std::unique_ptr<serialization::pimpl::Data>>
+            boost::future<boost::optional<serialization::pimpl::Data>>
             submitToKeyInternal(const serialization::pimpl::Data &keyData,
                                 const serialization::pimpl::Data &processor) {
                 return submitToKeyData(keyData, processor);
@@ -1079,20 +1113,6 @@ namespace hazelcast {
             }
 
         private:
-            template<typename K, typename V>
-            boost::future<std::vector<std::pair<K, V>>> toSortedEntryObjectVector(query::PagingPredicate<K, V> &predicate, query::IterationType iterationType) {
-                return toEntryObjectVector<K, V>(proxy::IMapImpl::entrySetForPagingPredicateData(toData(predicate))).then(
-                        boost::launch::deferred, [&](boost::future<std::vector<std::pair<K, V>>> f) {
-                            auto entries = sortAndGet<K, V>(predicate, iterationType, f.get());
-                            std::vector<std::pair<K, V>> result;
-                            result.reserve(entries.size());
-                            for_each(entries.begin(), entries.end(), [&](std::pair<K, boost::optional<V>> &entry) {
-                                result.push_back(
-                                        std::make_pair(std::move(entry.first), std::move(entry.second.value())));
-                            });
-                            return result;
-                        });
-            }
 
             template<typename K, typename V>
             std::vector<std::pair<K, boost::optional<V>>> sortAndGet(query::PagingPredicate<K, V> &predicate, query::IterationType iterationType, std::vector<std::pair<K, V>> entries) {

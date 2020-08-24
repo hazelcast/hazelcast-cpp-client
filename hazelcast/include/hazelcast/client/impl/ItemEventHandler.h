@@ -15,8 +15,8 @@
  */
 #pragma once
 
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -28,14 +28,14 @@ namespace hazelcast {
             template<typename BaseType>
             class ItemEventHandler : public BaseType {
             public:
-                ItemEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
+                ItemEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                  serialization::pimpl::SerializationService &serializationService,
                                  ItemListener &&listener, bool includeValue)
                         : instanceName(instanceName), clusterService(clusterService),
                           serializationService(serializationService), listener(std::move(listener)), includeValue(includeValue) {};
 
-                void handleItemEventV10(std::unique_ptr<serialization::pimpl::Data> &item, const std::string &uuid,
-                                        const int32_t &eventType) override {
+                void handle_item(const boost::optional<serialization::pimpl::Data> &item, boost::uuids::uuid uuid,
+                                        int32_t eventType) override {
                     TypedData val;
                     if (includeValue) {
                         val = TypedData(std::move(*item), serializationService);
@@ -52,7 +52,7 @@ namespace hazelcast {
 
             private:
                 const std::string &instanceName;
-                spi::ClientClusterService &clusterService;
+                spi::impl::ClientClusterServiceImpl &clusterService;
                 serialization::pimpl::SerializationService &serializationService;
                 ItemListener listener;
                 bool includeValue;
