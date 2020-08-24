@@ -38,7 +38,6 @@
 #include <boost/range/algorithm/find_if.hpp>
 #include <utility>
 
-#include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
@@ -1175,7 +1174,7 @@ namespace hazelcast {
                     }
 
                     if (userExecutorPoolSize <= 0) {
-                        userExecutorPoolSize = util::RuntimeAvailableProcessors::get();
+                        userExecutorPoolSize = std::thread::hardware_concurrency();
                     }
                     if (userExecutorPoolSize <= 0) {
                         userExecutorPoolSize = 4; // hard coded thread pool count in case we could not get the processor count

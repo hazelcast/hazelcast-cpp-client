@@ -15,8 +15,9 @@
  */
 #pragma once
 
+#include <atomic>
+
 #include "hazelcast/client/impl/AbstractLoadBalancer.h"
-#include "hazelcast/util/AtomicInt.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -45,7 +46,7 @@ namespace hazelcast {
                 const Member next() override;
 
             private:
-                util::AtomicInt index;
+                std::atomic<int> index{ 0 };
             };
         }
     }

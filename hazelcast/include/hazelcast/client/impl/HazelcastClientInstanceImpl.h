@@ -248,7 +248,7 @@ namespace hazelcast {
             };
 
             template<>
-            std::shared_ptr<IMap> HazelcastClientInstanceImpl::getDistributedObject(const std::string& name);
+            std::shared_ptr<IMap> HAZELCAST_API HazelcastClientInstanceImpl::getDistributedObject(const std::string& name);
         }
     }
 }

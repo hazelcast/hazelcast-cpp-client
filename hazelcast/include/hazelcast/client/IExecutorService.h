@@ -54,7 +54,7 @@ namespace hazelcast {
         class HAZELCAST_API IExecutorService : public proxy::ProxyImpl {
             friend class spi::ProxyManager;
         public:
-            static const std::string SERVICE_NAME;
+            static constexpr const char *SERVICE_NAME = "hz:impl:executorService";
 
             template<typename T>
             class executor_promise {

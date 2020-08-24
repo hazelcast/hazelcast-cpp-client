@@ -26,6 +26,6 @@ namespace hazelcast {
         * \tp
         */
         template<typename R, typename ...Args>
-        HAZELCAST_API R empty_function(Args...) {}
+        R empty_function(Args...) {}
     }
 }

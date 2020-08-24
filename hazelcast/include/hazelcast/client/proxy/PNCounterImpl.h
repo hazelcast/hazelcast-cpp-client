@@ -20,6 +20,7 @@
 #include <memory>
 #include <atomic>
 
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/util/Sync.h"
 
@@ -34,7 +35,7 @@ namespace hazelcast {
             }
         }
         namespace proxy {
-            class PNCounterImpl : public ProxyImpl {
+            class HAZELCAST_API PNCounterImpl : public ProxyImpl {
             public:
                 friend std::ostream &operator<<(std::ostream &os, const PNCounterImpl &proxy);
 
@@ -179,7 +180,7 @@ namespace hazelcast {
                  * sending invocations.
                  */
                 // public for testing purposes
-                std::shared_ptr<Address> HAZELCAST_API getCurrentTargetReplicaAddress();
+                std::shared_ptr<Address> getCurrentTargetReplicaAddress();
 
             protected:
                 PNCounterImpl(const std::string &serviceName, const std::string &objectName,

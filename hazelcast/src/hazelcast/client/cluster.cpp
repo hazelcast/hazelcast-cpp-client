@@ -306,8 +306,7 @@ namespace hazelcast {
         }
 
         namespace impl {
-            RoundRobinLB::RoundRobinLB() : index(0) {
-            }
+            RoundRobinLB::RoundRobinLB() = default;
 
             void RoundRobinLB::init(Cluster &cluster) {
                 AbstractLoadBalancer::init(cluster);

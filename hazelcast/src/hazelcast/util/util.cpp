@@ -63,14 +63,11 @@
 #include "hazelcast/util/UUID.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/SyncHttpClient.h"
-#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
 #include "hazelcast/util/concurrent/CancellationException.h"
 #include "hazelcast/util/UuidUtil.h"
-#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AddressHelper.h"
-#include "hazelcast/util/RuntimeAvailableProcessors.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/ByteBuffer.h"
@@ -369,6 +366,31 @@ namespace hazelcast {
 
         const std::string &ILogger::getInstanceName() const {
             return instanceName;
+        }
+
+        void ILogger::log_str(el::Level level, const std::string &s) {
+            std::lock_guard<std::mutex> lock(mutex_);
+
+            switch (level) {
+                case el::Level::Debug:
+                    easyLogger->debug(s);
+                    break;
+                case el::Level::Info:
+                    easyLogger->info(s);
+                    break;
+                case el::Level::Warning:
+                    easyLogger->warn(s);
+                    break;
+                case el::Level::Fatal:
+                    easyLogger->fatal(s);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        bool ILogger::enabled(el::Level level) const {
+            return easyLogger->enabled(level);
         }
     }
 }
@@ -727,22 +749,6 @@ namespace hazelcast {
     }
 }
 
-
-
-
-namespace hazelcast {
-    namespace util {
-        AtomicBoolean::AtomicBoolean() : std::atomic<bool>(false) {
-        }
-
-        AtomicBoolean::AtomicBoolean(bool i) : std::atomic<bool>(i) {
-        }
-    }
-}
-
-
-
-
 namespace hazelcast {
     namespace util {
         namespace concurrent {
@@ -1051,20 +1057,6 @@ namespace hazelcast {
     }
 }
 
-
-namespace hazelcast {
-    namespace util {
-        AtomicInt::AtomicInt() : atomic<int>(0) {
-        }
-
-        AtomicInt::AtomicInt(const int &value) : atomic<int>(value) {
-        }
-    }
-}
-
-
-
-
 namespace hazelcast {
     namespace util {
         const int AddressHelper::MAX_PORT_TRIES = 3;
@@ -1146,37 +1138,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-namespace hazelcast {
-    namespace util {
-        util::AtomicInt RuntimeAvailableProcessors::currentAvailableProcessors(
-                RuntimeAvailableProcessors::getNumberOfProcessors());
-
-        int RuntimeAvailableProcessors::getNumberOfProcessors() {
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            SYSTEM_INFO sysinfo;
-            GetSystemInfo(&sysinfo);
-            return sysinfo.dwNumberOfProcessors;
-#else
-            return sysconf(_SC_NPROCESSORS_ONLN);
-#endif
-        }
-
-        int RuntimeAvailableProcessors::get() {
-            return currentAvailableProcessors;
-        }
-
-        void RuntimeAvailableProcessors::override(int availableProcessors) {
-            RuntimeAvailableProcessors::currentAvailableProcessors.store(availableProcessors);
-        }
-
-        void RuntimeAvailableProcessors::resetOverride() {
-            currentAvailableProcessors.store(getNumberOfProcessors());
-        }
-    }
-}
-
 
 //-----------------------------------------------------------------------------
 // MurmurHash3 was written by Austin Appleby, and is placed in the public

@@ -37,7 +37,6 @@
 #include <hazelcast/client/proxy/PNCounterImpl.h>
 #include <hazelcast/client/serialization/pimpl/DataInput.h>
 #include <hazelcast/util/AddressUtil.h>
-#include <hazelcast/util/RuntimeAvailableProcessors.h>
 #include <hazelcast/client/serialization/pimpl/DataOutput.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/client/exception/IOException.h>
@@ -101,7 +100,6 @@
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
@@ -564,12 +562,12 @@ namespace hazelcast {
                 struct ListenerState {
                     ListenerState() : keys(UINT_MAX) {}
                     hazelcast::util::BlockingConcurrentQueue<int> keys;
-                    hazelcast::util::AtomicInt addCount;
-                    hazelcast::util::AtomicInt removeCount;
-                    hazelcast::util::AtomicInt updateCount;
-                    hazelcast::util::AtomicInt evictCount;
-                    hazelcast::util::AtomicInt mapClearCount;
-                    hazelcast::util::AtomicInt mapEvictCount;
+                    std::atomic<int> addCount{ 0 };
+                    std::atomic<int> removeCount{ 0 };
+                    std::atomic<int> updateCount{ 0 };
+                    std::atomic<int> evictCount{ 0 };
+                    std::atomic<int> mapClearCount{ 0 };
+                    std::atomic<int> mapEvictCount{ 0 };
                 };
 
                 EntryListener makeEventCountingListener(ListenerState &state) {

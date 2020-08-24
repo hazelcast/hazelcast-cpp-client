@@ -175,6 +175,8 @@ namespace hazelcast {
                     }
                 };
 
+                extern template class HAZELCAST_API NearCache<serialization::pimpl::Data, serialization::pimpl::Data>;
+
                 template<typename K, typename V>
                 std::shared_ptr<V> NearCache<K, V>::NULL_OBJECT(new V);
 

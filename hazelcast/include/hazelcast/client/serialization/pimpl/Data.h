@@ -67,7 +67,7 @@ namespace hazelcast {
 
                     bool operator<(const Data &rhs) const;
 
-                    friend bool operator==(const Data &lhs, const Data &rhs);
+                    friend bool HAZELCAST_API operator==(const Data &lhs, const Data &rhs);
 
                 private:
                     std::vector<byte> data;
@@ -83,28 +83,28 @@ namespace hazelcast {
 
 namespace std {
     template <>
-    class hash<hazelcast::client::serialization::pimpl::Data> {
+    class HAZELCAST_API hash<hazelcast::client::serialization::pimpl::Data> {
     public:
-        std::size_t HAZELCAST_API operator()(const hazelcast::client::serialization::pimpl::Data &val) const noexcept;
+        std::size_t operator()(const hazelcast::client::serialization::pimpl::Data &val) const noexcept;
     };
 
     template<>
-    class hash<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>> {
+    class HAZELCAST_API hash<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>> {
     public:
-        std::size_t HAZELCAST_API
+        std::size_t
         operator()(const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &val) const noexcept;
     };
 
     template<>
-    struct equal_to<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>> {
+    struct HAZELCAST_API equal_to<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>> {
         bool operator()(const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
                 const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept;;
     };
 
     template <>
-    class less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data> > {
+    class HAZELCAST_API less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data> > {
     public:
-        bool HAZELCAST_API operator() (const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
+        bool operator() (const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
                                      const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept;
     };
 }

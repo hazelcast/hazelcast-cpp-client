@@ -16,8 +16,9 @@
 
 #pragma once
 
+#include <atomic>
+
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
 
@@ -82,7 +83,7 @@ namespace hazelcast {
                     connection::ClientConnectionManagerImpl *connectionManager;
                     ClientPartitionService &partitionService;
 
-                    util::AtomicBoolean isShutdown;
+                    std::atomic<bool> isShutdown{ false };
                     std::chrono::steady_clock::duration invocationTimeout;
                     std::chrono::steady_clock::duration invocationRetryPause;
                     ResponseProcessor responseThread;
