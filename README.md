@@ -1898,11 +1898,11 @@ int main() {
 
     auto registrationId = map.addEntryListener(
         EntryListener().
-            onEntryAdded([](const hazelcast::client::EntryEvent &event) {
+            on_added([](hazelcast::client::EntryEvent &&event) {
                 std::cout << "Entry added:" << event.getKey().get<int>().value() 
                     << " --> " << event.getValue().get<std::string>().value() << std::endl;
             }).
-            onEntryRemoved([](const hazelcast::client::EntryEvent &event) {
+            on_removed([](hazelcast::client::EntryEvent &&event) {
                 std::cout << "Entry removed:" << event.getKey().get<int>().value() 
                     << " --> " << event.getValue().get<std::string>().value() << std::endl;
             })
@@ -1929,7 +1929,7 @@ int main() {
 
     auto registrationId = map.addEntryListener(
         EntryListener().
-            onMapCleared([](const hazelcast::client::MapEvent &event) {
+            on_map_cleared([](hazelcast::client::MapEvent &&event) {
                 std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
             })    
         , false).get();

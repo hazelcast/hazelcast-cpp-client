@@ -576,26 +576,26 @@ namespace hazelcast {
                     };
 
                     return EntryListener().
-                            onEntryAdded([&state, pushKey](const EntryEvent &event) {
+                            on_added([&state, pushKey](EntryEvent &&event) {
                                 pushKey(event);
                                 ++state.addCount;
                             }).
-                            onEntryRemoved([&state, pushKey](const EntryEvent &event) {
+                            on_removed([&state, pushKey](EntryEvent &&event) {
                                 pushKey(event);
                                 ++state.removeCount;
                             }).
-                            onEntryUpdated([&state, pushKey](const EntryEvent &event) {
+                            on_updated([&state, pushKey](EntryEvent &&event) {
                                 pushKey(event);
                                 ++state.updateCount;
                             }).
-                            onEntryEvicted([&state, pushKey](const EntryEvent &event) {
+                            on_evicted([&state, pushKey](EntryEvent &&event) {
                                 pushKey(event);
                                 ++state.evictCount;
                             }).
-                            onMapEvicted([&state](const MapEvent &) {
+                            on_map_evicted([&state](MapEvent &&) {
                                 ++state.mapEvictCount;
                             }).
-                            onMapCleared([&state](const MapEvent &) {
+                            on_map_cleared([&state](MapEvent &&) {
                                 ++state.mapClearCount;
                             });
                 }

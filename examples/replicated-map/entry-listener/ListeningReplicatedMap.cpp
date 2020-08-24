@@ -22,29 +22,29 @@ int main() {
 
     std::string listenerId = map->addEntryListener(
         hazelcast::client::EntryListener()
-            .onEntryAdded([](const hazelcast::client::EntryEvent &event) {
-                std::cout << "[entryAdded] " << event << std::endl;
+            .on_added([](hazelcast::client::EntryEvent &&event) {
+                std::cout << "[added] " << event << std::endl;
             })
-            .onEntryRemoved([](const hazelcast::client::EntryEvent &event) {
-                std::cout << "[entryRemoved] " << event << std::endl;
+            .on_removed([](hazelcast::client::EntryEvent &&event) {
+                std::cout << "[removed] " << event << std::endl;
             })
-            .onEntryUpdated([](const hazelcast::client::EntryEvent &event) {
-                std::cout << "[entryAdded] " << event << std::endl;
+            .on_updated([](hazelcast::client::EntryEvent &&event) {
+                std::cout << "[added] " << event << std::endl;
             })
-            .onEntryEvicted([](const hazelcast::client::EntryEvent &event) {
-                std::cout << "[entryUpdated] " << event << std::endl;
+            .on_evicted([](hazelcast::client::EntryEvent &&event) {
+                std::cout << "[updated] " << event << std::endl;
             })
-            .onEntryExpired([](const hazelcast::client::EntryEvent &event) {
-                std::cout << "[entryExpired] " << event << std::endl;
+            .on_expired([](hazelcast::client::EntryEvent &&event) {
+                std::cout << "[expired] " << event << std::endl;
             })
-            .onEntryMerged([](const hazelcast::client::EntryEvent &event) {
-                std::cout << "[entryMerged] " << event << std::endl;
+            .on_merged([](hazelcast::client::EntryEvent &&event) {
+                std::cout << "[merged] " << event << std::endl;
             })
-            .onMapEvicted([](const hazelcast::client::MapEvent &event) {
-                std::cout << "[mapEvicted] " << event << std::endl;
+            .on_map_evicted([](hazelcast::client::MapEvent &&event) {
+                std::cout << "[map_evicted] " << event << std::endl;
             })
-            .onMapCleared([](const hazelcast::client::MapEvent &event) {
-                std::cout << "[mapCleared] " << event << std::endl;
+            .on_map_cleared([](hazelcast::client::MapEvent &&event) {
+                std::cout << "[map_cleared] " << event << std::endl;
             })
     ).get();
 

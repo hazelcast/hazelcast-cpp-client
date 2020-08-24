@@ -69,9 +69,9 @@ namespace hazelcast {
                     MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName, numberOfAffectedEntries);
 
                     if (mapEventType == EntryEvent::type::CLEAR_ALL) {
-                        listener.mapCleared(mapEvent);
+                        listener.map_cleared(std::move(mapEvent));
                     } else if (mapEventType == EntryEvent::type::EVICT_ALL) {
-                        listener.mapEvicted(mapEvent);
+                        listener.map_evicted(std::move(mapEvent));
                     }
                 }
 
@@ -105,22 +105,22 @@ namespace hazelcast {
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
                         case EntryEvent::type::ADDED:
-                            listener.entryAdded(entryEvent);
+                            listener.added(std::move(entryEvent));
                             break;
                         case EntryEvent::type::REMOVED:
-                            listener.entryRemoved(entryEvent);
+                            listener.removed(std::move(entryEvent));
                             break;
                         case EntryEvent::type::UPDATED:
-                            listener.entryUpdated(entryEvent);
+                            listener.updated(std::move(entryEvent));
                             break;
                         case EntryEvent::type::EVICTED:
-                            listener.entryEvicted(entryEvent);
+                            listener.evicted(std::move(entryEvent));
                             break;
                         case EntryEvent::type::EXPIRED:
-                            listener.entryExpired(entryEvent);
+                            listener.expired(std::move(entryEvent));
                             break;
                         case EntryEvent::type::MERGED:
-                            listener.entryMerged(entryEvent);
+                            listener.merged(std::move(entryEvent));
                             break;
                         default:
                             logger.warning("Received unrecognized event with type: ", static_cast<int32_t>(type),

@@ -21,11 +21,10 @@
 namespace hazelcast {
     namespace util {
         /**
-        * Generic empty body function
-        * \tparam R return type
-        * \tp
+        * void no-operation function
+        * \tparam Args argument types
         */
-        template<typename R, typename ...Args>
-        R empty_function(Args...) {}
+        template<typename ...Args>
+        inline void noop(Args...) {}
     }
 }

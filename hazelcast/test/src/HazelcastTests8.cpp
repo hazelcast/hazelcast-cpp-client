@@ -910,7 +910,7 @@ namespace hazelcast {
 
                 std::string registrationId = set->addItemListener(
                     ItemListener()
-                        .onItemAdded([&latch1](const ItemEvent &itemEvent) {
+                        .on_added([&latch1](ItemEvent &&itemEvent) {
                             latch1.count_down();
                         })
                     , true).get();
@@ -1423,7 +1423,7 @@ namespace hazelcast {
 
             IssueTest::IssueTest() : latch1(1), latch2(1), issue864MapListener() {
                 issue864MapListener.
-                    onEntryAdded([this](const EntryEvent &event) {
+                    on_added([this](EntryEvent &&event) {
                         auto key = event.getKey().get<int>().value();
                         ASSERT_TRUE(1 == key || 2 == key);
                         if (key == 1) {
@@ -1436,7 +1436,7 @@ namespace hazelcast {
                             this->latch2.count_down();
                         }
                     }).
-                    onEntryUpdated([this](const EntryEvent &event) {
+                    on_updated([this](EntryEvent &&event) {
                         ASSERT_EQ(2, event.getKey().get<int>().value());
                         ASSERT_EQ(20, event.getValue().get<int>().value());
                         this->latch1.count_down();

@@ -56,7 +56,7 @@ namespace hazelcast {
                 * If you do want to deleteAll to be called use the #clear() method.
                 * <p/>
                 * The EVICT_ALL event is fired for any registered listeners.
-                * See EntryListener#mapEvicted(MapEvent)}.
+                * See EntryListener#map_evicted(MapEvent)}.
                 *
                 * @see #clear()
                 */

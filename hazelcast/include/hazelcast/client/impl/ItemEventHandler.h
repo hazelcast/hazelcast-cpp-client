@@ -44,9 +44,9 @@ namespace hazelcast {
                     ItemEventType type(static_cast<ItemEventType>(eventType));
                     ItemEvent itemEvent(instanceName, type, std::move(val), std::move(member).value());
                     if (type == ItemEventType::ADDED) {
-                        listener.itemAdded(itemEvent);
+                        listener.added(std::move(itemEvent));
                     } else if (type == ItemEventType::REMOVED) {
-                        listener.itemRemoved(itemEvent);
+                        listener.removed(std::move(itemEvent));
                     }
                 }
 

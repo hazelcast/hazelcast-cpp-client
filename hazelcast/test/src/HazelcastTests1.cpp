@@ -1846,11 +1846,11 @@ namespace hazelcast {
 
                 ASSERT_FALSE(map->removeEntryListener("Unknown").get());
 
-                boost::latch mapClearedLatch(1);
+                boost::latch map_clearedLatch(1);
 
                 EntryListener listener;
 
-                listener.onMapCleared([&mapClearedLatch](const MapEvent &event) {
+                listener.on_map_cleared([&map_clearedLatch](MapEvent &&event) {
                     ASSERT_EQ("testDeregisterListener", event.getName());
                     ASSERT_EQ(EntryEvent::type::CLEAR_ALL, event.getEventType());
                     const std::string &hostName = event.getMember().getAddress().getHost();
@@ -1858,13 +1858,13 @@ namespace hazelcast {
                     ASSERT_EQ(5701, event.getMember().getAddress().getPort());
                     ASSERT_EQ(1, event.getNumberOfEntriesAffected());
                     std::cout << "Map cleared event received:" << event << std::endl;
-                    mapClearedLatch.count_down();
+                    map_clearedLatch.count_down();
                 });
 
                 std::string listenerRegistrationId = map->addEntryListener(std::move(listener), true).get();
                 map->put(1, 1).get();
                 map->clear().get();
-                ASSERT_OPEN_EVENTUALLY(mapClearedLatch);
+                ASSERT_OPEN_EVENTUALLY(map_clearedLatch);
                 ASSERT_TRUE(map->removeEntryListener(listenerRegistrationId).get());
             }
 

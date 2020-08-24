@@ -122,10 +122,10 @@ namespace hazelcast {
 
                 EntryListener makeAddRemoveListener(boost::latch &addedLatch, boost::latch &removedLatch) {
                     return EntryListener().
-                        onEntryAdded([&addedLatch](const EntryEvent &) {
+                        on_added([&addedLatch](EntryEvent &&) {
                             addedLatch.count_down();
                         }).
-                        onEntryRemoved([&removedLatch](const EntryEvent &) {
+                        on_removed([&removedLatch](EntryEvent &&) {
                             removedLatch.count_down();
                         });
                 }
@@ -532,7 +532,7 @@ namespace hazelcast {
 
                 ItemListener listener;
 
-                listener.onItemAdded([&latch1](const ItemEvent &itemEvent) {
+                listener.on_added([&latch1](ItemEvent &&itemEvent) {
                     auto type = itemEvent.getEventType();
                     ASSERT_EQ(ItemEventType::ADDED, type);
                     ASSERT_EQ("MyList", itemEvent.getName());
@@ -606,7 +606,7 @@ namespace hazelcast {
                 boost::latch latch1(5);
 
                 auto listener = ItemListener()
-                    .onItemAdded([&latch1](const ItemEvent &itemEvent) {
+                    .on_added([&latch1](ItemEvent &&itemEvent) {
                         latch1.count_down();
                     });
 
