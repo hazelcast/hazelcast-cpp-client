@@ -398,7 +398,9 @@ namespace hazelcast {
                     auto content_length = static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS;
                     size_t item_count = content_length / (ClientMessage::get_sizeof<typename T::value_type::first_type>() + ClientMessage::get_sizeof<typename T::value_type::second_type>());
                     for (size_t i = 0; i < item_count; ++i) {
-                        result.emplace_back(std::make_pair(get<typename T::value_type::first_type>(), get<typename T::value_type::second_type>()));
+                        auto key = get<typename T::value_type::first_type>();
+                        auto value = get<typename T::value_type::second_type>();
+                        result.emplace_back(std::make_pair(std::move(key), std::move(value)));
                     }
 
                     return result;
@@ -431,7 +433,9 @@ namespace hazelcast {
 
                     T result;
                     while(!next_frame_is_data_structure_end_frame()) {
-                        result.emplace(get<typename T::key_type>(), get<typename T::mapped_type>());
+                        auto key = get<typename T::key_type>();
+                        auto value = get<typename T::mapped_type>();
+                        result.emplace(std::move(key), std::move(value));
                     }
 
                     // skip end frame
@@ -570,7 +574,9 @@ namespace hazelcast {
                 template<typename T>
                 typename std::enable_if<std::is_same<T, typename std::pair<typename T::first_type, typename T::second_type>>::value, T>::type
                 inline get() {
-                    return {get<typename T::first_type>(), get<typename T::second_type>()};
+                    auto key = get<typename T::first_type>();
+                    auto value = get<typename T::second_type>();
+                    return {std::move(key), std::move(value)};
                 }
 
                 template<typename T>
@@ -591,8 +597,11 @@ namespace hazelcast {
                     // skip bytes in initial frame
                     rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS - INT32_SIZE);
 
-                    codec::ErrorHolder h = {error_code, get<std::string>(), getNullable<std::string>(),
-                                                get<std::vector<codec::StackTraceElement>>()};
+                    auto class_name = get<std::string>();
+                    auto message = getNullable<std::string>();
+                    auto stack_traces = get<std::vector<codec::StackTraceElement>>();
+                    codec::ErrorHolder h = {error_code, std::move(class_name), std::move(message),
+                                            std::move(stack_traces)};
 
                     fast_forward_to_end_frame();
 
@@ -760,10 +769,15 @@ namespace hazelcast {
                 }
 
                 inline void set(boost::uuids::uuid uuid) {
-                    set(uuid.is_nil());
-                    boost::endian::endian_reverse_inplace<int64_t>(*reinterpret_cast<int64_t *>(uuid.data));
-                    boost::endian::endian_reverse_inplace<int64_t>(*reinterpret_cast<int64_t *>(uuid.data + util::Bits::LONG_SIZE_IN_BYTES));
-                    std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)), uuid.data, sizeof(boost::uuids::uuid));
+                    auto nil = uuid.is_nil();
+                    set(nil);
+                    if (!nil) {
+                        boost::endian::endian_reverse_inplace<int64_t>(*reinterpret_cast<int64_t *>(uuid.data));
+                        boost::endian::endian_reverse_inplace<int64_t>(*reinterpret_cast<int64_t *>(uuid.data + util::Bits::LONG_SIZE_IN_BYTES));
+                        std::memcpy(wr_ptr(sizeof(boost::uuids::uuid)), uuid.data, sizeof(boost::uuids::uuid));
+                    } else {
+                        wr_ptr(sizeof(boost::uuids::uuid));
+                    }
                 }
 
                 inline void set(const serialization::pimpl::Data &value, bool is_final = false) {

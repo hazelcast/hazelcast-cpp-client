@@ -331,8 +331,9 @@ namespace hazelcast {
                 get_paging_predicate_response(boost::future<protocol::ClientMessage> f) const {
                     auto msg = f.get();
 
-                    return std::make_pair(*msg.get_first_var_sized_field<ResultVector>(),
-                            msg.get<query::anchor_data_list>());
+                    auto entries_data = msg.get_first_var_sized_field<ResultVector>();
+                    auto anchor_list = msg.get<query::anchor_data_list>();
+                    return std::make_pair(std::move(entries_data.value()), std::move(anchor_list));
                 }
             };
         }

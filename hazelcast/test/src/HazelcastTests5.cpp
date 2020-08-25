@@ -1258,8 +1258,8 @@ namespace hazelcast {
 
                 imap->put<std::string, std::string>("key1", "value1", std::chrono::seconds(2)).get();
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
-                ASSERT_EQ(boost::cv_status::no_timeout, nullLatch.wait_for(boost::chrono::seconds(1)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
+                ASSERT_OPEN_EVENTUALLY(nullLatch);
 
                 ASSERT_TRUE(imap->removeEntryListener(id).get());
 
@@ -1383,7 +1383,7 @@ namespace hazelcast {
                 hazelcast::util::StartedThread t1(tryPutThread, &latch1, imap.get());
                 hazelcast::util::StartedThread t2(tryRemoveThread, &latch1, imap.get());
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_EQ("value1", (imap->get<std::string, std::string>("key1").get().value()));
                 ASSERT_EQ("value2", (imap->get<std::string, std::string>("key2").get().value()));
                 imap->forceUnlock("key1").get();
@@ -1436,7 +1436,7 @@ namespace hazelcast {
                 imap->lock("key1").get();
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t1(testLockThread, &latch1, imap.get());
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_EQ("value1", (imap->get<std::string, std::string>("key1").get().value()));
                 imap->forceUnlock("key1").get();
             }
@@ -1447,7 +1447,7 @@ namespace hazelcast {
                 imap->lock("key1", std::chrono::seconds(2)).get();
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t1(testLockTTLThread, &latch1, imap.get());
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_FALSE(imap->isLocked("key1").get());
                 ASSERT_EQ("value2", (imap->get<std::string, std::string>("key1").get().value()));
                 imap->forceUnlock("key1").get();
@@ -1457,7 +1457,7 @@ namespace hazelcast {
                 imap->lock("key1", std::chrono::seconds(3)).get();
                 boost::latch latch1(2);
                 hazelcast::util::StartedThread t1(testLockTTL2Thread, &latch1, imap.get());
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(10)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 imap->forceUnlock("key1").get();
             }
 
@@ -1466,7 +1466,7 @@ namespace hazelcast {
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t1(testMapTryLockThread1, &latch1, imap.get());
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
 
                 ASSERT_TRUE(imap->isLocked("key1").get());
 
@@ -1475,7 +1475,7 @@ namespace hazelcast {
 
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 imap->unlock("key1").get();
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch2);
                 ASSERT_TRUE(imap->isLocked("key1").get());
                 imap->forceUnlock("key1").get();
             }
@@ -1512,7 +1512,7 @@ namespace hazelcast {
                 imap->lock("key1").get();
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t2(testMapForceUnlockThread, &latch1, imap.get());
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(100)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 t2.join();
                 ASSERT_FALSE(imap->isLocked("key1").get());
             }
@@ -2766,10 +2766,10 @@ namespace hazelcast {
                 imap->remove<std::string, std::string>("key1").get();
                 imap->remove<std::string, std::string>("key3").get();
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1Add.wait_for(boost::chrono::seconds(10)));
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1Remove.wait_for(boost::chrono::seconds(10)));
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2Add.wait_for(boost::chrono::seconds(5)));
-                ASSERT_EQ(boost::cv_status::no_timeout, latch2Remove.wait_for(boost::chrono::seconds(5)));
+                ASSERT_OPEN_EVENTUALLY(latch1Add);
+                ASSERT_OPEN_EVENTUALLY(latch1Remove);
+                ASSERT_OPEN_EVENTUALLY(latch2Add);
+                ASSERT_OPEN_EVENTUALLY(latch2Remove);
 
                 ASSERT_TRUE(imap->removeEntryListener(listener1ID).get());
                 ASSERT_TRUE(imap->removeEntryListener(listener2ID).get());
@@ -3203,7 +3203,7 @@ namespace hazelcast {
                 auto listenerId = imap->addEntryListener(std::move(clearListener), false).get();
                 imap->put<std::string, std::string>("key1", "value1").get();
                 imap->clear().get();
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(120)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 imap->removeEntryListener(listenerId).get();
             }
 
@@ -3219,7 +3219,7 @@ namespace hazelcast {
                 auto listenerId = imap->addEntryListener(std::move(evictListener), false).get();
                 imap->put<std::string, std::string>("key1", "value1").get();
                 imap->evictAll().get();
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(120)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 imap->removeEntryListener(listenerId).get();
             }
 

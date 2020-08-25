@@ -1014,9 +1014,9 @@ namespace hazelcast {
 
                 HazelcastClient client(clientConfig);
 
-                ASSERT_EQ(boost::cv_status::no_timeout, startingLatch.wait_for(boost::chrono::seconds(0)));
-                ASSERT_EQ(boost::cv_status::no_timeout, startedLatch.wait_for(boost::chrono::seconds(0)));
-                ASSERT_EQ(boost::cv_status::no_timeout, connectedLatch.wait_for(boost::chrono::seconds(0)));
+                ASSERT_OPEN_EVENTUALLY(startingLatch);
+                ASSERT_OPEN_EVENTUALLY(startedLatch);
+                ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
                 instance->shutdown();
 
@@ -1056,9 +1056,9 @@ namespace hazelcast {
 
                 HazelcastClient client(clientConfig);
 
-                ASSERT_EQ(boost::cv_status::no_timeout, startingLatch.wait_for(boost::chrono::seconds(0)));
-                ASSERT_EQ(boost::cv_status::no_timeout, startedLatch.wait_for(boost::chrono::seconds(0)));
-                ASSERT_EQ(boost::cv_status::no_timeout, connectedLatch.wait_for(boost::chrono::seconds(0)));
+                ASSERT_OPEN_EVENTUALLY(startingLatch);
+                ASSERT_OPEN_EVENTUALLY(startedLatch);
+                ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
                 client.shutdown();
 
@@ -1593,13 +1593,13 @@ namespace hazelcast {
 
                 HazelcastServer instance2(*g_srvFactory);
 
-                ASSERT_EQ(boost::cv_status::no_timeout, memberAdded.wait_for(boost::chrono::seconds(30)));
-                ASSERT_EQ(boost::cv_status::no_timeout, memberAddedInit.wait_for(boost::chrono::seconds(30)));
+                ASSERT_OPEN_EVENTUALLY(memberAdded);
+                ASSERT_OPEN_EVENTUALLY(memberAddedInit);
 
                 instance2.shutdown();
 
-                ASSERT_EQ(boost::cv_status::no_timeout, memberRemoved.wait_for(boost::chrono::seconds(30)));
-                ASSERT_EQ(boost::cv_status::no_timeout, memberRemovedInit.wait_for(boost::chrono::seconds(30)));
+                ASSERT_OPEN_EVENTUALLY(memberRemoved);
+                ASSERT_OPEN_EVENTUALLY(memberRemovedInit);
 
                 instance.shutdown();
 
@@ -1624,8 +1624,8 @@ namespace hazelcast {
 
                 HazelcastServer instance2(*g_srvFactory);
 
-                ASSERT_EQ(boost::cv_status::no_timeout, memberAdded.wait_for(boost::chrono::seconds(30)));
-                ASSERT_EQ(boost::cv_status::no_timeout, memberAddedInit.wait_for(boost::chrono::seconds(30)));
+                ASSERT_OPEN_EVENTUALLY(memberAdded);
+                ASSERT_OPEN_EVENTUALLY(memberAddedInit);
 
                 instance2.shutdown();
 

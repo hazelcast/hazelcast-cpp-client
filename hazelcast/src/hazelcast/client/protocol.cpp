@@ -325,7 +325,7 @@ namespace hazelcast {
                 registerException(RETRYABLE_IO, new ExceptionFactoryImpl<exception::RetryableIOException>());
                 registerException(RUNTIME, new ExceptionFactoryImpl<exception::RuntimeException>());
                 registerException(SECURITY, new ExceptionFactoryImpl<exception::SecurityException>());
-                registerException(SOCKET, new ExceptionFactoryImpl<exception::SocketException>());
+                registerException(SOCK_ERROR, new ExceptionFactoryImpl<exception::SocketException>());
                 registerException(STALE_SEQUENCE, new ExceptionFactoryImpl<exception::StaleSequenceException>());
                 registerException(TARGET_DISCONNECTED,
                                   new ExceptionFactoryImpl<exception::TargetDisconnectedException>());

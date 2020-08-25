@@ -781,7 +781,11 @@ namespace hazelcast {
                 return invoke(request).then(boost::launch::deferred, [] (boost::future<protocol::ClientMessage> f) {
                     auto msg = f.get();
                     msg.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN);
-                    return FlakeIdGeneratorImpl::IdBatch(msg.get<int64_t>(), msg.get<int64_t>(), msg.get<int32_t>());
+
+                    auto base = msg.get<int64_t>();
+                    auto increment = msg.get<int64_t>();
+                    auto batch_size = msg.get<int32_t>();
+                    return FlakeIdGeneratorImpl::IdBatch(base, increment, batch_size);
                 });
             }
 
@@ -1745,18 +1749,10 @@ namespace hazelcast {
             }
         }
 
-        EntryEvent::EntryEvent(const std::string &name, const Member &member, type eventType,
-                   TypedData &&key, TypedData &&value)
-                : name(name), member(member), eventType(eventType), key(key), value(value) {
-        }
-
-        EntryEvent::EntryEvent(const std::string &name, const Member &member, type eventType,
+        EntryEvent::EntryEvent(const std::string &name, Member &&member, type eventType,
                    TypedData &&key, TypedData &&value, TypedData &&oldValue, TypedData &&mergingValue)
-                : name(name), member(member), eventType(eventType), key(key), value(value), oldValue(oldValue),
-                  mergingValue(mergingValue) {}
-
-        EntryEvent::EntryEvent(const std::string &name, const Member &member, type eventType)
-                : name(name), member(member), eventType(eventType) {}
+                : name(name), member(std::move(member)), eventType(eventType), key(std::move(key)),
+                value(std::move(value)), oldValue(std::move(oldValue)), mergingValue(std::move(mergingValue)) {}
 
         const TypedData &EntryEvent::getKey() const {
             return key;

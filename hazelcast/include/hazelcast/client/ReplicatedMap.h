@@ -310,7 +310,7 @@ namespace hazelcast {
                         member = Member(uuid);
                     }
                     auto type = static_cast<EntryEvent::type>(eventType);
-                    EntryEvent entryEvent(instanceName, member.value(), type, std::move(eventKey), std::move(val),
+                    EntryEvent entryEvent(instanceName, std::move(member.value()), type, std::move(eventKey), std::move(val),
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
                         case EntryEvent::type::ADDED:

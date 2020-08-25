@@ -52,13 +52,8 @@ namespace hazelcast {
                 ALL = 0xFF
             };
 
-            EntryEvent(const std::string &name, const Member &member, type eventType,
-                       TypedData &&key, TypedData &&value);
-
-            EntryEvent(const std::string &name, const Member &member, type eventType,
+            EntryEvent(const std::string &name, Member &&member, type eventType,
                        TypedData &&key, TypedData &&value, TypedData &&oldValue, TypedData &&mergingValue);
-
-            EntryEvent(const std::string &name, const Member &member, type eventType);
 
             /**
              *

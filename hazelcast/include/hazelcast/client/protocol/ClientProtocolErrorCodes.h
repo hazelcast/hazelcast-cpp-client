@@ -69,7 +69,7 @@ namespace hazelcast {
                 RETRYABLE_IO = 47,
                 RUNTIME = 48,
                 SECURITY = 49,
-                SOCKET = 50,
+                SOCK_ERROR = 50,
                 STALE_SEQUENCE = 51,
                 TARGET_DISCONNECTED = 52,
                 TARGET_NOT_MEMBER = 53,

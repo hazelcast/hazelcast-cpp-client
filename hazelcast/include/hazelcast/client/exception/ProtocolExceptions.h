@@ -59,7 +59,7 @@ namespace hazelcast {
 
             DEFINE_EXCEPTION_CLASS(NotSerializableException, protocol::NOT_SERIALIZABLE, false);
 
-            DEFINE_EXCEPTION_CLASS(SocketException, protocol::SOCKET, false);
+            DEFINE_EXCEPTION_CLASS(SocketException, protocol::SOCK_ERROR, false);
 
             DEFINE_EXCEPTION_CLASS(TimeoutException, protocol::TIMEOUT, false);
             DEFINE_EXCEPTION_CLASS(URISyntaxException, protocol::URI_SYNTAX, false);

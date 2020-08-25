@@ -555,7 +555,7 @@ namespace hazelcast {
 
                             startLatch.count_down();
 
-                            ASSERT_EQ(boost::cv_status::no_timeout, startLatch.wait_for(boost::chrono::seconds(10)));
+                            ASSERT_OPEN_EVENTUALLY(startLatch);
 
                             // insert items
                             for (int i = 0; i < numItems; ++i) {
@@ -631,7 +631,7 @@ namespace hazelcast {
                     }
 
                     // wait for the remove start
-                    ASSERT_EQ(boost::cv_status::no_timeout, startRemoveLatch.wait_for(boost::chrono::seconds(30)));
+                    ASSERT_OPEN_EVENTUALLY(startRemoveLatch);
 
                     int numRemoved = q.removeAll(&removalValue);
 

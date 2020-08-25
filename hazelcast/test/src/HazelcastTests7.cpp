@@ -542,7 +542,7 @@ namespace hazelcast {
 
                 list->add("item-1").get();
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
 
                 ASSERT_TRUE(list->removeItemListener(registrationId).get());
             }
@@ -611,7 +611,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer(std::string("event_item") + std::to_string(i)).get());
                 }
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_TRUE(q->removeItemListener(id).get());
 
                 // added for test coverage
