@@ -361,6 +361,7 @@ namespace hazelcast {
                                                                                    client.getName(), labels_);
                     }
                 }
+                assert(0);
                 return protocol::ClientMessage();
             }
 
@@ -633,9 +634,16 @@ namespace hazelcast {
                     fire_life_cycle_event(LifecycleEvent::LifecycleState::CLIENT_CONNECTED);
                 }
 
-                logger.info("Authenticated with server ", response.address , ":", response.member_uuid
+                auto local_address = connection->getLocalSocketAddress();
+                if (local_address) {
+                    logger.info("Authenticated with server ", response.address , ":", response.member_uuid
                             , ", server version: " , response.server_version
-                            , ", local address: ", *connection->getLocalSocketAddress());
+                            , ", local address: ", *local_address);
+                } else {
+                    logger.info("Authenticated with server ", response.address , ":", response.member_uuid
+                            , ", server version: " , response.server_version
+                            , ", no local address (connection disconnected ?)");
+                }
 
                 fireConnectionAddedEvent(connection);
             }
