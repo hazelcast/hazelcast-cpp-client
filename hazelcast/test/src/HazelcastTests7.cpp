@@ -367,16 +367,13 @@ namespace hazelcast {
 #else
                     instance = new HazelcastServer(*g_srvFactory);
 #endif
-                    ClientConfig clientConfig = getConfig();
 
 #ifdef HZ_BUILD_WITH_SSL
-                    config::ClientNetworkConfig networkConfig;
-                    config::SSLConfig sslConfig;
-                    sslConfig.setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList("HIGH");
-                    networkConfig.setSSLConfig(sslConfig);
-                    clientConfig.setNetworkConfig(networkConfig);
+                    ClientConfig clientConfig = getConfig(true);
+                    clientConfig.getNetworkConfig().getSSLConfig().setCipherList("HIGH");
+#else
+                    ClientConfig clientConfig = getConfig();
 #endif // HZ_BUILD_WITH_SSL
-
                     client = new HazelcastClient(clientConfig);
                     list = client->getList("MyList");
                 }
@@ -854,7 +851,7 @@ namespace hazelcast {
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
-                    client = new HazelcastClient;
+                    client = new HazelcastClient(ClientConfig().setClusterName("executor-test"));
                 }
 
                 static void TearDownTestCase() {
@@ -1620,7 +1617,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-                class AwsConfigTest : public ::testing::Test {
+                class AwsConfigTest : public ClientTestSupport {
                 };
 
                 TEST_F (AwsConfigTest, testDefaultValues) {
@@ -1687,7 +1684,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsConfigTest, testInvalidAwsMemberPortConfig) {
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "65536");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
@@ -1713,7 +1710,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-                class AwsClientTest : public ::testing::Test {
+                class AwsClientTest : public ClientTestSupport {
                 };
 
                 TEST_F (AwsClientTest, testClientAwsMemberNonDefaultPortConfig) {
@@ -1762,7 +1759,7 @@ namespace hazelcast {
                 // FIPS_mode_set is not available for Mac OS X built-in openssl library
 #ifndef __APPLE__
                                                                                                                                         TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
@@ -1792,7 +1789,7 @@ namespace hazelcast {
                  */
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                                                                                                                                         TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setIamRole("cloudbees-role").setTagKey(
@@ -1802,7 +1799,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey(

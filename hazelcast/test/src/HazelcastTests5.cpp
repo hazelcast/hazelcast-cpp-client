@@ -681,7 +681,7 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig = getConfig();
                     clientConfig.getSerializationConfig().setGlobalSerializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
                     client = new HazelcastClient(clientConfig);

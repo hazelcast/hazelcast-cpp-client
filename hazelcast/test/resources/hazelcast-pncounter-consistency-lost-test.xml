@@ -19,6 +19,8 @@
            xsi:schemaLocation="http://www.hazelcast.com/schema/config
            http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
 
+    <cluster-name>consistency-lost-dev</cluster-name>
+
     <properties>
         <property name="hazelcast.partition.count">5</property>
     </properties>

@@ -234,8 +234,9 @@ namespace hazelcast {
                     factory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), 
                             "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                     instance1 = new HazelcastServer(*factory);
-                    client = new HazelcastClient(getConfig());
-                    client2 = new HazelcastClient(getConfig());
+                    auto config = getConfig().setClusterName("replicated-map-binary-test");
+                    client = new HazelcastClient(config);
+                    client2 = new HazelcastClient(config);
                 }
 
                 static void TearDownTestCase() {
@@ -253,7 +254,7 @@ namespace hazelcast {
                 static ClientConfig getClientConfigWithNearCacheInvalidationEnabled() {
                     auto nearCacheConfig = std::make_shared<config::NearCacheConfig<serialization::pimpl::Data>>();
                     nearCacheConfig->setInvalidateOnChange(true).setInMemoryFormat(config::BINARY);
-                    return ClientConfig().addNearCacheConfig(nearCacheConfig);
+                    return getConfig().setClusterName("replicated-map-binary-test").addNearCacheConfig(nearCacheConfig);
                 }
 
                 static HazelcastServer *instance1;
@@ -1248,7 +1249,7 @@ namespace hazelcast {
                 }
 
                 static std::unique_ptr<ClientConfig> newClientConfig() {
-                    return std::unique_ptr<ClientConfig>(new ClientConfig());
+                    return std::unique_ptr<ClientConfig>(new ClientConfig(getConfig()));
                 }
 
                 std::shared_ptr<ReplicatedMap > getNearCachedMapFromClient(

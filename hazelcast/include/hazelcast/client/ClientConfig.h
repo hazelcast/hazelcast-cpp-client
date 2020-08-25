@@ -143,7 +143,7 @@ namespace hazelcast {
              */
             const std::string &getClusterName() const;
 
-            void setClusterName(const std::string &clusterName);
+            ClientConfig &setClusterName(const std::string &clusterName);
 
             /**
             * \deprecated Please use {\link ClientNetworkConfig#addAddress(const Address &)}.

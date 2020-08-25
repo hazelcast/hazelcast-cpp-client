@@ -18,6 +18,8 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://www.hazelcast.com/schema/config
            http://www.hazelcast.com/schema/config/hazelcast-config-4.0.xsd">
+    <cluster-name>replicated-map-binary-test</cluster-name>
+
     <replicatedmap name="default">
         <in-memory-format>BINARY</in-memory-format>
     </replicatedmap>

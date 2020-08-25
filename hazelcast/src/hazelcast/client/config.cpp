@@ -830,8 +830,9 @@ namespace hazelcast {
             return cluster_name_;
         }
 
-        void ClientConfig::setClusterName(const std::string &clusterName) {
+        ClientConfig &ClientConfig::setClusterName(const std::string &clusterName) {
             cluster_name_ = clusterName;
+            return *this;
         }
 
         const std::unordered_set<std::string> &ClientConfig::getLabels() const {
