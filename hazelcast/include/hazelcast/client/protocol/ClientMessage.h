@@ -248,7 +248,7 @@ namespace hazelcast {
                         // add a new buffer enough size to hold the minimum requested bytes
                         data_buffer.emplace_back();
                         b = data_buffer.rbegin();
-                        b->reserve(std::max(EXPECTED_DATA_BLOCK_SIZE, bytes_to_reserve));
+                        b->reserve((std::max)(EXPECTED_DATA_BLOCK_SIZE, bytes_to_reserve));
                     }
 
                     return b->insert(b->end(), actual_number_of_bytes, 0).operator->();
