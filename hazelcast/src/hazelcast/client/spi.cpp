@@ -143,7 +143,7 @@ namespace hazelcast {
                     try {
                         proxy.destroyLocally();
                         return proxy.destroyRemotely();
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         proxy.destroyRemotely();
                         throw;
                     }

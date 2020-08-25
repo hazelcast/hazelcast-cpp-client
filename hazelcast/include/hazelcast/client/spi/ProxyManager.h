@@ -69,7 +69,7 @@ namespace hazelcast {
                         initialize(std::static_pointer_cast<ClientProxy>(clientProxy));
                         promise.set_value(std::static_pointer_cast<ClientProxy>(clientProxy));
                         return clientProxy;
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         promise.set_exception(std::current_exception());
                         std::lock_guard<std::mutex> guard(lock);
                         if (insertedEntry) {

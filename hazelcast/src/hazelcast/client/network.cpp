@@ -238,7 +238,7 @@ namespace hazelcast {
 
                 try {
                     connection = future->get();
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     connectionsInProgress.remove(address);
                     throw;
                 }

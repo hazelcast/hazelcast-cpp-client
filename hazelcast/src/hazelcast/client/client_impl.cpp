@@ -190,7 +190,7 @@ namespace hazelcast {
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("HazelcastClient",
                                                                                "HazelcastClient could not be started!"));
                     }
-                } catch (std::exception &e) {
+                } catch (std::exception &) {
                     lifecycleService.shutdown();
                     throw;
                 }
@@ -513,7 +513,7 @@ namespace hazelcast {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         getContext(), request, getName(), target);
                 return std::make_pair(clientInvocation->invoke(), clientInvocation);
-            } catch (exception::IException &e) {
+            } catch (exception::IException &) {
                 util::ExceptionUtil::rethrow(std::current_exception());
             }
             return std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();
@@ -525,7 +525,7 @@ namespace hazelcast {
                 std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         getContext(), request, getName(), partitionId);
                 return std::make_pair(clientInvocation->invoke(), clientInvocation);
-            } catch (exception::IException &e) {
+            } catch (exception::IException &) {
                 util::ExceptionUtil::rethrow(std::current_exception());
             }
             return std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>();

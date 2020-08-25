@@ -30,10 +30,10 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                template<typename T> 
+                template<typename T>
                 class BaseSocket : public Socket {
                 public:
-                    template<typename CONTEXT = void>
+                    template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis)
@@ -42,7 +42,7 @@ namespace hazelcast {
                               connectTimeout(connectTimeoutInMillis), resolver(ioResolver), socket_(socketStrand) {
                     }
 
-                    template<typename CONTEXT>
+                    template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis,
@@ -264,11 +264,11 @@ namespace hazelcast {
                         try {
                             setSocketOptions(socketOptions);
                         } catch (std::exception &e) {
-                            std::make_exception_ptr(exception::IOException(
+                            authFuture->onFailure(std::make_exception_ptr(exception::IOException(
                                     "Connection::do_connect",
                                     (boost::format(
                                             "Failed to set socket options for %1%. %2%") % e.what() %
-                                     (*connection)).str()));
+                                     (*connection)).str())));
                             return;
                         }
 
