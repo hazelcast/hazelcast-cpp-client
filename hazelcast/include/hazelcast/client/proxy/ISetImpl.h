@@ -54,7 +54,7 @@ namespace hazelcast {
                 ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext);
 
                 boost::future<boost::uuids::uuid>
-                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::SetAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
+                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::set_addlistener_handler>> &&itemEventHandler, bool includeValue) {
                     return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
                 }
 

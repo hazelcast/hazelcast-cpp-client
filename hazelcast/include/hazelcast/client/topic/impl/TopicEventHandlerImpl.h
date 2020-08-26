@@ -37,7 +37,7 @@ namespace hazelcast {
                             :instanceName(instanceName), clusterService(clusterService),
                             serializationService(serializationService), listener(std::move(messageListener)) {}
 
-                    void handle_topic(Data &&item, int64_t publishTime, boost::uuids::uuid uuid) override {
+                    void handle_topic(Data const & item, int64_t publishTime, boost::uuids::uuid uuid) override {
                         listener.received(Message(instanceName, TypedData(std::move(item), serializationService), publishTime,
                                         clusterService.getMember(uuid)));
                     }

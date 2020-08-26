@@ -89,7 +89,7 @@ namespace hazelcast {
             boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
                         std::shared_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistener_handler>(getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(), std::move(listener), getContext().getLogger())));
             }
 
@@ -110,7 +110,7 @@ namespace hazelcast {
             addEntryListener(EntryListener &&listener, const K &key) {
                 return proxy::ReplicatedMapImpl::addEntryListenerToKey(
                         std::shared_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenertokey_handler>(getName(), getContext().getClientClusterService(),
                                                       getContext().getSerializationService(), std::move(listener),
                                                       getContext().getLogger())), toData(key));
             }
@@ -127,7 +127,7 @@ namespace hazelcast {
             addEntryListener(EntryListener &&listener, const P &predicate) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
                         std::shared_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenerwithpredicate_handler>(getName(), getContext().getClientClusterService(),
                                                       getContext().getSerializationService(), std::move(listener),
                                                       getContext().getLogger())), toData(predicate));
             }
@@ -145,7 +145,7 @@ namespace hazelcast {
             addEntryListener(EntryListener &&listener, const P &predicate, const K &key) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
                         std::shared_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenertokeywithpredicate_handler>(getName(), getContext().getClientClusterService(),
                                                       getContext().getSerializationService(), std::move(listener),
                                                       getContext().getLogger())), toData(key), toData(predicate));
             }
@@ -257,7 +257,8 @@ namespace hazelcast {
                     SERVICE_NAME, objectName, context) {
             }
 
-            class EntryEventHandler : public protocol::codec::replicatedmap_addentrylistener_handler {
+            template<typename HANDLER>
+            class EntryEventHandler : public HANDLER {
             public:
                 EntryEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,

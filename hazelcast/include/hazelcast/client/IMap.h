@@ -37,8 +37,6 @@
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/spi/ClientContext.h"
 
-class NearCachedClientMapProxy;
-
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -524,10 +522,10 @@ namespace hazelcast {
             *                     contain the value.
             */
             template<typename K>
-            boost::future<std::string> addEntryListener(EntryListener &&listener, bool includeValue, const K &key) {
+            boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener, bool includeValue, const K &key) {
                 const auto listener_flags = listener.flags;
                 return proxy::IMapImpl::addEntryListener(
-                        std::unique_ptr<impl::BaseEventHandler>(
+                        std::shared_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::map_addentrylistenertokey_handler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(),

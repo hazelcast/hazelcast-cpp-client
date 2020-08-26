@@ -68,7 +68,7 @@ namespace hazelcast {
                 IQueueImpl(const std::string& instanceName, spi::ClientContext *context);
 
                 boost::future<boost::uuids::uuid>
-                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
+                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::queue_addlistener_handler>> &&itemEventHandler, bool includeValue) {
                     return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
                 }
                 

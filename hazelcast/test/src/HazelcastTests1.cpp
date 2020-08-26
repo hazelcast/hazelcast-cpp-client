@@ -60,7 +60,6 @@
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/Cluster.h"
@@ -1701,8 +1700,7 @@ namespace hazelcast {
 
             TEST_P(SimpleListenerTest, testEmptyListener) {
                 HazelcastServer instance(*g_srvFactory);
-                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
-                HazelcastClient hazelcastClient(clientConfig);
+                HazelcastClient hazelcastClient(GetParam());
 
                 auto map = hazelcastClient.getMap("testEmptyListener");
 

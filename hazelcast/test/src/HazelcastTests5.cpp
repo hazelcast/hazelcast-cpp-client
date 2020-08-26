@@ -56,7 +56,6 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/IMap.h"
@@ -787,41 +786,6 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(expirationEventArrivalCount);
                 ASSERT_TRUE(imap->removeEntryListener(registrationId).get());
             }
-
-            TEST_F(ClientExpirationListenerTest, bothNotified_afterExpirationOfEntries) {
-                int numberOfPutOperations = 1000;
-                boost::latch expiredCount(numberOfPutOperations);
-                boost::latch evictedCount(numberOfPutOperations);
-
-                EntryListener listener;
-
-                listener.
-                    on_evicted([&evictedCount](EntryEvent &&) {
-                        evictedCount.count_down();
-                    }).
-                    on_expired([&expiredCount](EntryEvent &&) {
-                        expiredCount.count_down();
-                    });
-
-                auto registrationId = imap->addEntryListener(std::move(listener), true).get();
-
-                for (int i = 0; i < numberOfPutOperations; i++) {
-                    imap->put<int, int>(i, i, std::chrono::milliseconds(100)).get();
-                }
-
-// wait expiration of entries.
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-
-// trigger immediate fire of expiration events by touching them.
-                for (int i = 0; i < numberOfPutOperations; i++) {
-                    imap->get<int, int>(i).get();
-                }
-
-                ASSERT_OPEN_EVENTUALLY(expiredCount);
-                ASSERT_OPEN_EVENTUALLY(evictedCount);
-
-                ASSERT_TRUE(imap->removeEntryListener(registrationId).get());
-            }
         }
     }
 }
@@ -1247,7 +1211,7 @@ namespace hazelcast {
                     on_added([&latch1](EntryEvent &&) {
                         latch1.count_down();
                     }).
-                    on_evicted([&latch1, &nullLatch](EntryEvent &&event) {
+                    on_expired([&latch1, &nullLatch](EntryEvent &&event) {
                         auto oldValue = event.getOldValue().get<std::string>();
                         if (!oldValue.has_value() || oldValue.value().compare("")) {
                             nullLatch.count_down();
@@ -1255,7 +1219,7 @@ namespace hazelcast {
                         latch1.count_down();
                     });
 
-                std::string id = imap->addEntryListener(std::move(listener), true).get();
+                auto id = imap->addEntryListener(std::move(listener), true).get();
 
                 imap->put<std::string, std::string>("key1", "value1", std::chrono::seconds(2)).get();
 

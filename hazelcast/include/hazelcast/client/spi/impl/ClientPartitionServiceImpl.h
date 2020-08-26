@@ -19,7 +19,6 @@
 #include <atomic>
 
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/impl/Partition.h"

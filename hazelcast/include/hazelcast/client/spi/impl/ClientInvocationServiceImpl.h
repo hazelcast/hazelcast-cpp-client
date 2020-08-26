@@ -19,7 +19,6 @@
 #include <atomic>
 #include <chrono>
 
-#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 
