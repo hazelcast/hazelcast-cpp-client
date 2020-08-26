@@ -34,17 +34,17 @@ namespace hazelcast {
                 /**
                  * Makes an authentication request to the cluster.
                  */
-                ClientMessage client_authentication_encode(const std::string  & clusterName, const std::string  * username, const std::string  * password, boost::uuids::uuid uuid, const std::string  & clientType, byte serializationVersion, const std::string  & clientHazelcastVersion, const std::string  & clientName, const std::vector<std::string>  & labels);
+                ClientMessage HAZELCAST_API client_authentication_encode(const std::string  & clusterName, const std::string  * username, const std::string  * password, boost::uuids::uuid uuid, const std::string  & clientType, byte serializationVersion, const std::string  & clientHazelcastVersion, const std::string  & clientName, const std::vector<std::string>  & labels);
 
                 /**
                  * Makes an authentication request to the cluster using custom credentials.
                  */
-                ClientMessage client_authenticationcustom_encode(const std::string  & clusterName, const std::vector<byte>  & credentials, boost::uuids::uuid uuid, const std::string  & clientType, byte serializationVersion, const std::string  & clientHazelcastVersion, const std::string  & clientName, const std::vector<std::string>  & labels);
+                ClientMessage HAZELCAST_API client_authenticationcustom_encode(const std::string  & clusterName, const std::vector<byte>  & credentials, boost::uuids::uuid uuid, const std::string  & clientType, byte serializationVersion, const std::string  & clientHazelcastVersion, const std::string  & clientName, const std::vector<std::string>  & labels);
 
                 /**
                  * Adds a cluster view listener to a connection.
                  */
-                ClientMessage client_addclusterviewlistener_encode();
+                ClientMessage HAZELCAST_API client_addclusterviewlistener_encode();
 
                 struct HAZELCAST_API client_addclusterviewlistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -66,17 +66,17 @@ namespace hazelcast {
                 /**
                  * Creates a cluster-wide proxy with the given name and service.
                  */
-                ClientMessage client_createproxy_encode(const std::string  & name, const std::string  & serviceName);
+                ClientMessage HAZELCAST_API client_createproxy_encode(const std::string  & name, const std::string  & serviceName);
 
                 /**
                  * Destroys the proxy given by its name cluster-wide. Also, clears and releases all resources of this proxy.
                  */
-                ClientMessage client_destroyproxy_encode(const std::string  & name, const std::string  & serviceName);
+                ClientMessage HAZELCAST_API client_destroyproxy_encode(const std::string  & name, const std::string  & serviceName);
 
                 /**
                  * Adds a partition lost listener to the cluster.
                  */
-                ClientMessage client_addpartitionlostlistener_encode(bool localOnly);
+                ClientMessage HAZELCAST_API client_addpartitionlostlistener_encode(bool localOnly);
 
                 struct HAZELCAST_API client_addpartitionlostlistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -93,18 +93,18 @@ namespace hazelcast {
                  * Removes the specified partition lost listener. If there is no such listener added before, this call does no change
                  * in the cluster and returns false.
                  */
-                ClientMessage client_removepartitionlostlistener_encode(boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API client_removepartitionlostlistener_encode(boost::uuids::uuid registrationId);
 
                 /**
                  * Gets the list of distributed objects in the cluster.
                  */
-                ClientMessage client_getdistributedobjects_encode();
+                ClientMessage HAZELCAST_API client_getdistributedobjects_encode();
 
                 /**
                  * Adds a distributed object listener to the cluster. This listener will be notified
                  * when a distributed object is created or destroyed.
                  */
-                ClientMessage client_adddistributedobjectlistener_encode(bool localOnly);
+                ClientMessage HAZELCAST_API client_adddistributedobjectlistener_encode(bool localOnly);
 
                 struct HAZELCAST_API client_adddistributedobjectlistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -122,12 +122,12 @@ namespace hazelcast {
                  * Removes the specified distributed object listener. If there is no such listener added before, this call does no
                  * change in the cluster and returns false.
                  */
-                ClientMessage client_removedistributedobjectlistener_encode(boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API client_removedistributedobjectlistener_encode(boost::uuids::uuid registrationId);
 
                 /**
                  * Sends a ping to the given connection.
                  */
-                ClientMessage client_ping_encode();
+                ClientMessage HAZELCAST_API client_ping_encode();
 
                 /**
                  * The statistics is composed of three parameters.
@@ -288,14 +288,14 @@ namespace hazelcast {
                  * 
                  * The metrics blob constructed this way is then gets ZLIB compressed.
                  */
-                ClientMessage client_statistics_encode(int64_t timestamp, const std::string  & clientAttributes, const std::vector<byte>  & metricsBlob);
+                ClientMessage HAZELCAST_API client_statistics_encode(int64_t timestamp, const std::string  & clientAttributes, const std::vector<byte>  & metricsBlob);
 
                 /**
                  * Deploys the list of classes to cluster
                  * Each item is a Map.Entry<String, byte[]> in the list.
                  * key of entry is full class name, and byte[] is the class definition.
                  */
-                ClientMessage client_deployclasses_encode(const std::vector<std::pair<std::string, std::vector<byte>>>  & classDefinitions);
+                ClientMessage HAZELCAST_API client_deployclasses_encode(const std::vector<std::pair<std::string, std::vector<byte>>>  & classDefinitions);
 
                 /**
                  * Proxies will be created on all cluster members.
@@ -304,12 +304,12 @@ namespace hazelcast {
                  * Exceptions related to a proxy creation failure is not send to the client.
                  * A proxy creation failure does not cancel this operation, all proxies will be attempted to be created.
                  */
-                ClientMessage client_createproxies_encode(const std::vector<std::pair<std::string, std::string>>  & proxies);
+                ClientMessage HAZELCAST_API client_createproxies_encode(const std::vector<std::pair<std::string, std::string>>  & proxies);
 
                 /**
                  * Adds listener for backup acks
                  */
-                ClientMessage client_localbackuplistener_encode();
+                ClientMessage HAZELCAST_API client_localbackuplistener_encode();
 
                 struct HAZELCAST_API client_localbackuplistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -324,7 +324,7 @@ namespace hazelcast {
                  * Triggers partition assignment manually on the cluster.
                  * Note that Partition based operations triggers this automatically
                  */
-                ClientMessage client_triggerpartitionassignment_encode();
+                ClientMessage HAZELCAST_API client_triggerpartitionassignment_encode();
 
                 /**
                  * Puts an entry into this map with a given ttl (time to live) value.Entry will expire and get evicted after the ttl
@@ -332,13 +332,13 @@ namespace hazelcast {
                  * (identically equal) value previously put into the map.Time resolution for TTL is seconds. The given TTL value is
                  * rounded to the next closest second value.
                  */
-                ClientMessage map_put_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl);
+                ClientMessage HAZELCAST_API map_put_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl);
 
                 /**
                  * This method returns a clone of the original value, so modifying the returned value does not change the actual
                  * value in the map. You should put the modified value back to make changes visible to all nodes.
                  */
-                ClientMessage map_get_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API map_get_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Removes the mapping for a key from this map if it is present (optional operation).
@@ -347,33 +347,33 @@ namespace hazelcast {
                  * possible that the map explicitly mapped the key to null. The map will not contain a mapping for the specified key once the
                  * call returns.
                  */
-                ClientMessage map_remove_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API map_remove_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Replaces the entry for a key only if currently mapped to a given value.
                  */
-                ClientMessage map_replace_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
+                ClientMessage HAZELCAST_API map_replace_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
 
                 /**
                  * Replaces the the entry for a key only if existing values equal to the testValue
                  */
-                ClientMessage map_replaceifsame_encode(const std::string  & name, const Data  & key, const Data  & testValue, const Data  & value, int64_t threadId);
+                ClientMessage HAZELCAST_API map_replaceifsame_encode(const std::string  & name, const Data  & key, const Data  & testValue, const Data  & value, int64_t threadId);
 
                 /**
                  * Returns true if this map contains a mapping for the specified key.
                  */
-                ClientMessage map_containskey_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API map_containskey_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Returns true if this map maps one or more keys to the specified value.This operation will probably require time
                  * linear in the map size for most implementations of the Map interface.
                  */
-                ClientMessage map_containsvalue_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API map_containsvalue_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Removes the mapping for a key from this map if existing value equal to the this value
                  */
-                ClientMessage map_removeifsame_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
+                ClientMessage HAZELCAST_API map_removeifsame_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
 
                 /**
                  * Removes the mapping for a key from this map if it is present.Unlike remove(Object), this operation does not return
@@ -383,46 +383,46 @@ namespace hazelcast {
                  * This method breaks the contract of EntryListener. When an entry is removed by delete(), it fires an EntryEvent
                  * with a null oldValue. Also, a listener with predicates will have null values, so only keys can be queried via predicates
                  */
-                ClientMessage map_delete_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API map_delete_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * If this map has a MapStore, this method flushes all the local dirty entries by calling MapStore.storeAll()
                  * and/or MapStore.deleteAll().
                  */
-                ClientMessage map_flush_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_flush_encode(const std::string  & name);
 
                 /**
                  * Tries to remove the entry with the given key from this map within the specified timeout value.
                  * If the key is already locked by another thread and/or member, then this operation will wait the timeout
                  * amount for acquiring the lock.
                  */
-                ClientMessage map_tryremove_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t timeout);
+                ClientMessage HAZELCAST_API map_tryremove_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t timeout);
 
                 /**
                  * Tries to put the given key and value into this map within a specified timeout value. If this method returns false,
                  * it means that the caller thread could not acquire the lock for the key within the timeout duration,
                  * thus the put operation is not successful.
                  */
-                ClientMessage map_tryput_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t timeout);
+                ClientMessage HAZELCAST_API map_tryput_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t timeout);
 
                 /**
                  * Same as put except that MapStore, if defined, will not be called to store/persist the entry.
                  * If ttl is 0, then the entry lives forever.
                  */
-                ClientMessage map_puttransient_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl);
+                ClientMessage HAZELCAST_API map_puttransient_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl);
 
                 /**
                  * Puts an entry into this map with a given ttl (time to live) value if the specified key is not already associated
                  * with a value. Entry will expire and get evicted after the ttl.
                  */
-                ClientMessage map_putifabsent_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl);
+                ClientMessage HAZELCAST_API map_putifabsent_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl);
 
                 /**
                  * Puts an entry into this map with a given ttl (time to live) value.Entry will expire and get evicted after the ttl
                  * If ttl is 0, then the entry lives forever. Similar to the put operation except that set doesn't
                  * return the old value, which is more efficient.
                  */
-                ClientMessage map_set_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl);
+                ClientMessage HAZELCAST_API map_set_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl);
 
                 /**
                  * Acquires the lock for the specified lease time.After lease time, lock will be released.If the lock is not
@@ -431,7 +431,7 @@ namespace hazelcast {
                  * Scope of the lock is this map only. Acquired lock is only for the key in this map. Locks are re-entrant,
                  * so if the key is locked N times then it should be unlocked N times before another thread can acquire it.
                  */
-                ClientMessage map_lock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t ttl, int64_t referenceId);
+                ClientMessage HAZELCAST_API map_lock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t ttl, int64_t referenceId);
 
                 /**
                  * Tries to acquire the lock for the specified key for the specified lease time.After lease time, the lock will be
@@ -439,12 +439,12 @@ namespace hazelcast {
                  * purposes and lies dormant until one of two things happens the lock is acquired by the current thread, or
                  * the specified waiting time elapses.
                  */
-                ClientMessage map_trylock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t lease, int64_t timeout, int64_t referenceId);
+                ClientMessage HAZELCAST_API map_trylock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t lease, int64_t timeout, int64_t referenceId);
 
                 /**
                  * Checks the lock for the specified key.If the lock is acquired then returns true, else returns false.
                  */
-                ClientMessage map_islocked_encode(const std::string  & name, const Data  & key);
+                ClientMessage HAZELCAST_API map_islocked_encode(const std::string  & name, const Data  & key);
 
                 /**
                  * Releases the lock for the specified key. It never blocks and returns immediately.
@@ -452,24 +452,24 @@ namespace hazelcast {
                  * then the lock is released.  If the current thread is not the holder of this lock,
                  * then ILLEGAL_MONITOR_STATE is thrown.
                  */
-                ClientMessage map_unlock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t referenceId);
+                ClientMessage HAZELCAST_API map_unlock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t referenceId);
 
                 /**
                  * Adds an interceptor for this map. Added interceptor will intercept operations
                  * and execute user defined methods and will cancel operations if user defined method throw exception.
                  */
-                ClientMessage map_addinterceptor_encode(const std::string  & name, const Data  & interceptor);
+                ClientMessage HAZELCAST_API map_addinterceptor_encode(const std::string  & name, const Data  & interceptor);
 
                 /**
                  * Removes the given interceptor for this map so it will not intercept operations anymore.
                  */
-                ClientMessage map_removeinterceptor_encode(const std::string  & name, const std::string  & id);
+                ClientMessage HAZELCAST_API map_removeinterceptor_encode(const std::string  & name, const std::string  & id);
 
                 /**
                  * Adds a MapListener for this map. To receive an event, you should implement a corresponding MapListener
                  * sub-interface for that event.
                  */
-                ClientMessage map_addentrylistenertokeywithpredicate_encode(const std::string  & name, const Data  & key, const Data  & predicate, bool includeValue, int32_t listenerFlags, bool localOnly);
+                ClientMessage HAZELCAST_API map_addentrylistenertokeywithpredicate_encode(const std::string  & name, const Data  & key, const Data  & predicate, bool includeValue, int32_t listenerFlags, bool localOnly);
 
                 struct HAZELCAST_API map_addentrylistenertokeywithpredicate_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -500,7 +500,7 @@ namespace hazelcast {
                  * Adds an continuous entry listener for this map. Listener will get notified for map add/remove/update/evict events
                  * filtered by the given predicate.
                  */
-                ClientMessage map_addentrylistenerwithpredicate_encode(const std::string  & name, const Data  & predicate, bool includeValue, int32_t listenerFlags, bool localOnly);
+                ClientMessage HAZELCAST_API map_addentrylistenerwithpredicate_encode(const std::string  & name, const Data  & predicate, bool includeValue, int32_t listenerFlags, bool localOnly);
 
                 struct HAZELCAST_API map_addentrylistenerwithpredicate_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -531,7 +531,7 @@ namespace hazelcast {
                  * Adds a MapListener for this map. To receive an event, you should implement a corresponding MapListener
                  * sub-interface for that event.
                  */
-                ClientMessage map_addentrylistenertokey_encode(const std::string  & name, const Data  & key, bool includeValue, int32_t listenerFlags, bool localOnly);
+                ClientMessage HAZELCAST_API map_addentrylistenertokey_encode(const std::string  & name, const Data  & key, bool includeValue, int32_t listenerFlags, bool localOnly);
 
                 struct HAZELCAST_API map_addentrylistenertokey_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -562,7 +562,7 @@ namespace hazelcast {
                  * Adds a MapListener for this map. To receive an event, you should implement a corresponding MapListener
                  * sub-interface for that event.
                  */
-                ClientMessage map_addentrylistener_encode(const std::string  & name, bool includeValue, int32_t listenerFlags, bool localOnly);
+                ClientMessage HAZELCAST_API map_addentrylistener_encode(const std::string  & name, bool includeValue, int32_t listenerFlags, bool localOnly);
 
                 struct HAZELCAST_API map_addentrylistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -593,7 +593,7 @@ namespace hazelcast {
                  * Removes the specified entry listener. If there is no such listener added before, this call does no change in the
                  * cluster and returns false.
                  */
-                ClientMessage map_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API map_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
 
                 /**
                  * Adds a MapPartitionLostListener. The addPartitionLostListener returns a register-id. This id is needed to remove
@@ -603,7 +603,7 @@ namespace hazelcast {
                  * IMPORTANT: Listeners registered from HazelcastClient may miss some of the map partition lost events due
                  * to design limitations.
                  */
-                ClientMessage map_addpartitionlostlistener_encode(const std::string  & name, bool localOnly);
+                ClientMessage HAZELCAST_API map_addpartitionlostlistener_encode(const std::string  & name, bool localOnly);
 
                 struct HAZELCAST_API map_addpartitionlostlistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -619,44 +619,44 @@ namespace hazelcast {
                  * Removes the specified map partition lost listener. If there is no such listener added before, this call does no
                  * change in the cluster and returns false.
                  */
-                ClientMessage map_removepartitionlostlistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API map_removepartitionlostlistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
 
                 /**
                  * Returns the EntryView for the specified key.
                  * This method returns a clone of original mapping, modifying the returned value does not change the actual value
                  * in the map. One should put modified value back to make changes visible to all nodes.
                  */
-                ClientMessage map_getentryview_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API map_getentryview_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Evicts the specified key from this map. If a MapStore is defined for this map, then the entry is not deleted
                  * from the underlying MapStore, evict only removes the entry from the memory.
                  */
-                ClientMessage map_evict_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API map_evict_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Evicts all keys from this map except the locked ones. If a MapStore is defined for this map, deleteAll is not
                  * called by this method. If you do want to deleteAll to be called use the clear method. The EVICT_ALL event is
                  * fired for any registered listeners.
                  */
-                ClientMessage map_evictall_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_evictall_encode(const std::string  & name);
 
                 /**
                  * Loads all keys into the store. This is a batch load operation so that an implementation can optimize the multiple loads.
                  */
-                ClientMessage map_loadall_encode(const std::string  & name, bool replaceExistingValues);
+                ClientMessage HAZELCAST_API map_loadall_encode(const std::string  & name, bool replaceExistingValues);
 
                 /**
                  * Loads the given keys. This is a batch load operation so that an implementation can optimize the multiple loads.
                  */
-                ClientMessage map_loadgivenkeys_encode(const std::string  & name, const std::vector<Data>  & keys, bool replaceExistingValues);
+                ClientMessage HAZELCAST_API map_loadgivenkeys_encode(const std::string  & name, const std::vector<Data>  & keys, bool replaceExistingValues);
 
                 /**
                  * Returns a set clone of the keys contained in this map. The set is NOT backed by the map, so changes to the map
                  * are NOT reflected in the set, and vice-versa. This method is always executed by a distributed query, so it may
                  * throw a QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage map_keyset_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_keyset_encode(const std::string  & name);
 
                 /**
                  * Returns the entries for the given keys. If any keys are not present in the Map, it will call loadAll The returned
@@ -665,7 +665,7 @@ namespace hazelcast {
                  * matching to a different partition id shall be ignored. The API implementation using this request may need to send multiple
                  * of these request messages for filling a request for a key set if the keys belong to different partitions.
                  */
-                ClientMessage map_getall_encode(const std::string  & name, const std::vector<Data>  & keys);
+                ClientMessage HAZELCAST_API map_getall_encode(const std::string  & name, const std::vector<Data>  & keys);
 
                 /**
                  * Returns a collection clone of the values contained in this map.
@@ -673,7 +673,7 @@ namespace hazelcast {
                  * This method is always executed by a distributed query, so it may throw a QueryResultSizeExceededException
                  * if query result size limit is configured.
                  */
-                ClientMessage map_values_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_values_encode(const std::string  & name);
 
                 /**
                  * Returns a Set clone of the mappings contained in this map.
@@ -681,7 +681,7 @@ namespace hazelcast {
                  * This method is always executed by a distributed query, so it may throw a QueryResultSizeExceededException
                  * if query result size limit is configured.
                  */
-                ClientMessage map_entryset_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_entryset_encode(const std::string  & name);
 
                 /**
                  * Queries the map based on the specified predicate and returns the keys of matching entries. Specified predicate
@@ -689,7 +689,7 @@ namespace hazelcast {
                  * set, and vice-versa. This method is always executed by a distributed query, so it may throw a
                  * QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage map_keysetwithpredicate_encode(const std::string  & name, const Data  & predicate);
+                ClientMessage HAZELCAST_API map_keysetwithpredicate_encode(const std::string  & name, const Data  & predicate);
 
                 /**
                  * Queries the map based on the specified predicate and returns the values of matching entries.Specified predicate
@@ -697,7 +697,7 @@ namespace hazelcast {
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
                  * QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage map_valueswithpredicate_encode(const std::string  & name, const Data  & predicate);
+                ClientMessage HAZELCAST_API map_valueswithpredicate_encode(const std::string  & name, const Data  & predicate);
 
                 /**
                  * Queries the map based on the specified predicate and returns the matching entries.Specified predicate
@@ -705,23 +705,23 @@ namespace hazelcast {
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
                  * QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage map_entrieswithpredicate_encode(const std::string  & name, const Data  & predicate);
+                ClientMessage HAZELCAST_API map_entrieswithpredicate_encode(const std::string  & name, const Data  & predicate);
 
                 /**
                  * Adds an index to this map with specified configuration.
                  */
-                ClientMessage map_addindex_encode(const std::string  & name, const config::index_config  & indexConfig);
+                ClientMessage HAZELCAST_API map_addindex_encode(const std::string  & name, const config::index_config  & indexConfig);
 
                 /**
                  * Returns the number of key-value mappings in this map.  If the map contains more than Integer.MAX_VALUE elements,
                  * returns Integer.MAX_VALUE
                  */
-                ClientMessage map_size_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_size_encode(const std::string  & name);
 
                 /**
                  * Returns true if this map contains no key-value mappings.
                  */
-                ClientMessage map_isempty_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_isempty_encode(const std::string  & name);
 
                 /**
                  * Copies all of the mappings from the specified map to this map (optional operation).The effect of this call is
@@ -732,50 +732,50 @@ namespace hazelcast {
                  * matching to a different partition id shall be ignored. The API implementation using this request may need to send multiple
                  * of these request messages for filling a request for a key set if the keys belong to different partitions.
                  */
-                ClientMessage map_putall_encode(const std::string  & name, const std::vector<std::pair<Data, Data>>  & entries, bool triggerMapLoader);
+                ClientMessage HAZELCAST_API map_putall_encode(const std::string  & name, const std::vector<std::pair<Data, Data>>  & entries, bool triggerMapLoader);
 
                 /**
                  * This method clears the map and invokes MapStore#deleteAll deleteAll on MapStore which, if connected to a database,
                  * will delete the records from that database. The MAP_CLEARED event is fired for any registered listeners.
                  * To clear a map without calling MapStore#deleteAll, use #evictAll.
                  */
-                ClientMessage map_clear_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_clear_encode(const std::string  & name);
 
                 /**
                  * Applies the user defined EntryProcessor to the entry mapped by the key. Returns the the object which is result of
                  * the process() method of EntryProcessor.
                  */
-                ClientMessage map_executeonkey_encode(const std::string  & name, const Data  & entryProcessor, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API map_executeonkey_encode(const std::string  & name, const Data  & entryProcessor, const Data  & key, int64_t threadId);
 
                 /**
                  * Applies the user defined EntryProcessor to the entry mapped by the key. Returns immediately with a Future
                  * representing that task.EntryProcessor is not cancellable, so calling Future.cancel() method won't cancel the
                  * operation of EntryProcessor.
                  */
-                ClientMessage map_submittokey_encode(const std::string  & name, const Data  & entryProcessor, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API map_submittokey_encode(const std::string  & name, const Data  & entryProcessor, const Data  & key, int64_t threadId);
 
                 /**
                  * Applies the user defined EntryProcessor to the all entries in the map.Returns the results mapped by each key in the map.
                  */
-                ClientMessage map_executeonallkeys_encode(const std::string  & name, const Data  & entryProcessor);
+                ClientMessage HAZELCAST_API map_executeonallkeys_encode(const std::string  & name, const Data  & entryProcessor);
 
                 /**
                  * Applies the user defined EntryProcessor to the entries in the map which satisfies provided predicate.
                  * Returns the results mapped by each key in the map.
                  */
-                ClientMessage map_executewithpredicate_encode(const std::string  & name, const Data  & entryProcessor, const Data  & predicate);
+                ClientMessage HAZELCAST_API map_executewithpredicate_encode(const std::string  & name, const Data  & entryProcessor, const Data  & predicate);
 
                 /**
                  * Applies the user defined EntryProcessor to the entries mapped by the collection of keys.The results mapped by
                  * each key in the collection.
                  */
-                ClientMessage map_executeonkeys_encode(const std::string  & name, const Data  & entryProcessor, const std::vector<Data>  & keys);
+                ClientMessage HAZELCAST_API map_executeonkeys_encode(const std::string  & name, const Data  & entryProcessor, const std::vector<Data>  & keys);
 
                 /**
                  * Releases the lock for the specified key regardless of the lock owner.It always successfully unlocks the key,
                  * never blocks,and returns immediately.
                  */
-                ClientMessage map_forceunlock_encode(const std::string  & name, const Data  & key, int64_t referenceId);
+                ClientMessage HAZELCAST_API map_forceunlock_encode(const std::string  & name, const Data  & key, int64_t referenceId);
 
                 /**
                  * Queries the map based on the specified predicate and returns the keys of matching entries. Specified predicate
@@ -783,7 +783,7 @@ namespace hazelcast {
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
                  * QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage map_keysetwithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
+                ClientMessage HAZELCAST_API map_keysetwithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
 
                 /**
                  * Queries the map based on the specified predicate and returns the values of matching entries. Specified predicate
@@ -791,7 +791,7 @@ namespace hazelcast {
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
                  * QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage map_valueswithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
+                ClientMessage HAZELCAST_API map_valueswithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
 
                 /**
                  * Queries the map based on the specified predicate and returns the matching entries. Specified predicate
@@ -799,52 +799,52 @@ namespace hazelcast {
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw a
                  * QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage map_entrieswithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
+                ClientMessage HAZELCAST_API map_entrieswithpagingpredicate_encode(const std::string  & name, const codec::holder::paging_predicate_holder  & predicate);
 
                 /**
                  * Fetches specified number of keys from the specified partition starting from specified table index.
                  */
-                ClientMessage map_fetchkeys_encode(const std::string  & name, const std::vector<std::pair<int32_t, int32_t>>  & iterationPointers, int32_t batch);
+                ClientMessage HAZELCAST_API map_fetchkeys_encode(const std::string  & name, const std::vector<std::pair<int32_t, int32_t>>  & iterationPointers, int32_t batch);
 
                 /**
                  * Fetches specified number of entries from the specified partition starting from specified table index.
                  */
-                ClientMessage map_fetchentries_encode(const std::string  & name, const std::vector<std::pair<int32_t, int32_t>>  & iterationPointers, int32_t batch);
+                ClientMessage HAZELCAST_API map_fetchentries_encode(const std::string  & name, const std::vector<std::pair<int32_t, int32_t>>  & iterationPointers, int32_t batch);
 
                 /**
                  * Applies the aggregation logic on all map entries and returns the result
                  */
-                ClientMessage map_aggregate_encode(const std::string  & name, const Data  & aggregator);
+                ClientMessage HAZELCAST_API map_aggregate_encode(const std::string  & name, const Data  & aggregator);
 
                 /**
                  * Applies the aggregation logic on map entries filtered with the Predicate and returns the result
                  */
-                ClientMessage map_aggregatewithpredicate_encode(const std::string  & name, const Data  & aggregator, const Data  & predicate);
+                ClientMessage HAZELCAST_API map_aggregatewithpredicate_encode(const std::string  & name, const Data  & aggregator, const Data  & predicate);
 
                 /**
                  * Applies the projection logic on all map entries and returns the result
                  */
-                ClientMessage map_project_encode(const std::string  & name, const Data  & projection);
+                ClientMessage HAZELCAST_API map_project_encode(const std::string  & name, const Data  & projection);
 
                 /**
                  * Applies the projection logic on map entries filtered with the Predicate and returns the result
                  */
-                ClientMessage map_projectwithpredicate_encode(const std::string  & name, const Data  & projection, const Data  & predicate);
+                ClientMessage HAZELCAST_API map_projectwithpredicate_encode(const std::string  & name, const Data  & projection, const Data  & predicate);
 
                 /**
                  * Fetches invalidation metadata from partitions of map.
                  */
-                ClientMessage map_fetchnearcacheinvalidationmetadata_encode(const std::vector<std::string>  & names, boost::uuids::uuid uuid);
+                ClientMessage HAZELCAST_API map_fetchnearcacheinvalidationmetadata_encode(const std::vector<std::string>  & names, boost::uuids::uuid uuid);
 
                 /**
                  * Removes all entries which match with the supplied predicate
                  */
-                ClientMessage map_removeall_encode(const std::string  & name, const Data  & predicate);
+                ClientMessage HAZELCAST_API map_removeall_encode(const std::string  & name, const Data  & predicate);
 
                 /**
                  * Adds listener to map. This listener will be used to listen near cache invalidation events.
                  */
-                ClientMessage map_addnearcacheinvalidationlistener_encode(const std::string  & name, int32_t listenerFlags, bool localOnly);
+                ClientMessage HAZELCAST_API map_addnearcacheinvalidationlistener_encode(const std::string  & name, int32_t listenerFlags, bool localOnly);
 
                 struct HAZELCAST_API map_addnearcacheinvalidationlistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -870,14 +870,14 @@ namespace hazelcast {
                  * Fetches the specified number of entries from the specified partition starting from specified table index
                  * that match the predicate and applies the projection logic on them.
                  */
-                ClientMessage map_fetchwithquery_encode(const std::string  & name, const std::vector<std::pair<int32_t, int32_t>>  & iterationPointers, int32_t batch, const Data  & projection, const Data  & predicate);
+                ClientMessage HAZELCAST_API map_fetchwithquery_encode(const std::string  & name, const std::vector<std::pair<int32_t, int32_t>>  & iterationPointers, int32_t batch, const Data  & projection, const Data  & predicate);
 
                 /**
                  * Performs the initial subscription to the map event journal.
                  * This includes retrieving the event journal sequences of the
                  * oldest and newest event in the journal.
                  */
-                ClientMessage map_eventjournalsubscribe_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API map_eventjournalsubscribe_encode(const std::string  & name);
 
                 /**
                  * Reads from the map event journal in batches. You may specify the start sequence,
@@ -889,7 +889,7 @@ namespace hazelcast {
                  * The predicate, filter and projection may be {@code null} in which case all elements are returned
                  * and no projection is applied.
                  */
-                ClientMessage map_eventjournalread_encode(const std::string  & name, int64_t startSequence, int32_t minSize, int32_t maxSize, const Data  * predicate, const Data  * projection);
+                ClientMessage HAZELCAST_API map_eventjournalread_encode(const std::string  & name, int64_t startSequence, int32_t minSize, int32_t maxSize, const Data  * predicate, const Data  * projection);
 
                 /**
                  * Updates TTL (time to live) value of the entry specified by {@code key} with a new TTL value.
@@ -906,7 +906,7 @@ namespace hazelcast {
                  * <p>
                  * Time resolution for TTL is seconds. The given TTL value is rounded to the next closest second value.
                  */
-                ClientMessage map_setttl_encode(const std::string  & name, const Data  & key, int64_t ttl);
+                ClientMessage HAZELCAST_API map_setttl_encode(const std::string  & name, const Data  & key, int64_t ttl);
 
                 /**
                  * Puts an entry into this map with a given ttl (time to live) value.Entry will expire and get evicted after the ttl
@@ -914,19 +914,19 @@ namespace hazelcast {
                  * (identically equal) value previously put into the map.Time resolution for TTL is seconds. The given TTL value is
                  * rounded to the next closest second value.
                  */
-                ClientMessage map_putwithmaxidle_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl, int64_t maxIdle);
+                ClientMessage HAZELCAST_API map_putwithmaxidle_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl, int64_t maxIdle);
 
                 /**
                  * Same as put except that MapStore, if defined, will not be called to store/persist the entry.
                  * If ttl and maxIdle are 0, then the entry lives forever.
                  */
-                ClientMessage map_puttransientwithmaxidle_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl, int64_t maxIdle);
+                ClientMessage HAZELCAST_API map_puttransientwithmaxidle_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl, int64_t maxIdle);
 
                 /**
                  * Puts an entry into this map with a given ttl (time to live) value if the specified key is not already associated
                  * with a value. Entry will expire and get evicted after the ttl or maxIdle, whichever comes first.
                  */
-                ClientMessage map_putifabsentwithmaxidle_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl, int64_t maxIdle);
+                ClientMessage HAZELCAST_API map_putifabsentwithmaxidle_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl, int64_t maxIdle);
 
                 /**
                  * Puts an entry into this map with a given ttl (time to live) value and maxIdle.
@@ -935,77 +935,77 @@ namespace hazelcast {
                  * 
                  * Similar to the put operation except that set doesn't return the old value, which is more efficient.
                  */
-                ClientMessage map_setwithmaxidle_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl, int64_t maxIdle);
+                ClientMessage HAZELCAST_API map_setwithmaxidle_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId, int64_t ttl, int64_t maxIdle);
 
                 /**
                  * Stores a key-value pair in the multimap.
                  */
-                ClientMessage multimap_put_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
+                ClientMessage HAZELCAST_API multimap_put_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
 
                 /**
                  * Returns the collection of values associated with the key. The collection is NOT backed by the map, so changes to
                  * the map are NOT reflected in the collection, and vice-versa.
                  */
-                ClientMessage multimap_get_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API multimap_get_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Removes the given key value pair from the multimap.
                  */
-                ClientMessage multimap_remove_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API multimap_remove_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Returns the set of keys in the multimap.The collection is NOT backed by the map, so changes to the map are NOT
                  * reflected in the collection, and vice-versa.
                  */
-                ClientMessage multimap_keyset_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API multimap_keyset_encode(const std::string  & name);
 
                 /**
                  * Returns the collection of values in the multimap.The collection is NOT backed by the map, so changes to the map
                  * are NOT reflected in the collection, and vice-versa.
                  */
-                ClientMessage multimap_values_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API multimap_values_encode(const std::string  & name);
 
                 /**
                  * Returns the set of key-value pairs in the multimap.The collection is NOT backed by the map, so changes to the map
                  * are NOT reflected in the collection, and vice-versa
                  */
-                ClientMessage multimap_entryset_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API multimap_entryset_encode(const std::string  & name);
 
                 /**
                  * Returns whether the multimap contains an entry with the key.
                  */
-                ClientMessage multimap_containskey_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API multimap_containskey_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Returns whether the multimap contains an entry with the value.
                  */
-                ClientMessage multimap_containsvalue_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API multimap_containsvalue_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Returns whether the multimap contains the given key-value pair.
                  */
-                ClientMessage multimap_containsentry_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
+                ClientMessage HAZELCAST_API multimap_containsentry_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
 
                 /**
                  * Returns the number of key-value pairs in the multimap.
                  */
-                ClientMessage multimap_size_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API multimap_size_encode(const std::string  & name);
 
                 /**
                  * Clears the multimap. Removes all key-value pairs.
                  */
-                ClientMessage multimap_clear_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API multimap_clear_encode(const std::string  & name);
 
                 /**
                  * Returns the number of values that match the given key in the multimap.
                  */
-                ClientMessage multimap_valuecount_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API multimap_valuecount_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Adds the specified entry listener for the specified key.The listener will be notified for all
                  * add/remove/update/evict events for the specified key only.
                  */
-                ClientMessage multimap_addentrylistenertokey_encode(const std::string  & name, const Data  & key, bool includeValue, bool localOnly);
+                ClientMessage HAZELCAST_API multimap_addentrylistenertokey_encode(const std::string  & name, const Data  & key, bool includeValue, bool localOnly);
 
                 struct HAZELCAST_API multimap_addentrylistenertokey_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1035,7 +1035,7 @@ namespace hazelcast {
                 /**
                  * Adds an entry listener for this multimap. The listener will be notified for all multimap add/remove/update/evict events.
                  */
-                ClientMessage multimap_addentrylistener_encode(const std::string  & name, bool includeValue, bool localOnly);
+                ClientMessage HAZELCAST_API multimap_addentrylistener_encode(const std::string  & name, bool includeValue, bool localOnly);
 
                 struct HAZELCAST_API multimap_addentrylistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1066,7 +1066,7 @@ namespace hazelcast {
                  * Removes the specified entry listener. If there is no such listener added before, this call does no change in the
                  * cluster and returns false.
                  */
-                ClientMessage multimap_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API multimap_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
 
                 /**
                  * Acquires the lock for the specified key for the specified lease time. After the lease time, the lock will be
@@ -1075,7 +1075,7 @@ namespace hazelcast {
                  * lock is only for the key in this map.Locks are re-entrant, so if the key is locked N times, then it should be
                  * unlocked N times before another thread can acquire it.
                  */
-                ClientMessage multimap_lock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t ttl, int64_t referenceId);
+                ClientMessage HAZELCAST_API multimap_lock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t ttl, int64_t referenceId);
 
                 /**
                  * Tries to acquire the lock for the specified key for the specified lease time. After lease time, the lock will be
@@ -1083,35 +1083,35 @@ namespace hazelcast {
                  * and lies dormant until one of two things happens:the lock is acquired by the current thread, or the specified
                  * waiting time elapses.
                  */
-                ClientMessage multimap_trylock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t lease, int64_t timeout, int64_t referenceId);
+                ClientMessage HAZELCAST_API multimap_trylock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t lease, int64_t timeout, int64_t referenceId);
 
                 /**
                  * Checks the lock for the specified key. If the lock is acquired, this method returns true, else it returns false.
                  */
-                ClientMessage multimap_islocked_encode(const std::string  & name, const Data  & key);
+                ClientMessage HAZELCAST_API multimap_islocked_encode(const std::string  & name, const Data  & key);
 
                 /**
                  * Releases the lock for the specified key regardless of the lock owner. It always successfully unlocks the key,
                  * never blocks and returns immediately.
                  */
-                ClientMessage multimap_unlock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t referenceId);
+                ClientMessage HAZELCAST_API multimap_unlock_encode(const std::string  & name, const Data  & key, int64_t threadId, int64_t referenceId);
 
                 /**
                  * Releases the lock for the specified key regardless of the lock owner. It always successfully unlocks the key,
                  * never blocks and returns immediately.
                  */
-                ClientMessage multimap_forceunlock_encode(const std::string  & name, const Data  & key, int64_t referenceId);
+                ClientMessage HAZELCAST_API multimap_forceunlock_encode(const std::string  & name, const Data  & key, int64_t referenceId);
 
                 /**
                  * Removes all the entries with the given key. The collection is NOT backed by the map, so changes to the map are
                  * NOT reflected in the collection, and vice-versa.
                  */
-                ClientMessage multimap_removeentry_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
+                ClientMessage HAZELCAST_API multimap_removeentry_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t threadId);
 
                 /**
                  * Removes all the entries with the given key.
                  */
-                ClientMessage multimap_delete_encode(const std::string  & name, const Data  & key, int64_t threadId);
+                ClientMessage HAZELCAST_API multimap_delete_encode(const std::string  & name, const Data  & key, int64_t threadId);
 
                 /**
                  * Copies all of the mappings from the specified map to this MultiMap. The effect of this call is
@@ -1119,52 +1119,52 @@ namespace hazelcast {
                  * v in the specified MultiMap. The behavior of this operation is undefined if the specified map is modified while the
                  * operation is in progress.
                  */
-                ClientMessage multimap_putall_encode(const std::string  & name, const std::vector<std::pair<Data, std::vector<Data>>>  & entries);
+                ClientMessage HAZELCAST_API multimap_putall_encode(const std::string  & name, const std::vector<std::pair<Data, std::vector<Data>>>  & entries);
 
                 /**
                  * Inserts the specified element into this queue, waiting up to the specified wait time if necessary for space to
                  * become available.
                  */
-                ClientMessage queue_offer_encode(const std::string  & name, const Data  & value, int64_t timeoutMillis);
+                ClientMessage HAZELCAST_API queue_offer_encode(const std::string  & name, const Data  & value, int64_t timeoutMillis);
 
                 /**
                  * Inserts the specified element into this queue, waiting if necessary for space to become available.
                  */
-                ClientMessage queue_put_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API queue_put_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Returns the number of elements in this collection.  If this collection contains more than Integer.MAX_VALUE
                  * elements, returns Integer.MAX_VALUE
                  */
-                ClientMessage queue_size_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API queue_size_encode(const std::string  & name);
 
                 /**
                  * Retrieves and removes the head of this queue.  This method differs from poll only in that it throws an exception
                  * if this queue is empty.
                  */
-                ClientMessage queue_remove_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API queue_remove_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Retrieves and removes the head of this queue, waiting up to the specified wait time if necessary for an element
                  * to become available.
                  */
-                ClientMessage queue_poll_encode(const std::string  & name, int64_t timeoutMillis);
+                ClientMessage HAZELCAST_API queue_poll_encode(const std::string  & name, int64_t timeoutMillis);
 
                 /**
                  * Retrieves and removes the head of this queue, waiting if necessary until an element becomes available.
                  */
-                ClientMessage queue_take_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API queue_take_encode(const std::string  & name);
 
                 /**
                  * Retrieves, but does not remove, the head of this queue, or returns null if this queue is empty.
                  */
-                ClientMessage queue_peek_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API queue_peek_encode(const std::string  & name);
 
                 /**
                  * Returns an iterator over the elements in this collection.  There are no guarantees concerning the order in which
                  * the elements are returned (unless this collection is an instance of some class that provides a guarantee).
                  */
-                ClientMessage queue_iterator_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API queue_iterator_encode(const std::string  & name);
 
                 /**
                  * Removes all available elements from this queue and adds them to the given collection.  This operation may be more
@@ -1173,7 +1173,7 @@ namespace hazelcast {
                  * thrown. Attempts to drain a queue to itself result in ILLEGAL_ARGUMENT. Further, the behavior of
                  * this operation is undefined if the specified collection is modified while the operation is in progress.
                  */
-                ClientMessage queue_drainto_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API queue_drainto_encode(const std::string  & name);
 
                 /**
                  * Removes at most the given number of available elements from this queue and adds them to the given collection.
@@ -1182,36 +1182,36 @@ namespace hazelcast {
                  * ILLEGAL_ARGUMENT. Further, the behavior of this operation is undefined if the specified collection is
                  * modified while the operation is in progress.
                  */
-                ClientMessage queue_draintomaxsize_encode(const std::string  & name, int32_t maxSize);
+                ClientMessage HAZELCAST_API queue_draintomaxsize_encode(const std::string  & name, int32_t maxSize);
 
                 /**
                  * Returns true if this queue contains the specified element. More formally, returns true if and only if this queue
                  * contains at least one element e such that value.equals(e)
                  */
-                ClientMessage queue_contains_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API queue_contains_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Return true if this collection contains all of the elements in the specified collection.
                  */
-                ClientMessage queue_containsall_encode(const std::string  & name, const std::vector<Data>  & dataList);
+                ClientMessage HAZELCAST_API queue_containsall_encode(const std::string  & name, const std::vector<Data>  & dataList);
 
                 /**
                  * Removes all of this collection's elements that are also contained in the specified collection (optional operation).
                  * After this call returns, this collection will contain no elements in common with the specified collection.
                  */
-                ClientMessage queue_compareandremoveall_encode(const std::string  & name, const std::vector<Data>  & dataList);
+                ClientMessage HAZELCAST_API queue_compareandremoveall_encode(const std::string  & name, const std::vector<Data>  & dataList);
 
                 /**
                  * Retains only the elements in this collection that are contained in the specified collection (optional operation).
                  * In other words, removes from this collection all of its elements that are not contained in the specified collection.
                  */
-                ClientMessage queue_compareandretainall_encode(const std::string  & name, const std::vector<Data>  & dataList);
+                ClientMessage HAZELCAST_API queue_compareandretainall_encode(const std::string  & name, const std::vector<Data>  & dataList);
 
                 /**
                  * Removes all of the elements from this collection (optional operation). The collection will be empty after this
                  * method returns.
                  */
-                ClientMessage queue_clear_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API queue_clear_encode(const std::string  & name);
 
                 /**
                  * Adds all of the elements in the specified collection to this collection (optional operation).The behavior of this
@@ -1219,12 +1219,12 @@ namespace hazelcast {
                  * (This implies that the behavior of this call is undefined if the specified collection is this collection,
                  * and this collection is nonempty.)
                  */
-                ClientMessage queue_addall_encode(const std::string  & name, const std::vector<Data>  & dataList);
+                ClientMessage HAZELCAST_API queue_addall_encode(const std::string  & name, const std::vector<Data>  & dataList);
 
                 /**
                  * Adds an listener for this collection. Listener will be notified or all collection add/remove events.
                  */
-                ClientMessage queue_addlistener_encode(const std::string  & name, bool includeValue, bool localOnly);
+                ClientMessage HAZELCAST_API queue_addlistener_encode(const std::string  & name, bool includeValue, bool localOnly);
 
                 struct HAZELCAST_API queue_addlistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1241,7 +1241,7 @@ namespace hazelcast {
                  * Removes the specified item listener. If there is no such listener added before, this call does no change in the
                  * cluster and returns false.
                  */
-                ClientMessage queue_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API queue_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
 
                 /**
                  * Returns the number of additional elements that this queue can ideally (in the absence of memory or resource
@@ -1249,23 +1249,23 @@ namespace hazelcast {
                  * always tell if an attempt to insert an element will succeed by inspecting remainingCapacity because it may be
                  * the case that another thread is about to insert or remove an element.
                  */
-                ClientMessage queue_remainingcapacity_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API queue_remainingcapacity_encode(const std::string  & name);
 
                 /**
                  * Returns true if this collection contains no elements.
                  */
-                ClientMessage queue_isempty_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API queue_isempty_encode(const std::string  & name);
 
                 /**
                  * Publishes the message to all subscribers of this topic
                  */
-                ClientMessage topic_publish_encode(const std::string  & name, const Data  & message);
+                ClientMessage HAZELCAST_API topic_publish_encode(const std::string  & name, const Data  & message);
 
                 /**
                  * Subscribes to this topic. When someone publishes a message on this topic. onMessage() function of the given
                  * MessageListener is called. More than one message listener can be added on one instance.
                  */
-                ClientMessage topic_addmessagelistener_encode(const std::string  & name, bool localOnly);
+                ClientMessage HAZELCAST_API topic_addmessagelistener_encode(const std::string  & name, bool localOnly);
 
                 struct HAZELCAST_API topic_addmessagelistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1281,23 +1281,23 @@ namespace hazelcast {
                 /**
                  * Stops receiving messages for the given message listener.If the given listener already removed, this method does nothing.
                  */
-                ClientMessage topic_removemessagelistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API topic_removemessagelistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
 
                 /**
                  * Returns the number of elements in this list.  If this list contains more than Integer.MAX_VALUE elements, returns
                  * Integer.MAX_VALUE.
                  */
-                ClientMessage list_size_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API list_size_encode(const std::string  & name);
 
                 /**
                  * Returns true if this list contains the specified element.
                  */
-                ClientMessage list_contains_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API list_contains_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Returns true if this list contains all of the elements of the specified collection.
                  */
-                ClientMessage list_containsall_encode(const std::string  & name, const std::vector<Data>  & values);
+                ClientMessage HAZELCAST_API list_containsall_encode(const std::string  & name, const std::vector<Data>  & values);
 
                 /**
                  * Appends the specified element to the end of this list (optional operation). Lists that support this operation may
@@ -1305,14 +1305,14 @@ namespace hazelcast {
                  * elements, and others will impose restrictions on the type of elements that may be added. List classes should
                  * clearly specify in their documentation any restrictions on what elements may be added.
                  */
-                ClientMessage list_add_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API list_add_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Removes the first occurrence of the specified element from this list, if it is present (optional operation).
                  * If this list does not contain the element, it is unchanged.
                  * Returns true if this list contained the specified element (or equivalently, if this list changed as a result of the call).
                  */
-                ClientMessage list_remove_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API list_remove_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Appends all of the elements in the specified collection to the end of this list, in the order that they are
@@ -1320,33 +1320,33 @@ namespace hazelcast {
                  * The behavior of this operation is undefined if the specified collection is modified while the operation is in progress.
                  * (Note that this will occur if the specified collection is this list, and it's nonempty.)
                  */
-                ClientMessage list_addall_encode(const std::string  & name, const std::vector<Data>  & valueList);
+                ClientMessage HAZELCAST_API list_addall_encode(const std::string  & name, const std::vector<Data>  & valueList);
 
                 /**
                  * Removes from this list all of its elements that are contained in the specified collection (optional operation).
                  */
-                ClientMessage list_compareandremoveall_encode(const std::string  & name, const std::vector<Data>  & values);
+                ClientMessage HAZELCAST_API list_compareandremoveall_encode(const std::string  & name, const std::vector<Data>  & values);
 
                 /**
                  * Retains only the elements in this list that are contained in the specified collection (optional operation).
                  * In other words, removes from this list all of its elements that are not contained in the specified collection.
                  */
-                ClientMessage list_compareandretainall_encode(const std::string  & name, const std::vector<Data>  & values);
+                ClientMessage HAZELCAST_API list_compareandretainall_encode(const std::string  & name, const std::vector<Data>  & values);
 
                 /**
                  * Removes all of the elements from this list (optional operation). The list will be empty after this call returns.
                  */
-                ClientMessage list_clear_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API list_clear_encode(const std::string  & name);
 
                 /**
                  * Return the all elements of this collection
                  */
-                ClientMessage list_getall_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API list_getall_encode(const std::string  & name);
 
                 /**
                  * Adds an item listener for this collection. Listener will be notified for all collection add/remove events.
                  */
-                ClientMessage list_addlistener_encode(const std::string  & name, bool includeValue, bool localOnly);
+                ClientMessage HAZELCAST_API list_addlistener_encode(const std::string  & name, bool includeValue, bool localOnly);
 
                 struct HAZELCAST_API list_addlistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1363,12 +1363,12 @@ namespace hazelcast {
                  * Removes the specified item listener. If there is no such listener added before, this call does no change in the
                  * cluster and returns false.
                  */
-                ClientMessage list_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API list_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
 
                 /**
                  * Returns true if this list contains no elements
                  */
-                ClientMessage list_isempty_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API list_isempty_encode(const std::string  & name);
 
                 /**
                  * Inserts all of the elements in the specified collection into this list at the specified position (optional operation).
@@ -1377,41 +1377,41 @@ namespace hazelcast {
                  * The behavior of this operation is undefined if the specified collection is modified while the operation is in progress.
                  * (Note that this will occur if the specified collection is this list, and it's nonempty.)
                  */
-                ClientMessage list_addallwithindex_encode(const std::string  & name, int32_t index, const std::vector<Data>  & valueList);
+                ClientMessage HAZELCAST_API list_addallwithindex_encode(const std::string  & name, int32_t index, const std::vector<Data>  & valueList);
 
                 /**
                  * Returns the element at the specified position in this list
                  */
-                ClientMessage list_get_encode(const std::string  & name, int32_t index);
+                ClientMessage HAZELCAST_API list_get_encode(const std::string  & name, int32_t index);
 
                 /**
                  * The element previously at the specified position
                  */
-                ClientMessage list_set_encode(const std::string  & name, int32_t index, const Data  & value);
+                ClientMessage HAZELCAST_API list_set_encode(const std::string  & name, int32_t index, const Data  & value);
 
                 /**
                  * Inserts the specified element at the specified position in this list (optional operation). Shifts the element
                  * currently at that position (if any) and any subsequent elements to the right (adds one to their indices).
                  */
-                ClientMessage list_addwithindex_encode(const std::string  & name, int32_t index, const Data  & value);
+                ClientMessage HAZELCAST_API list_addwithindex_encode(const std::string  & name, int32_t index, const Data  & value);
 
                 /**
                  * Removes the element at the specified position in this list (optional operation). Shifts any subsequent elements
                  * to the left (subtracts one from their indices). Returns the element that was removed from the list.
                  */
-                ClientMessage list_removewithindex_encode(const std::string  & name, int32_t index);
+                ClientMessage HAZELCAST_API list_removewithindex_encode(const std::string  & name, int32_t index);
 
                 /**
                  * Returns the index of the last occurrence of the specified element in this list, or -1 if this list does not
                  * contain the element.
                  */
-                ClientMessage list_lastindexof_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API list_lastindexof_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Returns the index of the first occurrence of the specified element in this list, or -1 if this list does not
                  * contain the element.
                  */
-                ClientMessage list_indexof_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API list_indexof_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Returns a view of the portion of this list between the specified from, inclusive, and to, exclusive.(If from and
@@ -1426,12 +1426,12 @@ namespace hazelcast {
                  * structurally modified in any way other than via the returned list.(Structural modifications are those that change
                  * the size of this list, or otherwise perturb it in such a fashion that iterations in progress may yield incorrect results.)
                  */
-                ClientMessage list_sub_encode(const std::string  & name, int32_t from, int32_t to);
+                ClientMessage HAZELCAST_API list_sub_encode(const std::string  & name, int32_t from, int32_t to);
 
                 /**
                  * Returns an iterator over the elements in this list in proper sequence.
                  */
-                ClientMessage list_iterator_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API list_iterator_encode(const std::string  & name);
 
                 /**
                  * Returns a list iterator over the elements in this list (in proper sequence), starting at the specified position
@@ -1439,24 +1439,24 @@ namespace hazelcast {
                  * ListIterator#next next. An initial call to ListIterator#previous previous would return the element with the
                  * specified index minus one.
                  */
-                ClientMessage list_listiterator_encode(const std::string  & name, int32_t index);
+                ClientMessage HAZELCAST_API list_listiterator_encode(const std::string  & name, int32_t index);
 
                 /**
                  * Returns the number of elements in this set (its cardinality). If this set contains more than Integer.MAX_VALUE
                  * elements, returns Integer.MAX_VALUE.
                  */
-                ClientMessage set_size_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API set_size_encode(const std::string  & name);
 
                 /**
                  * Returns true if this set contains the specified element.
                  */
-                ClientMessage set_contains_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API set_contains_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Returns true if this set contains all of the elements of the specified collection. If the specified collection is
                  * also a set, this method returns true if it is a subset of this set.
                  */
-                ClientMessage set_containsall_encode(const std::string  & name, const std::vector<Data>  & items);
+                ClientMessage HAZELCAST_API set_containsall_encode(const std::string  & name, const std::vector<Data>  & items);
 
                 /**
                  * Adds the specified element to this set if it is not already present (optional operation).
@@ -1466,14 +1466,14 @@ namespace hazelcast {
                  * element, including null, and throw an exception, as described in the specification for Collection
                  * Individual set implementations should clearly document any restrictions on the elements that they may contain.
                  */
-                ClientMessage set_add_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API set_add_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Removes the specified element from this set if it is present (optional operation).
                  * Returns true if this set contained the element (or equivalently, if this set changed as a result of the call).
                  * (This set will not contain the element once the call returns.)
                  */
-                ClientMessage set_remove_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API set_remove_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Adds all of the elements in the specified collection to this set if they're not already present
@@ -1481,14 +1481,14 @@ namespace hazelcast {
                  * set so that its value is the union of the two sets. The behavior of this operation is undefined if the specified
                  * collection is modified while the operation is in progress.
                  */
-                ClientMessage set_addall_encode(const std::string  & name, const std::vector<Data>  & valueList);
+                ClientMessage HAZELCAST_API set_addall_encode(const std::string  & name, const std::vector<Data>  & valueList);
 
                 /**
                  * Removes from this set all of its elements that are contained in the specified collection (optional operation).
                  * If the specified collection is also a set, this operation effectively modifies this set so that its value is the
                  * asymmetric set difference of the two sets.
                  */
-                ClientMessage set_compareandremoveall_encode(const std::string  & name, const std::vector<Data>  & values);
+                ClientMessage HAZELCAST_API set_compareandremoveall_encode(const std::string  & name, const std::vector<Data>  & values);
 
                 /**
                  * Retains only the elements in this set that are contained in the specified collection (optional operation).
@@ -1496,22 +1496,22 @@ namespace hazelcast {
                  * If the specified collection is also a set, this operation effectively modifies this set so that its value is the
                  * intersection of the two sets.
                  */
-                ClientMessage set_compareandretainall_encode(const std::string  & name, const std::vector<Data>  & values);
+                ClientMessage HAZELCAST_API set_compareandretainall_encode(const std::string  & name, const std::vector<Data>  & values);
 
                 /**
                  * Removes all of the elements from this set (optional operation). The set will be empty after this call returns.
                  */
-                ClientMessage set_clear_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API set_clear_encode(const std::string  & name);
 
                 /**
                  * Return the all elements of this collection
                  */
-                ClientMessage set_getall_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API set_getall_encode(const std::string  & name);
 
                 /**
                  * Adds an item listener for this collection. Listener will be notified for all collection add/remove events.
                  */
-                ClientMessage set_addlistener_encode(const std::string  & name, bool includeValue, bool localOnly);
+                ClientMessage HAZELCAST_API set_addlistener_encode(const std::string  & name, bool includeValue, bool localOnly);
 
                 struct HAZELCAST_API set_addlistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1528,72 +1528,72 @@ namespace hazelcast {
                  * Removes the specified item listener. If there is no such listener added before, this call does no change in the
                  * cluster and returns false.
                  */
-                ClientMessage set_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API set_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
 
                 /**
                  * Returns true if this set contains no elements.
                  */
-                ClientMessage set_isempty_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API set_isempty_encode(const std::string  & name);
 
                 /**
                  * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted.
                  * Invocation has no additional effect if already shut down.
                  */
-                ClientMessage executorservice_shutdown_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API executorservice_shutdown_encode(const std::string  & name);
 
                 /**
                  * Returns true if this executor has been shut down.
                  */
-                ClientMessage executorservice_isshutdown_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API executorservice_isshutdown_encode(const std::string  & name);
 
                 /**
                  * Cancels the task running on the member that owns the partition with the given id.
                  */
-                ClientMessage executorservice_cancelonpartition_encode(boost::uuids::uuid uuid, bool interrupt);
+                ClientMessage HAZELCAST_API executorservice_cancelonpartition_encode(boost::uuids::uuid uuid, bool interrupt);
 
                 /**
                  * Cancels the task running on the member with the given address.
                  */
-                ClientMessage executorservice_cancelonmember_encode(boost::uuids::uuid uuid, boost::uuids::uuid memberUUID, bool interrupt);
+                ClientMessage HAZELCAST_API executorservice_cancelonmember_encode(boost::uuids::uuid uuid, boost::uuids::uuid memberUUID, bool interrupt);
 
                 /**
                  * Submits the task to the member that owns the partition with the given id.
                  */
-                ClientMessage executorservice_submittopartition_encode(const std::string  & name, boost::uuids::uuid uuid, const Data  & callable);
+                ClientMessage HAZELCAST_API executorservice_submittopartition_encode(const std::string  & name, boost::uuids::uuid uuid, const Data  & callable);
 
                 /**
                  * Submits the task to member specified by the address.
                  */
-                ClientMessage executorservice_submittomember_encode(const std::string  & name, boost::uuids::uuid uuid, const Data  & callable, boost::uuids::uuid memberUUID);
+                ClientMessage HAZELCAST_API executorservice_submittomember_encode(const std::string  & name, boost::uuids::uuid uuid, const Data  & callable, boost::uuids::uuid memberUUID);
 
                 /**
                  * Associates a given value to the specified key and replicates it to the cluster. If there is an old value, it will
                  * be replaced by the specified one and returned from the call. In addition, you have to specify a ttl and its TimeUnit
                  * to define when the value is outdated and thus should be removed from the replicated map.
                  */
-                ClientMessage replicatedmap_put_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t ttl);
+                ClientMessage HAZELCAST_API replicatedmap_put_encode(const std::string  & name, const Data  & key, const Data  & value, int64_t ttl);
 
                 /**
                  * Returns the number of key-value mappings in this map. If the map contains more than Integer.MAX_VALUE elements,
                  * returns Integer.MAX_VALUE.
                  */
-                ClientMessage replicatedmap_size_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API replicatedmap_size_encode(const std::string  & name);
 
                 /**
                  * Return true if this map contains no key-value mappings
                  */
-                ClientMessage replicatedmap_isempty_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API replicatedmap_isempty_encode(const std::string  & name);
 
                 /**
                  * Returns true if this map contains a mapping for the specified key.
                  */
-                ClientMessage replicatedmap_containskey_encode(const std::string  & name, const Data  & key);
+                ClientMessage HAZELCAST_API replicatedmap_containskey_encode(const std::string  & name, const Data  & key);
 
                 /**
                  * Returns true if this map maps one or more keys to the specified value.
                  * This operation will probably require time linear in the map size for most implementations of the Map interface.
                  */
-                ClientMessage replicatedmap_containsvalue_encode(const std::string  & name, const Data  & value);
+                ClientMessage HAZELCAST_API replicatedmap_containsvalue_encode(const std::string  & name, const Data  & value);
 
                 /**
                  * Returns the value to which the specified key is mapped, or null if this map contains no mapping for the key.
@@ -1601,7 +1601,7 @@ namespace hazelcast {
                  * necessarily indicate that the map contains no mapping for the key; it's also possible that the map
                  * explicitly maps the key to null.  The #containsKey operation may be used to distinguish these two cases.
                  */
-                ClientMessage replicatedmap_get_encode(const std::string  & name, const Data  & key);
+                ClientMessage HAZELCAST_API replicatedmap_get_encode(const std::string  & name, const Data  & key);
 
                 /**
                  * Removes the mapping for a key from this map if it is present (optional operation). Returns the value to which this map previously associated the key,
@@ -1609,7 +1609,7 @@ namespace hazelcast {
                  * null does not necessarily indicate that the map contained no mapping for the key; it's also possible that the map
                  * explicitly mapped the key to null. The map will not contain a mapping for the specified key once the call returns.
                  */
-                ClientMessage replicatedmap_remove_encode(const std::string  & name, const Data  & key);
+                ClientMessage HAZELCAST_API replicatedmap_remove_encode(const std::string  & name, const Data  & key);
 
                 /**
                  * Copies all of the mappings from the specified map to this map (optional operation). The effect of this call is
@@ -1617,7 +1617,7 @@ namespace hazelcast {
                  * v in the specified map. The behavior of this operation is undefined if the specified map is modified while the
                  * operation is in progress.
                  */
-                ClientMessage replicatedmap_putall_encode(const std::string  & name, const std::vector<std::pair<Data, Data>>  & entries);
+                ClientMessage HAZELCAST_API replicatedmap_putall_encode(const std::string  & name, const std::vector<std::pair<Data, Data>>  & entries);
 
                 /**
                  * The clear operation wipes data out of the replicated maps.It is the only synchronous remote operation in this
@@ -1625,13 +1625,13 @@ namespace hazelcast {
                  * it is retried for at most 3 times (on the failing nodes only). If it does not work after the third time, this
                  * method throws a OPERATION_TIMEOUT back to the caller.
                  */
-                ClientMessage replicatedmap_clear_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API replicatedmap_clear_encode(const std::string  & name);
 
                 /**
                  * Adds an continuous entry listener for this map. The listener will be notified for map add/remove/update/evict
                  * events filtered by the given predicate.
                  */
-                ClientMessage replicatedmap_addentrylistenertokeywithpredicate_encode(const std::string  & name, const Data  & key, const Data  & predicate, bool localOnly);
+                ClientMessage HAZELCAST_API replicatedmap_addentrylistenertokeywithpredicate_encode(const std::string  & name, const Data  & key, const Data  & predicate, bool localOnly);
 
                 struct HAZELCAST_API replicatedmap_addentrylistenertokeywithpredicate_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1662,7 +1662,7 @@ namespace hazelcast {
                  * Adds an continuous entry listener for this map. The listener will be notified for map add/remove/update/evict
                  * events filtered by the given predicate.
                  */
-                ClientMessage replicatedmap_addentrylistenerwithpredicate_encode(const std::string  & name, const Data  & predicate, bool localOnly);
+                ClientMessage HAZELCAST_API replicatedmap_addentrylistenerwithpredicate_encode(const std::string  & name, const Data  & predicate, bool localOnly);
 
                 struct HAZELCAST_API replicatedmap_addentrylistenerwithpredicate_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1693,7 +1693,7 @@ namespace hazelcast {
                  * Adds the specified entry listener for the specified key. The listener will be notified for all
                  * add/remove/update/evict events of the specified key only.
                  */
-                ClientMessage replicatedmap_addentrylistenertokey_encode(const std::string  & name, const Data  & key, bool localOnly);
+                ClientMessage HAZELCAST_API replicatedmap_addentrylistenertokey_encode(const std::string  & name, const Data  & key, bool localOnly);
 
                 struct HAZELCAST_API replicatedmap_addentrylistenertokey_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1723,7 +1723,7 @@ namespace hazelcast {
                 /**
                  * Adds an entry listener for this map. The listener will be notified for all map add/remove/update/evict events.
                  */
-                ClientMessage replicatedmap_addentrylistener_encode(const std::string  & name, bool localOnly);
+                ClientMessage HAZELCAST_API replicatedmap_addentrylistener_encode(const std::string  & name, bool localOnly);
 
                 struct HAZELCAST_API replicatedmap_addentrylistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1754,7 +1754,7 @@ namespace hazelcast {
                  * Removes the specified entry listener. If there is no such listener added before, this call does no change in the
                  * cluster and returns false.
                  */
-                ClientMessage replicatedmap_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
+                ClientMessage HAZELCAST_API replicatedmap_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId);
 
                 /**
                  * Returns a lazy Set view of the key contained in this map. A LazySet is optimized for querying speed
@@ -1764,22 +1764,22 @@ namespace hazelcast {
                  * very poor performance if called repeatedly (for example, in a loop). If the use case is different from querying
                  * the data, please copy the resulting set into a new java.util.HashSet.
                  */
-                ClientMessage replicatedmap_keyset_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API replicatedmap_keyset_encode(const std::string  & name);
 
                 /**
                  * Returns a lazy collection view of the values contained in this map.
                  */
-                ClientMessage replicatedmap_values_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API replicatedmap_values_encode(const std::string  & name);
 
                 /**
                  * Gets a lazy set view of the mappings contained in this map.
                  */
-                ClientMessage replicatedmap_entryset_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API replicatedmap_entryset_encode(const std::string  & name);
 
                 /**
                  * Adds a near cache entry listener for this map. This listener will be notified when an entry is added/removed/updated/evicted/expired etc. so that the near cache entries can be invalidated.
                  */
-                ClientMessage replicatedmap_addnearcacheentrylistener_encode(const std::string  & name, bool includeValue, bool localOnly);
+                ClientMessage HAZELCAST_API replicatedmap_addnearcacheentrylistener_encode(const std::string  & name, bool includeValue, bool localOnly);
 
                 struct HAZELCAST_API replicatedmap_addnearcacheentrylistener_handler : public impl::BaseEventHandler {
                     void handle(ClientMessage &msg);
@@ -1809,35 +1809,35 @@ namespace hazelcast {
                 /**
                  * Returns true if this map contains an entry for the specified key.
                  */
-                ClientMessage transactionalmap_containskey_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
+                ClientMessage HAZELCAST_API transactionalmap_containskey_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
 
                 /**
                  * Returns the value for the specified key, or null if this map does not contain this key.
                  */
-                ClientMessage transactionalmap_get_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
+                ClientMessage HAZELCAST_API transactionalmap_get_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
 
                 /**
                  * Locks the key and then gets and returns the value to which the specified key is mapped. Lock will be released at
                  * the end of the transaction (either commit or rollback).
                  */
-                ClientMessage transactionalmap_getforupdate_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
+                ClientMessage HAZELCAST_API transactionalmap_getforupdate_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
 
                 /**
                  * Returns the number of entries in this map.
                  */
-                ClientMessage transactionalmap_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionalmap_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Returns true if this map contains no entries.
                  */
-                ClientMessage transactionalmap_isempty_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionalmap_isempty_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Associates the specified value with the specified key in this map. If the map previously contained a mapping for
                  * the key, the old value is replaced by the specified value. The object to be put will be accessible only in the
                  * current transaction context till transaction is committed.
                  */
-                ClientMessage transactionalmap_put_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value, int64_t ttl);
+                ClientMessage HAZELCAST_API transactionalmap_put_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value, int64_t ttl);
 
                 /**
                  * Associates the specified value with the specified key in this map. If the map previously contained a mapping for
@@ -1845,52 +1845,52 @@ namespace hazelcast {
                  * if the old value is not needed.
                  * The object to be set will be accessible only in the current transaction context until the transaction is committed.
                  */
-                ClientMessage transactionalmap_set_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
+                ClientMessage HAZELCAST_API transactionalmap_set_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
 
                 /**
                  * If the specified key is not already associated with a value, associate it with the given value.
                  * The object to be put will be accessible only in the current transaction context until the transaction is committed.
                  */
-                ClientMessage transactionalmap_putifabsent_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
+                ClientMessage HAZELCAST_API transactionalmap_putifabsent_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
 
                 /**
                  * Replaces the entry for a key only if it is currently mapped to some value. The object to be replaced will be
                  * accessible only in the current transaction context until the transaction is committed.
                  */
-                ClientMessage transactionalmap_replace_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
+                ClientMessage HAZELCAST_API transactionalmap_replace_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
 
                 /**
                  * Replaces the entry for a key only if currently mapped to a given value. The object to be replaced will be
                  * accessible only in the current transaction context until the transaction is committed.
                  */
-                ClientMessage transactionalmap_replaceifsame_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & oldValue, const Data  & newValue);
+                ClientMessage HAZELCAST_API transactionalmap_replaceifsame_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & oldValue, const Data  & newValue);
 
                 /**
                  * Removes the mapping for a key from this map if it is present. The map will not contain a mapping for the
                  * specified key once the call returns. The object to be removed will be accessible only in the current transaction
                  * context until the transaction is committed.
                  */
-                ClientMessage transactionalmap_remove_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
+                ClientMessage HAZELCAST_API transactionalmap_remove_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
 
                 /**
                  * Removes the mapping for a key from this map if it is present. The map will not contain a mapping for the specified
                  * key once the call returns. This method is preferred to #remove(Object) if the old value is not needed. The object
                  * to be deleted will be removed from only the current transaction context until the transaction is committed.
                  */
-                ClientMessage transactionalmap_delete_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
+                ClientMessage HAZELCAST_API transactionalmap_delete_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
 
                 /**
                  * Removes the entry for a key only if currently mapped to a given value. The object to be removed will be removed
                  * from only the current transaction context until the transaction is committed.
                  */
-                ClientMessage transactionalmap_removeifsame_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
+                ClientMessage HAZELCAST_API transactionalmap_removeifsame_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
 
                 /**
                  * Returns a set clone of the keys contained in this map. The set is NOT backed by the map, so changes to the map
                  * are NOT reflected in the set, and vice-versa. This method is always executed by a distributed query, so it may throw
                  * a QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage transactionalmap_keyset_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionalmap_keyset_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Queries the map based on the specified predicate and returns the keys of matching entries. Specified predicate
@@ -1898,14 +1898,14 @@ namespace hazelcast {
                  * set, and vice-versa. This method is always executed by a distributed query, so it may throw a
                  * QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage transactionalmap_keysetwithpredicate_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & predicate);
+                ClientMessage HAZELCAST_API transactionalmap_keysetwithpredicate_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & predicate);
 
                 /**
                  * Returns a collection clone of the values contained in this map. The collection is NOT backed by the map,
                  * so changes to the map are NOT reflected in the collection, and vice-versa. This method is always executed by a
                  * distributed query, so it may throw a QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage transactionalmap_values_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionalmap_values_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Queries the map based on the specified predicate and returns the values of matching entries.Specified predicate
@@ -1913,145 +1913,145 @@ namespace hazelcast {
                  * in the collection, and vice-versa. This method is always executed by a distributed query, so it may throw
                  * a QueryResultSizeExceededException if query result size limit is configured.
                  */
-                ClientMessage transactionalmap_valueswithpredicate_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & predicate);
+                ClientMessage HAZELCAST_API transactionalmap_valueswithpredicate_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & predicate);
 
                 /**
                  * Returns true if this map contains an entry for the specified value.
                  */
-                ClientMessage transactionalmap_containsvalue_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & value);
+                ClientMessage HAZELCAST_API transactionalmap_containsvalue_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & value);
 
                 /**
                  * Stores a key-value pair in the multimap.
                  */
-                ClientMessage transactionalmultimap_put_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
+                ClientMessage HAZELCAST_API transactionalmultimap_put_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
 
                 /**
                  * Returns the collection of values associated with the key.
                  */
-                ClientMessage transactionalmultimap_get_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
+                ClientMessage HAZELCAST_API transactionalmultimap_get_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
 
                 /**
                  * Removes the given key value pair from the multimap.
                  */
-                ClientMessage transactionalmultimap_remove_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
+                ClientMessage HAZELCAST_API transactionalmultimap_remove_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
 
                 /**
                  * Removes all the entries associated with the given key.
                  */
-                ClientMessage transactionalmultimap_removeentry_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
+                ClientMessage HAZELCAST_API transactionalmultimap_removeentry_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key, const Data  & value);
 
                 /**
                  * Returns the number of values matching the given key in the multimap.
                  */
-                ClientMessage transactionalmultimap_valuecount_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
+                ClientMessage HAZELCAST_API transactionalmultimap_valuecount_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key);
 
                 /**
                  * Returns the number of key-value pairs in the multimap.
                  */
-                ClientMessage transactionalmultimap_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionalmultimap_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Add new item to transactional set.
                  */
-                ClientMessage transactionalset_add_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item);
+                ClientMessage HAZELCAST_API transactionalset_add_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item);
 
                 /**
                  * Remove item from transactional set.
                  */
-                ClientMessage transactionalset_remove_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item);
+                ClientMessage HAZELCAST_API transactionalset_remove_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item);
 
                 /**
                  * Returns the size of the set.
                  */
-                ClientMessage transactionalset_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionalset_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Adds a new item to the transactional list.
                  */
-                ClientMessage transactionallist_add_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item);
+                ClientMessage HAZELCAST_API transactionallist_add_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item);
 
                 /**
                  * Remove item from the transactional list
                  */
-                ClientMessage transactionallist_remove_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item);
+                ClientMessage HAZELCAST_API transactionallist_remove_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item);
 
                 /**
                  * Returns the size of the list
                  */
-                ClientMessage transactionallist_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionallist_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Inserts the specified element into this queue, waiting up to the specified wait time if necessary for space to
                  * become available.
                  */
-                ClientMessage transactionalqueue_offer_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item, int64_t timeout);
+                ClientMessage HAZELCAST_API transactionalqueue_offer_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & item, int64_t timeout);
 
                 /**
                  * Retrieves and removes the head of this queue, waiting if necessary until an element becomes available.
                  */
-                ClientMessage transactionalqueue_take_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionalqueue_take_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Retrieves and removes the head of this queue, waiting up to the specified wait time if necessary for an element
                  * to become available.
                  */
-                ClientMessage transactionalqueue_poll_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, int64_t timeout);
+                ClientMessage HAZELCAST_API transactionalqueue_poll_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, int64_t timeout);
 
                 /**
                  * Retrieves, but does not remove, the head of this queue, or returns null if this queue is empty.
                  */
-                ClientMessage transactionalqueue_peek_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, int64_t timeout);
+                ClientMessage HAZELCAST_API transactionalqueue_peek_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, int64_t timeout);
 
                 /**
                  * Returns the number of elements in this collection.If this collection contains more than Integer.MAX_VALUE
                  * elements, returns Integer.MAX_VALUE.
                  */
-                ClientMessage transactionalqueue_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
+                ClientMessage HAZELCAST_API transactionalqueue_size_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId);
 
                 /**
                  * Commits the transaction with the given id.
                  */
-                ClientMessage transaction_commit_encode(boost::uuids::uuid transactionId, int64_t threadId);
+                ClientMessage HAZELCAST_API transaction_commit_encode(boost::uuids::uuid transactionId, int64_t threadId);
 
                 /**
                  * Creates a transaction with the given parameters.
                  */
-                ClientMessage transaction_create_encode(int64_t timeout, int32_t durability, int32_t transactionType, int64_t threadId);
+                ClientMessage HAZELCAST_API transaction_create_encode(int64_t timeout, int32_t durability, int32_t transactionType, int64_t threadId);
 
                 /**
                  * Rollbacks the transaction with the given id.
                  */
-                ClientMessage transaction_rollback_encode(boost::uuids::uuid transactionId, int64_t threadId);
+                ClientMessage HAZELCAST_API transaction_rollback_encode(boost::uuids::uuid transactionId, int64_t threadId);
 
                 /**
                  * Returns number of items in the ringbuffer. If no ttl is set, the size will always be equal to capacity after the
                  * head completed the first looparound the ring. This is because no items are getting retired.
                  */
-                ClientMessage ringbuffer_size_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API ringbuffer_size_encode(const std::string  & name);
 
                 /**
                  * Returns the sequence of the tail. The tail is the side of the ringbuffer where the items are added to.
                  * The initial value of the tail is -1.
                  */
-                ClientMessage ringbuffer_tailsequence_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API ringbuffer_tailsequence_encode(const std::string  & name);
 
                 /**
                  * Returns the sequence of the head. The head is the side of the ringbuffer where the oldest items in the ringbuffer
                  * are found. If the RingBuffer is empty, the head will be one more than the tail.
                  * The initial value of the head is 0 (1 more than tail).
                  */
-                ClientMessage ringbuffer_headsequence_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API ringbuffer_headsequence_encode(const std::string  & name);
 
                 /**
                  * Returns the capacity of this Ringbuffer.
                  */
-                ClientMessage ringbuffer_capacity_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API ringbuffer_capacity_encode(const std::string  & name);
 
                 /**
                  * Returns the remaining capacity of the ringbuffer. The returned value could be stale as soon as it is returned.
                  * If ttl is not set, the remaining capacity will always be the capacity.
                  */
-                ClientMessage ringbuffer_remainingcapacity_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API ringbuffer_remainingcapacity_encode(const std::string  & name);
 
                 /**
                  * Adds an item to the tail of the Ringbuffer. If there is space in the ringbuffer, the call
@@ -2066,7 +2066,7 @@ namespace hazelcast {
                  * this id is not the sequence of the item you are about to publish but from a previously published item. So it can't be used
                  * to find that item.
                  */
-                ClientMessage ringbuffer_add_encode(const std::string  & name, int32_t overflowPolicy, const Data  & value);
+                ClientMessage HAZELCAST_API ringbuffer_add_encode(const std::string  & name, int32_t overflowPolicy, const Data  & value);
 
                 /**
                  * Reads one item from the Ringbuffer. If the sequence is one beyond the current tail, this call blocks until an
@@ -2074,7 +2074,7 @@ namespace hazelcast {
                  * readers or it can be read multiple times by the same reader. Currently it isn't possible to control how long this
                  * call is going to block. In the future we could add e.g. tryReadOne(long sequence, long timeout, TimeUnit unit).
                  */
-                ClientMessage ringbuffer_readone_encode(const std::string  & name, int64_t sequence);
+                ClientMessage HAZELCAST_API ringbuffer_readone_encode(const std::string  & name, int64_t sequence);
 
                 /**
                  * Adds all the items of a collection to the tail of the Ringbuffer. A addAll is likely to outperform multiple calls
@@ -2086,7 +2086,7 @@ namespace hazelcast {
                  * If an addAll is executed concurrently with an add or addAll, no guarantee is given that items are contiguous.
                  * The result of the future contains the sequenceId of the last written item
                  */
-                ClientMessage ringbuffer_addall_encode(const std::string  & name, const std::vector<Data>  & valueList, int32_t overflowPolicy);
+                ClientMessage HAZELCAST_API ringbuffer_addall_encode(const std::string  & name, const std::vector<Data>  & valueList, int32_t overflowPolicy);
 
                 /**
                  * Reads a batch of items from the Ringbuffer. If the number of available items after the first read item is smaller
@@ -2097,12 +2097,12 @@ namespace hazelcast {
                  * true are returned. Using filters is a good way to prevent getting items that are of no value to the receiver.
                  * This reduces the amount of IO and the number of operations being executed, and can result in a significant performance improvement.
                  */
-                ClientMessage ringbuffer_readmany_encode(const std::string  & name, int64_t startSequence, int32_t minCount, int32_t maxCount, const Data  * filter);
+                ClientMessage HAZELCAST_API ringbuffer_readmany_encode(const std::string  & name, int64_t startSequence, int32_t minCount, int32_t maxCount, const Data  * filter);
 
                 /**
                  * Fetches a new batch of ids for the given flake id generator.
                  */
-                ClientMessage flakeidgenerator_newidbatch_encode(const std::string  & name, int32_t batchSize);
+                ClientMessage HAZELCAST_API flakeidgenerator_newidbatch_encode(const std::string  & name, int32_t batchSize);
 
                 /**
                  * Query operation to retrieve the current value of the PNCounter.
@@ -2114,7 +2114,7 @@ namespace hazelcast {
                  * If smart routing is disabled, the actual member processing the client
                  * message may act as a proxy.
                  */
-                ClientMessage pncounter_get_encode(const std::string  & name, const std::vector<std::pair<boost::uuids::uuid, int64_t>>  & replicaTimestamps, boost::uuids::uuid targetReplicaUUID);
+                ClientMessage HAZELCAST_API pncounter_get_encode(const std::string  & name, const std::vector<std::pair<boost::uuids::uuid, int64_t>>  & replicaTimestamps, boost::uuids::uuid targetReplicaUUID);
 
                 /**
                  * Adds a delta to the PNCounter value. The delta may be negative for a
@@ -2127,7 +2127,7 @@ namespace hazelcast {
                  * If smart routing is disabled, the actual member processing the client
                  * message may act as a proxy.
                  */
-                ClientMessage pncounter_add_encode(const std::string  & name, int64_t delta, bool getBeforeUpdate, const std::vector<std::pair<boost::uuids::uuid, int64_t>>  & replicaTimestamps, boost::uuids::uuid targetReplicaUUID);
+                ClientMessage HAZELCAST_API pncounter_add_encode(const std::string  & name, int64_t delta, bool getBeforeUpdate, const std::vector<std::pair<boost::uuids::uuid, int64_t>>  & replicaTimestamps, boost::uuids::uuid targetReplicaUUID);
 
                 /**
                  * Returns the configured number of CRDT replicas for the PN counter with
@@ -2135,7 +2135,7 @@ namespace hazelcast {
                  * The actual replica count may be less, depending on the number of data
                  * members in the cluster (members that own data).
                  */
-                ClientMessage pncounter_getconfiguredreplicacount_encode(const std::string  & name);
+                ClientMessage HAZELCAST_API pncounter_getconfiguredreplicacount_encode(const std::string  & name);
 
             }
         }
