@@ -132,7 +132,7 @@ namespace hazelcast {
                       transactionManager(clientContext), cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(),
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
-                      id(++CLIENT_ID) {
+                      id(++CLIENT_ID), random_generator_(id), uuid_generator_{random_generator_} {
                 const std::shared_ptr<std::string> &name = clientConfig.getInstanceName();
                 if (name.get() != NULL) {
                     instanceName = *name;
@@ -354,6 +354,11 @@ namespace hazelcast {
 
             const std::shared_ptr<util::ILogger> &HazelcastClientInstanceImpl::getLogger() const {
                 return logger;
+            }
+
+            boost::uuids::uuid HazelcastClientInstanceImpl::random_uuid() {
+                std::lock_guard<std::mutex> g(uuid_generator_lock_);
+                return uuid_generator_();
             }
 
             BaseEventHandler::~BaseEventHandler() = default;
@@ -638,7 +643,7 @@ namespace hazelcast {
         }
 
         const char *ClientProperty::getSystemProperty() const {
-            return ::getenv(name.c_str());
+            return std::getenv(name.c_str());
         }
 
         ClientProperties::ClientProperties(const std::unordered_map<std::string, std::string> &properties)

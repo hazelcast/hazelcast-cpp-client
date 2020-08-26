@@ -109,6 +109,7 @@
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
 #pragma warning(disable: 4996) //for unsafe getenv
 #endif
 
@@ -1108,7 +1109,8 @@ namespace hazelcast {
                 executor::tasks::SelectNoMembers selector;
 
                 ASSERT_THROW(service->execute<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>>(
-                        executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>{mapName, boost::uuids::random_generator()()}, selector),
+                        executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>{mapName, spi::ClientContext(
+                                *client).random_uuid()}, selector),
                              exception::RejectedExecutionException);
             }
 
@@ -1266,7 +1268,7 @@ namespace hazelcast {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, boost::uuids::random_generator()());
+                executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, spi::ClientContext(*client).random_uuid());
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
                 std::shared_ptr<SuccessfullExecutionCallback> callback(new SuccessfullExecutionCallback(latch1));

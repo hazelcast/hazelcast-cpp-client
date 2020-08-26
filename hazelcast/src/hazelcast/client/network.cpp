@@ -88,7 +88,7 @@ namespace hazelcast {
                       reconnect_mode_(client.getClientConfig().getConnectionStrategyConfig().getReconnectMode()),
                       smart_routing_enabled_(client.getClientConfig().getNetworkConfig().isSmartRouting()),
                       connect_to_cluster_task_submitted_(false),
-                      client_uuid_(boost::uuids::random_generator()()),
+                      client_uuid_(client.random_uuid()),
                       authentication_timeout_(heartbeat.getHeartbeatTimeout().count()),
                       load_balancer_(client.getClientConfig().getLoadBalancer()) {
                 boost::uuids::uuid u;
@@ -1036,7 +1036,7 @@ namespace hazelcast {
                         timeout_millis > 0 ? timeout_millis : util::IOUtil::to_value<int64_t>(
                                 ClientProperties::PROP_HEARTBEAT_TIMEOUT_DEFAULT));
 
-                int interval_millis = clientProperties.getLong(clientProperties.getHeartbeatInterval());
+                auto interval_millis = clientProperties.getLong(clientProperties.getHeartbeatInterval());
                 heartbeat_interval_ = std::chrono::milliseconds(interval_millis > 0 ? interval_millis
                                                                                     : util::IOUtil::to_value<int64_t>(ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT));
             }

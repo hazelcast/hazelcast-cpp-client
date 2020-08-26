@@ -75,7 +75,7 @@ namespace hazelcast {
 
                     try {
                         return invokeCancelRequest(mayInterruptIfRunning);
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
                     return false;
@@ -566,7 +566,7 @@ namespace hazelcast {
             template<typename T>
             executor_promise<T>
             submitToPartitionInternal(const serialization::pimpl::Data &taskData, bool preventSync, int partitionId) {
-                auto uuid = boost::uuids::random_generator()();
+                auto uuid = context_.random_uuid();
 
                 auto f = invokeOnPartitionInternal(taskData, partitionId, uuid);
 
@@ -576,7 +576,7 @@ namespace hazelcast {
             template<typename T>
             void submitToPartitionInternal(const serialization::pimpl::Data &taskData, int partitionId,
                                            const std::shared_ptr<ExecutionCallback<T> > &callback) {
-                boost::uuids::uuid uuid = boost::uuids::random_generator()();
+                boost::uuids::uuid uuid = context_.random_uuid();
 
                 auto messageFuture = invokeOnPartitionInternal(taskData, partitionId, uuid);
 
@@ -586,7 +586,7 @@ namespace hazelcast {
                     try {
                         auto result = retrieveResultFromMessage<T>(serializationService, std::move(f));
                         executionService->execute([=]() { callback->onResponse(result); });
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         auto exception = std::current_exception();
                         executionService->execute([=]() { callback->onFailure(exception); });
                     }
@@ -643,7 +643,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             executor_promise<T> submitToTargetInternal(const HazelcastSerializable &task, const Member &member,
                                                        bool preventSync) {
-                boost::uuids::uuid uuid = boost::uuids::random_generator()();
+                boost::uuids::uuid uuid = context_.random_uuid();
 
                 auto f = invokeOnTargetInternal<HazelcastSerializable>(task, member, uuid);
 
@@ -653,7 +653,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             void submitToTargetInternal(const HazelcastSerializable &task, const Member &member,
                                         const std::shared_ptr<ExecutionCallback<T> > &callback) {
-                boost::uuids::uuid uuid = boost::uuids::random_generator()();
+                boost::uuids::uuid uuid = context_.random_uuid();
 
                 auto messageFuture = invokeOnTargetInternal<HazelcastSerializable>(task, member, uuid);
 

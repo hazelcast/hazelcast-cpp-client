@@ -17,6 +17,7 @@
 
 #include <string>
 #include <memory>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -136,6 +137,8 @@ namespace hazelcast {
                 client::impl::statistics::Statistics &getClientstatistics();
 
                 spi::impl::listener::cluster_view_listener &get_cluster_view_listener();
+
+                boost::uuids::uuid random_uuid();
             private:
                 client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };

@@ -247,6 +247,10 @@ namespace hazelcast {
                 return *hazelcastClient.cluster_listener_;
             }
 
+            boost::uuids::uuid ClientContext::random_uuid() {
+                return hazelcastClient.random_uuid();
+            }
+
             LifecycleService::LifecycleService(ClientContext &clientContext,
                                                const std::unordered_set<LifecycleListener *> &lifecycleListeners,
                                                LoadBalancer *const loadBalancer, Cluster &cluster) : clientContext(
@@ -424,7 +428,7 @@ namespace hazelcast {
                     try {
                         onDestroy();
                         postDestroy();
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         postDestroy();
                         throw;
                     }
@@ -625,7 +629,7 @@ namespace hazelcast {
 
                 boost::uuids::uuid ClientClusterServiceImpl::addMembershipListenerWithoutInit(
                         const std::shared_ptr<MembershipListener> &listener) {
-                    auto id = boost::uuids::random_generator()();
+                    auto id = client.random_uuid();
                     listeners.put(id, listener);
                     listener->setRegistrationId(id);
                     return id;
@@ -1023,9 +1027,9 @@ namespace hazelcast {
                         if (!invoked) {
                             notifyException(std::make_exception_ptr(exception::IOException("No connection found to invoke")));
                         }
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         notifyException(std::current_exception());
-                    } catch (std::exception &e) {
+                    } catch (std::exception &) {
                         assert(false);
                     }
                 }
@@ -1047,7 +1051,7 @@ namespace hazelcast {
                         invokeOnSelection();
                     } catch (exception::IException &e) {
                         setException(e, boost::current_exception());
-                    } catch (std::exception &se) {
+                    } catch (std::exception &) {
                         assert(false);
                     }
                 }
@@ -1295,7 +1299,7 @@ namespace hazelcast {
                         executionService->execute(command);
                     } else {
                         // progressive retry delay
-                        int64_t delayMillis = util::min<int64_t>(1 << (invokeCount - MAX_FAST_INVOCATION_COUNT),
+                        int64_t delayMillis = util::min<int64_t>(static_cast<int64_t>(1) << (invokeCount - MAX_FAST_INVOCATION_COUNT),
                                                                  std::chrono::duration_cast<std::chrono::milliseconds>(retryPause).count());
                         executionService->schedule(command, std::chrono::milliseconds(delayMillis));
                     }
@@ -1842,7 +1846,7 @@ namespace hazelcast {
                     boost::uuids::uuid listener_service_impl::registerListenerInternal(
                             std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
                             std::shared_ptr<client::impl::BaseEventHandler> handler) {
-                        auto user_registration_id = boost::uuids::random_generator()();
+                        auto user_registration_id = clientContext.random_uuid();
 
                         std::shared_ptr<listener_registration> registration(new listener_registration{listenerMessageCodec, handler});
                         registrations.put(user_registration_id, registration);

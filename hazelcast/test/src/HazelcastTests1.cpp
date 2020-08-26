@@ -74,6 +74,7 @@
 #include "hazelcast/client/ReliableTopic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
 #pragma warning(disable: 4996) //for unsafe getenv
 #endif
 
@@ -736,8 +737,9 @@ namespace hazelcast {
             }
 
             std::string ClientTestSupportBase::randomString() {
-                // TODO: Change with secure uuid generator as in Java
-                return boost::uuids::to_string(boost::uuids::random_generator()());
+                // performance is not important, hence we can use random_device for the tests
+                std::random_device rand{};
+                return boost::uuids::to_string(boost::uuids::basic_random_generator<std::random_device>{rand}());
             }
 
             void ClientTestSupportBase::sleepSeconds(int32_t seconds) {
@@ -750,7 +752,7 @@ namespace hazelcast {
                 spi::impl::ClientPartitionServiceImpl &partitionService = context.getPartitionService();
                 serialization::pimpl::SerializationService &serializationService = context.getSerializationService();
                 while (true) {
-                    auto id = boost::uuids::random_generator()();
+                    auto id = context.random_uuid();
                     int partitionId = partitionService.getPartitionId(serializationService.toData(id));
                     std::shared_ptr<impl::Partition> partition = partitionService.getPartition(partitionId);
                     auto owner = partition->getOwner();
@@ -1673,7 +1675,7 @@ namespace hazelcast {
 
                 auto map = hazelcastClient.getMap("testDeregisterListener");
 
-                ASSERT_FALSE(map->removeEntryListener(boost::uuids::random_generator()()).get());
+                ASSERT_FALSE(map->removeEntryListener(spi::ClientContext(hazelcastClient).random_uuid()).get());
 
                 boost::latch map_clearedLatch(1);
 

@@ -19,6 +19,7 @@
 #include <memory>
 #include <stdint.h>
 #include <vector>
+#include <random>
 
 #include "hazelcast/client/map/NearCachedClientMapProxy.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
@@ -200,6 +201,7 @@ namespace hazelcast {
 
                 const std::shared_ptr <util::ILogger> &getLogger() const;
 
+                boost::uuids::uuid random_uuid();
             private:
                 ClientConfig clientConfig;
                 ClientProperties clientProperties;
@@ -225,6 +227,9 @@ namespace hazelcast {
                 std::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
                 std::shared_ptr<util::ILogger> logger;
                 std::shared_ptr<spi::impl::listener::cluster_view_listener> cluster_listener_;
+                std::mt19937 random_generator_;
+                boost::uuids::basic_random_generator<std::mt19937> uuid_generator_;
+                std::mutex uuid_generator_lock_;
 
                 HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs) = delete;
 
