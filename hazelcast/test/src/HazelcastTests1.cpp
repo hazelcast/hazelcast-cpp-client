@@ -36,7 +36,6 @@
 #include <hazelcast/util/AddressUtil.h>
 #include <hazelcast/client/serialization/pimpl/DataOutput.h>
 #include <hazelcast/util/AddressHelper.h>
-
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>

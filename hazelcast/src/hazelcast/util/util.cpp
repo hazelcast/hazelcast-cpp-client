@@ -58,7 +58,6 @@
 
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/util/Closeable.h"
-#include <boost/uuid/uuid.hpp>
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/SyncHttpClient.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"

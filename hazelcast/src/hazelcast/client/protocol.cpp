@@ -394,7 +394,7 @@ namespace hazelcast {
                     factory = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
                 }
                 return factory->second->create_exception(*this, begin->className, begin->message.value_or("nullptr"),
-                                                  begin->toString(), create_exception(++begin, end));
+                                                  begin->toString(), create_exception(begin + 1, end));
             }
 
             std::exception_ptr ClientExceptionFactory::create_exception(const std::vector<codec::ErrorHolder> &errors) const {

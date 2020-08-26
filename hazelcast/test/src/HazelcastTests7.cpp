@@ -1758,7 +1758,7 @@ namespace hazelcast {
 
                 // FIPS_mode_set is not available for Mac OS X built-in openssl library
 #ifndef __APPLE__
-                                                                                                                                        TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
+                    TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
                     ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");

@@ -37,11 +37,11 @@
 
 #include <utility>
 
-#include "hazelcast/client/HazelcastClient.h"
 #include <boost/range/algorithm/find_if.hpp>
 #include <boost/uuid/uuid_hash.hpp>
 #include <boost/functional/hash.hpp>
 
+#include "hazelcast/client/HazelcastClient.h"
 #include <hazelcast/client/protocol/codec/ErrorCodec.h>
 #include <hazelcast/client/spi/impl/ListenerMessageCodec.h>
 #include <hazelcast/client/spi/impl/ClientClusterServiceImpl.h>
@@ -58,11 +58,9 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
-#include "hazelcast/client/spi/impl/ClientInvocationServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
 #include "hazelcast/client/spi/impl/AwsAddressProvider.h"
-#include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
 #include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithoutBackpressure.h"
