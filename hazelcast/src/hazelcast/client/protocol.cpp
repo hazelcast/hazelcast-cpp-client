@@ -259,6 +259,18 @@ namespace hazelcast {
                 }
             }
 
+            const ClientMessage::frame_header_t &ClientMessage::null_frame() {
+                return NULL_FRAME;
+            }
+
+            const ClientMessage::frame_header_t &ClientMessage::begin_frame() {
+                return BEGIN_FRAME;
+            }
+
+            const ClientMessage::frame_header_t &ClientMessage::end_frame() {
+                return END_FRAME;
+            }
+
             ExceptionFactory::~ExceptionFactory() = default;
 
             ClientExceptionFactory::ClientExceptionFactory() {

@@ -54,7 +54,7 @@ namespace hazelcast {
 
             namespace codec {
                 namespace holder {
-                    struct paging_predicate_holder {
+                    struct HAZELCAST_API paging_predicate_holder {
                         int32_t page_size;
                         int32_t page;
                         byte iteration_type;
@@ -76,7 +76,7 @@ namespace hazelcast {
             }
 
             template <typename>
-            struct is_trivial_entry_vector : std::false_type
+            struct HAZELCAST_API is_trivial_entry_vector : std::false_type
             { };
 
             template <typename T, typename U>
@@ -84,11 +84,11 @@ namespace hazelcast {
             { };
 
             template <>
-            struct is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::Data, boost::optional<hazelcast::client::serialization::pimpl::Data>>>> : std::false_type
+            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::Data, boost::optional<hazelcast::client::serialization::pimpl::Data>>>> : std::false_type
             { };
 
             template <>
-            struct is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::Data, hazelcast::client::serialization::pimpl::Data>>> : std::false_type
+            struct HAZELCAST_API is_trivial_entry_vector<std::vector<std::pair<serialization::pimpl::Data, hazelcast::client::serialization::pimpl::Data>>> : std::false_type
             { };
 
             /**
@@ -193,11 +193,11 @@ namespace hazelcast {
                     BACKUP_EVENT_FLAG = 1 << 7
                 };
 
-                struct frame_header_t {
+                struct HAZELCAST_API frame_header_t {
                     boost::endian::little_int32_t frame_len;
                     boost::endian::little_int16_t flags;
 
-                    friend bool operator==(const frame_header_t &lhs, const frame_header_t &rhs) {
+                    friend bool HAZELCAST_API operator==(const frame_header_t &lhs, const frame_header_t &rhs) {
                         return lhs.frame_len == rhs.frame_len &&
                                lhs.flags == rhs.flags;
                     }
@@ -219,13 +219,9 @@ namespace hazelcast {
                 //offset valid for fragmentation frames only
                 static constexpr size_t FRAGMENTATION_ID_OFFSET = 0;
 
-                static const frame_header_t NULL_FRAME;
-                static const frame_header_t BEGIN_FRAME;
-                static const frame_header_t END_FRAME;
-
                 ClientMessage();
 
-                ClientMessage(size_t initial_frame_size, bool is_fingle_frame = false);
+                explicit ClientMessage(size_t initial_frame_size, bool is_fingle_frame = false);
 
                 const std::vector<std::vector<byte>> &getBuffer() const {
                     return data_buffer;
@@ -699,8 +695,8 @@ namespace hazelcast {
                 void setNullable(const T *value, bool is_final = false) {
                     bool isNull = (NULL == value);
                     if (isNull) {
-                        auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(NULL_FRAME)));
-                        *h = NULL_FRAME;
+                        auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
+                        *h = null_frame();
                         if (is_final) {
                             h->flags |= IS_FINAL_FLAG;
                         }
@@ -811,15 +807,15 @@ namespace hazelcast {
 
                 template<typename T>
                 void set(const std::vector<T> &values, bool is_final = false) {
-                    auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(BEGIN_FRAME)));
-                    *h = BEGIN_FRAME;
+                    auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
+                    *h = begin_frame();
 
                     for (auto &item : values) {
                         set(item);
                     }
 
-                    h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(END_FRAME)));
-                    *h = END_FRAME;
+                    h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
+                    *h = end_frame();
                     if (is_final) {
                         h->flags |= IS_FINAL_FLAG;
                     }
@@ -866,9 +862,17 @@ namespace hazelcast {
 
                 void fast_forward_to_end_frame();
 
-                friend std::ostream &operator<<(std::ostream &os, const ClientMessage &message);
+                static const frame_header_t &null_frame();
+                static const frame_header_t &begin_frame();
+                static const frame_header_t &end_frame();
+
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const ClientMessage &message);
 
             private:
+                static const frame_header_t NULL_FRAME;
+                static const frame_header_t BEGIN_FRAME;
+                static const frame_header_t END_FRAME;
+
                 template<typename T>
                 void set_primitive_vector(const std::vector<T> &values, bool is_final = false) {
                     int32_t len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + values.size() * sizeof(T);
@@ -905,13 +909,13 @@ namespace hazelcast {
                 }
 
                 void add_begin_frame() {
-                    auto *f = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(BEGIN_FRAME)));
-                    *f = BEGIN_FRAME;
+                    auto *f = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
+                    *f = begin_frame();
                 }
 
                 void add_end_frame(bool is_final) {
-                    auto ef = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(END_FRAME)));
-                    *ef = END_FRAME;
+                    auto ef = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
+                    *ef = end_frame();
                     if (is_final) {
                         ef->flags |= IS_FINAL_FLAG;
                     }
@@ -938,16 +942,16 @@ namespace hazelcast {
             };
 
             template<>
-            void ClientMessage::set(const std::vector<int32_t> &values, bool is_final);
+            void HAZELCAST_API ClientMessage::set(const std::vector<int32_t> &values, bool is_final);
 
             template<>
-            void ClientMessage::set(const std::vector<int64_t> &values, bool is_final);
+            void HAZELCAST_API ClientMessage::set(const std::vector<int64_t> &values, bool is_final);
 
             template<>
-            void ClientMessage::set(const std::vector<boost::uuids::uuid> &values, bool is_final);
+            void HAZELCAST_API ClientMessage::set(const std::vector<boost::uuids::uuid> &values, bool is_final);
 
             template<>
-            void ClientMessage::set(const std::vector<std::pair<boost::uuids::uuid, int64_t>> &values, bool is_final);
+            void HAZELCAST_API ClientMessage::set(const std::vector<std::pair<boost::uuids::uuid, int64_t>> &values, bool is_final);
 
         }
     }

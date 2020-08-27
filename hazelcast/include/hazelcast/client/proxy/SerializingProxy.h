@@ -263,21 +263,21 @@ namespace hazelcast {
 
             template<>
             boost::future<boost::optional<serialization::pimpl::Data>>
-            SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request);
+            HAZELCAST_API SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request);
 
             template<>
             boost::future<boost::optional<map::DataEntryView>>
-            SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request,
+            HAZELCAST_API SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request,
                                                  const serialization::pimpl::Data &key);
 
             template<>
             boost::future<boost::optional<serialization::pimpl::Data>>
-            SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request, int partitionId);
+            HAZELCAST_API SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request, int partitionId);
 
 
             template<>
             boost::future<boost::optional<serialization::pimpl::Data>>
-            SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request,
+            HAZELCAST_API SerializingProxy::invokeAndGetFuture(protocol::ClientMessage &request,
                                                  const serialization::pimpl::Data &key);
 
         }

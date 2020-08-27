@@ -68,7 +68,7 @@ namespace hazelcast {
                                              const std::shared_ptr<ClientMessage> &response) override;
 
                 private:
-                    class ResponseProcessor {
+                    class HAZELCAST_API ResponseProcessor {
                     public:
                         ResponseProcessor(util::ILogger &invocationLogger,
                                           ClientInvocationServiceImpl &invocationService,
