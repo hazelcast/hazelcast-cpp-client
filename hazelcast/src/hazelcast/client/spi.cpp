@@ -1486,9 +1486,7 @@ namespace hazelcast {
                     if (it != table_ptr->partitions.end()) {
                         return it->second;
                     }
-                    boost::uuids::uuid u;
-                    std::memset(&u, 0, sizeof(boost::uuids::uuid));
-                    return u;
+                    return boost::uuids::nil_uuid();
                 }
 
                 int32_t ClientPartitionServiceImpl::getPartitionId(const serialization::pimpl::Data &key) {

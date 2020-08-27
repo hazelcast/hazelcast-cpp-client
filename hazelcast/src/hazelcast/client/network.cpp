@@ -87,17 +87,13 @@ namespace hazelcast {
                       connect_to_cluster_task_submitted_(false),
                       client_uuid_(client.random_uuid()),
                       authentication_timeout_(heartbeat.getHeartbeatTimeout().count()),
+                      cluster_id_(boost::uuids::nil_uuid()),
                       load_balancer_(client.getClientConfig().getLoadBalancer()) {
-                boost::uuids::uuid u;
-                std::memset(&u, 0, sizeof(boost::uuids::uuid));
-                cluster_id_ = u;
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
                 int64_t connTimeout = networkConfig.getConnectionTimeout();
                 if (connTimeout > 0) {
                     connectionTimeoutMillis = std::chrono::milliseconds(connTimeout);
                 }
-
-                current_credentials_ = client.getClientConfig().credentials_;
 
                 ClientProperties &clientProperties = client.getClientProperties();
                 shuffleMemberList = clientProperties.getBoolean(clientProperties.getShuffleMemberList());
@@ -479,30 +475,29 @@ namespace hazelcast {
                         exception::IllegalStateException("ConnectionManager::do_connect_to_cluster", out.str()));
             }
 
-            std::unordered_set<Address> ClientConnectionManagerImpl::getPossibleMemberAddresses() {
+            std::vector<Address> ClientConnectionManagerImpl::getPossibleMemberAddresses() {
                 std::vector<Address> addresses;
                 for (auto &&member : client.getClientClusterService().getMemberList()) {
-                    addresses.emplace_back(member.getAddress());
+                    addresses.emplace_back(std::move(member.getAddress()));
                 }
 
                 if (shuffleMemberList) {
                     shuffle(addresses);
                 }
 
+                std::vector<Address> provided_addresses;
                 for (auto &addressProvider : addressProviders) {
                     auto addrList = addressProvider->loadAddresses();
-                    addresses.insert(addresses.end(), addrList.begin(), addrList.end());
+                    provided_addresses.insert(provided_addresses.end(), addrList.begin(), addrList.end());
                 }
 
                 if (shuffleMemberList) {
-                    shuffle(addresses);
+                    shuffle(provided_addresses);
                 }
 
-                std::unordered_set<Address> result;
-                for (auto &&a : std::move(addresses)) {
-                    result.insert(a);
-                }
-                return result;
+                addresses.insert(addresses.end(), provided_addresses.begin(), provided_addresses.end());
+
+                return addresses;
             }
 
             void ClientConnectionManagerImpl::connectToCluster() {
@@ -754,9 +749,8 @@ namespace hazelcast {
                       invocationService(clientContext.getInvocationService()),
                       connectionId(connectionId),
                       connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION),
-                      logger(clientContext.getLogger()), alive(true) {
+                      remote_uuid_(boost::uuids::nil_uuid()), logger(clientContext.getLogger()), alive(true) {
                 socket = socketFactory.create(address, connectTimeoutInMillis);
-                std::memset(&remote_uuid_, 0, sizeof(boost::uuids::uuid));
             }
 
             Connection::~Connection() = default;

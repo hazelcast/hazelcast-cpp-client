@@ -38,7 +38,6 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 #include "hazelcast/client/proxy/FlakeIdGeneratorImpl.h"
-#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/listener/listener_service_impl.h"
 #include "hazelcast/client/proxy/ReliableTopicImpl.h"
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"

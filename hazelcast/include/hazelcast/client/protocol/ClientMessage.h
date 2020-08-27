@@ -30,6 +30,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/endian.hpp>
 #include <boost/optional.hpp>
+#include <boost/uuid/nil_generator.hpp>
+
 #include <hazelcast/client/query/PagingPredicate.h>
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/Member.h"
@@ -485,9 +487,7 @@ namespace hazelcast {
                     if (get<bool>()) {
                         // skip the next 16 bytes
                         rd_ptr(sizeof(boost::uuids::uuid));
-                        boost::uuids::uuid id;
-                        std::memset(&id, 0, sizeof(boost::uuids::uuid));
-                        return id;
+                        return boost::uuids::nil_uuid();
                     }
                     return get_uuid();
                 }

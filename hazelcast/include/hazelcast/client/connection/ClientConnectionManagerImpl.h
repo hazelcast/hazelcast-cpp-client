@@ -160,7 +160,7 @@ namespace hazelcast {
 
                 bool do_connect_to_cluster();
 
-                std::unordered_set<Address> getPossibleMemberAddresses();
+                std::vector<Address> getPossibleMemberAddresses();
 
                 template<typename Container>
                 void shuffle(Container &memberAddresses) const {
