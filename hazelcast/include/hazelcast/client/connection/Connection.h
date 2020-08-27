@@ -66,14 +66,13 @@ namespace hazelcast {
             class HAZELCAST_API Connection : public util::Closeable, public std::enable_shared_from_this<Connection> {
             public:
                 Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
-                           const std::shared_ptr<ConnectionFuture> &authFuture,
                            internal::socket::SocketFactory &socketFactory,
                            ClientConnectionManagerImpl &clientConnectionManager,
                            std::chrono::steady_clock::duration &connectTimeoutInMillis);
 
                 ~Connection() override;
 
-                void asyncStart();
+                void connect();
 
                 void close();
 
@@ -145,7 +144,6 @@ namespace hazelcast {
                 boost::uuids::uuid remote_uuid_;
                 util::ILogger &logger;
                 std::atomic_bool alive;
-                std::shared_ptr<ConnectionFuture> authFuture;
             };
         }
     }

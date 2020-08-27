@@ -243,7 +243,7 @@ namespace hazelcast {
                     std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                             client, request, objectName, connection);
                     return clientInvocation->invoke();
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
                                                              "ClientTransactionUtil::invoke failed");
                     return boost::make_ready_future(protocol::ClientMessage(0));

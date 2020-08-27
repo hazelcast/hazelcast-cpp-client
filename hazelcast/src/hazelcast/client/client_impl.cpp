@@ -643,7 +643,14 @@ namespace hazelcast {
         }
 
         const char *ClientProperty::getSystemProperty() const {
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            #pragma warning(push)
+#pragma warning(disable: 4996) //for 'getenv': This function or variable may be unsafe.
+#endif
             return std::getenv(name.c_str());
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            #pragma warning(pop)
+#endif
         }
 
         ClientProperties::ClientProperties(const std::unordered_map<std::string, std::string> &properties)

@@ -49,9 +49,7 @@
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/connection/ConnectionFuture.h"
 #include "hazelcast/client/config/ClientNetworkConfig.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
@@ -62,9 +60,8 @@
 #include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/config/SSLConfig.h"
-#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/sync_unoredered_set.h"
+#include "hazelcast/util/sync_associative_container.h"
 
 namespace hazelcast {
     namespace client {
@@ -164,6 +161,10 @@ namespace hazelcast {
                     }
                     connect_to_all_members();
 
+                    if (!client.getLifecycleService().isRunning()) {
+                        return;
+                    }
+
                     schedule_connect_to_all_members();
                 });
             }
@@ -179,13 +180,6 @@ namespace hazelcast {
                 }
 
                 heartbeat.shutdown();
-
-                // let the waiting authentication futures not block anymore
-                for (auto &f : connectionsInProgress.values()) {
-                    f->onFailure(std::make_exception_ptr(
-                            exception::IllegalStateException("ClientConnectionManagerImpl::shutdown",
-                                                             "Client is shutting down")));
-                }
 
                 // close connections
                 for (auto &connection : activeConnections.values()) {
@@ -213,35 +207,18 @@ namespace hazelcast {
                     return connection;
                 }
 
-                auto future = std::make_shared<ConnectionFuture>(address, connection, connectionsInProgress);
-                auto f = connectionsInProgress.putIfAbsent(address, future);
-                bool outstanding_connection_exists = static_cast<bool>(f);
-                if (outstanding_connection_exists) {
-                    future = f;
-                }
-                std::lock_guard<std::mutex> g(future->getLock());
+                auto f = conn_locks_.emplace(address, std::unique_ptr<std::mutex>(new std::mutex()));
+                std::lock_guard<std::mutex> g(*f.first->second);
                 // double check here
                 connection = getConnection(address);
                 if (connection) {
                     return connection;
                 }
-                if (outstanding_connection_exists) {
-                    // Outstanding connection seems to be failed. Try connecting only if we could actually insert into
-                    // the outstanding connections map
-                    return getOrConnect(address);
-                }
 
                 auto target = translator->translate(address);
-                connection = std::make_shared<Connection>(target, client, ++connectionIdGen, future,
+                connection = std::make_shared<Connection>(target, client, ++connectionIdGen,
                                                           *socketFactory, *this, connectionTimeoutMillis);
-                connection->asyncStart();
-
-                try {
-                    connection = future->get();
-                } catch (exception::IException &) {
-                    connectionsInProgress.remove(address);
-                    throw;
-                }
+                connection->connect();
 
                 // call the interceptor from user thread
                 if (socketInterceptor) {
@@ -430,7 +407,7 @@ namespace hazelcast {
                     return;
                 }
 
-                auto connecting_addresses = std::make_shared<util::sync_unordered_set<Address>>();
+                auto connecting_addresses = std::make_shared<util::sync_associative_container<std::unordered_set<Address>>>();
                 for (const auto &member : client.getClientClusterService().getMemberList()) {
                     const auto& address = member.getAddress();
 
@@ -438,17 +415,18 @@ namespace hazelcast {
                         && connecting_addresses->insert(address).second) {
                         // submit a task for this address only if there is no
                         // another connection attempt for it
-                        boost::asio::post([=] () {
+                        Address addr = address;
+                        boost::asio::post(executor_->get_executor(), [=] () {
                             try {
                                 if (!client.getLifecycleService().isRunning()) {
                                     return;
                                 }
                                 if (!getConnection(member.getUuid())) {
-                                    getOrConnect(address);
+                                    getOrConnect(addr);
                                 }
-                                connecting_addresses->erase(address);
-                            } catch (exception::IException &) {
-                                connecting_addresses->erase(address);
+                                connecting_addresses->erase(addr);
+                            } catch (std::exception &) {
+                                connecting_addresses->erase(addr);
                             }
                         });
                     }
@@ -544,10 +522,6 @@ namespace hazelcast {
                 auto member_uuid = connection.getRemoteUuid();
 
                 auto socket_remote_address = connection.getSocket().getRemoteEndpoint();
-                auto conn_future = connectionsInProgress.remove(socket_remote_address);
-                if (conn_future) {
-                    conn_future->onFailure(cause);
-                }
 
                 if (!endpoint) {
                     if (logger.isFinestEnabled()) {
@@ -600,8 +574,8 @@ namespace hazelcast {
                 try {
                     logger.info("Trying to connect to ", address);
                     return getOrConnect(address);
-                } catch (exception::IException &e) {
-                    logger.warning("Exception during initial connection to ", address, ": ", e);
+                } catch (std::exception &e) {
+                    logger.warning("Exception during initial connection to ", address, ": ", e.what());
                     return nullptr;
                 }
             }
@@ -730,43 +704,10 @@ namespace hazelcast {
                 for (const auto &member : client.getClientClusterService().getMemberList()) {
                     try {
                         getOrConnect(member.getAddress());
-                    } catch (exception::IException &) {
+                    } catch (std::exception &) {
                         // ignore
                     }
                 }
-            }
-
-            ConnectionFuture::ConnectionFuture(Address address,
-                                               std::shared_ptr<Connection> connectionInProgress,
-                                               util::SynchronizedMap<Address, ConnectionFuture> &connectionsInProgress)
-                    : address_(std::move(address)), connection_in_progress_(std::move(connectionInProgress)),
-                      connections_in_progress_(connectionsInProgress) {}
-
-            const std::shared_ptr<Connection> &ConnectionFuture::getConnectionInProgress() const {
-                return connection_in_progress_;
-            }
-
-            std::mutex &ConnectionFuture::getLock() {
-                return lock_;
-            }
-
-            void ConnectionFuture::onSuccess(const std::shared_ptr<Connection> &conn) {
-                if (connections_in_progress_.remove(address_)) {
-                    promise_.set_value(conn);
-                }
-            }
-
-            void ConnectionFuture::onFailure(std::exception_ptr t) {
-                util::IOUtil::closeResource(connection_in_progress_.get(),
-                                            (boost::format("Connection to address %1% failed.") %
-                                             address_).str().c_str());
-                if (connections_in_progress_.remove(address_)) {
-                    promise_.set_exception(t);
-                }
-            }
-
-            std::shared_ptr<Connection> ConnectionFuture::get() {
-                return promise_.get_future().get();
             }
 
             ReadHandler::ReadHandler(Connection &connection, size_t bufferSize)
@@ -803,7 +744,6 @@ namespace hazelcast {
             }
 
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId, // NOLINT(cppcoreguidelines-pro-type-member-init)
-                                   const std::shared_ptr<ConnectionFuture> &authFuture,
                                    internal::socket::SocketFactory &socketFactory,
                                    ClientConnectionManagerImpl &clientConnectionManager,
                                    std::chrono::steady_clock::duration &connectTimeoutInMillis)
@@ -814,15 +754,15 @@ namespace hazelcast {
                       invocationService(clientContext.getInvocationService()),
                       connectionId(connectionId),
                       connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION),
-                      logger(clientContext.getLogger()), alive(true), authFuture(authFuture) {
+                      logger(clientContext.getLogger()), alive(true) {
                 socket = socketFactory.create(address, connectTimeoutInMillis);
                 std::memset(&remote_uuid_, 0, sizeof(boost::uuids::uuid));
             }
 
             Connection::~Connection() = default;
 
-            void Connection::asyncStart() {
-                socket->asyncStart(shared_from_this(), authFuture);
+            void Connection::connect() {
+                socket->connect(shared_from_this());
             }
 
             void Connection::close() {
@@ -1196,23 +1136,8 @@ namespace hazelcast {
                     return supportedCiphers;
                 }
 
-                void SSLSocket::async_handle_connect(const std::shared_ptr<connection::Connection> connection,
-                                                     const std::shared_ptr<connection::ConnectionFuture> authFuture) {
-                    socket_.async_handshake(boost::asio::ssl::stream_base::client,
-                                             [=](const boost::system::error_code &ec) {
-                                                 if (ec) {
-                                                     authFuture->onFailure(
-                                                             std::make_exception_ptr(exception::IOException(
-                                                                     "Connection::do_connect", (boost::format(
-                                                                             "Handshake with server %1% failed. %2%") %
-                                                                                                remoteEndpoint %
-                                                                                                ec).str())));
-                                                     return;
-                                                 }
-
-                                                 BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::async_handle_connect(
-                                                         connection, authFuture);
-                                             });
+                void SSLSocket::post_connect() {
+                    socket_.handshake(boost::asio::ssl::stream_base::client);
                 }
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info) {

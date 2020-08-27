@@ -30,19 +30,24 @@
 namespace hazelcast {
     namespace util {
 
-        template <typename Key, typename Hash = std::hash<Key>>
-        class sync_unordered_set  {
+        template <typename Container>
+        class sync_associative_container  {
         public:
-            std::pair<typename std::unordered_set<Key, Hash>::iterator, bool> insert(const Key& key) {
+            std::pair<typename Container::iterator, bool> insert(const typename Container::key_type &key) {
                 std::lock_guard<std::mutex> g(lock_);
-                return set_.insert(key);
+                return container_.insert(key);
             }
-            typename std::unordered_set<Key, Hash>::size_type erase( const Key& key) {
+            typename Container::size_type erase( const typename Container::key_type& key) {
                 std::lock_guard<std::mutex> g(lock_);
-                return set_.erase(key);
+                return container_.erase(key);
+            }
+            template< class... Args >
+            std::pair<typename Container::iterator, bool> emplace(Args&&... args) {
+                std::lock_guard<std::mutex> g(lock_);
+                return container_.emplace(std::forward<Args>(args)...);
             }
         private:
-            std::unordered_set<Key, Hash> set_;
+            Container container_;
             std::mutex lock_;
         };
     }

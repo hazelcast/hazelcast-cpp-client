@@ -23,6 +23,7 @@
 #include <vector>
 #include <boost/asio.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
+#include <hazelcast/util/sync_associative_container.h>
 
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/ConcurrentSet.h"
@@ -189,7 +190,7 @@ namespace hazelcast {
                 spi::impl::ClientExecutionServiceImpl &executionService;
                 std::shared_ptr<AddressTranslator> translator;
                 util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> activeConnections;
-                util::SynchronizedMap<Address, ConnectionFuture> connectionsInProgress;
+                util::sync_associative_container<std::unordered_map<Address, std::unique_ptr<std::mutex>>> conn_locks_;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
                 boost::atomic_shared_ptr<security::credentials> current_credentials_;

@@ -43,9 +43,7 @@ namespace hazelcast {
         public:
             virtual ~Socket() = default;
 
-            virtual void
-            asyncStart(const std::shared_ptr<connection::Connection> connection,
-                       const std::shared_ptr<connection::ConnectionFuture> authFuture) = 0;
+            virtual void connect(const std::shared_ptr<connection::Connection> connection) = 0;
 
             virtual void
             asyncWrite(const std::shared_ptr<connection::Connection> connection,
