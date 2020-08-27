@@ -1481,11 +1481,6 @@ namespace hazelcast {
 
                         terminateMember(*currentTarget, instance, instance2);
 
-                        try {
-                            pnCounter->addAndGet(5).get();
-                        } catch(std::exception &e) {
-                            std::cout << e.what() << '\n';
-                        }
                         ASSERT_THROW(pnCounter->addAndGet(5).get(), exception::ConsistencyLostException);
                     }
 
