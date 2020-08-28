@@ -180,10 +180,8 @@ namespace hazelcast {
                 void handleSuccessfulAuth(const std::shared_ptr<Connection> &connection, auth_response response);
 
                 std::atomic_bool alive;
-
                 util::ILogger &logger;
                 std::chrono::steady_clock::duration connectionTimeoutMillis;
-
                 spi::ClientContext &client;
                 std::unique_ptr<boost::asio::io_context> ioContext;
                 SocketInterceptor *socketInterceptor;
@@ -221,7 +219,6 @@ namespace hazelcast {
                 std::atomic<boost::uuids::uuid> cluster_id_;
 #endif
                 std::vector<std::string> labels_;
-
                 LoadBalancer *load_balancer_;
 
                 void schedule_connect_to_all_members();

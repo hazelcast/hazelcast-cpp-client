@@ -488,6 +488,10 @@ namespace hazelcast {
 
                 nearCachedMap->put<int, std::string>(1, "newValue").get();
 
+                // wait for the invalidation to be processed
+                WAIT_EQ_EVENTUALLY(size - 1, nearCache->size());
+                ASSERT_EQ(1, stats->getInvalidations());
+
                 int64_t expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
                 int64_t expectedHits = getExpectedHitsWithLocalUpdatePolicy();
 
