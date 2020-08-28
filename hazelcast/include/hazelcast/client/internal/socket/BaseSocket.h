@@ -52,10 +52,6 @@ namespace hazelcast {
                               socket_(socketStrand, context) {
                     }
 
-                    ~BaseSocket() override {
-                        close();
-                    }
-
                     void connect(const std::shared_ptr<connection::Connection> connection) override {
                         using namespace boost::asio;
                         using namespace boost::asio::ip;
