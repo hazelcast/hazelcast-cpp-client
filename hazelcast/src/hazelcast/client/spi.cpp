@@ -1823,6 +1823,7 @@ namespace hazelcast {
                     }
 
                     void listener_service_impl::shutdown() {
+                        eventStrands.clear();
                         ClientExecutionServiceImpl::shutdownThreadPool(eventExecutor.get());
                         ClientExecutionServiceImpl::shutdownThreadPool(registrationExecutor.get());
                     }
