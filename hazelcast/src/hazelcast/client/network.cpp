@@ -173,6 +173,7 @@ namespace hazelcast {
 
                 if (connect_to_members_timer_) {
                     connect_to_members_timer_->cancel();
+                    connect_to_members_timer_.reset();
                 }
 
                 heartbeat.shutdown();
@@ -1023,6 +1024,7 @@ namespace hazelcast {
                 if (timer) {
                     boost::system::error_code ignored;
                     timer->cancel(ignored);
+                    timer.reset();
                 }
             }
 

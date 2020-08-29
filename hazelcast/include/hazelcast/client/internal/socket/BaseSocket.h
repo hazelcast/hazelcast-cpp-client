@@ -36,8 +36,7 @@ namespace hazelcast {
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis)
-                            : socketOptions(socketOptions), remoteEndpoint(address), io(io),
-                              socketStrand(io), connectTimer(socketStrand),
+                            : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
                               connectTimeout(connectTimeoutInMillis), resolver(ioResolver), socket_(socketStrand) {
                     }
 
@@ -46,8 +45,7 @@ namespace hazelcast {
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis,
                             CONTEXT &context)
-                            : socketOptions(socketOptions), remoteEndpoint(address), io(io),
-                              socketStrand(io), connectTimer(socketStrand),
+                            : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
                               connectTimeout(connectTimeoutInMillis), resolver(ioResolver),
                               socket_(socketStrand, context) {
                     }
@@ -56,6 +54,7 @@ namespace hazelcast {
                         using namespace boost::asio;
                         using namespace boost::asio::ip;
 
+                        boost::asio::steady_timer connectTimer(socket_.get_executor());
                         connectTimer.expires_from_now(connectTimeout);
                         connectTimer.async_wait([=](const boost::system::error_code &ec) {
                             if (ec == boost::asio::error::operation_aborted) {
@@ -236,7 +235,6 @@ namespace hazelcast {
                     Address remoteEndpoint;
                     boost::asio::io_context &io;
                     boost::asio::io_context::strand socketStrand;
-                    boost::asio::steady_timer connectTimer;
                     std::chrono::steady_clock::duration connectTimeout;
                     boost::asio::ip::tcp::resolver &resolver;
                     T socket_;
