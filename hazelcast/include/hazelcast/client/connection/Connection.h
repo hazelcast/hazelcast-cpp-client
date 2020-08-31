@@ -112,8 +112,6 @@ namespace hazelcast {
 
                 boost::optional<Address> getLocalSocketAddress() const;
 
-                int getConnectedServerVersion() const;
-
                 std::chrono::steady_clock::time_point getStartTime() const;
 
                 Socket &getSocket();
@@ -138,8 +136,7 @@ namespace hazelcast {
                 std::string closeReason;
                 std::exception_ptr closeCause;
                 std::string connectedServerVersionString;
-                int connectedServerVersion;
-                // check if they need to be atomic
+                // TODO: check if they need to be atomic
                 boost::optional<Address> remote_address_;
                 boost::uuids::uuid remote_uuid_;
                 util::ILogger &logger;

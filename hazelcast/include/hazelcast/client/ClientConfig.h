@@ -146,38 +146,6 @@ namespace hazelcast {
             ClientConfig &setClusterName(const std::string &clusterName);
 
             /**
-            * \deprecated Please use {\link ClientNetworkConfig#addAddress(const Address &)}.
-            *
-            * Adds an address to list of the initial addresses.
-            * Client will use this list to find a running Member, connect to it.
-            *
-            * \param address
-            * \return itself ClientConfig
-            */
-            ClientConfig &addAddress(const Address &address);
-
-            /**
-            * \deprecated Please use {\link ClientNetworkConfig#addAddresses(const std::vector<Address> &)}.
-            *
-            * Adds all address in given vector to list of the initial addresses.
-            * Client will use this list to find a running Member, connect to it.
-            *
-            * \param addresses vector of addresses
-            * \return itself ClientConfig
-            */
-            ClientConfig &addAddresses(const std::vector<Address> &addresses);
-
-            /**
-            * \deprecated Please use {\link ClientNetworkConfig#getAddresses()}.
-            *
-            * Returns set of the initial addresses.
-            * Client will use this vector to find a running Member, connect to it.
-            *
-            * \return vector of addresses
-            */
-            std::unordered_set<Address> getAddresses();
-
-            /**
             * The Group Configuration properties like:
             * Name and Password that is used to connect to the cluster.
             *
@@ -214,60 +182,6 @@ namespace hazelcast {
             }
 
             /**
-            * \deprecated Please use {\link ClientNetworkConfig#setConnectionAttemptLimit(int32_t)}
-            *
-            * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
-            * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
-            * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
-            *
-            * \param connectionAttemptLimit
-            * \return itself ClientConfig
-            */
-            ClientConfig &setConnectionAttemptLimit(int connectionAttemptLimit);
-
-            /**
-            * \deprecated Please use {\link ClientNetworkConfig#getConnectionAttemptLimit()}
-            *
-            * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
-            * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
-            * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
-            *
-            * return int connectionAttemptLimit
-            */
-            int getConnectionAttemptLimit() const;
-
-            /**
-             * Use {\link ClientNetworkConfig#setConnectionTimeout} instead
-             * \deprecated
-             */
-            ClientConfig &setConnectionTimeout(int connectionTimeoutInMillis);
-
-            /**
-             * Use {\link ClientNetworkConfig#getConnectionTimeout} instead
-             * \deprecated
-             */
-            int getConnectionTimeout() const;
-
-            /**
-            * \deprecated Please use {\link ClientNetworkConfig#setAttemptPeriod(int32_t)}
-            *
-            * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
-            *
-            * \param attemptPeriodInMillis
-            * \return itself ClientConfig
-            */
-            ClientConfig &setAttemptPeriod(int attemptPeriodInMillis);
-
-            /**
-            * \deprecated Please use {\link ClientNetworkConfig#getAttemptPeriod()}
-            *
-            * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
-            *
-            * \return int attemptPeriodInMillis
-            */
-            int getAttemptPeriod() const;
-
-            /**
             * If true, client will redo the operations that were executing on the server and client lost the connection.
             * This can be because of network, or simply because the member died. However it is not clear whether the
             * application is performed or not. For idempotent operations this is harmless, but for non idempotent ones
@@ -286,28 +200,6 @@ namespace hazelcast {
             * returns redoOperation
             */
             bool isRedoOperation() const;
-
-            /**
-            * \deprecated Please use ClientNetworkConfig#isSmartRouting
-            *
-            * \return true if client configured as smart
-            * see setSmart()
-            */
-            bool isSmart() const;
-
-            /**
-            * \deprecated Please use ClientNetworkConfig#setSmartRouting
-            *
-            * If true, client will route the key based operations to owner of the key at the best effort.
-            * Note that it uses a cached version of PartitionService#getPartitions() and doesn't
-            * guarantee that the operation will always be executed on the owner.
-            * The cached table is updated every 10 seconds.
-            *
-            * \param smart
-            *
-            * \return itself ClientConfig
-            */
-            ClientConfig &setSmart(bool smart);
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.

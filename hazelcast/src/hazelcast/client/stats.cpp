@@ -34,7 +34,6 @@
 #include <iomanip>
 
 #include "hazelcast/client/impl/statistics/Statistics.h"
-#include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"

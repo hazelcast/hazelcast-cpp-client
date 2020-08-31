@@ -35,7 +35,6 @@
 #include <easylogging++.h>
 #include <boost/format.hpp>
 
-#include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ILogger.h"
@@ -373,28 +372,6 @@ namespace hazelcast {
                 return logger;
             }
 
-            int BuildInfo::calculateVersion(const std::string &version) {
-                std::vector<std::string> versionTokens = util::StringUtil::tokenizeVersionString(version);
-                if (!versionTokens.empty()) {
-                    int calculatedVersion = MAJOR_VERSION_MULTIPLIER * util::IOUtil::to_value<int>(versionTokens[0])
-                                            + MINOR_VERSION_MULTIPLIER *
-                                              util::IOUtil::to_value<int>(versionTokens[1]);
-                    if (versionTokens.size() > PATCH_TOKEN_INDEX) {
-                        size_t snapshotStartPosition = versionTokens[PATCH_TOKEN_INDEX].find("-");
-                        if (snapshotStartPosition == std::string::npos) {
-                            calculatedVersion += util::IOUtil::to_value<int>(versionTokens[PATCH_TOKEN_INDEX]);
-                        }
-
-                        if (snapshotStartPosition > 0) {
-                            calculatedVersion += util::IOUtil::to_value<int>(
-                                    versionTokens[PATCH_TOKEN_INDEX].substr(0, snapshotStartPosition));
-                        }
-                    }
-                    return calculatedVersion;
-                }
-
-                return UNKNOWN_HAZELCAST_VERSION;
-            }
         }
 
         LoadBalancer::~LoadBalancer() = default;

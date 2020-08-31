@@ -57,7 +57,6 @@
 #include "hazelcast/client/spi/impl/listener/listener_service_impl.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
-#include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/config/SSLConfig.h"
 #include "hazelcast/util/IOUtil.h"
@@ -746,7 +745,6 @@ namespace hazelcast {
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       connectionId(connectionId),
-                      connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION),
                       remote_uuid_(boost::uuids::nil_uuid()), logger(clientContext.getLogger()), alive(true) {
                 socket = socketFactory.create(address, connectTimeoutInMillis);
             }
@@ -893,11 +891,6 @@ namespace hazelcast {
 
             void Connection::setConnectedServerVersion(const std::string &connectedServer) {
                 Connection::connectedServerVersionString = connectedServer;
-                connectedServerVersion = impl::BuildInfo::calculateVersion(connectedServer);
-            }
-
-            int Connection::getConnectedServerVersion() const {
-                return connectedServerVersion;
             }
 
             boost::optional<Address> Connection::getLocalSocketAddress() const {

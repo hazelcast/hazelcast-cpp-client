@@ -67,7 +67,6 @@
 #include "hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdFactory.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/impl/BuildInfo.h"
 #include "hazelcast/util/AddressHelper.h"
 #include "hazelcast/util/HashUtil.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
