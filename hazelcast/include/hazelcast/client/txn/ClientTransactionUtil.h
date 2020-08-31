@@ -48,7 +48,7 @@ namespace hazelcast {
                  * sends IOException to user. This wraps that exception into a TransactionException.
                  */
                 static boost::future<protocol::ClientMessage>
-                invoke(std::unique_ptr<protocol::ClientMessage> &request, const std::string &objectName,
+                invoke(protocol::ClientMessage &request, const std::string &objectName,
                        spi::ClientContext &client, const std::shared_ptr<connection::Connection> &connection);
 
                 static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &

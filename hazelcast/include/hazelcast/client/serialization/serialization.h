@@ -22,6 +22,7 @@
 #include <boost/any.hpp>
 #include <boost/optional.hpp>
 #include<boost/optional/optional_io.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/client/HazelcastJsonValue.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
@@ -84,6 +85,7 @@ namespace hazelcast {
                     CONSTANT_TYPE_FLOAT_ARRAY = -18,
                     CONSTANT_TYPE_DOUBLE_ARRAY = -19,
                     CONSTANT_TYPE_STRING_ARRAY = -20,
+                    CONSTANT_TYPE_UUID = -21,
                     JAVASCRIPT_JSON_SERIALIZATION_TYPE = -130,
 
                     CONSTANT_TYPE_GLOBAL = INT32_MIN
@@ -377,6 +379,14 @@ namespace hazelcast {
             public:
                 static inline pimpl::SerializationConstants getTypeId() {
                     return pimpl::SerializationConstants::CONSTANT_TYPE_STRING_ARRAY;
+                }
+            };
+
+            template<>
+            struct HAZELCAST_API hz_serializer<boost::uuids::uuid> : public builtin_serializer {
+            public:
+                static inline pimpl::SerializationConstants getTypeId() {
+                    return pimpl::SerializationConstants::CONSTANT_TYPE_UUID;
                 }
             };
 

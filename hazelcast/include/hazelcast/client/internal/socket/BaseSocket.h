@@ -22,7 +22,6 @@
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/AuthenticationFuture.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/SocketInterceptor.h"
 
@@ -30,85 +29,57 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                template<typename T> 
+                template<typename T>
                 class BaseSocket : public Socket {
                 public:
-                    template<typename CONTEXT = void>
+                    template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis)
-                            : socketOptions(socketOptions), remoteEndpoint(address), io(io),
-                              socketStrand(io), connectTimer(socketStrand),
-                              connectTimeoutMillis(connectTimeoutInMillis), resolver(ioResolver), socket_(socketStrand) {
+                            : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
+                              connectTimeout(connectTimeoutInMillis), resolver(ioResolver), socket_(socketStrand) {
                     }
 
-                    template<typename CONTEXT>
+                    template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis,
                             CONTEXT &context)
-                            : socketOptions(socketOptions), remoteEndpoint(address), io(io),
-                              socketStrand(io), connectTimer(socketStrand),
-                              connectTimeoutMillis(connectTimeoutInMillis), resolver(ioResolver),
+                            : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
+                              connectTimeout(connectTimeoutInMillis), resolver(ioResolver),
                               socket_(socketStrand, context) {
                     }
 
-                    ~BaseSocket() override {
-                        close();
-                    }
-
-                    void asyncStart(const std::shared_ptr<connection::Connection> connection,
-                                    const std::shared_ptr<connection::AuthenticationFuture> authFuture) override {
+                    void connect(const std::shared_ptr<connection::Connection> connection) override {
                         using namespace boost::asio;
                         using namespace boost::asio::ip;
 
-                        connectTimer.expires_from_now(connectTimeoutMillis);
-                        connectTimer.async_wait([this, connection, authFuture](const boost::system::error_code &ec) {
+                        boost::asio::steady_timer connectTimer(socket_.get_executor());
+                        connectTimer.expires_from_now(connectTimeout);
+                        connectTimer.async_wait([=](const boost::system::error_code &ec) {
                             if (ec == boost::asio::error::operation_aborted) {
                                 return;
                             }
-                            authFuture->onFailure(std::make_exception_ptr(exception::IOException(
-                                    "Connection::asyncStart", (boost::format(
-                                            "Connection establishment to server %1% timed out in %2% msecs. %3%") %
-                                                               remoteEndpoint % connectTimeoutMillis.count() %
-                                                               ec).str())));
+                            close();
                             return;
                         });
-                        resolver.async_resolve(remoteEndpoint.getHost(), std::to_string(remoteEndpoint.getPort()),
-                                               bind_executor(socketStrand, [=](const boost::system::error_code &ec,
-                                                   tcp::resolver::results_type resolvedAddresses) {
-                                                   if (ec) {
-                                                       boost::system::error_code ignored;
-                                                       connectTimer.cancel(ignored);
-                                                       authFuture->onFailure(
-                                                               std::make_exception_ptr(exception::IOException(
-                                                                       "Connection::asyncStart", (boost::format(
-                                                                               "Could not resolve server address %1%. %2%") %
-                                                                                                  remoteEndpoint %
-                                                                                                  ec).str())));
-                                                       return;
-                                                   }
+                        try {
+                            auto addresses = resolver.resolve(remoteEndpoint.getHost(), std::to_string(remoteEndpoint.getPort()));
+                            boost::asio::async_connect(socket_.lowest_layer(), addresses,
+                                                                     boost::asio::use_future).get();
+                            post_connect();
+                            connectTimer.cancel();
+                            setSocketOptions(socketOptions);
+                            static constexpr const char *PROTOCOL_TYPE_BYTES = "CP2";
+                            write(socket_, boost::asio::buffer(PROTOCOL_TYPE_BYTES, 3));
+                        } catch (...) {
+                            connectTimer.cancel();
+                            close();
+                            throw;
+                        }
 
-                                                   async_connect(socket_.lowest_layer(), resolvedAddresses,
-                                                                 [=](const boost::system::error_code &ec,
-                                                                     const tcp::endpoint &) {
-                                                                     boost::system::error_code ignored;
-                                                                     connectTimer.cancel(ignored);
-                                                                     if (ec) {
-                                                                         authFuture->onFailure(
-                                                                                 std::make_exception_ptr(
-                                                                                         exception::IOException(
-                                                                                                 "Connection::asyncStart",
-                                                                                                 (boost::format(
-                                                                                                         "Socket failed to connect to server address %1%. %2%") %
-                                                                                                  remoteEndpoint %
-                                                                                                  ec).str())));
-                                                                         return;
-                                                                     }
-
-                                                                     this->async_handle_connect(connection, authFuture);
-                                                                 });
-                                               }));
+                        socket_.lowest_layer().native_non_blocking(true);
+                        do_read(std::move(connection));
                     }
 
                     void asyncWrite(const std::shared_ptr<connection::Connection> connection,
@@ -137,31 +108,40 @@ namespace hazelcast {
                                 return;
                             }
 
-                            boost::asio::async_write(socket_,
-                                                     boost::asio::buffer(message->getBuffer().data(),
-                                                                         message->getFrameLength()),
-                                                     [=](const boost::system::error_code &ec,
-                                                         std::size_t bytesWritten) {
-                                                         if (ec) {
-                                                             auto invocationIt = connection->invocations.find(
-                                                                     correlationId);
+                            auto handler = [=](const boost::system::error_code &ec,
+                                               std::size_t bytesWritten) {
+                                if (ec) {
+                                    auto invocationIt = connection->invocations.find(
+                                            correlationId);
 
-                                                             assert(invocationIt != connection->invocations.end());
+                                    assert(invocationIt != connection->invocations.end());
 
-                                                             auto message = (boost::format{
-                                                                     "Error %1% during invocation write for %2% on connection %3%"} %
-                                                                             ec % *invocation % *connection).str();
-                                                             invocationIt->second->notifyException(
-                                                                     boost::enable_current_exception(
-                                                                             std::make_exception_ptr(
-                                                                                     exception::IOException(
-                                                                                             "Connection::write",
-                                                                                             message))));
+                                    auto message = (boost::format{
+                                            "Error %1% during invocation write for %2% on connection %3%"} %
+                                                    ec % *invocation % *connection).str();
+                                    invocationIt->second->notifyException(
+                                            boost::enable_current_exception(
+                                                    std::make_exception_ptr(
+                                                            exception::IOException(
+                                                                    "Connection::write",
+                                                                    message))));
 
-                                                             connection->close(message);
-                                                             connection->invocations.erase(invocationIt);
-                                                         }
-                                                     });
+                                    connection->close(message);
+                                    connection->invocations.erase(invocationIt);
+                                }
+                            };
+
+                            auto &datas = message->getBuffer();
+                            if (datas.size() == 1) {
+                                boost::asio::async_write(socket_, boost::asio::buffer(datas[0]), handler);
+                            } else {
+                                std::vector<boost::asio::const_buffer> buffers;
+                                buffers.reserve(datas.size());
+                                for (auto &d : datas) {
+                                    buffers.push_back(boost::asio::buffer(d));
+                                }
+                                boost::asio::async_write(socket_, buffers, handler);
+                            }
                         });
                     }
 
@@ -181,15 +161,14 @@ namespace hazelcast {
                      *
                      * @returns An address that represents the local endpoint of the socket.
                      */
-                    std::unique_ptr<Address> localSocketAddress() const override {
+                    boost::optional<Address> localSocketAddress() const override {
                         boost::system::error_code ec;
                         boost::asio::ip::basic_endpoint<boost::asio::ip::tcp> localEndpoint = socket_.lowest_layer().local_endpoint(
                                 ec);
                         if (ec) {
-                            return std::unique_ptr<Address>();
+                            return boost::none;
                         }
-                        return std::unique_ptr<Address>(
-                                new Address(localEndpoint.address().to_string(), localEndpoint.port()));
+                        return boost::optional<Address>(Address(localEndpoint.address().to_string(), localEndpoint.port()));
                     }
 
                     const Address &getRemoteEndpoint() const override {
@@ -249,45 +228,14 @@ namespace hazelcast {
                                                  });
                     }
 
-                    virtual void async_handle_connect(const std::shared_ptr<connection::Connection> connection,
-                                                      const std::shared_ptr<connection::AuthenticationFuture> authFuture) {
-                        try {
-                            setSocketOptions(socketOptions);
-                        } catch (std::exception &e) {
-                            std::make_exception_ptr(exception::IOException(
-                                    "Connection::do_connect",
-                                    (boost::format(
-                                            "Failed to set socket options for %1%. %2%") % e.what() %
-                                     (*connection)).str()));
-                            return;
-                        }
-
-                        static const std::string PROTOCOL_TYPE_BYTES("CB2");
-                        async_write(socket_, boost::asio::buffer(PROTOCOL_TYPE_BYTES),
-                                    [=](const boost::system::error_code &ec, size_t bytesWritten) {
-                                        if (ec) {
-                                            authFuture->onFailure(
-                                                    std::make_exception_ptr(exception::IOException(
-                                                            "Connection::do_connect",
-                                                            (boost::format(
-                                                                    "Write error for initial protocol bytes %1%. %2% for %3%") %
-                                                             PROTOCOL_TYPE_BYTES % ec %
-                                                             (*connection)).str())));
-                                            return;
-                                        }
-
-                                        do_read(connection);
-
-                                        connection->authenticate();
-                                    });
+                    virtual void post_connect() {
                     }
 
                     client::config::SocketOptions &socketOptions;
                     Address remoteEndpoint;
                     boost::asio::io_context &io;
                     boost::asio::io_context::strand socketStrand;
-                    boost::asio::steady_timer connectTimer;
-                    std::chrono::steady_clock::duration connectTimeoutMillis;
+                    std::chrono::steady_clock::duration connectTimeout;
                     boost::asio::ip::tcp::resolver &resolver;
                     T socket_;
                 };
@@ -296,6 +244,3 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif

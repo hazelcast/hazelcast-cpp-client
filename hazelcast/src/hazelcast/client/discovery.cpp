@@ -33,10 +33,6 @@
 #include <sstream>
 #include <iomanip>
 
-#ifdef HZ_BUILD_WITH_SSL
-#include <openssl/ssl.h>
-#endif
-
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/date_time.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -54,6 +50,11 @@
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/SyncHttpClient.h"
+
+// openssl include should be after the other so that winsock.h and winsock2.h conflict does not occur at windows
+#ifdef HZ_BUILD_WITH_SSL
+#include <openssl/ssl.h>
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -458,7 +459,14 @@ namespace hazelcast {
                 void DescribeInstances::getKeysFromIamTaskRole() {
                     // before giving up, attempt to discover whether we're running in an ECS Container,
                     // in which case, AWS_CONTAINER_CREDENTIALS_RELATIVE_URI will exist as an env var.
-                    const char *uri = getenv(Constants::ECS_CREDENTIALS_ENV_VAR_NAME);
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    #pragma warning(push)
+#pragma warning(disable: 4996) //for 'getenv': This function or variable may be unsafe.
+#endif
+                    const char *uri = std::getenv(Constants::ECS_CREDENTIALS_ENV_VAR_NAME);
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
                     if (!uri) {
                         BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("getKeysFromIamTaskRole",
                                                                                   "Could not acquire credentials! Did not find declared AWS access key or IAM Role, and could not discover IAM Task Role or default role."));

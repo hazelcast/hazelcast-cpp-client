@@ -42,8 +42,8 @@
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
@@ -55,9 +55,6 @@ namespace hazelcast {
         namespace impl {
             namespace statistics {
                 const std::string Statistics::NEAR_CACHE_CATEGORY_PREFIX("nc.");
-                const std::string Statistics::FEATURE_SUPPORTED_SINCE_VERSION_STRING("3.9");
-                const int Statistics::FEATURE_SUPPORTED_SINCE_VERSION = impl::BuildInfo::calculateVersion(
-                        FEATURE_SUPPORTED_SINCE_VERSION_STRING);
 
                 Statistics::Statistics(spi::ClientContext &clientContext) : clientContext(clientContext),
                                                                             clientProperties(
@@ -103,63 +100,34 @@ namespace hazelcast {
                             return;
                         }
 
-                        std::shared_ptr<connection::Connection> ownerConnection = getOwnerConnection();
-                        if (NULL == ownerConnection.get()) {
-                            logger.finest("Cannot send client statistics to the server. No owner connection.");
+                        auto collection_timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                std::chrono::system_clock::now().time_since_epoch()).count();
+                        std::shared_ptr<connection::Connection> connection = getConnection();
+                        if (!connection) {
+                            logger.finest("annot send client statistics to the server. No connection found.");
                             return;
                         }
 
                         std::ostringstream stats;
 
-                        periodicStats.fillMetrics(stats, ownerConnection);
+                        periodicStats.fillMetrics(stats, connection);
 
                         periodicStats.addNearCacheStats(stats);
 
-                        sendStats(stats.str(), ownerConnection);
+                        sendStats(collection_timestamp, stats.str(), connection);
                     }, std::chrono::seconds(0), std::chrono::seconds(periodSeconds));
                 }
 
-                std::shared_ptr<connection::Connection> Statistics::getOwnerConnection() {
-                    connection::ClientConnectionManagerImpl &connectionManager = clientContext.getConnectionManager();
-                    std::shared_ptr<connection::Connection> connection = connectionManager.getOwnerConnection();
-                    if (NULL == connection.get()) {
-                        return std::shared_ptr<connection::Connection>();
-                    }
-
-                    std::shared_ptr<Address> currentOwnerAddress = connectionManager.getOwnerConnectionAddress();
-                    int serverVersion = connection->getConnectedServerVersion();
-                    if (serverVersion < FEATURE_SUPPORTED_SINCE_VERSION) {
-                        // do not print too many logs if connected to an old version server
-                        if (!isSameWithCachedOwnerAddress(currentOwnerAddress)) {
-                            if (logger.isFinestEnabled()) {
-                                logger.finest("Client statistics cannot be sent to server ", *currentOwnerAddress,
-                                              " since, connected owner server version is less than the minimum supported server version ",
-                                              FEATURE_SUPPORTED_SINCE_VERSION_STRING);
-                            }
-                        }
-
-                        // cache the last connected server address for decreasing the log prints
-                        cachedOwnerAddress = currentOwnerAddress;
-                        return std::shared_ptr<connection::Connection>();
-                    }
-
-                    return connection;
+                std::shared_ptr<connection::Connection> Statistics::getConnection() {
+                    return clientContext.getConnectionManager().get_random_connection();
                 }
 
-                bool Statistics::isSameWithCachedOwnerAddress(const std::shared_ptr<Address> &currentOwnerAddress) {
-                    const std::shared_ptr<Address> cachedAddress = cachedOwnerAddress.get();
-                    if (NULL == cachedAddress.get() && NULL == currentOwnerAddress.get()) {
-                        return true;
-                    }
-                    return cachedAddress.get() && currentOwnerAddress.get() && *currentOwnerAddress == *cachedAddress;
-                }
-
-                void Statistics::sendStats(const std::string &newStats,
-                                           const std::shared_ptr<connection::Connection> &ownerConnection) {
-                    auto request = protocol::codec::ClientStatisticsCodec::encodeRequest(
-                            newStats);
+                void Statistics::sendStats(int64_t timestamp, const std::string &newStats,
+                                           const std::shared_ptr<connection::Connection> &connection) {
+                    // TODO: implement metrics blob
+                    auto request = protocol::codec::client_statistics_encode(timestamp, newStats, std::vector<byte>());
                     try {
-                        spi::impl::ClientInvocation::create(clientContext, request, "", ownerConnection)->invoke();
+                        spi::impl::ClientInvocation::create(clientContext, request, "", connection)->invoke();
                     } catch (exception::IException &e) {
                         // suppress exception, do not print too many messages
                         if (logger.isFinestEnabled()) {
@@ -169,24 +137,24 @@ namespace hazelcast {
                 }
 
                 void Statistics::PeriodicStatistics::fillMetrics(std::ostringstream &stats,
-                                                                 const std::shared_ptr<connection::Connection> &ownerConnection) {
+                                                                 const std::shared_ptr<connection::Connection> &connection) {
                     stats << "lastStatisticsCollectionTime" << KEY_VALUE_SEPARATOR << util::currentTimeMillis();
                     addStat(stats, "enterprise", false);
                     addStat(stats, "clientType", protocol::ClientTypes::CPP);
                     addStat(stats, "clientVersion", HAZELCAST_VERSION);
-                    addStat(stats, "clusterConnectionTimestamp", ownerConnection->getStartTime().time_since_epoch().count());
+                    addStat(stats, "clusterConnectionTimestamp", connection->getStartTime().time_since_epoch().count());
 
-                    std::unique_ptr<Address> localSocketAddress = ownerConnection->getLocalSocketAddress();
+                    auto localSocketAddress = connection->getLocalSocketAddress();
                     stats << STAT_SEPARATOR << "clientAddress" << KEY_VALUE_SEPARATOR;
-                    if (localSocketAddress.get()) {
+                    if (localSocketAddress) {
                         stats << localSocketAddress->getHost() << ":" << localSocketAddress->getPort();
                     }
 
                     addStat(stats, "clientName", statistics.clientContext.getName());
 
-                    auto principal = statistics.clientContext.getClientConfig().getPrincipal();
-                    if (principal) {
-                        addStat(stats, "credentials.principal", principal.value());
+                    auto credential = statistics.clientContext.getConnectionManager().getCurrentCredentials();
+                    if (credential) {
+                        addStat(stats, "credentials.principal", credential->get_name());
                     }
                 }
 

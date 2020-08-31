@@ -4,7 +4,9 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-#pragma once
+#ifndef remote_controller_TYPES_H
+#define remote_controller_TYPES_H
+
 #include <iosfwd>
 
 #include <thrift/Thrift.h>
@@ -238,3 +240,4 @@ std::ostream& operator<<(std::ostream& out, const ServerException& obj);
 
 }}}} // namespace
 
+#endif

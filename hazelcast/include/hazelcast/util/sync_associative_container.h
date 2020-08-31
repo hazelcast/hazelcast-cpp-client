@@ -16,9 +16,11 @@
 
 #pragma once
 
-#include <memory>
+#include <unordered_set>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include <mutex>
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,41 +28,36 @@
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class Address;
+    namespace util {
 
-        namespace impl {
-            class Partition;
-        }
-        namespace serialization {
-            namespace pimpl {
-                class Data;
+        template <typename Container>
+        class sync_associative_container  {
+        public:
+            std::pair<typename Container::iterator, bool> insert(const typename Container::key_type &key) {
+                std::lock_guard<std::mutex> g(lock_);
+                return container_.insert(key);
             }
-        }
-
-        namespace spi {
-            /**
-             * Partition service for Hazelcast clients.
-             *
-             * Allows to retrieve information about the partition count, the partition owner or the partitionId of a key.
-             */
-            class HAZELCAST_API ClientPartitionService {
-            public:
-                virtual std::shared_ptr<Address> getPartitionOwner(int partitionId) = 0;
-
-                virtual int getPartitionId(const serialization::pimpl::Data &key) = 0;
-
-                virtual int getPartitionCount() = 0;
-
-                virtual std::shared_ptr<client::impl::Partition> getPartition(int partitionId) = 0;
-            };
-        }
+            typename Container::size_type erase( const typename Container::key_type& key) {
+                std::lock_guard<std::mutex> g(lock_);
+                return container_.erase(key);
+            }
+            template< class... Args >
+            std::pair<typename Container::iterator, bool> emplace(Args&&... args) {
+                std::lock_guard<std::mutex> g(lock_);
+                return container_.emplace(std::forward<Args>(args)...);
+            }
+        private:
+            Container container_;
+            std::mutex lock_;
+        };
     }
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
+
+
 
 
 

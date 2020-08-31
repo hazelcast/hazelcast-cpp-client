@@ -30,7 +30,7 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
-            class AuthenticationFuture;
+            class ConnectionFuture;
         }
 
         namespace spi {
@@ -43,9 +43,7 @@ namespace hazelcast {
         public:
             virtual ~Socket() = default;
 
-            virtual void
-            asyncStart(const std::shared_ptr<connection::Connection> connection,
-                       const std::shared_ptr<connection::AuthenticationFuture> authFuture) = 0;
+            virtual void connect(const std::shared_ptr<connection::Connection> connection) = 0;
 
             virtual void
             asyncWrite(const std::shared_ptr<connection::Connection> connection,
@@ -61,7 +59,7 @@ namespace hazelcast {
              *
              * @returns An address that represents the local endpoint of the socket.
              */
-            virtual std::unique_ptr<Address> localSocketAddress() const = 0;
+            virtual boost::optional<Address> localSocketAddress() const = 0;
 
             virtual const Address &getRemoteEndpoint() const = 0;
 

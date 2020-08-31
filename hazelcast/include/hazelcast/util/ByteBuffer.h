@@ -55,7 +55,18 @@ namespace hazelcast {
             * returns the number of bytes put into target which shall be less or equal to len
             * @param len: requested maximum size to to read
             */
-            size_t readBytes(byte *target, size_t len);
+            template<typename T>
+            size_t readBytes(T &target, size_t len) {
+                size_t numBytesToCopy = std::min<size_t>(lim - pos, len);
+                target.insert(target.end(), buffer + pos, buffer + pos + numBytesToCopy);
+                pos += numBytesToCopy;
+                return numBytesToCopy;
+            }
+
+            inline void read_bytes(byte *dest, size_t len) {
+                std::memcpy(dest, buffer + pos, len);
+                pos += len;
+            }
 
             void writeByte(char c);
 

@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastClient.h>
+#include <boost/uuid/uuid_io.hpp>
 
 int main() {
     hazelcast::client::HazelcastClient hz;
 
     auto map = hz.getReplicatedMap("map");
 
-    std::string listenerId = map->addEntryListener(
+    auto listenerId = map->addEntryListener(
         hazelcast::client::EntryListener()
             .on_added([](hazelcast::client::EntryEvent &&event) {
                 std::cout << "[added] " << event << std::endl;
@@ -48,7 +49,7 @@ int main() {
             })
     ).get();
 
-    std::cout << "EntryListener registered with id " << listenerId << std::endl;
+    std::cout << "EntryListener registered with id " << boost::uuids::to_string(listenerId) << std::endl;
 
     return 0;
 }

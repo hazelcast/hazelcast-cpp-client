@@ -23,11 +23,12 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            class ClientClusterService;
+            namespace impl {
+                class ClientClusterServiceImpl;
+            }
         }
 
         class MembershipListener;
-
         class InitialMembershipListener;
 
         /**
@@ -38,7 +39,7 @@ namespace hazelcast {
             /**
              * Constructor
              */
-            Cluster(spi::ClientClusterService &clusterService);
+            Cluster(spi::impl::ClientClusterServiceImpl &clusterService);
 
             /**
              * @deprecated Please use {@link addMembershipListener(const std::shared_ptr<MembershipListener> &)}
@@ -71,7 +72,7 @@ namespace hazelcast {
              * @throws NullPointerException if listener is null
              * @see #removeMembershipListener(const std::string &)
              */
-            std::string addMembershipListener(const std::shared_ptr<MembershipListener> &listener);
+            boost::uuids::uuid addMembershipListener(const std::shared_ptr<MembershipListener> &listener);
 
             /**
              * @deprecated Please use {@link addMembershipListener(const std::shared_ptr<InitialMembershipListener> &)}
@@ -87,7 +88,7 @@ namespace hazelcast {
              * @return the registration ID
              */
 
-            std::string addMembershipListener(InitialMembershipListener *listener);
+            boost::uuids::uuid addMembershipListener(InitialMembershipListener *listener);
 
             /**
              * Adds MembershipListener to listen for membership updates.
@@ -105,7 +106,7 @@ namespace hazelcast {
              * @throws NullPointerException if listener is null
              * @see #removeMembershipListener(const std::string &)
              */
-            std::string addMembershipListener(const std::shared_ptr<InitialMembershipListener> &listener);
+            boost::uuids::uuid addMembershipListener(const std::shared_ptr<InitialMembershipListener> &listener);
 
             /**
              * @deprecated Please use {@link removeMembershipListener(const std::string &)}
@@ -129,7 +130,7 @@ namespace hazelcast {
              * @return true if the registration is removed, false otherwise
              * @see #addMembershipListener(const std::shared_ptr<MembershipListener> &)
              */
-            bool removeMembershipListener(const std::string &registrationId);
+            bool removeMembershipListener(boost::uuids::uuid registrationId);
 
             /**
              * Set of current members of the cluster.
@@ -142,7 +143,7 @@ namespace hazelcast {
             std::vector<Member> getMembers();
 
         private:
-            spi::ClientClusterService &clusterService;
+            spi::impl::ClientClusterServiceImpl &clusterService;
         };
     }
 }

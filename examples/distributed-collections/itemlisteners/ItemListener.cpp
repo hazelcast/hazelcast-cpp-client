@@ -36,7 +36,7 @@ int main() {
             ++numRemoved;
         });
 
-    std::string registrationId = queue->addItemListener(std::move(listener), true).get();
+    auto registrationId = queue->addItemListener(std::move(listener), true).get();
 
     std::cout << "Registered the listener with registration id:" << registrationId <<
     "Waiting for the listener events!" << std::endl;
@@ -49,7 +49,7 @@ int main() {
     if (queue->removeItemListener(registrationId).get()) {
         std::cout << "Removed the item listener with registration id " << registrationId << std::endl;
     } else {
-        std::cout << "Failed to remove the item listener with registration id " << registrationId << std::endl;
+        std::cout << "Failed to remove the item listener with registration id " << boost::uuids::to_string(registrationId) << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

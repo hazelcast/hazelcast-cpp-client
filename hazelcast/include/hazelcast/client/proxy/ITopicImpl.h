@@ -31,28 +31,23 @@ namespace hazelcast {
                 *
                 * @return true if registration is removed, false otherwise
                 */
-                boost::future<bool> removeMessageListener(const std::string& registrationId);
+                boost::future<bool> removeMessageListener(boost::uuids::uuid registrationId);
 
             protected:
                 ITopicImpl(const std::string& instanceName, spi::ClientContext *context);
 
                 boost::future<void> publish(const serialization::pimpl::Data& data);
 
-                boost::future<std::string> addMessageListener(std::unique_ptr<impl::BaseEventHandler> &&topicEventHandler);
+                boost::future<boost::uuids::uuid> addMessageListener(std::shared_ptr<impl::BaseEventHandler> topicEventHandler);
 
             private:
                 class TopicListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     TopicListenerMessageCodec(std::string name);
 
-                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
+                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
 
-                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override;
-
-                    std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const override;
-
-                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override;
+                    protocol::ClientMessage encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
 
                 private:
                     std::string name;
@@ -60,7 +55,7 @@ namespace hazelcast {
 
                 int partitionId;
 
-                std::unique_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec();
+                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec();
             };
         }
     }

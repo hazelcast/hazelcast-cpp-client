@@ -50,8 +50,7 @@ int main() {
 
     auto map = hz.getMap("somemap");
 
-
-    std::string listenerId = map->addEntryListener(makeListener(), true).get();
+    auto listenerId = map->addEntryListener(makeListener(), true).get();
 
     std::cout << "EntryListener registered" << std::endl;
 

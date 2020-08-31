@@ -24,10 +24,10 @@
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/ExecutionCallback.h"
@@ -77,7 +77,7 @@ namespace hazelcast {
 
                     invalidateOnChange = nearCache->isInvalidatedOnChange();
                     if (invalidateOnChange) {
-                        std::unique_ptr<client::impl::BaseEventHandler> invalidationHandler(
+                        std::shared_ptr<client::impl::BaseEventHandler> invalidationHandler(
                                 new ClientMapAddNearCacheEventHandler(nearCache));
                         addNearCacheInvalidateListener(invalidationHandler);
                     }
@@ -113,14 +113,14 @@ namespace hazelcast {
                     return IMap::containsKeyInternal(*key);
                 }
 
-                boost::future<std::unique_ptr<serialization::pimpl::Data>> getInternal(const serialization::pimpl::Data &keyData) override {
+                boost::future<boost::optional<serialization::pimpl::Data>> getInternal(const serialization::pimpl::Data &keyData) override {
                     auto key = std::make_shared<serialization::pimpl::Data>(keyData);
                     auto cached = nearCache->get(key);
                     if (cached) {
                         if (internal::nearcache::NearCache<K, V>::NULL_OBJECT == cached) {
-                            return boost::make_ready_future(std::unique_ptr<serialization::pimpl::Data>());
+                            return boost::make_ready_future(boost::optional<serialization::pimpl::Data>());
                         }
-                        return boost::make_ready_future(std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*cached)));
+                        return boost::make_ready_future(boost::make_optional(*cached));
                     }
 
                     bool marked = keyStateMarker->tryMark(*key);
@@ -128,7 +128,7 @@ namespace hazelcast {
                     try {
                         auto future = IMap::getInternal(*key);
                         if (marked) {
-                            return future.then(boost::launch::deferred, [=](boost::future<std::unique_ptr<serialization::pimpl::Data>> f) {
+                            return future.then(boost::launch::deferred, [=](boost::future<boost::optional<serialization::pimpl::Data>> f) {
                                 auto data = f.get();
                                 auto cachedValue = data ? std::make_shared<serialization::pimpl::Data>(*data)
                                                         : internal::nearcache::NearCache<K, V>::NULL_OBJECT;
@@ -155,7 +155,7 @@ namespace hazelcast {
                     }
                 }
 
-                boost::future<std::unique_ptr<serialization::pimpl::Data>> removeInternal(
+                boost::future<boost::optional<serialization::pimpl::Data>> removeInternal(
                         const serialization::pimpl::Data &keyData) override {
                     try {
                         invalidateNearCache(keyData);
@@ -214,7 +214,7 @@ namespace hazelcast {
                     }
                 }
 
-                boost::future<std::unique_ptr<serialization::pimpl::Data>> putInternal(const serialization::pimpl::Data &keyData,
+                boost::future<boost::optional<serialization::pimpl::Data>> putInternal(const serialization::pimpl::Data &keyData,
                         const serialization::pimpl::Data &valueData, std::chrono::steady_clock::duration ttl) override {
                     try {
                         auto previousValue = IMap::putInternal(keyData, valueData, ttl);
@@ -240,7 +240,7 @@ namespace hazelcast {
                     }
                 }
 
-                boost::future<std::unique_ptr<serialization::pimpl::Data>>
+                boost::future<boost::optional<serialization::pimpl::Data>>
                 putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &valueData,
                                     std::chrono::steady_clock::duration ttl) override {
@@ -267,7 +267,7 @@ namespace hazelcast {
                     }
                 }
 
-                boost::future<std::unique_ptr<serialization::pimpl::Data>>
+                boost::future<boost::optional<serialization::pimpl::Data>>
                 replaceInternal(const serialization::pimpl::Data &keyData,
                                 const serialization::pimpl::Data &valueData) override {
                     try {
@@ -357,7 +357,7 @@ namespace hazelcast {
                     }
                 }
 
-                boost::future<std::unique_ptr<serialization::pimpl::Data>>
+                boost::future<boost::optional<serialization::pimpl::Data>>
                 executeOnKeyInternal(const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &processor) override {
                     try {
@@ -395,10 +395,10 @@ namespace hazelcast {
                             getKeyStateMarker();
                 }
 
-                void addNearCacheInvalidateListener(std::unique_ptr<client::impl::BaseEventHandler> &handler) {
+                void addNearCacheInvalidateListener(std::shared_ptr<client::impl::BaseEventHandler> &handler) {
                     try {
                         invalidationListenerId = proxy::ProxyImpl::registerListener(createNearCacheEntryListenerCodec(),
-                                                                                    std::move(handler)).get();
+                                                                                    handler).get();
                     } catch (exception::IException &e) {
                         std::ostringstream out;
                         out << "-----------------\n Near Cache is not initialized!!! \n-----------------";
@@ -408,17 +408,17 @@ namespace hazelcast {
                 }
 
                 void removeNearCacheInvalidationListener() {
-                    std::string listenerId = this->invalidationListenerId;
-                    if (listenerId.empty()) {
+                    if (invalidationListenerId.is_nil()) {
                         return;
                     }
 
-                    proxy::ProxyImpl::deregisterListener(listenerId).get();
+                    proxy::ProxyImpl::deregisterListener(invalidationListenerId).get();
                 }
 
                 class ClientMapAddNearCacheEventHandler
-                        : public protocol::codec::MapAddNearCacheEntryListenerCodec::AbstractEventHandler {
+                        : public protocol::codec::map_addnearcacheinvalidationlistener_handler {
                 public:
+                    // TODO: implement RepairingTask as in Java client
                     ClientMapAddNearCacheEventHandler(
                             const std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > &cache)
                             : nearCache(cache) {
@@ -432,38 +432,23 @@ namespace hazelcast {
                         nearCache->clear();
                     }
 
-                    void handleIMapInvalidationEventV10(std::unique_ptr<Data> &key) override {
+                    void handle_imapinvalidation(const boost::optional<Data> &key, boost::uuids::uuid sourceUuid,
+                                                 boost::uuids::uuid partitionUuid, int64_t sequence) override {
                         // null key means Near Cache has to remove all entries in it (see MapAddNearCacheEntryListenerMessageTask)
-                        if (key.get() == NULL) {
+                        if (!key) {
                             nearCache->clear();
                         } else {
-                            nearCache->invalidate(std::shared_ptr<serialization::pimpl::Data>(std::move(key)));
+                            nearCache->invalidate(std::make_shared<serialization::pimpl::Data>(*key));
                         }
                     }
 
-                    void handleIMapBatchInvalidationEventV10(const std::vector<Data> &keys) override {
-                        for (std::vector<serialization::pimpl::Data>::const_iterator it = keys.begin();
-                             it != keys.end(); ++it) {
-                            nearCache->invalidate(std::shared_ptr<serialization::pimpl::Data>(
-                                    new serialization::pimpl::Data(*it)));
+                    void handle_imapbatchinvalidation(const std::vector<serialization::pimpl::Data> &keys,
+                                                      const std::vector<boost::uuids::uuid> &sourceUuids,
+                                                      const std::vector<boost::uuids::uuid> &partitionUuids,
+                                                      const std::vector<int64_t> &sequences) override {
+                        for (auto &k : keys) {
+                            nearCache->invalidate(std::make_shared<serialization::pimpl::Data>(k));
                         }
-                    }
-
-                    void handleIMapInvalidationEventV14(std::unique_ptr<serialization::pimpl::Data> &key,
-                                                                const std::string &sourceUuid,
-                                                                const util::UUID &partitionUuid,
-                                                                const int64_t &sequence) override {
-                        // TODO: change with the new near cache impl.
-                        handleIMapInvalidationEventV10(key);
-                    }
-
-                    void
-                    handleIMapBatchInvalidationEventV14(const std::vector<serialization::pimpl::Data> &keys,
-                                                        const std::vector<std::string> &sourceUuids,
-                                                        const std::vector<util::UUID> &partitionUuids,
-                                                        const std::vector<int64_t> &sequences) override {
-                        // TODO: change with the new near cache impl.
-                        handleIMapBatchInvalidationEventV10(keys);
                     }
 
                 private:
@@ -472,25 +457,15 @@ namespace hazelcast {
 
                 class NearCacheEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override {
-                        return protocol::codec::MapAddNearCacheEntryListenerCodec::encodeRequest(name,
+                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override {
+                        return protocol::codec::map_addnearcacheinvalidationlistener_encode(name,
                                                                                                  static_cast<int32_t>(listenerFlags),
                                                                                                  localOnly);
                     }
 
-                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override {
-                        return protocol::codec::MapAddNearCacheEntryListenerCodec::ResponseParameters::decode(
-                                std::move(responseMessage)).response;
-                    }
-
-                    std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const override {
-                        return protocol::codec::MapRemoveEntryListenerCodec::encodeRequest(name, realRegistrationId);
-                    }
-
-                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override {
-                        return protocol::codec::MapRemoveEntryListenerCodec::ResponseParameters::decode(
-                                std::move(clientMessage)).response;
+                    protocol::ClientMessage
+                    encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override {
+                        return protocol::codec::map_removeentrylistener_encode(name, realRegistrationId);
                     }
 
                     NearCacheEntryListenerMessageCodec(const std::string &name, EntryEvent::type listenerFlags)
@@ -501,9 +476,9 @@ namespace hazelcast {
                     EntryEvent::type listenerFlags;
                 };
 
-                std::unique_ptr<spi::impl::ListenerMessageCodec> createNearCacheEntryListenerCodec() {
+                std::shared_ptr<spi::impl::ListenerMessageCodec> createNearCacheEntryListenerCodec() {
                     EntryEvent::type listenerFlags = EntryEvent::type::INVALIDATION;
-                    return std::unique_ptr<spi::impl::ListenerMessageCodec>(
+                    return std::shared_ptr<spi::impl::ListenerMessageCodec>(
                             new NearCacheEntryListenerMessageCodec(spi::ClientProxy::getName(), listenerFlags));
                 }
 
@@ -566,7 +541,7 @@ namespace hazelcast {
                 impl::nearcache::KeyStateMarker *keyStateMarker;
                 const config::NearCacheConfig<K, V> &nearCacheConfig;
                 std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V>> nearCache;
-                std::string invalidationListenerId;
+                boost::uuids::uuid invalidationListenerId;
                 util::ILogger &logger;
             };
         }

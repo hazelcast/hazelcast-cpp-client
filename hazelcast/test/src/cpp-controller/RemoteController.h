@@ -4,7 +4,9 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-#pragma once
+#ifndef RemoteController_H
+#define RemoteController_H
+
 #include <thrift/TDispatchProcessor.h>
 #include <thrift/async/TConcurrentClientSyncInfo.h>
 #include <memory>
@@ -14,7 +16,7 @@ namespace hazelcast { namespace client { namespace test { namespace remote {
 
 #ifdef _MSC_VER
   #pragma warning( push )
-  #pragma warning (disable : 4250 ) //inheriting methods via dominance
+  #pragma warning (disable : 4250 ) //inheriting methods via dominance 
 #endif
 
 class RemoteControllerIf {
@@ -24,6 +26,7 @@ class RemoteControllerIf {
   virtual bool clean() = 0;
   virtual bool exit() = 0;
   virtual void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) = 0;
+  virtual void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) = 0;
   virtual void startMember(Member& _return, const std::string& clusterId) = 0;
   virtual bool shutdownMember(const std::string& clusterId, const std::string& memberId) = 0;
   virtual bool terminateMember(const std::string& clusterId, const std::string& memberId) = 0;
@@ -76,6 +79,9 @@ class RemoteControllerNull : virtual public RemoteControllerIf {
     return _return;
   }
   void createCluster(Cluster& /* _return */, const std::string& /* hzVersion */, const std::string& /* xmlconfig */) {
+    return;
+  }
+  void createClusterKeepClusterName(Cluster& /* _return */, const std::string& /* hzVersion */, const std::string& /* xmlconfig */) {
     return;
   }
   void startMember(Member& /* _return */, const std::string& /* clusterId */) {
@@ -506,6 +512,125 @@ class RemoteController_createCluster_presult {
   ServerException serverException;
 
   _RemoteController_createCluster_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _RemoteController_createClusterKeepClusterName_args__isset {
+  _RemoteController_createClusterKeepClusterName_args__isset() : hzVersion(false), xmlconfig(false) {}
+  bool hzVersion :1;
+  bool xmlconfig :1;
+} _RemoteController_createClusterKeepClusterName_args__isset;
+
+class RemoteController_createClusterKeepClusterName_args {
+ public:
+
+  RemoteController_createClusterKeepClusterName_args(const RemoteController_createClusterKeepClusterName_args&);
+  RemoteController_createClusterKeepClusterName_args& operator=(const RemoteController_createClusterKeepClusterName_args&);
+  RemoteController_createClusterKeepClusterName_args() : hzVersion(), xmlconfig() {
+  }
+
+  virtual ~RemoteController_createClusterKeepClusterName_args() noexcept;
+  std::string hzVersion;
+  std::string xmlconfig;
+
+  _RemoteController_createClusterKeepClusterName_args__isset __isset;
+
+  void __set_hzVersion(const std::string& val);
+
+  void __set_xmlconfig(const std::string& val);
+
+  bool operator == (const RemoteController_createClusterKeepClusterName_args & rhs) const
+  {
+    if (!(hzVersion == rhs.hzVersion))
+      return false;
+    if (!(xmlconfig == rhs.xmlconfig))
+      return false;
+    return true;
+  }
+  bool operator != (const RemoteController_createClusterKeepClusterName_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteController_createClusterKeepClusterName_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class RemoteController_createClusterKeepClusterName_pargs {
+ public:
+
+
+  virtual ~RemoteController_createClusterKeepClusterName_pargs() noexcept;
+  const std::string* hzVersion;
+  const std::string* xmlconfig;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteController_createClusterKeepClusterName_result__isset {
+  _RemoteController_createClusterKeepClusterName_result__isset() : success(false), serverException(false) {}
+  bool success :1;
+  bool serverException :1;
+} _RemoteController_createClusterKeepClusterName_result__isset;
+
+class RemoteController_createClusterKeepClusterName_result {
+ public:
+
+  RemoteController_createClusterKeepClusterName_result(const RemoteController_createClusterKeepClusterName_result&);
+  RemoteController_createClusterKeepClusterName_result& operator=(const RemoteController_createClusterKeepClusterName_result&);
+  RemoteController_createClusterKeepClusterName_result() {
+  }
+
+  virtual ~RemoteController_createClusterKeepClusterName_result() noexcept;
+  Cluster success;
+  ServerException serverException;
+
+  _RemoteController_createClusterKeepClusterName_result__isset __isset;
+
+  void __set_success(const Cluster& val);
+
+  void __set_serverException(const ServerException& val);
+
+  bool operator == (const RemoteController_createClusterKeepClusterName_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(serverException == rhs.serverException))
+      return false;
+    return true;
+  }
+  bool operator != (const RemoteController_createClusterKeepClusterName_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RemoteController_createClusterKeepClusterName_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _RemoteController_createClusterKeepClusterName_presult__isset {
+  _RemoteController_createClusterKeepClusterName_presult__isset() : success(false), serverException(false) {}
+  bool success :1;
+  bool serverException :1;
+} _RemoteController_createClusterKeepClusterName_presult__isset;
+
+class RemoteController_createClusterKeepClusterName_presult {
+ public:
+
+
+  virtual ~RemoteController_createClusterKeepClusterName_presult() noexcept;
+  Cluster* success;
+  ServerException serverException;
+
+  _RemoteController_createClusterKeepClusterName_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -1645,6 +1770,9 @@ class RemoteControllerClient : virtual public RemoteControllerIf {
   void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig);
   void send_createCluster(const std::string& hzVersion, const std::string& xmlconfig);
   void recv_createCluster(Cluster& _return);
+  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig);
+  void send_createClusterKeepClusterName(const std::string& hzVersion, const std::string& xmlconfig);
+  void recv_createClusterKeepClusterName(Cluster& _return);
   void startMember(Member& _return, const std::string& clusterId);
   void send_startMember(const std::string& clusterId);
   void recv_startMember(Member& _return);
@@ -1694,6 +1822,7 @@ class RemoteControllerProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_clean(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_exit(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_createCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_createClusterKeepClusterName(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_startMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_shutdownMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_terminateMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -1711,6 +1840,7 @@ class RemoteControllerProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["clean"] = &RemoteControllerProcessor::process_clean;
     processMap_["exit"] = &RemoteControllerProcessor::process_exit;
     processMap_["createCluster"] = &RemoteControllerProcessor::process_createCluster;
+    processMap_["createClusterKeepClusterName"] = &RemoteControllerProcessor::process_createClusterKeepClusterName;
     processMap_["startMember"] = &RemoteControllerProcessor::process_startMember;
     processMap_["shutdownMember"] = &RemoteControllerProcessor::process_shutdownMember;
     processMap_["terminateMember"] = &RemoteControllerProcessor::process_terminateMember;
@@ -1783,6 +1913,16 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
       ifaces_[i]->createCluster(_return, hzVersion, xmlconfig);
     }
     ifaces_[i]->createCluster(_return, hzVersion, xmlconfig);
+    return;
+  }
+
+  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->createClusterKeepClusterName(_return, hzVersion, xmlconfig);
+    }
+    ifaces_[i]->createClusterKeepClusterName(_return, hzVersion, xmlconfig);
     return;
   }
 
@@ -1924,6 +2064,9 @@ class RemoteControllerConcurrentClient : virtual public RemoteControllerIf {
   void createCluster(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig);
   int32_t send_createCluster(const std::string& hzVersion, const std::string& xmlconfig);
   void recv_createCluster(Cluster& _return, const int32_t seqid);
+  void createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig);
+  int32_t send_createClusterKeepClusterName(const std::string& hzVersion, const std::string& xmlconfig);
+  void recv_createClusterKeepClusterName(Cluster& _return, const int32_t seqid);
   void startMember(Member& _return, const std::string& clusterId);
   int32_t send_startMember(const std::string& clusterId);
   void recv_startMember(Member& _return, const int32_t seqid);
@@ -1968,3 +2111,4 @@ class RemoteControllerConcurrentClient : virtual public RemoteControllerIf {
 
 }}}} // namespace
 
+#endif
