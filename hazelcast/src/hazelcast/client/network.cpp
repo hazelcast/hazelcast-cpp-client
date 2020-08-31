@@ -173,7 +173,6 @@ namespace hazelcast {
 
                 if (connect_to_members_timer_) {
                     connect_to_members_timer_->cancel();
-                    connect_to_members_timer_.reset();
                 }
 
                 heartbeat.shutdown();
@@ -187,11 +186,9 @@ namespace hazelcast {
                 spi::impl::ClientExecutionServiceImpl::shutdownThreadPool(executor_.get());
 
                 ioGuard.reset();
-                ioResolver.reset();
                 ioContext->stop();
                 boost::asio::use_service<boost::asio::detail::resolver_service<boost::asio::ip::tcp>>(*ioContext).shutdown();
                 std::for_each(ioThreads.begin(), ioThreads.end(), [](std::thread &t) { t.join(); });
-                ioContext.reset();
 
                 connectionListeners.clear();
                 activeConnections.clear();
@@ -1024,7 +1021,6 @@ namespace hazelcast {
                 if (timer) {
                     boost::system::error_code ignored;
                     timer->cancel(ignored);
-                    timer.reset();
                 }
             }
 

@@ -1150,12 +1150,12 @@ namespace hazelcast {
 
         void hz_thread_pool::shutdown_gracefully() {
             pool_->join();
+            pool_->stop();
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             // needed due to bug https://github.com/chriskohlhoff/asio/issues/431
             boost::asio::use_service<boost::asio::detail::win_iocp_io_context>(*pool_).stop();
 #endif
-            pool_.reset();
         }
 
         boost::asio::thread_pool::executor_type hz_thread_pool::get_executor() const {

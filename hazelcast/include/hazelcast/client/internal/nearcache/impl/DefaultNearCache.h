@@ -112,7 +112,6 @@ namespace hazelcast {
                             if (expirationTimer) {
                                 boost::system::error_code ignored;
                                 expirationTimer->cancel(ignored);
-                                expirationTimer.reset();
                             }
                             nearCacheRecordStore->destroy();
                         }

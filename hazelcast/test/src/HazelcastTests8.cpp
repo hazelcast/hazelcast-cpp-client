@@ -1494,14 +1494,8 @@ namespace hazelcast {
                 HazelcastServer server2(*g_srvFactory);
 
                 std::thread([=] () {
-                    do {
-                        // 7. Put a 2nd entry to the map
-                        try {
-                            map->put(2, 20).get();
-                        } catch (std::exception &) {
-                            // suppress the error
-                        }
-                    } while (boost::cv_status::timeout == latch2.wait_for(boost::chrono::milliseconds(100)));
+                    // 7. Put a 2nd entry to the map
+                    ASSERT_NO_THROW(map->put(2, 20).get());
                 }).detach();
 
                 // 6. Verify that the 2nd entry is received by the listener

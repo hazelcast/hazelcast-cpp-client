@@ -91,7 +91,6 @@ namespace hazelcast {
                     if (sendTaskTimer) {
                         boost::system::error_code ignored;
                         sendTaskTimer->cancel(ignored);
-                        sendTaskTimer.reset();
                     }
                 }
 
