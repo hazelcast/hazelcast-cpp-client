@@ -104,6 +104,11 @@ namespace hazelcast {
             static constexpr unsigned int DOUBLE_SIZE_IN_BYTES = 8;
 
             /**
+            * uuid size in bytes
+            */
+            static constexpr unsigned int UUID_SIZE_IN_BYTES = 16;
+
+            /**
              * for null arrays, this value writen to stream to represent null array size.
              */
             static constexpr int NULL_ARRAY = -1;

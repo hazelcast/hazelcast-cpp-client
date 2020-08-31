@@ -22,7 +22,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 
 #include "hazelcast/client/internal/nearcache/NearCacheRecord.h"
-#include "hazelcast/util/UUID.h"
+#include <boost/uuid/uuid.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -67,11 +67,11 @@ namespace hazelcast {
                                 AbstractNearCacheRecord::creationTime = creationTime;
                             }
 
-                            const std::shared_ptr<util::UUID> &getUuid() const {
+                            boost::uuids::uuid getUuid() const {
                                 return uuid;
                             }
 
-                            void setUuid(const std::shared_ptr<util::UUID> &uuid) override {
+                            void setUuid(boost::uuids::uuid uuid) override {
                                 AbstractNearCacheRecord::uuid = uuid;
                             }
 
@@ -132,18 +132,15 @@ namespace hazelcast {
                                 this->sequence = seq;
                             }
 
-                            bool hasSameUuid(const std::shared_ptr<util::UUID> &thatUuid) const override {
-                                if (uuid.get() == NULL || thatUuid.get() == NULL) {
-                                    return false;
-                                }
-                                return uuid->equals(*thatUuid);
+                            bool hasSameUuid(boost::uuids::uuid thatUuid) const override {
+                                return uuid == thatUuid;
                             }
 
                         protected:
                             std::shared_ptr<V> value;
                             int64_t creationTime;
                             int64_t sequence;
-                            std::shared_ptr<util::UUID> uuid;
+                            boost::uuids::uuid uuid;
 
                             std::atomic<int64_t> expirationTime;
                             std::atomic<int64_t> accessTime;

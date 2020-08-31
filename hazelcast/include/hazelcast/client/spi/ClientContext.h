@@ -17,6 +17,7 @@
 
 #include <string>
 #include <memory>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -30,23 +31,19 @@ namespace hazelcast {
         class ILogger;
     }
     namespace client {
-
         class Cluster;
+        class HazelcastClient;
+        class ClientConfig;
+        class ClientProperties;
 
         namespace serialization {
             namespace pimpl {
                 class SerializationService;
             }
         }
-        class HazelcastClient;
-
-        class ClientConfig;
-
-        class ClientProperties;
 
         namespace impl {
             class HazelcastClientInstanceImpl;
-
             class ClientLockReferenceIdGenerator;
 
             namespace statistics {
@@ -56,7 +53,6 @@ namespace hazelcast {
 
         namespace connection {
             class ClientConnectionManagerImpl;
-
             class Connection;
         }
 
@@ -71,48 +67,48 @@ namespace hazelcast {
         }
 
         namespace spi {
-            class ClientInvocationService;
-
-            class ClientPartitionService;
-
             class ClientListenerService;
 
             class LifecycleService;
-
-            class ClientInvocationService;
-
-            class ClientClusterService;
 
             class ProxyManager;
 
             namespace impl {
                 class ClientExecutionServiceImpl;
+                class ClientInvocationServiceImpl;
+                class ClientPartitionServiceImpl;
+                class ClientClusterServiceImpl;
 
                 namespace sequence {
                     class CallIdSequence;
+                }
+
+                namespace listener {
+                    class cluster_view_listener;
+                    class listener_service_impl;
                 }
             }
 
             class HAZELCAST_API ClientContext {
             public:
                 // This constructor is used from tests
-                ClientContext(const client::HazelcastClient &hazelcastClient);
+                explicit ClientContext(const client::HazelcastClient &hazelcastClient);
 
-                ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
+                explicit ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
 
                 serialization::pimpl::SerializationService &getSerializationService();
 
-                ClientClusterService &getClientClusterService();
+                impl::ClientClusterServiceImpl & getClientClusterService();
 
-                ClientInvocationService &getInvocationService();
+                impl::ClientInvocationServiceImpl &getInvocationService();
 
                 ClientConfig &getClientConfig();
 
-                ClientPartitionService &getPartitionService();
+                impl::ClientPartitionServiceImpl & getPartitionService();
 
                 LifecycleService &getLifecycleService();
 
-                ClientListenerService &getClientListenerService();
+                spi::impl::listener::listener_service_impl &getClientListenerService();
 
                 connection::ClientConnectionManagerImpl &getConnectionManager();
 
@@ -130,8 +126,6 @@ namespace hazelcast {
 
                 impl::ClientExecutionServiceImpl &getClientExecutionService() const;
 
-                void onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection);
-
                 const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
 
                 std::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
@@ -141,6 +135,10 @@ namespace hazelcast {
                 util::ILogger &getLogger();
 
                 client::impl::statistics::Statistics &getClientstatistics();
+
+                spi::impl::listener::cluster_view_listener &get_cluster_view_listener();
+
+                boost::uuids::uuid random_uuid();
             private:
                 client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };

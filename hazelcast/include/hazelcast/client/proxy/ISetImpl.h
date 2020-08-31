@@ -31,7 +31,7 @@ namespace hazelcast {
                 *
                 * @return true if registration is removed, false otherwise
                 */
-                boost::future<bool> removeItemListener(const std::string& registrationId);
+                boost::future<bool> removeItemListener(boost::uuids::uuid registrationId);
 
                 /**
                 *
@@ -53,8 +53,8 @@ namespace hazelcast {
             protected:
                 ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext);
 
-                boost::future<std::string>
-                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::SetAddListenerCodec::AbstractEventHandler>> &&itemEventHandler, bool includeValue) {
+                boost::future<boost::uuids::uuid>
+                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::set_addlistener_handler>> &&itemEventHandler, bool includeValue) {
                     return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
                 }
 
@@ -79,14 +79,10 @@ namespace hazelcast {
                 public:
                     SetListenerMessageCodec(std::string name, bool includeValue);
 
-                    std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const override;
+                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
 
-                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const override;
-
-                    std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const override;
-
-                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const override;
+                    protocol::ClientMessage
+                    encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
 
                 private:
                     std::string  name;
@@ -95,7 +91,7 @@ namespace hazelcast {
 
                 int partitionId;
 
-                std::unique_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
+                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
         }
     }

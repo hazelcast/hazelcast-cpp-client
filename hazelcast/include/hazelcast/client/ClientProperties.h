@@ -98,20 +98,20 @@ namespace hazelcast {
 
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
-            * passing between client and member within the given time via this property in seconds the connection
+            * passing between client and member within the given time via this property in milliseconds the connection
             * will be closed.
             *
             * attribute      "hazelcast_client_heartbeat_timeout"
-            * default value  "60"
+            * default value  "60000"
             */
             static const std::string PROP_HEARTBEAT_TIMEOUT;
             static const std::string PROP_HEARTBEAT_TIMEOUT_DEFAULT;
 
             /**
-            * Time interval in seconds between heartbeats to nodes from client
+            * Time interval in milliseconds between the heartbeats sent by the client to the nodes.
             *
             * attribute      "hazelcast_client_heartbeat_interval"
-            * default value  "10"
+            * default value  "5000"
             */
             static const std::string PROP_HEARTBEAT_INTERVAL;
             static const std::string PROP_HEARTBEAT_INTERVAL_DEFAULT;

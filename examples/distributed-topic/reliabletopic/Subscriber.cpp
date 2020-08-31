@@ -64,7 +64,7 @@ void listenWithDefaultConfig() {
     auto topic = client.getReliableTopic(topicName);
 
     std::atomic<int> numberOfMessagesReceived{0};
-    std::string listenerId = topic->addMessageListener(MyListener(numberOfMessagesReceived));
+    auto listenerId = topic->addMessageListener(MyListener(numberOfMessagesReceived));
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
@@ -90,7 +90,7 @@ void listenWithConfig() {
     auto topic = client.getReliableTopic(topicName);
 
     std::atomic<int> numberOfMessagesReceived{0};
-    const std::string &listenerId = topic->addMessageListener(MyListener(numberOfMessagesReceived));
+    auto listenerId = topic->addMessageListener(MyListener(numberOfMessagesReceived));
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 

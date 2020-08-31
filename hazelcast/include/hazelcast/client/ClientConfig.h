@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <memory>
 #include <boost/optional.hpp>
+#include <hazelcast/client/serialization/serialization.h>
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
@@ -58,6 +59,64 @@ namespace hazelcast {
              class ClientConnectionManagerImpl;
         };
 
+        namespace security {
+            class credentials {
+            public:
+                enum type {
+                    username_password,
+                    token,
+                    secret
+                };
+
+                virtual ~credentials();
+
+                virtual const std::string &get_name() const = 0;
+                virtual const type get_type() const = 0;
+            };
+
+            class password_credentials : public credentials {
+            public:
+                virtual const std::string &get_password() const = 0;
+            };
+
+            class username_password_credentials : public password_credentials {
+            public:
+                username_password_credentials(const std::string &name, const std::string &password);
+
+                const std::string &get_name() const override;
+
+                const std::string &get_password() const override;
+
+                const type get_type() const override;
+
+            private:
+                std::string name_;
+                std::string password_;
+            };
+
+            class token_credentials : public credentials {
+            public:
+                token_credentials(const std::string &name, const std::vector<byte> &secretData);
+
+                const std::string &get_name() const override;
+
+                const std::vector<byte> &get_secret() const;
+
+                const type get_type() const override;
+
+            private:
+                std::string name_;
+                std::vector<byte> secret_data_;
+            };
+
+            class secret_credential : public token_credentials {
+            public:
+                secret_credential(const std::string &name, const std::vector<byte> &secretData);
+
+                const type get_type() const override;
+            };
+        };
+
         /**
         * HazelcastClient configuration class.
         */
@@ -77,34 +136,44 @@ namespace hazelcast {
             ClientConfig();
 
             /**
-            * @deprecated Please use {@link ClientNetworkConfig#addAddress(const Address &)}.
+             * Returns the configured cluster name. The name is sent as part of client authentication message and may be verified on the
+             * member.
+             *
+             * \return the configured cluster name
+             */
+            const std::string &getClusterName() const;
+
+            ClientConfig &setClusterName(const std::string &clusterName);
+
+            /**
+            * \deprecated Please use {\link ClientNetworkConfig#addAddress(const Address &)}.
             *
             * Adds an address to list of the initial addresses.
             * Client will use this list to find a running Member, connect to it.
             *
-            * @param address
-            * @return itself ClientConfig
+            * \param address
+            * \return itself ClientConfig
             */
             ClientConfig &addAddress(const Address &address);
 
             /**
-            * @deprecated Please use {@link ClientNetworkConfig#addAddresses(const std::vector<Address> &)}.
+            * \deprecated Please use {\link ClientNetworkConfig#addAddresses(const std::vector<Address> &)}.
             *
             * Adds all address in given vector to list of the initial addresses.
             * Client will use this list to find a running Member, connect to it.
             *
-            * @param addresses vector of addresses
-            * @return itself ClientConfig
+            * \param addresses vector of addresses
+            * \return itself ClientConfig
             */
             ClientConfig &addAddresses(const std::vector<Address> &addresses);
 
             /**
-            * @deprecated Please use {@link ClientNetworkConfig#getAddresses()}.
+            * \deprecated Please use {\link ClientNetworkConfig#getAddresses()}.
             *
             * Returns set of the initial addresses.
             * Client will use this vector to find a running Member, connect to it.
             *
-            * @return vector of addresses
+            * \return vector of addresses
             */
             std::unordered_set<Address> getAddresses();
 
@@ -112,49 +181,52 @@ namespace hazelcast {
             * The Group Configuration properties like:
             * Name and Password that is used to connect to the cluster.
             *
-            * @param groupConfig
-            * @return itself ClientConfig
+            * \param groupConfig
+            * \return itself ClientConfig
             */
             ClientConfig &setGroupConfig(const GroupConfig &groupConfig);
 
             /**
             *
-            * @return groupConfig
+            * \return groupConfig
             */
             GroupConfig &getGroupConfig();
 
             /**
-            * Can be used instead of GroupConfig in Hazelcast Extensions.
             *
-            *  @return itself ClientConfig
+            *  \return itself ClientConfig
             */
-            template<typename T>
-            ClientConfig &setCredentials(const T &credential) {
-                serialization::pimpl::SerializationService ss(serializationConfig);
-                credentials = ss.toData<T>(credential);
-                principal = credential.getPrincipal();
+            ClientConfig &setCredentials(const boost::shared_ptr<security::credentials> &credential) {
+                credentials_ = credential;
                 return *this;
             }
 
             /**
-            * Gets the principal if set by the credentials
+            *
+            *  \return itself ClientConfig
             */
-            const boost::optional<std::string> &getPrincipal() const;
+            template<typename T>
+            ClientConfig &setCredentials(const T &secret) {
+                serialization::pimpl::SerializationService ss(serializationConfig);
+                credentials_ = std::make_shared<security::secret_credential>(secret.get_name(),
+                                                                             ss.toData<T>(secret).toByteArray());
+                return *this;
+            }
 
             /**
-            * @deprecated Please use {@link ClientNetworkConfig#setConnectionAttemptLimit(int32_t)}
+            * \deprecated Please use {\link ClientNetworkConfig#setConnectionAttemptLimit(int32_t)}
             *
             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
             * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
             *
-            * @param connectionAttemptLimit
-            * @return itself ClientConfig
+            * \param connectionAttemptLimit
+            * \return itself ClientConfig
             */
             ClientConfig &setConnectionAttemptLimit(int connectionAttemptLimit);
 
             /**
-            * @deprecated Please use {@link ClientNetworkConfig#getConnectionAttemptLimit()}
+            * \deprecated Please use {\link ClientNetworkConfig#getConnectionAttemptLimit()}
             *
             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
@@ -165,33 +237,33 @@ namespace hazelcast {
             int getConnectionAttemptLimit() const;
 
             /**
-             * Use {@link ClientNetworkConfig#setConnectionTimeout} instead
-             * @Deprecated
+             * Use {\link ClientNetworkConfig#setConnectionTimeout} instead
+             * \deprecated
              */
             ClientConfig &setConnectionTimeout(int connectionTimeoutInMillis);
 
             /**
-             * Use {@link ClientNetworkConfig#getConnectionTimeout} instead
-             * @Deprecated
+             * Use {\link ClientNetworkConfig#getConnectionTimeout} instead
+             * \deprecated
              */
             int getConnectionTimeout() const;
 
             /**
-            * @deprecated Please use {@link ClientNetworkConfig#setAttemptPeriod(int32_t)}
+            * \deprecated Please use {\link ClientNetworkConfig#setAttemptPeriod(int32_t)}
             *
             * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
             *
-            * @param attemptPeriodInMillis
-            * @return itself ClientConfig
+            * \param attemptPeriodInMillis
+            * \return itself ClientConfig
             */
             ClientConfig &setAttemptPeriod(int attemptPeriodInMillis);
 
             /**
-            * @deprecated Please use {@link ClientNetworkConfig#getAttemptPeriod()}
+            * \deprecated Please use {\link ClientNetworkConfig#getAttemptPeriod()}
             *
             * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
             *
-            * @return int attemptPeriodInMillis
+            * \return int attemptPeriodInMillis
             */
             int getAttemptPeriod() const;
 
@@ -203,7 +275,7 @@ namespace hazelcast {
             *
             * If false, the operation will throw IOException.
             *
-            * @param redoOperation
+            * \param redoOperation
             * return itself ClientConfig
             */
             ClientConfig &setRedoOperation(bool redoOperation);
@@ -216,31 +288,31 @@ namespace hazelcast {
             bool isRedoOperation() const;
 
             /**
-            * @deprecated Please use ClientNetworkConfig#isSmartRouting
+            * \deprecated Please use ClientNetworkConfig#isSmartRouting
             *
-            * @return true if client configured as smart
+            * \return true if client configured as smart
             * see setSmart()
             */
             bool isSmart() const;
 
             /**
-            * @deprecated Please use ClientNetworkConfig#setSmartRouting
+            * \deprecated Please use ClientNetworkConfig#setSmartRouting
             *
             * If true, client will route the key based operations to owner of the key at the best effort.
             * Note that it uses a cached version of PartitionService#getPartitions() and doesn't
             * guarantee that the operation will always be executed on the owner.
             * The cached table is updated every 10 seconds.
             *
-            * @param smart
+            * \param smart
             *
-            * @return itself ClientConfig
+            * \return itself ClientConfig
             */
             ClientConfig &setSmart(bool smart);
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
             *
-            * @return itself ClientConfig
+            * \return itself ClientConfig
             */
             ClientConfig &setSocketInterceptor(SocketInterceptor *interceptor);
 
@@ -256,19 +328,19 @@ namespace hazelcast {
             *
             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
             *
-            * @param listener LifecycleListener *listener
-            * @return itself ClientConfig
+            * \param listener LifecycleListener *listener
+            * \return itself ClientConfig
             */
             ClientConfig &addListener(LifecycleListener *listener);
 
             /**
             *
-            * @return registered lifecycleListeners
+            * \return registered lifecycleListeners
             */
             const std::unordered_set<LifecycleListener *> &getLifecycleListeners() const;
 
             /**
-            * @deprecated Please use addListener(const std::shared_ptr<MembershipListener> &listener) instead.
+            * \deprecated Please use addListener(const std::shared_ptr<MembershipListener> &listener) instead.
             *
             * Adds a listener to configuration to be registered when HazelcastClient starts.
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
@@ -276,8 +348,8 @@ namespace hazelcast {
             *
             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
             *
-            * @param listener MembershipListener *listener
-            * @return itself ClientConfig
+            * \param listener MembershipListener *listener
+            * \return itself ClientConfig
             */
             ClientConfig &addListener(MembershipListener *listener);
 
@@ -288,48 +360,48 @@ namespace hazelcast {
             *
             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
             *
-            * @param listener MembershipListener *listener
-            * @return itself ClientConfig
+            * \param listener MembershipListener *listener
+            * \return itself ClientConfig
             */
             ClientConfig &addListener(const std::shared_ptr<MembershipListener> &listener);
 
             /**
             * Returns registered membershipListeners
             *
-            * @return registered membershipListeners
+            * \return registered membershipListeners
             */
             const std::unordered_set<MembershipListener *> &getMembershipListeners() const;
 
             /**
              * Returns registered membershipListeners
              *
-             * @return registered membership listeners. This method returns the same list as the
+             * \return registered membership listeners. This method returns the same list as the
              * getMembershipListeners method but as a set of shared_ptr.
              */
             const std::unordered_set<std::shared_ptr<MembershipListener> > &getManagedMembershipListeners() const;
 
             /**
-            * @deprecated Please use addListener(const std::shared_ptr<InitialMembershipListener> &listener)
+            * \deprecated Please use addListener(const std::shared_ptr<InitialMembershipListener> &listener)
             *
             * Adds a listener to configuration to be registered when HazelcastClient starts.
             *
-            * @param listener InitialMembershipListener *listener
-            * @return itself ClientConfig
+            * \param listener InitialMembershipListener *listener
+            * \return itself ClientConfig
             */
             ClientConfig &addListener(InitialMembershipListener *listener);
 
             /**
             * Adds a listener to configuration to be registered when HazelcastClient starts.
             *
-            * @param listener InitialMembershipListener *listener
-            * @return itself ClientConfig
+            * \param listener InitialMembershipListener *listener
+            * \return itself ClientConfig
             */
             ClientConfig &addListener(const std::shared_ptr<InitialMembershipListener> &listener);
 
             /**
             * Used to distribute the operations to multiple Endpoints.
             *
-            * @return loadBalancer
+            * \return loadBalancer
             */
             LoadBalancer *const getLoadBalancer();
 
@@ -337,9 +409,9 @@ namespace hazelcast {
             * Used to distribute the operations to multiple Endpoints.
             * If not set, RoundRobin based load balancer is used
             *
-            * @param loadBalancer
+            * \param loadBalancer
             *
-            * @return itself ClientConfig
+            * \return itself ClientConfig
             */
             ClientConfig &setLoadBalancer(LoadBalancer *loadBalancer);
 
@@ -350,14 +422,14 @@ namespace hazelcast {
             *  set SEVERE to see only serious errors
             *  set FINEST to see all messages including debug messages.
             *
-            * @param loggerLevel The log level to be set.
-            * @return The configured client configuration for chaining.
+            * \param loggerLevel The log level to be set.
+            * \return The configured client configuration for chaining.
              */
             ClientConfig &setLogLevel(LogLevel loggerLevel);
 
             /**
             *
-            *  @return serializationConfig
+            *  \return serializationConfig
             */
             SerializationConfig &getSerializationConfig();
 
@@ -365,15 +437,15 @@ namespace hazelcast {
             * SerializationConfig is used to
             *   * set version of portable classes in this client (@see versioned_portable_serializer)
             *
-            * @param serializationConfig
-            * @return itself ClientConfig
+            * \param serializationConfig
+            * \return itself ClientConfig
             */
             ClientConfig &setSerializationConfig(SerializationConfig const &serializationConfig);
 
             /**
             * Gets a reference to properties map
             *
-            * @return properties map
+            * \return properties map
             */
             const std::unordered_map<std::string, std::string> &getProperties() const;
 
@@ -382,33 +454,33 @@ namespace hazelcast {
             *
             * @see ClientProperties for properties that is used to configure client
             *
-            * @param name  property name
-            * @param value value of the property
-            * @return itself ClientConfig
+            * \param name  property name
+            * \param value value of the property
+            * \return itself ClientConfig
             */
             ClientConfig &setProperty(const std::string &name, const std::string &value);
 
             /**
              * Adds a ClientReliableTopicConfig.
              *
-             * @param reliableTopicConfig the ReliableTopicConfig to add
-             * @return configured {@link ClientConfig} for chaining
+             * \param reliableTopicConfig the ReliableTopicConfig to add
+             * \return configured {\link ClientConfig} for chaining
              */
             ClientConfig &addReliableTopicConfig(const config::ReliableTopicConfig &reliableTopicConfig);
 
             /**
              * Gets the ClientReliableTopicConfig for a given reliable topic name.
              *
-             * @param name the name of the reliable topic
-             * @return the found config. If none is found, a default configured one is returned.
+             * \param name the name of the reliable topic
+             * \return the found config. If none is found, a default configured one is returned.
              */
             const config::ReliableTopicConfig *getReliableTopicConfig(const std::string &name);
 
             /**
              * Helper method to add a new NearCacheConfig
              *
-             * @param nearCacheConfig {@link com.hazelcast.config.NearCacheConfig} to be added
-             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             * \param nearCacheConfig {\link com.hazelcast.config.NearCacheConfig} to be added
+             * \return configured {\link com.hazelcast.client.config.ClientConfig} for chaining
              * @see com.hazelcast.config.NearCacheConfig
              * 
              * Memory ownership of the config is passed to the client config
@@ -420,10 +492,10 @@ namespace hazelcast {
             }
 
             /**
-             * Gets the {@link NearCacheConfig} configured for the map / cache with name
+             * Gets the {\link NearCacheConfig} configured for the map / cache with name
              *
-             * @param name name of the map / cache
-             * @return Configured {@link NearCacheConfig}
+             * \param name name of the map / cache
+             * \return Configured {\link NearCacheConfig}
              * @see com.hazelcast.config.NearCacheConfig
              */
             template <typename K, typename V>
@@ -439,18 +511,18 @@ namespace hazelcast {
             }
 
             /**
-             * Gets {@link com.hazelcast.client.config.ClientNetworkConfig}
+             * Gets {\link com.hazelcast.client.config.ClientNetworkConfig}
              *
-             * @return {@link com.hazelcast.client.config.ClientNetworkConfig}
+             * \return {\link com.hazelcast.client.config.ClientNetworkConfig}
              * @see com.hazelcast.client.config.ClientNetworkConfig
              */
             config::ClientNetworkConfig &getNetworkConfig();
 
             /**
-             * Sets {@link com.hazelcast.client.config.ClientNetworkConfig}
+             * Sets {\link com.hazelcast.client.config.ClientNetworkConfig}
              *
-             * @param networkConfig {@link com.hazelcast.client.config.ClientNetworkConfig} to be set
-             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             * \param networkConfig {\link com.hazelcast.client.config.ClientNetworkConfig} to be set
+             * \return configured {\link com.hazelcast.client.config.ClientConfig} for chaining
              * @see com.hazelcast.client.config.ClientNetworkConfig
              */
             ClientConfig &setNetworkConfig(const config::ClientNetworkConfig &networkConfig);
@@ -462,15 +534,15 @@ namespace hazelcast {
             /**
              * Pool size for internal ExecutorService which handles responses etc.
              *
-             * @return int Executor pool size.
+             * \return int Executor pool size.
              */
             int32_t getExecutorPoolSize() const;
 
             /**
              * Sets Client side Executor pool size.
              *
-             * @param executorPoolSize pool size
-             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             * \param executorPoolSize pool size
+             * \return configured {\link com.hazelcast.client.config.ClientConfig} for chaining
              */
             void setExecutorPoolSize(int32_t executorPoolSize);
 
@@ -480,15 +552,15 @@ namespace hazelcast {
             setConnectionStrategyConfig(const config::ClientConnectionStrategyConfig &connectionStrategyConfig);
 
             /**
-             * Returns a {@link ClientFlakeIdGeneratorConfig} configuration for the given flake ID generator name.
+             * Returns a {\link ClientFlakeIdGeneratorConfig} configuration for the given flake ID generator name.
              * <p>
              * The name is matched by pattern to the configuration and by stripping the
              * partition ID qualifier from the given {@code name}.
              * If there is no config found by the name, it will return the configuration
              * with the name {@code "default"}.
              *
-             * @param name name of the flake ID generator config
-             * @return the flake ID generator configuration
+             * \param name name of the flake ID generator config
+             * \return the flake ID generator configuration
              * @throws ConfigurationException if ambiguous configurations are found
              * @see StringPartitioningStrategy#getBaseName(std::string)
              * @see #setConfigPatternMatcher(ConfigPatternMatcher)
@@ -497,7 +569,7 @@ namespace hazelcast {
             std::shared_ptr<config::ClientFlakeIdGeneratorConfig> findFlakeIdGeneratorConfig(const std::string &name);
 
             /**
-             * Returns the {@link ClientFlakeIdGeneratorConfig} for the given name, creating
+             * Returns the {\link ClientFlakeIdGeneratorConfig} for the given name, creating
              * one if necessary and adding it to the collection of known configurations.
              * <p>
              * The configuration is found by matching the the configuration name
@@ -509,15 +581,15 @@ namespace hazelcast {
              * <p>
              * This method is intended to easily and fluently create and add
              * configurations more specific than the default configuration without
-             * explicitly adding it by invoking {@link #addFlakeIdGeneratorConfig(ClientFlakeIdGeneratorConfig)}.
+             * explicitly adding it by invoking {\link #addFlakeIdGeneratorConfig(ClientFlakeIdGeneratorConfig)}.
              * <p>
              * Because it adds new configurations if they are not already present,
              * this method is intended to be used before this config is used to
              * create a hazelcast instance. Afterwards, newly added configurations
              * may be ignored.
              *
-             * @param name name of the flake ID generator config
-             * @return the cache configuration
+             * \param name name of the flake ID generator config
+             * \return the cache configuration
              * @throws ConfigurationException if ambiguous configurations are found
              * @see StringPartitioningStrategy#getBaseName(std::string)
              */
@@ -528,19 +600,26 @@ namespace hazelcast {
              * name, which may be a pattern with which the configuration will be
              * obtained in the future.
              *
-             * @param config the flake ID configuration
-             * @return this config instance
+             * \param config the flake ID configuration
+             * \return this config instance
              */
             ClientConfig &addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config);
 
-
             /**
              *
-             * @return The logger configuration.
+             * \return The logger configuration.
              */
             config::LoggerConfig &getLoggerConfig();
 
+            const std::unordered_set<std::string> &getLabels() const;
+
+            ClientConfig &setLabels(const std::unordered_set<std::string> &labels);
+
+            ClientConfig &addLabel(const std::string &label);
+
         private:
+            std::string cluster_name_;
+
             GroupConfig groupConfig;
 
             config::ClientNetworkConfig networkConfig;
@@ -562,8 +641,7 @@ namespace hazelcast {
 
             SocketInterceptor *socketInterceptor;
 
-            boost::optional<serialization::pimpl::Data> credentials;
-            boost::optional<std::string> principal;
+            boost::shared_ptr<security::credentials> credentials_;
 
             std::unordered_map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
 
@@ -583,6 +661,8 @@ namespace hazelcast {
             config::matcher::MatchingPointConfigPatternMatcher configPatternMatcher;
 
             config::LoggerConfig loggerConfig;
+
+            std::unordered_set<std::string> labels_;
         };
 
     }

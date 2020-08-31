@@ -44,9 +44,9 @@ namespace hazelcast {
 
             /**
              * Returns the next member to route to
-             * @return Returns the next member or null if no member is available
+             * @return Returns the next member or boost::none if no member is available
              */
-            virtual const Member next() = 0;
+            virtual boost::optional<Member> next() = 0;
 
             virtual ~LoadBalancer();
         };

@@ -67,7 +67,7 @@ namespace hazelcast {
             };
 
             enum struct PredicateDataSerializerHook {
-                F_ID = -32,
+                F_ID = -20,
 
                 SQL_PREDICATE = 0,
 

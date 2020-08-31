@@ -730,6 +730,229 @@ uint32_t RemoteController_createCluster_presult::read(::apache::thrift::protocol
 }
 
 
+RemoteController_createClusterKeepClusterName_args::~RemoteController_createClusterKeepClusterName_args() noexcept {
+}
+
+
+uint32_t RemoteController_createClusterKeepClusterName_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->hzVersion);
+          this->__isset.hzVersion = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->xmlconfig);
+          this->__isset.xmlconfig = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RemoteController_createClusterKeepClusterName_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("RemoteController_createClusterKeepClusterName_args");
+
+  xfer += oprot->writeFieldBegin("hzVersion", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->hzVersion);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("xmlconfig", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->xmlconfig);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+RemoteController_createClusterKeepClusterName_pargs::~RemoteController_createClusterKeepClusterName_pargs() noexcept {
+}
+
+
+uint32_t RemoteController_createClusterKeepClusterName_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("RemoteController_createClusterKeepClusterName_pargs");
+
+  xfer += oprot->writeFieldBegin("hzVersion", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->hzVersion)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("xmlconfig", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->xmlconfig)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+RemoteController_createClusterKeepClusterName_result::~RemoteController_createClusterKeepClusterName_result() noexcept {
+}
+
+
+uint32_t RemoteController_createClusterKeepClusterName_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->serverException.read(iprot);
+          this->__isset.serverException = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RemoteController_createClusterKeepClusterName_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("RemoteController_createClusterKeepClusterName_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  } else if (this->__isset.serverException) {
+    xfer += oprot->writeFieldBegin("serverException", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->serverException.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+RemoteController_createClusterKeepClusterName_presult::~RemoteController_createClusterKeepClusterName_presult() noexcept {
+}
+
+
+uint32_t RemoteController_createClusterKeepClusterName_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->serverException.read(iprot);
+          this->__isset.serverException = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+
 RemoteController_startMember_args::~RemoteController_startMember_args() noexcept {
 }
 
@@ -2966,6 +3189,68 @@ void RemoteControllerClient::recv_createCluster(Cluster& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "createCluster failed: unknown result");
 }
 
+void RemoteControllerClient::createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig)
+{
+  send_createClusterKeepClusterName(hzVersion, xmlconfig);
+  recv_createClusterKeepClusterName(_return);
+}
+
+void RemoteControllerClient::send_createClusterKeepClusterName(const std::string& hzVersion, const std::string& xmlconfig)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("createClusterKeepClusterName", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  RemoteController_createClusterKeepClusterName_pargs args;
+  args.hzVersion = &hzVersion;
+  args.xmlconfig = &xmlconfig;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+}
+
+void RemoteControllerClient::recv_createClusterKeepClusterName(Cluster& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+    ::apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != ::apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  if (fname.compare("createClusterKeepClusterName") != 0) {
+    iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+  }
+  RemoteController_createClusterKeepClusterName_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  if (result.__isset.serverException) {
+    throw result.serverException;
+  }
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "createClusterKeepClusterName failed: unknown result");
+}
+
 void RemoteControllerClient::startMember(Member& _return, const std::string& clusterId)
 {
   send_startMember(clusterId);
@@ -3577,7 +3862,7 @@ bool RemoteControllerProcessor::dispatchCall(::apache::thrift::protocol::TProtoc
 
 void RemoteControllerProcessor::process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.ping", callContext);
   }
@@ -3631,7 +3916,7 @@ void RemoteControllerProcessor::process_ping(int32_t seqid, ::apache::thrift::pr
 
 void RemoteControllerProcessor::process_clean(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.clean", callContext);
   }
@@ -3685,7 +3970,7 @@ void RemoteControllerProcessor::process_clean(int32_t seqid, ::apache::thrift::p
 
 void RemoteControllerProcessor::process_exit(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.exit", callContext);
   }
@@ -3739,7 +4024,7 @@ void RemoteControllerProcessor::process_exit(int32_t seqid, ::apache::thrift::pr
 
 void RemoteControllerProcessor::process_createCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.createCluster", callContext);
   }
@@ -3794,9 +4079,66 @@ void RemoteControllerProcessor::process_createCluster(int32_t seqid, ::apache::t
   }
 }
 
+void RemoteControllerProcessor::process_createClusterKeepClusterName(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+{
+  void* ctx = NULL;
+  if (this->eventHandler_.get() != NULL) {
+    ctx = this->eventHandler_->getContext("RemoteController.createClusterKeepClusterName", callContext);
+  }
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "RemoteController.createClusterKeepClusterName");
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preRead(ctx, "RemoteController.createClusterKeepClusterName");
+  }
+
+  RemoteController_createClusterKeepClusterName_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  uint32_t bytes = iprot->getTransport()->readEnd();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postRead(ctx, "RemoteController.createClusterKeepClusterName", bytes);
+  }
+
+  RemoteController_createClusterKeepClusterName_result result;
+  try {
+    iface_->createClusterKeepClusterName(result.success, args.hzVersion, args.xmlconfig);
+    result.__isset.success = true;
+  } catch (ServerException &serverException) {
+    result.serverException = serverException;
+    result.__isset.serverException = true;
+  } catch (const std::exception& e) {
+    if (this->eventHandler_.get() != NULL) {
+      this->eventHandler_->handlerError(ctx, "RemoteController.createClusterKeepClusterName");
+    }
+
+    ::apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("createClusterKeepClusterName", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->writeEnd();
+    oprot->getTransport()->flush();
+    return;
+  }
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->preWrite(ctx, "RemoteController.createClusterKeepClusterName");
+  }
+
+  oprot->writeMessageBegin("createClusterKeepClusterName", ::apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  bytes = oprot->getTransport()->writeEnd();
+  oprot->getTransport()->flush();
+
+  if (this->eventHandler_.get() != NULL) {
+    this->eventHandler_->postWrite(ctx, "RemoteController.createClusterKeepClusterName", bytes);
+  }
+}
+
 void RemoteControllerProcessor::process_startMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.startMember", callContext);
   }
@@ -3853,7 +4195,7 @@ void RemoteControllerProcessor::process_startMember(int32_t seqid, ::apache::thr
 
 void RemoteControllerProcessor::process_shutdownMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.shutdownMember", callContext);
   }
@@ -3907,7 +4249,7 @@ void RemoteControllerProcessor::process_shutdownMember(int32_t seqid, ::apache::
 
 void RemoteControllerProcessor::process_terminateMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.terminateMember", callContext);
   }
@@ -3961,7 +4303,7 @@ void RemoteControllerProcessor::process_terminateMember(int32_t seqid, ::apache:
 
 void RemoteControllerProcessor::process_suspendMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.suspendMember", callContext);
   }
@@ -4015,7 +4357,7 @@ void RemoteControllerProcessor::process_suspendMember(int32_t seqid, ::apache::t
 
 void RemoteControllerProcessor::process_resumeMember(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.resumeMember", callContext);
   }
@@ -4069,7 +4411,7 @@ void RemoteControllerProcessor::process_resumeMember(int32_t seqid, ::apache::th
 
 void RemoteControllerProcessor::process_shutdownCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.shutdownCluster", callContext);
   }
@@ -4123,7 +4465,7 @@ void RemoteControllerProcessor::process_shutdownCluster(int32_t seqid, ::apache:
 
 void RemoteControllerProcessor::process_terminateCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.terminateCluster", callContext);
   }
@@ -4177,7 +4519,7 @@ void RemoteControllerProcessor::process_terminateCluster(int32_t seqid, ::apache
 
 void RemoteControllerProcessor::process_splitMemberFromCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.splitMemberFromCluster", callContext);
   }
@@ -4231,7 +4573,7 @@ void RemoteControllerProcessor::process_splitMemberFromCluster(int32_t seqid, ::
 
 void RemoteControllerProcessor::process_mergeMemberToCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.mergeMemberToCluster", callContext);
   }
@@ -4285,7 +4627,7 @@ void RemoteControllerProcessor::process_mergeMemberToCluster(int32_t seqid, ::ap
 
 void RemoteControllerProcessor::process_executeOnController(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
-  void* ctx = nullptr;
+  void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
     ctx = this->eventHandler_->getContext("RemoteController.executeOnController", callContext);
   }
@@ -4673,6 +5015,95 @@ void RemoteControllerConcurrentClient::recv_createCluster(Cluster& _return, cons
       }
       // in a bad state, don't commit
       throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "createCluster failed: unknown result");
+    }
+    // seqid != rseqid
+    this->sync_->updatePending(fname, mtype, rseqid);
+
+    // this will temporarily unlock the readMutex, and let other clients get work done
+    this->sync_->waitForWork(seqid);
+  } // end while(true)
+}
+
+void RemoteControllerConcurrentClient::createClusterKeepClusterName(Cluster& _return, const std::string& hzVersion, const std::string& xmlconfig)
+{
+  int32_t seqid = send_createClusterKeepClusterName(hzVersion, xmlconfig);
+  recv_createClusterKeepClusterName(_return, seqid);
+}
+
+int32_t RemoteControllerConcurrentClient::send_createClusterKeepClusterName(const std::string& hzVersion, const std::string& xmlconfig)
+{
+  int32_t cseqid = this->sync_->generateSeqId();
+  ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
+  oprot_->writeMessageBegin("createClusterKeepClusterName", ::apache::thrift::protocol::T_CALL, cseqid);
+
+  RemoteController_createClusterKeepClusterName_pargs args;
+  args.hzVersion = &hzVersion;
+  args.xmlconfig = &xmlconfig;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->writeEnd();
+  oprot_->getTransport()->flush();
+
+  sentry.commit();
+  return cseqid;
+}
+
+void RemoteControllerConcurrentClient::recv_createClusterKeepClusterName(Cluster& _return, const int32_t seqid)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TMessageType mtype;
+
+  // the read mutex gets dropped and reacquired as part of waitForWork()
+  // The destructor of this sentry wakes up other clients
+  ::apache::thrift::async::TConcurrentRecvSentry sentry(this->sync_.get(), seqid);
+
+  while(true) {
+    if(!this->sync_->getPending(fname, mtype, rseqid)) {
+      iprot_->readMessageBegin(fname, mtype, rseqid);
+    }
+    if(seqid == rseqid) {
+      if (mtype == ::apache::thrift::protocol::T_EXCEPTION) {
+        ::apache::thrift::TApplicationException x;
+        x.read(iprot_);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+        sentry.commit();
+        throw x;
+      }
+      if (mtype != ::apache::thrift::protocol::T_REPLY) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+      }
+      if (fname.compare("createClusterKeepClusterName") != 0) {
+        iprot_->skip(::apache::thrift::protocol::T_STRUCT);
+        iprot_->readMessageEnd();
+        iprot_->getTransport()->readEnd();
+
+        // in a bad state, don't commit
+        using ::apache::thrift::protocol::TProtocolException;
+        throw TProtocolException(TProtocolException::INVALID_DATA);
+      }
+      RemoteController_createClusterKeepClusterName_presult result;
+      result.success = &_return;
+      result.read(iprot_);
+      iprot_->readMessageEnd();
+      iprot_->getTransport()->readEnd();
+
+      if (result.__isset.success) {
+        // _return pointer has now been filled
+        sentry.commit();
+        return;
+      }
+      if (result.__isset.serverException) {
+        sentry.commit();
+        throw result.serverException;
+      }
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "createClusterKeepClusterName failed: unknown result");
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);

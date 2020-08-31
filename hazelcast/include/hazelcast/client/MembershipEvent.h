@@ -17,7 +17,6 @@
 
 #pragma once
 
-#include <vector>
 #include "hazelcast/client/Member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -47,7 +46,6 @@ namespace hazelcast {
             enum MembershipEventType {
                 MEMBER_ADDED = 1,
                 MEMBER_REMOVED = 2,
-                MEMBER_ATTRIBUTE_CHANGED = 5
             };
 
             /**
@@ -55,7 +53,7 @@ namespace hazelcast {
              * Constructor.
              */
             MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
-                            const std::vector<Member> &membersList);
+                            const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &membersList);
 
             /**
              * Destructor
@@ -75,7 +73,7 @@ namespace hazelcast {
              *
              * @return the members at the moment after this event.
              */
-            virtual const std::vector<Member> getMembers() const;
+            virtual std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> getMembers() const;
 
             /**
              * Returns the cluster of the event.
@@ -100,10 +98,10 @@ namespace hazelcast {
             virtual const Member &getMember() const;
 
         private:
-            Cluster *cluster;
+            Cluster &cluster;
             Member member;
             MembershipEventType eventType;
-            std::vector<Member> members;
+            std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> members;
         };
     }
 }

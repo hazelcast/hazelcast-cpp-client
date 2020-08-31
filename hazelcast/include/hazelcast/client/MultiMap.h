@@ -17,7 +17,7 @@
 
 #include "hazelcast/client/proxy/MultiMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
+#include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
@@ -174,10 +174,10 @@ namespace hazelcast {
             *                     contain the value.
             * @return returns registration id.
             */
-            boost::future<std::string> addEntryListener(EntryListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener, bool includeValue) {
                 return proxy::MultiMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
-                                new impl::EntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
+                                new impl::EntryEventHandler<protocol::codec::multimap_addentrylistener_handler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(), std::move(listener), includeValue, getContext().getLogger())), includeValue);
             }
@@ -199,10 +199,10 @@ namespace hazelcast {
             * @return returns registration id.
             */
             template<typename K>
-            boost::future<std::string> addEntryListener(EntryListener &&listener, const K &key, bool includeValue) {
+            boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener, const K &key, bool includeValue) {
                 return proxy::MultiMapImpl::addEntryListener(
-                        std::unique_ptr<impl::BaseEventHandler>(
-                                new impl::EntryEventHandler<protocol::codec::MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler>(
+                        std::shared_ptr<impl::BaseEventHandler>(
+                                new impl::EntryEventHandler<protocol::codec::multimap_addentrylistenertokey_handler>(
                                         getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(), std::move(listener), includeValue, getContext().getLogger())), includeValue,
                         toData(key));

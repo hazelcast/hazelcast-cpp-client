@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
+#include <boost/optional.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -37,14 +37,14 @@ namespace hazelcast {
                 public:
                     virtual ~ListenerMessageCodec() = default;
 
-                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const = 0;
+                    virtual protocol::ClientMessage encodeAddRequest(bool localOnly) const = 0;
 
-                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const = 0;
+                    boost::uuids::uuid decodeAddResponse(protocol::ClientMessage &msg) const;
 
-                    virtual std::unique_ptr<protocol::ClientMessage>
-                    encodeRemoveRequest(const std::string &realRegistrationId) const = 0;
+                    virtual protocol::ClientMessage
+                    encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const = 0;
 
-                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const = 0;
+                    bool decodeRemoveResponse(protocol::ClientMessage &msg) const;
                 };
             }
         }

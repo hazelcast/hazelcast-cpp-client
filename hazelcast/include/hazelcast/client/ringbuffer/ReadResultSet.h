@@ -15,6 +15,13 @@
  */
 #pragma once
 
+#include <vector>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         namespace ringbuffer {
@@ -29,9 +36,8 @@ namespace hazelcast {
 
                 ReadResultSet(int32_t readCount, std::vector<serialization::pimpl::Data> &&dataItems,
                               serialization::pimpl::SerializationService &serializationService,
-                              std::unique_ptr<std::vector<int64_t>> &itemSeqs, bool itemSeqsExist,
-                              int64_t nextSeq) : itemsReadCount(readCount), itemSeqs(std::move(itemSeqs)),
-                                                 itemSeqsExist(itemSeqsExist), nextSeq(nextSeq) {
+                              boost::optional<std::vector<int64_t>> &itemSeqs, int64_t nextSeq)
+                              : itemsReadCount(readCount), itemSeqs(std::move(itemSeqs)), nextSeq(nextSeq) {
                     for (auto &&item : dataItems) {
                         items.emplace_back(item, serializationService);
                     }
@@ -67,10 +73,6 @@ namespace hazelcast {
                  * @since 3.9
                  */
                 int64_t getSequence(int32_t index) const {
-                    if (!itemSeqsExist) {
-                        BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("ReadResultSet::getSequence",
-                                                                                  "No item sequences exist"));
-                    }
                     if (index >= (int32_t) itemSeqs->size() || index < 0) {
                         BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::IllegalArgumentException>(
                                 "ReadResultSet::getSequence") << "Index " << index
@@ -109,10 +111,13 @@ namespace hazelcast {
             private:
                 int32_t itemsReadCount;
                 std::vector<TypedData> items;
-                std::unique_ptr<std::vector<int64_t>> itemSeqs;
-                bool itemSeqsExist;
+                boost::optional<std::vector<int64_t>> itemSeqs;
                 int64_t nextSeq;
             };
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif

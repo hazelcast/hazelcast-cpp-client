@@ -22,6 +22,11 @@
 #include "hazelcast/util/noop.h"
 #include "hazelcast/util/type_traits.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         class ItemEvent;
@@ -97,3 +102,7 @@ namespace hazelcast {
         };
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif

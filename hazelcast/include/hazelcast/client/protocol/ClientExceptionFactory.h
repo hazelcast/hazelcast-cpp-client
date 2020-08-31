@@ -16,10 +16,9 @@
 #pragma once
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <memory>
 #include <unordered_map>
-#include <stdint.h>
 #include <string>
+#include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -33,6 +32,9 @@ namespace hazelcast {
         }
 
         namespace protocol {
+            namespace codec {
+                struct ErrorHolder;
+            }
             class ClientMessage;
 
             class ExceptionFactory;
@@ -43,13 +45,13 @@ namespace hazelcast {
 
                 virtual ~ClientExceptionFactory();
 
-                void throwException(const std::string &source,
-                                    protocol::ClientMessage &clientMessage) const;
-
-                void throwException(int32_t errorCode) const;
+                std::exception_ptr create_exception(const std::vector<codec::ErrorHolder> &errors) const;
 
             private:
                 void registerException(int32_t errorCode, ExceptionFactory *factory);
+
+                std::exception_ptr create_exception(std::vector<codec::ErrorHolder>::const_iterator begin,
+                                                    std::vector<codec::ErrorHolder>::const_iterator end) const;
 
                 std::unordered_map<int32_t, ExceptionFactory *> errorCodeToFactory;
             };
@@ -58,34 +60,24 @@ namespace hazelcast {
             public:
                 virtual ~ExceptionFactory();
 
-                virtual void
-                throwException(const ClientExceptionFactory &clientExceptionFactory, const std::string &source,
-                               const std::string &message, const std::string &details,
-                               int32_t causeErrorCode) const = 0;
-
-                virtual void throwException() const = 0;
+                virtual std::exception_ptr create_exception(const ClientExceptionFactory &factory,
+                                                            const std::string &source,
+                                                            const std::string &message,
+                                                            const std::string &details, std::exception_ptr cause) const = 0;
             };
 
             template<typename EXCEPTION>
             class ExceptionFactoryImpl : public ExceptionFactory {
             public:
-                void throwException(const ClientExceptionFactory &clientExceptionFactory, const std::string &source,
-                                    const std::string &message,
-                                    const std::string &details = nullptr, int32_t causeErrorCode = -1) const override {
-                    EXCEPTION e(source, message, details);
-                    if (causeErrorCode < 0) {
-                        throw boost::enable_current_exception(e);
-                    }
-
+                std::exception_ptr create_exception(const ClientExceptionFactory &factory,
+                                                    const std::string &source,
+                                                    const std::string &message,
+                                                    const std::string &details, std::exception_ptr cause) const override {
                     try {
-                        clientExceptionFactory.throwException(causeErrorCode);
+                        BOOST_THROW_EXCEPTION(EXCEPTION(source, message, details, cause));
                     } catch (...) {
-                        std::throw_with_nested(boost::enable_current_exception(e));
+                        return std::current_exception();
                     }
-                }
-
-                void throwException() const override {
-                    return BOOST_THROW_EXCEPTION(EXCEPTION());
                 }
             };
 

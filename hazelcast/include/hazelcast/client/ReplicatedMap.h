@@ -23,7 +23,6 @@
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/MapEvent.h"
 #include "hazelcast/client/query/Predicates.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -87,10 +86,10 @@ namespace hazelcast {
              *
              * @param listener entry listener
              */
-            boost::future<std::string> addEntryListener(EntryListener &&listener) {
+            boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
-                        std::unique_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                        std::shared_ptr<impl::BaseEventHandler>(
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistener_handler>(getName(), getContext().getClientClusterService(),
                                         getContext().getSerializationService(), std::move(listener), getContext().getLogger())));
             }
 
@@ -107,11 +106,11 @@ namespace hazelcast {
              * @param key      the key to listen to
              */
             template<typename K>
-            typename std::enable_if<!std::is_base_of<query::Predicate, K>::value, boost::future<std::string>>::type
+            typename std::enable_if<!std::is_base_of<query::Predicate, K>::value, boost::future<boost::uuids::uuid>>::type
             addEntryListener(EntryListener &&listener, const K &key) {
                 return proxy::ReplicatedMapImpl::addEntryListenerToKey(
-                        std::unique_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                        std::shared_ptr<impl::BaseEventHandler>(
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenertokey_handler>(getName(), getContext().getClientClusterService(),
                                                       getContext().getSerializationService(), std::move(listener),
                                                       getContext().getLogger())), toData(key));
             }
@@ -124,11 +123,11 @@ namespace hazelcast {
              * @param predicate the predicate for filtering entries
              */
             template<typename P>
-            typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<std::string>>::type
+            typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<boost::uuids::uuid>>::type
             addEntryListener(EntryListener &&listener, const P &predicate) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
-                        std::unique_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                        std::shared_ptr<impl::BaseEventHandler>(
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenerwithpredicate_handler>(getName(), getContext().getClientClusterService(),
                                                       getContext().getSerializationService(), std::move(listener),
                                                       getContext().getLogger())), toData(predicate));
             }
@@ -142,11 +141,11 @@ namespace hazelcast {
              * @param key       the key to listen to
              */
             template<typename K, typename P>
-            typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<std::string>>::type
+            typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<boost::uuids::uuid>>::type
             addEntryListener(EntryListener &&listener, const P &predicate, const K &key) {
                 return proxy::ReplicatedMapImpl::addEntryListener(
-                        std::unique_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler(getName(), getContext().getClientClusterService(),
+                        std::shared_ptr<impl::BaseEventHandler>(
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenertokeywithpredicate_handler>(getName(), getContext().getClientClusterService(),
                                                       getContext().getSerializationService(), std::move(listener),
                                                       getContext().getLogger())), toData(key), toData(predicate));
             }
@@ -258,20 +257,19 @@ namespace hazelcast {
                     SERVICE_NAME, objectName, context) {
             }
 
-            class EntryEventHandler : public protocol::codec::ReplicatedMapAddEntryListenerCodec::AbstractEventHandler {
+            template<typename HANDLER>
+            class EntryEventHandler : public HANDLER {
             public:
-                EntryEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
+                EntryEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,
                                   EntryListener &&listener, util::ILogger &log)
                         : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
                         , listener(std::move(listener)), logger(log) {}
 
-                void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data> &key,
-                                                 std::unique_ptr<serialization::pimpl::Data> &value,
-                                                 std::unique_ptr<serialization::pimpl::Data> &oldValue,
-                                                 std::unique_ptr<serialization::pimpl::Data> &mergingValue,
-                                                 const int32_t &eventType, const std::string &uuid,
-                                                 const int32_t &numberOfAffectedEntries) override {
+                void handle_entry(const boost::optional<Data> &key, const boost::optional<Data> &value,
+                                  const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
+                                  int32_t eventType, boost::uuids::uuid uuid,
+                                  int32_t numberOfAffectedEntries) override {
                     if (eventType == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
                         fireMapWideEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
@@ -281,24 +279,20 @@ namespace hazelcast {
                 }
 
             private:
-                void fireMapWideEvent(std::unique_ptr<serialization::pimpl::Data> &key,
-                                      std::unique_ptr<serialization::pimpl::Data> &value,
-                                      std::unique_ptr<serialization::pimpl::Data> &oldValue,
-                                      std::unique_ptr<serialization::pimpl::Data> &mergingValue,
-                                      const int32_t &eventType, const std::string &uuid,
-                                      const int32_t &numberOfAffectedEntries) {
+                void fireMapWideEvent(const boost::optional<Data> &key, const boost::optional<Data> &value,
+                                      const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
+                                      int32_t eventType, boost::uuids::uuid uuid,
+                                      int32_t numberOfAffectedEntries) {
                     auto member = clusterService.getMember(uuid);
                     auto mapEventType = static_cast<EntryEvent::type>(eventType);
                     MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName, numberOfAffectedEntries);
                     listener.map_cleared(std::move(mapEvent));
                 }
 
-                void fireEntryEvent(std::unique_ptr<serialization::pimpl::Data> &key,
-                                    std::unique_ptr<serialization::pimpl::Data> &value,
-                                    std::unique_ptr<serialization::pimpl::Data> &oldValue,
-                                    std::unique_ptr<serialization::pimpl::Data> &mergingValue,
-                                    const int32_t &eventType, const std::string &uuid,
-                                    const int32_t &numberOfAffectedEntries) {
+                void fireEntryEvent(const boost::optional<Data> &key, const boost::optional<Data> &value,
+                                    const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
+                                    int32_t eventType, boost::uuids::uuid uuid,
+                                    int32_t numberOfAffectedEntries) {
                     TypedData eventKey, val, oldVal, mergingVal;
                     if (value) {
                         val = TypedData(std::move(*value), serializationService);
@@ -317,7 +311,7 @@ namespace hazelcast {
                         member = Member(uuid);
                     }
                     auto type = static_cast<EntryEvent::type>(eventType);
-                    EntryEvent entryEvent(instanceName, member.value(), type, std::move(eventKey), std::move(val),
+                    EntryEvent entryEvent(instanceName, std::move(member.value()), type, std::move(eventKey), std::move(val),
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
                         case EntryEvent::type::ADDED:
@@ -339,7 +333,7 @@ namespace hazelcast {
                 }
             private:
                 const std::string& instanceName;
-                spi::ClientClusterService &clusterService;
+                spi::impl::ClientClusterServiceImpl &clusterService;
                 serialization::pimpl::SerializationService& serializationService;
                 EntryListener listener;
                 util::ILogger &logger;

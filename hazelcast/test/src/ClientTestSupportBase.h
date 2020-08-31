@@ -50,10 +50,11 @@ namespace hazelcast {
 
                 static void sleepSeconds(int32_t seconds);
 
-                static std::string generateKeyOwnedBy(spi::ClientContext &context, const Member &member);
-            protected:
+                static boost::uuids::uuid generateKeyOwnedBy(spi::ClientContext &context, const Member &member);
 
-                static hazelcast::client::ClientConfig getConfig();
+                static hazelcast::client::ClientConfig getConfig(bool ssl_enabled = false, bool smart = true);
+            protected:
+                static const std::string get_ssl_cluster_name();
 
                 static HazelcastClient getNewClient();
 

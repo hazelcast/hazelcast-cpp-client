@@ -18,8 +18,8 @@
 #include <memory>
 #include <vector>
 #include <atomic>
+#include <boost/uuid/uuid.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/serialization/serialization.h"
 
@@ -79,7 +79,7 @@ namespace hazelcast {
 
                 TransactionProxy(const TransactionProxy &rhs);
 
-                const std::string &getTxnId() const;
+                boost::uuids::uuid getTxnId() const;
 
                 TxnState getState() const;
 
@@ -105,7 +105,7 @@ namespace hazelcast {
                 std::atomic<bool> TRANSACTION_EXISTS{ false };
 
                 int64_t threadId;
-                std::string txnId;
+                boost::uuids::uuid txnId;
 
                 TxnState state;
                 std::chrono::steady_clock::time_point startTime;
@@ -114,7 +114,7 @@ namespace hazelcast {
 
                 void checkTimeout();
 
-                boost::future<protocol::ClientMessage> invoke(std::unique_ptr<protocol::ClientMessage> &request);
+                boost::future<protocol::ClientMessage> invoke(protocol::ClientMessage &request);
             };
         }
     }

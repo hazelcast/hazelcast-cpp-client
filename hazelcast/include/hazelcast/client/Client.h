@@ -31,13 +31,14 @@ namespace hazelcast {
          */
         class HAZELCAST_API Client : public Endpoint {
         public:
-            Client(const std::shared_ptr<std::string> &uuid, const std::shared_ptr<Address> &socketAddress,
-                   const std::string &name);
+            Client(boost::uuids::uuid uuid, boost::optional<Address> socketAddress, std::string name,
+                   std::unordered_set<std::string> labels);
 
             const std::string &getName() const;
 
         private:
             std::string name;
+            std::unordered_set<std::string> labels_;
         };
     }
 }

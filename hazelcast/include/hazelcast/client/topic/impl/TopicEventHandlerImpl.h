@@ -15,11 +15,10 @@
  */
 #pragma once
 
-#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/topic/MessageListener.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,22 +29,21 @@ namespace hazelcast {
     namespace client {
         namespace topic {
             namespace impl {
-                class TopicEventHandlerImpl : public protocol::codec::TopicAddMessageListenerCodec::AbstractEventHandler {
+                class TopicEventHandlerImpl : public protocol::codec::topic_addmessagelistener_handler {
                 public:
-                    TopicEventHandlerImpl(const std::string &instanceName, spi::ClientClusterService &clusterService,
+                    TopicEventHandlerImpl(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                           serialization::pimpl::SerializationService &serializationService,
                                           Listener &&messageListener)
                             :instanceName(instanceName), clusterService(clusterService),
                             serializationService(serializationService), listener(std::move(messageListener)) {}
 
-                    void handleTopicEventV10(serialization::pimpl::Data &&item, const int64_t &publishTime,
-                                             const std::string &uuid) override {
+                    void handle_topic(Data const & item, int64_t publishTime, boost::uuids::uuid uuid) override {
                         listener.received(Message(instanceName, TypedData(std::move(item), serializationService), publishTime,
                                         clusterService.getMember(uuid)));
                     }
                 private:
                     std::string instanceName;
-                    spi::ClientClusterService &clusterService;
+                    spi::impl::ClientClusterServiceImpl &clusterService;
                     serialization::pimpl::SerializationService &serializationService;
                     Listener listener;
                 };

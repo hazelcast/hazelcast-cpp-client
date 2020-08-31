@@ -231,22 +231,29 @@ namespace hazelcast {
             readMany(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter = nullptr) {
                 auto filterData = toData<IFUNCTION>(filter);
                 return readManyData(startSequence, minCount, maxCount, &filterData).then([=] (boost::future<protocol::ClientMessage> f) {
-                    auto params = protocol::codec::RingbufferReadManyCodec::ResponseParameters::decode(f.get());
-                    return ringbuffer::ReadResultSet(params.readCount, std::move(params.items), getSerializationService(),
-                                                     params.itemSeqs, params.itemSeqsExist,
-                                                     (params.nextSeqExist ? params.nextSeq
-                                                                          : ringbuffer::ReadResultSet::SEQUENCE_UNAVAILABLE));
+                    return get_result_set(std::move(f));
                 });
+            }
+
+            ringbuffer::ReadResultSet get_result_set(boost::future<protocol::ClientMessage> f) {
+                auto msg = f.get();
+                auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(msg.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN));
+                auto read_count = msg.get<int32_t>();
+                auto next_seq = msg.get<int64_t>();
+                msg.rd_ptr(
+                        static_cast<int32_t>(initial_frame->frame_len) - ClientMessage::RESPONSE_HEADER_LEN - ClientMessage::INT32_SIZE -
+                        ClientMessage::INT64_SIZE);
+
+                auto datas = msg.get<std::vector<Data>>();
+                auto item_seqs = msg.getNullable<std::vector<int64_t>>();
+                return ringbuffer::ReadResultSet(read_count, std::move(datas), getSerializationService(), item_seqs,
+                                                 next_seq);
             }
 
             boost::future<ringbuffer::ReadResultSet>
             readMany(int64_t startSequence, int32_t minCount, int32_t maxCount) {
                 return readManyData(startSequence, minCount, maxCount, nullptr).then([=] (boost::future<protocol::ClientMessage> f) {
-                    auto params = protocol::codec::RingbufferReadManyCodec::ResponseParameters::decode(f.get());
-                    return ringbuffer::ReadResultSet(params.readCount, std::move(params.items), getSerializationService(),
-                                                     params.itemSeqs, params.itemSeqsExist,
-                                                     (params.nextSeqExist ? params.nextSeq
-                                                                          : ringbuffer::ReadResultSet::SEQUENCE_UNAVAILABLE));
+                    return get_result_set(std::move(f));
                 });
             }
 

@@ -24,13 +24,11 @@
 #include <hazelcast/client/exception/IllegalStateException.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/util/UuidUtil.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
 #include <thread>
 #include <hazelcast/client/spi/ClientContext.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/protocol/Principal.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <ClientTestSupport.h>
 #include <memory>
@@ -88,7 +86,6 @@
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
@@ -117,7 +114,6 @@
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/MultiMap.h"
-#include "hazelcast/util/LittleEndianBufferWrapper.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
@@ -130,6 +126,7 @@
 #include "hazelcast/client/ReliableTopic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
 #pragma warning(disable: 4996) //for unsafe getenv
 #endif
 
@@ -225,13 +222,21 @@ namespace hazelcast {
                     }
                     return testValues;
                 }
-                
+
+                virtual void SetUp() {
+                    ASSERT_TRUE(factory);
+                    ASSERT_TRUE(instance1);
+                    ASSERT_TRUE(client);
+                    ASSERT_TRUE(client2);
+                }
+
                 static void SetUpTestCase() {
                     factory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), 
                             "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                     instance1 = new HazelcastServer(*factory);
-                    client = new HazelcastClient(getConfig());
-                    client2 = new HazelcastClient(getConfig());
+                    auto config = getConfig().setClusterName("replicated-map-binary-test");
+                    client = new HazelcastClient(config);
+                    client2 = new HazelcastClient(config);
                 }
 
                 static void TearDownTestCase() {
@@ -249,7 +254,7 @@ namespace hazelcast {
                 static ClientConfig getClientConfigWithNearCacheInvalidationEnabled() {
                     auto nearCacheConfig = std::make_shared<config::NearCacheConfig<serialization::pimpl::Data>>();
                     nearCacheConfig->setInvalidateOnChange(true).setInMemoryFormat(config::BINARY);
-                    return ClientConfig().addNearCacheConfig(nearCacheConfig);
+                    return getConfig().setClusterName("replicated-map-binary-test").addNearCacheConfig(nearCacheConfig);
                 }
 
                 static HazelcastServer *instance1;
@@ -562,12 +567,8 @@ namespace hazelcast {
                 struct ListenerState {
                     ListenerState() : keys(UINT_MAX) {}
                     hazelcast::util::BlockingConcurrentQueue<int> keys;
-                    std::atomic<int> addCount{ 0 };
-                    std::atomic<int> removeCount{ 0 };
-                    std::atomic<int> updateCount{ 0 };
-                    std::atomic<int> evictCount{ 0 };
-                    std::atomic<int> mapClearCount{ 0 };
-                    std::atomic<int> mapEvictCount{ 0 };
+                    std::atomic<int> addCount{ 0 }, removeCount{ 0 }, updateCount{ 0 }, evictCount{ 0 },
+                    mapClearCount{ 0 }, mapEvictCount{ 0 };
                 };
 
                 EntryListener makeEventCountingListener(ListenerState &state) {
@@ -706,10 +707,10 @@ namespace hazelcast {
 
                 void TearDown() override {
                     if (nearCachedMap) {
-                        nearCachedMap->destroy();
+                        nearCachedMap->destroy().get();
                     }
                     if (noNearCacheMap) {
-                        noNearCacheMap->destroy();
+                        noNearCacheMap->destroy().get();
                     }
                     if (client) {
                         client->shutdown();
@@ -1248,7 +1249,7 @@ namespace hazelcast {
                 }
 
                 static std::unique_ptr<ClientConfig> newClientConfig() {
-                    return std::unique_ptr<ClientConfig>(new ClientConfig());
+                    return std::unique_ptr<ClientConfig>(new ClientConfig(getConfig()));
                 }
 
                 std::shared_ptr<ReplicatedMap > getNearCachedMapFromClient(
@@ -1369,7 +1370,7 @@ namespace hazelcast {
 
             TEST_F(ClientTopicTest, testTopicListeners) {
                 boost::latch latch1(10);
-                std::string id = topic->addMessageListener(
+                auto id = topic->addMessageListener(
                     topic::Listener().
                         on_received([&latch1](topic::Message &&) {
                             latch1.count_down();

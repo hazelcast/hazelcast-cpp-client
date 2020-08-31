@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/MemberAttributeEvent.h>
 #include <hazelcast/client/InitialMembershipListener.h>
 #include <hazelcast/client/InitialMembershipEvent.h>
+#include <hazelcast/client/MembershipEvent.h>
 
 class MyInitialMemberListener : public hazelcast::client::InitialMembershipListener {
 
 public:
-    void init(const hazelcast::client::InitialMembershipEvent &event) override {
-        std::vector<hazelcast::client::Member> members = event.getMembers();
+    void init(hazelcast::client::InitialMembershipEvent event) override {
+        auto members = event.getMembers();
         std::cout << "The following are the initial members in the cluster:" << std::endl;
-        for (std::vector<hazelcast::client::Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-            std::cout << it->getAddress() << std::endl;
+        for (const auto &member : members) {
+            std::cout << member.getAddress() << std::endl;
         }
     }
 
@@ -39,12 +39,6 @@ public:
         membershipEvent.getMember().getAddress() << std::endl;
     }
 
-    void memberAttributeChanged(const hazelcast::client::MemberAttributeEvent &memberAttributeEvent) override {
-        std::cout << "[MyInitialMemberListener::memberAttributeChanged] Member attribute:" <<
-        memberAttributeEvent.getKey()
-        << " changed. Value:" << memberAttributeEvent.getValue() << " for member:" <<
-        memberAttributeEvent.getMember().getAddress() << std::endl;
-    }
 };
 
 class MyMemberListener : public hazelcast::client::MembershipListener {
@@ -58,12 +52,6 @@ public:
     void memberRemoved(const hazelcast::client::MembershipEvent &membershipEvent) override {
         std::cout << "[MyMemberListener::memberRemoved] Member left:" <<
         membershipEvent.getMember().getAddress() << std::endl;
-    }
-
-    void memberAttributeChanged(const hazelcast::client::MemberAttributeEvent &memberAttributeEvent) override {
-        std::cout << "[MyMemberListener::memberAttributeChanged] Member attribute:" << memberAttributeEvent.getKey()
-        << " changed. Value:" << memberAttributeEvent.getValue() << " for member:" <<
-        memberAttributeEvent.getMember().getAddress() << std::endl;
     }
 };
 

@@ -19,12 +19,10 @@
 #include <atomic>
 
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/impl/Partition.h"
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -43,40 +41,34 @@ namespace hazelcast {
             class ClientContext;
 
             namespace impl {
-                class ClientExecutionServiceImpl;
-
-                class HAZELCAST_API ClientPartitionServiceImpl : public ClientPartitionService,
-                                                                 public std::enable_shared_from_this<ClientPartitionServiceImpl>,
-                                                                 public protocol::codec::ClientAddPartitionListenerCodec::AbstractEventHandler {
+                class HAZELCAST_API ClientPartitionServiceImpl : public std::enable_shared_from_this<ClientPartitionServiceImpl> {
                 public:
-                    ClientPartitionServiceImpl(ClientContext &client,
-                                               hazelcast::client::spi::impl::ClientExecutionServiceImpl &executionService);
+                    ClientPartitionServiceImpl(ClientContext &client);
 
-                    void start();
+                    /**
+                     * The partitions can be empty on the response, client will not apply the empty partition table,
+                     */
+                    void handle_event(const std::shared_ptr<connection::Connection>& connection, int32_t version,
+                                      const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
-                    void refreshPartitions();
+                    boost::uuids::uuid getPartitionOwner(int partitionId);
 
-                    void stop();
+                    int32_t getPartitionId(const serialization::pimpl::Data &key);
 
-                    void listenPartitionTable(const std::shared_ptr<connection::Connection> &ownerConnection);
+                    int32_t getPartitionCount();
 
-                    void
-                    handlePartitionsEventV15(const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
-                                             const int32_t &partitionStateVersion) override;
+                    std::shared_ptr<client::impl::Partition> getPartition(int32_t partitionId);
 
-                    void beforeListenerRegister() override;
+                    bool check_and_set_partition_count(int32_t new_partition_count);
 
-                    void onListenerRegister() override;
-
-                    std::shared_ptr<Address> getPartitionOwner(int partitionId) override;
-
-                    int getPartitionId(const serialization::pimpl::Data &key) override;
-
-                    int getPartitionCount() override;
-
-                    std::shared_ptr<client::impl::Partition> getPartition(int partitionId) override;
-
+                    void reset();
                 private:
+                    struct partition_table {
+                        std::shared_ptr<connection::Connection> connection;
+                        int32_t version;
+                        std::unordered_map<int32_t, boost::uuids::uuid> partitions;
+                    };
+
                     class PartitionImpl : public client::impl::Partition {
                     public:
                         PartitionImpl(int partitionId, ClientContext &client,
@@ -92,23 +84,20 @@ namespace hazelcast {
                         ClientPartitionServiceImpl &partitionService;
                     };
 
-                    bool processPartitionResponse(
-                            const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
-                            int32_t partitionStateVersion, bool partitionStateVersionExist);
+                    bool should_be_applied(const std::shared_ptr<connection::Connection>& connection, int32_t version,
+                                           const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions,
+                                           const partition_table &current);
+
+                    void log_failure(const std::shared_ptr<connection::Connection> &connection, int32_t version,
+                                     const partition_table &current, const std::string &cause);
+
+                    std::unordered_map<int32_t, boost::uuids::uuid>
+                    convert_to_map(const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
                     ClientContext &client;
-                    ClientExecutionServiceImpl &clientExecutionService;
-
-                    util::SynchronizedMap<int, Address> partitions;
+                    util::ILogger &logger_;
                     std::atomic<int32_t> partitionCount;
-                    std::atomic<int32_t> lastPartitionStateVersion;
-                    std::mutex lock;
-
-                    std::future<void> refreshPartitionsFuture;
-
-                    void waitForPartitionsFetchedOnce();
-
-                    bool isClusterFormedByOnlyLiteMembers();
+                    boost::atomic_shared_ptr<partition_table> partition_table_;
                 };
             }
         }

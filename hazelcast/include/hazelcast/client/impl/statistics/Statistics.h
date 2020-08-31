@@ -55,8 +55,6 @@ namespace hazelcast {
 
                 private:
                     static const std::string NEAR_CACHE_CATEGORY_PREFIX;
-                    static const std::string FEATURE_SUPPORTED_SINCE_VERSION_STRING;
-                    static const int FEATURE_SUPPORTED_SINCE_VERSION;
                     static const char STAT_SEPARATOR = ',';
                     static const char KEY_VALUE_SEPARATOR = '=';
 
@@ -65,7 +63,7 @@ namespace hazelcast {
                         PeriodicStatistics(Statistics &statistics);
 
                         void fillMetrics(std::ostringstream &stats,
-                                         const std::shared_ptr<connection::Connection> &ownerConnection);
+                                         const std::shared_ptr<connection::Connection> &connection);
 
                         void addNearCacheStats(std::ostringstream &stats);
 
@@ -93,12 +91,10 @@ namespace hazelcast {
 
                     void schedulePeriodicStatisticsSendTask(int64_t periodSeconds);
 
-                    std::shared_ptr<connection::Connection> getOwnerConnection();
+                    std::shared_ptr<connection::Connection> getConnection();
 
-                    void sendStats(const std::string &newStats,
-                                   const std::shared_ptr<connection::Connection> &ownerConnection);
-
-                    bool isSameWithCachedOwnerAddress(const std::shared_ptr<Address> &currentOwnerAddress);
+                    void sendStats(int64_t timestamp, const std::string &newStats,
+                                   const std::shared_ptr<connection::Connection> &connection);
 
                     static std::string escapeSpecialCharacters(const std::string &name);
 
