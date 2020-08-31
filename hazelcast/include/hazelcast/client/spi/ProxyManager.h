@@ -32,18 +32,15 @@
 
 namespace hazelcast {
     namespace client {
-        class Address;
-
         namespace spi {
             class ClientContext;
             class ClientProxy;
-            class ClientProxyFactory;
 
             class HAZELCAST_API ProxyManager {
             public:
                 typedef std::unordered_map<DefaultObjectNamespace, std::shared_future<std::shared_ptr<ClientProxy>>> proxy_map;
 
-                ProxyManager(ClientContext &context);
+                explicit ProxyManager(ClientContext &context);
 
                 template<typename T>
                 std::shared_ptr<T> getOrCreateProxy(const std::string &service, const std::string &id) {
@@ -58,8 +55,7 @@ namespace hazelcast {
                         if (it != proxies.end()) {
                             proxyFuture = it->second;
                         } else {
-                            auto result = proxies.insert({ns, promise.get_future().share()});
-                            assert(result.second);
+                            proxies.insert({ns, promise.get_future().share()});
                             insertedEntry = true;
                         }
                     }
@@ -70,10 +66,10 @@ namespace hazelcast {
 
                     try {
                         auto clientProxy = std::shared_ptr<T>(new T(id, &client));
-                        initializeWithRetry(std::static_pointer_cast<ClientProxy>(clientProxy));
+                        initialize(std::static_pointer_cast<ClientProxy>(clientProxy));
                         promise.set_value(std::static_pointer_cast<ClientProxy>(clientProxy));
                         return clientProxy;
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         promise.set_exception(std::current_exception());
                         std::lock_guard<std::mutex> guard(lock);
                         if (insertedEntry) {
@@ -104,21 +100,11 @@ namespace hazelcast {
                 void destroy();
 
             private:
-                void initializeWithRetry(const std::shared_ptr<ClientProxy> &clientProxy);
-
-                std::shared_ptr<Address> findNextAddressToSendCreateRequest();
-
                 void initialize(const std::shared_ptr<ClientProxy> &clientProxy);
 
                 proxy_map proxies;
                 std::mutex lock;
-                std::chrono::steady_clock::duration invocationTimeout;
-                std::chrono::steady_clock::duration invocationRetryPause;
                 ClientContext &client;
-
-                bool isRetryable(exception::IException &exception);
-
-                void sleepForProxyInitRetry();
             };
         }
     }

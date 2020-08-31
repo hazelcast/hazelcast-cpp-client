@@ -76,8 +76,8 @@ namespace hazelcast {
                 std::unique_ptr<ClientMessage> message;
                 connection::Connection &connection;
 
-                int32_t frameLen;
-                int32_t offset;
+                bool is_final_frame;
+                size_t remaining_frame_bytes;
             };
         }
     }

@@ -43,7 +43,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API InitialMembershipEvent {
         public:
-            InitialMembershipEvent(Cluster &cluster, const std::unordered_set<Member> &members);
+            InitialMembershipEvent(Cluster &cluster, std::unordered_set<Member> members);
 
             /**
              * Returns an immutable set of ordered members at the moment this InitialMembershipListener is
@@ -51,7 +51,7 @@ namespace hazelcast {
              *
              * @return a set of members.
              */
-            const std::vector<Member> &getMembers() const;
+            const std::unordered_set<Member> &getMembers() const;
 
             /**
              * Returns the cluster of the event.
@@ -61,8 +61,8 @@ namespace hazelcast {
             Cluster &getCluster();
 
         private:
-            std::vector<Member> members;
-            Cluster &cluster;
+            Cluster &cluster_;
+            std::unordered_set<Member> members_;
         };
 
     }

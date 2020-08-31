@@ -19,10 +19,16 @@
 #include <unordered_set>
 #include <memory>
 #include <atomic>
+#include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include <hazelcast/client/cluster/impl/VectorClock.h>
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/util/Sync.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace util {
@@ -180,13 +186,13 @@ namespace hazelcast {
                  * sending invocations.
                  */
                 // public for testing purposes
-                std::shared_ptr<Address> getCurrentTargetReplicaAddress();
+                boost::shared_ptr<Member> getCurrentTargetReplicaAddress();
 
             protected:
                 PNCounterImpl(const std::string &serviceName, const std::string &objectName,
                               spi::ClientContext *context);
 
-                static const std::shared_ptr<std::unordered_set<Address>> EMPTY_ADDRESS_LIST;
+                static const std::shared_ptr<std::unordered_set<Member>> EMPTY_ADDRESS_LIST;
 
                 /**
                  * Returns the target on which this proxy should invoke a CRDT operation.
@@ -202,7 +208,7 @@ namespace hazelcast {
                  * @return a CRDT replica address or {@code null} if there are no viable
                  * addresses
                  */
-                std::shared_ptr<Address> getCRDTOperationTarget(const std::unordered_set<Address> &excludedAddresses);
+                boost::shared_ptr<Member> getCRDTOperationTarget(const std::unordered_set<Member> &excludedAddresses);
 
                 /**
                  * Chooses and returns a CRDT replica address. Replicas with addresses
@@ -215,22 +221,22 @@ namespace hazelcast {
                  *                          address
                  * @return a CRDT replica address or {@code null} if there are no viable addresses
                  */
-                std::shared_ptr<Address> chooseTargetReplica(const std::unordered_set<Address> &excludedAddresses);
+                boost::shared_ptr<Member> chooseTargetReplica(const std::unordered_set<Member> &excludedAddresses);
 
                 /**
                  * Returns the addresses of the CRDT replicas from the current state of the
                  * local membership list. Addresses contained in the {@code excludedAddresses}
                  * collection are excluded.
                  *
-                 * @param excludedAddresses the addresses to exclude when choosing a replica
+                 * @param excludedMembers the addresses to exclude when choosing a replica
                  *                          address
                  * @return list of possible CRDT replica addresses
                  */
-                std::vector<Address> getReplicaAddresses(const std::unordered_set<Address> &excludedAddresses);
+                std::vector<Member> getReplicaAddresses(const std::unordered_set<Member> &excludedMembers);
 
-                std::shared_ptr<Address>
-                tryChooseANewTarget(std::shared_ptr<std::unordered_set<Address>> excludedAddresses,
-                                    std::shared_ptr<Address> lastTarget,
+                boost::shared_ptr<Member>
+                tryChooseANewTarget(std::shared_ptr<std::unordered_set<Member>> excludedAddresses,
+                                    boost::shared_ptr<Member> lastTarget,
                                     const exception::HazelcastException &lastException);
 
                 /**
@@ -261,9 +267,9 @@ namespace hazelcast {
                  *                                        {@code lastException} is false
                  */
                 boost::future<int64_t>
-                invokeGetInternal(std::shared_ptr<std::unordered_set<Address> > excludedAddresses,
+                invokeGetInternal(std::shared_ptr<std::unordered_set<Member> > excludedAddresses,
                                   std::exception_ptr lastException,
-                                  const std::shared_ptr<Address> &target);
+                                  const boost::shared_ptr<Member> &target);
 
 
                 /**
@@ -292,8 +298,8 @@ namespace hazelcast {
                  */
                 boost::future<int64_t>
                 invokeAddInternal(int64_t delta, bool getBeforeUpdate,
-                                  std::shared_ptr<std::unordered_set<Address> > excludedAddresses,
-                                  std::exception_ptr lastException, const std::shared_ptr<Address> &target);
+                                  std::shared_ptr<std::unordered_set<Member> > excludedAddresses,
+                                  std::exception_ptr lastException, const boost::shared_ptr<Member> &target);
 
                 /**
                  * Updates the locally observed CRDT vector clock atomically. This method
@@ -304,7 +310,7 @@ namespace hazelcast {
                  * @param receivedLogicalTimestamps logical timestamps received from a replica state read
                  */
                 void updateObservedReplicaTimestamps(
-                        const std::vector<std::pair<std::string, int64_t> > &receivedLogicalTimestamps);
+                        const cluster::impl::VectorClock::TimestampVector &receivedLogicalTimestamps);
 
                 /**
                  * Transforms the list of replica logical timestamps to a vector clock instance.
@@ -313,9 +319,9 @@ namespace hazelcast {
                  * @return a vector clock instance
                  */
                 static std::shared_ptr<cluster::impl::VectorClock>
-                toVectorClock(const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps);
+                toVectorClock(const cluster::impl::VectorClock::TimestampVector &replicaLogicalTimestamps);
 
-                util::Sync<std::shared_ptr<Address> > currentTargetReplicaAddress;
+                boost::atomic_shared_ptr<Member> currentTargetReplicaAddress;
                 std::mutex targetSelectionMutex;
                 std::atomic<int32_t> maxConfiguredReplicaCount;
                 /**
@@ -324,8 +330,13 @@ namespace hazelcast {
                  */
                 util::Sync<std::shared_ptr<cluster::impl::VectorClock> > observedClock;
                 util::ILogger &logger;
+
+                int64_t get_and_update_timestamps(boost::future<protocol::ClientMessage> f);
             };
         }
     }
 }
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif

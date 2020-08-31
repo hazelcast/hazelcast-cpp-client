@@ -109,15 +109,16 @@ namespace hazelcast {
                 * @param listenerMessageCodec The codec used for listener register/deregister
                 * @param handler Event handler for the listener
                 */
-                boost::future<std::string> registerListener(std::unique_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
-                                             std::unique_ptr<client::impl::BaseEventHandler> handler);
+                boost::future<boost::uuids::uuid> registerListener(
+                        std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
+                        std::shared_ptr<client::impl::BaseEventHandler> handler);
 
                 /**
                 * Internal API.
                 *
                 * @param registrationId The registration id for the listener to be unregistered.
                 */
-                boost::future<bool> deregisterListener(const std::string &registrationId);
+                boost::future<bool> deregisterListener(boost::uuids::uuid registrationId);
             protected:
                 /**
                  * Called before proxy is destroyed and determines whether destroy should be done.

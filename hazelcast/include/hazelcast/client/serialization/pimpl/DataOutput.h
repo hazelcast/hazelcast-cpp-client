@@ -84,7 +84,8 @@ namespace hazelcast {
                             std::is_same<int32_t, typename std::remove_cv<T>::type>::value ||
                             std::is_same<int64_t, typename std::remove_cv<T>::type>::value ||
                             std::is_same<float, typename std::remove_cv<T>::type>::value ||
-                            std::is_same<double, typename std::remove_cv<T>::type>::value, void>::type
+                            std::is_same<double, typename std::remove_cv<T>::type>::value ||
+                            std::is_same<boost::uuids::uuid, typename std::remove_cv<T>::type>::value, void>::type
                     inline write(T) { if (isNoWrite) { return; } }
 
                     template <typename T>
@@ -183,6 +184,9 @@ namespace hazelcast {
 
                 template <>
                 HAZELCAST_API void DataOutput::write(double value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(boost::uuids::uuid value);
 
                 template <>
                 HAZELCAST_API void DataOutput::write(const std::string &value);

@@ -27,14 +27,12 @@
 #include <hazelcast/client/exception/IllegalStateException.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/serialization.h>
-#include <hazelcast/util/UuidUtil.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <hazelcast/client/spi/impl/ClientInvocation.h>
 #include <gtest/gtest.h>
 #include <thread>
 #include <hazelcast/client/spi/ClientContext.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/protocol/Principal.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <ClientTestSupport.h>
 #include <memory>
@@ -90,11 +88,9 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
@@ -111,6 +107,7 @@
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
 #pragma warning(disable: 4996) //for unsafe getenv
 #endif
 
@@ -223,8 +220,8 @@ namespace hazelcast {
                 auto listener1 = makeAddRemoveListener(latch1Add, latch1Remove);
                 auto listener2 = makeAddRemoveListener(latch2Add, latch2Remove);
 
-                std::string id1 = mm->addEntryListener(std::move(listener1), true).get();
-                std::string id2 = mm->addEntryListener(std::move(listener2), "key3", true).get();
+                auto id1 = mm->addEntryListener(std::move(listener1), true).get();
+                auto id2 = mm->addEntryListener(std::move(listener2), "key3", true).get();
 
                 fillData();
 
@@ -356,10 +353,10 @@ namespace hazelcast {
         namespace test {
             class ClientListTest : public ClientTestSupport {
             protected:
-                
+
                 void TearDown() override {
                     // clear list
-                    list->clear();
+                    list->clear().get();
                 }
 
                 static void SetUpTestCase() {
@@ -369,16 +366,13 @@ namespace hazelcast {
 #else
                     instance = new HazelcastServer(*g_srvFactory);
 #endif
-                    ClientConfig clientConfig = getConfig();
 
 #ifdef HZ_BUILD_WITH_SSL
-                    config::ClientNetworkConfig networkConfig;
-                    config::SSLConfig sslConfig;
-                    sslConfig.setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList("HIGH");
-                    networkConfig.setSSLConfig(sslConfig);
-                    clientConfig.setNetworkConfig(networkConfig);
+                    ClientConfig clientConfig = getConfig(true);
+                    clientConfig.getNetworkConfig().getSSLConfig().setCipherList("HIGH");
+#else
+                    ClientConfig clientConfig = getConfig();
 #endif // HZ_BUILD_WITH_SSL
-
                     client = new HazelcastClient(clientConfig);
                     list = client->getList("MyList");
                 }
@@ -542,12 +536,12 @@ namespace hazelcast {
                     ASSERT_EQ("item-1", itemEvent.getItem().get<std::string>().value());
                     latch1.count_down();
                 });
-                
-                std::string registrationId = list->addItemListener(std::move(listener), true).get();
+
+                auto registrationId = list->addItemListener(std::move(listener), true).get();
 
                 list->add("item-1").get();
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(20)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
 
                 ASSERT_TRUE(list->removeItemListener(registrationId).get());
             }
@@ -610,13 +604,13 @@ namespace hazelcast {
                         latch1.count_down();
                     });
 
-                std::string id = q->addItemListener(std::move(listener), true).get();
+                auto id = q->addItemListener(std::move(listener), true).get();
                 
                 for (int i = 0; i < 5; i++) {
                     ASSERT_TRUE(q->offer(std::string("event_item") + std::to_string(i)).get());
                 }
 
-                ASSERT_EQ(boost::cv_status::no_timeout, latch1.wait_for(boost::chrono::seconds(5)));
+                ASSERT_OPEN_EVENTUALLY(latch1);
                 ASSERT_TRUE(q->removeItemListener(id).get());
 
                 // added for test coverage
@@ -832,13 +826,6 @@ namespace hazelcast {
                     void SelectNoMembers::toString(std::ostream &os) const {
                         os << "SelectNoMembers";
                     }
-
-                    const std::string *MapPutPartitionAwareCallable::getPartitionKey() const {
-                        return &partitionKey;
-                    }
-
-                    MapPutPartitionAwareCallable::MapPutPartitionAwareCallable(
-                            const std::string &mapName, const std::string &partitionKey) : mapName(mapName), partitionKey(partitionKey) {}
                 }
             }
         }
@@ -863,7 +850,7 @@ namespace hazelcast {
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
-                    client = new HazelcastClient;
+                    client = new HazelcastClient(ClientConfig().setClusterName("executor-test"));
                 }
 
                 static void TearDownTestCase() {
@@ -898,11 +885,11 @@ namespace hazelcast {
                     hazelcast::util::Sync<std::exception_ptr> exception;
                 };
 
-                class SuccessfullExecutionCallback : public ExecutionCallback<std::string> {
+                class SuccessfullExecutionCallback : public ExecutionCallback<boost::uuids::uuid> {
                 public:
                     SuccessfullExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
 
-                    void onResponse(const boost::optional<std::string> &response) override {
+                    void onResponse(const boost::optional<boost::uuids::uuid> &response) override {
                         latch1->count_down();
                     }
 
@@ -913,25 +900,26 @@ namespace hazelcast {
                     const std::shared_ptr<boost::latch> latch1;
                 };
 
-                class ResultSettingExecutionCallback : public ExecutionCallback<std::string> {
+                template<typename T>
+                class ResultSettingExecutionCallback : public ExecutionCallback<T> {
                 public:
-                    ResultSettingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
+                    explicit ResultSettingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
 
-                    void onResponse(const boost::optional<std::string> &response) override {
-                        result.set(std::move(response));
+                    void onResponse(const boost::optional<T> &response) override {
+                        result.set(response);
                         latch1->count_down();
                     }
 
                     void onFailure(std::exception_ptr e) override {
                     }
 
-                    boost::optional<std::string> getResult() {
+                    boost::optional<T> getResult() {
                         return result.get();
                     }
 
                 private:
                     const std::shared_ptr<boost::latch> latch1;
-                    hazelcast::util::Sync<boost::optional<std::string>> result;
+                    hazelcast::util::Sync<boost::optional<T>> result;
                 };
 
                 class MultiExecutionCompletionCallback : public MultiExecutionCallback<std::string> {
@@ -1118,8 +1106,9 @@ namespace hazelcast {
 
                 executor::tasks::SelectNoMembers selector;
 
-                ASSERT_THROW(service->execute<executor::tasks::MapPutPartitionAwareCallable>(
-                        executor::tasks::MapPutPartitionAwareCallable{mapName, randomString()}, selector),
+                ASSERT_THROW(service->execute<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>>(
+                        executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>{mapName, spi::ClientContext(
+                                *client).random_uuid()}, selector),
                              exception::RejectedExecutionException);
             }
 
@@ -1194,12 +1183,12 @@ namespace hazelcast {
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_EQ(numberOfMembers, members.size());
 
-                auto future = service->submitToMember<executor::tasks::GetMemberUuidTask, std::string>(
+                auto future = service->submitToMember<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(
                         task, members[0]).get_future();
 
                 auto uuid = future.get();
                 ASSERT_TRUE(uuid);
-                ASSERT_EQ(members[0].getUuid(), *uuid);
+                ASSERT_EQ(members[0].getUuid(), uuid);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMembers) {
@@ -1210,7 +1199,7 @@ namespace hazelcast {
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_EQ(numberOfMembers, members.size());
 
-                auto futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, std::string>(task,
+                auto futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(task,
                                                                                                             members);
 
                 for (const Member &member : members) {
@@ -1219,7 +1208,7 @@ namespace hazelcast {
                     ASSERT_NE(futuresMap.end(), it);
                     auto uuid = (*it).second.get_future().get();
                     ASSERT_TRUE(uuid);
-                    ASSERT_EQ(member.getUuid(), *uuid);
+                    ASSERT_EQ(member.getUuid(), uuid);
                 }
             }
 
@@ -1230,8 +1219,7 @@ namespace hazelcast {
                 executor::tasks::AppendCallable callable{msg};
                 executor::tasks::SelectAllMembers selectAll;
 
-                auto f = service->submit<executor::tasks::AppendCallable, std::string>(callable,
-                                                                                       selectAll).get_future();
+                auto f = service->submit<executor::tasks::AppendCallable, std::string>(callable, selectAll).get_future();
 
                 auto result = f.get();
                 ASSERT_TRUE(result);
@@ -1244,7 +1232,7 @@ namespace hazelcast {
                 executor::tasks::GetMemberUuidTask task;
                 executor::tasks::SelectAllMembers selectAll;
 
-                auto futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, std::string>(
+                auto futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(
                         task, selectAll);
 
                 for (auto &pair : futuresMap) {
@@ -1253,7 +1241,7 @@ namespace hazelcast {
 
                     auto uuid = future.get();
                     ASSERT_TRUE(uuid);
-                    ASSERT_EQ(member.getUuid(), *uuid);
+                    ASSERT_EQ(member.getUuid(), uuid);
                 }
             }
 
@@ -1278,7 +1266,7 @@ namespace hazelcast {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, randomString());
+                executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, spi::ClientContext(*client).random_uuid());
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
                 std::shared_ptr<SuccessfullExecutionCallback> callback(new SuccessfullExecutionCallback(latch1));
@@ -1286,8 +1274,7 @@ namespace hazelcast {
                 std::vector<Member> members = client->getCluster().getMembers();
                 ASSERT_EQ(numberOfMembers, members.size());
 
-                service->submitToMember<executor::tasks::MapPutPartitionAwareCallable, std::string>(callable,
-                                                                                                    members[0],
+                service->submitToMember<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, members[0],
                                                                                                     callback);
 
                 auto map = client->getMap(testName);
@@ -1323,8 +1310,7 @@ namespace hazelcast {
                 executor::tasks::AppendCallable callable{msg};
                 executor::tasks::SelectAllMembers selector;
                 std::shared_ptr<boost::latch> responseLatch(new boost::latch(1));
-                std::shared_ptr<ResultSettingExecutionCallback> callback(
-                        new ResultSettingExecutionCallback(responseLatch));
+                auto callback = std::make_shared<ResultSettingExecutionCallback<std::string>>(responseLatch);
 
                 service->submit<executor::tasks::AppendCallable, std::string>(callable, selector,
                                                                               std::static_pointer_cast<ExecutionCallback<std::string>>(
@@ -1414,10 +1400,9 @@ namespace hazelcast {
                 executor::tasks::AppendCallable callable{msg};
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-                std::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch1));
+                auto callback = std::make_shared<ResultSettingExecutionCallback<std::string>>(latch1);
 
-                service->submit<executor::tasks::AppendCallable, std::string>(callable,
-                                                                              std::static_pointer_cast<ExecutionCallback<std::string>>(
+                service->submit<executor::tasks::AppendCallable, std::string>(callable, std::static_pointer_cast<ExecutionCallback<std::string>>(
                                                                                       callback));
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
@@ -1432,8 +1417,7 @@ namespace hazelcast {
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable{msg};
 
-                auto f = service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(callable,
-                                                                                                              "key").get_future();
+                auto f = service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(callable, "key").get_future();
 
                 auto result = f.get();
                 ASSERT_TRUE(result);
@@ -1447,7 +1431,7 @@ namespace hazelcast {
                 executor::tasks::AppendCallable callable{msg};
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-                std::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch1));
+                auto callback = std::make_shared<ResultSettingExecutionCallback<std::string>>(latch1);
 
                 service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(callable, "key",
                                                                                                      std::static_pointer_cast<ExecutionCallback<std::string>>(
@@ -1468,11 +1452,11 @@ namespace hazelcast {
                 std::vector<Member> members = client->getCluster().getMembers();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
-                std::string key = generateKeyOwnedBy(clientContext, member);
+                auto key = generateKeyOwnedBy(clientContext, member);
 
-                executor::tasks::MapPutPartitionAwareCallable callable{testName, key};
+                executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable{testName, key};
 
-                auto f = service->submit<executor::tasks::MapPutPartitionAwareCallable, std::string>(
+                auto f = service->submit<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(
                         callable).get_future();
 
                 auto result = f.get();
@@ -1490,17 +1474,17 @@ namespace hazelcast {
                 std::vector<Member> members = client->getCluster().getMembers();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
-                std::string key = generateKeyOwnedBy(clientContext, member);
+                auto key = generateKeyOwnedBy(clientContext, member);
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, key);
+                executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, key);
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
-                std::shared_ptr<ExecutionCallback<std::string>> callback(new ResultSettingExecutionCallback(latch1));
+                auto callback = std::make_shared<ResultSettingExecutionCallback<boost::uuids::uuid>>(latch1);
 
-                service->submit<executor::tasks::MapPutPartitionAwareCallable, std::string>(callable, callback);
+                service->submit<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, callback);
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
-                auto value = std::static_pointer_cast<ResultSettingExecutionCallback>(callback)->getResult();
+                auto value = std::static_pointer_cast<ResultSettingExecutionCallback<boost::uuids::uuid>>(callback)->getResult();
                 ASSERT_TRUE(value);
                 ASSERT_EQ(member.getUuid(), *value);
                 ASSERT_TRUE(map->containsKey(member.getUuid()).get());
@@ -1510,8 +1494,8 @@ namespace hazelcast {
                 std::string testName = getTestName();
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
-                service->execute<executor::tasks::MapPutPartitionAwareCallable>(
-                        executor::tasks::MapPutPartitionAwareCallable(testName, "key"));
+                service->execute(
+                        executor::tasks::MapPutPartitionAwareCallable<std::string>(testName, "key"));
 
                 auto map = client->getMap(testName);
 
@@ -1523,8 +1507,8 @@ namespace hazelcast {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
                 executor::tasks::SelectAllMembers selector;
 
-                service->execute<executor::tasks::MapPutPartitionAwareCallable>(
-                        executor::tasks::MapPutPartitionAwareCallable(testName, "key"), selector);
+                service->execute(
+                        executor::tasks::MapPutPartitionAwareCallable<std::string>(testName, "key"), selector);
                 auto map = client->getMap(testName);
 
                 assertSizeEventually(1, map);
@@ -1535,16 +1519,17 @@ namespace hazelcast {
                 std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
 
                 auto map = client->getMap(testName);
+                map->put(1, 1).get();
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
-                std::string targetUuid = member.getUuid();
-                std::string key = generateKeyOwnedBy(clientContext, member);
+                auto targetUuid = member.getUuid();
+                auto key = generateKeyOwnedBy(clientContext, member);
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, key);
+                executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, key);
 
-                service->executeOnKeyOwner<executor::tasks::MapPutPartitionAwareCallable, std::string>(callable, key);
+                service->executeOnKeyOwner<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, key);
 
                 ASSERT_TRUE_EVENTUALLY(map->containsKey(targetUuid).get());
             }
@@ -1557,11 +1542,11 @@ namespace hazelcast {
 
                 std::vector<Member> members = client->getCluster().getMembers();
                 Member &member = members[0];
-                std::string targetUuid = member.getUuid();
+                auto targetUuid = member.getUuid();
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+                executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->executeOnMember<executor::tasks::MapPutPartitionAwareCallable>(callable, member);
+                service->executeOnMember(callable, member);
 
                 ASSERT_TRUE_EVENTUALLY(map->containsKey(targetUuid).get());
             }
@@ -1575,9 +1560,9 @@ namespace hazelcast {
                 std::vector<Member> allMembers = client->getCluster().getMembers();
                 std::vector<Member> members(allMembers.begin(), allMembers.begin() + 2);
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+                executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->executeOnMembers<executor::tasks::MapPutPartitionAwareCallable>(callable, members);
+                service->executeOnMembers(callable, members);
 
                 ASSERT_TRUE_EVENTUALLY(map->containsKey(members[0].getUuid()).get() && map->containsKey(members[1].getUuid()).get());
             }
@@ -1588,10 +1573,9 @@ namespace hazelcast {
 
                auto map = client->getMap(testName);
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+                executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->executeOnMembers<executor::tasks::MapPutPartitionAwareCallable>(callable,
-                                                                                         std::vector<Member>());
+                service->executeOnMembers(callable, std::vector<Member>());
 
                 assertSizeEventually(0, map);
             }
@@ -1602,11 +1586,11 @@ namespace hazelcast {
 
                 auto map = client->getMap(testName);
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+                executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
                 executor::tasks::SelectAllMembers selector;
 
-                service->executeOnMembers<executor::tasks::MapPutPartitionAwareCallable>(callable, selector);
+                service->executeOnMembers(callable, selector);
 
                 assertSizeEventually((int) numberOfMembers, map);
             }
@@ -1617,9 +1601,9 @@ namespace hazelcast {
 
                 auto map = client->getMap(testName);
 
-                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+                executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->executeOnAllMembers<executor::tasks::MapPutPartitionAwareCallable>(callable);
+                service->executeOnAllMembers(callable);
 
                 assertSizeEventually((int) numberOfMembers, map);
             }
@@ -1633,7 +1617,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-                class AwsConfigTest : public ::testing::Test {
+                class AwsConfigTest : public ClientTestSupport {
                 };
 
                 TEST_F (AwsConfigTest, testDefaultValues) {
@@ -1700,7 +1684,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsConfigTest, testInvalidAwsMemberPortConfig) {
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "65536");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
@@ -1726,7 +1710,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-                class AwsClientTest : public ::testing::Test {
+                class AwsClientTest : public ClientTestSupport {
                 };
 
                 TEST_F (AwsClientTest, testClientAwsMemberNonDefaultPortConfig) {
@@ -1774,8 +1758,8 @@ namespace hazelcast {
 
                 // FIPS_mode_set is not available for Mac OS X built-in openssl library
 #ifndef __APPLE__
-                                                                                                                                        TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
-                    ClientConfig clientConfig;
+                    TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
+                    ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
@@ -1805,7 +1789,7 @@ namespace hazelcast {
                  */
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                                                                                                                                         TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setIamRole("cloudbees-role").setTagKey(
@@ -1815,7 +1799,7 @@ namespace hazelcast {
                 }
 
                 TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig = getConfig();
 
                     clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
                     clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey(

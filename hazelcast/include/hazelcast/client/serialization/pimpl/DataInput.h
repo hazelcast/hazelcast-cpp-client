@@ -172,6 +172,16 @@ namespace hazelcast {
                     }
 
                     template<typename T>
+                    typename std::enable_if<std::is_same<boost::uuids::uuid, typename std::remove_cv<T>::type>::value, T>::type
+                    inline read() {
+                        checkAvailable(util::Bits::UUID_SIZE_IN_BYTES);
+                        boost::uuids::uuid u;
+                        std::memcpy(&u.data, &buffer[pos], util::Bits::UUID_SIZE_IN_BYTES);
+                        pos += util::Bits::UUID_SIZE_IN_BYTES;
+                        return u;
+                    }
+
+                    template<typename T>
                     typename std::enable_if<std::is_same<std::vector<byte>, typename std::remove_cv<T>::type>::value ||
                                             std::is_same<std::vector<char>, typename std::remove_cv<T>::type>::value ||
                                             std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value ||

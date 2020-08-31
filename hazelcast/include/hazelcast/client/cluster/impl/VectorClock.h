@@ -20,6 +20,8 @@
 #include <stdint.h>
 #include <unordered_map>
 #include <vector>
+#include <boost/uuid/uuid.hpp>
+#include <boost/functional/hash.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -33,7 +35,8 @@ namespace hazelcast {
                  */
                 class VectorClock {
                 public:
-                    typedef std::vector<std::pair<std::string, int64_t> > TimestampVector;
+                    typedef std::vector<std::pair<boost::uuids::uuid, int64_t> > TimestampVector;
+                    typedef std::unordered_map<boost::uuids::uuid, int64_t, boost::hash<boost::uuids::uuid>> TimestampMap;
 
                     VectorClock();
 
@@ -55,9 +58,8 @@ namespace hazelcast {
                      * @return false for the pair.first if timestamp does not exist for replicaId,
                      * otherwise returns true for pair.first and the timestamp of the replica as the pair.second.
                      */
-                    std::pair<bool, int64_t> getTimestampForReplica(const std::string &replicaId);
+                    std::pair<bool, int64_t> getTimestampForReplica(boost::uuids::uuid replicaId);
 
-                    typedef std::unordered_map<std::string, int64_t> TimestampMap;
                     TimestampMap replicaTimestamps;
                     VectorClock::TimestampVector replicaTimestampEntries;
                 };

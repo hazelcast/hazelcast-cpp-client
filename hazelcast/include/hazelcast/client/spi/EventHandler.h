@@ -35,7 +35,7 @@ namespace hazelcast {
             template <typename E>
             class HAZELCAST_API EventHandler {
             public:
-                virtual void handle(const std::shared_ptr<E> &event) = 0;
+                virtual void handle(E &event) = 0;
 
                 /**
                  *  This method is called before registration request is sent to node.

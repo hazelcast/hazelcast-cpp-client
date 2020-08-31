@@ -29,7 +29,6 @@
 #include <thread>
 #include <hazelcast/client/spi/ClientContext.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
-#include <hazelcast/client/protocol/Principal.h>
 #include <hazelcast/client/connection/Connection.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/util/Util.h>
@@ -61,11 +60,9 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
-
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
@@ -95,7 +92,6 @@
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/MultiMap.h"
-#include "hazelcast/util/LittleEndianBufferWrapper.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/HazelcastJsonValue.h"
@@ -108,6 +104,7 @@
 #include "hazelcast/client/ReliableTopic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
 #pragma warning(disable: 4996) //for unsafe getenv
 #endif
 
@@ -491,6 +488,10 @@ namespace hazelcast {
 
                 nearCachedMap->put<int, std::string>(1, "newValue").get();
 
+                // wait for the invalidation to be processed
+                WAIT_EQ_EVENTUALLY(size - 1, nearCache->size());
+                ASSERT_EQ(1, stats->getInvalidations());
+
                 int64_t expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
                 int64_t expectedHits = getExpectedHitsWithLocalUpdatePolicy();
 
@@ -665,7 +666,7 @@ namespace hazelcast {
 
                 void TearDown() override {
                     if (map) {
-                        map->destroy();
+                        map->destroy().get();
                     }
                 }
 
@@ -683,7 +684,7 @@ namespace hazelcast {
                 }
 
                 static std::unique_ptr<ClientConfig> newClientConfig() {
-                    return std::unique_ptr<ClientConfig>(new ClientConfig());
+                    return std::unique_ptr<ClientConfig>(new ClientConfig(getConfig()));
                 }
 
                 std::shared_ptr<IMap> getNearCachedMapFromClient(
@@ -784,7 +785,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            
+
             class ClientSetTest : public ClientTestSupport {
             protected:
                 void addItems(int count) {
@@ -794,7 +795,7 @@ namespace hazelcast {
                 }
 
                 void TearDown() override {
-                    set->clear();
+                    set->clear().get();
                 }
 
                 static void SetUpTestCase() {
@@ -908,7 +909,7 @@ namespace hazelcast {
             TEST_F(ClientSetTest, testListener) {
                 boost::latch latch1(6);
 
-                std::string registrationId = set->addItemListener(
+                auto registrationId = set->addItemListener(
                     ItemListener()
                         .on_added([&latch1](ItemEvent &&itemEvent) {
                             latch1.count_down();
@@ -997,7 +998,7 @@ namespace hazelcast {
             protected:
                 void TearDown() override {
                     if (topic) {
-                        topic->destroy();
+                        topic->destroy().get();
                     }
                 }
 
@@ -1493,14 +1494,8 @@ namespace hazelcast {
                 HazelcastServer server2(*g_srvFactory);
 
                 std::thread([=] () {
-                    do {
-                        // 7. Put a 2nd entry to the map
-                        try {
-                            map->put(2, 20).get();
-                        } catch (std::exception &) {
-                            // suppress the error
-                        }
-                    } while (boost::cv_status::timeout == latch2.wait_for(boost::chrono::milliseconds(100)));
+                    // 7. Put a 2nd entry to the map
+                    ASSERT_NO_THROW(map->put(2, 20).get());
                 }).detach();
 
                 // 6. Verify that the 2nd entry is received by the listener
@@ -1606,13 +1601,6 @@ namespace hazelcast {
                 shutdown();
             }
 
-            bool HazelcastServer::setAttributes(int memberStartOrder) {
-                if (!isStarted) {
-                    return false;
-                }
-                return factory.setAttributes(memberStartOrder);
-            }
-
             const remote::Member &HazelcastServer::getMember() const {
                 return member;
             }
@@ -1680,16 +1668,14 @@ namespace hazelcast {
         namespace test {
             class ClientMessageTest: public ClientTestSupport {};
             TEST_F(ClientMessageTest, testOperationNameGetSet) {
-                std::unique_ptr<protocol::ClientMessage> message = protocol::ClientMessage::create(8);
+                protocol::ClientMessage message(8);
                 constexpr const char* operation_name = "OPERATION_NAME";
-                message->setOperationName(operation_name);
-                ASSERT_EQ(message->getOperationName(), operation_name);
+                message.setOperationName(operation_name);
+                ASSERT_EQ(message.getOperationName(), operation_name);
             }
             TEST_F(ClientMessageTest, testOperationNameAfterRequestEncoding) {
-                std::string expected_operation_name = protocol::codec::MapSizeCodec::OPERATION_NAME;
-                std::unique_ptr<protocol::ClientMessage> request =
-                  protocol::codec::MapSizeCodec::encodeRequest("map_name");
-                ASSERT_EQ(request->getOperationName(), expected_operation_name);
+                auto request = protocol::codec::map_size_encode("map_name");
+                ASSERT_EQ(request.getOperationName(), "Map.Size");
             }
         }
     }

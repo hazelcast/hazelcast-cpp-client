@@ -500,6 +500,12 @@ namespace hazelcast {
                 }
 
                 template<>
+                void DataOutput::write(boost::uuids::uuid v) {
+                    if (isNoWrite) { return; }
+                    outputStream.insert(outputStream.end(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
+                }
+
+                template<>
                 void DataOutput::write(bool value) {
                     if (isNoWrite) { return; }
                     write<byte>(value);

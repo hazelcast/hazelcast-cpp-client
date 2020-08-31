@@ -34,7 +34,7 @@ namespace hazelcast {
 
                 boost::future<bool> offer(const serialization::pimpl::Data &e, std::chrono::steady_clock::duration timeout);
 
-                boost::future<std::unique_ptr<serialization::pimpl::Data>> pollData(std::chrono::steady_clock::duration timeout);
+                boost::future<boost::optional<serialization::pimpl::Data>>pollData(std::chrono::steady_clock::duration timeout);
             };
         }
     }

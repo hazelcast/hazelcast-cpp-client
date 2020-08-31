@@ -53,7 +53,7 @@ int main() {
 
     auto map = hz.getMap("personsWithIndex");
 
-    map->addIndex("name", true).get();
+    map->addIndex(config::index_config::index_type::SORTED, "name").get();
 
     const int mapSize = 200000;
 

@@ -31,19 +31,16 @@ namespace hazelcast {
         namespace protocol {
             class HAZELCAST_API Principal {
             public:
-                Principal(std::unique_ptr<std::string> &id, std::unique_ptr<std::string> &owner);
+                Principal(boost::uuids::uuid uuid);
 
-                const std::string *getUuid() const;
+                boost::uuids::uuid getUuid() const;
 
-                const std::string *getOwnerUuid() const;
-
-                bool operator==(const Principal &rhs) const;
+                friend bool operator==(const Principal &lhs, const Principal &rhs);
 
                 friend std::ostream &operator<<(std::ostream &os, const Principal &principal);
 
             private:
-                std::shared_ptr<std::string> uuid;
-                std::shared_ptr<std::string> ownerUuid;
+                boost::uuids::uuid uuid;
             };
         }
     }

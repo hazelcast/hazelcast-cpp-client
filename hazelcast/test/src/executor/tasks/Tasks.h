@@ -54,13 +54,17 @@ namespace hazelcast {
                     struct GetMemberUuidTask {
                     };
 
-                    struct MapPutPartitionAwareCallable : public PartitionAware<std::string> {
-                        const std::string *getPartitionKey() const override;
+                    template<typename T>
+                    struct MapPutPartitionAwareCallable : public PartitionAware<T> {
+                        const T *getPartitionKey() const override {
+                            return &partitionKey;
+                        }
 
-                        MapPutPartitionAwareCallable(const std::string &mapName, const std::string &partitionKey);
+                        MapPutPartitionAwareCallable(const std::string &mapName, T partitionKey) :
+                                mapName(mapName), partitionKey(partitionKey) {}
 
                         std::string mapName;
-                        std::string partitionKey;
+                        T partitionKey;
                     };
 
                     struct NullCallable {
@@ -155,13 +159,13 @@ namespace hazelcast {
                 }
             };
 
-            template<>
-            struct hz_serializer<test::executor::tasks::MapPutPartitionAwareCallable> : public TaskSerializerFactory {
+            template<typename T>
+            struct hz_serializer<test::executor::tasks::MapPutPartitionAwareCallable<T>> : public TaskSerializerFactory {
                 static int32_t getClassId() {
                     return static_cast<int32_t>(test::executor::tasks::TASK_IDS::MAP_PUTPARTITIONAWARE_CALLABLE);
                 }
 
-                static void writeData(const test::executor::tasks::MapPutPartitionAwareCallable &object, ObjectDataOutput &out) {
+                static void writeData(const test::executor::tasks::MapPutPartitionAwareCallable<T> &object, ObjectDataOutput &out) {
                     out.write(object.mapName);
                     out.writeObject(object.partitionKey);
                 }

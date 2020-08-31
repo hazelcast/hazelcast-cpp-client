@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <memory>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/client/internal/eviction/Evictable.h"
 #include "hazelcast/client/internal/eviction/Expirable.h"
@@ -113,13 +114,13 @@ namespace hazelcast {
                     /**
                      * @param uuid last known uuid of invalidation source at time of this records' creation
                      */
-                    virtual void setUuid(const std::shared_ptr<util::UUID> &uuid) = 0;
+                    virtual void setUuid(boost::uuids::uuid uuid) = 0;
 
                     /**
                      * @return {@code true} if supplied uuid equals existing one, otherwise and when one of supplied
                      * or existing is null returns {@code false}
                      */
-                    virtual bool hasSameUuid(const std::shared_ptr<util::UUID> &thatUuid) const = 0;
+                    virtual bool hasSameUuid(boost::uuids::uuid thatUuid) const = 0;
                 };
             }
         }

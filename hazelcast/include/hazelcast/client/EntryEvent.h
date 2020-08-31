@@ -43,20 +43,17 @@ namespace hazelcast {
                 REMOVED = 1 << 1,
                 UPDATED = 1 << 2,
                 EVICTED = 1 << 3 ,
-                EVICT_ALL = 1 << 4 ,
-                CLEAR_ALL = 1 << 5 ,
-                MERGED = 1 << 6 ,
-                EXPIRED = 1 << 7,
+                EXPIRED = 1 << 4,
+                EVICT_ALL = 1 << 5 ,
+                CLEAR_ALL = 1 << 6 ,
+                MERGED = 1 << 7 ,
                 INVALIDATION = 1 << 8,
+                LOADED = 1 << 9,
+                ALL = 0xFF
             };
 
-            EntryEvent(const std::string &name, const Member &member, type eventType,
-                       TypedData &&key, TypedData &&value);
-
-            EntryEvent(const std::string &name, const Member &member, type eventType,
+            EntryEvent(const std::string &name, Member &&member, type eventType,
                        TypedData &&key, TypedData &&value, TypedData &&oldValue, TypedData &&mergingValue);
-
-            EntryEvent(const std::string &name, const Member &member, type eventType);
 
             /**
              *

@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "hazelcast/client/Address.h"
+#include <boost/uuid/uuid.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,12 +49,11 @@ namespace hazelcast {
 
             Member();
 
-            Member(const Address &address, const std::string &uuid, bool lite,
-                   const std::unordered_map<std::string, std::string> &attr);
+            Member(Address address, boost::uuids::uuid uuid, bool lite, std::unordered_map<std::string, std::string> attr);
 
-            Member(const Address &memberAddress);
+            Member(Address memberAddress);
 
-            Member(const std::string &uuid);
+            Member(boost::uuids::uuid uuid);
 
             /**
              * comparison operation
@@ -79,7 +79,7 @@ namespace hazelcast {
              *
              * @return UUID of this member.
              */
-            const std::string &getUuid() const;
+            boost::uuids::uuid getUuid() const;
 
             const std::unordered_map<std::string, std::string> &getAttributes() const;
 
@@ -103,12 +103,9 @@ namespace hazelcast {
 
             bool operator<(const Member &rhs) const;
 
-            void updateAttribute(MemberAttributeOperationType operationType, const std::string &key,
-                                 std::unique_ptr<std::string> &value);
-
         private:
             Address address;
-            std::string uuid;
+            boost::uuids::uuid uuid;
             bool liteMember;
             std::unordered_map<std::string, std::string> attributes;
         };
