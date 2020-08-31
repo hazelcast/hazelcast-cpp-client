@@ -127,7 +127,7 @@ int main(int argc, char *args[]) {
     const string address = args[2];
 
     ClientConfig config;
-    config.addAddress(Address(address, 5701));
+    config.getNetworkConfig().addAddress(Address(address, 5701));
 
     HazelcastClient hazelcastInstance(config);
     spi::ClientContext context(hazelcastInstance);

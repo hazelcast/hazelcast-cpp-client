@@ -21,7 +21,7 @@
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::Address serverAddress("127.0.0.1", 5701);
-    config.addAddress(serverAddress);
+    config.getNetworkConfig().addAddress(serverAddress);
 
     config.getNetworkConfig().getSSLConfig().
             setEnabled(true).          // Mandatory setting

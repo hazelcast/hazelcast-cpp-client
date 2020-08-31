@@ -17,7 +17,7 @@
 
 int main() {
     hazelcast::client::ClientConfig config;
-    config.addAddress(hazelcast::client::Address("127.0.0.1", 5702)).addAddress(
+    config.getNetworkConfig().addAddress(hazelcast::client::Address("127.0.0.1", 5702)).addAddress(
             hazelcast::client::Address("127.0.0.1", 9090)).addAddress(hazelcast::client::Address("127.0.0.1", 9091))
             .addAddress(hazelcast::client::Address("127.0.0.1", 5701));
 

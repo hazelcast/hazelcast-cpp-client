@@ -21,7 +21,7 @@ int main() {
     const int port = 5701;
     hazelcast::client::ClientConfig config;
     hazelcast::client::Address addr(serverIp, port);
-    config.addAddress(addr);
+    config.getNetworkConfig().addAddress(addr);
     hazelcast::client::HazelcastClient hz(config);
 
     auto map = hz.getMap("test map");

@@ -23,7 +23,7 @@ int main() {
     ClientConfig config;
     const char *mapName = "BinaryMap";
     Address serverAddr("127.0.0.1", 5701);
-    config.addAddress(serverAddr);
+    config.getNetworkConfig().addAddress(serverAddr);
     std::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
             new config::NearCacheConfig<int, std::string>(mapName, config::BINARY));
     nearCacheConfig->setInvalidateOnChange(false);
