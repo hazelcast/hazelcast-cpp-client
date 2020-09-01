@@ -801,7 +801,7 @@ namespace hazelcast {
                     clientConfig.addListener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
-                                connectedLatch.count_down();
+                                connectedLatch.try_count_down();
                             })
                     );
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
@@ -830,7 +830,7 @@ namespace hazelcast {
                     client.addLifecycleListener(
                         LifecycleListener()
                             .on_shutdown([&shutdownLatch](){
-                                shutdownLatch.count_down();
+                                shutdownLatch.try_count_down();
                             })
                     );
 
@@ -857,7 +857,7 @@ namespace hazelcast {
                     client.addLifecycleListener(
                         LifecycleListener()
                             .on_shutdown([&shutdownLatch](){
-                                shutdownLatch.count_down();
+                                shutdownLatch.try_count_down();
                             })
                     );
 
@@ -884,7 +884,7 @@ namespace hazelcast {
                     client.addLifecycleListener(
                         LifecycleListener()
                             .on_shutdown([&shutdownLatch](){
-                                shutdownLatch.count_down();
+                                shutdownLatch.try_count_down();
                             })
                     );
 
@@ -908,7 +908,7 @@ namespace hazelcast {
                     clientConfig.addListener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
-                                connectedLatch.count_down();
+                                connectedLatch.try_count_down();
                             })
                     );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
@@ -933,7 +933,7 @@ namespace hazelcast {
                     clientConfig.addListener(
                         LifecycleListener()
                             .on_connected([&initialConnectionLatch](){
-                                initialConnectionLatch.count_down();
+                                initialConnectionLatch.try_count_down();
                             })
                     );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
@@ -947,7 +947,7 @@ namespace hazelcast {
                     client.addLifecycleListener(
                         LifecycleListener()
                             .on_connected([&reconnectedLatch](){
-                                reconnectedLatch.count_down();
+                                reconnectedLatch.try_count_down();
                             })
                     );
 
@@ -972,7 +972,7 @@ namespace hazelcast {
                     clientConfig.addListener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
-                                connectedLatch.count_down();
+                                connectedLatch.try_count_down();
                             })
                     );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
@@ -989,14 +989,14 @@ namespace hazelcast {
                     client.addLifecycleListener(
                         LifecycleListener()
                             .on_disconnected([&disconnectedLatch](){
-                                disconnectedLatch.count_down();
+                                disconnectedLatch.try_count_down();
                             })
                     );
 
                     client.addLifecycleListener(
                         LifecycleListener()
                             .on_connected([&reconnectedLatch](){
-                                reconnectedLatch.count_down();
+                                reconnectedLatch.try_count_down();
                             })
                     );
 

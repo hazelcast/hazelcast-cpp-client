@@ -177,7 +177,12 @@ namespace hazelcast {
         private:
             using HandlerType = std::function<void()>;
             static constexpr auto noop_handler = util::noop<>;
-            HandlerType starting, started, shutting_down, shutdown, connected, disconnected;
+            HandlerType starting{ noop_handler },
+                        started{ noop_handler }, 
+                        shutting_down{ noop_handler },
+                        shutdown{ noop_handler },
+                        connected{ noop_handler },
+                        disconnected{ noop_handler };
 
             friend class spi::LifecycleService;
         };
