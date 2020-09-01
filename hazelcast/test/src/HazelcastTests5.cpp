@@ -951,7 +951,7 @@ namespace hazelcast {
                 static constexpr const char *ONE_SECOND_MAP_NAME = "OneSecondTtlMap";
 
                 MapClientConfig() {
-                    addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    getNetworkConfig().addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                 }
 
                 virtual ~MapClientConfig() = default;

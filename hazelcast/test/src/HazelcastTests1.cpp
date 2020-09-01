@@ -713,7 +713,7 @@ namespace hazelcast {
 
             hazelcast::client::ClientConfig ClientTestSupportBase::getConfig(bool ssl_enabled, bool smart) {
                 ClientConfig clientConfig;
-                clientConfig.addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                clientConfig.getNetworkConfig().addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                 if (ssl_enabled) {
                     clientConfig.setClusterName(get_ssl_cluster_name());
                     clientConfig.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
@@ -992,7 +992,7 @@ namespace hazelcast {
 
             TEST_P(ClusterTest, testDummyClientBehaviourWhenClusterNotFound) {
                 auto clientConfig = GetParam();
-                clientConfig.setSmart(false);
+                clientConfig.getNetworkConfig().setSmartRouting(false);
                 ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
             }
 
@@ -1000,8 +1000,9 @@ namespace hazelcast {
                 auto clientConfig = GetParam();
                 std::unique_ptr<HazelcastServer> instance = startServer(clientConfig);
 
-                clientConfig.setAttemptPeriod(1000);
-                clientConfig.setConnectionAttemptLimit(1);
+                auto networkConfig = clientConfig.getNetworkConfig();
+                networkConfig.setConnectionAttemptPeriod(1000);
+                networkConfig.setConnectionAttemptLimit(1);
                 boost::latch startingLatch(1);
                 boost::latch startedLatch(1);
                 boost::latch connectedLatch(1);

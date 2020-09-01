@@ -1118,7 +1118,7 @@ namespace hazelcast {
 
             TEST_F(ReliableTopicTest, testConfig) {
                 ClientConfig clientConfig;
-                clientConfig.addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                clientConfig.getNetworkConfig().addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                 config::ReliableTopicConfig relConfig("testConfig");
                 relConfig.setReadBatchSize(2);
                 clientConfig.addReliableTopicConfig(relConfig);
@@ -1367,7 +1367,7 @@ namespace hazelcast {
                         clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "10");
                         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
                         auto member = server.getMember();
-                        clientConfig.addAddress(Address(member.host, member.port)).setAttemptPeriod(10 * 1000);
+                        clientConfig.getNetworkConfig().addAddress(Address(member.host, member.port)).setConnectionAttemptPeriod(10 * 1000);
                         clientConfig.setLogLevel(FINEST);
 
                         Stats stats;
@@ -1450,7 +1450,7 @@ namespace hazelcast {
 
                 ClientConfig clientConfig(getConfig());
                 clientConfig.setRedoOperation(true);
-                clientConfig.setSmart(false);
+                clientConfig.getNetworkConfig().setSmartRouting(false);
 
                 HazelcastClient client(clientConfig);
 
@@ -1473,8 +1473,8 @@ namespace hazelcast {
                 HazelcastServer server(*g_srvFactory);
 
                 // 2. Start a client
-                ClientConfig clientConfig(getConfig());
-                clientConfig.setConnectionAttemptLimit(10);
+                ClientConfig clientConfig = getConfig();
+                clientConfig.getNetworkConfig().setConnectionAttemptLimit(10);
 
                 HazelcastClient client(clientConfig);
 
