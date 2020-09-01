@@ -565,25 +565,6 @@ namespace hazelcast {
         ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(NULL), redoOperation(false),
                                        socketInterceptor(NULL), executorPoolSize(-1) {}
 
-        ClientConfig &ClientConfig::addAddress(const Address &address) {
-            networkConfig.addAddress(address);
-            return (*this);
-        }
-
-        ClientConfig &ClientConfig::addAddresses(const std::vector<Address> &addresses) {
-            networkConfig.addAddresses(addresses);
-            return (*this);
-        }
-
-
-        std::unordered_set<Address> ClientConfig::getAddresses() {
-            std::unordered_set<Address> result;
-            for (const Address &address : networkConfig.getAddresses()) {
-                result.insert(address);
-            }
-            return result;
-        }
-
         ClientConfig &ClientConfig::setGroupConfig(const GroupConfig &groupConfig) {
             this->groupConfig = groupConfig;
             return *this;
@@ -591,34 +572,6 @@ namespace hazelcast {
         
         GroupConfig &ClientConfig::getGroupConfig() {
             return groupConfig;
-        }
-
-
-        ClientConfig &ClientConfig::setConnectionAttemptLimit(int connectionAttemptLimit) {
-            networkConfig.setConnectionAttemptLimit(connectionAttemptLimit);
-            return *this;
-        }
-
-        int ClientConfig::getConnectionAttemptLimit() const {
-            return networkConfig.getConnectionAttemptLimit();
-        }
-
-        ClientConfig &ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
-            this->networkConfig.setConnectionTimeout(connectionTimeoutInMillis);
-            return *this;
-        }
-
-        int ClientConfig::getConnectionTimeout() const {
-            return (int) this->networkConfig.getConnectionTimeout();
-        }
-
-        ClientConfig &ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
-            networkConfig.setConnectionAttemptPeriod(attemptPeriodInMillis);
-            return *this;
-        }
-
-        int ClientConfig::getAttemptPeriod() const {
-            return networkConfig.getConnectionAttemptPeriod();
         }
 
         ClientConfig &ClientConfig::setRedoOperation(bool redoOperation) {
@@ -709,15 +662,6 @@ namespace hazelcast {
             return socketInterceptor;
         }
 
-        ClientConfig &ClientConfig::setSmart(bool smart) {
-            networkConfig.setSmartRouting(smart);
-            return *this;
-        }
-
-        bool ClientConfig::isSmart() const {
-            return networkConfig.isSmartRouting();
-        }
-
         SerializationConfig &ClientConfig::getSerializationConfig() {
             return serializationConfig;
         }
@@ -726,7 +670,6 @@ namespace hazelcast {
             this->serializationConfig = serializationConfig;
             return *this;
         }
-
 
         const std::unordered_map<std::string, std::string> &ClientConfig::getProperties() const {
             return properties;

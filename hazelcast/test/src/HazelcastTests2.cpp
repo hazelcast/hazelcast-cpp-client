@@ -722,7 +722,7 @@ namespace hazelcast {
                 Address address("localhost", 5555);
                 clientConfig.getNetworkConfig().addAddress(address);
 
-                auto addresses = clientConfig.getAddresses();
+                auto addresses = clientConfig.getNetworkConfig().getAddresses();
                 ASSERT_EQ(1U, addresses.size());
                 ASSERT_EQ(address, *addresses.begin());
             }
@@ -733,7 +733,7 @@ namespace hazelcast {
                 std::sort(addresses.begin(), addresses.end());
                 clientConfig.getNetworkConfig().addAddresses(addresses);
 
-                std::unordered_set<Address> configuredAddresses = clientConfig.getAddresses();
+                auto configuredAddresses = clientConfig.getNetworkConfig().getAddresses();
                 ASSERT_EQ(2U, addresses.size());
                 std::vector<Address> configuredAddressVector(configuredAddresses.begin(), configuredAddresses.end());
                 std::sort(configuredAddressVector.begin(), configuredAddressVector.end());
