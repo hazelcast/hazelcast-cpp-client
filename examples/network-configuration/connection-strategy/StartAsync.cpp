@@ -38,10 +38,8 @@ int main() {
     std::promise<void> connected;
     config.addListener(
         hazelcast::client::LifecycleListener().
-            onStateChanged([&connected](const hazelcast::client::LifecycleEvent &ev){
-                if (ev.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
-                    connected.set_value();
-                }
+            on_connected([&connected](){
+                connected.set_value();
             })
     );
 

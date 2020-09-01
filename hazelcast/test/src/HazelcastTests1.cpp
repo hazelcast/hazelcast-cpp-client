@@ -19,6 +19,7 @@
 #include <vector>
 #include <chrono>
 #include <functional>
+#include "hazelcast/client/LifecycleEvent.h"
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/ClientConfig.h>
@@ -921,31 +922,24 @@ namespace hazelcast {
                                                         boost::latch &disconnected,
                                                         boost::latch &shuttingDown,
                                                         boost::latch &shutdown) {
-
-                    return LifecycleListener().
-                        onStateChanged([&](const LifecycleEvent &e) {
-                            switch (e.getState()) {
-                                case LifecycleEvent::STARTING:
-                                    starting.count_down();
-                                    break;
-                                case LifecycleEvent::STARTED:
-                                    started.count_down();
-                                    break;
-                                case LifecycleEvent::CLIENT_CONNECTED:
-                                    connected.count_down();
-                                    break;
-                                case LifecycleEvent::CLIENT_DISCONNECTED:
-                                    disconnected.count_down();
-                                    break;
-                                case LifecycleEvent::SHUTTING_DOWN:
-                                    shuttingDown.count_down();
-                                    break;
-                                case LifecycleEvent::SHUTDOWN:
-                                    shutdown.count_down();
-                                    break;
-                                default:
-                                    FAIL() << "No such state expected:" << e.getState();
-                            }
+                    return LifecycleListener()
+                        .on_starting([&starting](){
+                            starting.count_down();
+                        })
+                        .on_started([&started](){
+                            started.count_down();
+                        })
+                        .on_connected([&connected](){
+                            connected.count_down();
+                        })
+                        .on_disconnected([&disconnected](){
+                            disconnected.count_down();
+                        })
+                        .on_shutting_down([&shuttingDown](){
+                            shuttingDown.count_down();
+                        })
+                        .on_shutdown([&shutdown](){
+                            shutdown.count_down();
                         });
                 }
                 

@@ -34,6 +34,7 @@
 #include <ctime>
 #include <errno.h>
 #include <hazelcast/client/LifecycleListener.h>
+#include "hazelcast/client/LifecycleEvent.h"
 #include "serialization/Serializables.h"
 #include <hazelcast/client/SerializationConfig.h>
 #include <hazelcast/client/HazelcastJsonValue.h>
@@ -767,15 +768,6 @@ namespace hazelcast {
                     }
 
                 protected:
-                    LifecycleListener makeLifecycleStateListener(boost::latch &trigger, 
-                                                                 const LifecycleEvent::LifecycleState expected) {
-                        return LifecycleListener().
-                            onStateChanged([&trigger, expected](const LifecycleEvent &e) {
-                                if (e.getState() == expected) {
-                                    trigger.try_count_down();
-                                }
-                            });
-                    }
 
                     ClientConfig clientConfig;
                 };
@@ -806,8 +798,12 @@ namespace hazelcast {
                     clientConfig.getNetworkConfig().addAddress(Address("8.8.8.8", 5701))
                             .addAddress(Address("127.0.0.1", 5701)).setConnectionAttemptLimit(INT32_MAX);
                     clientConfig.setProperty("hazelcast.client.shuffle.member.list", "false");
-                    auto lifecycleListener = makeLifecycleStateListener(connectedLatch, LifecycleEvent::CLIENT_CONNECTED);
-                    clientConfig.addListener(std::move(lifecycleListener));
+                    clientConfig.addListener(
+                        LifecycleListener()
+                            .on_connected([&connectedLatch](){
+                                connectedLatch.count_down();
+                            })
+                    );
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
 
                     HazelcastClient client(clientConfig);
@@ -831,8 +827,12 @@ namespace hazelcast {
                             config::ClientConnectionStrategyConfig::OFF);
                     HazelcastClient client(clientConfig);
                     boost::latch shutdownLatch(1);
-                    auto lifecycleListener = makeLifecycleStateListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
-                    client.addLifecycleListener(std::move(lifecycleListener));
+                    client.addLifecycleListener(
+                        LifecycleListener()
+                            .on_shutdown([&shutdownLatch](){
+                                shutdownLatch.count_down();
+                            })
+                    );
 
                     // no exception at this point
                     auto map = client.getMap(randomMapName());
@@ -854,8 +854,12 @@ namespace hazelcast {
                             config::ClientConnectionStrategyConfig::OFF);
                     HazelcastClient client(clientConfig);
                     boost::latch shutdownLatch(1);
-                    auto lifecycleListener = makeLifecycleStateListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
-                    client.addLifecycleListener(std::move(lifecycleListener));
+                    client.addLifecycleListener(
+                        LifecycleListener()
+                            .on_shutdown([&shutdownLatch](){
+                                shutdownLatch.count_down();
+                            })
+                    );
 
                     // no exception at this point
                     auto map = client.getMap(randomMapName());
@@ -877,8 +881,12 @@ namespace hazelcast {
                             config::ClientConnectionStrategyConfig::OFF);
                     HazelcastClient client(clientConfig);
                     boost::latch shutdownLatch(1);
-                    auto lifecycleListener = makeLifecycleStateListener(shutdownLatch, LifecycleEvent::SHUTDOWN);
-                    client.addLifecycleListener(std::move(lifecycleListener));
+                    client.addLifecycleListener(
+                        LifecycleListener()
+                            .on_shutdown([&shutdownLatch](){
+                                shutdownLatch.count_down();
+                            })
+                    );
 
 // no exception at this point
                     auto map = client.getMap(randomMapName());
@@ -897,8 +905,12 @@ namespace hazelcast {
 
                     boost::latch connectedLatch(1);
 
-                    auto listener = makeLifecycleStateListener(connectedLatch, LifecycleEvent::CLIENT_CONNECTED);
-                    clientConfig.addListener(std::move(listener));
+                    clientConfig.addListener(
+                        LifecycleListener()
+                            .on_connected([&connectedLatch](){
+                                connectedLatch.count_down();
+                            })
+                    );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
                     HazelcastClient client(clientConfig);
@@ -918,8 +930,12 @@ namespace hazelcast {
                     boost::latch reconnectedLatch(1);
 
                     clientConfig.getNetworkConfig().setConnectionAttemptLimit(INT32_MAX);
-                    auto listener = makeLifecycleStateListener(initialConnectionLatch, LifecycleEvent::CLIENT_CONNECTED);
-                    clientConfig.addListener(std::move(listener));
+                    clientConfig.addListener(
+                        LifecycleListener()
+                            .on_connected([&initialConnectionLatch](){
+                                initialConnectionLatch.count_down();
+                            })
+                    );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
                     HazelcastClient client(clientConfig);
@@ -928,8 +944,12 @@ namespace hazelcast {
 
                     hazelcastInstance.shutdown();
 
-                    auto reconnectListener = makeLifecycleStateListener(reconnectedLatch, LifecycleEvent::CLIENT_CONNECTED);
-                    client.addLifecycleListener(std::move(reconnectListener));
+                    client.addLifecycleListener(
+                        LifecycleListener()
+                            .on_connected([&reconnectedLatch](){
+                                reconnectedLatch.count_down();
+                            })
+                    );
 
                     HazelcastServer hazelcastInstance2(*g_srvFactory);
 
@@ -949,8 +969,12 @@ namespace hazelcast {
                     boost::latch connectedLatch(1), disconnectedLatch(1), reconnectedLatch(1);
 
                     clientConfig.getNetworkConfig().setConnectionAttemptLimit(10);
-                    auto listener = makeLifecycleStateListener(connectedLatch, LifecycleEvent::CLIENT_CONNECTED);
-                    clientConfig.addListener(std::move(listener));
+                    clientConfig.addListener(
+                        LifecycleListener()
+                            .on_connected([&connectedLatch](){
+                                connectedLatch.count_down();
+                            })
+                    );
                     clientConfig.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
                     HazelcastClient client(clientConfig);
@@ -962,11 +986,19 @@ namespace hazelcast {
                     auto map = client.getMap(randomMapName());
                     map->put(1, 5).get();
 
-                    auto disconnectListener = makeLifecycleStateListener(disconnectedLatch, LifecycleEvent::CLIENT_DISCONNECTED);
-                    client.addLifecycleListener(std::move(disconnectListener));
+                    client.addLifecycleListener(
+                        LifecycleListener()
+                            .on_disconnected([&disconnectedLatch](){
+                                disconnectedLatch.count_down();
+                            })
+                    );
 
-                    auto reconnectListener = makeLifecycleStateListener(reconnectedLatch, LifecycleEvent::CLIENT_CONNECTED);
-                    client.addLifecycleListener(std::move(reconnectListener));
+                    client.addLifecycleListener(
+                        LifecycleListener()
+                            .on_connected([&reconnectedLatch](){
+                                reconnectedLatch.count_down();
+                            })
+                    );
 
                     server1.shutdown();
                     server2.shutdown();

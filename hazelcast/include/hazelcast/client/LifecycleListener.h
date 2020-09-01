@@ -43,30 +43,141 @@ namespace hazelcast {
         class HAZELCAST_API LifecycleListener final {
         public:
             /**
-             * Set an handler function to be invoked when the state changes
-             * \param h a `void` function object that is callable with a single parameter of type `const LifecycleEvent &`
+             * Set an handler function to be invoked when the client is starting
+             * \param h a `void` function object that is callable without any parameters.
              * \return `*this`
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            LifecycleListener &onStateChanged(Handler &&h) & {
-                stateChanged = std::forward<Handler>(h);
+            LifecycleListener &on_starting(Handler &&h) & {
+                starting = std::forward<Handler>(h);
                 return *this;
             }
 
             /** 
-             * \copydoc LifecycleListener::onStateChanged
+             * \copydoc LifecycleListener::on_starting
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            LifecycleListener &&onStateChanged(Handler &&h) && {
-                onStateChanged(std::forward<Handler>(h));
+            LifecycleListener &&on_starting(Handler &&h) && {
+                on_starting(std::forward<Handler>(h));
+                return std::move(*this);
+            }
+
+            /**
+             * Set an handler function to be invoked when the client has started
+             * \param h a `void` function object that is callable without any parameters.
+             * \return `*this`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &on_started(Handler &&h) & {
+                started = std::forward<Handler>(h);
+                return *this;
+            }
+
+            /** 
+             * \copydoc LifecycleListener::on_started
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &&on_started(Handler &&h) && {
+                on_started(std::forward<Handler>(h));
+                return std::move(*this);
+            }
+
+            /**
+             * Set an handler function to be invoked when the client is shutting down
+             * \param h a `void` function object that is callable without any parameters.
+             * \return `*this`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &on_shutting_down(Handler &&h) & {
+                shutting_down = std::forward<Handler>(h);
+                return *this;
+            }
+
+            /** 
+             * \copydoc LifecycleListener::on_shutting_down
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &&on_shutting_down(Handler &&h) && {
+                on_shutting_down(std::forward<Handler>(h));
+                return std::move(*this);
+            }
+
+            /**
+             * Set an handler function to be invoked when the client's shutdown has completed
+             * \param h a `void` function object that is callable without any parameters.
+             * \return `*this`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &on_shutdown(Handler &&h) & {
+                shutdown = std::forward<Handler>(h);
+                return *this;
+            }
+
+            /** 
+             * \copydoc LifecycleListener::on_shutdown
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &&on_shutdown(Handler &&h) && {
+                on_shutdown(std::forward<Handler>(h));
+                return std::move(*this);
+            }
+
+            /**
+             * Set an handler function to be invoked when the client is connected to the cluster
+             * \param h a `void` function object that is callable without any parameters.
+             * \return `*this`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &on_connected(Handler &&h) & {
+                connected = std::forward<Handler>(h);
+                return *this;
+            }
+
+            /** 
+             * \copydoc LifecycleListener::on_connected
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &&on_connected(Handler &&h) && {
+                on_connected(std::forward<Handler>(h));
+                return std::move(*this);
+            }
+
+            /**
+             * Set an handler function to be invoked when client is disconnected from the cluster.
+             * \param h a `void` function object that is callable without any parameters.
+             * \return `*this`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &on_disconnected(Handler &&h) & {
+                disconnected = std::forward<Handler>(h);
+                return *this;
+            }
+
+            /** 
+             * \copydoc LifecycleListener::on_disconnected
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            LifecycleListener &&on_disconnected(Handler &&h) && {
+                on_disconnected(std::forward<Handler>(h));
                 return std::move(*this);
             }
         
         private:
-            using HandlerType = std::function<void(const LifecycleEvent &)>;
-            HandlerType stateChanged = util::noop<const LifecycleEvent &>;
+            using HandlerType = std::function<void()>;
+            static constexpr auto noop_handler = util::noop<>;
+            HandlerType starting, started, shutting_down, shutdown, connected, disconnected;
 
             friend class spi::LifecycleService;
         };

@@ -15,12 +15,14 @@
  */
 #pragma once
 
+#include <random>
 #include <unordered_map>
 #include <mutex>
 #include <unordered_set>
 #include <atomic>
 #include <boost/thread/latch.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/container_hash/hash.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -74,6 +76,8 @@ namespace hazelcast {
                 LoadBalancer *loadBalancer;
                 Cluster &cluster;
                 boost::latch shutdownCompletedLatch;
+                std::mt19937 random_generator_{std::random_device{}()};
+                boost::uuids::basic_random_generator<std::mt19937> uuid_generator_{random_generator_};
 
                 void wait_for_initial_membership_event() const;
             };

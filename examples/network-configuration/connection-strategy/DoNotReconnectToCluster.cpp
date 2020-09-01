@@ -43,13 +43,12 @@ int main() {
     std::promise<void> disconnected, connected;
 
     hz.addLifecycleListener(
-        hazelcast::client::LifecycleListener().
-            onStateChanged([&](const hazelcast::client::LifecycleEvent &lifecycleEvent) {
-                if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_DISCONNECTED) {
-                    disconnected.set_value();
-                } else if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
-                    connected.set_value();
-                }
+        hazelcast::client::LifecycleListener()
+            .on_connected([&connected](){
+                connected.set_value();
+            })
+            .on_disconnected([&disconnected](){
+                disconnected.set_value();
             })
     );
 

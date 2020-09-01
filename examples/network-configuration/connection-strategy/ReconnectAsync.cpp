@@ -23,19 +23,13 @@
 #include <hazelcast/client/LifecycleEvent.h>
 
 hazelcast::client::LifecycleListener makeConnectionListener(std::promise<void> &connected, std::promise<void> &disconnected) {
-    return hazelcast::client::LifecycleListener().onStateChanged([&](const hazelcast::client::LifecycleEvent &e) {
-        switch (e.getState()) {
-            case hazelcast::client::LifecycleEvent::CLIENT_CONNECTED: {
-                connected.set_value();
-                break;
-            }
-            case hazelcast::client::LifecycleEvent::CLIENT_DISCONNECTED: {
-                disconnected.set_value();
-                break;
-            }
-            default: break;
-        }
-    });
+    return hazelcast::client::LifecycleListener()
+        .on_connected([&connected](){
+            connected.set_value();
+        })
+        .on_disconnected([&disconnected](){
+            disconnected.set_value();
+        });
 }
 
 int main() {
