@@ -47,6 +47,7 @@
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
 #include "hazelcast/client/query/Predicates.h"
+#include "hazelcast/client/LifecycleListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -603,8 +604,8 @@ namespace hazelcast {
             return loggerConfig;
         }
 
-        ClientConfig &ClientConfig::addListener(LifecycleListener *listener) {
-            lifecycleListeners.insert(listener);
+        ClientConfig &ClientConfig::addListener(LifecycleListener &&listener) {
+            lifecycleListeners.emplace_back(std::move(listener));
             return *this;
         }
 
@@ -645,7 +646,7 @@ namespace hazelcast {
             return *this;
         }
 
-        const std::unordered_set<LifecycleListener *> &ClientConfig::getLifecycleListeners() const {
+        const std::vector<LifecycleListener> &ClientConfig::getLifecycleListeners() const {
             return lifecycleListeners;
         }
 

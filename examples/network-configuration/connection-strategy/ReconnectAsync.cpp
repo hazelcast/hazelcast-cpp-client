@@ -13,37 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <boost/thread/latch.hpp>
+
+#include <future>
+#include <chrono>
 
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/config/ClientConnectionStrategyConfig.h>
 #include <hazelcast/client/LifecycleListener.h>
+#include <hazelcast/client/LifecycleEvent.h>
 
-class DisconnectedListener : public hazelcast::client::LifecycleListener {
-public:
-    DisconnectedListener() : disconnectedLatch(1), connectedLatch(1) {}
-
-    void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) override {
-        if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_DISCONNECTED) {
-            disconnectedLatch.count_down();
-        } else if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
-            connectedLatch.count_down();
-        }
-    }
-
-    void waitForDisconnection() {
-        disconnectedLatch.wait();
-    }
-
-    bool awaitReconnection(int seconds) {
-        return connectedLatch.wait_for(boost::chrono::seconds(seconds)) == boost::cv_status::no_timeout;
-    }
-
-private:
-    boost::latch disconnectedLatch;
-    boost::latch connectedLatch;
-};
-
+hazelcast::client::LifecycleListener makeConnectionListener(std::promise<void> &connected, std::promise<void> &disconnected) {
+    return hazelcast::client::LifecycleListener()
+        .on_connected([&connected](){
+            connected.set_value();
+        })
+        .on_disconnected([&disconnected](){
+            disconnected.set_value();
+        });
+}
 
 int main() {
     hazelcast::client::ClientConfig config;
@@ -63,15 +50,16 @@ int main() {
 
     map->put(1, 100);
 
-    DisconnectedListener listener;
-    hz.addLifecycleListener(&listener);
+    std::promise<void> connected, disconnected;
+    hz.addLifecycleListener(makeConnectionListener(connected, disconnected));
 
     // Please shut down the cluster at this point.
-    listener.waitForDisconnection();
+    disconnected.get_future().wait();
 
     std::cout << "Client is disconnected from the cluster now." << std::endl;
 
-    if (listener.awaitReconnection(10)) {
+    auto connection_future = connected.get_future();
+    if (connection_future.wait_for(std::chrono::seconds(10)) == std::future_status::ready) {
         std::cout << "The client is connected to the cluster within 10 seconds after disconnection as expected." << std::endl;
     }
 

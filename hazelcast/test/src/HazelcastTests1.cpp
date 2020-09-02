@@ -19,6 +19,7 @@
 #include <vector>
 #include <chrono>
 #include <functional>
+#include "hazelcast/client/LifecycleEvent.h"
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/ClientConfig.h>
@@ -915,65 +916,33 @@ namespace hazelcast {
                 ClusterTest() : sslFactory(g_srvFactory->getServerAddress(), getSslFilePath()) {}
 
             protected:
-                class ClientAllStatesListener : public LifecycleListener {
-                public:
-
-                    ClientAllStatesListener(boost::latch *startingLatch,
-                                            boost::latch *startedLatch = nullptr,
-                                            boost::latch *connectedLatch = nullptr,
-                                            boost::latch *disconnectedLatch = nullptr,
-                                            boost::latch *shuttingDownLatch = nullptr,
-                                            boost::latch *shutdownLatch = nullptr)
-                            : startingLatch(startingLatch), startedLatch(startedLatch), connectedLatch(connectedLatch),
-                              disconnectedLatch(disconnectedLatch), shuttingDownLatch(shuttingDownLatch),
-                              shutdownLatch(shutdownLatch) {}
-
-                    void stateChanged(const LifecycleEvent &lifecycleEvent) override {
-                        switch (lifecycleEvent.getState()) {
-                            case LifecycleEvent::STARTING:
-                                if (startingLatch) {
-                                    startingLatch->count_down();
-                                }
-                                break;
-                            case LifecycleEvent::STARTED:
-                                if (startedLatch) {
-                                    startedLatch->count_down();
-                                }
-                                break;
-                            case LifecycleEvent::CLIENT_CONNECTED:
-                                if (connectedLatch) {
-                                    connectedLatch->count_down();
-                                }
-                                break;
-                            case LifecycleEvent::CLIENT_DISCONNECTED:
-                                if (disconnectedLatch) {
-                                    disconnectedLatch->count_down();
-                                }
-                                break;
-                            case LifecycleEvent::SHUTTING_DOWN:
-                                if (shuttingDownLatch) {
-                                    shuttingDownLatch->count_down();
-                                }
-                                break;
-                            case LifecycleEvent::SHUTDOWN:
-                                if (shutdownLatch) {
-                                    shutdownLatch->count_down();
-                                }
-                                break;
-                            default:
-                                FAIL() << "No such state expected:" << lifecycleEvent.getState();
-                        }
-                    }
-
-                private:
-                    boost::latch *startingLatch;
-                    boost::latch *startedLatch;
-                    boost::latch *connectedLatch;
-                    boost::latch *disconnectedLatch;
-                    boost::latch *shuttingDownLatch;
-                    boost::latch *shutdownLatch;
-                };
-
+                LifecycleListener makeAllStatesListener(boost::latch &starting,
+                                                        boost::latch &started,
+                                                        boost::latch &connected,
+                                                        boost::latch &disconnected,
+                                                        boost::latch &shuttingDown,
+                                                        boost::latch &shutdown) {
+                    return LifecycleListener()
+                        .on_starting([&starting](){
+                            starting.count_down();
+                        })
+                        .on_started([&started](){
+                            started.count_down();
+                        })
+                        .on_connected([&connected](){
+                            connected.count_down();
+                        })
+                        .on_disconnected([&disconnected](){
+                            disconnected.count_down();
+                        })
+                        .on_shutting_down([&shuttingDown](){
+                            shuttingDown.count_down();
+                        })
+                        .on_shutdown([&shutdown](){
+                            shutdown.count_down();
+                        });
+                }
+                
                 std::unique_ptr<HazelcastServer> startServer(ClientConfig &clientConfig) {
                     if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(sslFactory));
@@ -1009,9 +978,9 @@ namespace hazelcast {
                 boost::latch disconnectedLatch(1);
                 boost::latch shuttingDownLatch(1);
                 boost::latch shutdownLatch(1);
-                ClientAllStatesListener listener(&startingLatch, &startedLatch, &connectedLatch, &disconnectedLatch,
-                                                 &shuttingDownLatch, &shutdownLatch);
-                clientConfig.addListener(&listener);
+                auto listener = makeAllStatesListener(startingLatch, startedLatch, connectedLatch, disconnectedLatch,
+                                                      shuttingDownLatch, shutdownLatch);
+                clientConfig.addListener(std::move(listener));
 
                 HazelcastClient client(clientConfig);
 
@@ -1051,9 +1020,9 @@ namespace hazelcast {
                 boost::latch disconnectedLatch(1);
                 boost::latch shuttingDownLatch(1);
                 boost::latch shutdownLatch(1);
-                ClientAllStatesListener listener(&startingLatch, &startedLatch, &connectedLatch, &disconnectedLatch,
-                                                 &shuttingDownLatch, &shutdownLatch);
-                clientConfig.addListener(&listener);
+                auto listener = makeAllStatesListener(startingLatch, startedLatch, connectedLatch, disconnectedLatch,
+                                                      shuttingDownLatch, shutdownLatch);
+                clientConfig.addListener(std::move(listener));
 
                 HazelcastClient client(clientConfig);
 

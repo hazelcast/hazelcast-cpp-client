@@ -31,8 +31,8 @@ namespace hazelcast {
          *          CLIENT_DISCONNECTED
          *      };
          *
-         * @see HazelcastInstance#getLifecycleService()
-         * @see LifecycleService#addLifecycleListener(LifecycleListener *lifecycleListener)
+         * \see HazelcastInstance::getLifecycleService
+         * \see LifecycleService::addLifecycleListener
          */
         class HAZELCAST_API LifecycleEvent {
         public:
