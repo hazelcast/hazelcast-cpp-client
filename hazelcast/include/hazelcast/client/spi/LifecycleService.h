@@ -62,9 +62,9 @@ namespace hazelcast {
 
                 void shutdown();
 
-                boost::uuids::uuid addLifecycleListener(LifecycleListener &&lifecycleListener);
+                boost::uuids::uuid addListener(LifecycleListener &&lifecycleListener);
 
-                bool removeLifecycleListener(const boost::uuids::uuid &registrationId);
+                bool removeListener(const boost::uuids::uuid &registrationId);
 
                 bool isRunning();
 

@@ -217,11 +217,11 @@ namespace hazelcast {
             }
 
             boost::uuids::uuid HazelcastClientInstanceImpl::addLifecycleListener(LifecycleListener &&lifecycleListener) {
-                return lifecycleService.addLifecycleListener(std::move(lifecycleListener));
+                return lifecycleService.addListener(std::move(lifecycleListener));
             }
 
             bool HazelcastClientInstanceImpl::removeLifecycleListener(const boost::uuids::uuid &registrationId) {
-                return lifecycleService.removeLifecycleListener(registrationId);
+                return lifecycleService.removeListener(registrationId);
             }
 
             void HazelcastClientInstanceImpl::shutdown() {

@@ -253,7 +253,7 @@ namespace hazelcast {
                     clientContext(clientContext), listeners(), loadBalancer(loadBalancer),
                     cluster(cluster), shutdownCompletedLatch(1) {
                 for (const auto &listener: listeners) {
-                    addLifecycleListener(LifecycleListener(listener));
+                    addListener(LifecycleListener(listener));
                 }
             }
 
@@ -318,14 +318,14 @@ namespace hazelcast {
                 }
             }
 
-            boost::uuids::uuid LifecycleService::addLifecycleListener(LifecycleListener &&lifecycleListener) {
+            boost::uuids::uuid LifecycleService::addListener(LifecycleListener &&lifecycleListener) {
                 std::lock_guard<std::mutex> lg(listenerLock);
                 const auto id = uuid_generator_();
                 listeners.emplace(id, std::move(lifecycleListener));
                 return id;
             }
 
-            bool LifecycleService::removeLifecycleListener(const boost::uuids::uuid &registrationId) {
+            bool LifecycleService::removeListener(const boost::uuids::uuid &registrationId) {
                 std::lock_guard<std::mutex> lg(listenerLock);
                 return listeners.erase(registrationId) == 1;
             }
@@ -333,6 +333,8 @@ namespace hazelcast {
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
                 std::lock_guard<std::mutex> lg(listenerLock);
                 util::ILogger &logger = clientContext.getLogger();
+
+                std::function<void(LifecycleListener &)> fire_one;
 
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING : {
@@ -346,56 +348,55 @@ namespace hazelcast {
                                           commitId.c_str());
                         logger.info(msg);
 
-                        for (auto &item: listeners) {
-                            auto& listener = item.second;
+                        fire_one = [](LifecycleListener &listener) {
                             listener.starting();
-                        }
+                        };
                         break;
                     }
                     case LifecycleEvent::STARTED : {
                         logger.info("LifecycleService::LifecycleEvent STARTED");
 
-                        for (auto &item: listeners) {
-                            auto& listener = item.second;
+                        fire_one = [](LifecycleListener &listener) {
                             listener.started();
-                        }
+                        };
                         break;
                     }
                     case LifecycleEvent::SHUTTING_DOWN : {
                         logger.info("LifecycleService::LifecycleEvent SHUTTING_DOWN");
 
-                        for (auto &item: listeners) {
-                            auto& listener = item.second;
+                        fire_one = [](LifecycleListener &listener) {
                             listener.shutting_down();
-                        }
+                        };
                         break;
                     }
                     case LifecycleEvent::SHUTDOWN : {
                         logger.info("LifecycleService::LifecycleEvent SHUTDOWN");
 
-                        for (auto &item: listeners) {
-                            auto& listener = item.second;
+                        fire_one = [](LifecycleListener &listener) {
                             listener.shutdown();
-                        }
+                        };
                         break;
                     }
                     case LifecycleEvent::CLIENT_CONNECTED : {
                         logger.info("LifecycleService::LifecycleEvent CLIENT_CONNECTED");
 
-                        for (auto &item: listeners) {
-                            auto& listener = item.second;
+                        fire_one = [](LifecycleListener &listener) {
                             listener.connected();
-                        }
+                        };
                         break;
                     }
                     case LifecycleEvent::CLIENT_DISCONNECTED : {
                         logger.info("LifecycleService::LifecycleEvent CLIENT_DISCONNECTED");
 
-                        for (auto &item: listeners) {
-                            auto& listener = item.second;
+                        fire_one = [](LifecycleListener &listener) {
                             listener.disconnected();
-                        }
+                        };
                         break;
+                    }
+
+                    for (auto &item: listeners) {
+                        auto& listener = item.second;
+                        fire_one(listener);
                     }
                 }
             }
