@@ -393,11 +393,10 @@ namespace hazelcast {
                         };
                         break;
                     }
+                }
 
-                    for (auto &item: listeners) {
-                        auto& listener = item.second;
-                        fire_one(listener);
-                    }
+                for (auto &item: listeners) {
+                    fire_one(item.second);
                 }
             }
 
