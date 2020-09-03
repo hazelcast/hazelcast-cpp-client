@@ -784,6 +784,14 @@ namespace hazelcast {
                 }
 
                 inline void set(const serialization::pimpl::Data &value, bool is_final = false) {
+                    if (value.dataSize() == 0) {
+                        auto *h = reinterpret_cast<frame_header_t *>(wr_ptr(sizeof(frame_header_t)));
+                        *h = null_frame();
+                        if (is_final) {
+                            h->flags |= IS_FINAL_FLAG;
+                        }
+                        return;
+                    }
                     auto &bytes = value.toByteArray();
                     auto frame_length = sizeof(frame_header_t) + bytes.size();
                     auto fp = wr_ptr(frame_length);

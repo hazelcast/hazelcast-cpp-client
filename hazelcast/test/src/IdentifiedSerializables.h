@@ -21,11 +21,16 @@ namespace hazelcast {
     namespace client {
         namespace test {
             enum struct identified_class_ids {
-                MULTIPLIER = 16
+                MULTIPLICATION = 16,
+                APPEND_STRING = 17
             };
 
             struct multiplication {
                 std::int64_t multiplier;
+            };
+
+            struct append_string {
+                std::string suffix;
             };
         }
 
@@ -40,7 +45,7 @@ namespace hazelcast {
             struct hz_serializer<test::multiplication> : public identified_base {
 
                 static int32_t getClassId() {
-                    return static_cast<int32_t>(test::identified_class_ids::MULTIPLIER);
+                    return static_cast<int32_t>(test::identified_class_ids::MULTIPLICATION);
                 }
 
                 static void writeData(const test::multiplication &object, ObjectDataOutput &out) {
@@ -49,6 +54,22 @@ namespace hazelcast {
 
                 static struct test::multiplication readData(ObjectDataInput &in) {
                     return {in.read<int64_t>()};
+                }
+            };
+
+            template<>
+            struct hz_serializer<test::append_string> : public identified_base {
+
+                static int32_t getClassId() {
+                    return static_cast<int32_t>(test::identified_class_ids::APPEND_STRING);
+                }
+
+                static void writeData(const test::append_string &object, ObjectDataOutput &out) {
+                    out.write(object.suffix);
+                }
+
+                static struct test::append_string readData(ObjectDataInput &in) {
+                    return {in.read<std::string>()};
                 }
             };
         }
