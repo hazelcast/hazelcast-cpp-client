@@ -288,6 +288,8 @@ namespace hazelcast {
              * @return the lifecycle service for this instance
              */
             spi::LifecycleService &getLifecycleService();
+
+            cp::cp_subsystem &get_cp_subsystem();
         private:
             std::shared_ptr<impl::HazelcastClientInstanceImpl> clientImpl;
         };

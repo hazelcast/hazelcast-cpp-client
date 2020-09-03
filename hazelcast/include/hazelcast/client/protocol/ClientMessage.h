@@ -46,6 +46,9 @@ namespace hazelcast {
         class ByteBuffer;
     }
 
+    namespace cp {
+        struct raft_group_id;
+    }
     namespace client {
         namespace protocol {
 
@@ -576,6 +579,10 @@ namespace hazelcast {
                 }
 
                 template<typename T>
+                typename std::enable_if<std::is_same<T, cp::raft_group_id>::value, T>::type
+                get();
+
+                template<typename T>
                 typename std::enable_if<std::is_same<T, typename boost::optional<typename std::remove_reference<typename std::remove_cv<typename T::value_type>::type>::type>>::value, T>::type
                 inline get() {
                     typedef typename std::remove_reference<typename std::remove_cv<typename T::value_type>::type>::type type;
@@ -789,6 +796,8 @@ namespace hazelcast {
                 inline void set(const serialization::pimpl::Data *value, bool is_final = false) {
                     setNullable<serialization::pimpl::Data>(value, is_final);
                 }
+
+                void set(const cp::raft_group_id &o, bool is_final = false);
 
                 template<typename T>
                 typename std::enable_if<std::is_same<T, typename boost::optional<typename std::remove_reference<typename std::remove_cv<typename T::value_type>::type>::type>>::value, void>::type

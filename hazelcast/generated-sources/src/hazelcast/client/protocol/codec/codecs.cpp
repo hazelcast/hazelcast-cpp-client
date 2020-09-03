@@ -3091,6 +3091,80 @@ namespace hazelcast {
                     return msg;
                 }
 
+                ClientMessage fencedlock_lock_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("FencedLock.Lock");
+
+                    msg.setMessageType(static_cast<int32_t>(459008));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(threadId);
+                    msg.set(invocationUid);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage fencedlock_trylock_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid, int64_t timeoutMs) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("FencedLock.TryLock");
+
+                    msg.setMessageType(static_cast<int32_t>(459264));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(threadId);
+                    msg.set(invocationUid);
+                    msg.set(timeoutMs);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage fencedlock_unlock_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("FencedLock.Unlock");
+
+                    msg.setMessageType(static_cast<int32_t>(459520));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(threadId);
+                    msg.set(invocationUid);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage fencedlock_getlockownership_encode(const raft_group_id  & groupId, const std::string  & name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("FencedLock.GetLockOwnership");
+
+                    msg.setMessageType(static_cast<int32_t>(459776));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
                 ClientMessage executorservice_shutdown_encode(const std::string  & name) {
                     size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
                     ClientMessage msg(initial_frame_size);
@@ -3179,6 +3253,433 @@ namespace hazelcast {
                     msg.set(name);
 
                     msg.set(callable, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomiclong_apply_encode(const raft_group_id  & groupId, const std::string  & name, const Data  & function) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicLong.Apply");
+
+                    msg.setMessageType(static_cast<int32_t>(590080));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name);
+
+                    msg.set(function, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomiclong_alter_encode(const raft_group_id  & groupId, const std::string  & name, const Data  & function, int32_t returnValueType) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT32_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicLong.Alter");
+
+                    msg.setMessageType(static_cast<int32_t>(590336));
+                    msg.setPartitionId(-1);
+
+                    msg.set(returnValueType);
+                    msg.set(groupId);
+
+                    msg.set(name);
+
+                    msg.set(function, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomiclong_addandget_encode(const raft_group_id  & groupId, const std::string  & name, int64_t delta) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicLong.AddAndGet");
+
+                    msg.setMessageType(static_cast<int32_t>(590592));
+                    msg.setPartitionId(-1);
+
+                    msg.set(delta);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomiclong_compareandset_encode(const raft_group_id  & groupId, const std::string  & name, int64_t expected, int64_t updated) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicLong.CompareAndSet");
+
+                    msg.setMessageType(static_cast<int32_t>(590848));
+                    msg.setPartitionId(-1);
+
+                    msg.set(expected);
+                    msg.set(updated);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomiclong_get_encode(const raft_group_id  & groupId, const std::string  & name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("AtomicLong.Get");
+
+                    msg.setMessageType(static_cast<int32_t>(591104));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomiclong_getandadd_encode(const raft_group_id  & groupId, const std::string  & name, int64_t delta) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicLong.GetAndAdd");
+
+                    msg.setMessageType(static_cast<int32_t>(591360));
+                    msg.setPartitionId(-1);
+
+                    msg.set(delta);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomiclong_getandset_encode(const raft_group_id  & groupId, const std::string  & name, int64_t newValue) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicLong.GetAndSet");
+
+                    msg.setMessageType(static_cast<int32_t>(591616));
+                    msg.setPartitionId(-1);
+
+                    msg.set(newValue);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomicref_apply_encode(const raft_group_id  & groupId, const std::string  & name, const Data  & function, int32_t returnValueType, bool alter) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT32_SIZE + ClientMessage::UINT8_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicRef.Apply");
+
+                    msg.setMessageType(static_cast<int32_t>(655616));
+                    msg.setPartitionId(-1);
+
+                    msg.set(returnValueType);
+                    msg.set(alter);
+                    msg.set(groupId);
+
+                    msg.set(name);
+
+                    msg.set(function, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomicref_compareandset_encode(const raft_group_id  & groupId, const std::string  & name, const Data  * oldValue, const Data  * newValue) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicRef.CompareAndSet");
+
+                    msg.setMessageType(static_cast<int32_t>(655872));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name);
+
+                    msg.setNullable(oldValue);
+
+                    msg.setNullable(newValue, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomicref_contains_encode(const raft_group_id  & groupId, const std::string  & name, const Data  * value) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("AtomicRef.Contains");
+
+                    msg.setMessageType(static_cast<int32_t>(656128));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name);
+
+                    msg.setNullable(value, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomicref_get_encode(const raft_group_id  & groupId, const std::string  & name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("AtomicRef.Get");
+
+                    msg.setMessageType(static_cast<int32_t>(656384));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage atomicref_set_encode(const raft_group_id  & groupId, const std::string  & name, const Data  * newValue, bool returnOldValue) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::UINT8_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("AtomicRef.Set");
+
+                    msg.setMessageType(static_cast<int32_t>(656640));
+                    msg.setPartitionId(-1);
+
+                    msg.set(returnOldValue);
+                    msg.set(groupId);
+
+                    msg.set(name);
+
+                    msg.setNullable(newValue, true);
+
+                    return msg;
+                }
+
+                ClientMessage countdownlatch_trysetcount_encode(const raft_group_id  & groupId, const std::string  & name, int32_t count) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT32_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CountDownLatch.TrySetCount");
+
+                    msg.setMessageType(static_cast<int32_t>(721152));
+                    msg.setPartitionId(-1);
+
+                    msg.set(count);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage countdownlatch_await_encode(const raft_group_id  & groupId, const std::string  & name, boost::uuids::uuid invocationUid, int64_t timeoutMs) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::UUID_SIZE + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CountDownLatch.Await");
+
+                    msg.setMessageType(static_cast<int32_t>(721408));
+                    msg.setPartitionId(-1);
+
+                    msg.set(invocationUid);
+                    msg.set(timeoutMs);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage countdownlatch_countdown_encode(const raft_group_id  & groupId, const std::string  & name, boost::uuids::uuid invocationUid, int32_t expectedRound) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CountDownLatch.CountDown");
+
+                    msg.setMessageType(static_cast<int32_t>(721664));
+                    msg.setPartitionId(-1);
+
+                    msg.set(invocationUid);
+                    msg.set(expectedRound);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage countdownlatch_getcount_encode(const raft_group_id  & groupId, const std::string  & name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CountDownLatch.GetCount");
+
+                    msg.setMessageType(static_cast<int32_t>(721920));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage countdownlatch_getround_encode(const raft_group_id  & groupId, const std::string  & name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CountDownLatch.GetRound");
+
+                    msg.setMessageType(static_cast<int32_t>(722176));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage semaphore_init_encode(const raft_group_id  & groupId, const std::string  & name, int32_t permits) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT32_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("Semaphore.Init");
+
+                    msg.setMessageType(static_cast<int32_t>(786688));
+                    msg.setPartitionId(-1);
+
+                    msg.set(permits);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage semaphore_acquire_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid, int32_t permits, int64_t timeoutMs) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("Semaphore.Acquire");
+
+                    msg.setMessageType(static_cast<int32_t>(786944));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(threadId);
+                    msg.set(invocationUid);
+                    msg.set(permits);
+                    msg.set(timeoutMs);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage semaphore_release_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid, int32_t permits) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("Semaphore.Release");
+
+                    msg.setMessageType(static_cast<int32_t>(787200));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(threadId);
+                    msg.set(invocationUid);
+                    msg.set(permits);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage semaphore_drain_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("Semaphore.Drain");
+
+                    msg.setMessageType(static_cast<int32_t>(787456));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(threadId);
+                    msg.set(invocationUid);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage semaphore_change_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid, int32_t permits) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE + ClientMessage::INT64_SIZE + ClientMessage::UUID_SIZE + ClientMessage::INT32_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("Semaphore.Change");
+
+                    msg.setMessageType(static_cast<int32_t>(787712));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(threadId);
+                    msg.set(invocationUid);
+                    msg.set(permits);
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage semaphore_availablepermits_encode(const raft_group_id  & groupId, const std::string  & name) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("Semaphore.AvailablePermits");
+
+                    msg.setMessageType(static_cast<int32_t>(787968));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage semaphore_getsemaphoretype_encode(const std::string  & proxyName) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("Semaphore.GetSemaphoreType");
+
+                    msg.setMessageType(static_cast<int32_t>(788224));
+                    msg.setPartitionId(-1);
+
+                    msg.set(proxyName, true);
 
                     return msg;
                 }
@@ -4443,6 +4944,98 @@ namespace hazelcast {
                     msg.setPartitionId(-1);
 
                     msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage cpgroup_createcpgroup_encode(const std::string  & proxyName) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CPGroup.CreateCPGroup");
+
+                    msg.setMessageType(static_cast<int32_t>(1966336));
+                    msg.setPartitionId(-1);
+
+                    msg.set(proxyName, true);
+
+                    return msg;
+                }
+
+                ClientMessage cpgroup_destroycpobject_encode(const raft_group_id  & groupId, const std::string  & serviceName, const std::string  & objectName) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CPGroup.DestroyCPObject");
+
+                    msg.setMessageType(static_cast<int32_t>(1966592));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(serviceName);
+
+                    msg.set(objectName, true);
+
+                    return msg;
+                }
+
+                ClientMessage cpsession_createsession_encode(const raft_group_id  & groupId, const std::string  & endpointName) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CPSession.CreateSession");
+
+                    msg.setMessageType(static_cast<int32_t>(2031872));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId);
+
+                    msg.set(endpointName, true);
+
+                    return msg;
+                }
+
+                ClientMessage cpsession_closesession_encode(const raft_group_id  & groupId, int64_t sessionId) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CPSession.CloseSession");
+
+                    msg.setMessageType(static_cast<int32_t>(2032128));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(groupId, true);
+
+                    return msg;
+                }
+
+                ClientMessage cpsession_heartbeatsession_encode(const raft_group_id  & groupId, int64_t sessionId) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN  + ClientMessage::INT64_SIZE;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CPSession.HeartbeatSession");
+
+                    msg.setMessageType(static_cast<int32_t>(2032384));
+                    msg.setPartitionId(-1);
+
+                    msg.set(sessionId);
+                    msg.set(groupId, true);
+
+                    return msg;
+                }
+
+                ClientMessage cpsession_generatethreadid_encode(const raft_group_id  & groupId) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(true);
+                    msg.setOperationName("CPSession.GenerateThreadId");
+
+                    msg.setMessageType(static_cast<int32_t>(2032640));
+                    msg.setPartitionId(-1);
+
+                    msg.set(groupId, true);
 
                     return msg;
                 }
