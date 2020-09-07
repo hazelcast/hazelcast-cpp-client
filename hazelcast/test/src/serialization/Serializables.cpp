@@ -580,9 +580,18 @@ namespace hazelcast {
             }
 
             test::TestCustomPerson hz_serializer<test::TestCustomPerson>::read(ObjectDataInput &in) {
-                assert(999 ==in.read<int32_t>());
+                {
+                    int t = in.read<int32_t>();
+                    assert(999 == t);
+                }
+
                 test::TestCustomPerson object{in.read<std::string>()};
-                assert(999 == in.read<int32_t>());
+                
+                {
+                    int t = in.read<int32_t>();
+                    assert(999 == t);
+                }
+
                 return object;
             }
 
@@ -593,9 +602,18 @@ namespace hazelcast {
             }
 
             test::TestCustomXSerializable hz_serializer<test::TestCustomXSerializable>::read(ObjectDataInput &in) {
-                assert(666 ==in.read<int32_t>());
+                {
+                    int t = in.read<int32_t>();
+                    assert(666 == t);
+                }
+
                 test::TestCustomXSerializable object{in.read<int32_t>()};
-                assert(666 ==in.read<int32_t>());
+                
+                {
+                    int t = in.read<int32_t>();
+                    assert(666 == t);
+                }
+                
                 return object;
             }
 
