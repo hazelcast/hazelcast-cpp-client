@@ -248,10 +248,13 @@ namespace hazelcast {
             }
 
             LifecycleService::LifecycleService(ClientContext &clientContext,
-                                               const std::unordered_set<LifecycleListener *> &lifecycleListeners,
-                                               LoadBalancer *const loadBalancer, Cluster &cluster) : clientContext(
-                    clientContext), loadBalancer(loadBalancer), cluster(cluster), shutdownCompletedLatch(1) {
-                listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
+                                               const std::vector<LifecycleListener> &listeners,
+                                               LoadBalancer *const loadBalancer, Cluster &cluster) : 
+                    clientContext(clientContext), listeners(), loadBalancer(loadBalancer),
+                    cluster(cluster), shutdownCompletedLatch(1) {
+                for (const auto &listener: listeners) {
+                    addListener(LifecycleListener(listener));
+                }
             }
 
             bool LifecycleService::start() {
@@ -315,19 +318,24 @@ namespace hazelcast {
                 }
             }
 
-            void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
+            boost::uuids::uuid LifecycleService::addListener(LifecycleListener &&lifecycleListener) {
                 std::lock_guard<std::mutex> lg(listenerLock);
-                listeners.insert(lifecycleListener);
+                const auto id = uuid_generator_();
+                listeners.emplace(id, std::move(lifecycleListener));
+                return id;
             }
 
-            bool LifecycleService::removeLifecycleListener(LifecycleListener *lifecycleListener) {
+            bool LifecycleService::removeListener(const boost::uuids::uuid &registrationId) {
                 std::lock_guard<std::mutex> lg(listenerLock);
-                return listeners.erase(lifecycleListener) == 1;
+                return listeners.erase(registrationId) == 1;
             }
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
                 std::lock_guard<std::mutex> lg(listenerLock);
                 util::ILogger &logger = clientContext.getLogger();
+
+                std::function<void(LifecycleListener &)> fire_one;
+
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING : {
                         // convert the date string from "2016-04-20" to 20160420
@@ -339,29 +347,57 @@ namespace hazelcast {
                         util::hz_snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(),
                                           commitId.c_str());
                         logger.info(msg);
+
+                        fire_one = [](LifecycleListener &listener) {
+                            listener.starting();
+                        };
                         break;
                     }
-                    case LifecycleEvent::STARTED :
+                    case LifecycleEvent::STARTED : {
                         logger.info("LifecycleService::LifecycleEvent STARTED");
+
+                        fire_one = [](LifecycleListener &listener) {
+                            listener.started();
+                        };
                         break;
-                    case LifecycleEvent::SHUTTING_DOWN :
+                    }
+                    case LifecycleEvent::SHUTTING_DOWN : {
                         logger.info("LifecycleService::LifecycleEvent SHUTTING_DOWN");
+
+                        fire_one = [](LifecycleListener &listener) {
+                            listener.shutting_down();
+                        };
                         break;
-                    case LifecycleEvent::SHUTDOWN :
+                    }
+                    case LifecycleEvent::SHUTDOWN : {
                         logger.info("LifecycleService::LifecycleEvent SHUTDOWN");
+
+                        fire_one = [](LifecycleListener &listener) {
+                            listener.shutdown();
+                        };
                         break;
-                    case LifecycleEvent::CLIENT_CONNECTED :
+                    }
+                    case LifecycleEvent::CLIENT_CONNECTED : {
                         logger.info("LifecycleService::LifecycleEvent CLIENT_CONNECTED");
+
+                        fire_one = [](LifecycleListener &listener) {
+                            listener.connected();
+                        };
                         break;
-                    case LifecycleEvent::CLIENT_DISCONNECTED :
+                    }
+                    case LifecycleEvent::CLIENT_DISCONNECTED : {
                         logger.info("LifecycleService::LifecycleEvent CLIENT_DISCONNECTED");
+
+                        fire_one = [](LifecycleListener &listener) {
+                            listener.disconnected();
+                        };
                         break;
+                    }
                 }
 
-                for (std::unordered_set<LifecycleListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it) {
-                    (*it)->stateChanged(lifecycleEvent);
+                for (auto &item: listeners) {
+                    fire_one(item.second);
                 }
-
             }
 
             bool LifecycleService::isRunning() {

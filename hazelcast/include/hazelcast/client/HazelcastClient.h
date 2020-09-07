@@ -266,14 +266,14 @@ namespace hazelcast {
             *
             * @param lifecycleListener Listener object
             */
-            void addLifecycleListener(LifecycleListener *lifecycleListener);
+            boost::uuids::uuid addLifecycleListener(LifecycleListener &&lifecycleListener);
 
             /**
             * Remove lifecycle listener
             * @param lifecycleListener
             * @return true if removed successfully
             */
-            bool removeLifecycleListener(LifecycleListener *lifecycleListener);
+            bool removeLifecycleListener(const boost::uuids::uuid &registrationId);
 
             /**
             * Shuts down this HazelcastClient.
