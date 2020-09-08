@@ -250,7 +250,7 @@ namespace hazelcast {
 
         boost::future<void> latch::count_down() {
             auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
-            return get_round().then([=] (boost::future<int32_t> f) {
+            return get_round().then(boost::launch::deferred,[=] (boost::future<int32_t> f) {
                 auto round = f.get();
                 for (;;) {
                     try {
@@ -265,7 +265,7 @@ namespace hazelcast {
         }
 
         boost::future<bool> latch::try_wait() {
-            return get_count().then([] (boost::future<int32_t> f) {
+            return get_count().then(boost::launch::deferred, [] (boost::future<int32_t> f) {
                 return f.get() == 0;
             });
         }
@@ -288,7 +288,7 @@ namespace hazelcast {
             auto timeout_millis = std::max<int64_t>(0, milliseconds);
             auto invoation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
             auto request = countdownlatch_await_encode(group_id_, object_name_, invoation_uid, timeout_millis);
-            return invokeAndGetFuture<bool>(request).then([] (boost::future<bool> f) {
+            return invokeAndGetFuture<bool>(request).then(boost::launch::deferred, [] (boost::future<bool> f) {
                 return f.get() ? std::cv_status::no_timeout : std::cv_status::timeout;
             });
         }
