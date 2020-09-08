@@ -17,6 +17,7 @@
 #pragma once
 
 #include <string>
+#include <condition_variable>
 #include <boost/thread/future.hpp>
 
 #include "hazelcast/util/SynchronizedMap.h"
