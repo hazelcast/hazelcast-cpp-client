@@ -208,10 +208,10 @@ namespace hazelcast {
                         .on_init([this](const InitialMembershipEvent &){
                             setMembersRef();
                         })
-                        .on_join([this](const MembershipEvent &){
+                        .on_added([this](const MembershipEvent &){
                             setMembersRef();
                         })
-                        .on_leave([this](const MembershipEvent &){
+                        .on_removed([this](const MembershipEvent &){
                             setMembersRef();
                         })
                 );

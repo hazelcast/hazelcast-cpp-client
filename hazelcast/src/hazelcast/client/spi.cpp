@@ -894,7 +894,7 @@ namespace hazelcast {
                             if (event.getEventType() == MembershipEvent::MembershipEventType::MEMBER_ADDED) {
                                 listener.join_(event);
                             } else {
-                                listener.leave_(event);
+                                listener.removed_(event);
                             }
                         }
                     }

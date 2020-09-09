@@ -46,10 +46,11 @@ namespace hazelcast {
          * The MembershipListener will never be called concurrently and all MembershipListeners will receive the events
          * in the same order.
          *
-         * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+         * \warning
+         * 1 - If listener should do a time consuming operation, off-load the operation to another thread.
          * otherwise it will slow down the system.
-         *
-         * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+         * \warning
+         * 2 - Do not make a call to hazelcast. It can cause deadlock.
          *
          * \see Cluster::addMembershipListener
          */
@@ -63,18 +64,18 @@ namespace hazelcast {
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            MembershipListener& on_join(Handler &&h) & {
+            MembershipListener& on_added(Handler &&h) & {
                 join_ = std::forward<Handler>(h);
                 return *this;
             };
 
             /**
-             * \copydoc MembershipListener::on_join
+             * \copydoc MembershipListener::on_added
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            MembershipListener&& on_join(Handler &&h) && {
-                on_join(std::forward<Handler>(h));
+            MembershipListener&& on_added(Handler &&h) && {
+                on_added(std::forward<Handler>(h));
                 return std::move(*this);
             };
             
@@ -84,18 +85,18 @@ namespace hazelcast {
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            MembershipListener& on_leave(Handler &&h) & {
-                leave_ = std::forward<Handler>(h);
+            MembershipListener& on_removed(Handler &&h) & {
+                removed_ = std::forward<Handler>(h);
                 return *this;
             };
 
             /**
-             * \copydoc MembershipListener::on_leave
+             * \copydoc MembershipListener::on_removed
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            MembershipListener&& on_leave(Handler &&h) && {
-                on_leave(std::forward<Handler>(h));
+            MembershipListener&& on_removed(Handler &&h) && {
+                on_removed(std::forward<Handler>(h));
                 return std::move(*this);
             };
 
@@ -126,11 +127,9 @@ namespace hazelcast {
             
             static constexpr auto noop_handler = util::noop<const MembershipEvent &>;
 
-            handler_t leave_{ noop_handler },
+            handler_t removed_{ noop_handler },
                       join_{ noop_handler };
             init_handler_t init_{};
-
-            boost::uuids::uuid registration_id_;
         };
     }
 }
