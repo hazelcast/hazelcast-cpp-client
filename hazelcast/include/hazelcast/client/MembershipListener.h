@@ -17,8 +17,11 @@
 #pragma once
 
 #include <string>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/type_traits.h"
+#include "hazelcast/util/noop.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,8 +32,7 @@ namespace hazelcast {
     namespace client {
 
         class MembershipEvent;
-
-        class MemberAttributeEvent;
+        class InitialMembershipEvent;
 
         namespace spi {
             namespace impl {
@@ -49,58 +51,86 @@ namespace hazelcast {
          *
          * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
          *
-         * @see InitialMembershipListener
-         * @see Cluster#addMembershipListener(MembershipListener*)
+         * \see Cluster::addMembershipListener
          */
-
-        class HAZELCAST_API MembershipListener {
+        class HAZELCAST_API MembershipListener final {
             friend class Cluster;
-            friend class MembershipListenerDelegator;
-            friend class InitialMembershipListenerDelegator;
             friend class spi::impl::ClientClusterServiceImpl;
         public:
-            virtual ~MembershipListener();
+            /**
+             * Set an handler function to be invoked when a new member joins the cluster.
+             * \param h a `void` function object that is callable with a single parameter of type `const MembershipEvent &`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener& on_join(Handler &&h) & {
+                join_ = std::forward<Handler>(h);
+                return *this;
+            };
 
             /**
-             * Invoked when a new member is added to the cluster.
-             *
-             * @param membershipEvent membership event
+             * \copydoc MembershipListener::on_join
              */
-            virtual void memberAdded(const MembershipEvent &membershipEvent) = 0;
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener&& on_join(Handler &&h) && {
+                on_join(std::forward<Handler>(h));
+                return std::move(*this);
+            };
+            
+            /**
+             * Set an handler function to be invoked when an existing member leaves the cluster.
+             * \param h a `void` function object that is callable with a single parameter of type `const MembershipEvent &`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener& on_leave(Handler &&h) & {
+                leave_ = std::forward<Handler>(h);
+                return *this;
+            };
 
             /**
-             * Invoked when an existing member leaves the cluster.
-             *
-             * @param membershipEvent membership event
+             * \copydoc MembershipListener::on_leave
              */
-            virtual void memberRemoved(const MembershipEvent &membershipEvent) = 0;
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener&& on_leave(Handler &&h) && {
+                on_leave(std::forward<Handler>(h));
+                return std::move(*this);
+            };
 
-        protected:
-            boost::uuids::uuid registrationId;
+            /**
+             * Set an handler function to be invoked once when this listener is registered.
+             * \param h a `void` function object that is callable with a single parameter of type `const InitialMembershipEvent &`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener& on_init(Handler &&h) & {
+                init_ = std::forward<Handler>(h);
+                return *this;
+            };
 
-            virtual bool shouldRequestInitialMembers() const;
+            /**
+             * \copydoc MembershipListener::on_init
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener&& on_init(Handler &&h) && {
+                on_init(std::forward<Handler>(h));
+                return std::move(*this);
+            };
 
-            virtual boost::uuids::uuid  getRegistrationId() const;
+        private:
+            using handler_t = std::function<void(const MembershipEvent &)>;
+            using init_handler_t = std::function<void(const InitialMembershipEvent &)>;
+            
+            static constexpr auto noop_handler = util::noop<const MembershipEvent &>;
 
-            virtual void setRegistrationId(boost::uuids::uuid registrationId);
-        };
+            handler_t leave_{ noop_handler },
+                      join_{ noop_handler };
+            init_handler_t init_{};
 
-        class MembershipListenerDelegator : public MembershipListener {
-        public:
-            explicit MembershipListenerDelegator(MembershipListener *listener);
-
-            void memberAdded(const MembershipEvent &membershipEvent) override;
-
-            void memberRemoved(const MembershipEvent &membershipEvent) override;
-
-        protected:
-            MembershipListener *listener;
-
-            bool shouldRequestInitialMembers() const override;
-
-            void setRegistrationId(boost::uuids::uuid registrationId) override;
-
-            boost::uuids::uuid  getRegistrationId() const override;
+            boost::uuids::uuid registration_id_;
         };
     }
 }

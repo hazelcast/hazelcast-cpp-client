@@ -59,7 +59,6 @@
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/Cluster.h"
@@ -1492,51 +1491,31 @@ namespace hazelcast {
                 SimpleListenerTest() = default;
 
             protected:
-                class SampleInitialListener : public InitialMembershipListener {
-                public:
-                    SampleInitialListener(boost::latch &_memberAdded, boost::latch &_memberRemoved)
-                            : _memberAdded(_memberAdded), _memberRemoved(_memberRemoved) {
-                    }
+                MembershipListener makeMembershipListener(boost::latch &added, boost::latch &removed) {
+                    return MembershipListener()
+                        .on_join([&added](const MembershipEvent &) {
+                            added.count_down();
+                        })
+                        .on_leave([&removed](const MembershipEvent &) {
+                            removed.count_down();
+                        });
+                }
 
-                    void init(InitialMembershipEvent event) override {
-                        auto &members = event.getMembers();
-                        if (members.size() == 1) {
-                            _memberAdded.count_down();
-                        }
-                    }
-
-                    void memberAdded(const MembershipEvent &event) override {
-                        _memberAdded.count_down();
-                    }
-
-                    void memberRemoved(const MembershipEvent &event) override {
-                        _memberRemoved.count_down();
-                    }
-
-                private:
-                    boost::latch &_memberAdded;
-                    boost::latch &_memberRemoved;
-                };
-
-                class SampleListenerInSimpleListenerTest : public MembershipListener {
-                public:
-                    SampleListenerInSimpleListenerTest(boost::latch &_memberAdded,
-                                                       boost::latch &_memberRemoved)
-                            : _memberAdded(_memberAdded), _memberRemoved(_memberRemoved) {
-                    }
-
-                    void memberAdded(const MembershipEvent &event) override {
-                        _memberAdded.count_down();
-                    }
-
-                    void memberRemoved(const MembershipEvent &event) override {
-                        _memberRemoved.count_down();
-                    }
-
-                private:
-                    boost::latch &_memberAdded;
-                    boost::latch &_memberRemoved;
-                };
+                MembershipListener makeInitialMembershipListener(boost::latch &added, boost::latch &removed) {
+                    return MembershipListener()
+                        .on_init([&added](const InitialMembershipEvent &event) {
+                            auto &members = event.getMembers();
+                            if (members.size() == 1) {
+                                added.count_down();
+                            }
+                        })
+                        .on_join([&added](const MembershipEvent &) {
+                            added.count_down();
+                        })
+                        .on_leave([&removed](const MembershipEvent &) {
+                            removed.count_down();
+                        });
+                }
             };
 
             TEST_P(SimpleListenerTest, testSharedClusterListeners) {
@@ -1548,13 +1527,11 @@ namespace hazelcast {
                 boost::latch memberRemoved(1);
                 boost::latch memberRemovedInit(1);
 
-                std::shared_ptr<MembershipListener> sampleInitialListener(
-                        new SampleInitialListener(memberAddedInit, memberRemovedInit));
-                std::shared_ptr<MembershipListener> sampleListener(
-                        new SampleListenerInSimpleListenerTest(memberAdded, memberRemoved));
+                auto init_listener = makeInitialMembershipListener(memberAddedInit, memberRemovedInit);
+                auto listener = makeMembershipListener(memberAdded, memberRemoved);
 
-                auto initialListenerRegistrationId = cluster.addMembershipListener(sampleInitialListener);
-                auto sampleListenerRegistrationId = cluster.addMembershipListener(sampleListener);
+                auto initialListenerRegistrationId = cluster.addMembershipListener(std::move(init_listener));
+                auto sampleListenerRegistrationId = cluster.addMembershipListener(std::move(listener));
 
                 HazelcastServer instance2(*g_srvFactory);
 
@@ -1581,11 +1558,11 @@ namespace hazelcast {
                 boost::latch memberRemoved(1);
                 boost::latch memberRemovedInit(1);
 
-                SampleInitialListener sampleInitialListener(memberAddedInit, memberRemovedInit);
-                SampleListenerInSimpleListenerTest sampleListener(memberAdded, memberRemoved);
+                auto init_listener = makeInitialMembershipListener(memberAddedInit, memberRemovedInit);
+                auto listener = makeMembershipListener(memberAdded, memberRemoved);
 
-                cluster.addMembershipListener(&sampleInitialListener);
-                cluster.addMembershipListener(&sampleListener);
+                auto init_id = cluster.addMembershipListener(std::move(init_listener));
+                auto id = cluster.addMembershipListener(std::move(listener));
 
                 HazelcastServer instance2(*g_srvFactory);
 
@@ -1599,8 +1576,8 @@ namespace hazelcast {
 
                 instance.shutdown();
 
-                ASSERT_TRUE(cluster.removeMembershipListener(&sampleInitialListener));
-                ASSERT_TRUE(cluster.removeMembershipListener(&sampleListener));
+                ASSERT_TRUE(cluster.removeMembershipListener(init_id));
+                ASSERT_TRUE(cluster.removeMembershipListener(id));
             }
 
             TEST_P(SimpleListenerTest, testClusterListenersFromConfig) {
@@ -1608,12 +1585,12 @@ namespace hazelcast {
                 boost::latch memberAddedInit(2);
                 boost::latch memberRemoved(1);
                 boost::latch memberRemovedInit(1);
-                SampleInitialListener sampleInitialListener(memberAddedInit, memberRemovedInit);
-                SampleListenerInSimpleListenerTest sampleListener(memberAdded, memberRemoved);
+                auto init_listener = makeInitialMembershipListener(memberAddedInit, memberRemovedInit);
+                auto listener = makeMembershipListener(memberAdded, memberRemoved);
 
                 ClientConfig clientConfig = GetParam();
-                clientConfig.addListener(&sampleListener);
-                clientConfig.addListener(&sampleInitialListener);
+                clientConfig.addListener(std::move(init_listener));
+                clientConfig.addListener(std::move(listener));
 
                 HazelcastServer instance(*g_srvFactory);
                 HazelcastClient hazelcastClient(clientConfig);
@@ -2192,20 +2169,12 @@ namespace hazelcast {
 
             };
 
-            class MyMembershipListener : public MembershipListener {
-            public:
-                MyMembershipListener(boost::latch &countDownLatch)
-                        : countDownLatch(countDownLatch) {}
-
-                void memberAdded(const MembershipEvent &membershipEvent) override {}
-
-                void memberRemoved(const MembershipEvent &membershipEvent) override {
-                    countDownLatch.count_down();
-                }
-
-            private:
-                boost::latch &countDownLatch;
-            };
+            MembershipListener makeMemberRemovedListener(boost::latch &l) {
+                return MembershipListener()
+                    .on_leave([&l](const MembershipEvent &){
+                        l.count_down();
+                    });
+            }
 
             ClientTxnTest::ClientTxnTest()
                     : hazelcastInstanceFactory(*g_srvFactory) {
@@ -2318,8 +2287,8 @@ namespace hazelcast {
                 TransactionContext context = client->newTransactionContext();
                 boost::latch txnRollbackLatch(1);
                 boost::latch memberRemovedLatch(1);
-                MyMembershipListener myLifecycleListener(memberRemovedLatch);
-                client->getCluster().addMembershipListener(&myLifecycleListener);
+                auto listener = makeMemberRemovedListener(memberRemovedLatch);
+                client->getCluster().addMembershipListener(std::move(listener));
 
                 try {
                     context.beginTransaction().get();
@@ -2356,8 +2325,8 @@ namespace hazelcast {
                 auto queue = context.getQueue(queueName);
                 queue->offer("str").get();
 
-                MyMembershipListener myLifecycleListener(memberRemovedLatch);
-                client->getCluster().addMembershipListener(&myLifecycleListener);
+                auto listener = makeMemberRemovedListener(memberRemovedLatch);
+                client->getCluster().addMembershipListener(std::move(listener));
 
                 server->shutdown();
 
