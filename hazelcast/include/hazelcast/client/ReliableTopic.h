@@ -137,7 +137,7 @@ namespace hazelcast {
                         name(topicName), executor(rb, logger), serializationService(service),
                         config(reliableTopicConfig) {
                     // we are going to listen to next publication. We don't care about what already has been published.
-                    int64_t initialSequence = listener.retrieveInitialSequence();
+                    int64_t initialSequence = listener.initial_sequence_;
                     if (initialSequence == -1) {
                         initialSequence = ringbuffer->tailSequence().get() + 1;
                     }
@@ -169,7 +169,7 @@ namespace hazelcast {
                     // but we'll process whatever was received in 1 go.
                     for (auto &item : allMessages->getItems()) {
                         try {
-                            listener.storeSequence(sequence);
+                            listener.store_sequence_(sequence);
                             process(item.get<topic::impl::reliable::ReliableTopicMessage>().get_ptr());
                         } catch (exception::IException &e) {
                             if (terminate(e)) {
@@ -212,7 +212,7 @@ namespace hazelcast {
                             // StaleSequenceException.getHeadSeq() is not available on the client-side, see #7317
                             int64_t remoteHeadSeq = ringbuffer->headSequence().get();
 
-                            if (listener.isLossTolerant()) {
+                            if (listener.loss_tolerant_) {
                                 if (logger.isFinestEnabled()) {
                                     std::ostringstream out;
                                     out << "MessageListener " << id << " on topic: " << name
@@ -269,7 +269,7 @@ namespace hazelcast {
             private:
                 void process(topic::impl::reliable::ReliableTopicMessage *message) {
                     //  proxy.localTopicStats.incrementReceives();
-                    listener.onMessage(toMessage(message));
+                    listener.received_(toMessage(message));
                 }
 
                 topic::Message toMessage(topic::impl::reliable::ReliableTopicMessage *m) {
@@ -288,7 +288,7 @@ namespace hazelcast {
                     }
 
                     try {
-                        bool terminate = listener.isTerminal(failure);
+                        bool terminate = listener.exception_(failure);
                         if (terminate) {
                             std::ostringstream out;
                             out << "Terminating MessageListener " << id << " on topic: " << name << ". "

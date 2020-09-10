@@ -20,34 +20,31 @@
 #pragma warning(disable: 4251) //for dll export
 #endif
 
-#include "hazelcast/client/topic/MessageListener.h"
-#include "hazelcast/client/exception/IException.h"
+#include <cstdint>
 
-#include <stdint.h>
+#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/util/noop.h"
+#include "hazelcast/util/type_traits.h"
 
 namespace hazelcast {
     namespace client {
+        class ReliableTopic;
         namespace topic {
+            class Message;
+
             /**
-             * A {@link MessageListener} to better integrate with the reliable topic.
-             *
-             * If a regular MessageListener is registered on a reliable topic, the message listener works fine, but it can't do much
-             * more than listen to messages.
-             *
-             * If a ReliableMessageListener is registered on a normal topic, only the {@link MessageListener} methods will be called.
-             *
+             * Listen to messages from a ReliableTopic
+             *             
              * <h1>Durable Subscription</h1>
-             * The ReliableMessageListener allows you to control where you want to start processing a message when the listener is
+             * ReliableListener allows you to control where you want to start processing a message when the listener is
              * registered. This makes it possible to create a durable subscription by storing the sequence of the last message and
              * using this sequenceId as the sequenceId to start from.
              *
              * <h1>Exception handling</h1>
-             * The ReliableMessageListener also gives the ability to deal with exceptions using the {@link #isTerminal(Throwable)}
-             * method. If a plain MessageListener is used, then it won't terminate on exceptions and it will keep on running. But in some
-             * cases it is better to stop running.
+             * ReliableListener also gives the ability to deal with exceptions via the method ReliableListener::on_exception.
              *
              * <h1>Global order</h1>
-             * The ReliableMessageListener will always get all events in order (global order). It will not get duplicates and
+             * The ReliableListener will always get all events in order (global order). It will not get duplicates and
              * there will only be gaps if it is too slow. For more information see {@link #isLossTolerant()}.
              *
              * <h1>Delivery guarantees</h1>
@@ -57,44 +54,13 @@ namespace hazelcast {
              * sequence, then an at-least-once delivery is implemented since the same item is now being processed twice. To implement
              * an at-most-once delivery guarantee, add 1 to the stored sequence when the {@link #retrieveInitialSequence()} is called.
              *
-             *
-             * @Beta
              */
-            class HAZELCAST_API ReliableMessageListener {
+            class HAZELCAST_API ReliableListener final {
+                friend class client::ReliableTopic;
             public:
-                virtual ~ReliableMessageListener() = default;
-
                 /**
-                * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.
-                * Therefore there is only one thread invoking onMessage. The user should not keep the thread busy, but preferably
-                * should dispatch it via an Executor. This will increase the performance of the topic.
-                *
-                * @param message the message that is received for the added topic
-                */
-                virtual void onMessage(Message &&message) = 0;
-
-                /**
-                 * Retrieves the initial sequence from which this ReliableMessageListener should start.
-                 *
-                 * Return -1 if there is no initial sequence and you want to start from the next published message.
-                 *
-                 * If you intent to create a durable subscriber so you continue from where you stopped the previous
-                 * time, load the previous sequence and add 1. If you don't add one, then you will be receiving the
-                 * same message twice.
-                 *
-                 * @return the initial sequence
-                 */
-                virtual int64_t retrieveInitialSequence() const = 0;
-
-                /**
-                 * Informs the ReliableMessageListener that it should store the sequence. This method is called before the message is
-                 * processed. Can be used to make a durable subscription.
-                 *
-                 * @param sequence the sequence
-                 */
-                virtual void storeSequence(int64_t sequence) = 0;
-
-                /**
+                 * \param loss_tolerant
+                 * \param initial_sequence
                  * Checks if this ReliableMessageListener is able to deal with message loss. Even though the reliable topic promises to
                  * be reliable, it can be that a MessageListener is too slow. Eventually the message won't be available anymore.
                  *
@@ -103,7 +69,56 @@ namespace hazelcast {
                  *
                  * @return true if the ReliableMessageListener is tolerant towards loosing messages.
                  */
-                virtual bool isLossTolerant() const = 0;
+                ReliableListener(bool loss_tolerant, int64_t initial_sequence = -1)
+                    : loss_tolerant_(loss_tolerant)
+                    , initial_sequence_(initial_sequence) {}
+
+                /**
+                 * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.
+                 * Therefore there is only one thread invoking onMessage. The user should not keep the thread busy, but preferably
+                 * should dispatch it via an Executor. This will increase the performance of the topic.
+                 *
+                 * \param message the message that is received for the added topic
+                 */
+                template<typename Handler,
+                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
+                ReliableListener &on_received(Handler &&h) & {
+                    received_ = std::move(h);
+                    return *this;
+                }
+
+                /**
+                 * \copydoc ReliableListener::on_received
+                 */
+                template<typename Handler,
+                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
+                ReliableListener &&on_received(Handler &&h) && {
+                    on_received(std::move(h));
+                    return std::move(*this);
+                }
+
+                /**
+                 * Informs the ReliableMessageListener that it should store the sequence. This method is called before the message is
+                 * processed. Can be used to make a durable subscription.
+                 *
+                 * @param sequence the sequence
+                 */
+                template<typename Handler,
+                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
+                ReliableListener &on_store_sequence(Handler &&h) & {
+                    store_sequence_ = std::move(h);
+                    return *this;
+                }
+
+                /**
+                 * \copydoc ReliableListener::on_store_sequence
+                 */
+                template<typename Handler,
+                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
+                ReliableListener &&on_store_sequence(Handler &&h) && {
+                    on_store_sequence(std::move(h));
+                    return std::move(*this);
+                }
 
                 /**
                  * Checks if the ReliableMessageListener should be terminated based on an exception thrown while calling
@@ -112,7 +127,38 @@ namespace hazelcast {
                  * @param failure the exception thrown while calling {@link #onMessage(com.hazelcast.core.Message)}.
                  * @return true if the ReliableMessageListener should terminate itself, false if it should keep on running.
                  */
-                virtual bool isTerminal(const exception::IException &failure) const = 0;
+                template<typename Handler,
+                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
+                ReliableListener &on_exception(Handler &&h) & {
+                    exception_ = std::move(h);
+                    return *this;
+                }
+
+                /**
+                 * \copydoc ReliableListener::on_exception
+                 */
+                template<typename Handler,
+                         typename = util::enable_if_rvalue_ref_t<Handler &&>>
+                ReliableListener &&on_exception(Handler &&h) && {
+                    on_exception(std::move(h));
+                    return std::move(*this);
+                }
+
+            private:
+                using received_handler_t = std::function<void(Message &&)>;
+                using store_sequence_handler_t = std::function<void(int64_t)>;
+                using exception_handler_t = std::function<bool(const exception::IException &)>;
+
+                bool loss_tolerant_;
+                int64_t initial_sequence_;
+
+                received_handler_t received_{ util::noop<Message &&> };
+                store_sequence_handler_t store_sequence_ { util::noop<int64_t> };
+                exception_handler_t exception_{ 
+                    [](const exception::IException &){
+                        return false;
+                    }
+                };
             };
 
         }
