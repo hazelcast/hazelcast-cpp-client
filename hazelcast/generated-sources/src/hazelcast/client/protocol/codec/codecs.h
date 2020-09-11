@@ -26,6 +26,7 @@ using namespace hazelcast::client;
 using namespace hazelcast::util;
 using namespace hazelcast::client::protocol;
 using namespace hazelcast::client::serialization::pimpl;
+using namespace hazelcast::cp;
 
 namespace hazelcast {
     namespace client {
@@ -1536,6 +1537,43 @@ namespace hazelcast {
                 ClientMessage HAZELCAST_API set_isempty_encode(const std::string  & name);
 
                 /**
+                 * Acquires the given FencedLock on the given CP group. If the lock is
+                 * acquired, a valid fencing token (positive number) is returned. If not
+                 * acquired because of max reentrant entry limit, the call returns -1.
+                 * If the lock is held by some other endpoint when this method is called,
+                 * the caller thread is blocked until the lock is released. If the session
+                 * is closed between reentrant acquires, the call fails with
+                 * {@code LockOwnershipLostException}.
+                 */
+                ClientMessage HAZELCAST_API fencedlock_lock_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid);
+
+                /**
+                 * Attempts to acquire the given FencedLock on the given CP group.
+                 * If the lock is acquired, a valid fencing token (positive number) is
+                 * returned. If not acquired either because of max reentrant entry limit or
+                 * the lock is not free during the timeout duration, the call returns -1.
+                 * If the lock is held by some other endpoint when this method is called,
+                 * the caller thread is blocked until the lock is released or the timeout
+                 * duration passes. If the session is closed between reentrant acquires,
+                 * the call fails with {@code LockOwnershipLostException}.
+                 */
+                ClientMessage HAZELCAST_API fencedlock_trylock_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid, int64_t timeoutMs);
+
+                /**
+                 * Unlocks the given FencedLock on the given CP group. If the lock is
+                 * not acquired, the call fails with {@link IllegalMonitorStateException}.
+                 * If the session is closed while holding the lock, the call fails with
+                 * {@code LockOwnershipLostException}. Returns true if the lock is still
+                 * held by the caller after a successful unlock() call, false otherwise.
+                 */
+                ClientMessage HAZELCAST_API fencedlock_unlock_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid);
+
+                /**
+                 * Returns current lock ownership status of the given FencedLock instance.
+                 */
+                ClientMessage HAZELCAST_API fencedlock_getlockownership_encode(const raft_group_id  & groupId, const std::string  & name);
+
+                /**
                  * Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted.
                  * Invocation has no additional effect if already shut down.
                  */
@@ -1565,6 +1603,154 @@ namespace hazelcast {
                  * Submits the task to member specified by the address.
                  */
                 ClientMessage HAZELCAST_API executorservice_submittomember_encode(const std::string  & name, boost::uuids::uuid uuid, const Data  & callable, boost::uuids::uuid memberUUID);
+
+                /**
+                 * Applies a function on the value, the actual stored value will not change
+                 */
+                ClientMessage HAZELCAST_API atomiclong_apply_encode(const raft_group_id  & groupId, const std::string  & name, const Data  & function);
+
+                /**
+                 * Alters the currently stored value by applying a function on it.
+                 */
+                ClientMessage HAZELCAST_API atomiclong_alter_encode(const raft_group_id  & groupId, const std::string  & name, const Data  & function, int32_t returnValueType);
+
+                /**
+                 * Atomically adds the given value to the current value.
+                 */
+                ClientMessage HAZELCAST_API atomiclong_addandget_encode(const raft_group_id  & groupId, const std::string  & name, int64_t delta);
+
+                /**
+                 * Atomically sets the value to the given updated value only if the current
+                 * value the expected value.
+                 */
+                ClientMessage HAZELCAST_API atomiclong_compareandset_encode(const raft_group_id  & groupId, const std::string  & name, int64_t expected, int64_t updated);
+
+                /**
+                 * Gets the current value.
+                 */
+                ClientMessage HAZELCAST_API atomiclong_get_encode(const raft_group_id  & groupId, const std::string  & name);
+
+                /**
+                 * Atomically adds the given value to the current value.
+                 */
+                ClientMessage HAZELCAST_API atomiclong_getandadd_encode(const raft_group_id  & groupId, const std::string  & name, int64_t delta);
+
+                /**
+                 * Atomically sets the given value and returns the old value.
+                 */
+                ClientMessage HAZELCAST_API atomiclong_getandset_encode(const raft_group_id  & groupId, const std::string  & name, int64_t newValue);
+
+                /**
+                 * Applies a function on the value
+                 */
+                ClientMessage HAZELCAST_API atomicref_apply_encode(const raft_group_id  & groupId, const std::string  & name, const Data  & function, int32_t returnValueType, bool alter);
+
+                /**
+                 * Alters the currently stored value by applying a function on it.
+                 */
+                ClientMessage HAZELCAST_API atomicref_compareandset_encode(const raft_group_id  & groupId, const std::string  & name, const Data  * oldValue, const Data  * newValue);
+
+                /**
+                 * Checks if the reference contains the value.
+                 */
+                ClientMessage HAZELCAST_API atomicref_contains_encode(const raft_group_id  & groupId, const std::string  & name, const Data  * value);
+
+                /**
+                 * Gets the current value.
+                 */
+                ClientMessage HAZELCAST_API atomicref_get_encode(const raft_group_id  & groupId, const std::string  & name);
+
+                /**
+                 * Atomically sets the given value
+                 */
+                ClientMessage HAZELCAST_API atomicref_set_encode(const raft_group_id  & groupId, const std::string  & name, const Data  * newValue, bool returnOldValue);
+
+                /**
+                 * Sets the count to the given value if the current count is zero.
+                 * If the count is not zero, then this method does nothing
+                 * and returns false
+                 */
+                ClientMessage HAZELCAST_API countdownlatch_trysetcount_encode(const raft_group_id  & groupId, const std::string  & name, int32_t count);
+
+                /**
+                 * Causes the current thread to wait until the latch has counted down
+                 * to zero, or an exception is thrown, or the specified waiting time
+                 * elapses. If the current count is zero then this method returns
+                 * immediately with the value true. If the current count is greater than
+                 * zero, then the current thread becomes disabled for thread scheduling
+                 * purposes and lies dormant until one of five things happen: the count
+                 * reaches zero due to invocations of the {@code countDown} method, this
+                 * ICountDownLatch instance is destroyed, the countdown owner becomes
+                 * disconnected, some other thread Thread#interrupt interrupts the current
+                 * thread, or the specified waiting time elapses. If the count reaches zero
+                 * then the method returns with the value true. If the current thread has
+                 * its interrupted status set on entry to this method, or is interrupted
+                 * while waiting, then {@code InterruptedException} is thrown
+                 * and the current thread's interrupted status is cleared. If the specified
+                 * waiting time elapses then the value false is returned.  If the time is
+                 * less than or equal to zero, the method will not wait at all.
+                 */
+                ClientMessage HAZELCAST_API countdownlatch_await_encode(const raft_group_id  & groupId, const std::string  & name, boost::uuids::uuid invocationUid, int64_t timeoutMs);
+
+                /**
+                 * Decrements the count of the latch, releasing all waiting threads if
+                 * the count reaches zero. If the current count is greater than zero, then
+                 * it is decremented. If the new count is zero: All waiting threads are
+                 * re-enabled for thread scheduling purposes, and Countdown owner is set to
+                 * null. If the current count equals zero, then nothing happens.
+                 */
+                ClientMessage HAZELCAST_API countdownlatch_countdown_encode(const raft_group_id  & groupId, const std::string  & name, boost::uuids::uuid invocationUid, int32_t expectedRound);
+
+                /**
+                 * Returns the current count.
+                 */
+                ClientMessage HAZELCAST_API countdownlatch_getcount_encode(const raft_group_id  & groupId, const std::string  & name);
+
+                /**
+                 * Returns the current round. A round completes when the count value
+                 * reaches to 0 and a new round starts afterwards.
+                 */
+                ClientMessage HAZELCAST_API countdownlatch_getround_encode(const raft_group_id  & groupId, const std::string  & name);
+
+                /**
+                 * Initializes the ISemaphore instance with the given permit number, if not
+                 * initialized before.
+                 */
+                ClientMessage HAZELCAST_API semaphore_init_encode(const raft_group_id  & groupId, const std::string  & name, int32_t permits);
+
+                /**
+                 * Acquires the requested amount of permits if available, reducing
+                 * the number of available permits. If no enough permits are available,
+                 * then the current thread becomes disabled for thread scheduling purposes
+                 * and lies dormant until other threads release enough permits.
+                 */
+                ClientMessage HAZELCAST_API semaphore_acquire_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid, int32_t permits, int64_t timeoutMs);
+
+                /**
+                 * Releases the given number of permits and increases the number of
+                 * available permits by that amount.
+                 */
+                ClientMessage HAZELCAST_API semaphore_release_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid, int32_t permits);
+
+                /**
+                 * Acquires all available permits at once and returns immediately.
+                 */
+                ClientMessage HAZELCAST_API semaphore_drain_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid);
+
+                /**
+                 * Increases or decreases the number of permits by the given value.
+                 */
+                ClientMessage HAZELCAST_API semaphore_change_encode(const raft_group_id  & groupId, const std::string  & name, int64_t sessionId, int64_t threadId, boost::uuids::uuid invocationUid, int32_t permits);
+
+                /**
+                 * Returns the number of available permits.
+                 */
+                ClientMessage HAZELCAST_API semaphore_availablepermits_encode(const raft_group_id  & groupId, const std::string  & name);
+
+                /**
+                 * Returns true if the semaphore is JDK compatible
+                 */
+                ClientMessage HAZELCAST_API semaphore_getsemaphoretype_encode(const std::string  & proxyName);
 
                 /**
                  * Associates a given value to the specified key and replicates it to the cluster. If there is an old value, it will
@@ -2136,6 +2322,39 @@ namespace hazelcast {
                  * members in the cluster (members that own data).
                  */
                 ClientMessage HAZELCAST_API pncounter_getconfiguredreplicacount_encode(const std::string  & name);
+
+                /**
+                 * Creates a new CP group with the given name
+                 */
+                ClientMessage HAZELCAST_API cpgroup_createcpgroup_encode(const std::string  & proxyName);
+
+                /**
+                 * Destroys the distributed object with the given name on the requested
+                 * CP group
+                 */
+                ClientMessage HAZELCAST_API cpgroup_destroycpobject_encode(const raft_group_id  & groupId, const std::string  & serviceName, const std::string  & objectName);
+
+                /**
+                 * Creates a session for the caller on the given CP group.
+                 */
+                ClientMessage HAZELCAST_API cpsession_createsession_encode(const raft_group_id  & groupId, const std::string  & endpointName);
+
+                /**
+                 * Closes the given session on the given CP group
+                 */
+                ClientMessage HAZELCAST_API cpsession_closesession_encode(const raft_group_id  & groupId, int64_t sessionId);
+
+                /**
+                 * Commits a heartbeat for the given session on the given cP group and
+                 * extends its session expiration time.
+                 */
+                ClientMessage HAZELCAST_API cpsession_heartbeatsession_encode(const raft_group_id  & groupId, int64_t sessionId);
+
+                /**
+                 * Generates a new ID for the caller thread. The ID is unique in the given
+                 * CP group.
+                 */
+                ClientMessage HAZELCAST_API cpsession_generatethreadid_encode(const raft_group_id  & groupId);
 
             }
         }

@@ -126,27 +126,44 @@ namespace hazelcast {
 
             boost::future<void> ProxyManager::destroyProxy(ClientProxy &proxy) {
                 DefaultObjectNamespace objectNamespace(proxy.getServiceName(), proxy.getName());
+                std::shared_ptr<ClientProxy> registeredProxy;
                 {
                     std::lock_guard<std::mutex> guard(lock);
                     auto it = proxies.find(objectNamespace);
-                    if (it == proxies.end()) {
-                        return boost::make_ready_future();
+                    registeredProxy = it == proxies.end() ? nullptr : it->second.get();
+                    if (it != proxies.end()) {
+                        proxies.erase(it);
                     }
-                    proxies.erase(it);
                 }
 
                 try {
-                    try {
+                    if (registeredProxy) {
+                        try {
+                            proxy.destroyLocally();
+                            return proxy.destroyRemotely();
+                        } catch (exception::IException &) {
+                            proxy.destroyRemotely();
+                            throw;
+                        }
+                    }
+                    if (&proxy != registeredProxy.get()) {
+                        // The given proxy is stale and was already destroyed, but the caller
+                        // may have allocated local resources in the context of this stale proxy
+                        // instance after it was destroyed, so we have to cleanup it locally one
+                        // more time to make sure there are no leaking local resources.
                         proxy.destroyLocally();
-                        return proxy.destroyRemotely();
-                    } catch (exception::IException &) {
-                        proxy.destroyRemotely();
-                        throw;
                     }
                 } catch (...) {
-                    proxy.destroyLocally();
+                    if (&proxy != registeredProxy.get()) {
+                        // The given proxy is stale and was already destroyed, but the caller
+                        // may have allocated local resources in the context of this stale proxy
+                        // instance after it was destroyed, so we have to cleanup it locally one
+                        // more time to make sure there are no leaking local resources.
+                        proxy.destroyLocally();
+                    }
                     throw;
                 }
+                return boost::make_ready_future();
             }
 
             ClientContext::ClientContext(const client::HazelcastClient &hazelcastClient) : hazelcastClient(

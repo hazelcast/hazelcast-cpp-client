@@ -52,6 +52,7 @@
 #include "hazelcast/client/FlakeIdGenerator.h"
 #include "hazelcast/client/IExecutorService.h"
 #include "hazelcast/client/Client.h"
+#include "hazelcast/cp/cp.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -203,6 +204,8 @@ namespace hazelcast {
                 const std::shared_ptr <util::ILogger> &getLogger() const;
 
                 boost::uuids::uuid random_uuid();
+
+                cp::cp_subsystem &get_cp_subsystem();
             private:
                 ClientConfig clientConfig;
                 ClientProperties clientProperties;
@@ -231,6 +234,7 @@ namespace hazelcast {
                 std::mt19937 random_generator_;
                 boost::uuids::basic_random_generator<std::mt19937> uuid_generator_;
                 std::mutex uuid_generator_lock_;
+                cp::cp_subsystem cp_subsystem_;
 
                 HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs) = delete;
 
