@@ -263,6 +263,8 @@ namespace hazelcast {
                      const std::string &objectName) : cp_proxy(SERVICE_NAME, name, &context, groupId, objectName) {}
 
         boost::future<bool> latch::try_set_count(int32_t count) {
+            util::Preconditions::checkPositive(count, "count must be positive!");
+
             auto request = countdownlatch_trysetcount_encode(group_id_, object_name_, count);
             return invokeAndGetFuture<bool>(request);
         }
@@ -651,6 +653,17 @@ namespace hazelcast {
         bool fenced_lock::lock_ownership_state::is_locked() {
             return fence != INVALID_FENCE;
         }
+    }
+}
+
+namespace std {
+    std::size_t
+    hash<hazelcast::cp::raft_group_id>::operator()(const hazelcast::cp::raft_group_id &group_id) const noexcept {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, group_id.name);
+        boost::hash_combine(seed, group_id.seed);
+        boost::hash_combine(seed, group_id.group_id);
+        return seed;
     }
 }
 

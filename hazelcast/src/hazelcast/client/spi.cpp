@@ -322,6 +322,7 @@ namespace hazelcast {
                 }
                 try {
                     fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
+                    clientContext.get_proxy_session_manager().shutdown();
                     clientContext.getClientstatistics().shutdown();
                     clientContext.getProxyManager().destroy();
                     clientContext.getConnectionManager().shutdown();

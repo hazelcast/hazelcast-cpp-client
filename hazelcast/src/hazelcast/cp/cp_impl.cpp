@@ -104,7 +104,8 @@ namespace hazelcast {
                                 std::tie(group_id, session_id, in_use) = entry;
                                 if (in_use) {
                                     prev_heartbeats->emplace_back(
-                                            heartbeat(group_id, session_id).then([&](boost::future<void> f) {
+                                            heartbeat(group_id, session_id).then(boost::launch::sync,
+                                                                                 [=](boost::future<client::protocol::ClientMessage> f) {
                                                 try {
                                                     f.get();
                                                 } catch (client::exception::SessionExpiredException &) {
@@ -115,15 +116,13 @@ namespace hazelcast {
                                             }));
                                 }
                             }
-
                         }, duration, duration);
                     }
                 }
 
-                boost::future<void> proxy_session_manager::heartbeat(const raft_group_id &group_id, int64_t session_id) {
+                boost::future<client::protocol::ClientMessage> proxy_session_manager::heartbeat(const raft_group_id &group_id, int64_t session_id) {
                     auto request = client::protocol::codec::cpsession_heartbeatsession_encode(group_id, session_id);
-                    return client::proxy::SerializingProxy::toVoidFuture(spi::impl::ClientInvocation::create(client_, request,
-                                                                        "sessionManager")->invoke());
+                    return spi::impl::ClientInvocation::create(client_, request,"sessionManager")->invoke();
                 }
 
                 void proxy_session_manager::invalidate_session(const raft_group_id &group_id, int64_t session_id) {
@@ -215,16 +214,5 @@ namespace hazelcast {
 
             }
         }
-    }
-}
-
-namespace std {
-    std::size_t
-    hash<hazelcast::cp::raft_group_id>::operator()(const hazelcast::cp::raft_group_id &group_id) const noexcept {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, group_id.name);
-        boost::hash_combine(seed, group_id.seed);
-        boost::hash_combine(seed, group_id.group_id);
-        return seed;
     }
 }

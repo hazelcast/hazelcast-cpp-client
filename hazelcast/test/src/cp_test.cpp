@@ -301,6 +301,10 @@ namespace hazelcast {
                     ASSERT_THROW(cp_structure_->try_set_count(-20).get(), exception::IllegalArgumentException);
                 }
 
+                TEST_F(basic_latch_test, test_try_set_count_when_argument_zero) {
+                    ASSERT_THROW(cp_structure_->try_set_count(0).get(), exception::IllegalArgumentException);
+                }
+
                 TEST_F(basic_latch_test, test_try_set_count_when_count_is_not_zero) {
                     ASSERT_TRUE(cp_structure_->try_set_count(10).get());
 
@@ -666,6 +670,25 @@ namespace hazelcast {
                     cp_structure_->destroy().get();
 
                     ASSERT_THROW(cp_structure_->try_lock().get(), exception::DistributedObjectDestroyedException);
+                }
+
+                TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown) {
+                    HazelcastClient c(getConfig());
+                    auto l = c.get_cp_subsystem().get_lock(getTestName());
+                    auto proxy_name = l->getName();
+                    l->lock().get();
+
+                    c.shutdown();
+
+                    std::ostringstream script;
+                    script << "result = instance_0.getCPSubsystem().getLock(\"" << proxy_name
+                           << "\").isLocked() ? \"1\" : \"0\";";
+
+                    Response response;
+                    remoteController->executeOnController(response, g_srvFactory->getClusterId(), script.str().c_str(),
+                                                          Lang::JAVASCRIPT);
+                    ASSERT_TRUE(response.success);
+                    ASSERT_EQ("0", response.result);
                 }
             }
         }

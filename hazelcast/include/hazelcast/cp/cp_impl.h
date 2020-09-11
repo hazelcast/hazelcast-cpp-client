@@ -115,7 +115,7 @@ namespace hazelcast {
 
                     void schedule_heartbeat_task(int64_t hearbeat_millis);
 
-                    boost::future<void> heartbeat(const raft_group_id &group_id, int64_t session_id);
+                    boost::future<client::protocol::ClientMessage> heartbeat(const raft_group_id &group_id, int64_t session_id);
 
                     void close_session(const raft_group_id &group_id, int64_t session_id);
                 };

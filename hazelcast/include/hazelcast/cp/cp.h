@@ -333,24 +333,103 @@ namespace hazelcast {
             latch(const std::string &name, client::spi::ClientContext &context, const raft_group_id &groupId,
                   const std::string &objectName);
 
+            /**
+             * Sets the count to the given value if the current count is zero.
+             * <p>
+             * If count is not zero, then this method does nothing and returns \false.
+             *
+             * @param count the number of times \count_down must be invoked
+             *              before threads can pass through \wait_for
+             * @return \true if the new count was set, \false if the current count is not zero
+             * @throws IllegalArgumentException if \count is not positive number
+             */
             boost::future<bool> try_set_count(int32_t count);
 
+            /**
+             * Returns the current count.
+             *
+             * @return the current count
+             */
             boost::future<int32_t> get_count();
 
+            /**
+             * Decrements the count of the latch, releasing all waiting threads if
+             * the count reaches zero.
+             * <p>
+             * If the current count is greater than zero, then it is decremented.
+             * If the new count is zero:
+             * <ul>
+             * <li>All waiting threads are re-enabled for thread scheduling purposes, and
+             * <li>Countdown owner is set to \null.
+             * </ul>
+             * If the current count equals zero, then nothing happens.
+             */
             boost::future<void> count_down();
 
+            /**
+             * see https://en.cppreference.com/w/cpp/thread/latch/try_wait
+             *
+             * @return true only if the internal counter has reached zero. This function may spuriously return false with
+             * very low probability even if the internal counter has reached zero.
+             */
             boost::future<bool> try_wait();
 
+            /**
+             * see https://en.cppreference.com/w/cpp/thread/latch/wait
+             *
+             * Blocks the calling thread until the internal counter reaches 0 or server thread is interrupted (e.g. cluster shutdown).
+             * If it is zero already, returns immediately.
+             *
+             * @return when the latch count becaomes 0.
+             */
             boost::future<void> wait();
 
+            /**
+             * Causes the current thread to wait until the latch has counted down to
+             * zero, or an exception is thrown, or the specified waiting time elapses.
+             * <p>
+             * If the current count is zero then this method returns immediately
+             * with the value \no_timeout.
+             * <p>
+             * If the current count is greater than zero, then the current
+             * thread becomes disabled for thread scheduling purposes and lies
+             * dormant until one of five things happen:
+             * <ul>
+             * <li>the count reaches zero due to invocations of the \count_down method,
+             * <li>this \latch instance is destroyed,
+             * <li>the countdown owner becomes disconnected,
+             * <li>some other thread interrupts the current server thread, or
+             * <li>the specified waiting time elapses.
+             * </ul>
+             * If the count reaches zero, then the method returns with the
+             * value \no_timeout.
+             * <p>
+             * If the specified waiting time elapses then the value \timeout
+             * is returned.  If the time is less than or equal to zero, the method
+             * will not wait at all.
+             *
+             * @param rel_time the maximum time to wait
+             * @return \no_timeout if the count reached zero, \timeout
+             * if the waiting time elapsed before the count reached zero
+             * @throws IllegalStateException if the Hazelcast instance is shutdown while waiting
+             */
             template<typename Rep, typename Period>
             boost::future<std::cv_status> wait_for(const std::chrono::duration<Rep, Period> &rel_time) {
                 using namespace std::chrono;
                 return wait_for(duration_cast<milliseconds>(rel_time).count());
             }
 
+            /**
+             * see \wait_for for details of the operation.
+             *
+             * @tparam Clock The clock type used
+             * @tparam Duration The duration type used
+             * @param timeout_time The time to wait until.
+             * @return \no_timeout if the count reached zero, \timeout
+             * if the waiting time elapsed before the count reached zero
+             */
             template<typename Clock, typename Duration>
-            boost::future<std::cv_status> wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time ) {
+            boost::future<std::cv_status> wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time) {
                 using namespace std::chrono;
                 return wait_for(duration_cast<milliseconds>(timeout_time - Clock::now()).count());
             }
