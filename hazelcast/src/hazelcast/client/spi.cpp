@@ -264,6 +264,10 @@ namespace hazelcast {
                 return hazelcastClient.random_uuid();
             }
 
+            cp::internal::session::proxy_session_manager &ClientContext::get_proxy_session_manager() {
+                return hazelcastClient.proxy_session_manager_;
+            }
+
             LifecycleService::LifecycleService(ClientContext &clientContext,
                                                const std::vector<LifecycleListener> &listeners,
                                                LoadBalancer *const loadBalancer, Cluster &cluster) : 

@@ -44,6 +44,14 @@ namespace hazelcast {
              * This base proxy can perform serialization and invocation related operations.
              */
             class HAZELCAST_API SerializingProxy {
+            public:
+                template<typename T>
+                static boost::future<void> toVoidFuture(boost::future<T> messageFuture) {
+                    return messageFuture.then(boost::launch::deferred, [](boost::future<T> f) {
+                        f.get(); }
+                    );
+                }
+
             protected:
                 SerializingProxy(spi::ClientContext &context, const std::string &objectName);
                 
@@ -183,13 +191,6 @@ namespace hazelcast {
                                       });
                         return result;
                     });
-                }
-
-                template<typename T>
-                boost::future<void> toVoidFuture(boost::future<T> messageFuture) {
-                    return messageFuture.then(boost::launch::deferred, [](boost::future<T> f) {
-                        f.get(); }
-                        );
                 }
 
                 template<typename T>
