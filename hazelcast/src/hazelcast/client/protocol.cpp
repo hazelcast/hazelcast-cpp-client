@@ -46,6 +46,7 @@
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
+#include "hazelcast/cp/cp.h"
 
 namespace hazelcast {
     namespace client {
@@ -270,6 +271,40 @@ namespace hazelcast {
             const ClientMessage::frame_header_t &ClientMessage::end_frame() {
                 return END_FRAME;
             }
+
+            void ClientMessage::set(const cp::raft_group_id &o, bool is_final) {
+                add_begin_frame();
+
+                auto f = reinterpret_cast<frame_header_t *>(wr_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+                f->frame_len = SIZE_OF_FRAME_LENGTH_AND_FLAGS + 2 * INT64_SIZE;
+                f->flags = DEFAULT_FLAGS;
+                set(o.seed);
+                set(o.group_id);
+
+                set(o.name);
+
+                add_end_frame(is_final);
+            }
+
+            template<typename T>
+            typename std::enable_if<std::is_same<T, cp::raft_group_id>::value, T>::type
+            ClientMessage::get() {
+                // skip begin frame
+                rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS);
+
+                // skip header of the frame
+                auto f = reinterpret_cast<frame_header_t *>(rd_ptr(SIZE_OF_FRAME_LENGTH_AND_FLAGS));
+                auto seed = get<int64_t>();
+                auto id = get<int64_t>();
+                rd_ptr(static_cast<int32_t>(f->frame_len) - SIZE_OF_FRAME_LENGTH_AND_FLAGS - 2 * INT64_SIZE);
+
+                auto name = get<std::string>();
+
+                fast_forward_to_end_frame();
+
+                return {std::move(name), seed, id};
+            }
+            template cp::raft_group_id ClientMessage::get<cp::raft_group_id>();
 
             ExceptionFactory::~ExceptionFactory() = default;
 

@@ -121,6 +121,10 @@ namespace hazelcast {
             clientImpl->shutdown();
         }
 
+        cp::cp_subsystem &HazelcastClient::get_cp_subsystem() {
+            return clientImpl->get_cp_subsystem();
+        }
+
         namespace impl {
             std::atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
@@ -131,7 +135,8 @@ namespace hazelcast {
                       transactionManager(clientContext), cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(),
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
-                      id(++CLIENT_ID), random_generator_(id), uuid_generator_{random_generator_} {
+                      id(++CLIENT_ID), random_generator_(id), uuid_generator_{random_generator_},
+                      cp_subsystem_(clientContext) {
                 const std::shared_ptr<std::string> &name = clientConfig.getInstanceName();
                 if (name.get() != NULL) {
                     instanceName = *name;
@@ -358,6 +363,10 @@ namespace hazelcast {
             boost::uuids::uuid HazelcastClientInstanceImpl::random_uuid() {
                 std::lock_guard<std::mutex> g(uuid_generator_lock_);
                 return uuid_generator_();
+            }
+
+            cp::cp_subsystem &HazelcastClientInstanceImpl::get_cp_subsystem() {
+                return cp_subsystem_;
             }
 
             BaseEventHandler::~BaseEventHandler() = default;
