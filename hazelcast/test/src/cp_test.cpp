@@ -48,17 +48,6 @@ namespace hazelcast {
                         return response.success ? std::atoi(response.result.c_str()) : -1;
                     }
 
-                    static bool is_cp_discovery_completed() {
-                        std::ostringstream script;
-                        script << "function cp_completed() { "
-                                  "com.hazelcast.cp.internal.HazelcastRaftTestSupport.waitUntilCPDiscoveryCompleted(instance_0, instance_1, instance_2);} "
-                                                                          " result=size(); )delimiter";
-
-                        Response response;
-                        remoteController->executeOnController(response, g_srvFactory->getClusterId(), script.str().c_str(), Lang::JAVASCRIPT);
-                        return response.success ? std::atoi(response.result.c_str()) : -1;
-                    }
-
                     static void SetUpTestCase() {
                         server1 = new HazelcastServer(*g_srvFactory);
                         server2 = new HazelcastServer(*g_srvFactory);
@@ -66,7 +55,6 @@ namespace hazelcast {
                         ASSERT_EQ_EVENTUALLY(3, get_cluster_size(0));
                         ASSERT_EQ_EVENTUALLY(3, get_cluster_size(1));
                         ASSERT_EQ_EVENTUALLY(3, get_cluster_size(2));
-                        ASSERT_TRUE_EVENTUALLY(is_cp_discovery_completed());
                         client = new HazelcastClient(getConfig());
                     }
 

@@ -30,6 +30,7 @@ namespace hazelcast {
     namespace cp {
         namespace internal {
             namespace session {
+                constexpr int64_t proxy_session_manager::NO_SESSION_ID;
                 proxy_session_manager::proxy_session_manager(
                         hazelcast::client::spi::ClientContext &client) : client_(client) {}
 

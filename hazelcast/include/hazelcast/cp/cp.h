@@ -40,7 +40,7 @@ namespace hazelcast {
 
         class raft_proxy_factory;
 
-        struct raft_group_id {
+        struct HAZELCAST_API raft_group_id {
             std::string name;
             int64_t seed;
             int64_t group_id;
@@ -50,7 +50,7 @@ namespace hazelcast {
             bool operator!=(const raft_group_id &rhs) const;
         };
 
-        class cp_proxy : public client::proxy::ProxyImpl {
+        class HAZELCAST_API cp_proxy : public client::proxy::ProxyImpl {
         public:
             cp_proxy(const std::string &serviceName, const std::string &proxyName, client::spi::ClientContext *context,
                      const raft_group_id &groupId, const std::string &objectName);
@@ -69,7 +69,7 @@ namespace hazelcast {
                 class proxy_session_manager;
             }
         }
-        class session_aware_proxy : public cp_proxy {
+        class HAZELCAST_API session_aware_proxy : public cp_proxy {
         public:
             session_aware_proxy(const std::string &serviceName, const std::string &proxyName,
                                 client::spi::ClientContext *context, const raft_group_id &groupId,
@@ -837,7 +837,7 @@ namespace hazelcast {
          * Client-side Raft-based proxy implementation of atomic reference
          *
          */
-        class raft_proxy_factory {
+        class HAZELCAST_API raft_proxy_factory {
         public:
             raft_proxy_factory(client::spi::ClientContext &context);
 
@@ -1028,6 +1028,13 @@ namespace hazelcast {
             cp_subsystem(client::spi::ClientContext &context);
         };
     }
+}
+
+namespace std {
+    template<>
+    struct HAZELCAST_API hash<hazelcast::cp::raft_group_id> {
+        std::size_t operator()(const hazelcast::cp::raft_group_id &group_id) const noexcept;
+    };
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

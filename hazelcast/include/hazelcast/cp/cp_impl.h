@@ -21,24 +21,12 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/thread/future.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/cp/cp.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
 #endif
-
-namespace hazelcast {
-    namespace cp {
-        struct raft_group_id;
-    }
-}
-namespace std {
-    template<>
-    struct HAZELCAST_API hash<hazelcast::cp::raft_group_id> {
-        std::size_t operator()(const hazelcast::cp::raft_group_id &group_id) const noexcept;
-    };
-}
 
 namespace hazelcast {
     namespace client { namespace spi { class ClientContext; } }
