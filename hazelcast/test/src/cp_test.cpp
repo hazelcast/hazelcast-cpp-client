@@ -84,7 +84,7 @@ namespace hazelcast {
                         return client->get_cp_subsystem().get_atomic_long(name);
                     }
                 };
-
+                
                 TEST_F(basic_atomic_long_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client->get_cp_subsystem().get_atomic_long("long@METADATA"),
                                  exception::IllegalArgumentException);
@@ -309,6 +309,15 @@ namespace hazelcast {
                     ASSERT_TRUE(cp_structure_->try_set_count(10).get());
 
                     ASSERT_FALSE(cp_structure_->try_set_count(20).get());
+                    ASSERT_FALSE(cp_structure_->try_set_count(1).get());
+                    ASSERT_EQ(10, cp_structure_->get_count().get());
+                }
+
+                TEST_F(basic_latch_test, test_try_set_count_when_already_set) {
+                    ASSERT_TRUE(cp_structure_->try_set_count(10).get());
+
+                    ASSERT_FALSE(cp_structure_->try_set_count(20).get());
+                    ASSERT_FALSE(cp_structure_->try_set_count(100).get());
                     ASSERT_FALSE(cp_structure_->try_set_count(1).get());
                     ASSERT_EQ(10, cp_structure_->get_count().get());
                 }
