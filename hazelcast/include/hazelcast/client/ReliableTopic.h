@@ -305,8 +305,8 @@ namespace hazelcast {
                         return terminate;
                     } catch (exception::IException &t) {
                         std::ostringstream out;
-                        out << "Terminating MessageListener " << id << " on topic: " << name << ". "
-                            << " Reason: Unhandled exception while calling ReliableMessageListener::isTerminal() method. "
+                        out << "Terminating ReliableListener " << id << " on topic: " << name << ". "
+                            << " Reason: Unhandled exception while calling the function set by ReliableListener::on_exception. "
                             << t.what();
                         logger.warning(out.str());
 
