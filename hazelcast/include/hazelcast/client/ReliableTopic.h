@@ -288,7 +288,7 @@ namespace hazelcast {
                     }
 
                     try {
-                        bool terminate = listener.exception_(failure);
+                        bool terminate = listener.terminal_(failure);
                         if (terminate) {
                             std::ostringstream out;
                             out << "Terminating MessageListener " << id << " on topic: " << name << ". "
@@ -306,7 +306,7 @@ namespace hazelcast {
                     } catch (exception::IException &t) {
                         std::ostringstream out;
                         out << "Terminating ReliableListener " << id << " on topic: " << name << ". "
-                            << " Reason: Unhandled exception while calling the function set by ReliableListener::on_exception. "
+                            << " Reason: Unhandled exception while calling the function set by ReliableListener::terminate_on_exception. "
                             << t.what();
                         logger.warning(out.str());
 
