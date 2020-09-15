@@ -333,7 +333,7 @@ namespace hazelcast {
                     ASSERT_TRUE(latch_->try_set_count(10).get());
 
                     ASSERT_FALSE(latch_->try_set_count(20).get());
-                    ASSERT_FALSE(latch_->try_set_count(0).get());
+                    ASSERT_FALSE(latch_->try_set_count(1).get());
                     ASSERT_EQ(10, latch_->get_count().get());
                 }
 
