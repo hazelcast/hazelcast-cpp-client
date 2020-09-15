@@ -37,6 +37,7 @@
 #include "hazelcast/client/connection/ConnectionListenable.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/client/SocketInterceptor.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -55,8 +56,6 @@ namespace hazelcast {
         namespace protocol {
             class ClientMessage;
         }
-
-        class SocketInterceptor;
 
         namespace spi {
             namespace impl {
@@ -184,7 +183,7 @@ namespace hazelcast {
                 std::chrono::steady_clock::duration connectionTimeoutMillis;
                 spi::ClientContext &client;
                 std::unique_ptr<boost::asio::io_context> ioContext;
-                SocketInterceptor *socketInterceptor;
+                SocketInterceptor socketInterceptor;
                 spi::impl::ClientExecutionServiceImpl &executionService;
                 std::shared_ptr<AddressTranslator> translator;
                 util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> activeConnections;
