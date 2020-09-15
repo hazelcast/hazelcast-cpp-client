@@ -40,12 +40,12 @@ namespace hazelcast {
             /**
              * MembershipEventType
              *
-             * MEMBER_ADDED = 1,
-             * MEMBER_REMOVED = 2,
+             * MEMBER_JOINED = 1,
+             * MEMBER_LEFT = 2,
              */
             enum MembershipEventType {
-                MEMBER_ADDED = 1,
-                MEMBER_REMOVED = 2,
+                MEMBER_JOINED = 1,
+                MEMBER_LEFT = 2,
             };
 
             /**
@@ -83,8 +83,8 @@ namespace hazelcast {
             virtual const Cluster &getCluster() const;
 
             /**
-             * Returns the membership event type; MembershipEvent#MEMBER_ADDED ,
-             * MembershipEvent#MEMBER_REMOVED and MembershipEvent#MEMBER_ATTRIBUTE_CHANGED
+             * Returns the membership event type; MembershipEvent#MEMBER_JOINED ,
+             * MembershipEvent#MEMBER_LEFT
              *
              * @return the membership event type
              */

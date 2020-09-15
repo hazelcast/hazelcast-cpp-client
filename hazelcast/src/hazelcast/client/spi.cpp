@@ -880,7 +880,7 @@ namespace hazelcast {
 
                     // removal events should be added before added events
                     for (auto const &e : previous_members) {
-                        events.emplace_back(client.getCluster(), e.second, MembershipEvent::MembershipEventType::MEMBER_REMOVED, current_members);
+                        events.emplace_back(client.getCluster(), e.second, MembershipEvent::MembershipEventType::MEMBER_LEFT, current_members);
                         auto connection = client.getConnectionManager().getConnection(e.second.getUuid());
                         if (connection) {
                             connection->close("", std::make_exception_ptr(exception::TargetDisconnectedException(
@@ -890,7 +890,7 @@ namespace hazelcast {
                         }
                     }
                     for (auto const &member : new_members) {
-                        events.emplace_back(client.getCluster(), member, MembershipEvent::MembershipEventType::MEMBER_ADDED, current_members);
+                        events.emplace_back(client.getCluster(), member, MembershipEvent::MembershipEventType::MEMBER_JOINED, current_members);
                     }
 
                     if (!events.empty()) {
@@ -908,10 +908,10 @@ namespace hazelcast {
                     for (auto const &event : events) {
                         for (auto &item : listeners_) {
                             MembershipListener &listener = item.second;
-                            if (event.getEventType() == MembershipEvent::MembershipEventType::MEMBER_ADDED) {
-                                listener.join_(event);
+                            if (event.getEventType() == MembershipEvent::MembershipEventType::MEMBER_JOINED) {
+                                listener.joined_(event);
                             } else {
-                                listener.removed_(event);
+                                listener.left_(event);
                             }
                         }
                     }

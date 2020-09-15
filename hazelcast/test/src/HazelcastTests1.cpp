@@ -1491,29 +1491,29 @@ namespace hazelcast {
                 SimpleListenerTest() = default;
 
             protected:
-                MembershipListener makeMembershipListener(boost::latch &added, boost::latch &removed) {
+                MembershipListener makeMembershipListener(boost::latch &joined, boost::latch &left) {
                     return MembershipListener()
-                        .on_added([&added](const MembershipEvent &) {
-                            added.count_down();
+                        .on_joined([&joined](const MembershipEvent &) {
+                            joined.count_down();
                         })
-                        .on_removed([&removed](const MembershipEvent &) {
-                            removed.count_down();
+                        .on_left([&left](const MembershipEvent &) {
+                            left.count_down();
                         });
                 }
 
-                MembershipListener makeInitialMembershipListener(boost::latch &added, boost::latch &removed) {
+                MembershipListener makeInitialMembershipListener(boost::latch &joined, boost::latch &left) {
                     return MembershipListener()
-                        .on_init([&added](const InitialMembershipEvent &event) {
+                        .on_init([&joined](const InitialMembershipEvent &event) {
                             auto &members = event.getMembers();
                             if (members.size() == 1) {
-                                added.count_down();
+                                joined.count_down();
                             }
                         })
-                        .on_added([&added](const MembershipEvent &) {
-                            added.count_down();
+                        .on_joined([&joined](const MembershipEvent &) {
+                            joined.count_down();
                         })
-                        .on_removed([&removed](const MembershipEvent &) {
-                            removed.count_down();
+                        .on_left([&left](const MembershipEvent &) {
+                            left.count_down();
                         });
                 }
             };
@@ -2171,7 +2171,7 @@ namespace hazelcast {
 
             MembershipListener makeMemberRemovedListener(boost::latch &l) {
                 return MembershipListener()
-                    .on_removed([&l](const MembershipEvent &){
+                    .on_left([&l](const MembershipEvent &){
                         l.count_down();
                     });
             }

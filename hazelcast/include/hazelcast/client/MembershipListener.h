@@ -64,18 +64,18 @@ namespace hazelcast {
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            MembershipListener& on_added(Handler &&h) & {
-                join_ = std::forward<Handler>(h);
+            MembershipListener& on_joined(Handler &&h) & {
+                joined_ = std::forward<Handler>(h);
                 return *this;
             };
 
             /**
-             * \copydoc MembershipListener::on_added
+             * \copydoc MembershipListener::on_joined
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            MembershipListener&& on_added(Handler &&h) && {
-                on_added(std::forward<Handler>(h));
+            MembershipListener&& on_joined(Handler &&h) && {
+                on_joined(std::forward<Handler>(h));
                 return std::move(*this);
             };
             
@@ -85,18 +85,18 @@ namespace hazelcast {
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            MembershipListener& on_removed(Handler &&h) & {
-                removed_ = std::forward<Handler>(h);
+            MembershipListener& on_left(Handler &&h) & {
+                left_ = std::forward<Handler>(h);
                 return *this;
             };
 
             /**
-             * \copydoc MembershipListener::on_removed
+             * \copydoc MembershipListener::on_left
              */
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
-            MembershipListener&& on_removed(Handler &&h) && {
-                on_removed(std::forward<Handler>(h));
+            MembershipListener&& on_left(Handler &&h) && {
+                on_left(std::forward<Handler>(h));
                 return std::move(*this);
             };
 
@@ -127,8 +127,8 @@ namespace hazelcast {
             
             static constexpr auto noop_handler = util::noop<const MembershipEvent &>;
 
-            handler_t removed_{ noop_handler },
-                      join_{ noop_handler };
+            handler_t left_{ noop_handler },
+                      joined_{ noop_handler };
             init_handler_t init_{};
         };
     }
