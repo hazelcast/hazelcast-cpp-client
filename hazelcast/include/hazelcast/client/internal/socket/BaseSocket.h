@@ -39,7 +39,8 @@ namespace hazelcast {
                             : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
                               connectTimeout(connectTimeoutInMillis), resolver(ioResolver), socket_(socketStrand) {
                     }
-
+                    
+#ifdef HZ_BUILD_WITH_SSL
                     template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
@@ -49,6 +50,7 @@ namespace hazelcast {
                               connectTimeout(connectTimeoutInMillis), resolver(ioResolver),
                               socket_(socketStrand, context) {
                     }
+#endif // HZ_BUILD_WITH_SSL
 
                     void connect(const std::shared_ptr<connection::Connection> connection) override {
                         using namespace boost::asio;
