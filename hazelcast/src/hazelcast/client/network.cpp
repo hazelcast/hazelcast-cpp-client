@@ -987,10 +987,9 @@ namespace hazelcast {
 
                 auto now = std::chrono::steady_clock::now();
                 if (now - connection->lastReadTime() > heartbeat_timeout_) {
-                    if (connection->isAlive()) {
-                        logger.warning("Heartbeat failed over the connection: ", *connection);
-                        onHeartbeatStopped(connection, "Heartbeat timed out");
-                    }
+                    logger.warning("Heartbeat failed over the connection: ", *connection);
+                    onHeartbeatStopped(connection, "Heartbeat timed out");
+                    return;
                 }
 
                 if (now - connection->lastReadTime() > heartbeat_interval_) {

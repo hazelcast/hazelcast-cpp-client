@@ -53,6 +53,7 @@
 #include "hazelcast/client/IExecutorService.h"
 #include "hazelcast/client/Client.h"
 #include "hazelcast/cp/cp.h"
+#include "hazelcast/cp/cp_impl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -235,6 +236,7 @@ namespace hazelcast {
                 boost::uuids::basic_random_generator<std::mt19937> uuid_generator_;
                 std::mutex uuid_generator_lock_;
                 cp::cp_subsystem cp_subsystem_;
+                cp::internal::session::proxy_session_manager proxy_session_manager_;
 
                 HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs) = delete;
 
