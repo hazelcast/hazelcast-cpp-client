@@ -69,13 +69,13 @@ namespace hazelcast {
                 bool isRunning();
 
             private:
-                ClientContext &clientContext;
-                std::unordered_map<boost::uuids::uuid, LifecycleListener, boost::hash<boost::uuids::uuid>> listeners;
-                std::mutex listenerLock;
-                std::atomic<bool> active{ false };
-                LoadBalancer *loadBalancer;
-                Cluster &cluster;
-                boost::latch shutdownCompletedLatch;
+                ClientContext &client_context_;
+                std::unordered_map<boost::uuids::uuid, LifecycleListener, boost::hash<boost::uuids::uuid>> listeners_;
+                std::mutex listener_lock_;
+                std::atomic<bool> active_{ false };
+                LoadBalancer *load_balancer_;
+                Cluster &cluster_;
+                boost::latch shutdown_completed_latch_;
                 std::mt19937 random_generator_{std::random_device{}()};
                 boost::uuids::basic_random_generator<std::mt19937> uuid_generator_{random_generator_};
 

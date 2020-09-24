@@ -79,9 +79,9 @@ namespace hazelcast {
                         boost::optional<Member> getOwner() const override;
 
                     private:
-                        int partitionId;
-                        ClientContext &client;
-                        ClientPartitionServiceImpl &partitionService;
+                        int partition_id_;
+                        ClientContext &client_;
+                        ClientPartitionServiceImpl &partition_service_;
                     };
 
                     bool should_be_applied(const std::shared_ptr<connection::Connection>& connection, int32_t version,
@@ -94,9 +94,9 @@ namespace hazelcast {
                     std::unordered_map<int32_t, boost::uuids::uuid>
                     convert_to_map(const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
-                    ClientContext &client;
+                    ClientContext &client_;
                     util::ILogger &logger_;
-                    std::atomic<int32_t> partitionCount;
+                    std::atomic<int32_t> partition_count_;
                     boost::atomic_shared_ptr<partition_table> partition_table_;
                 };
             }

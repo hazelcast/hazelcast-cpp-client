@@ -401,9 +401,9 @@ namespace hazelcast {
                 class ThreeSecondDelayCompleteOperation {
                 public:
                     ThreeSecondDelayCompleteOperation(spi::impl::sequence::CallIdSequenceWithBackpressure &sequence,
-                                                      boost::latch &nextCalledLatch) : sequence(
+                                                      boost::latch &nextCalledLatch) : sequence_(
                             sequence),
-                                                                                       nextCalledLatch(
+                                                                                       next_called_latch_(
                                                                                                nextCalledLatch) {}
 
                     virtual const std::string getName() const {
@@ -411,15 +411,15 @@ namespace hazelcast {
                     }
 
                     virtual void run() {
-                        sequence.next();
-                        nextCalledLatch.count_down();
+                        sequence_.next();
+                        next_called_latch_.count_down();
                         sleepSeconds(3);
-                        sequence.complete();
+                        sequence_.complete();
                     }
 
                 private:
-                    spi::impl::sequence::CallIdSequenceWithBackpressure &sequence;
-                    boost::latch &nextCalledLatch;
+                    spi::impl::sequence::CallIdSequenceWithBackpressure &sequence_;
+                    boost::latch &next_called_latch_;
                 };
 
                 int64_t nextCallId(spi::impl::sequence::CallIdSequence &seq, bool isUrgent) {
@@ -926,21 +926,21 @@ namespace hazelcast {
         namespace test {
             class PartitionAwareInt : public PartitionAware<int> {
             public:
-                PartitionAwareInt() : partitionKey(0), actualKey(0) {}
+                PartitionAwareInt() : partition_key_(0), actual_key_(0) {}
 
                 PartitionAwareInt(int partitionKey, int actualKey)
-                        : partitionKey(partitionKey), actualKey(actualKey) {}
+                        : partition_key_(partitionKey), actual_key_(actualKey) {}
 
                 const int *getPartitionKey() const override {
-                    return &partitionKey;
+                    return &partition_key_;
                 }
 
                 int getActualKey() const {
-                    return actualKey;
+                    return actual_key_;
                 }
             private:
-                int partitionKey;
-                int actualKey;
+                int partition_key_;
+                int actual_key_;
             };
 
             class MapClientConfig : public ClientConfig {
@@ -1027,13 +1027,13 @@ namespace hazelcast {
 
                 class EntryMultiplier {
                 public:
-                    EntryMultiplier(int multiplier) : multiplier(multiplier) {}
+                    EntryMultiplier(int multiplier) : multiplier_(multiplier) {}
 
                     int getMultiplier() const {
-                        return multiplier;
+                        return multiplier_;
                     }
                 private:
-                    int multiplier;
+                    int multiplier_;
                 };
             protected:
                 void SetUp() override {

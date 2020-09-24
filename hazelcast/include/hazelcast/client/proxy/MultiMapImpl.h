@@ -116,8 +116,8 @@ namespace hazelcast {
 
                     protocol::ClientMessage encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
                 private:
-                    std::string name;
-                    bool includeValue;
+                    std::string name_;
+                    bool include_value_;
                 };
 
                 class MultiMapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
@@ -129,12 +129,12 @@ namespace hazelcast {
 
                     protocol::ClientMessage encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
                 private:
-                    std::string  name;
-                    bool includeValue;
-                    serialization::pimpl::Data key;
+                    std::string  name_;
+                    bool include_value_;
+                    serialization::pimpl::Data key_;
                 };
 
-                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
+                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lock_reference_id_generator_;
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec> createMultiMapEntryListenerCodec(bool includeValue);
 

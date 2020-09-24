@@ -156,7 +156,7 @@ namespace hazelcast {
              */
             template<typename T>
             std::shared_ptr<T> getTransactionalObject(const std::string &serviceName, const std::string &name) {
-                if (transaction.getState() != txn::TxnState::ACTIVE) {
+                if (transaction_.getState() != txn::TxnState::ACTIVE) {
                     std::string message = "No transaction is found while accessing ";
                     message += "transactional object -> [" + name + "]!";
                     BOOST_THROW_EXCEPTION(
@@ -164,20 +164,20 @@ namespace hazelcast {
                                                              message));
                 }
                 auto key = std::make_pair(serviceName, name);
-                std::shared_ptr<T> obj = std::static_pointer_cast<T>(txnObjectMap.get(key));
+                std::shared_ptr<T> obj = std::static_pointer_cast<T>(txn_object_map_.get(key));
                 if (!obj) {
-                    obj = std::shared_ptr<T>(new T(name, transaction));
-                    txnObjectMap.put(key, obj);
+                    obj = std::shared_ptr<T>(new T(name, transaction_));
+                    txn_object_map_.put(key, obj);
                 }
 
                 return obj;
             }
 
         private :
-            TransactionOptions options;
-            std::shared_ptr<connection::Connection> txnConnection;
-            txn::TransactionProxy transaction;
-            util::SynchronizedMap<std::pair<std::string, std::string>, proxy::TransactionalObject> txnObjectMap;
+            TransactionOptions options_;
+            std::shared_ptr<connection::Connection> txn_connection_;
+            txn::TransactionProxy transaction_;
+            util::SynchronizedMap<std::pair<std::string, std::string>, proxy::TransactionalObject> txn_object_map_;
         };
     }
 }

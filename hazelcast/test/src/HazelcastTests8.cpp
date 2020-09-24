@@ -1256,13 +1256,13 @@ namespace hazelcast {
 
                     class StatsPrinterTask {
                     public:
-                        explicit StatsPrinterTask(Stats &stats) : stats(stats) {}
+                        explicit StatsPrinterTask(Stats &stats) : stats_(stats) {}
 
                         void run()  {
                             while (true) {
                                 try {
                                     hazelcast::util::sleep((unsigned int) STATS_SECONDS);
-                                    const Stats statsNow = stats.getAndReset();
+                                    const Stats statsNow = stats_.getAndReset();
                                     statsNow.print();
                                     std::cerr << "Operations per Second : " << statsNow.total() / STATS_SECONDS
                                               << std::endl;
@@ -1277,14 +1277,14 @@ namespace hazelcast {
                         }
 
                     private:
-                        Stats &stats;
+                        Stats &stats_;
                     };
 
                     class Task {
                     public:
                         Task(Stats &stats, std::shared_ptr<IMap> map,
-                             std::shared_ptr<hazelcast::util::ILogger> logger) : stats(stats), map(map),
-                                                                                 logger(std::move(logger)) {
+                             std::shared_ptr<hazelcast::util::ILogger> logger) : stats_(stats), map_(map),
+                                                                                 logger_(std::move(logger)) {
                         }
 
                         void run() {
@@ -1300,27 +1300,27 @@ namespace hazelcast {
                                 int operation = (rand() % 100);
                                 try {
                                     if (operation < GET_PERCENTAGE) {
-                                        map->get<int, std::vector<char>>(key).get();
+                                        map_->get<int, std::vector<char>>(key).get();
                                         ++getCount;
                                     } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                                        map->put<int, std::vector<char>>(key, value).get();
+                                        map_->put<int, std::vector<char>>(key, value).get();
                                         ++putCount;
                                     } else {
-                                        map->remove<int, std::string>(key).get();
+                                        map_->remove<int, std::string>(key).get();
                                         ++removeCount;
                                     }
                                     updateStats(updateIntervalCount, getCount, putCount, removeCount);
                                 } catch (hazelcast::client::exception::IOException &e) {
-                                    logger->warning(
+                                    logger_->warning(
                                             std::string("[SimpleMapTest IOException] ") + e.what());
                                 } catch (hazelcast::client::exception::HazelcastClientNotActiveException &e) {
-                                    logger->warning(
+                                    logger_->warning(
                                             std::string("[SimpleMapTest::run] ") + e.what());
                                 } catch (hazelcast::client::exception::IException &e) {
-                                    logger->warning(
+                                    logger_->warning(
                                             std::string("[SimpleMapTest:run] ") + e.what());
                                 } catch (...) {
-                                    logger->warning("[SimpleMapTest:run] unknown exception!");
+                                    logger_->warning("[SimpleMapTest:run] unknown exception!");
                                     running = false;
                                     throw;
                                 }
@@ -1335,23 +1335,23 @@ namespace hazelcast {
                         void
                         updateStats(int updateIntervalCount, int &getCount, int &putCount, int &removeCount) const {
                             if ((getCount + putCount + removeCount) % updateIntervalCount == 0) {
-                                int64_t current = stats.getCount;
-                                stats.getCount = current + getCount;
+                                int64_t current = stats_.getCount;
+                                stats_.getCount = current + getCount;
                                 getCount = 0;
 
-                                current = stats.putCount;
-                                stats.putCount = current + putCount;
+                                current = stats_.putCount;
+                                stats_.putCount = current + putCount;
                                 putCount = 0;
 
-                                current = stats.removeCount;
-                                stats.removeCount = current + removeCount;
+                                current = stats_.removeCount;
+                                stats_.removeCount = current + removeCount;
                                 removeCount = 0;
                             }
                         }
 
-                        Stats &stats;
-                        std::shared_ptr<IMap> map;
-                        std::shared_ptr<hazelcast::util::ILogger> logger;
+                        Stats &stats_;
+                        std::shared_ptr<IMap> map_;
+                        std::shared_ptr<hazelcast::util::ILogger> logger_;
                     };
 
 

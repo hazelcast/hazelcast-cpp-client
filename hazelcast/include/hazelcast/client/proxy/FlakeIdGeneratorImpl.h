@@ -96,12 +96,12 @@ namespace hazelcast {
 
                         bool operator!=(const IdIterator &rhs) const;
 
-                        const int64_t &operator*() { return base2; }
+                        const int64_t &operator*() { return base2_; }
 
                     private:
-                        int64_t base2;
-                        const int64_t increment;
-                        int32_t remaining;
+                        int64_t base2_;
+                        const int64_t increment_;
+                        int32_t remaining_;
                     };
 
                     IdIterator iterator();
@@ -109,9 +109,9 @@ namespace hazelcast {
                     static IdIterator &end();
 
                 private:
-                    int64_t base;
-                    int64_t increment;
-                    int32_t batchSize;
+                    int64_t base_;
+                    int64_t increment_;
+                    int32_t batch_size_;
 
                     static IdIterator endOfBatch;
                 };
@@ -126,19 +126,19 @@ namespace hazelcast {
                     int64_t next();
 
                 private:
-                    IdBatch idBatch;
-                    std::chrono::steady_clock::time_point invalidSince;
-                    std::atomic<int32_t> numReturned;
+                    IdBatch id_batch_;
+                    std::chrono::steady_clock::time_point invalid_since_;
+                    std::atomic<int32_t> num_returned_;
                 };
 
                 boost::future<FlakeIdGeneratorImpl::IdBatch> newIdBatch(int32_t size);
 
                 int64_t newIdInternal();
 
-                int32_t batchSize;
-                std::chrono::steady_clock::duration validity;
-                boost::atomic_shared_ptr<Block> block;
-                std::mutex lock;
+                int32_t batch_size_;
+                std::chrono::steady_clock::duration validity_;
+                boost::atomic_shared_ptr<Block> block_;
+                std::mutex lock_;
             };
 
         }

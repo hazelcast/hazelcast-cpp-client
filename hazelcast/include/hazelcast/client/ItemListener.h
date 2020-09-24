@@ -58,7 +58,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             ItemListener &on_added(Handler &&h) & {
-                added = std::forward<Handler>(h);
+                added_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -78,7 +78,7 @@ namespace hazelcast {
              */
             template<typename Handler>
             ItemListener &on_removed(Handler &&h) & {
-                removed = std::forward<Handler>(h);
+                removed_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -94,8 +94,8 @@ namespace hazelcast {
         private:
             using HandlerType = std::function<void(ItemEvent &&)>;
             static constexpr auto noop_handler = util::noop<ItemEvent &&>;
-            HandlerType added = noop_handler,
-                        removed = noop_handler;
+            HandlerType added_ = noop_handler,
+                        removed_ = noop_handler;
 
             template<typename>
             friend class impl::ItemEventHandler;

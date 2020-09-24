@@ -74,12 +74,12 @@ namespace hazelcast {
                      */
                     void addFilters();
 
-                    std::unique_ptr<security::EC2RequestSigner> rs;
-                    config::ClientAwsConfig &awsConfig;
-                    const std::string &endpoint;
-                    std::unordered_map<std::string, std::string> attributes;
-                    std::unique_ptr<util::SyncHttpsClient> httpsClient;
-                    util::ILogger &logger;
+                    std::unique_ptr<security::EC2RequestSigner> rs_;
+                    config::ClientAwsConfig &aws_config_;
+                    const std::string &endpoint_;
+                    std::unordered_map<std::string, std::string> attributes_;
+                    std::unique_ptr<util::SyncHttpsClient> https_client_;
+                    util::ILogger &logger_;
 
                     static const std::string QUERY_PREFIX;
                     static const std::string IAM_ROLE_ENDPOINT;

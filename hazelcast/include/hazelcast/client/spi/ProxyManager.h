@@ -50,12 +50,12 @@ namespace hazelcast {
                     std::promise<std::shared_ptr<ClientProxy>> promise;
                     bool insertedEntry = false;
                     {
-                        std::lock_guard<std::mutex> guard(lock);
-                        auto it = proxies.find(ns);
-                        if (it != proxies.end()) {
+                        std::lock_guard<std::mutex> guard(lock_);
+                        auto it = proxies_.find(ns);
+                        if (it != proxies_.end()) {
                             proxyFuture = it->second;
                         } else {
-                            proxies.insert({ns, promise.get_future().share()});
+                            proxies_.insert({ns, promise.get_future().share()});
                             insertedEntry = true;
                         }
                     }
@@ -65,15 +65,15 @@ namespace hazelcast {
                     }
 
                     try {
-                        auto clientProxy = std::shared_ptr<T>(new T(id, &client));
+                        auto clientProxy = std::shared_ptr<T>(new T(id, &client_));
                         initialize(std::static_pointer_cast<ClientProxy>(clientProxy));
                         promise.set_value(std::static_pointer_cast<ClientProxy>(clientProxy));
                         return clientProxy;
                     } catch (exception::IException &) {
                         promise.set_exception(std::current_exception());
-                        std::lock_guard<std::mutex> guard(lock);
+                        std::lock_guard<std::mutex> guard(lock_);
                         if (insertedEntry) {
-                            proxies.erase(ns);
+                            proxies_.erase(ns);
                         }
                         throw;
                     }
@@ -102,9 +102,9 @@ namespace hazelcast {
             private:
                 void initialize(const std::shared_ptr<ClientProxy> &clientProxy);
 
-                proxy_map proxies;
-                std::mutex lock;
-                ClientContext &client;
+                proxy_map proxies_;
+                std::mutex lock_;
+                ClientContext &client_;
             };
         }
     }

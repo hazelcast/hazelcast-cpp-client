@@ -60,16 +60,16 @@ namespace hazelcast {
             template<typename T>
             class executor_promise {
             public:
-                executor_promise(spi::ClientContext &context) : context(context) {}
+                executor_promise(spi::ClientContext &context) : context_(context) {}
 
                 executor_promise(boost::future<boost::optional<T>> &future, boost::uuids::uuid uuid, int partitionId,
                                  boost::uuids::uuid member, spi::ClientContext &context,
                                  const std::shared_ptr<spi::impl::ClientInvocation> &invocation)
-                        : sharedFuture(future.share()), uuid(uuid), partitionId(partitionId), memberUuid(member),
-                          context(context), invocation(invocation) {}
+                        : shared_future_(future.share()), uuid_(uuid), partition_id_(partitionId), member_uuid_(member),
+                          context_(context), invocation_(invocation) {}
 
                 bool cancel(bool mayInterruptIfRunning) {
-                    if (sharedFuture.is_ready()) {
+                    if (shared_future_.is_ready()) {
                         return false;
                     }
 
@@ -82,30 +82,30 @@ namespace hazelcast {
                 }
 
                 boost::shared_future<boost::optional<T>> get_future() {
-                    return sharedFuture;
+                    return shared_future_;
                 }
 
             private:
-                boost::shared_future<boost::optional<T>> sharedFuture;
-                boost::uuids::uuid uuid;
-                int partitionId;
-                boost::uuids::uuid memberUuid;
-                spi::ClientContext &context;
-                std::shared_ptr<spi::impl::ClientInvocation> invocation;
+                boost::shared_future<boost::optional<T>> shared_future_;
+                boost::uuids::uuid uuid_;
+                int partition_id_;
+                boost::uuids::uuid member_uuid_;
+                spi::ClientContext &context_;
+                std::shared_ptr<spi::impl::ClientInvocation> invocation_;
 
                 bool invokeCancelRequest(bool mayInterruptIfRunning) {
-                    invocation->getSendConnectionOrWait();
+                    invocation_->getSendConnectionOrWait();
 
-                    if (partitionId > -1) {
-                        auto request = protocol::codec::executorservice_cancelonpartition_encode(uuid, mayInterruptIfRunning);
+                    if (partition_id_ > -1) {
+                        auto request = protocol::codec::executorservice_cancelonpartition_encode(uuid_, mayInterruptIfRunning);
                         std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
-                                context, request, boost::uuids::to_string(uuid), partitionId);
+                                context_, request, boost::uuids::to_string(uuid_), partition_id_);
                         return clientInvocation->invoke().get().get_first_fixed_sized_field<bool>();
                     } else {
                         auto request = protocol::codec::executorservice_cancelonmember_encode(
-                                uuid, memberUuid, mayInterruptIfRunning);
+                                uuid_, member_uuid_, mayInterruptIfRunning);
                         std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
-                                context, request, boost::uuids::to_string(uuid), memberUuid);
+                                context_, request, boost::uuids::to_string(uuid_), member_uuid_);
                         return clientInvocation->invoke().get().get_first_fixed_sized_field<bool>();
                     }
                 }
@@ -498,46 +498,46 @@ namespace hazelcast {
             public:
                 MultiExecutionCallbackWrapper(
                         int memberSize, const std::shared_ptr<MultiExecutionCallback<T> > &multiExecutionCallback)
-                        : multiExecutionCallback(multiExecutionCallback), members(memberSize) {
+                        : multi_execution_callback_(multiExecutionCallback), members_(memberSize) {
                 }
 
             public:
                 void onResponse(const Member &member, const boost::optional<T> &value) override {
-                    multiExecutionCallback->onResponse(member, value);
+                    multi_execution_callback_->onResponse(member, value);
 
-                    std::lock_guard<std::mutex> guard(lock);
-                    values[member] = value;
-                    int waitingResponse = --members;
+                    std::lock_guard<std::mutex> guard(lock_);
+                    values_[member] = value;
+                    int waitingResponse = --members_;
                     if (waitingResponse == 0) {
-                        onComplete(values, exceptions);
+                        onComplete(values_, exceptions_);
                     }
                 }
 
                 void
                 onFailure(const Member &member, std::exception_ptr exception) override {
-                    multiExecutionCallback->onFailure(member, exception);
+                    multi_execution_callback_->onFailure(member, exception);
 
-                    std::lock_guard<std::mutex> guard(lock);
-                    exceptions[member] = exception;
-                    int waitingResponse = --members;
+                    std::lock_guard<std::mutex> guard(lock_);
+                    exceptions_[member] = exception;
+                    int waitingResponse = --members_;
                     if (waitingResponse == 0) {
-                        onComplete(values, exceptions);
+                        onComplete(values_, exceptions_);
                     }
                 }
 
                 void onComplete(const std::unordered_map<Member, boost::optional<T> > &vals,
                                         const std::unordered_map<Member, std::exception_ptr> &excs) override {
-                    multiExecutionCallback->onComplete(vals, excs);
+                    multi_execution_callback_->onComplete(vals, excs);
                 }
 
             private:
 
-                const std::shared_ptr<MultiExecutionCallback<T> > multiExecutionCallback;
+                const std::shared_ptr<MultiExecutionCallback<T> > multi_execution_callback_;
                 // TODO: We may not need thread safe structures here if being used from the same thread
-                std::unordered_map<Member, boost::optional<T>> values;
-                std::unordered_map<Member, std::exception_ptr> exceptions;
-                int members;
-                std::mutex lock;
+                std::unordered_map<Member, boost::optional<T>> values_;
+                std::unordered_map<Member, std::exception_ptr> exceptions_;
+                int members_;
+                std::mutex lock_;
             };
 
             template<typename T>
@@ -545,20 +545,20 @@ namespace hazelcast {
             public:
                 ExecutionCallbackWrapper(
                         const std::shared_ptr<MultiExecutionCallbackWrapper<T> > &multiExecutionCallbackWrapper,
-                        Member member) : multiExecutionCallbackWrapper(multiExecutionCallbackWrapper),
-                                                member(std::move(member)) {}
+                        Member member) : multi_execution_callback_wrapper_(multiExecutionCallbackWrapper),
+                                                member_(std::move(member)) {}
 
                 void onResponse(const boost::optional<T> &response) override {
-                    multiExecutionCallbackWrapper->onResponse(member, response);
+                    multi_execution_callback_wrapper_->onResponse(member_, response);
                 }
 
                 void onFailure(std::exception_ptr e) override {
-                    multiExecutionCallbackWrapper->onFailure(member, e);
+                    multi_execution_callback_wrapper_->onFailure(member_, e);
                 }
 
             private:
-                const std::shared_ptr<MultiExecutionCallbackWrapper<T> > multiExecutionCallbackWrapper;
-                const Member member;
+                const std::shared_ptr<MultiExecutionCallbackWrapper<T> > multi_execution_callback_wrapper_;
+                const Member member_;
             };
 
             std::vector<Member> selectMembers(const cluster::memberselector::MemberSelector &memberSelector);
@@ -566,7 +566,7 @@ namespace hazelcast {
             template<typename T>
             executor_promise<T>
             submitToPartitionInternal(const serialization::pimpl::Data &taskData, bool preventSync, int partitionId) {
-                auto uuid = context_.random_uuid();
+                auto uuid = hazelcast::client::proxy::SerializingProxy::context_.random_uuid();
 
                 auto f = invokeOnPartitionInternal(taskData, partitionId, uuid);
 
@@ -576,7 +576,7 @@ namespace hazelcast {
             template<typename T>
             void submitToPartitionInternal(const serialization::pimpl::Data &taskData, int partitionId,
                                            const std::shared_ptr<ExecutionCallback<T> > &callback) {
-                boost::uuids::uuid uuid = context_.random_uuid();
+                boost::uuids::uuid uuid = hazelcast::client::proxy::SerializingProxy::context_.random_uuid();
 
                 auto messageFuture = invokeOnPartitionInternal(taskData, partitionId, uuid);
 
@@ -643,7 +643,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             executor_promise<T> submitToTargetInternal(const HazelcastSerializable &task, const Member &member,
                                                        bool preventSync) {
-                boost::uuids::uuid uuid = context_.random_uuid();
+                boost::uuids::uuid uuid = hazelcast::client::proxy::SerializingProxy::context_.random_uuid();
 
                 auto f = invokeOnTargetInternal<HazelcastSerializable>(task, member, uuid);
 
@@ -653,7 +653,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             void submitToTargetInternal(const HazelcastSerializable &task, const Member &member,
                                         const std::shared_ptr<ExecutionCallback<T> > &callback) {
-                boost::uuids::uuid uuid = context_.random_uuid();
+                boost::uuids::uuid uuid = hazelcast::client::proxy::SerializingProxy::context_.random_uuid();
 
                 auto messageFuture = invokeOnTargetInternal<HazelcastSerializable>(task, member, uuid);
 
@@ -756,8 +756,8 @@ namespace hazelcast {
             static const int32_t MIN_TIME_RESOLUTION_OF_CONSECUTIVE_SUBMITS = 10;
             static const int32_t MAX_CONSECUTIVE_SUBMITS = 100;
 
-            std::atomic<int32_t> consecutiveSubmits;
-            std::atomic<int64_t> lastSubmitTime;
+            std::atomic<int32_t> consecutive_submits_;
+            std::atomic<int64_t> last_submit_time_;
         };
     }
 }

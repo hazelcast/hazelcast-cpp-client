@@ -85,8 +85,8 @@ namespace hazelcast {
                 ClientConnectionStrategyConfig &setReconnectMode(ReconnectMode reconnectMode);
 
             private:
-                bool asyncStart;
-                ReconnectMode reconnectMode;
+                bool async_start_;
+                ReconnectMode reconnect_mode_;
 
             };
 

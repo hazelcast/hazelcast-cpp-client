@@ -69,11 +69,11 @@ namespace hazelcast {
                         static constexpr size_t INDEX_HEAD = 7;
                         static constexpr size_t INDEX_TAIL = 15;
 
-                        int32_t maxConcurrentInvocations;
+                        int32_t max_concurrent_invocations_;
 
                         // instead of using 2 AtomicLongs, we use an array if width of 3 cache lines to prevent any false sharing.
                         std::array<std::atomic<int64_t>,
-                                3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES> longs;
+                                3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES> longs_;
                     };
                 }
             }

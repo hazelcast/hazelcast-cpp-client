@@ -52,8 +52,8 @@ namespace hazelcast {
              *         element
              */
             bool add(const T &e) {
-                std::lock_guard<std::mutex> lg(m);
-                return internalSet.insert(e).second;
+                std::lock_guard<std::mutex> lg(m_);
+                return internal_set_.insert(e).second;
             }
 
             /**
@@ -62,8 +62,8 @@ namespace hazelcast {
              * @return the number of elements in this set (its cardinality)
              */
             size_t size() {
-                std::lock_guard<std::mutex> lg(m);
-                return internalSet.size();
+                std::lock_guard<std::mutex> lg(m_);
+                return internal_set_.size();
             }
 
             /**
@@ -72,8 +72,8 @@ namespace hazelcast {
              * @return <tt>true</tt> if this set contains no elements
              */
             bool isEmpty() {
-                std::lock_guard<std::mutex> lg(m);
-                return internalSet.empty();
+                std::lock_guard<std::mutex> lg(m_);
+                return internal_set_.empty();
             }
 
             /**
@@ -90,21 +90,21 @@ namespace hazelcast {
              * @return an array containing all the elements in this set
              */
             std::vector<T> toArray() {
-                std::lock_guard<std::mutex> lg(m);
+                std::lock_guard<std::mutex> lg(m_);
                 std::vector<T> result;
-                for (const typename std::unordered_set<T>::value_type &value  : internalSet) {
+                for (const typename std::unordered_set<T>::value_type &value  : internal_set_) {
                                 result.push_back(value);
                             }
                 return result;
             }
 
             void clear() {
-                std::lock_guard<std::mutex> lg(m);
-                internalSet.clear();
+                std::lock_guard<std::mutex> lg(m_);
+                internal_set_.clear();
             }
         private:
-            std::mutex m;
-            std::unordered_set<T> internalSet;
+            std::mutex m_;
+            std::unordered_set<T> internal_set_;
         };
     }
 }

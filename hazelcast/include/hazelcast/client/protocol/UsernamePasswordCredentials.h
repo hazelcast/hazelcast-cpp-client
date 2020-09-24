@@ -43,8 +43,8 @@ namespace hazelcast {
                 const std::string &getPassword() const;
 
             private:
-                std::string name;
-                std::string password;
+                std::string name_;
+                std::string password_;
             };
         }
     }

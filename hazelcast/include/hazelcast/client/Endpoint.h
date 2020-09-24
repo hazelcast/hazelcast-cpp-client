@@ -50,8 +50,8 @@ namespace hazelcast {
             const boost::optional<Address> &getSocketAddress() const;
 
         private:
-            boost::uuids::uuid uuid;
-            boost::optional<Address> socketAddress;
+            boost::uuids::uuid uuid_;
+            boost::optional<Address> socket_address_;
         };
     }
 }

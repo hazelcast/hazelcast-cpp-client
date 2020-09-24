@@ -82,13 +82,13 @@ namespace hazelcast {
             const std::string &getInstanceName() const;
 
         private:
-            const std::string instanceName;
-            const std::string groupName;
-            const std::string version;
-            std::string prefix;
-            el::Logger *easyLogger;
-            client::config::LoggerConfig loggerConfig;
-            std::once_flag elOnceflag;
+            const std::string instance_name_;
+            const std::string group_name_;
+            const std::string version_;
+            std::string prefix_;
+            el::Logger *easy_logger_;
+            client::config::LoggerConfig logger_config_;
+            std::once_flag el_onceflag_;
             std::mutex mutex_;
 
             void composeMessage(std::ostringstream &out) {}

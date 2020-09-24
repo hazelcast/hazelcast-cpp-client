@@ -59,7 +59,7 @@ namespace hazelcast {
             LifecycleState getState() const;
 
         private:
-            LifecycleState state;
+            LifecycleState state_;
         };
     }
 }

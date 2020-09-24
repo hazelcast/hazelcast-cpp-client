@@ -84,20 +84,20 @@ namespace hazelcast {
                                      const std::shared_ptr<ClientMessage> &response);
 
                     private:
-                        util::ILogger &invocationLogger;
-                        ClientContext &client;
-                        std::unique_ptr<hazelcast::util::hz_thread_pool> pool;
+                        util::ILogger &invocation_logger_;
+                        ClientContext &client_;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> pool_;
 
                         void processInternal(const std::shared_ptr<ClientInvocation> &invocation,
                                              const std::shared_ptr<protocol::ClientMessage> &response);
                     };
 
-                    ClientContext &client;
-                    util::ILogger &invocationLogger;
-                    std::atomic<bool> isShutdown{ false };
-                    std::chrono::steady_clock::duration invocationTimeout;
-                    std::chrono::steady_clock::duration invocationRetryPause;
-                    ResponseProcessor responseThread;
+                    ClientContext &client_;
+                    util::ILogger &invocation_logger_;
+                    std::atomic<bool> is_shutdown_{ false };
+                    std::chrono::steady_clock::duration invocation_timeout_;
+                    std::chrono::steady_clock::duration invocation_retry_pause_;
+                    ResponseProcessor response_thread_;
                     bool smart_routing_;
 
                     static void writeToConnection(connection::Connection &connection,

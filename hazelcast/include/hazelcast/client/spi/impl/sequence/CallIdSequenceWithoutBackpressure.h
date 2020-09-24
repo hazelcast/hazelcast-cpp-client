@@ -50,7 +50,7 @@ namespace hazelcast {
                         int64_t getLastCallId() override;
 
                     private:
-                        std::atomic<int64_t> head;
+                        std::atomic<int64_t> head_;
                     };
                 }
             }

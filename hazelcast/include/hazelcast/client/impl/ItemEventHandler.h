@@ -31,31 +31,31 @@ namespace hazelcast {
                 ItemEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                  serialization::pimpl::SerializationService &serializationService,
                                  ItemListener &&listener, bool includeValue)
-                        : instanceName(instanceName), clusterService(clusterService),
-                          serializationService(serializationService), listener(std::move(listener)), includeValue(includeValue) {};
+                        : instance_name_(instanceName), cluster_service_(clusterService),
+                          serialization_service_(serializationService), listener_(std::move(listener)), include_value_(includeValue) {};
 
                 void handle_item(const boost::optional<serialization::pimpl::Data> &item, boost::uuids::uuid uuid,
                                         int32_t eventType) override {
                     TypedData val;
-                    if (includeValue) {
-                        val = TypedData(std::move(*item), serializationService);
+                    if (include_value_) {
+                        val = TypedData(std::move(*item), serialization_service_);
                     }
-                    auto member = clusterService.getMember(uuid);
+                    auto member = cluster_service_.getMember(uuid);
                     ItemEventType type(static_cast<ItemEventType>(eventType));
-                    ItemEvent itemEvent(instanceName, type, std::move(val), std::move(member).value());
+                    ItemEvent itemEvent(instance_name_, type, std::move(val), std::move(member).value());
                     if (type == ItemEventType::ADDED) {
-                        listener.added(std::move(itemEvent));
+                        listener_.added_(std::move(itemEvent));
                     } else if (type == ItemEventType::REMOVED) {
-                        listener.removed(std::move(itemEvent));
+                        listener_.removed_(std::move(itemEvent));
                     }
                 }
 
             private:
-                const std::string &instanceName;
-                spi::impl::ClientClusterServiceImpl &clusterService;
-                serialization::pimpl::SerializationService &serializationService;
-                ItemListener listener;
-                bool includeValue;
+                const std::string &instance_name_;
+                spi::impl::ClientClusterServiceImpl &cluster_service_;
+                serialization::pimpl::SerializationService &serialization_service_;
+                ItemListener listener_;
+                bool include_value_;
             };
         }
     }

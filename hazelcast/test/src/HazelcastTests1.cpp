@@ -913,7 +913,7 @@ namespace hazelcast {
         namespace test {
             class ClusterTest : public ClientTestSupportBase, public ::testing::TestWithParam<ClientConfig> {
             public:
-                ClusterTest() : sslFactory(g_srvFactory->getServerAddress(), getSslFilePath()) {}
+                ClusterTest() : ssl_factory_(g_srvFactory->getServerAddress(), getSslFilePath()) {}
 
             protected:
                 LifecycleListener makeAllStatesListener(boost::latch &starting,
@@ -945,14 +945,14 @@ namespace hazelcast {
                 
                 std::unique_ptr<HazelcastServer> startServer(ClientConfig &clientConfig) {
                     if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
-                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(sslFactory));
+                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(ssl_factory_));
                     } else {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                     }
                 }
 
             private:
-                HazelcastServerFactory sslFactory;
+                HazelcastServerFactory ssl_factory_;
             };
 
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
@@ -1082,17 +1082,17 @@ namespace hazelcast {
 
             class MySocketInterceptor : public SocketInterceptor {
             public:
-                MySocketInterceptor(boost::latch &latch1) : interceptorLatch(latch1) {
+                MySocketInterceptor(boost::latch &latch1) : interceptor_latch_(latch1) {
                 }
 
                 void onConnect(const hazelcast::client::Socket &connectedSocket) override {
                     ASSERT_EQ("127.0.0.1", connectedSocket.getAddress().getHost());
                     ASSERT_NE(0, connectedSocket.getAddress().getPort());
-                    interceptorLatch.count_down();
+                    interceptor_latch_.count_down();
                 }
 
             private:
-                boost::latch &interceptorLatch;
+                boost::latch &interceptor_latch_;
             };
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -1495,47 +1495,47 @@ namespace hazelcast {
                 class SampleInitialListener : public InitialMembershipListener {
                 public:
                     SampleInitialListener(boost::latch &_memberAdded, boost::latch &_memberRemoved)
-                            : _memberAdded(_memberAdded), _memberRemoved(_memberRemoved) {
+                            : member_added_(_memberAdded), member_removed_(_memberRemoved) {
                     }
 
                     void init(InitialMembershipEvent event) override {
                         auto &members = event.getMembers();
                         if (members.size() == 1) {
-                            _memberAdded.count_down();
+                            member_added_.count_down();
                         }
                     }
 
                     void memberAdded(const MembershipEvent &event) override {
-                        _memberAdded.count_down();
+                        member_added_.count_down();
                     }
 
                     void memberRemoved(const MembershipEvent &event) override {
-                        _memberRemoved.count_down();
+                        member_removed_.count_down();
                     }
 
                 private:
-                    boost::latch &_memberAdded;
-                    boost::latch &_memberRemoved;
+                    boost::latch &member_added_;
+                    boost::latch &member_removed_;
                 };
 
                 class SampleListenerInSimpleListenerTest : public MembershipListener {
                 public:
                     SampleListenerInSimpleListenerTest(boost::latch &_memberAdded,
                                                        boost::latch &_memberRemoved)
-                            : _memberAdded(_memberAdded), _memberRemoved(_memberRemoved) {
+                            : member_added_(_memberAdded), member_removed_(_memberRemoved) {
                     }
 
                     void memberAdded(const MembershipEvent &event) override {
-                        _memberAdded.count_down();
+                        member_added_.count_down();
                     }
 
                     void memberRemoved(const MembershipEvent &event) override {
-                        _memberRemoved.count_down();
+                        member_removed_.count_down();
                     }
 
                 private:
-                    boost::latch &_memberAdded;
-                    boost::latch &_memberRemoved;
+                    boost::latch &member_added_;
+                    boost::latch &member_removed_;
                 };
             };
 
@@ -2195,16 +2195,16 @@ namespace hazelcast {
             class MyMembershipListener : public MembershipListener {
             public:
                 MyMembershipListener(boost::latch &countDownLatch)
-                        : countDownLatch(countDownLatch) {}
+                        : count_down_latch_(countDownLatch) {}
 
                 void memberAdded(const MembershipEvent &membershipEvent) override {}
 
                 void memberRemoved(const MembershipEvent &membershipEvent) override {
-                    countDownLatch.count_down();
+                    count_down_latch_.count_down();
                 }
 
             private:
-                boost::latch &countDownLatch;
+                boost::latch &count_down_latch_;
             };
 
             ClientTxnTest::ClientTxnTest()

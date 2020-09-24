@@ -118,10 +118,10 @@ namespace hazelcast {
                  */
                 SSLConfig &setCipherList(const std::string &ciphers);
             private:
-                bool enabled;
-                SSLProtocol sslProtocol;
-                std::vector<std::string> clientVerifyFiles;
-                std::string cipherList;
+                bool enabled_;
+                SSLProtocol ssl_protocol_;
+                std::vector<std::string> client_verify_files_;
+                std::string cipher_list_;
             };
         }
     }

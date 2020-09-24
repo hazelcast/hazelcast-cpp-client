@@ -46,11 +46,11 @@ namespace hazelcast {
                         class DefaultEvictionPolicyEvaluator : public EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> {
                         public:
                             DefaultEvictionPolicyEvaluator(const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > &comparator)
-                                    : evictionPolicyComparator(comparator) {
+                                    : eviction_policy_comparator_(comparator) {
                             }
 
                             const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > getEvictionPolicyComparator() const override {
-                                return evictionPolicyComparator;
+                                return eviction_policy_comparator_;
                             }
 
                             /**
@@ -77,7 +77,7 @@ namespace hazelcast {
                                             return returnEvictionCandidate(currentEvictionCandidate);
                                         }
 
-                                        int comparisonResult = evictionPolicyComparator->compare(
+                                        int comparisonResult = eviction_policy_comparator_->compare(
                                                 selectedEvictionCandidate.get(), currentEvictionCandidate.get());
                                         if (comparisonResult == EvictionPolicyComparator<A, E>::SECOND_ENTRY_HAS_HIGHER_PRIORITY_TO_BE_EVICTED) {
                                             selectedEvictionCandidate = currentEvictionCandidate;
@@ -114,7 +114,7 @@ namespace hazelcast {
                                 return expired;
                             }
 
-                            const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
+                            const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > eviction_policy_comparator_;
                         };
                     }
                 }

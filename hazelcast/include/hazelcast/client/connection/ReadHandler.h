@@ -56,8 +56,8 @@ namespace hazelcast {
                 util::ByteBuffer byteBuffer;
             private:
 
-                protocol::ClientMessageBuilder builder;
-                std::atomic<std::chrono::steady_clock::duration> lastReadTimeDuration;
+                protocol::ClientMessageBuilder builder_;
+                std::atomic<std::chrono::steady_clock::duration> last_read_time_duration_;
             };
         }
     }

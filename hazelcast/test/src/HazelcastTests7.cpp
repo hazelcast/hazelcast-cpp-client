@@ -865,76 +865,76 @@ namespace hazelcast {
 
                 class FailingExecutionCallback : public ExecutionCallback<std::string> {
                 public:
-                    FailingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(
+                    FailingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(
                             latch1) {}
 
                     void onResponse(const boost::optional<std::string> &response) override {
                     }
 
                     void onFailure(std::exception_ptr e) override {
-                        exception = e;
-                        latch1->count_down();
+                        exception_ = e;
+                        latch1_->count_down();
                     }
 
                     std::exception_ptr getException() {
-                        return exception;
+                        return exception_;
                     }
 
                 private:
-                    const std::shared_ptr<boost::latch> latch1;
-                    hazelcast::util::Sync<std::exception_ptr> exception;
+                    const std::shared_ptr<boost::latch> latch1_;
+                    hazelcast::util::Sync<std::exception_ptr> exception_;
                 };
 
                 class SuccessfullExecutionCallback : public ExecutionCallback<boost::uuids::uuid> {
                 public:
-                    SuccessfullExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
+                    SuccessfullExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(latch1) {}
 
                     void onResponse(const boost::optional<boost::uuids::uuid> &response) override {
-                        latch1->count_down();
+                        latch1_->count_down();
                     }
 
                     void onFailure(std::exception_ptr e) override {
                     }
 
                 private:
-                    const std::shared_ptr<boost::latch> latch1;
+                    const std::shared_ptr<boost::latch> latch1_;
                 };
 
                 template<typename T>
                 class ResultSettingExecutionCallback : public ExecutionCallback<T> {
                 public:
-                    explicit ResultSettingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1(latch1) {}
+                    explicit ResultSettingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(latch1) {}
 
                     void onResponse(const boost::optional<T> &response) override {
-                        result.set(response);
-                        latch1->count_down();
+                        result_.set(response);
+                        latch1_->count_down();
                     }
 
                     void onFailure(std::exception_ptr e) override {
                     }
 
                     boost::optional<T> getResult() {
-                        return result.get();
+                        return result_.get();
                     }
 
                 private:
-                    const std::shared_ptr<boost::latch> latch1;
-                    hazelcast::util::Sync<boost::optional<T>> result;
+                    const std::shared_ptr<boost::latch> latch1_;
+                    hazelcast::util::Sync<boost::optional<T>> result_;
                 };
 
                 class MultiExecutionCompletionCallback : public MultiExecutionCallback<std::string> {
                 public:
                     MultiExecutionCompletionCallback(std::string msg,
                                                      std::shared_ptr<boost::latch> responseLatch,
-                                                     const std::shared_ptr<boost::latch> &completeLatch) : msg(std::move(msg)),
-                                                                                                           responseLatch(std::move(
+                                                     const std::shared_ptr<boost::latch> &completeLatch) : msg_(std::move(msg)),
+                                                                                                           response_latch_(std::move(
                                                                                                                    responseLatch)),
-                                                                                                           completeLatch(
+                                                                                                           complete_latch_(
                                                                                                                    completeLatch) {}
 
                     void onResponse(const Member &member, const boost::optional<std::string> &response) override {
-                        if (response && *response == msg + APPENDAGE) {
-                            responseLatch->count_down();
+                        if (response && *response == msg_ + APPENDAGE) {
+                            response_latch_->count_down();
                         }
                     }
 
@@ -945,29 +945,29 @@ namespace hazelcast {
                     void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
                                             const std::unordered_map<Member, std::exception_ptr> &exceptions) override {
                         typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
-                        std::string expectedValue(msg + APPENDAGE);
+                        std::string expectedValue(msg_ + APPENDAGE);
                         for (const VALUE_MAP::value_type &entry  : values) {
                             if (entry.second && *entry.second == expectedValue) {
-                                completeLatch->count_down();
+                                complete_latch_->count_down();
                             }
                         }
                     }
 
                 private:
-                    std::string msg;
-                    const std::shared_ptr<boost::latch> responseLatch;
-                    const std::shared_ptr<boost::latch> completeLatch;
+                    std::string msg_;
+                    const std::shared_ptr<boost::latch> response_latch_;
+                    const std::shared_ptr<boost::latch> complete_latch_;
                 };
 
                 class MultiExecutionNullCallback : public MultiExecutionCallback<std::string> {
                 public:
                     MultiExecutionNullCallback(std::shared_ptr<boost::latch> responseLatch,
                                                std::shared_ptr<boost::latch> completeLatch)
-                            : responseLatch(std::move(responseLatch)), completeLatch(std::move(completeLatch)) {}
+                            : response_latch_(std::move(responseLatch)), complete_latch_(std::move(completeLatch)) {}
 
                     void onResponse(const Member &member, const boost::optional<std::string> &response) override {
                         if (!response) {
-                            responseLatch->count_down();
+                            response_latch_->count_down();
                         }
                     }
 
@@ -980,14 +980,14 @@ namespace hazelcast {
                         typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
                         for (const VALUE_MAP::value_type &entry  : values) {
                             if (!entry.second) {
-                                completeLatch->count_down();
+                                complete_latch_->count_down();
                             }
                         }
                     }
 
                 private:
-                    const std::shared_ptr<boost::latch> responseLatch;
-                    const std::shared_ptr<boost::latch> completeLatch;
+                    const std::shared_ptr<boost::latch> response_latch_;
+                    const std::shared_ptr<boost::latch> complete_latch_;
                 };
 
                 static std::vector<HazelcastServer *> instances;

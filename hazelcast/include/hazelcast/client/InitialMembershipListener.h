@@ -85,7 +85,7 @@ namespace hazelcast {
 
             void setRegistrationId(boost::uuids::uuid registrationId) override;
 
-            InitialMembershipListener *listener;
+            InitialMembershipListener *listener_;
         };
     }
 }

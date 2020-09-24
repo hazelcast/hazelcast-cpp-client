@@ -59,9 +59,9 @@ namespace hazelcast {
             const std::string &getName() const;
 
         private:
-            std::string name;
-            Member member;
-            ItemEventType eventType;
+            std::string name_;
+            Member member_;
+            ItemEventType event_type_;
         };
 
         /**

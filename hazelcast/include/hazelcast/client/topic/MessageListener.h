@@ -52,7 +52,7 @@ namespace hazelcast {
                 template<typename Handler,
                          typename = util::enable_if_rvalue_ref_t<Handler &&>>
                 Listener &on_received(Handler &&h) & {
-                    received = std::move(h);
+                    received_ = std::move(h);
                     return *this;
                 }
 
@@ -69,7 +69,7 @@ namespace hazelcast {
             private:
                 using HandlerType = std::function<void(Message &&)>;
 
-                HandlerType received = util::noop<Message &&>;
+                HandlerType received_ = util::noop<Message &&>;
 
                 friend class impl::TopicEventHandlerImpl;
             };

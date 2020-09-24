@@ -57,15 +57,15 @@ namespace hazelcast {
             */
             template<typename T>
             size_t readBytes(T &target, size_t len) {
-                size_t numBytesToCopy = std::min<size_t>(lim - pos, len);
-                target.insert(target.end(), buffer + pos, buffer + pos + numBytesToCopy);
-                pos += numBytesToCopy;
+                size_t numBytesToCopy = std::min<size_t>(lim_ - pos_, len);
+                target.insert(target.end(), buffer_ + pos_, buffer_ + pos_ + numBytesToCopy);
+                pos_ += numBytesToCopy;
                 return numBytesToCopy;
             }
 
             inline void read_bytes(byte *dest, size_t len) {
-                std::memcpy(dest, buffer + pos, len);
-                pos += len;
+                std::memcpy(dest, buffer_ + pos_, len);
+                pos_ += len;
             }
 
             void writeByte(char c);
@@ -75,10 +75,10 @@ namespace hazelcast {
             void safeIncrementPosition(size_t);
 
         private:
-            size_t pos;
-            size_t lim;
-            size_t capacity;
-            char *buffer;
+            size_t pos_;
+            size_t lim_;
+            size_t capacity_;
+            char *buffer_;
         };
     }
 }

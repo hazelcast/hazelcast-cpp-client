@@ -117,50 +117,50 @@ namespace hazelcast {
                  * resets for reuse
                  */
                 void reset() {
-                    iterationType = IterationType::VALUE;
+                    iteration_type_ = IterationType::VALUE;
                     anchor_data_list_.page_list.clear();
                     anchor_data_list_.data_list.clear();
-                    page = 0;
+                    page_ = 0;
                 }
 
                 /**
                  * sets the page value to next page
                  */
                 void nextPage() {
-                    ++page;
+                    ++page_;
                 }
 
                 /**
                  * sets the page value to previous page
                  */
                 void previousPage() {
-                    if (page != 0) {
-                        --page;
+                    if (page_ != 0) {
+                        --page_;
                     }
                 }
 
                 IterationType getIterationType() const {
-                    return iterationType;
+                    return iteration_type_;
                 }
 
                 void setIterationType(IterationType type) {
-                    iterationType = type;
+                    iteration_type_ = type;
                 }
 
                 size_t getPage() const {
-                    return page;
+                    return page_;
                 }
 
                 void setPage(size_t pageNumber) {
-                    page = pageNumber;
+                    page_ = pageNumber;
                 }
 
                 size_t getPageSize() const {
-                    return pageSize;
+                    return page_size_;
                 }
 
                 const query::EntryComparator<K, V> *getComparator() const {
-                    return comparator.get();
+                    return comparator_.get();
                 }
 
                 void setAnchorDataList(anchor_data_list anchorDataList) {
@@ -169,11 +169,11 @@ namespace hazelcast {
 
             private:
                 anchor_data_list anchor_data_list_;
-                std::shared_ptr<query::EntryComparator<K, V>> comparator;
-                serialization::ObjectDataOutput outStream;
-                size_t pageSize;
-                size_t page;
-                IterationType iterationType;
+                std::shared_ptr<query::EntryComparator<K, V>> comparator_;
+                serialization::ObjectDataOutput out_stream_;
+                size_t page_size_;
+                size_t page_;
+                IterationType iteration_type_;
                 boost::optional<serialization::pimpl::Data> comparator_data_;
                 boost::optional<serialization::pimpl::Data> predicate_data_;
 
@@ -186,10 +186,10 @@ namespace hazelcast {
                  * @param predicatePageSize size of the page
                  */
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
-                        size_t predicatePageSize) : outStream(serializationService.newOutputStream()),
-                        pageSize(predicatePageSize), page(0), iterationType(IterationType::VALUE) {
-                    outStream.writeObject<bool>(nullptr);
-                    outStream.writeObject<bool>(nullptr);
+                        size_t predicatePageSize) : out_stream_(serializationService.newOutputStream()),
+                        page_size_(predicatePageSize), page_(0), iteration_type_(IterationType::VALUE) {
+                    out_stream_.writeObject<bool>(nullptr);
+                    out_stream_.writeObject<bool>(nullptr);
                 }
 
                 /**
@@ -205,10 +205,10 @@ namespace hazelcast {
                 template<typename INNER_PREDICATE>
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
                         size_t predicatePageSize, const INNER_PREDICATE &predicate)
-                        : outStream(serializationService.newOutputStream()), pageSize(predicatePageSize), page(0),
-                        iterationType(IterationType::VALUE) {
-                    outStream.writeObject(predicate);
-                    outStream.writeObject<bool>(nullptr);
+                        : out_stream_(serializationService.newOutputStream()), page_size_(predicatePageSize), page_(0),
+                        iteration_type_(IterationType::VALUE) {
+                    out_stream_.writeObject(predicate);
+                    out_stream_.writeObject<bool>(nullptr);
                     predicate_data_ = serializationService.toData<INNER_PREDICATE>(predicate);
                 }
 
@@ -224,12 +224,12 @@ namespace hazelcast {
                 template<typename COMPARATOR>
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
                         COMPARATOR &&comp, size_t predicatePageSize)
-                        : outStream(serializationService.newOutputStream()), pageSize(predicatePageSize), page(0),
-                        iterationType(IterationType::VALUE) {
-                    outStream.writeObject<bool>(nullptr);
-                    outStream.writeObject(comp);
+                        : out_stream_(serializationService.newOutputStream()), page_size_(predicatePageSize), page_(0),
+                        iteration_type_(IterationType::VALUE) {
+                    out_stream_.writeObject<bool>(nullptr);
+                    out_stream_.writeObject(comp);
                     comparator_data_ = serializationService.toData<COMPARATOR>(comp);
-                    comparator = std::make_shared<COMPARATOR>(std::forward<COMPARATOR>(comp));
+                    comparator_ = std::make_shared<COMPARATOR>(std::forward<COMPARATOR>(comp));
                 }
 
                 /**
@@ -246,13 +246,13 @@ namespace hazelcast {
                 template<typename INNER_PREDICATE, typename COMPARATOR>
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
                         const INNER_PREDICATE &predicate, COMPARATOR &&comp, size_t predicatePageSize)
-                        : outStream(serializationService.newOutputStream()), pageSize(predicatePageSize), page(0),
-                        iterationType(IterationType::VALUE) {
-                    outStream.writeObject(predicate);
-                    outStream.writeObject(comp);
+                        : out_stream_(serializationService.newOutputStream()), page_size_(predicatePageSize), page_(0),
+                        iteration_type_(IterationType::VALUE) {
+                    out_stream_.writeObject(predicate);
+                    out_stream_.writeObject(comp);
                     predicate_data_ = serializationService.toData<INNER_PREDICATE>(predicate);
                     comparator_data_ = serializationService.toData<COMPARATOR>(comp);
-                    comparator = std::make_shared<COMPARATOR>(std::forward<COMPARATOR>(comp));
+                    comparator_ = std::make_shared<COMPARATOR>(std::forward<COMPARATOR>(comp));
                 }
             };
         }

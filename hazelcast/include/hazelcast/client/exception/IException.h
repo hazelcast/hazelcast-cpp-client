@@ -92,11 +92,11 @@ namespace hazelcast {
             template<typename EXCEPTIONCLASS>
             class ExceptionBuilder {
             public:
-                explicit ExceptionBuilder(const std::string &source) : source(source) {}
+                explicit ExceptionBuilder(const std::string &source) : source_(source) {}
 
                 template<typename T>
                 ExceptionBuilder &operator<<(const T &message) {
-                    msg << message;
+                    msg_ << message;
                     return *this;
                 }
 
@@ -105,11 +105,11 @@ namespace hazelcast {
                  * @return The constructed exception.
                  */
                 boost::exception_detail::clone_impl<EXCEPTIONCLASS> build() {
-                    return boost::enable_current_exception(EXCEPTIONCLASS(source, msg.str()));
+                    return boost::enable_current_exception(EXCEPTIONCLASS(source_, msg_.str()));
                 }
             private:
-                std::string source;
-                std::ostringstream msg;
+                std::string source_;
+                std::ostringstream msg_;
             };
 
         }

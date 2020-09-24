@@ -98,10 +98,10 @@ namespace hazelcast {
             virtual const Member &getMember() const;
 
         private:
-            Cluster &cluster;
-            Member member;
-            MembershipEventType eventType;
-            std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> members;
+            Cluster &cluster_;
+            Member member_;
+            MembershipEventType event_type_;
+            std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> members_;
         };
     }
 }

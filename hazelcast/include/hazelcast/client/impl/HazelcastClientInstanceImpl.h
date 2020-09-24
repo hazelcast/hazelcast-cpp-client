@@ -128,7 +128,7 @@ namespace hazelcast {
                 */
                 template<typename T>
                 std::shared_ptr<T> getDistributedObject(const std::string& name) {
-                    return proxyManager.getOrCreateProxy<T>(T::SERVICE_NAME, name);
+                    return proxy_manager_.getOrCreateProxy<T>(T::SERVICE_NAME, name);
                 }
 
                 /**
@@ -207,29 +207,29 @@ namespace hazelcast {
 
                 cp::cp_subsystem &get_cp_subsystem();
             private:
-                ClientConfig clientConfig;
-                ClientProperties clientProperties;
-                spi::ClientContext clientContext;
-                serialization::pimpl::SerializationService serializationService;
-                std::shared_ptr<connection::ClientConnectionManagerImpl> connectionManager;
-                std::unique_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
-                spi::impl::ClientClusterServiceImpl clusterService;
-                std::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
-                std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
-                std::unique_ptr<spi::impl::ClientInvocationServiceImpl> invocationService;
-                std::shared_ptr<spi::impl::listener::listener_service_impl> listenerService;
-                spi::impl::ClientTransactionManagerServiceImpl transactionManager;
-                Cluster cluster;
-                spi::LifecycleService lifecycleService;
-                spi::ProxyManager proxyManager;
-                std::shared_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
-                std::unique_ptr<statistics::Statistics> statistics;
-                protocol::ClientExceptionFactory exceptionFactory;
-                std::string instanceName;
+                ClientConfig client_config_;
+                ClientProperties client_properties_;
+                spi::ClientContext client_context_;
+                serialization::pimpl::SerializationService serialization_service_;
+                std::shared_ptr<connection::ClientConnectionManagerImpl> connection_manager_;
+                std::unique_ptr<internal::nearcache::NearCacheManager> near_cache_manager_;
+                spi::impl::ClientClusterServiceImpl cluster_service_;
+                std::shared_ptr<spi::impl::ClientPartitionServiceImpl> partition_service_;
+                std::shared_ptr<spi::impl::ClientExecutionServiceImpl> execution_service_;
+                std::unique_ptr<spi::impl::ClientInvocationServiceImpl> invocation_service_;
+                std::shared_ptr<spi::impl::listener::listener_service_impl> listener_service_;
+                spi::impl::ClientTransactionManagerServiceImpl transaction_manager_;
+                Cluster cluster_;
+                spi::LifecycleService lifecycle_service_;
+                spi::ProxyManager proxy_manager_;
+                std::shared_ptr<spi::impl::sequence::CallIdSequence> call_id_sequence_;
+                std::unique_ptr<statistics::Statistics> statistics_;
+                protocol::ClientExceptionFactory exception_factory_;
+                std::string instance_name_;
                 static std::atomic<int32_t> CLIENT_ID;
-                int32_t id;
-                std::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
-                std::shared_ptr<util::ILogger> logger;
+                int32_t id_;
+                std::shared_ptr<ClientLockReferenceIdGenerator> lock_reference_id_generator_;
+                std::shared_ptr<util::ILogger> logger_;
                 std::shared_ptr<spi::impl::listener::cluster_view_listener> cluster_listener_;
                 std::mt19937 random_generator_;
                 boost::uuids::basic_random_generator<std::mt19937> uuid_generator_;

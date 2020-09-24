@@ -229,7 +229,7 @@ namespace hazelcast {
                 explicit ClientMessage(size_t initial_frame_size, bool is_fingle_frame = false);
 
                 const std::vector<std::vector<byte>> &getBuffer() const {
-                    return data_buffer;
+                    return data_buffer_;
                 }
 
                 void wrap_for_read();
@@ -241,14 +241,14 @@ namespace hazelcast {
                 inline byte *wr_ptr(size_t bytes_to_reserve, size_t actual_number_of_bytes) {
                     assert(bytes_to_reserve >= actual_number_of_bytes);
                     size_t max_available_bytes = 0;
-                    auto b = data_buffer.rbegin();
-                    if (b != data_buffer.rend()) {
+                    auto b = data_buffer_.rbegin();
+                    if (b != data_buffer_.rend()) {
                         max_available_bytes = b->capacity() - b->size();
                     }
                     if (max_available_bytes < bytes_to_reserve) {
                         // add a new buffer enough size to hold the minimum requested bytes
-                        data_buffer.emplace_back();
-                        b = data_buffer.rbegin();
+                        data_buffer_.emplace_back();
+                        b = data_buffer_.rbegin();
                         b->reserve((std::max)(EXPECTED_DATA_BLOCK_SIZE, bytes_to_reserve));
                     }
 
@@ -257,13 +257,13 @@ namespace hazelcast {
 
                 inline byte *rd_ptr(size_t requestedBytes) {
                     byte *result = peek(requestedBytes);
-                    offset += requestedBytes;
+                    offset_ += requestedBytes;
                     return result;
                 }
 
                 inline void seek(size_t position) {
-                    assert(buffer_index == 0 && position >= offset && position < data_buffer[buffer_index].size());
-                    offset = position;
+                    assert(buffer_index_ == 0 && position >= offset_ && position < data_buffer_[buffer_index_].size());
+                    offset_ = position;
                 }
 
                 inline byte *peek(size_t requestedBytes) {
@@ -271,24 +271,24 @@ namespace hazelcast {
                         return nullptr;
                     }
 
-                    if (offset >= data_buffer[buffer_index].size()) {
-                        ++buffer_index;
-                        if (buffer_index == data_buffer.size()) {
+                    if (offset_ >= data_buffer_[buffer_index_].size()) {
+                        ++buffer_index_;
+                        if (buffer_index_ == data_buffer_.size()) {
                             BOOST_THROW_EXCEPTION(client::exception::HazelcastSerializationException("peek",
                                                                                                      (boost::format("Not enough bytes in client message to read. Requested %1% bytes but "
                                                                                                                     "there is no more bytes left to read. %2%") %requestedBytes %*this).str()));
                         }
 
-                        offset = 0;
+                        offset_ = 0;
                     }
 
-                    if (offset + requestedBytes > data_buffer[buffer_index].size()) {
+                    if (offset_ + requestedBytes > data_buffer_[buffer_index_].size()) {
                         BOOST_THROW_EXCEPTION(client::exception::HazelcastSerializationException("peek",
                                                                                                  (boost::format("Not enough bytes in client message to read. Requested %1% bytes but there "
                                                                                                                 "is not enough bytes left to read. %2%") %requestedBytes %*this).str()));
                     }
 
-                    return &data_buffer[buffer_index][offset];
+                    return &data_buffer_[buffer_index_][offset_];
                 }
 
                 //---------------------- Getters -------------------------------
@@ -623,14 +623,14 @@ namespace hazelcast {
 
                 template<typename T>
                 T get_first_fixed_sized_field() {
-                    assert(buffer_index == 0 && offset == 0);
+                    assert(buffer_index_ == 0 && offset_ == 0);
                     // skip header
                     rd_ptr(RESPONSE_HEADER_LEN);
                     return get<T>();
                 }
 
                 inline boost::uuids::uuid get_first_uuid() {
-                    assert(buffer_index == 0 && offset == 0);
+                    assert(buffer_index_ == 0 && offset_ == 0);
                     // skip header
                     rd_ptr(RESPONSE_HEADER_LEN);
                     return get<boost::uuids::uuid>();
@@ -638,14 +638,14 @@ namespace hazelcast {
 
                 template<typename T>
                 boost::optional<T> get_first_var_sized_field() {
-                    assert(buffer_index == 0 && offset == 0);
+                    assert(buffer_index_ == 0 && offset_ == 0);
                     skip_frame();
                     return get<T>();
                 }
 
                 template<typename T>
                 boost::optional<T> get_first_optional_var_sized_field() {
-                    assert(buffer_index == 0 && offset == 0);
+                    assert(buffer_index_ == 0 && offset_ == 0);
                     skip_frame();
                     return getNullable<T>();
                 }
@@ -950,12 +950,12 @@ namespace hazelcast {
                     return 17;
                 }
 
-                bool retryable;
-                std::string operationName;
+                bool retryable_;
+                std::string operation_name_;
 
-                std::vector<std::vector<byte>> data_buffer;
-                size_t buffer_index;
-                size_t offset;
+                std::vector<std::vector<byte>> data_buffer_;
+                size_t buffer_index_;
+                size_t offset_;
             };
 
             template<>

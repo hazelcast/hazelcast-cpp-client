@@ -57,88 +57,88 @@ namespace hazelcast {
         namespace txn {
             TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
                                                std::shared_ptr<connection::Connection> connection)
-                    : options(txnOptions), clientContext(clientContext), connection(connection),
-                      threadId(util::getCurrentThreadId()), state(TxnState::NO_TXN) {}
+                    : options_(txnOptions), client_context_(clientContext), connection_(connection),
+                      thread_id_(util::getCurrentThreadId()), state_(TxnState::NO_TXN) {}
 
-            TransactionProxy::TransactionProxy(const TransactionProxy &rhs) : options(rhs.options),
-                                                                              clientContext(rhs.clientContext),
-                                                                              connection(rhs.connection),
-                                                                              threadId(rhs.threadId), txnId(rhs.txnId),
-                                                                              state(rhs.state),
-                                                                              startTime(rhs.startTime) {
-                TRANSACTION_EXISTS.store(rhs.TRANSACTION_EXISTS.load());
+            TransactionProxy::TransactionProxy(const TransactionProxy &rhs) : options_(rhs.options_),
+                                                                              client_context_(rhs.client_context_),
+                                                                              connection_(rhs.connection_),
+                                                                              thread_id_(rhs.thread_id_), txn_id_(rhs.txn_id_),
+                                                                              state_(rhs.state_),
+                                                                              start_time_(rhs.start_time_) {
+                transaction_exists_.store(rhs.transaction_exists_.load());
             }
 
             boost::uuids::uuid TransactionProxy::getTxnId() const {
-                return txnId;
+                return txn_id_;
             }
 
             TxnState TransactionProxy::getState() const {
-                return state;
+                return state_;
             }
 
             std::chrono::steady_clock::duration TransactionProxy::getTimeout() const {
-                return options.getTimeout();
+                return options_.getTimeout();
             }
 
             boost::future<void> TransactionProxy::begin() {
                 try {
-                    if (state == TxnState::ACTIVE) {
+                    if (state_ == TxnState::ACTIVE) {
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::begin()",
                                                                                "Transaction is already active"));
                     }
                     checkThread();
-                    if (TRANSACTION_EXISTS) {
+                    if (transaction_exists_) {
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::begin()",
                                                                                "Nested transactions are not allowed!"));
                     }
-                    TRANSACTION_EXISTS.store(true);
-                    startTime = std::chrono::steady_clock::now();
+                    transaction_exists_.store(true);
+                    start_time_ = std::chrono::steady_clock::now();
                     auto request = protocol::codec::transaction_create_encode(
-                            std::chrono::duration_cast<std::chrono::milliseconds>(getTimeout()).count(), options.getDurability(),
-                            static_cast<int32_t>(options.getTransactionType()), threadId);
+                            std::chrono::duration_cast<std::chrono::milliseconds>(getTimeout()).count(), options_.getDurability(),
+                            static_cast<int32_t>(options_.getTransactionType()), thread_id_);
                     return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             auto msg = f.get();
                             // skip header
                             msg.rd_ptr(msg.RESPONSE_HEADER_LEN);
-                            this->txnId = msg.get<boost::uuids::uuid>();
-                            this->state = TxnState::ACTIVE;
+                            this->txn_id_ = msg.get<boost::uuids::uuid>();
+                            this->state_ = TxnState::ACTIVE;
                         } catch (exception::IException &) {
-                            TRANSACTION_EXISTS.store(false);
+                            transaction_exists_.store(false);
                             throw;
                         }
                     });
                 } catch (exception::IException &) {
-                    TRANSACTION_EXISTS.store(false);
+                    transaction_exists_.store(false);
                     throw;
                 }
             }
 
             boost::future<void> TransactionProxy::commit() {
                 try {
-                    if (state != TxnState::ACTIVE) {
+                    if (state_ != TxnState::ACTIVE) {
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::commit()",
                                                                                "Transaction is not active"));
                     }
-                    state = TxnState::COMMITTING;
+                    state_ = TxnState::COMMITTING;
                     checkThread();
                     checkTimeout();
 
-                    auto request = protocol::codec::transaction_commit_encode(txnId, threadId);
+                    auto request = protocol::codec::transaction_commit_encode(txn_id_, thread_id_);
                     return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             f.get();
-                            state = TxnState::COMMITTED;
+                            state_ = TxnState::COMMITTED;
                         } catch (exception::IException &) {
-                            TRANSACTION_EXISTS.store(false);
+                            transaction_exists_.store(false);
                             ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
                                                                                             "TransactionProxy::commit() failed");
                         }
                     });
                 } catch (...) {
-                    state = TxnState::COMMIT_FAILED;
-                    TRANSACTION_EXISTS.store(false);
+                    state_ = TxnState::COMMIT_FAILED;
+                    transaction_exists_.store(false);
                     ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
                                                                                     "TransactionProxy::commit() failed");
                     return boost::make_ready_future();
@@ -147,32 +147,32 @@ namespace hazelcast {
 
             boost::future<void> TransactionProxy::rollback() {
                 try {
-                    if (state == TxnState::NO_TXN || state == TxnState::ROLLED_BACK) {
+                    if (state_ == TxnState::NO_TXN || state_ == TxnState::ROLLED_BACK) {
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::rollback()",
                                                                                "Transaction is not active"));
                     }
-                    state = TxnState::ROLLING_BACK;
+                    state_ = TxnState::ROLLING_BACK;
                     checkThread();
                     try {
-                        auto request = protocol::codec::transaction_rollback_encode(txnId, threadId);
+                        auto request = protocol::codec::transaction_rollback_encode(txn_id_, thread_id_);
                         return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                             try {
-                                state = TxnState::ROLLED_BACK;
-                                TRANSACTION_EXISTS.store(false);
+                                state_ = TxnState::ROLLED_BACK;
+                                transaction_exists_.store(false);
                                 f.get();
                             } catch (exception::IException &e) {
-                                clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:",
+                                client_context_.getLogger().warning("Exception while rolling back the transaction. Exception:",
                                                                   e);
                             }
                         });
                     } catch (exception::IException &exception) {
-                        clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:",
+                        client_context_.getLogger().warning("Exception while rolling back the transaction. Exception:",
                                                           exception);
                     }
-                    state = TxnState::ROLLED_BACK;
-                    TRANSACTION_EXISTS.store(false);
+                    state_ = TxnState::ROLLED_BACK;
+                    transaction_exists_.store(false);
                 } catch (exception::IException &) {
-                    TRANSACTION_EXISTS.store(false);
+                    transaction_exists_.store(false);
                     ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
                                                                                     "TransactionProxy::rollback() failed");
                 }
@@ -180,22 +180,22 @@ namespace hazelcast {
             }
 
             serialization::pimpl::SerializationService &TransactionProxy::getSerializationService() {
-                return clientContext.getSerializationService();
+                return client_context_.getSerializationService();
             }
 
             std::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
-                return connection;
+                return connection_;
             }
 
             void TransactionProxy::checkThread() {
-                if (threadId != util::getCurrentThreadId()) {
+                if (thread_id_ != util::getCurrentThreadId()) {
                     BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::checkThread()",
                                                                            "Transaction cannot span multiple threads!"));
                 }
             }
 
             void TransactionProxy::checkTimeout() {
-                if (startTime + options.getTimeout() < std::chrono::steady_clock::now()) {
+                if (start_time_ + options_.getTimeout() < std::chrono::steady_clock::now()) {
                     BOOST_THROW_EXCEPTION(exception::TransactionException("TransactionProxy::checkTimeout()",
                                                                           "Transaction is timed-out!"));
                 }
@@ -224,11 +224,11 @@ namespace hazelcast {
             }
 
             boost::future<protocol::ClientMessage> TransactionProxy::invoke(protocol::ClientMessage &request) {
-                return ClientTransactionUtil::invoke(request, boost::uuids::to_string(getTxnId()), clientContext, connection);
+                return ClientTransactionUtil::invoke(request, boost::uuids::to_string(getTxnId()), client_context_, connection_);
             }
 
             spi::ClientContext &TransactionProxy::getClientContext() const {
-                return clientContext;
+                return client_context_;
             }
 
             const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> ClientTransactionUtil::exceptionFactory(
@@ -552,44 +552,44 @@ namespace hazelcast {
         }
 
         TransactionContext::TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transactionManager,
-                                               const TransactionOptions &txnOptions) : options(txnOptions),
-                                                                                       txnConnection(
+                                               const TransactionOptions &txnOptions) : options_(txnOptions),
+                                                                                       txn_connection_(
                                                                                                transactionManager.connect()),
-                                                                                       transaction(options,
+                                                                                       transaction_(options_,
                                                                                                    transactionManager.getClient(),
-                                                                                                   txnConnection) {
+                                                                                                   txn_connection_) {
         }
 
         boost::uuids::uuid  TransactionContext::getTxnId() const {
-            return transaction.getTxnId();
+            return transaction_.getTxnId();
         }
 
         boost::future<void> TransactionContext::beginTransaction() {
-            return transaction.begin();
+            return transaction_.begin();
         }
 
         boost::future<void> TransactionContext::commitTransaction() {
-            return transaction.commit();
+            return transaction_.commit();
         }
 
         boost::future<void> TransactionContext::rollbackTransaction() {
-            return transaction.rollback();
+            return transaction_.rollback();
         }
 
-        TransactionOptions::TransactionOptions() : timeout(std::chrono::minutes(2)), durability(1),
-                                                   transactionType(TransactionType::TWO_PHASE) {}
+        TransactionOptions::TransactionOptions() : timeout_(std::chrono::minutes(2)), durability_(1),
+                                                   transaction_type_(TransactionType::TWO_PHASE) {}
 
         TransactionOptions::TransactionType TransactionOptions::getTransactionType() const {
-            return transactionType;
+            return transaction_type_;
         }
 
         TransactionOptions &TransactionOptions::setTransactionType(TransactionType type) {
-            transactionType = type;
+            transaction_type_ = type;
             return *this;
         }
 
         std::chrono::steady_clock::duration TransactionOptions::getTimeout() const {
-            return timeout;
+            return timeout_;
         }
 
         TransactionOptions &TransactionOptions::setTimeout(std::chrono::steady_clock::duration duration) {
@@ -597,12 +597,12 @@ namespace hazelcast {
                 BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setTimeout",
                                                                        "Timeout must be positive!"));
             }
-            timeout = duration;
+            timeout_ = duration;
             return *this;
         }
 
         int TransactionOptions::getDurability() const {
-            return durability;
+            return durability_;
         }
 
         TransactionOptions &TransactionOptions::setDurability(int numMachines) {
@@ -610,7 +610,7 @@ namespace hazelcast {
                 BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setDurability",
                                                                        "Durability cannot be negative!"));
             }
-            this->durability = numMachines;
+            this->durability_ = numMachines;
             return *this;
         }
     }

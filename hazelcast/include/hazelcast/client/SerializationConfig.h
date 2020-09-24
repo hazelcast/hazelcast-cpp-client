@@ -61,8 +61,8 @@ namespace hazelcast {
 
             void setGlobalSerializer(const std::shared_ptr<serialization::global_serializer> &globalSerializer);
         private:
-            int version;
-            std::shared_ptr<serialization::global_serializer> globalSerializer_;
+            int version_;
+            std::shared_ptr<serialization::global_serializer> global_serializer_;
         };
     }
 }

@@ -92,9 +92,9 @@ namespace hazelcast {
                 void setLogLevel(LoggerLevel::Level logLevel);
 
             private:
-                Type::LoggerType type;
-                std::string configurationFileName;
-                LoggerLevel::Level logLevel;
+                Type::LoggerType type_;
+                std::string configuration_file_name_;
+                LoggerLevel::Level log_level_;
             };
         }
     }

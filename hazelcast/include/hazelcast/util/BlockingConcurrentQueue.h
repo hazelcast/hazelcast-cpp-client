@@ -34,34 +34,34 @@ namespace hazelcast {
         /* Blocking - synchronized queue */
         class BlockingConcurrentQueue {
         public:
-            BlockingConcurrentQueue(size_t maxQueueCapacity) : capacity(maxQueueCapacity), isInterrupted(false) {
+            BlockingConcurrentQueue(size_t maxQueueCapacity) : capacity_(maxQueueCapacity), is_interrupted_(false) {
             }
 
             void push(const T &e) {
-                std::unique_lock<std::mutex> lock(m);
-                while (internalQueue.size() == capacity) {
-                    if (isInterrupted) {
+                std::unique_lock<std::mutex> lock(m_);
+                while (internal_queue_.size() == capacity_) {
+                    if (is_interrupted_) {
                         throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
                     }
                     // wait on condition
-                    notFull.wait(lock);
+                    not_full_.wait(lock);
                 }
-                internalQueue.push_back(e);
-                notEmpty.notify_one();
+                internal_queue_.push_back(e);
+                not_empty_.notify_one();
             }
 
             T pop() {
-                std::unique_lock<std::mutex> lock(m);
-                while (internalQueue.empty()) {
-                    if (isInterrupted) {
+                std::unique_lock<std::mutex> lock(m_);
+                while (internal_queue_.empty()) {
+                    if (is_interrupted_) {
                         throw client::exception::InterruptedException("BlockingConcurrentQueue::pop");
                     }
                     // wait for notEmpty condition
-                    notEmpty.wait(lock);
+                    not_empty_.wait(lock);
                 }
-                T element = internalQueue.front();
-                internalQueue.pop_front();
-                notFull.notify_one();
+                T element = internal_queue_.front();
+                internal_queue_.pop_front();
+                not_full_.notify_one();
                 return element;
             }
 
@@ -71,38 +71,38 @@ namespace hazelcast {
              *
              */
             void clear() {
-                std::unique_lock<std::mutex> lock(m);
-                internalQueue.clear();
-                notFull.notify_one();
+                std::unique_lock<std::mutex> lock(m_);
+                internal_queue_.clear();
+                not_full_.notify_one();
             }
 
             void interrupt() {
-                notFull.notify_one();
-                notEmpty.notify_one();
-                isInterrupted = true;
+                not_full_.notify_one();
+                not_empty_.notify_one();
+                is_interrupted_ = true;
             }
 
             bool isEmpty() {
-                std::lock_guard<std::mutex> lock(m);
-                return internalQueue.empty();
+                std::lock_guard<std::mutex> lock(m_);
+                return internal_queue_.empty();
             }
 
             size_t size() {
-                std::unique_lock<std::mutex> lock(m);
-                return internalQueue.size();
+                std::unique_lock<std::mutex> lock(m_);
+                return internal_queue_.size();
             }
 
         private:
-            std::mutex m;
+            std::mutex m_;
             /**
              * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
-            std::list<T> internalQueue;
-            size_t capacity;
-            std::condition_variable notFull;
-            std::condition_variable notEmpty;
-            bool isInterrupted;
+            std::list<T> internal_queue_;
+            size_t capacity_;
+            std::condition_variable not_full_;
+            std::condition_variable not_empty_;
+            bool is_interrupted_;
         };
     }
 }

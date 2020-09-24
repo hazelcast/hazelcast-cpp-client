@@ -50,7 +50,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             LifecycleListener &on_starting(Handler &&h) & {
-                starting = std::forward<Handler>(h);
+                starting_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -72,7 +72,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             LifecycleListener &on_started(Handler &&h) & {
-                started = std::forward<Handler>(h);
+                started_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -94,7 +94,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             LifecycleListener &on_shutting_down(Handler &&h) & {
-                shutting_down = std::forward<Handler>(h);
+                shutting_down_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -116,7 +116,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             LifecycleListener &on_shutdown(Handler &&h) & {
-                shutdown = std::forward<Handler>(h);
+                shutdown_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -138,7 +138,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             LifecycleListener &on_connected(Handler &&h) & {
-                connected = std::forward<Handler>(h);
+                connected_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -160,7 +160,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             LifecycleListener &on_disconnected(Handler &&h) & {
-                disconnected = std::forward<Handler>(h);
+                disconnected_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -177,12 +177,12 @@ namespace hazelcast {
         private:
             using HandlerType = std::function<void()>;
             static constexpr auto noop_handler = util::noop<>;
-            HandlerType starting{ noop_handler },
-                        started{ noop_handler }, 
-                        shutting_down{ noop_handler },
-                        shutdown{ noop_handler },
-                        connected{ noop_handler },
-                        disconnected{ noop_handler };
+            HandlerType starting_{ noop_handler },
+                        started_{ noop_handler }, 
+                        shutting_down_{ noop_handler },
+                        shutdown_{ noop_handler },
+                        connected_{ noop_handler },
+                        disconnected_{ noop_handler };
 
             friend class spi::LifecycleService;
         };

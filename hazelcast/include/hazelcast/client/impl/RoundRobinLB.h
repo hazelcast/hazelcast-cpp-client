@@ -46,7 +46,7 @@ namespace hazelcast {
                 boost::optional<Member> next() override;
 
             private:
-                std::atomic<int> index{ 0 };
+                std::atomic<int> index_{ 0 };
             };
         }
     }

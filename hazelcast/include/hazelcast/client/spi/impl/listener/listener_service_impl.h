@@ -115,17 +115,17 @@ namespace hazelcast {
 
                         bool registersLocalOnly() const;
 
-                        ClientContext &clientContext;
-                        serialization::pimpl::SerializationService &serializationService;
-                        util::ILogger &logger;
-                        connection::ClientConnectionManagerImpl &clientConnectionManager;
-                        std::unique_ptr<hazelcast::util::hz_thread_pool> eventExecutor;
-                        std::vector<boost::asio::strand<boost::asio::thread_pool::executor_type>> eventStrands;
-                        std::unique_ptr<hazelcast::util::hz_thread_pool> registrationExecutor;
-                        std::chrono::steady_clock::duration invocationTimeout;
-                        std::chrono::steady_clock::duration invocationRetryPause;
-                        util::SynchronizedMap<boost::uuids::uuid, listener_registration, boost::hash<boost::uuids::uuid>> registrations;
-                        int numberOfEventThreads;
+                        ClientContext &client_context_;
+                        serialization::pimpl::SerializationService &serialization_service_;
+                        util::ILogger &logger_;
+                        connection::ClientConnectionManagerImpl &client_connection_manager_;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> event_executor_;
+                        std::vector<boost::asio::strand<boost::asio::thread_pool::executor_type>> event_strands_;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> registration_executor_;
+                        std::chrono::steady_clock::duration invocation_timeout_;
+                        std::chrono::steady_clock::duration invocation_retry_pause_;
+                        util::SynchronizedMap<boost::uuids::uuid, listener_registration, boost::hash<boost::uuids::uuid>> registrations_;
+                        int number_of_event_threads_;
                         bool smart_;
                     };
                 }

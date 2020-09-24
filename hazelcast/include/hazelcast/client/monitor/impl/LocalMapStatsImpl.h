@@ -39,7 +39,7 @@ namespace hazelcast {
 
                     std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const override;
                 private:
-                    std::shared_ptr<monitor::NearCacheStats> nearCacheStats;
+                    std::shared_ptr<monitor::NearCacheStats> near_cache_stats_;
                 };
             }
         }

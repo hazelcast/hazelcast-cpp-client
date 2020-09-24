@@ -34,18 +34,18 @@ namespace hazelcast {
                     TopicEventHandlerImpl(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                           serialization::pimpl::SerializationService &serializationService,
                                           Listener &&messageListener)
-                            :instanceName(instanceName), clusterService(clusterService),
-                            serializationService(serializationService), listener(std::move(messageListener)) {}
+                            :instance_name_(instanceName), cluster_service_(clusterService),
+                            serialization_service_(serializationService), listener_(std::move(messageListener)) {}
 
                     void handle_topic(Data const & item, int64_t publishTime, boost::uuids::uuid uuid) override {
-                        listener.received(Message(instanceName, TypedData(std::move(item), serializationService), publishTime,
-                                        clusterService.getMember(uuid)));
+                        listener_.received_(Message(instance_name_, TypedData(std::move(item), serialization_service_), publishTime,
+                                        cluster_service_.getMember(uuid)));
                     }
                 private:
-                    std::string instanceName;
-                    spi::impl::ClientClusterServiceImpl &clusterService;
-                    serialization::pimpl::SerializationService &serializationService;
-                    Listener listener;
+                    std::string instance_name_;
+                    spi::impl::ClientClusterServiceImpl &cluster_service_;
+                    serialization::pimpl::SerializationService &serialization_service_;
+                    Listener listener_;
                 };
             }
         }

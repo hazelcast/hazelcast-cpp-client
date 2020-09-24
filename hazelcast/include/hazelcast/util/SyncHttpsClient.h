@@ -40,18 +40,18 @@ namespace hazelcast {
 
             std::istream &openConnection();
         private:
-            std::string server;
-            std::string uriPath;
+            std::string server_;
+            std::string uri_path_;
 
-            boost::asio::io_service ioService;
+            boost::asio::io_service io_service_;
 
             #ifdef HZ_BUILD_WITH_SSL
-            boost::asio::ssl::context sslContext;
-            std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > socket;
+            boost::asio::ssl::context ssl_context_;
+            std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> > socket_;
             #endif // HZ_BUILD_WITH_SSL
 
-            boost::asio::streambuf response;
-            std::istream responseStream;
+            boost::asio::streambuf response_;
+            std::istream response_stream_;
         };
     }
 }

@@ -461,15 +461,15 @@ namespace hazelcast {
                             class MaxSizeEvictionChecker : public eviction::EvictionChecker {
                             public:
 
-                                MaxSizeEvictionChecker(const eviction::MaxSizeChecker *maxSizeChecker) : maxSizeChecker(
+                                MaxSizeEvictionChecker(const eviction::MaxSizeChecker *maxSizeChecker) : max_size_checker_(
                                         maxSizeChecker) { }
 
                                 bool isEvictionRequired() const override {
-                                    return maxSizeChecker != NULL && maxSizeChecker->isReachedToMaxSize();
+                                    return max_size_checker_ != NULL && max_size_checker_->isReachedToMaxSize();
                                 }
 
                             private:
-                                const eviction::MaxSizeChecker *maxSizeChecker;
+                                const eviction::MaxSizeChecker *max_size_checker_;
                             };
 
                             template<typename VALUE>

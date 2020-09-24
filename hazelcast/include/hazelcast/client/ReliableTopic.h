@@ -82,11 +82,11 @@ namespace hazelcast {
             */
             template<typename Listener>
             std::string addMessageListener(Listener &&listener) {
-                int id = ++runnerCounter;
+                int id = ++runner_counter_;
                 std::shared_ptr<MessageRunner < Listener>>
                 runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer, getName(),
                                                    getSerializationService(), *config, logger));
-                runnersMap.put(id, runner);
+                runners_map_.put(id, runner);
                 runner->next();
                 return std::to_string(id);
             }
@@ -101,18 +101,18 @@ namespace hazelcast {
             */
             bool removeMessageListener(const std::string &registrationId) {
                 int id = util::IOUtil::to_value<int>(registrationId);
-                auto runner = runnersMap.get(id);
+                auto runner = runners_map_.get(id);
                 if (!runner) {
                     return false;
                 }
                 runner->cancel();
-                runnersMap.remove(id);
+                runners_map_.remove(id);
                 return true;
             };
         protected:
             void onDestroy() override {
                 // cancel all runners
-                for (auto &entry : runnersMap.clear()) {
+                for (auto &entry : runners_map_.clear()) {
                     entry.second->cancel();
                 }
 
@@ -133,35 +133,35 @@ namespace hazelcast {
                 MessageRunner(int id, Listener &&listener, const std::shared_ptr<Ringbuffer> &rb,
                               const std::string &topicName, serialization::pimpl::SerializationService &service,
                               const config::ReliableTopicConfig &reliableTopicConfig, util::ILogger &logger)
-                        : listener(listener), id(id), ringbuffer(rb), cancelled(false), logger(logger),
-                        name(topicName), executor(rb, logger), serializationService(service),
-                        config(reliableTopicConfig) {
+                        : listener_(listener), id_(id), ringbuffer_(rb), cancelled_(false), logger_(logger),
+                        name_(topicName), executor_(rb, logger), serialization_service_(service),
+                        config_(reliableTopicConfig) {
                     // we are going to listen to next publication. We don't care about what already has been published.
                     int64_t initialSequence = listener.retrieveInitialSequence();
                     if (initialSequence == -1) {
-                        initialSequence = ringbuffer->tailSequence().get() + 1;
+                        initialSequence = ringbuffer_->tailSequence().get() + 1;
                     }
-                    sequence = initialSequence;
+                    sequence_ = initialSequence;
                 }
 
                 ~MessageRunner() override = default;
 
                 void next() {
-                    if (cancelled) {
+                    if (cancelled_) {
                         return;
                     }
 
                     topic::impl::reliable::ReliableTopicExecutor::Message m;
                     m.type = topic::impl::reliable::ReliableTopicExecutor::GET_ONE_MESSAGE;
                     m.callback = this->shared_from_this();
-                    m.sequence = sequence;
-                    m.maxCount = config.getReadBatchSize();
-                    executor.execute(std::move(m));
+                    m.sequence = sequence_;
+                    m.maxCount = config_.getReadBatchSize();
+                    executor_.execute(std::move(m));
                 }
 
                 // This method is called from the provided executor.
                 void onResponse(const boost::optional<ringbuffer::ReadResultSet> &allMessages) override {
-                    if (cancelled) {
+                    if (cancelled_) {
                         return;
                     }
 
@@ -169,7 +169,7 @@ namespace hazelcast {
                     // but we'll process whatever was received in 1 go.
                     for (auto &item : allMessages->getItems()) {
                         try {
-                            listener.storeSequence(sequence);
+                            listener_.storeSequence(sequence_);
                             process(item.get<topic::impl::reliable::ReliableTopicMessage>().get_ptr());
                         } catch (exception::IException &e) {
                             if (terminate(e)) {
@@ -178,7 +178,7 @@ namespace hazelcast {
                             }
                         }
 
-                        sequence++;
+                        sequence_++;
                     }
 
                     next();
@@ -186,7 +186,7 @@ namespace hazelcast {
 
                 // This method is called from the provided executor.
                 void onFailure(std::exception_ptr throwable) override {
-                    if (cancelled) {
+                    if (cancelled_) {
                         return;
                     }
 
@@ -201,57 +201,57 @@ namespace hazelcast {
                             causeErrorCode = causeException.getErrorCode();
                         }
                         if (protocol::TIMEOUT == err) {
-                            if (logger.isFinestEnabled()) {
-                                logger.finest("MessageListener on topic: ", name, " timed out. ",
-                                              "Continuing from last known sequence: ", sequence);
+                            if (logger_.isFinestEnabled()) {
+                                logger_.finest("MessageListener on topic: ", name_, " timed out. ",
+                                              "Continuing from last known sequence: ", sequence_);
                             }
                             next();
                             return;
                         } else if (protocol::EXECUTION == err &&
                                    protocol::STALE_SEQUENCE == causeErrorCode) {
                             // StaleSequenceException.getHeadSeq() is not available on the client-side, see #7317
-                            int64_t remoteHeadSeq = ringbuffer->headSequence().get();
+                            int64_t remoteHeadSeq = ringbuffer_->headSequence().get();
 
-                            if (listener.isLossTolerant()) {
-                                if (logger.isFinestEnabled()) {
+                            if (listener_.isLossTolerant()) {
+                                if (logger_.isFinestEnabled()) {
                                     std::ostringstream out;
-                                    out << "MessageListener " << id << " on topic: " << name
+                                    out << "MessageListener " << id_ << " on topic: " << name_
                                         << " ran into a stale sequence. "
-                                        << "Jumping from oldSequence: " << sequence << " to sequence: "
+                                        << "Jumping from oldSequence: " << sequence_ << " to sequence: "
                                         << remoteHeadSeq;
-                                    logger.finest(out.str());
+                                    logger_.finest(out.str());
                                 }
-                                sequence = remoteHeadSeq;
+                                sequence_ = remoteHeadSeq;
                                 next();
                                 return;
                             }
 
                             std::ostringstream out;
-                            out << "Terminating MessageListener:" << id << " on topic: " << name
+                            out << "Terminating MessageListener:" << id_ << " on topic: " << name_
                                 << "Reason: The listener "
                                    "was too slow or the retention period of the message has been violated. "
                                 << "head: "
-                                << remoteHeadSeq << " sequence:" << sequence;
-                            logger.warning(out.str());
+                                << remoteHeadSeq << " sequence:" << sequence_;
+                            logger_.warning(out.str());
                         } else if (protocol::HAZELCAST_INSTANCE_NOT_ACTIVE == err) {
-                            if (logger.isFinestEnabled()) {
+                            if (logger_.isFinestEnabled()) {
                                 std::ostringstream out;
-                                out << "Terminating MessageListener " << id << " on topic: " << name << ". "
+                                out << "Terminating MessageListener " << id_ << " on topic: " << name_ << ". "
                                     << " Reason: HazelcastInstance is shutting down";
-                                logger.finest(out.str());
+                                logger_.finest(out.str());
                             }
                         } else if (protocol::DISTRIBUTED_OBJECT_DESTROYED == err) {
-                            if (logger.isFinestEnabled()) {
+                            if (logger_.isFinestEnabled()) {
                                 std::ostringstream out;
-                                out << "Terminating MessageListener " << id << " on topic: " << name
+                                out << "Terminating MessageListener " << id_ << " on topic: " << name_
                                     << " Reason: Topic is destroyed";
-                                logger.finest(out.str());
+                                logger_.finest(out.str());
                             }
                         } else {
                             std::ostringstream out;
-                            out << "Terminating MessageListener " << id << " on topic: " << name << ". "
+                            out << "Terminating MessageListener " << id_ << " on topic: " << name_ << ". "
                                 << " Reason: Unhandled exception, details:" << ie.what();
-                            logger.warning(out.str());
+                            logger_.warning(out.str());
                         }
 
                         cancel();
@@ -259,17 +259,17 @@ namespace hazelcast {
                 }
 
                 bool cancel() override {
-                    cancelled.store(true);
-                    return executor.stop();
+                    cancelled_.store(true);
+                    return executor_.stop();
                 }
 
                 bool isCancelled() override {
-                    return cancelled.load();
+                    return cancelled_.load();
                 }
             private:
                 void process(topic::impl::reliable::ReliableTopicMessage *message) {
                     //  proxy.localTopicStats.incrementReceives();
-                    listener.onMessage(toMessage(message));
+                    listener_.onMessage(toMessage(message));
                 }
 
                 topic::Message toMessage(topic::impl::reliable::ReliableTopicMessage *m) {
@@ -278,57 +278,57 @@ namespace hazelcast {
                     if (addr.has_value()) {
                         member = boost::make_optional<Member>(addr.value());
                     }
-                    return topic::Message(name, TypedData(std::move(m->getPayload()), serializationService),
+                    return topic::Message(name_, TypedData(std::move(m->getPayload()), serialization_service_),
                                           m->getPublishTime(), std::move(member));
                 }
 
                 bool terminate(const exception::IException &failure) {
-                    if (cancelled) {
+                    if (cancelled_) {
                         return true;
                     }
 
                     try {
-                        bool terminate = listener.isTerminal(failure);
+                        bool terminate = listener_.isTerminal(failure);
                         if (terminate) {
                             std::ostringstream out;
-                            out << "Terminating MessageListener " << id << " on topic: " << name << ". "
+                            out << "Terminating MessageListener " << id_ << " on topic: " << name_ << ". "
                                 << " Reason: Unhandled exception, details: " << failure.what();
-                            logger.warning(out.str());
+                            logger_.warning(out.str());
                         } else {
-                            if (logger.isFinestEnabled()) {
+                            if (logger_.isFinestEnabled()) {
                                 std::ostringstream out;
-                                out << "MessageListener " << id << " on topic: " << name << ". "
+                                out << "MessageListener " << id_ << " on topic: " << name_ << ". "
                                     << " ran into an exception, details:" << failure.what();
-                                logger.finest(out.str());
+                                logger_.finest(out.str());
                             }
                         }
                         return terminate;
                     } catch (exception::IException &t) {
                         std::ostringstream out;
-                        out << "Terminating MessageListener " << id << " on topic: " << name << ". "
+                        out << "Terminating MessageListener " << id_ << " on topic: " << name_ << ". "
                             << " Reason: Unhandled exception while calling ReliableMessageListener::isTerminal() method. "
                             << t.what();
-                        logger.warning(out.str());
+                        logger_.warning(out.str());
 
                         return true;
                     }
                 }
 
             private:
-                Listener listener;
-                int id;
-                std::shared_ptr<Ringbuffer> ringbuffer;
-                int64_t sequence;
-                std::atomic<bool> cancelled;
-                util::ILogger &logger;
-                const std::string &name;
-                topic::impl::reliable::ReliableTopicExecutor executor;
-                serialization::pimpl::SerializationService &serializationService;
-                const config::ReliableTopicConfig &config;
+                Listener listener_;
+                int id_;
+                std::shared_ptr<Ringbuffer> ringbuffer_;
+                int64_t sequence_;
+                std::atomic<bool> cancelled_;
+                util::ILogger &logger_;
+                const std::string &name_;
+                topic::impl::reliable::ReliableTopicExecutor executor_;
+                serialization::pimpl::SerializationService &serialization_service_;
+                const config::ReliableTopicConfig &config_;
             };
 
-            util::SynchronizedMap<int, util::concurrent::Cancellable> runnersMap;
-            std::atomic<int> runnerCounter{ 0 };
+            util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;
+            std::atomic<int> runner_counter_{ 0 };
         };
     }
 }

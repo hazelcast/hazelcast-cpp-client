@@ -81,8 +81,8 @@ namespace hazelcast {
             GroupConfig &setName(const std::string &name);
 
         private:
-            std::string name;
-            std::string password;
+            std::string name_;
+            std::string password_;
         };
 
     }

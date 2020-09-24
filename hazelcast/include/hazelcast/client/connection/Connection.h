@@ -127,20 +127,20 @@ namespace hazelcast {
 
                 void innerClose();
 
-                std::chrono::steady_clock::time_point startTime;
-                std::atomic<std::chrono::steady_clock::duration> closedTimeDuration;
-                spi::ClientContext &clientContext;
-                protocol::IMessageHandler &invocationService;
-                std::unique_ptr<Socket> socket;
-                int connectionId;
-                std::string closeReason;
-                std::exception_ptr closeCause;
-                std::string connectedServerVersionString;
+                std::chrono::steady_clock::time_point start_time_;
+                std::atomic<std::chrono::steady_clock::duration> closed_time_duration_;
+                spi::ClientContext &client_context_;
+                protocol::IMessageHandler &invocation_service_;
+                std::unique_ptr<Socket> socket_;
+                int connection_id_;
+                std::string close_reason_;
+                std::exception_ptr close_cause_;
+                std::string connected_server_version_string_;
                 // TODO: check if they need to be atomic
                 boost::optional<Address> remote_address_;
                 boost::uuids::uuid remote_uuid_;
-                util::ILogger &logger;
-                std::atomic_bool alive;
+                util::ILogger &logger_;
+                std::atomic_bool alive_;
             };
         }
     }

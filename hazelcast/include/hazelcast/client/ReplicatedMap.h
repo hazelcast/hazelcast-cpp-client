@@ -263,8 +263,8 @@ namespace hazelcast {
                 EntryEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,
                                   EntryListener &&listener, util::ILogger &log)
-                        : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
-                        , listener(std::move(listener)), logger(log) {}
+                        : instance_name_(instanceName), cluster_service_(clusterService), serialization_service_(serializationService)
+                        , listener_(std::move(listener)), logger_(log) {}
 
                 void handle_entry(const boost::optional<Data> &key, const boost::optional<Data> &value,
                                   const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
@@ -283,10 +283,10 @@ namespace hazelcast {
                                       const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
                                       int32_t eventType, boost::uuids::uuid uuid,
                                       int32_t numberOfAffectedEntries) {
-                    auto member = clusterService.getMember(uuid);
+                    auto member = cluster_service_.getMember(uuid);
                     auto mapEventType = static_cast<EntryEvent::type>(eventType);
-                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName, numberOfAffectedEntries);
-                    listener.map_cleared(std::move(mapEvent));
+                    MapEvent mapEvent(std::move(member).value(), mapEventType, instance_name_, numberOfAffectedEntries);
+                    listener_.map_cleared_(std::move(mapEvent));
                 }
 
                 void fireEntryEvent(const boost::optional<Data> &key, const boost::optional<Data> &value,
@@ -295,48 +295,48 @@ namespace hazelcast {
                                     int32_t numberOfAffectedEntries) {
                     TypedData eventKey, val, oldVal, mergingVal;
                     if (value) {
-                        val = TypedData(std::move(*value), serializationService);
+                        val = TypedData(std::move(*value), serialization_service_);
                     }
                     if (oldValue) {
-                        oldVal = TypedData(std::move(*oldValue), serializationService);
+                        oldVal = TypedData(std::move(*oldValue), serialization_service_);
                     }
                     if (mergingValue) {
-                        mergingVal = TypedData(std::move(*mergingValue), serializationService);
+                        mergingVal = TypedData(std::move(*mergingValue), serialization_service_);
                     }
                     if (key) {
-                        eventKey = TypedData(std::move(*key), serializationService);
+                        eventKey = TypedData(std::move(*key), serialization_service_);
                     }
-                    auto member = clusterService.getMember(uuid);
+                    auto member = cluster_service_.getMember(uuid);
                     if (!member.has_value()) {
                         member = Member(uuid);
                     }
                     auto type = static_cast<EntryEvent::type>(eventType);
-                    EntryEvent entryEvent(instanceName, std::move(member.value()), type, std::move(eventKey), std::move(val),
+                    EntryEvent entryEvent(instance_name_, std::move(member.value()), type, std::move(eventKey), std::move(val),
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
                         case EntryEvent::type::ADDED:
-                            listener.added(std::move(entryEvent));
+                            listener_.added_(std::move(entryEvent));
                             break;
                         case EntryEvent::type::REMOVED:
-                            listener.removed(std::move(entryEvent));
+                            listener_.removed_(std::move(entryEvent));
                             break;
                         case EntryEvent::type::UPDATED:
-                            listener.updated(std::move(entryEvent));
+                            listener_.updated_(std::move(entryEvent));
                             break;
                         case EntryEvent::type::EVICTED:
-                            listener.evicted(std::move(entryEvent));
+                            listener_.evicted_(std::move(entryEvent));
                             break;
                         default:
-                            logger.warning("Received unrecognized event with type: ", static_cast<int>(type),
+                            logger_.warning("Received unrecognized event with type: ", static_cast<int>(type),
                                            " Dropping the event!!!");
                     }
                 }
             private:
-                const std::string& instanceName;
-                spi::impl::ClientClusterServiceImpl &clusterService;
-                serialization::pimpl::SerializationService& serializationService;
-                EntryListener listener;
-                util::ILogger &logger;
+                const std::string& instance_name_;
+                spi::impl::ClientClusterServiceImpl &cluster_service_;
+                serialization::pimpl::SerializationService& serialization_service_;
+                EntryListener listener_;
+                util::ILogger &logger_;
             };
         };
     }

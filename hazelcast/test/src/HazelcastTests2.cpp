@@ -455,15 +455,15 @@ namespace hazelcast {
 
                 class TestObject {
                 public:
-                    TestObject(int objectCount) : objectCount(objectCount) {}
+                    TestObject(int objectCount) : object_count_(objectCount) {}
 
                     friend std::ostream &operator<<(std::ostream &os, const TestObject &object) {
-                        os << "objectCount: " << object.objectCount;
+                        os << "objectCount: " << object.object_count_;
                         return os;
                     }
 
                 private:
-                    int objectCount;
+                    int object_count_;
                 };
 
                 hazelcast::util::ILogger &logger;
@@ -542,12 +542,12 @@ namespace hazelcast {
                     public:
                         ConcurrentQueueTask(hazelcast::util::ConcurrentQueue<int> &q,
                                             boost::latch &startLatch,
-                                            boost::latch &startRemoveLatch, int removalValue) : q(q),
-                                                                                                startLatch(
+                                            boost::latch &startRemoveLatch, int removalValue) : q_(q),
+                                                                                                start_latch_(
                                                                                                         startLatch),
-                                                                                                startRemoveLatch(
+                                                                                                start_remove_latch_(
                                                                                                         startRemoveLatch),
-                                                                                                removalValue(
+                                                                                                removal_value_(
                                                                                                         removalValue) {}
 
                         virtual void run() {
@@ -555,23 +555,23 @@ namespace hazelcast {
 
                             std::vector<int> values((size_t) numItems);
 
-                            startLatch.count_down();
+                            start_latch_.count_down();
 
-                            ASSERT_OPEN_EVENTUALLY(startLatch);
+                            ASSERT_OPEN_EVENTUALLY(start_latch_);
 
                             // insert items
                             for (int i = 0; i < numItems; ++i) {
                                 values[i] = i;
-                                q.offer(&values[i]);
+                                q_.offer(&values[i]);
                             }
 
-                            q.offer(&removalValue);
-                            startRemoveLatch.count_down();
+                            q_.offer(&removal_value_);
+                            start_remove_latch_.count_down();
 
                             // poll items
                             for (int i = 0; i < numItems; ++i) {
                                 values[i] = i;
-                                ASSERT_NE((int *) nullptr, q.poll());
+                                ASSERT_NE((int *) nullptr, q_.poll());
                             }
                         }
 
@@ -580,10 +580,10 @@ namespace hazelcast {
                         }
 
                     private:
-                        hazelcast::util::ConcurrentQueue<int> &q;
-                        boost::latch &startLatch;
-                        boost::latch &startRemoveLatch;
-                        int removalValue;
+                        hazelcast::util::ConcurrentQueue<int> &q_;
+                        boost::latch &start_latch_;
+                        boost::latch &start_remove_latch_;
+                        int removal_value_;
                     };
                 };
 
@@ -1098,36 +1098,36 @@ namespace hazelcast {
                 public:
                     Child() = default;
 
-                    Child(std::string name) : name(name) {}
+                    Child(std::string name) : name_(name) {}
 
                     const std::string &getName() const {
-                        return name;
+                        return name_;
                     }
 
                     friend bool operator==(const Child &lhs, const Child &rhs) {
-                        return lhs.name == rhs.name;
+                        return lhs.name_ == rhs.name_;
                     }
 
                 private:
-                    std::string name;
+                    std::string name_;
                 };
 
                 class Parent {
                 public:
                     friend bool operator==(const Parent &lhs, const Parent &rhs) {
-                        return lhs.child == rhs.child;
+                        return lhs.child_ == rhs.child_;
                     }
 
                     Parent() = default;
 
-                    Parent(Child child) : child(child) {}
+                    Parent(Child child) : child_(child) {}
 
                     const Child &getChild() const {
-                        return child;
+                        return child_;
                     }
 
                 private:
-                    Child child;
+                    Child child_;
                 };
             };
 
@@ -1203,17 +1203,17 @@ namespace hazelcast {
             public:
                 class SimplePartitionAwareObject : public PartitionAware<int> {
                 public:
-                    SimplePartitionAwareObject() : testKey(5) {}
+                    SimplePartitionAwareObject() : test_key_(5) {}
 
                     const int *getPartitionKey() const override {
-                        return &testKey;
+                        return &test_key_;
                     }
 
                     int getTestKey() const {
-                        return testKey;
+                        return test_key_;
                     }
                 private:
-                    int testKey;
+                    int test_key_;
                 };
             };
 

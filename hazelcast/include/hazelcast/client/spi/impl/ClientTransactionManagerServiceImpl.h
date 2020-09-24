@@ -46,7 +46,7 @@ namespace hazelcast {
                     std::shared_ptr<connection::Connection> connect();
 
                 private:
-                    ClientContext &client;
+                    ClientContext &client_;
 
                     std::exception_ptr
                     newOperationTimeoutException(std::exception_ptr cause, std::chrono::steady_clock::duration invocationTimeout,

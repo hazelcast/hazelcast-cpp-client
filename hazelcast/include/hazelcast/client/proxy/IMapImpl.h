@@ -266,7 +266,7 @@ namespace hazelcast {
                 void onInitialize() override;
 
             private:
-                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
+                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lock_reference_id_generator_;
 
                 class MapEntryListenerWithPredicateMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
@@ -278,10 +278,10 @@ namespace hazelcast {
 
                     protocol::ClientMessage encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
                 private:
-                    std::string name;
-                    bool includeValue;
-                    int32_t listenerFlags;
-                    serialization::pimpl::Data predicate;
+                    std::string name_;
+                    bool include_value_;
+                    int32_t listener_flags_;
+                    serialization::pimpl::Data predicate_;
                 };
 
                 class MapEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
@@ -294,9 +294,9 @@ namespace hazelcast {
                     encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
 
                 private:
-                    std::string name;
-                    bool includeValue;
-                    int32_t listenerFlags;
+                    std::string name_;
+                    bool include_value_;
+                    int32_t listener_flags_;
                 };
 
                 class MapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
@@ -309,10 +309,10 @@ namespace hazelcast {
                     protocol::ClientMessage encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
 
                 private:
-                    std::string name;
-                    bool includeValue;
-                    int32_t listenerFlags;
-                    serialization::pimpl::Data key;
+                    std::string name_;
+                    bool include_value_;
+                    int32_t listener_flags_;
+                    serialization::pimpl::Data key_;
                 };
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec>

@@ -54,10 +54,10 @@ namespace hazelcast {
         constexpr std::chrono::milliseconds IMap::UNSET;
 
         namespace impl {
-            ClientLockReferenceIdGenerator::ClientLockReferenceIdGenerator() : referenceIdCounter(0) {}
+            ClientLockReferenceIdGenerator::ClientLockReferenceIdGenerator() : reference_id_counter_(0) {}
 
             int64_t ClientLockReferenceIdGenerator::getNextReferenceId() {
-                return ++referenceIdCounter;
+                return ++reference_id_counter_;
             }
         }
 
@@ -65,7 +65,7 @@ namespace hazelcast {
             MultiMapImpl::MultiMapImpl(const std::string &instanceName, spi::ClientContext *context)
                     : ProxyImpl(MultiMap::SERVICE_NAME, instanceName, context) {
                 // TODO: remove this line once the client instance getDistributedObject works as expected in Java for this proxy type
-                lockReferenceIdGenerator = getContext().getLockReferenceIdGenerator();
+                lock_reference_id_generator_ = getContext().getLockReferenceIdGenerator();
             }
 
             boost::future<bool> MultiMapImpl::put(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
@@ -165,7 +165,7 @@ namespace hazelcast {
             boost::future<void> MultiMapImpl::lock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration leaseTime) {
                 auto request = protocol::codec::multimap_lock_encode(getName(), key, util::getCurrentThreadId(),
                                                                           std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
-                                                                          lockReferenceIdGenerator->getNextReferenceId());
+                                                                          lock_reference_id_generator_->getNextReferenceId());
                 return toVoidFuture(invokeOnPartition(request, getPartitionId(key)));
             }
 
@@ -178,7 +178,7 @@ namespace hazelcast {
                 auto request = protocol::codec::multimap_trylock_encode(getName(), key,
                                                                              util::getCurrentThreadId(), INT64_MAX,
                                                                              0,
-                                                                             lockReferenceIdGenerator->getNextReferenceId());
+                                                                             lock_reference_id_generator_->getNextReferenceId());
                 return invokeAndGetFuture<bool>(request, key);
             }
 
@@ -190,19 +190,19 @@ namespace hazelcast {
                 auto request = protocol::codec::multimap_trylock_encode(getName(), key, util::getCurrentThreadId(),
                         std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
                         std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
-                        lockReferenceIdGenerator->getNextReferenceId());
+                        lock_reference_id_generator_->getNextReferenceId());
                 return invokeAndGetFuture<bool>(request, key);
             }
 
             boost::future<void> MultiMapImpl::unlock(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::multimap_unlock_encode(getName(), key, util::getCurrentThreadId(),
-                                                                            lockReferenceIdGenerator->getNextReferenceId());
+                                                                            lock_reference_id_generator_->getNextReferenceId());
                 return toVoidFuture(invokeOnPartition(request, getPartitionId(key)));
             }
 
             boost::future<void> MultiMapImpl::forceUnlock(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::multimap_forceunlock_encode(getName(), key,
-                                                                                 lockReferenceIdGenerator->getNextReferenceId());
+                                                                                 lock_reference_id_generator_->getNextReferenceId());
                 return toVoidFuture(invokeOnPartition(request, getPartitionId(key)));
             }
 
@@ -220,40 +220,40 @@ namespace hazelcast {
 
             void MultiMapImpl::onInitialize() {
                 ProxyImpl::onInitialize();
-                lockReferenceIdGenerator = getContext().getLockReferenceIdGenerator();
+                lock_reference_id_generator_ = getContext().getLockReferenceIdGenerator();
             }
 
             MultiMapImpl::MultiMapEntryListenerMessageCodec::MultiMapEntryListenerMessageCodec(std::string name,
                                                                                                bool includeValue)
-                    : name(std::move(name)), includeValue(includeValue) {}
+                    : name_(std::move(name)), include_value_(includeValue) {}
 
             protocol::ClientMessage
             MultiMapImpl::MultiMapEntryListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::multimap_addentrylistener_encode(name, includeValue, localOnly);
+                return protocol::codec::multimap_addentrylistener_encode(name_, include_value_, localOnly);
             }
 
             protocol::ClientMessage
             MultiMapImpl::MultiMapEntryListenerMessageCodec::encodeRemoveRequest(
                     boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::multimap_removeentrylistener_encode(name, realRegistrationId);
+                return protocol::codec::multimap_removeentrylistener_encode(name_, realRegistrationId);
             }
 
             protocol::ClientMessage
             MultiMapImpl::MultiMapEntryListenerToKeyCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::multimap_addentrylistenertokey_encode(name, key, includeValue,
+                return protocol::codec::multimap_addentrylistenertokey_encode(name_, key_, include_value_,
                                                                                           localOnly);
             }
 
             protocol::ClientMessage
             MultiMapImpl::MultiMapEntryListenerToKeyCodec::encodeRemoveRequest(
                     boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::multimap_removeentrylistener_encode(name, realRegistrationId);
+                return protocol::codec::multimap_removeentrylistener_encode(name_, realRegistrationId);
             }
 
             MultiMapImpl::MultiMapEntryListenerToKeyCodec::MultiMapEntryListenerToKeyCodec(std::string name,
                                                                                            bool includeValue,
                                                                                            serialization::pimpl::Data &&key)
-                    : name(std::move(name)), includeValue(includeValue), key(key) {}
+                    : name_(std::move(name)), include_value_(includeValue), key_(key) {}
 
 
             ReliableTopicImpl::ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context)
@@ -545,7 +545,7 @@ namespace hazelcast {
                     : ProxyImpl("hz:impl:listService", instanceName, context) {
                 serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(
                         &instanceName);
-                partitionId = getPartitionId(keyData);
+                partition_id_ = getPartitionId(keyData);
             }
 
             boost::future<bool> IListImpl::removeItemListener(boost::uuids::uuid registrationId) {
@@ -554,99 +554,99 @@ namespace hazelcast {
 
             boost::future<int> IListImpl::size() {
                 auto request = protocol::codec::list_size_encode(getName());
-                return invokeAndGetFuture<int>(request, partitionId);
+                return invokeAndGetFuture<int>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::isEmpty() {
                 auto request = protocol::codec::list_isempty_encode(getName());
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::contains(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::list_contains_encode(getName(), element);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<std::vector<serialization::pimpl::Data>> IListImpl::toArrayData() {
                 auto request = protocol::codec::list_getall_encode(getName());
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::add(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::list_add_encode(getName(), element);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::remove(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::list_remove_encode(getName(), element);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::containsAllData(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::list_containsall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::addAllData(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::list_addall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::addAllData(int index, const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::list_addallwithindex_encode(getName(), index,
                                                                                  elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::removeAllData(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::list_compareandremoveall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IListImpl::retainAllData(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::list_compareandretainall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<void> IListImpl::clear() {
                 auto request = protocol::codec::list_clear_encode(getName());
-                return toVoidFuture(invokeOnPartition(request, partitionId));
+                return toVoidFuture(invokeOnPartition(request, partition_id_));
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>> IListImpl::getData(int index) {
                 auto request = protocol::codec::list_get_encode(getName(), index);
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>> IListImpl::setData(int index,
                                                                            const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::list_set_encode(getName(), index, element);
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<void> IListImpl::add(int index, const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::list_addwithindex_encode(getName(), index, element);
-                return toVoidFuture(invokeOnPartition(request, partitionId));
+                return toVoidFuture(invokeOnPartition(request, partition_id_));
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>> IListImpl::removeData(int index) {
                 auto request = protocol::codec::list_removewithindex_encode(getName(), index);
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<int> IListImpl::indexOf(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::list_indexof_encode(getName(), element);
-                return invokeAndGetFuture<int>(request, partitionId);
+                return invokeAndGetFuture<int>(request, partition_id_);
             }
 
             boost::future<int> IListImpl::lastIndexOf(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::list_lastindexof_encode(getName(), element);
-                return invokeAndGetFuture<int>(request, partitionId);
+                return invokeAndGetFuture<int>(request, partition_id_);
             }
 
             boost::future<std::vector<serialization::pimpl::Data>> IListImpl::subListData(int fromIndex, int toIndex) {
                 auto request = protocol::codec::list_sub_encode(getName(), fromIndex, toIndex);
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             std::shared_ptr<spi::impl::ListenerMessageCodec> IListImpl::createItemListenerCodec(bool includeValue) {
@@ -655,85 +655,85 @@ namespace hazelcast {
             }
 
             IListImpl::ListListenerMessageCodec::ListListenerMessageCodec(std::string name,
-                                                                          bool includeValue) : name(std::move(name)),
-                                                                                               includeValue(
+                                                                          bool includeValue) : name_(std::move(name)),
+                                                                                               include_value_(
                                                                                                        includeValue) {}
 
             protocol::ClientMessage
             IListImpl::ListListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::list_addlistener_encode(name, includeValue, localOnly);
+                return protocol::codec::list_addlistener_encode(name_, include_value_, localOnly);
             }
 
             protocol::ClientMessage
             IListImpl::ListListenerMessageCodec::encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::list_removelistener_encode(name, realRegistrationId);
+                return protocol::codec::list_removelistener_encode(name_, realRegistrationId);
             }
 
             FlakeIdGeneratorImpl::Block::Block(IdBatch &&idBatch, std::chrono::steady_clock::duration validity)
-                    : idBatch(idBatch), invalidSince(std::chrono::steady_clock::now() + validity), numReturned(0) {}
+                    : id_batch_(idBatch), invalid_since_(std::chrono::steady_clock::now() + validity), num_returned_(0) {}
 
             int64_t FlakeIdGeneratorImpl::Block::next() {
-                if (invalidSince <= std::chrono::steady_clock::now()) {
+                if (invalid_since_ <= std::chrono::steady_clock::now()) {
                     return INT64_MIN;
                 }
                 int32_t index;
                 do {
-                    index = numReturned;
-                    if (index == idBatch.getBatchSize()) {
+                    index = num_returned_;
+                    if (index == id_batch_.getBatchSize()) {
                         return INT64_MIN;
                     }
-                } while (!numReturned.compare_exchange_strong(index, index + 1));
+                } while (!num_returned_.compare_exchange_strong(index, index + 1));
 
-                return idBatch.getBase() + index * idBatch.getIncrement();
+                return id_batch_.getBase() + index * id_batch_.getIncrement();
             }
 
             FlakeIdGeneratorImpl::IdBatch::IdIterator FlakeIdGeneratorImpl::IdBatch::endOfBatch;
 
             const int64_t FlakeIdGeneratorImpl::IdBatch::getBase() const {
-                return base;
+                return base_;
             }
 
             const int64_t FlakeIdGeneratorImpl::IdBatch::getIncrement() const {
-                return increment;
+                return increment_;
             }
 
             const int32_t FlakeIdGeneratorImpl::IdBatch::getBatchSize() const {
-                return batchSize;
+                return batch_size_;
             }
 
             FlakeIdGeneratorImpl::IdBatch::IdBatch(int64_t base, int64_t increment, int32_t batchSize)
-                    : base(base), increment(increment), batchSize(batchSize) {}
+                    : base_(base), increment_(increment), batch_size_(batchSize) {}
 
             FlakeIdGeneratorImpl::IdBatch::IdIterator &FlakeIdGeneratorImpl::IdBatch::end() {
                 return endOfBatch;
             }
 
             FlakeIdGeneratorImpl::IdBatch::IdIterator FlakeIdGeneratorImpl::IdBatch::iterator() {
-                return FlakeIdGeneratorImpl::IdBatch::IdIterator(base, increment, batchSize);
+                return FlakeIdGeneratorImpl::IdBatch::IdIterator(base_, increment_, batch_size_);
             }
 
-            FlakeIdGeneratorImpl::IdBatch::IdIterator::IdIterator(int64_t base2, const int64_t increment, int32_t remaining) : base2(
-                    base2), increment(increment), remaining(remaining) {}
+            FlakeIdGeneratorImpl::IdBatch::IdIterator::IdIterator(int64_t base2, const int64_t increment, int32_t remaining) : base2_(
+                    base2), increment_(increment), remaining_(remaining) {}
 
             bool FlakeIdGeneratorImpl::IdBatch::IdIterator::operator==(const FlakeIdGeneratorImpl::IdBatch::IdIterator &rhs) const {
-                return base2 == rhs.base2 && increment == rhs.increment && remaining == rhs.remaining;
+                return base2_ == rhs.base2_ && increment_ == rhs.increment_ && remaining_ == rhs.remaining_;
             }
 
             bool FlakeIdGeneratorImpl::IdBatch::IdIterator::operator!=(const FlakeIdGeneratorImpl::IdBatch::IdIterator &rhs) const {
                 return !(rhs == *this);
             }
 
-            FlakeIdGeneratorImpl::IdBatch::IdIterator::IdIterator() : base2(-1), increment(-1), remaining(-1) {
+            FlakeIdGeneratorImpl::IdBatch::IdIterator::IdIterator() : base2_(-1), increment_(-1), remaining_(-1) {
             }
 
             FlakeIdGeneratorImpl::IdBatch::IdIterator &FlakeIdGeneratorImpl::IdBatch::IdIterator::operator++() {
-                if (remaining == 0) {
+                if (remaining_ == 0) {
                     return FlakeIdGeneratorImpl::IdBatch::end();
                 }
 
-                --remaining;
+                --remaining_;
 
-                base2 += increment;
+                base2_ += increment_;
 
                 return *this;
             }
@@ -741,14 +741,14 @@ namespace hazelcast {
 
             FlakeIdGeneratorImpl::FlakeIdGeneratorImpl(const std::string &serviceName, const std::string &objectName,
                                                        spi::ClientContext *context)
-                    : ProxyImpl(serviceName, objectName, context), block(nullptr) {
+                    : ProxyImpl(serviceName, objectName, context), block_(nullptr) {
                 auto config = context->getClientConfig().findFlakeIdGeneratorConfig(objectName);
-                batchSize = config->getPrefetchCount();
-                validity = config->getPrefetchValidityDuration();
+                batch_size_ = config->getPrefetchCount();
+                validity_ = config->getPrefetchValidityDuration();
             }
 
             int64_t FlakeIdGeneratorImpl::newIdInternal() {
-                auto b = block.load();
+                auto b = block_.load();
                 if (b) {
                     int64_t res = b->next();
                     if (res != INT64_MIN) {
@@ -763,12 +763,12 @@ namespace hazelcast {
                 try {
                     return boost::make_ready_future(newIdInternal());
                 } catch (std::overflow_error &) {
-                    return newIdBatch(batchSize).then(boost::launch::deferred,
+                    return newIdBatch(batch_size_).then(boost::launch::deferred,
                                                       [=](boost::future<FlakeIdGeneratorImpl::IdBatch> f) {
-                                                          auto newBlock = boost::make_shared<Block>(f.get(), validity);
+                                                          auto newBlock = boost::make_shared<Block>(f.get(), validity_);
                                                           auto value = newBlock->next();
-                                                          auto b = block.load();
-                                                          block.compare_exchange_strong(b, newBlock);
+                                                          auto b = block_.load();
+                                                          block_.compare_exchange_strong(b, newBlock);
                                                           return value;
                                                       });
                 }
@@ -792,7 +792,7 @@ namespace hazelcast {
                     : ProxyImpl("hz:impl:queueService", instanceName, context) {
                 serialization::pimpl::Data data = getContext().getSerializationService().toData<std::string>(
                         &instanceName);
-                partitionId = getPartitionId(data);
+                partition_id_ = getPartitionId(data);
             }
 
             boost::future<bool> IQueueImpl::removeItemListener(
@@ -803,88 +803,88 @@ namespace hazelcast {
             boost::future<bool> IQueueImpl::offer(const serialization::pimpl::Data &element, std::chrono::steady_clock::duration timeout) {
                 auto request = protocol::codec::queue_offer_encode(getName(), element,
                                                                         std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<void> IQueueImpl::put(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::queue_put_encode(getName(), element);
-                return toVoidFuture(invokeOnPartition(request, partitionId));
+                return toVoidFuture(invokeOnPartition(request, partition_id_));
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>> IQueueImpl::pollData(std::chrono::steady_clock::duration timeout) {
                 auto request = protocol::codec::queue_poll_encode(getName(), std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<int> IQueueImpl::remainingCapacity() {
                 auto request = protocol::codec::queue_remainingcapacity_encode(getName());
-                return invokeAndGetFuture<int>(request, partitionId);
+                return invokeAndGetFuture<int>(request, partition_id_);
             }
 
             boost::future<bool> IQueueImpl::remove(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::queue_remove_encode(getName(), element);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IQueueImpl::contains(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::queue_contains_encode(getName(), element);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<std::vector<serialization::pimpl::Data>> IQueueImpl::drainToData(size_t maxElements) {
                 auto request = protocol::codec::queue_draintomaxsize_encode(getName(), (int32_t) maxElements);
 
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<std::vector<serialization::pimpl::Data>> IQueueImpl::drainToData() {
                 auto request = protocol::codec::queue_drainto_encode(getName());
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>> IQueueImpl::peekData() {
                 auto request = protocol::codec::queue_peek_encode(getName());
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<int> IQueueImpl::size() {
                 auto request = protocol::codec::queue_size_encode(getName());
-                return invokeAndGetFuture<int>(request, partitionId);
+                return invokeAndGetFuture<int>(request, partition_id_);
             }
 
             boost::future<bool> IQueueImpl::isEmpty() {
                 auto request = protocol::codec::queue_isempty_encode(getName());
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<std::vector<serialization::pimpl::Data>> IQueueImpl::toArrayData() {
                 auto request = protocol::codec::queue_iterator_encode(getName());
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<bool> IQueueImpl::containsAllData(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::queue_containsall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IQueueImpl::addAllData(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::queue_addall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IQueueImpl::removeAllData(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::queue_compareandremoveall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> IQueueImpl::retainAllData(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::queue_compareandretainall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<void> IQueueImpl::clear() {
                 auto request = protocol::codec::queue_clear_encode(getName());
-                return toVoidFuture(invokeOnPartition(request, partitionId));
+                return toVoidFuture(invokeOnPartition(request, partition_id_));
             }
 
             std::shared_ptr<spi::impl::ListenerMessageCodec>
@@ -894,18 +894,18 @@ namespace hazelcast {
             }
 
             IQueueImpl::QueueListenerMessageCodec::QueueListenerMessageCodec(std::string name,
-                                                                             bool includeValue) : name(std::move(name)),
-                                                                                                  includeValue(
+                                                                             bool includeValue) : name_(std::move(name)),
+                                                                                                  include_value_(
                                                                                                           includeValue) {}
 
             protocol::ClientMessage
             IQueueImpl::QueueListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::queue_addlistener_encode(name, includeValue, localOnly);
+                return protocol::codec::queue_addlistener_encode(name_, include_value_, localOnly);
             }
 
             protocol::ClientMessage
             IQueueImpl::QueueListenerMessageCodec::encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::queue_removelistener_encode(name, realRegistrationId);
+                return protocol::codec::queue_removelistener_encode(name_, realRegistrationId);
             }
 
             ProxyImpl::ProxyImpl(const std::string &serviceName, const std::string &objectName,
@@ -1129,7 +1129,7 @@ namespace hazelcast {
             boost::future<protocol::ClientMessage> IMapImpl::lock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration leaseTime) {
                 auto request = protocol::codec::map_lock_encode(getName(), key, util::getCurrentThreadId(),
                                                                      std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
-                                                                     lockReferenceIdGenerator->getNextReferenceId());
+                                                                     lock_reference_id_generator_->getNextReferenceId());
                 return invokeOnPartition(request, getPartitionId(key));
             }
 
@@ -1149,19 +1149,19 @@ namespace hazelcast {
                 auto request = protocol::codec::map_trylock_encode(getName(), key, util::getCurrentThreadId(),
                         std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
                         std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
-                        lockReferenceIdGenerator->getNextReferenceId());
+                        lock_reference_id_generator_->getNextReferenceId());
                 return invokeAndGetFuture<bool>(request, key);
             }
 
             boost::future<protocol::ClientMessage> IMapImpl::unlock(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::map_unlock_encode(getName(), key, util::getCurrentThreadId(),
-                                                                       lockReferenceIdGenerator->getNextReferenceId());
+                                                                       lock_reference_id_generator_->getNextReferenceId());
                 return invokeOnPartition(request, getPartitionId(key));
             }
 
             boost::future<protocol::ClientMessage> IMapImpl::forceUnlock(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::map_forceunlock_encode(getName(), key,
-                                                                            lockReferenceIdGenerator->getNextReferenceId());
+                                                                            lock_reference_id_generator_->getNextReferenceId());
                 return invokeOnPartition(request, getPartitionId(key));
             }
 
@@ -1365,61 +1365,61 @@ namespace hazelcast {
 
             void IMapImpl::onInitialize() {
                 ProxyImpl::onInitialize();
-                lockReferenceIdGenerator = getContext().getLockReferenceIdGenerator();
+                lock_reference_id_generator_ = getContext().getLockReferenceIdGenerator();
             }
 
             IMapImpl::MapEntryListenerMessageCodec::MapEntryListenerMessageCodec(std::string name,
                                                                                  bool includeValue,
-                                                                                 int32_t listenerFlags) : name(std::move(name)),
-                                                                                                          includeValue(
+                                                                                 int32_t listenerFlags) : name_(std::move(name)),
+                                                                                                          include_value_(
                                                                                                                   includeValue),
-                                                                                                          listenerFlags(
+                                                                                                          listener_flags_(
                                                                                                                   listenerFlags) {}
 
             protocol::ClientMessage
             IMapImpl::MapEntryListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::map_addentrylistener_encode(name, includeValue,
-                                                                                static_cast<int32_t>(listenerFlags),
+                return protocol::codec::map_addentrylistener_encode(name_, include_value_,
+                                                                                static_cast<int32_t>(listener_flags_),
                                                                                 localOnly);
             }
 
             protocol::ClientMessage
             IMapImpl::MapEntryListenerMessageCodec::encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::map_removeentrylistener_encode(name, realRegistrationId);
+                return protocol::codec::map_removeentrylistener_encode(name_, realRegistrationId);
             }
 
             protocol::ClientMessage
             IMapImpl::MapEntryListenerToKeyCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::map_addentrylistenertokey_encode(name, key, includeValue,
-                                                                                     static_cast<int32_t>(listenerFlags), localOnly);
+                return protocol::codec::map_addentrylistenertokey_encode(name_, key_, include_value_,
+                                                                                     static_cast<int32_t>(listener_flags_), localOnly);
             }
 
             protocol::ClientMessage
             IMapImpl::MapEntryListenerToKeyCodec::encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::map_removeentrylistener_encode(name, realRegistrationId);
+                return protocol::codec::map_removeentrylistener_encode(name_, realRegistrationId);
             }
 
             IMapImpl::MapEntryListenerToKeyCodec::MapEntryListenerToKeyCodec(std::string name, bool includeValue,
                                                                              int32_t listenerFlags,
                                                                              serialization::pimpl::Data key)
-                    : name(std::move(name)), includeValue(includeValue), listenerFlags(listenerFlags), key(std::move(key)) {}
+                    : name_(std::move(name)), include_value_(includeValue), listener_flags_(listenerFlags), key_(std::move(key)) {}
 
             IMapImpl::MapEntryListenerWithPredicateMessageCodec::MapEntryListenerWithPredicateMessageCodec(
                     std::string name, bool includeValue, int32_t listenerFlags,
-                    serialization::pimpl::Data &&predicate) : name(std::move(name)), includeValue(includeValue),
-                                                             listenerFlags(listenerFlags), predicate(predicate) {}
+                    serialization::pimpl::Data &&predicate) : name_(std::move(name)), include_value_(includeValue),
+                                                             listener_flags_(listenerFlags), predicate_(predicate) {}
 
             protocol::ClientMessage
             IMapImpl::MapEntryListenerWithPredicateMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::map_addentrylistenerwithpredicate_encode(name, predicate,
-                                                                                             includeValue,
-                                                                                             static_cast<int32_t>(listenerFlags), localOnly);
+                return protocol::codec::map_addentrylistenerwithpredicate_encode(name_, predicate_,
+                                                                                             include_value_,
+                                                                                             static_cast<int32_t>(listener_flags_), localOnly);
             }
 
             protocol::ClientMessage
             IMapImpl::MapEntryListenerWithPredicateMessageCodec::encodeRemoveRequest(
                     boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::map_removeentrylistener_encode(name, realRegistrationId);
+                return protocol::codec::map_removeentrylistener_encode(name_, realRegistrationId);
             }
 
             TransactionalQueueImpl::TransactionalQueueImpl(const std::string &name,
@@ -1451,7 +1451,7 @@ namespace hazelcast {
                     : ProxyImpl(ISet::SERVICE_NAME, instanceName, clientContext) {
                 serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(
                         &instanceName);
-                partitionId = getPartitionId(keyData);
+                partition_id_ = getPartitionId(keyData);
             }
 
             boost::future<bool> ISetImpl::removeItemListener(boost::uuids::uuid registrationId) {
@@ -1460,57 +1460,57 @@ namespace hazelcast {
 
             boost::future<int> ISetImpl::size() {
                 auto request = protocol::codec::set_size_encode(getName());
-                return invokeAndGetFuture<int>(request, partitionId);
+                return invokeAndGetFuture<int>(request, partition_id_);
             }
 
             boost::future<bool> ISetImpl::isEmpty() {
                 auto request = protocol::codec::set_isempty_encode(getName());
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> ISetImpl::contains(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::set_contains_encode(getName(), element);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<std::vector<serialization::pimpl::Data>> ISetImpl::toArrayData() {
                 auto request = protocol::codec::set_getall_encode(getName());
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partitionId);
+                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(request, partition_id_);
             }
 
             boost::future<bool> ISetImpl::add(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::set_add_encode(getName(), element);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> ISetImpl::remove(const serialization::pimpl::Data &element) {
                 auto request = protocol::codec::set_remove_encode(getName(), element);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> ISetImpl::containsAll(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::set_containsall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> ISetImpl::addAll(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::set_addall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> ISetImpl::removeAll(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::set_compareandremoveall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<bool> ISetImpl::retainAll(const std::vector<serialization::pimpl::Data> &elements) {
                 auto request = protocol::codec::set_compareandretainall_encode(getName(), elements);
-                return invokeAndGetFuture<bool>(request, partitionId);
+                return invokeAndGetFuture<bool>(request, partition_id_);
             }
 
             boost::future<void> ISetImpl::clear() {
                 auto request = protocol::codec::set_clear_encode(getName());
-                return toVoidFuture(invokeOnPartition(request, partitionId));
+                return toVoidFuture(invokeOnPartition(request, partition_id_));
             }
 
             std::shared_ptr<spi::impl::ListenerMessageCodec>
@@ -1520,25 +1520,25 @@ namespace hazelcast {
             }
 
             ISetImpl::SetListenerMessageCodec::SetListenerMessageCodec(std::string name, bool includeValue)
-                    : name(std::move(name)), includeValue(includeValue) {}
+                    : name_(std::move(name)), include_value_(includeValue) {}
 
             protocol::ClientMessage
             ISetImpl::SetListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::set_addlistener_encode(name, includeValue, localOnly);
+                return protocol::codec::set_addlistener_encode(name_, include_value_, localOnly);
             }
 
             protocol::ClientMessage
             ISetImpl::SetListenerMessageCodec::encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::set_removelistener_encode(name, realRegistrationId);
+                return protocol::codec::set_removelistener_encode(name_, realRegistrationId);
             }
 
             ITopicImpl::ITopicImpl(const std::string &instanceName, spi::ClientContext *context)
                     : proxy::ProxyImpl("hz:impl:topicService", instanceName, context),
-                    partitionId(getPartitionId(toData(instanceName))) {}
+                    partition_id_(getPartitionId(toData(instanceName))) {}
 
             boost::future<void> ITopicImpl::publish(const serialization::pimpl::Data &data) {
                 auto request = protocol::codec::topic_publish_encode(getName(), data);
-                return toVoidFuture(invokeOnPartition(request, partitionId));
+                return toVoidFuture(invokeOnPartition(request, partition_id_));
             }
 
             boost::future<boost::uuids::uuid> ITopicImpl::addMessageListener(std::shared_ptr<impl::BaseEventHandler> topicEventHandler) {
@@ -1553,84 +1553,84 @@ namespace hazelcast {
                 return std::shared_ptr<spi::impl::ListenerMessageCodec>(new TopicListenerMessageCodec(getName()));
             }
 
-            ITopicImpl::TopicListenerMessageCodec::TopicListenerMessageCodec(std::string name) : name(std::move(name)) {}
+            ITopicImpl::TopicListenerMessageCodec::TopicListenerMessageCodec(std::string name) : name_(std::move(name)) {}
 
             protocol::ClientMessage
             ITopicImpl::TopicListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::topic_addmessagelistener_encode(name, localOnly);
+                return protocol::codec::topic_addmessagelistener_encode(name_, localOnly);
             }
 
             protocol::ClientMessage
             ITopicImpl::TopicListenerMessageCodec::encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const {
-                return protocol::codec::topic_removemessagelistener_encode(name, realRegistrationId);
+                return protocol::codec::topic_removemessagelistener_encode(name_, realRegistrationId);
             }
 
             ReplicatedMapImpl::ReplicatedMapImpl(const std::string &serviceName, const std::string &objectName,
                                                  spi::ClientContext *context) : ProxyImpl(serviceName, objectName,
                                                                                           context),
-                                                                                targetPartitionId(-1) {}
+                                                                                target_partition_id_(-1) {}
 
             constexpr int32_t RingbufferImpl::MAX_BATCH_SIZE;
         }
 
         namespace map {
             const serialization::pimpl::Data &DataEntryView::getKey() const {
-                return key;
+                return key_;
             }
 
             const serialization::pimpl::Data &DataEntryView::getValue() const {
-                return value;
+                return value_;
             }
 
             int64_t DataEntryView::getCost() const {
-                return cost;
+                return cost_;
             }
 
             int64_t DataEntryView::getCreationTime() const {
-                return creationTime;
+                return creation_time_;
             }
 
             int64_t DataEntryView::getExpirationTime() const {
-                return expirationTime;
+                return expiration_time_;
             }
 
             int64_t DataEntryView::getHits() const {
-                return hits;
+                return hits_;
             }
 
             int64_t DataEntryView::getLastAccessTime() const {
-                return lastAccessTime;
+                return last_access_time_;
             }
 
             int64_t DataEntryView::getLastStoredTime() const {
-                return lastStoredTime;
+                return last_stored_time_;
             }
 
             int64_t DataEntryView::getLastUpdateTime() const {
-                return lastUpdateTime;
+                return last_update_time_;
             }
 
             int64_t DataEntryView::getVersion() const {
-                return version;
+                return version_;
             }
 
             int64_t DataEntryView::getTtl() const {
-                return ttl;
+                return ttl_;
             }
 
             int64_t DataEntryView::getMaxIdle() const {
-                return maxIdle;
+                return max_idle_;
             }
 
             DataEntryView::DataEntryView(Data &&key, Data &&value, int64_t cost, int64_t creationTime,
                                          int64_t expirationTime, int64_t hits, int64_t lastAccessTime,
                                          int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version, int64_t ttl,
-                                         int64_t maxIdle) : key(key), value(value), cost(cost),
-                                                            creationTime(creationTime), expirationTime(expirationTime),
-                                                            hits(hits), lastAccessTime(lastAccessTime),
-                                                            lastStoredTime(lastStoredTime),
-                                                            lastUpdateTime(lastUpdateTime), version(version), ttl(ttl),
-                                                            maxIdle(maxIdle) {}
+                                         int64_t maxIdle) : key_(key), value_(value), cost_(cost),
+                                                            creation_time_(creationTime), expiration_time_(expirationTime),
+                                                            hits_(hits), last_access_time_(lastAccessTime),
+                                                            last_stored_time_(lastStoredTime),
+                                                            last_update_time_(lastUpdateTime), version_(version), ttl_(ttl),
+                                                            max_idle_(maxIdle) {}
         }
 
         namespace topic {
@@ -1638,8 +1638,8 @@ namespace hazelcast {
                 namespace reliable {
                     ReliableTopicExecutor::ReliableTopicExecutor(std::shared_ptr<Ringbuffer> rb,
                                                                  util::ILogger &logger)
-                            : ringbuffer(std::move(rb)), q(10), shutdown(false) {
-                        runnerThread = std::thread([&]() { Task(ringbuffer, q, shutdown).run(); });
+                            : ringbuffer_(std::move(rb)), q_(10), shutdown_(false) {
+                        runner_thread_ = std::thread([&]() { Task(ringbuffer_, q_, shutdown_).run(); });
                     }
 
                     ReliableTopicExecutor::~ReliableTopicExecutor() {
@@ -1650,7 +1650,7 @@ namespace hazelcast {
 
                     bool ReliableTopicExecutor::stop() {
                         bool expected = false;
-                        if (!shutdown.compare_exchange_strong(expected, true)) {
+                        if (!shutdown_.compare_exchange_strong(expected, true)) {
                             return false;
                         }
 
@@ -1659,24 +1659,24 @@ namespace hazelcast {
                         m.callback = nullptr;
                         m.sequence = -1;
                         execute(m);
-                        runnerThread.join();
+                        runner_thread_.join();
                         return true;
                     }
 
                     void ReliableTopicExecutor::execute(Message m) {
-                        q.push(m);
+                        q_.push(m);
                     }
 
                     void ReliableTopicExecutor::Task::run() {
-                        while (!shutdown) {
-                            Message m = q.pop();
+                        while (!shutdown_) {
+                            Message m = q_.pop();
                             if (CANCEL == m.type) {
                                 // exit the thread
                                 return;
                             }
                             try {
-                                auto f = rb->readMany(m.sequence, 1, m.maxCount);
-                                while (!shutdown && f.wait_for(boost::chrono::seconds(1)) != boost::future_status::ready) {}
+                                auto f = rb_->readMany(m.sequence, 1, m.maxCount);
+                                while (!shutdown_ && f.wait_for(boost::chrono::seconds(1)) != boost::future_status::ready) {}
                                 if (f.is_ready()) {
                                     m.callback->onResponse(boost::make_optional<ringbuffer::ReadResultSet>(f.get()));
                                 }
@@ -1692,30 +1692,30 @@ namespace hazelcast {
 
                     ReliableTopicExecutor::Task::Task(std::shared_ptr<Ringbuffer> rb,
                                                       util::BlockingConcurrentQueue<ReliableTopicExecutor::Message> &q,
-                                                      std::atomic<bool> &shutdown) : rb(std::move(rb)), q(q),
-                                                                                       shutdown(shutdown) {}
+                                                      std::atomic<bool> &shutdown) : rb_(std::move(rb)), q_(q),
+                                                                                       shutdown_(shutdown) {}
 
-                    ReliableTopicMessage::ReliableTopicMessage() : publishTime(std::chrono::system_clock::now()) {}
+                    ReliableTopicMessage::ReliableTopicMessage() : publish_time_(std::chrono::system_clock::now()) {}
 
                     ReliableTopicMessage::ReliableTopicMessage(
                             hazelcast::client::serialization::pimpl::Data &&payloadData,
                             std::unique_ptr<Address> address)
-                            : publishTime(std::chrono::system_clock::now()), payload(payloadData) {
+                            : publish_time_(std::chrono::system_clock::now()), payload_(payloadData) {
                         if (address) {
-                            publisherAddress = boost::make_optional(*address);
+                            publisher_address_ = boost::make_optional(*address);
                         }
                     }
 
                     std::chrono::system_clock::time_point ReliableTopicMessage::getPublishTime() const {
-                        return publishTime;
+                        return publish_time_;
                     }
 
                     const boost::optional<Address> &ReliableTopicMessage::getPublisherAddress() const {
-                        return publisherAddress;
+                        return publisher_address_;
                     }
 
                     serialization::pimpl::Data &ReliableTopicMessage::getPayload() {
-                        return payload;
+                        return payload_;
                     }
                 }
             }
@@ -1732,18 +1732,18 @@ namespace hazelcast {
 
             void hz_serializer<topic::impl::reliable::ReliableTopicMessage>::writeData(
                     const topic::impl::reliable::ReliableTopicMessage &object, ObjectDataOutput &out) {
-                out.write<int64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(object.publishTime.time_since_epoch()).count());
-                out.writeObject(object.publisherAddress);
-                out.write(object.payload.toByteArray());
+                out.write<int64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(object.publish_time_.time_since_epoch()).count());
+                out.writeObject(object.publisher_address_);
+                out.write(object.payload_.toByteArray());
             }
 
             topic::impl::reliable::ReliableTopicMessage
             hz_serializer<topic::impl::reliable::ReliableTopicMessage>::readData(ObjectDataInput &in) {
                 topic::impl::reliable::ReliableTopicMessage message;
                 auto now = std::chrono::system_clock::now();
-                message.publishTime = now + std::chrono::milliseconds(in.read<int64_t>()) - now.time_since_epoch();
-                message.publisherAddress = in.readObject<Address>();
-                message.payload = serialization::pimpl::Data(in.read<std::vector<byte>>().value());
+                message.publish_time_ = now + std::chrono::milliseconds(in.read<int64_t>()) - now.time_since_epoch();
+                message.publisher_address_ = in.readObject<Address>();
+                message.payload_ = serialization::pimpl::Data(in.read<std::vector<byte>>().value());
                 return message;
             }
         }
@@ -1790,43 +1790,43 @@ namespace hazelcast {
 
         MapEvent::MapEvent(Member &&member, EntryEvent::type eventType, const std::string &name,
                            int numberOfEntriesAffected)
-                : member(member), eventType(eventType), name(name), numberOfEntriesAffected(numberOfEntriesAffected) {}
+                : member_(member), event_type_(eventType), name_(name), number_of_entries_affected_(numberOfEntriesAffected) {}
 
         const Member &MapEvent::getMember() const {
-            return member;
+            return member_;
         }
 
         EntryEvent::type MapEvent::getEventType() const {
-            return eventType;
+            return event_type_;
         }
 
         const std::string &MapEvent::getName() const {
-            return name;
+            return name_;
         }
 
         int MapEvent::getNumberOfEntriesAffected() const {
-            return numberOfEntriesAffected;
+            return number_of_entries_affected_;
         }
 
         std::ostream &operator<<(std::ostream &os, const MapEvent &event) {
-            os << "MapEvent{member: " << event.member << " eventType: " << static_cast<int>(event.eventType) << " name: " << event.name
-               << " numberOfEntriesAffected: " << event.numberOfEntriesAffected;
+            os << "MapEvent{member: " << event.member_ << " eventType: " << static_cast<int>(event.event_type_) << " name: " << event.name_
+               << " numberOfEntriesAffected: " << event.number_of_entries_affected_;
             return os;
         }
 
         ItemEventBase::ItemEventBase(const std::string &name, const Member &member, const ItemEventType &eventType)
-                : name(name), member(member), eventType(eventType) {}
+                : name_(name), member_(member), event_type_(eventType) {}
 
         const Member &ItemEventBase::getMember() const {
-            return member;
+            return member_;
         }
 
         ItemEventType ItemEventBase::getEventType() const {
-            return eventType;
+            return event_type_;
         }
 
         const std::string &ItemEventBase::getName() const {
-            return name;
+            return name_;
         }
 
         ItemEventBase::~ItemEventBase() = default;

@@ -74,71 +74,71 @@ namespace hazelcast {
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
                                                                      const std::shared_ptr<AddressTranslator> &addressTranslator,
                                                                      const std::vector<std::shared_ptr<AddressProvider> > &addressProviders)
-                    : alive(false), logger(client.getLogger()), connectionTimeoutMillis(std::chrono::milliseconds::max()),
-                      client(client),
-                      socketInterceptor(client.getClientConfig().getSocketInterceptor()),
-                      executionService(client.getClientExecutionService()),
-                      translator(addressTranslator), current_credentials_(nullptr), connectionIdGen(0),
-                      heartbeat(client, *this), partition_count_(-1),
+                    : alive_(false), logger_(client.getLogger()), connection_timeout_millis_(std::chrono::milliseconds::max()),
+                      client_(client),
+                      socket_interceptor_(client.getClientConfig().getSocketInterceptor()),
+                      execution_service_(client.getClientExecutionService()),
+                      translator_(addressTranslator), current_credentials_(nullptr), connection_id_gen_(0),
+                      heartbeat_(client, *this), partition_count_(-1),
                       async_start_(client.getClientConfig().getConnectionStrategyConfig().isAsyncStart()),
                       reconnect_mode_(client.getClientConfig().getConnectionStrategyConfig().getReconnectMode()),
                       smart_routing_enabled_(client.getClientConfig().getNetworkConfig().isSmartRouting()),
                       connect_to_cluster_task_submitted_(false),
                       client_uuid_(client.random_uuid()),
-                      authentication_timeout_(heartbeat.getHeartbeatTimeout().count()),
+                      authentication_timeout_(heartbeat_.getHeartbeatTimeout().count()),
                       cluster_id_(boost::uuids::nil_uuid()),
                       load_balancer_(client.getClientConfig().getLoadBalancer()) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
                 int64_t connTimeout = networkConfig.getConnectionTimeout();
                 if (connTimeout > 0) {
-                    connectionTimeoutMillis = std::chrono::milliseconds(connTimeout);
+                    connection_timeout_millis_ = std::chrono::milliseconds(connTimeout);
                 }
 
                 ClientProperties &clientProperties = client.getClientProperties();
-                shuffleMemberList = clientProperties.getBoolean(clientProperties.getShuffleMemberList());
+                shuffle_member_list_ = clientProperties.getBoolean(clientProperties.getShuffleMemberList());
 
-                ClientConnectionManagerImpl::addressProviders = addressProviders;
+                ClientConnectionManagerImpl::address_providers_ = addressProviders;
 
-                connectionAttemptPeriod = networkConfig.getConnectionAttemptPeriod();
+                connection_attempt_period_ = networkConfig.getConnectionAttemptPeriod();
 
                 int connAttemptLimit = networkConfig.getConnectionAttemptLimit();
                 bool isAsync = client.getClientConfig().getConnectionStrategyConfig().isAsyncStart();
 
                 if (connAttemptLimit < 0) {
-                    this->connectionAttemptLimit = isAsync ? DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC
+                    this->connection_attempt_limit_ = isAsync ? DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC
                                                            : DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
                 } else {
-                    this->connectionAttemptLimit = connAttemptLimit == 0 ? INT32_MAX : connAttemptLimit;
+                    this->connection_attempt_limit_ = connAttemptLimit == 0 ? INT32_MAX : connAttemptLimit;
                 }
 
-                ioThreadCount = clientProperties.getInteger(clientProperties.getIOThreadCount());
+                io_thread_count_ = clientProperties.getInteger(clientProperties.getIOThreadCount());
             }
 
             bool ClientConnectionManagerImpl::start() {
                 bool expected = false;
-                if (!alive.compare_exchange_strong(expected, true)) {
+                if (!alive_.compare_exchange_strong(expected, true)) {
                     return false;
                 }
 
-                ioContext.reset(new boost::asio::io_context);
-                ioResolver.reset(new boost::asio::ip::tcp::resolver(ioContext->get_executor()));
-                socketFactory.reset(new internal::socket::SocketFactory(client, *ioContext, *ioResolver));
-                ioGuard.reset(new boost::asio::io_context::work(*ioContext));
+                io_context_.reset(new boost::asio::io_context);
+                io_resolver_.reset(new boost::asio::ip::tcp::resolver(io_context_->get_executor()));
+                socket_factory_.reset(new internal::socket::SocketFactory(client_, *io_context_, *io_resolver_));
+                io_guard_.reset(new boost::asio::io_context::work(*io_context_));
 
-                if (!socketFactory->start()) {
+                if (!socket_factory_->start()) {
                     return false;
                 }
 
-                socketInterceptor = client.getClientConfig().getSocketInterceptor();
+                socket_interceptor_ = client_.getClientConfig().getSocketInterceptor();
 
-                for (int j = 0; j < ioThreadCount; ++j) {
-                    ioThreads.emplace_back([=]() { ioContext->run(); });
+                for (int j = 0; j < io_thread_count_; ++j) {
+                    io_threads_.emplace_back([=]() { io_context_->run(); });
                 }
 
                 executor_.reset(new hazelcast::util::hz_thread_pool(EXECUTOR_CORE_POOL_SIZE));
                 connect_to_members_timer_ = boost::asio::steady_timer(executor_->get_executor());
 
-                heartbeat.start();
+                heartbeat_.start();
 
                 connectToCluster();
                 if (smart_routing_enabled_) {
@@ -156,7 +156,7 @@ namespace hazelcast {
                     }
                     connect_to_all_members();
 
-                    if (!client.getLifecycleService().isRunning()) {
+                    if (!client_.getLifecycleService().isRunning()) {
                         return;
                     }
 
@@ -166,7 +166,7 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::shutdown() {
                 bool expected = true;
-                if (!alive.compare_exchange_strong(expected, false)) {
+                if (!alive_.compare_exchange_strong(expected, false)) {
                     return;
                 }
 
@@ -174,23 +174,23 @@ namespace hazelcast {
                     connect_to_members_timer_->cancel();
                 }
 
-                heartbeat.shutdown();
+                heartbeat_.shutdown();
 
                 // close connections
-                for (auto &connection : activeConnections.values()) {
+                for (auto &connection : active_connections_.values()) {
                     // prevent any exceptions
                     util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
                 }
 
                 spi::impl::ClientExecutionServiceImpl::shutdownThreadPool(executor_.get());
 
-                ioGuard.reset();
-                ioContext->stop();
-                boost::asio::use_service<boost::asio::detail::resolver_service<boost::asio::ip::tcp>>(*ioContext).shutdown();
-                std::for_each(ioThreads.begin(), ioThreads.end(), [](std::thread &t) { t.join(); });
+                io_guard_.reset();
+                io_context_->stop();
+                boost::asio::use_service<boost::asio::detail::resolver_service<boost::asio::ip::tcp>>(*io_context_).shutdown();
+                std::for_each(io_threads_.begin(), io_threads_.end(), [](std::thread &t) { t.join(); });
 
-                connectionListeners.clear();
-                activeConnections.clear();
+                connection_listeners_.clear();
+                active_connections_.clear();
             }
 
             std::shared_ptr<Connection>
@@ -208,14 +208,14 @@ namespace hazelcast {
                     return connection;
                 }
 
-                auto target = translator->translate(address);
-                connection = std::make_shared<Connection>(target, client, ++connectionIdGen,
-                                                          *socketFactory, *this, connectionTimeoutMillis);
+                auto target = translator_->translate(address);
+                connection = std::make_shared<Connection>(target, client_, ++connection_id_gen_,
+                                                          *socket_factory_, *this, connection_timeout_millis_);
                 connection->connect();
 
                 // call the interceptor from user thread
-                if (socketInterceptor) {
-                    socketInterceptor->onConnect(connection->getSocket());
+                if (socket_interceptor_) {
+                    socket_interceptor_->onConnect(connection->getSocket());
                 }
 
                 authenticate_on_cluster(connection);
@@ -224,12 +224,12 @@ namespace hazelcast {
             }
 
             std::vector<std::shared_ptr<Connection> > ClientConnectionManagerImpl::getActiveConnections() {
-                return activeConnections.values();
+                return active_connections_.values();
             }
 
             std::shared_ptr<Connection>
             ClientConnectionManagerImpl::getConnection(const Address &address) {
-                for (const auto &connection : activeConnections.values()) {
+                for (const auto &connection : active_connections_.values()) {
                     auto remote_address = connection->getRemoteAddress();
                     if (remote_address && *remote_address == address) {
                         return connection;
@@ -239,13 +239,13 @@ namespace hazelcast {
             }
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::getConnection(boost::uuids::uuid uuid) {
-                return activeConnections.get(uuid);
+                return active_connections_.get(uuid);
             }
 
             void
             ClientConnectionManagerImpl::authenticate_on_cluster(std::shared_ptr<Connection> &connection) {
-                auto request = encodeAuthenticationRequest(client.getSerializationService());
-                auto clientInvocation = spi::impl::ClientInvocation::create(client, request, "", connection);
+                auto request = encodeAuthenticationRequest(client_.getSerializationService());
+                auto clientInvocation = spi::impl::ClientInvocation::create(client_, request, "", connection);
                 auto f = clientInvocation->invokeUrgent();
 
                 struct auth_response result;
@@ -299,11 +299,11 @@ namespace hazelcast {
             protocol::ClientMessage
             ClientConnectionManagerImpl::encodeAuthenticationRequest(serialization::pimpl::SerializationService &ss) {
                 byte serializationVersion = ss.getVersion();
-                auto cluster_name = client.getClientConfig().getClusterName();
+                auto cluster_name = client_.getClientConfig().getClusterName();
 
                 auto credential = current_credentials_.load();
                 if (!credential) {
-                    GroupConfig &groupConfig = client.getClientConfig().getGroupConfig();
+                    GroupConfig &groupConfig = client_.getClientConfig().getGroupConfig();
                     credential = boost::make_shared<security::username_password_credentials>(groupConfig.getName(),
                                                                                              groupConfig.getPassword());
                     current_credentials_.store(
@@ -319,7 +319,7 @@ namespace hazelcast {
                         return protocol::codec::client_authentication_encode(cluster_name, username, password,
                                                                              client_uuid_, protocol::ClientTypes::CPP,
                                                                              serializationVersion, HAZELCAST_VERSION,
-                                                                             client.getName(), labels_);
+                                                                             client_.getName(), labels_);
                     }
                     case security::credentials::type::secret:
                     case security::credentials::token:
@@ -328,7 +328,7 @@ namespace hazelcast {
                         return protocol::codec::client_authenticationcustom_encode(cluster_name, cr->get_secret(),
                                                                                    client_uuid_, protocol::ClientTypes::CPP,
                                                                                    serializationVersion, HAZELCAST_VERSION,
-                                                                                   client.getName(), labels_);
+                                                                                   client_.getName(), labels_);
                     }
                 }
                 assert(0);
@@ -337,14 +337,14 @@ namespace hazelcast {
 
             void
             ClientConnectionManagerImpl::fireConnectionAddedEvent(const std::shared_ptr<Connection> &connection) {
-                for (const std::shared_ptr<ConnectionListener> &connectionListener : connectionListeners.toArray()) {
+                for (const std::shared_ptr<ConnectionListener> &connectionListener : connection_listeners_.toArray()) {
                     connectionListener->connectionAdded(connection);
                 }
             }
 
             void
             ClientConnectionManagerImpl::fireConnectionRemovedEvent(const std::shared_ptr<Connection> &connection) {
-                for (const auto &listener : connectionListeners.toArray()) {
+                for (const auto &listener : connection_listeners_.toArray()) {
                     listener->connectionRemoved(connection);
                 }
             }
@@ -379,39 +379,39 @@ namespace hazelcast {
                     try {
                         do_connect_to_cluster();
                         connect_to_cluster_task_submitted_ = false;
-                        if (activeConnections.empty()) {
-                            if (logger.isFinestEnabled()) {
+                        if (active_connections_.empty()) {
+                            if (logger_.isFinestEnabled()) {
                                 boost::uuids::uuid cluster_id = cluster_id_;
-                                logger.warning("No connection to cluster: ", cluster_id);
+                                logger_.warning("No connection to cluster: ", cluster_id);
                             }
 
                             submit_connect_to_cluster_task();
                         }
 
                     } catch (exception::IException &e) {
-                        logger.warning("Could not connect to any cluster, shutting down the client: ", e);
-                        shutdownWithExternalThread(client.getHazelcastClientImplementation());
+                        logger_.warning("Could not connect to any cluster, shutting down the client: ", e);
+                        shutdownWithExternalThread(client_.getHazelcastClientImplementation());
                     }
                 });
             }
 
             void ClientConnectionManagerImpl::connect_to_all_members() {
-                if (!client.getLifecycleService().isRunning()) {
+                if (!client_.getLifecycleService().isRunning()) {
                     return;
                 }
 
                 auto connecting_addresses = std::make_shared<util::sync_associative_container<std::unordered_set<Address>>>();
-                for (const auto &member : client.getClientClusterService().getMemberList()) {
+                for (const auto &member : client_.getClientClusterService().getMemberList()) {
                     const auto& address = member.getAddress();
 
-                    if (client.getLifecycleService().isRunning() && !getConnection(address)
+                    if (client_.getLifecycleService().isRunning() && !getConnection(address)
                         && connecting_addresses->insert(address).second) {
                         // submit a task for this address only if there is no
                         // another connection attempt for it
                         Address addr = address;
                         boost::asio::post(executor_->get_executor(), [=] () {
                             try {
-                                if (!client.getLifecycleService().isRunning()) {
+                                if (!client_.getLifecycleService().isRunning()) {
                                     return;
                                 }
                                 if (!getConnection(member.getUuid())) {
@@ -430,9 +430,9 @@ namespace hazelcast {
                 int attempt = 0;
                 std::unordered_set<Address> triedAddresses;
 
-                while (attempt < connectionAttemptLimit) {
+                while (attempt < connection_attempt_limit_) {
                     attempt++;
-                    int64_t nextTry = util::currentTimeMillis() + connectionAttemptPeriod;
+                    int64_t nextTry = util::currentTimeMillis() + connection_attempt_period_;
 
                     for (const Address &address : getPossibleMemberAddresses()) {
                         check_client_active();
@@ -447,19 +447,19 @@ namespace hazelcast {
                     // and the lifecycle check is missing, hence we need to repeat the same check at this point.
                     check_client_active();
 
-                    if (attempt < connectionAttemptLimit) {
+                    if (attempt < connection_attempt_limit_) {
                         const int64_t remainingTime = nextTry - util::currentTimeMillis();
-                        logger.warning("Unable to get alive cluster connection, try in ",
+                        logger_.warning("Unable to get alive cluster connection, try in ",
                                        (remainingTime > 0 ? remainingTime : 0), " ms later, attempt ", attempt,
-                                       " of ", connectionAttemptLimit, ".");
+                                       " of ", connection_attempt_limit_, ".");
 
                         if (remainingTime > 0) {
                             // TODO use a condition variable here
                             std::this_thread::sleep_for(std::chrono::milliseconds(remainingTime));
                         }
                     } else {
-                        logger.warning("Unable to get alive cluster connection, attempt ", attempt, " of ",
-                                       connectionAttemptLimit, ".");
+                        logger_.warning("Unable to get alive cluster connection, attempt ", attempt, " of ",
+                                       connection_attempt_limit_, ".");
                     }
                 }
                 std::ostringstream out;
@@ -474,21 +474,21 @@ namespace hazelcast {
 
             std::vector<Address> ClientConnectionManagerImpl::getPossibleMemberAddresses() {
                 std::vector<Address> addresses;
-                for (auto &&member : client.getClientClusterService().getMemberList()) {
+                for (auto &&member : client_.getClientClusterService().getMemberList()) {
                     addresses.emplace_back(std::move(member.getAddress()));
                 }
 
-                if (shuffleMemberList) {
+                if (shuffle_member_list_) {
                     shuffle(addresses);
                 }
 
                 std::vector<Address> provided_addresses;
-                for (auto &addressProvider : addressProviders) {
+                for (auto &addressProvider : address_providers_) {
                     auto addrList = addressProvider->loadAddresses();
                     provided_addresses.insert(provided_addresses.end(), addrList.begin(), addrList.end());
                 }
 
-                if (shuffleMemberList) {
+                if (shuffle_member_list_) {
                     shuffle(provided_addresses);
                 }
 
@@ -506,7 +506,7 @@ namespace hazelcast {
             }
 
             bool ClientConnectionManagerImpl::isAlive() {
-                return alive;
+                return alive_;
             }
 
             void ClientConnectionManagerImpl::on_connection_close(Connection &connection, std::exception_ptr cause) {
@@ -516,17 +516,17 @@ namespace hazelcast {
                 auto socket_remote_address = connection.getSocket().getRemoteEndpoint();
 
                 if (!endpoint) {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Destroying ", connection, ", but it has end-point set to null ",
+                    if (logger_.isFinestEnabled()) {
+                        logger_.finest("Destroying ", connection, ", but it has end-point set to null ",
                                       "-> not removing it from a connection map");
                     }
                     return;
                 }
 
                 auto conn = connection.shared_from_this();
-                if (activeConnections.remove(member_uuid, conn)) {
-                    logger.info("Removed connection to endpoint: ", *endpoint, ", connection: ", connection);
-                    if (activeConnections.empty()) {
+                if (active_connections_.remove(member_uuid, conn)) {
+                    logger_.info("Removed connection to endpoint: ", *endpoint, ", connection: ", connection);
+                    if (active_connections_.empty()) {
                         fire_life_cycle_event(LifecycleEvent::LifecycleState::CLIENT_DISCONNECTED);
 
                         trigger_cluster_reconnection();
@@ -534,8 +534,8 @@ namespace hazelcast {
 
                     fireConnectionRemovedEvent(connection.shared_from_this());
                 } else {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Destroying a connection, but there is no mapping ", endpoint, " -> ",
+                    if (logger_.isFinestEnabled()) {
+                        logger_.finest("Destroying a connection, but there is no mapping ", endpoint, " -> ",
                                       connection, " in the connection map.");
                     }
                 }
@@ -544,7 +544,7 @@ namespace hazelcast {
             void
             ClientConnectionManagerImpl::addConnectionListener(
                     const std::shared_ptr<ConnectionListener> &connectionListener) {
-                connectionListeners.add(connectionListener);
+                connection_listeners_.add(connectionListener);
             }
 
             ClientConnectionManagerImpl::~ClientConnectionManagerImpl() {
@@ -552,11 +552,11 @@ namespace hazelcast {
             }
 
             util::ILogger &ClientConnectionManagerImpl::getLogger() {
-                return client.getLogger();
+                return client_.getLogger();
             }
 
             void ClientConnectionManagerImpl::check_client_active() {
-                if (!client.getLifecycleService().isRunning()) {
+                if (!client_.getLifecycleService().isRunning()) {
                     BOOST_THROW_EXCEPTION(exception::HazelcastClientNotActiveException(
                             "ClientConnectionManagerImpl::check_client_active", "Client is shutdown"));
                 }
@@ -564,10 +564,10 @@ namespace hazelcast {
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const Address &address) {
                 try {
-                    logger.info("Trying to connect to ", address);
+                    logger_.info("Trying to connect to ", address);
                     return getOrConnect(address);
                 } catch (std::exception &e) {
-                    logger.warning("Exception during initial connection to ", address, ": ", e.what());
+                    logger_.warning("Exception during initial connection to ", address, ": ", e.what());
                     return nullptr;
                 }
             }
@@ -582,18 +582,18 @@ namespace hazelcast {
                 auto new_cluster_id = response.cluster_id;
                 boost::uuids::uuid current_cluster_id = cluster_id_;
 
-                if (logger.isFinestEnabled()) {
-                    logger.finest("Checking the cluster: ", new_cluster_id, ", current cluster: ", current_cluster_id);
+                if (logger_.isFinestEnabled()) {
+                    logger_.finest("Checking the cluster: ", new_cluster_id, ", current cluster: ", current_cluster_id);
                 }
 
-                auto initial_connection = activeConnections.empty();
+                auto initial_connection = active_connections_.empty();
                 auto changedCluster = initial_connection && !current_cluster_id.is_nil() && !(new_cluster_id == current_cluster_id);
                 if (changedCluster) {
-                    logger.warning("Switching from current cluster: ", current_cluster_id, " to new cluster: ", new_cluster_id);
-                    client.getHazelcastClientImplementation()->on_cluster_restart();
+                    logger_.warning("Switching from current cluster: ", current_cluster_id, " to new cluster: ", new_cluster_id);
+                    client_.getHazelcastClientImplementation()->on_cluster_restart();
                 }
 
-                activeConnections.put(response.member_uuid, connection);
+                active_connections_.put(response.member_uuid, connection);
 
                 if (initial_connection) {
                     cluster_id_ = new_cluster_id;
@@ -602,11 +602,11 @@ namespace hazelcast {
 
                 auto local_address = connection->getLocalSocketAddress();
                 if (local_address) {
-                    logger.info("Authenticated with server ", response.address , ":", response.member_uuid
+                    logger_.info("Authenticated with server ", response.address , ":", response.member_uuid
                             , ", server version: " , response.server_version
                             , ", local address: ", *local_address);
                 } else {
-                    logger.info("Authenticated with server ", response.address , ":", response.member_uuid
+                    logger_.info("Authenticated with server ", response.address , ":", response.member_uuid
                             , ", server version: " , response.server_version
                             , ", no local address (connection disconnected ?)");
                 }
@@ -615,11 +615,11 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::fire_life_cycle_event(LifecycleEvent::LifecycleState state) {
-                client.getLifecycleService().fireLifecycleEvent(state);
+                client_.getLifecycleService().fireLifecycleEvent(state);
             }
 
             void ClientConnectionManagerImpl::check_partition_count(int32_t new_partition_count) {
-                auto &partition_service = static_cast<spi::impl::ClientPartitionServiceImpl &>(client.getPartitionService());
+                auto &partition_service = static_cast<spi::impl::ClientPartitionServiceImpl &>(client_.getPartitionService());
                 if (!partition_service.check_and_set_partition_count(new_partition_count)) {
                     BOOST_THROW_EXCEPTION(exception::ClientNotAllowedInClusterException("ClientConnectionManagerImpl::check_partition_count",
                           (boost::format("Client can not work with this cluster because it has a different partition count. "
@@ -630,12 +630,12 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::trigger_cluster_reconnection() {
                 if (reconnect_mode_ == config::ClientConnectionStrategyConfig::ReconnectMode::OFF) {
-                    logger.info("RECONNECT MODE is off. Shutting down the client.");
-                    shutdownWithExternalThread(client.getHazelcastClientImplementation());
+                    logger_.info("RECONNECT MODE is off. Shutting down the client.");
+                    shutdownWithExternalThread(client_.getHazelcastClientImplementation());
                     return;
                 }
 
-                if (client.getLifecycleService().isRunning()) {
+                if (client_.getLifecycleService().isRunning()) {
                     submit_connect_to_cluster_task();
                 }
             }
@@ -652,7 +652,7 @@ namespace hazelcast {
                     }
                 }
 
-                auto connections = activeConnections.values();
+                auto connections = active_connections_.values();
                 if (connections.empty()) {
                     return nullptr;
                 }
@@ -665,7 +665,7 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::check_invocation_allowed() {
-                if (activeConnections.size() > 0) {
+                if (active_connections_.size() > 0) {
                     return;
                 }
 
@@ -693,7 +693,7 @@ namespace hazelcast {
                     return;
                 }
 
-                for (const auto &member : client.getClientClusterService().getMemberList()) {
+                for (const auto &member : client_.getClientClusterService().getMemberList()) {
                     try {
                         getOrConnect(member.getAddress());
                     } catch (std::exception &) {
@@ -703,8 +703,8 @@ namespace hazelcast {
             }
 
             ReadHandler::ReadHandler(Connection &connection, size_t bufferSize)
-                    : buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize), builder(connection),
-                      lastReadTimeDuration(std::chrono::steady_clock::now().time_since_epoch()) {
+                    : buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize), builder_(connection),
+                      last_read_time_duration_(std::chrono::steady_clock::now().time_since_epoch()) {
             }
 
             ReadHandler::~ReadHandler() {
@@ -712,7 +712,7 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                lastReadTimeDuration = std::chrono::steady_clock::now().time_since_epoch();
+                last_read_time_duration_ = std::chrono::steady_clock::now().time_since_epoch();
 
                 if (byteBuffer.position() == 0)
                     return;
@@ -721,7 +721,7 @@ namespace hazelcast {
 
                 // it is important to check the onData return value since there may be left data less than a message
                 // header size, and this may cause an infinite loop.
-                while (byteBuffer.hasRemaining() && builder.onData(byteBuffer)) {
+                while (byteBuffer.hasRemaining() && builder_.onData(byteBuffer)) {
                 }
 
                 if (byteBuffer.hasRemaining()) {
@@ -732,7 +732,7 @@ namespace hazelcast {
             }
 
             std::chrono::steady_clock::time_point ReadHandler::getLastReadTime() const {
-                return std::chrono::steady_clock::time_point(lastReadTimeDuration);
+                return std::chrono::steady_clock::time_point(last_read_time_duration_);
             }
 
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId, // NOLINT(cppcoreguidelines-pro-type-member-init)
@@ -740,19 +740,19 @@ namespace hazelcast {
                                    ClientConnectionManagerImpl &clientConnectionManager,
                                    std::chrono::steady_clock::duration &connectTimeoutInMillis)
                     : readHandler(*this, 16 << 10),
-                      startTime(std::chrono::steady_clock::now()),
-                      closedTimeDuration(),
-                      clientContext(clientContext),
-                      invocationService(clientContext.getInvocationService()),
-                      connectionId(connectionId),
-                      remote_uuid_(boost::uuids::nil_uuid()), logger(clientContext.getLogger()), alive(true) {
-                socket = socketFactory.create(address, connectTimeoutInMillis);
+                      start_time_(std::chrono::steady_clock::now()),
+                      closed_time_duration_(),
+                      client_context_(clientContext),
+                      invocation_service_(clientContext.getInvocationService()),
+                      connection_id_(connectionId),
+                      remote_uuid_(boost::uuids::nil_uuid()), logger_(clientContext.getLogger()), alive_(true) {
+                socket_ = socketFactory.create(address, connectTimeoutInMillis);
             }
 
             Connection::~Connection() = default;
 
             void Connection::connect() {
-                socket->connect(shared_from_this());
+                socket_->connect(shared_from_this());
             }
 
             void Connection::close() {
@@ -765,27 +765,27 @@ namespace hazelcast {
 
             void Connection::close(const std::string &reason, std::exception_ptr cause) {
                 bool expected = true;
-                if (!alive.compare_exchange_strong(expected, false)) {
+                if (!alive_.compare_exchange_strong(expected, false)) {
                     return;
                 }
 
-                closedTimeDuration.store(std::chrono::steady_clock::now().time_since_epoch());
+                closed_time_duration_.store(std::chrono::steady_clock::now().time_since_epoch());
 
-                closeCause = cause;
-                closeReason = reason;
+                close_cause_ = cause;
+                close_reason_ = reason;
 
                 logClose();
 
                 try {
                     innerClose();
                 } catch (exception::IException &e) {
-                    clientContext.getLogger().warning("Exception while closing connection", e.getMessage());
+                    client_context_.getLogger().warning("Exception while closing connection", e.getMessage());
                 }
 
-                clientContext.getConnectionManager().on_connection_close(*this, closeCause);
+                client_context_.getConnectionManager().on_connection_close(*this, close_cause_);
 
                 auto thisConnection = shared_from_this();
-                boost::asio::post(socket->get_executor(), [=]() {
+                boost::asio::post(socket_->get_executor(), [=]() {
                     for (auto &invocationEntry : invocations) {
                         invocationEntry.second->notifyException(std::make_exception_ptr(boost::enable_current_exception(
                                 exception::TargetDisconnectedException("Connection::close",
@@ -795,7 +795,7 @@ namespace hazelcast {
             }
 
             void Connection::write(const std::shared_ptr<spi::impl::ClientInvocation> &clientInvocation) {
-                socket->asyncWrite(shared_from_this(), clientInvocation);
+                socket_->asyncWrite(shared_from_this(), clientInvocation);
             }
 
             const boost::optional<Address> &Connection::getRemoteAddress() const {
@@ -810,7 +810,7 @@ namespace hazelcast {
                 auto correlationId = message->getCorrelationId();
                 auto invocationIterator = invocations.find(correlationId);
                 if (invocationIterator == invocations.end()) {
-                    logger.warning("No invocation' for callId: ", correlationId, ". Dropping this message: ", *message);
+                    logger_.warning("No invocation' for callId: ", correlationId, ". Dropping this message: ", *message);
                     return;
                 }
                 auto invocation = invocationIterator->second;
@@ -819,32 +819,32 @@ namespace hazelcast {
                     invocations.erase(invocationIterator);
                 }
                 if (message->is_flag_set(message->getHeaderFlags(), protocol::ClientMessage::IS_EVENT_FLAG)) {
-                    clientContext.getClientListenerService().handleClientMessage(invocation, message);
+                    client_context_.getClientListenerService().handleClientMessage(invocation, message);
                 } else {
-                    invocationService.handleClientMessage(invocation, message);
+                    invocation_service_.handleClientMessage(invocation, message);
                 }
             }
 
             int Connection::getConnectionId() const {
-                return connectionId;
+                return connection_id_;
             }
 
             bool Connection::isAlive() const {
-                return alive;
+                return alive_;
             }
 
             const std::string &Connection::getCloseReason() const {
-                return closeReason;
+                return close_reason_;
             }
 
             void Connection::logClose() {
                 std::ostringstream message;
                 message << *this << " closed. Reason: ";
-                if (!closeReason.empty()) {
-                    message << closeReason;
-                } else if (closeCause) {
+                if (!close_reason_.empty()) {
+                    message << close_reason_;
+                } else if (close_cause_) {
                     try {
-                        std::rethrow_exception(closeCause);
+                        std::rethrow_exception(close_cause_);
                     } catch (exception::IException &ie) {
                         message << ie.getSource() << "[" + ie.getMessage() << "]";
                     }
@@ -852,25 +852,25 @@ namespace hazelcast {
                     message << "Socket explicitly closed";
                 }
 
-                if (clientContext.getLifecycleService().isRunning()) {
-                    if (!closeCause) {
-                        logger.info(message.str());
+                if (client_context_.getLifecycleService().isRunning()) {
+                    if (!close_cause_) {
+                        logger_.info(message.str());
                     } else {
                         try {
-                            std::rethrow_exception(closeCause);
+                            std::rethrow_exception(close_cause_);
                         } catch (exception::IException &ie) {
-                            logger.warning(message.str(), ie);
+                            logger_.warning(message.str(), ie);
                         }
                     }
                 } else {
-                    if (logger.isFinestEnabled()) {
-                        if (!closeCause) {
-                            logger.finest(message.str());
+                    if (logger_.isFinestEnabled()) {
+                        if (!close_cause_) {
+                            logger_.finest(message.str());
                         } else {
                             try {
-                                std::rethrow_exception(closeCause);
+                                std::rethrow_exception(close_cause_);
                             } catch (exception::IException &ie) {
-                                logger.finest(message.str(), ie);
+                                logger_.finest(message.str(), ie);
                             }
                         }
                     }
@@ -878,7 +878,7 @@ namespace hazelcast {
             }
 
             bool Connection::operator==(const Connection &rhs) const {
-                return connectionId == rhs.connectionId;
+                return connection_id_ == rhs.connection_id_;
             }
 
             bool Connection::operator!=(const Connection &rhs) const {
@@ -886,15 +886,15 @@ namespace hazelcast {
             }
 
             const std::string &Connection::getConnectedServerVersionString() const {
-                return connectedServerVersionString;
+                return connected_server_version_string_;
             }
 
             void Connection::setConnectedServerVersion(const std::string &connectedServer) {
-                Connection::connectedServerVersionString = connectedServer;
+                Connection::connected_server_version_string_ = connectedServer;
             }
 
             boost::optional<Address> Connection::getLocalSocketAddress() const {
-                return socket->localSocketAddress();
+                return socket_->localSocketAddress();
             }
 
             std::chrono::steady_clock::time_point Connection::lastReadTime() const {
@@ -902,12 +902,12 @@ namespace hazelcast {
             }
 
             void Connection::innerClose() {
-                if (!socket) {
+                if (!socket_) {
                     return;
                 }
 
                 auto thisConnection = shared_from_this();
-                boost::asio::post(socket->get_executor(), [=] () { thisConnection->socket->close(); });
+                boost::asio::post(socket_->get_executor(), [=] () { thisConnection->socket_->close(); });
             }
 
             std::ostream &operator<<(std::ostream &os, const Connection &connection) {
@@ -921,23 +921,23 @@ namespace hazelcast {
                     os << "null";
                 }
                 os << ", lastReadTime=" << util::StringUtil::timeToString(connection.lastReadTime())
-                   << ", closedTime=" << util::StringUtil::timeToString(std::chrono::steady_clock::time_point(connection.closedTimeDuration))
-                   << ", connected server version=" << connection.connectedServerVersionString
+                   << ", closedTime=" << util::StringUtil::timeToString(std::chrono::steady_clock::time_point(connection.closed_time_duration_))
+                   << ", connected server version=" << connection.connected_server_version_string_
                    << '}';
 
                 return os;
             }
 
             bool Connection::operator<(const Connection &rhs) const {
-                return connectionId < rhs.connectionId;
+                return connection_id_ < rhs.connection_id_;
             }
 
             std::chrono::steady_clock::time_point Connection::getStartTime() const {
-                return startTime;
+                return start_time_;
             }
 
             Socket &Connection::getSocket() {
-                return *socket;
+                return *socket_;
             }
 
             void Connection::deregisterInvocation(int64_t callId) {
@@ -954,7 +954,7 @@ namespace hazelcast {
 
             HeartbeatManager::HeartbeatManager(spi::ClientContext &client,
                                                ClientConnectionManagerImpl &connectionManager)
-                    : client(client), clientConnectionManager(connectionManager), logger(client.getLogger()) {
+                    : client_(client), client_connection_manager_(connectionManager), logger_(client.getLogger()) {
                 ClientProperties &clientProperties = client.getClientProperties();
                 auto timeout_millis = clientProperties.getLong(clientProperties.getHeartbeatTimeout());
                 heartbeat_timeout_ = std::chrono::milliseconds(
@@ -967,14 +967,14 @@ namespace hazelcast {
             }
 
             void HeartbeatManager::start() {
-                spi::impl::ClientExecutionServiceImpl &clientExecutionService = client.getClientExecutionService();
+                spi::impl::ClientExecutionServiceImpl &clientExecutionService = client_.getClientExecutionService();
 
-                timer = clientExecutionService.scheduleWithRepetition([=]() {
-                    if (!clientConnectionManager.isAlive()) {
+                timer_ = clientExecutionService.scheduleWithRepetition([=]() {
+                    if (!client_connection_manager_.isAlive()) {
                         return;
                     }
 
-                    for (auto &connection : clientConnectionManager.getActiveConnections()) {
+                    for (auto &connection : client_connection_manager_.getActiveConnections()) {
                         checkConnection(connection);
                     }
                 }, heartbeat_interval_, heartbeat_interval_);
@@ -988,7 +988,7 @@ namespace hazelcast {
                 auto now = std::chrono::steady_clock::now();
                 if (now - connection->lastReadTime() > heartbeat_timeout_) {
                     if (connection->isAlive()) {
-                        logger.warning("Heartbeat failed over the connection: ", *connection);
+                        logger_.warning("Heartbeat failed over the connection: ", *connection);
                         onHeartbeatStopped(connection, "Heartbeat timed out");
                     }
                 }
@@ -996,7 +996,7 @@ namespace hazelcast {
                 if (now - connection->lastReadTime() > heartbeat_interval_) {
                     auto request = protocol::codec::client_ping_encode();
                     std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
-                            client, request, "", connection);
+                            client_, request, "", connection);
                     clientInvocation->invokeUrgent();
                 }
             }
@@ -1011,9 +1011,9 @@ namespace hazelcast {
             }
 
             void HeartbeatManager::shutdown() {
-                if (timer) {
+                if (timer_) {
                     boost::system::error_code ignored;
-                    timer->cancel(ignored);
+                    timer_->cancel(ignored);
                 }
             }
 
@@ -1027,23 +1027,23 @@ namespace hazelcast {
             namespace socket {
                 SocketFactory::SocketFactory(spi::ClientContext &clientContext, boost::asio::io_context &io,
                                              boost::asio::ip::tcp::resolver &resolver)
-                        : clientContext(clientContext), io(io), ioResolver(resolver) {
+                        : client_context_(clientContext), io_(io), io_resolver_(resolver) {
                 }
 
                 bool SocketFactory::start() {
 #ifdef HZ_BUILD_WITH_SSL
-                    const client::config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
+                    const client::config::SSLConfig &sslConfig = client_context_.getClientConfig().getNetworkConfig().getSSLConfig();
                     if (sslConfig.isEnabled()) {
-                        sslContext = std::unique_ptr<boost::asio::ssl::context>(new boost::asio::ssl::context(
+                        ssl_context_ = std::unique_ptr<boost::asio::ssl::context>(new boost::asio::ssl::context(
                                 (boost::asio::ssl::context_base::method) sslConfig.getProtocol()));
 
                         const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
                         bool success = true;
-                        util::ILogger &logger = clientContext.getLogger();
+                        util::ILogger &logger = client_context_.getLogger();
                         for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
                              ++it) {
                             boost::system::error_code ec;
-                            sslContext->load_verify_file(*it, ec);
+                            ssl_context_->load_verify_file(*it, ec);
                             if (ec) {
                                 logger.warning(
                                         std::string("SocketFactory::start: Failed to load CA "
@@ -1054,7 +1054,7 @@ namespace hazelcast {
                         }
 
                         if (!success) {
-                            sslContext.reset();
+                            ssl_context_.reset();
                             logger.warning("SocketFactory::start: Failed to load one or more "
                                            "configured CA verify files (PEM files). Please "
                                            "correct the files and retry.");
@@ -1064,7 +1064,7 @@ namespace hazelcast {
                         // set cipher list if the list is set
                         const std::string &cipherList = sslConfig.getCipherList();
                         if (!cipherList.empty()) {
-                            if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
+                            if (!SSL_CTX_set_cipher_list(ssl_context_->native_handle(), cipherList.c_str())) {
                                 logger.warning(
                                         std::string("SocketFactory::start: Could not load any "
                                                     "of the ciphers in the config provided "
@@ -1083,16 +1083,16 @@ namespace hazelcast {
                 std::unique_ptr<Socket> SocketFactory::create(const Address &address,
                                                               std::chrono::steady_clock::duration &connectTimeoutInMillis) {
 #ifdef HZ_BUILD_WITH_SSL
-                    if (sslContext.get()) {
-                        return std::unique_ptr<Socket>(new internal::socket::SSLSocket(io, *sslContext, address,
-                                                                                       clientContext.getClientConfig().getNetworkConfig().getSocketOptions(),
-                                                                                       connectTimeoutInMillis, ioResolver));
+                    if (ssl_context_.get()) {
+                        return std::unique_ptr<Socket>(new internal::socket::SSLSocket(io_, *ssl_context_, address,
+                                                                                       client_context_.getClientConfig().getNetworkConfig().getSocketOptions(),
+                                                                                       connectTimeoutInMillis, io_resolver_));
                     }
 #endif
 
-                    return std::unique_ptr<Socket>(new internal::socket::TcpSocket(io, address,
-                                                                                   clientContext.getClientConfig().getNetworkConfig().getSocketOptions(),
-                                                                                   connectTimeoutInMillis, ioResolver));
+                    return std::unique_ptr<Socket>(new internal::socket::TcpSocket(io_, address,
+                                                                                   client_context_.getClientConfig().getNetworkConfig().getSocketOptions(),
+                                                                                   connectTimeoutInMillis, io_resolver_));
                 }
 
 #ifdef HZ_BUILD_WITH_SSL

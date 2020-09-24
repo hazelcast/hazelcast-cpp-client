@@ -72,10 +72,10 @@ namespace hazelcast {
             friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const MapEvent &event);
 
         private:
-            Member member;
-            EntryEvent::type eventType;
-            std::string name;
-            int numberOfEntriesAffected;
+            Member member_;
+            EntryEvent::type event_type_;
+            std::string name_;
+            int number_of_entries_affected_;
         };
     }
 }

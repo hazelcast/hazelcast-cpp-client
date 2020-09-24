@@ -71,13 +71,13 @@ namespace hazelcast {
 
                 typedef std::unordered_map<int64_t, std::shared_ptr<ClientMessage> > MessageMap;
 
-                MessageMap partialMessages;
+                MessageMap partial_messages_;
 
-                std::unique_ptr<ClientMessage> message;
-                connection::Connection &connection;
+                std::unique_ptr<ClientMessage> message_;
+                connection::Connection &connection_;
 
-                bool is_final_frame;
-                size_t remaining_frame_bytes;
+                bool is_final_frame_;
+                size_t remaining_frame_bytes_;
             };
         }
     }

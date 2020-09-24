@@ -56,7 +56,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &on_added(Handler &&h) & {
-                added = std::forward<Handler>(h);
+                added_ = std::forward<Handler>(h);
                 add_flag(EntryEvent::type::ADDED);
                 return *this;
             }
@@ -79,7 +79,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &on_removed(Handler &&h) & {
-                removed = std::forward<Handler>(h);
+                removed_ = std::forward<Handler>(h);
                 add_flag(EntryEvent::type::REMOVED);
                 return *this;
             }
@@ -102,7 +102,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &on_updated(Handler &&h) & {
-                updated = std::forward<Handler>(h);
+                updated_ = std::forward<Handler>(h);
                 add_flag(EntryEvent::type::UPDATED);
                 return *this;
             }
@@ -125,7 +125,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &on_evicted(Handler &&h) & {
-                evicted = std::forward<Handler>(h);
+                evicted_ = std::forward<Handler>(h);
                 add_flag(EntryEvent::type::EVICTED);
                 return *this;
             }
@@ -148,7 +148,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &on_expired(Handler &&h) & {
-                expired = std::forward<Handler>(h);
+                expired_ = std::forward<Handler>(h);
                 add_flag(EntryEvent::type::EXPIRED);
                 return *this;
             }
@@ -171,7 +171,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &on_merged(Handler &&h) & {
-                merged = std::forward<Handler>(h);
+                merged_ = std::forward<Handler>(h);
                 add_flag(EntryEvent::type::MERGED);
                 return *this;
             }
@@ -194,7 +194,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &on_map_evicted(Handler &&h) & {
-                map_evicted = std::forward<Handler>(h);
+                map_evicted_ = std::forward<Handler>(h);
                 add_flag(EntryEvent::type::EVICT_ALL);
                 return *this;
             }
@@ -217,7 +217,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             EntryListener &on_map_cleared(Handler &&h) & {
-                map_cleared = std::forward<Handler>(h);
+                map_cleared_ = std::forward<Handler>(h);
                 add_flag(EntryEvent::type::CLEAR_ALL);
                 return *this;
             }
@@ -235,22 +235,22 @@ namespace hazelcast {
         private: 
             using EntryHandlerType = std::function<void(EntryEvent &&)>;
             static constexpr auto noop_entry_handler = util::noop<EntryEvent &&>;
-            EntryHandlerType added = noop_entry_handler,
-                             removed = noop_entry_handler,
-                             updated = noop_entry_handler,
-                             evicted = noop_entry_handler,
-                             expired = noop_entry_handler,
-                             merged = noop_entry_handler;
+            EntryHandlerType added_ = noop_entry_handler,
+                             removed_ = noop_entry_handler,
+                             updated_ = noop_entry_handler,
+                             evicted_ = noop_entry_handler,
+                             expired_ = noop_entry_handler,
+                             merged_ = noop_entry_handler;
 
             using MapHandlerType = std::function<void(MapEvent &&)>;
             static constexpr auto noop_map_handler = util::noop<MapEvent &&>;
-            MapHandlerType map_evicted = noop_map_handler,
-                           map_cleared = noop_map_handler;
+            MapHandlerType map_evicted_ = noop_map_handler,
+                           map_cleared_ = noop_map_handler;
 
-            int32_t flags = 0;
+            int32_t flags_ = 0;
 
             void add_flag(EntryEvent::type t) {
-                flags |= static_cast<int32_t>(t);
+                flags_ |= static_cast<int32_t>(t);
             }
 
             template<typename>

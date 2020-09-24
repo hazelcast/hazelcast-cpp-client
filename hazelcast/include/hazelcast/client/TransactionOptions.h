@@ -103,9 +103,9 @@ namespace hazelcast {
             TransactionOptions& setDurability(int numMachines);
 
         private:
-            std::chrono::steady_clock::duration timeout;
-            int durability;
-            TransactionType transactionType;
+            std::chrono::steady_clock::duration timeout_;
+            int durability_;
+            TransactionType transaction_type_;
         };
     }
 }

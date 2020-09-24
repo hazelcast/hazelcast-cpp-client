@@ -174,7 +174,7 @@ namespace hazelcast {
             */
             template<typename T>
             ClientConfig &setCredentials(const T &secret) {
-                serialization::pimpl::SerializationService ss(serializationConfig);
+                serialization::pimpl::SerializationService ss(serialization_config_);
                 credentials_ = std::make_shared<security::secret_credential>(secret.get_name(),
                                                                              ss.toData<T>(secret).toByteArray());
                 return *this;
@@ -378,7 +378,7 @@ namespace hazelcast {
              */
             template <typename K, typename V>
             ClientConfig &addNearCacheConfig(const std::shared_ptr<config::NearCacheConfig<K, V> > nearCacheConfig) {
-                nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
+                near_cache_config_map_.put(nearCacheConfig->getName(), nearCacheConfig);
                 return *this;
             }
 
@@ -392,9 +392,9 @@ namespace hazelcast {
             template <typename K, typename V>
             const std::shared_ptr<config::NearCacheConfig<K, V> > getNearCacheConfig(const std::string &name) {
                 std::shared_ptr<config::NearCacheConfigBase> nearCacheConfig = internal::config::ConfigUtils::lookupByPattern<config::NearCacheConfigBase>(
-                        configPatternMatcher, nearCacheConfigMap, name);
+                        config_pattern_matcher_, near_cache_config_map_, name);
                 if (nearCacheConfig.get() == NULL) {
-                    nearCacheConfig = nearCacheConfigMap.get("default");
+                    nearCacheConfig = near_cache_config_map_.get("default");
                 }
                 // not needed for c++ client since it is always native memory
                 //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
@@ -511,47 +511,47 @@ namespace hazelcast {
         private:
             std::string cluster_name_;
 
-            GroupConfig groupConfig;
+            GroupConfig group_config_;
 
-            config::ClientNetworkConfig networkConfig;
+            config::ClientNetworkConfig network_config_;
 
-            SerializationConfig serializationConfig;
+            SerializationConfig serialization_config_;
 
-            LoadBalancer *loadBalancer;
+            LoadBalancer *load_balancer_;
 
-            impl::RoundRobinLB defaultLoadBalancer;
+            impl::RoundRobinLB default_load_balancer_;
 
-            std::unordered_set<MembershipListener *> membershipListeners;
-            std::unordered_set<std::shared_ptr<MembershipListener> > managedMembershipListeners;
+            std::unordered_set<MembershipListener *> membership_listeners_;
+            std::unordered_set<std::shared_ptr<MembershipListener> > managed_membership_listeners_;
 
-            std::vector<LifecycleListener> lifecycleListeners;
+            std::vector<LifecycleListener> lifecycle_listeners_;
 
-            std::unordered_map<std::string, std::string> properties;
+            std::unordered_map<std::string, std::string> properties_;
 
-            bool redoOperation;
+            bool redo_operation_;
 
-            SocketInterceptor *socketInterceptor;
+            SocketInterceptor *socket_interceptor_;
 
             boost::shared_ptr<security::credentials> credentials_;
 
-            std::unordered_map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
+            std::unordered_map<std::string, config::ReliableTopicConfig> reliable_topic_config_map_;
 
-            util::SynchronizedMap<std::string, config::NearCacheConfigBase> nearCacheConfigMap;
+            util::SynchronizedMap<std::string, config::NearCacheConfigBase> near_cache_config_map_;
 
-            std::shared_ptr<std::string> instanceName;
+            std::shared_ptr<std::string> instance_name_;
 
             /**
              * pool-size for internal ExecutorService which handles responses etc.
              */
-            int32_t executorPoolSize;
+            int32_t executor_pool_size_;
 
-            config::ClientConnectionStrategyConfig connectionStrategyConfig;
+            config::ClientConnectionStrategyConfig connection_strategy_config_;
 
-            util::SynchronizedMap<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap;
+            util::SynchronizedMap<std::string, config::ClientFlakeIdGeneratorConfig> flake_id_generator_config_map_;
 
-            config::matcher::MatchingPointConfigPatternMatcher configPatternMatcher;
+            config::matcher::MatchingPointConfigPatternMatcher config_pattern_matcher_;
 
-            config::LoggerConfig loggerConfig;
+            config::LoggerConfig logger_config_;
 
             std::unordered_set<std::string> labels_;
         };

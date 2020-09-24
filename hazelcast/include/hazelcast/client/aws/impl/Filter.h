@@ -49,7 +49,7 @@ namespace hazelcast {
                     const std::unordered_map<std::string, std::string> &getFilters();
 
                 private:
-                    std::unordered_map<std::string, std::string> filters;
+                    std::unordered_map<std::string, std::string> filters_;
                 };
             };
         }

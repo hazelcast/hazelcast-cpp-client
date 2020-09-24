@@ -104,8 +104,8 @@ namespace hazelcast {
              */
             std::vector<boost::optional<E>> results() {
                 std::vector<boost::optional<E>> result;
-                result.reserve(futures.size());
-                auto result_futures = when_all(futures.begin(), futures.end());
+                result.reserve(futures_.size());
+                auto result_futures = when_all(futures_.begin(), futures_.end());
                 for (auto &f : result_futures.get()) {
                     result.emplace_back(f.get());
                 }
@@ -124,23 +124,23 @@ namespace hazelcast {
             void add(boost::future<boost::optional<E>> future) {
                 down();
 
-                futures.push_back(future.share());
+                futures_.push_back(future.share());
             }
 
         private:
-            Pipelining(int depth) : permits(util::Preconditions::checkPositive(depth, "depth must be positive")) {
+            Pipelining(int depth) : permits_(util::Preconditions::checkPositive(depth, "depth must be positive")) {
             }
 
             void down() {
                 int usedPermits = 0;
-                for (auto &f : futures) {
+                for (auto &f : futures_) {
                     if (!f.is_ready()) {
                         ++usedPermits;
                     }
                 }
-                if (usedPermits >= permits) {
-                    decltype(futures) outStandingFutures;
-                    for (auto &f : futures) {
+                if (usedPermits >= permits_) {
+                    decltype(futures_) outStandingFutures;
+                    for (auto &f : futures_) {
                         if (!f.is_ready()) {
                             outStandingFutures.push_back(f);
                         }
@@ -152,8 +152,8 @@ namespace hazelcast {
                 }
             }
 
-            int permits;
-            std::vector<boost::shared_future<boost::optional<E>>> futures;
+            int permits_;
+            std::vector<boost::shared_future<boost::optional<E>>> futures_;
         };
     }
 }

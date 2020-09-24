@@ -38,33 +38,33 @@ namespace hazelcast {
 
                 Message(std::string topicName, TypedData &&message, std::chrono::system_clock::time_point publishTime,
                         boost::optional<Member> &&member)
-                        : messageObject(message), publishTime(publishTime), publishingMember(member), name(std::move(topicName)) {}
+                        : message_object_(message), publish_time_(publishTime), publishing_member_(member), name_(std::move(topicName)) {}
 
                 const TypedData &getMessageObject() const {
-                    return messageObject;
+                    return message_object_;
                 }
 
                 std::chrono::system_clock::time_point getPublishTime() const {
-                    return publishTime;
+                    return publish_time_;
                 }
 
                 const Member *getPublishingMember() const {
-                    return publishingMember.get_ptr();
+                    return publishing_member_.get_ptr();
                 }
 
                 const std::string &getSource() const {
-                    return name;
+                    return name_;
                 }
 
                 const std::string &getName() const {
-                    return name;
+                    return name_;
                 }
 
             private:
-                TypedData messageObject;
-                std::chrono::system_clock::time_point publishTime;
-                boost::optional<Member> publishingMember;
-                std::string name;
+                TypedData message_object_;
+                std::chrono::system_clock::time_point publish_time_;
+                boost::optional<Member> publishing_member_;
+                std::string name_;
             };
         }
     }

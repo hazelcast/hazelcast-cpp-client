@@ -142,8 +142,8 @@ namespace hazelcast {
 
                 serialization::pimpl::SerializationService &getSerializationService();
             private:
-                const std::string serviceName;
-                spi::ClientContext &context;
+                const std::string service_name_;
+                spi::ClientContext &context_;
             };
         }
     }

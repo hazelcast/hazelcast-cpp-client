@@ -55,9 +55,9 @@ namespace hazelcast {
                 void init(InitialMembershipEvent event) override;
 
             private:
-                mutable std::mutex membersLock;
-                std::vector<Member> membersRef;
-                Cluster *cluster;
+                mutable std::mutex members_lock_;
+                std::vector<Member> members_ref_;
+                Cluster *cluster_;
             };
         }
     }

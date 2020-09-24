@@ -140,7 +140,7 @@ namespace hazelcast {
 
                 boost::uuids::uuid random_uuid();
             private:
-                client::impl::HazelcastClientInstanceImpl &hazelcastClient;
+                client::impl::HazelcastClientInstanceImpl &hazelcast_client_;
             };
         }
     }

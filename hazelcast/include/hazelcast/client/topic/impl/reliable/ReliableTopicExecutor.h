@@ -72,15 +72,15 @@ namespace hazelcast {
                             virtual std::string getName() const;
 
                         private:
-                            std::shared_ptr<Ringbuffer> rb;
-                            util::BlockingConcurrentQueue<Message> &q;
-                            std::atomic<bool> &shutdown;
+                            std::shared_ptr<Ringbuffer> rb_;
+                            util::BlockingConcurrentQueue<Message> &q_;
+                            std::atomic<bool> &shutdown_;
                         };
 
-                        std::shared_ptr<Ringbuffer> ringbuffer;
-                        std::thread runnerThread;
-                        util::BlockingConcurrentQueue<Message> q;
-                        std::atomic<bool> shutdown;
+                        std::shared_ptr<Ringbuffer> ringbuffer_;
+                        std::thread runner_thread_;
+                        util::BlockingConcurrentQueue<Message> q_;
+                        std::atomic<bool> shutdown_;
                     };
                 }
             }

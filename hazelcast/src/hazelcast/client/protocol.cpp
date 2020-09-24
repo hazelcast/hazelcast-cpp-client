@@ -59,9 +59,9 @@ namespace hazelcast {
             const ClientMessage::frame_header_t ClientMessage::BEGIN_FRAME{ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS, ClientMessage::BEGIN_DATA_STRUCTURE_FLAG};
             const ClientMessage::frame_header_t ClientMessage::END_FRAME{ClientMessage::SIZE_OF_FRAME_LENGTH_AND_FLAGS, ClientMessage::END_DATA_STRUCTURE_FLAG};
 
-            ClientMessage::ClientMessage() : retryable(false) {}
+            ClientMessage::ClientMessage() : retryable_(false) {}
 
-            ClientMessage::ClientMessage(size_t initial_frame_size, bool is_fingle_frame) : retryable(false) {
+            ClientMessage::ClientMessage(size_t initial_frame_size, bool is_fingle_frame) : retryable_(false) {
                 auto *initial_frame = reinterpret_cast<frame_header_t *>(wr_ptr(REQUEST_HEADER_LEN));
                 initial_frame->frame_len = initial_frame_size;
                 initial_frame->flags = is_fingle_frame ? static_cast<int16_t>(ClientMessage::UNFRAGMENTED_MESSAGE) |
@@ -69,21 +69,21 @@ namespace hazelcast {
             }
 
             void ClientMessage::wrap_for_read() {
-                buffer_index = 0;
-                offset = 0;
+                buffer_index_ = 0;
+                offset_ = 0;
             }
 
             //----- Setter methods begin --------------------------------------
             void ClientMessage::setMessageType(int32_t type) {
-                boost::endian::store_little_s64(&data_buffer[0][TYPE_FIELD_OFFSET], type);
+                boost::endian::store_little_s64(&data_buffer_[0][TYPE_FIELD_OFFSET], type);
             }
 
             void ClientMessage::setCorrelationId(int64_t id) {
-                boost::endian::store_little_s64(&data_buffer[0][CORRELATION_ID_FIELD_OFFSET], id);
+                boost::endian::store_little_s64(&data_buffer_[0][CORRELATION_ID_FIELD_OFFSET], id);
             }
 
             void ClientMessage::setPartitionId(int32_t partitionId) {
-                boost::endian::store_little_s32(&data_buffer[0][PARTITION_ID_FIELD_OFFSET], partitionId);
+                boost::endian::store_little_s32(&data_buffer_[0][PARTITION_ID_FIELD_OFFSET], partitionId);
             }
 
             template<>
@@ -175,26 +175,26 @@ namespace hazelcast {
 
             size_t ClientMessage::size() const {
                 size_t len = 0;
-                for (auto &v : data_buffer) {
+                for (auto &v : data_buffer_) {
                     len += v.size();
                 }
                 return len;
             }
 
             int32_t ClientMessage::getMessageType() const {
-                return boost::endian::load_little_s32(&data_buffer[0][TYPE_FIELD_OFFSET]);
+                return boost::endian::load_little_s32(&data_buffer_[0][TYPE_FIELD_OFFSET]);
             }
 
             uint16_t ClientMessage::getHeaderFlags() const {
-                return boost::endian::load_little_u16(&data_buffer[0][FLAGS_FIELD_OFFSET]);
+                return boost::endian::load_little_u16(&data_buffer_[0][FLAGS_FIELD_OFFSET]);
             }
 
             int64_t ClientMessage::getCorrelationId() const {
-                return boost::endian::load_little_s64(&data_buffer[0][CORRELATION_ID_FIELD_OFFSET]);
+                return boost::endian::load_little_s64(&data_buffer_[0][CORRELATION_ID_FIELD_OFFSET]);
             }
 
             int32_t ClientMessage::getPartitionId() const {
-                return boost::endian::load_little_s32(&data_buffer[0][PARTITION_ID_FIELD_OFFSET]);
+                return boost::endian::load_little_s32(&data_buffer_[0][PARTITION_ID_FIELD_OFFSET]);
             }
 /*
             void ClientMessage::append(const ClientMessage *msg) {
@@ -210,19 +210,19 @@ namespace hazelcast {
 */
 
             bool ClientMessage::isRetryable() const {
-                return retryable;
+                return retryable_;
             }
 
             void ClientMessage::setRetryable(bool shouldRetry) {
-                retryable = shouldRetry;
+                retryable_ = shouldRetry;
             }
 
             std::string ClientMessage::getOperationName() const {
-                return operationName;
+                return operation_name_;
             }
 
             void ClientMessage::setOperationName(const std::string &name) {
-                this->operationName = name;
+                this->operation_name_ = name;
             }
 
             std::ostream &operator<<(std::ostream &os, const ClientMessage &msg) {
@@ -414,21 +414,21 @@ namespace hazelcast {
             ClientExceptionFactory::~ClientExceptionFactory() {
                 // release memory for the factories
                 for (std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it =
-                        errorCodeToFactory.begin(); errorCodeToFactory.end() != it; ++it) {
+                        error_code_to_factory_.begin(); error_code_to_factory_.end() != it; ++it) {
                     delete (it->second);
                 }
             }
 
             void ClientExceptionFactory::registerException(int32_t errorCode, ExceptionFactory *factory) {
-                auto it = errorCodeToFactory.find(errorCode);
-                if (errorCodeToFactory.end() != it) {
+                auto it = error_code_to_factory_.find(errorCode);
+                if (error_code_to_factory_.end() != it) {
                     char msg[100];
                     util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
                     BOOST_THROW_EXCEPTION(
                             exception::IllegalStateException("ClientExceptionFactory::registerException", msg));
                 }
 
-                errorCodeToFactory[errorCode] = factory;
+                error_code_to_factory_[errorCode] = factory;
             }
 
             std::exception_ptr ClientExceptionFactory::create_exception(std::vector<codec::ErrorHolder>::const_iterator begin,
@@ -436,9 +436,9 @@ namespace hazelcast {
                 if (begin == end) {
                     return nullptr;
                 }
-                auto factory = errorCodeToFactory.find(begin->errorCode);
-                if (errorCodeToFactory.end() == factory) {
-                    factory = errorCodeToFactory.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
+                auto factory = error_code_to_factory_.find(begin->errorCode);
+                if (error_code_to_factory_.end() == factory) {
+                    factory = error_code_to_factory_.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
                 }
                 return factory->second->create_exception(*this, begin->className, begin->message.value_or("nullptr"),
                                                   begin->toString(), create_exception(begin + 1, end));
@@ -449,26 +449,26 @@ namespace hazelcast {
             }
 
             ClientMessageBuilder::ClientMessageBuilder(connection::Connection &connection)
-                    : connection(connection) {}
+                    : connection_(connection) {}
 
             ClientMessageBuilder::~ClientMessageBuilder() = default;
 
             bool ClientMessageBuilder::onData(util::ByteBuffer &buffer) {
                 bool isCompleted = false;
 
-                if (!message) {
-                    message.reset(new ClientMessage());
-                    is_final_frame = false;
-                    remaining_frame_bytes = 0;
+                if (!message_) {
+                    message_.reset(new ClientMessage());
+                    is_final_frame_ = false;
+                    remaining_frame_bytes_ = 0;
                 }
 
-                if (message) {
-                    message->fillMessageFrom(buffer, is_final_frame, remaining_frame_bytes);
-                    isCompleted = is_final_frame && remaining_frame_bytes == 0;
+                if (message_) {
+                    message_->fillMessageFrom(buffer, is_final_frame_, remaining_frame_bytes_);
+                    isCompleted = is_final_frame_ && remaining_frame_bytes_ == 0;
                     if (isCompleted) {
                         //MESSAGE IS COMPLETE HERE
-                        message->wrap_for_read();
-                        connection.handleClientMessage(std::move(message));
+                        message_->wrap_for_read();
+                        connection_.handleClientMessage(std::move(message_));
                         isCompleted = true;
 
                         //TODO: add fragmentation later
@@ -495,8 +495,8 @@ namespace hazelcast {
             }
 
             void ClientMessageBuilder::addToPartialMessages(std::unique_ptr<ClientMessage> &msg) {
-                int64_t id = message->getCorrelationId();
-                partialMessages[id] = std::move(msg);
+                int64_t id = message_->getCorrelationId();
+                partial_messages_[id] = std::move(msg);
             }
 
             bool ClientMessageBuilder::appendExistingPartialMessage(std::unique_ptr<ClientMessage> &msg) {
@@ -527,15 +527,15 @@ namespace hazelcast {
 
             UsernamePasswordCredentials::UsernamePasswordCredentials(const std::string &principal,
                                                                      const std::string &password)
-                    : name(principal), password(password) {
+                    : name_(principal), password_(password) {
             }
 
             const std::string &UsernamePasswordCredentials::getName() const {
-                return name;
+                return name_;
             }
 
             const std::string &UsernamePasswordCredentials::getPassword() const {
-                return password;
+                return password_;
             }
 
             namespace codec {

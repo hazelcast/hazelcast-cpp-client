@@ -217,13 +217,13 @@ namespace hazelcast {
                     : public util::Iterable<E>, public util::Iterator<E> {
             public:
                 LazySamplingEntryIterableIterator(int maxCount, const SampleableConcurrentHashMap<K, V, KS, VS> &sampleableMap)
-                        : maxEntryCount(maxCount), randomNumber(std::abs(rand())), returnedEntryCount(0),
-                          currentIndex(-1),
-                          reachedToEnd(false), internalMap(sampleableMap) {
-                    size_t mapSize = internalMap.size();
-                    startIndex = (int) (randomNumber % mapSize);
-                    if (startIndex < 0) {
-                        startIndex = 0;
+                        : max_entry_count_(maxCount), random_number_(std::abs(rand())), returned_entry_count_(0),
+                          current_index_(-1),
+                          reached_to_end_(false), internal_map_(sampleableMap) {
+                    size_t mapSize = internal_map_.size();
+                    start_index_ = (int) (random_number_ % mapSize);
+                    if (start_index_ < 0) {
+                        start_index_ = 0;
                     }
                 }
 
@@ -232,49 +232,49 @@ namespace hazelcast {
                 }
 
                 void iterate() {
-                    if (returnedEntryCount >= maxEntryCount || reachedToEnd) {
-                        currentSample.reset();
+                    if (returned_entry_count_ >= max_entry_count_ || reached_to_end_) {
+                        current_sample_.reset();
                         return;
                     }
 
-                    if (currentIndex == -1) {
-                        currentIndex = startIndex;
+                    if (current_index_ == -1) {
+                        current_index_ = start_index_;
                     }
                     // If current entry is not initialized yet, initialize it
-                    if (currentEntry.get() == NULL) {
-                        currentEntry = internalMap.getEntry((size_t) currentIndex);
+                    if (current_entry_.get() == NULL) {
+                        current_entry_ = internal_map_.getEntry((size_t) current_index_);
                     }
                     do {
-                        currentEntry = internalMap.getEntry((size_t) currentIndex);
+                        current_entry_ = internal_map_.getEntry((size_t) current_index_);
                         // Advance to next entry
-                        ++currentIndex;
-                        if ((size_t) currentIndex >= internalMap.size()) {
-                            currentIndex = 0;
+                        ++current_index_;
+                        if ((size_t) current_index_ >= internal_map_.size()) {
+                            current_index_ = 0;
                         }
-                        while (currentEntry.get() != NULL) {
-                            std::shared_ptr<VS> value = currentEntry->second;
-                            std::shared_ptr<KS> key = currentEntry->first;
-                            currentEntry = internalMap.getEntry((size_t) currentIndex);
-                            if (internalMap.isValidForSampling(value)) {
-                                currentSample = internalMap.createSamplingEntry(key, value);
-                                returnedEntryCount++;
+                        while (current_entry_.get() != NULL) {
+                            std::shared_ptr<VS> value = current_entry_->second;
+                            std::shared_ptr<KS> key = current_entry_->first;
+                            current_entry_ = internal_map_.getEntry((size_t) current_index_);
+                            if (internal_map_.isValidForSampling(value)) {
+                                current_sample_ = internal_map_.createSamplingEntry(key, value);
+                                returned_entry_count_++;
                                 return;
                             }
                         }
-                    } while (currentIndex != startIndex);
+                    } while (current_index_ != start_index_);
 
-                    reachedToEnd = true;
-                    currentSample.reset();
+                    reached_to_end_ = true;
+                    current_sample_.reset();
                 }
 
                 bool hasNext() override {
                     iterate();
-                    return currentSample.get() != NULL;
+                    return current_sample_.get() != NULL;
                 }
 
                 std::shared_ptr<E> next() override {
-                    if (currentSample.get() != NULL) {
-                        return currentSample;
+                    if (current_sample_.get() != NULL) {
+                        return current_sample_;
                     } else {
                         BOOST_THROW_EXCEPTION(client::exception::NoSuchElementException(
                                                       "No more elements in the iterated collection"));
@@ -286,15 +286,15 @@ namespace hazelcast {
                 }
 
             private:
-                const int maxEntryCount;
-                const int randomNumber;
-                std::shared_ptr<std::pair<std::shared_ptr<KS>, std::shared_ptr<VS> > > currentEntry;
-                int returnedEntryCount;
-                int currentIndex;
-                bool reachedToEnd;
-                std::shared_ptr<E> currentSample;
-                const SampleableConcurrentHashMap &internalMap;
-                int startIndex;
+                const int max_entry_count_;
+                const int random_number_;
+                std::shared_ptr<std::pair<std::shared_ptr<KS>, std::shared_ptr<VS> > > current_entry_;
+                int returned_entry_count_;
+                int current_index_;
+                bool reached_to_end_;
+                std::shared_ptr<E> current_sample_;
+                const SampleableConcurrentHashMap &internal_map_;
+                int start_index_;
             };
         };
     }

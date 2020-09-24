@@ -39,7 +39,7 @@ namespace hazelcast {
                 boost::future<int32_t> size() {
                     auto request = protocol::codec::replicatedmap_size_encode(name);
                     return invokeAndGetFuture<int32_t>(
-                            request, targetPartitionId);
+                            request, target_partition_id_);
                 }
 
                 /**
@@ -49,7 +49,7 @@ namespace hazelcast {
                 boost::future<bool> isEmpty() {
                     auto request = protocol::codec::replicatedmap_isempty_encode(name);
                     return invokeAndGetFuture<bool>(
-                            request, targetPartitionId);
+                            request, target_partition_id_);
                 }
 
                 /**
@@ -61,13 +61,13 @@ namespace hazelcast {
                     try {
                         auto request = protocol::codec::replicatedmap_clear_encode(name);
                         auto result = toVoidFuture(invoke(request));
-                        if (nearCache) {
-                            nearCache->clear();
+                        if (near_cache_) {
+                            near_cache_->clear();
                         }
                         return result;
                     } catch (...) {
-                        if (nearCache) {
-                            nearCache->clear();
+                        if (near_cache_) {
+                            near_cache_->clear();
                         }
                         throw;
                     }
@@ -125,7 +125,7 @@ namespace hazelcast {
                         auto request = protocol::codec::replicatedmap_putall_encode(name, dataEntries);
                         auto result = toVoidFuture(invoke(request));
 
-                        if (nearCache) {
+                        if (near_cache_) {
                             for (auto &entry : dataEntries) {
                                 invalidate(std::move(entry.first));
                             }
@@ -133,7 +133,7 @@ namespace hazelcast {
 
                         return result;
                     } catch (...) {
-                        if (nearCache) {
+                        if (near_cache_) {
                             for (auto &entry : dataEntries) {
                                 invalidate(std::move(entry.first));
                             }
@@ -176,18 +176,18 @@ namespace hazelcast {
                 boost::future<std::vector<serialization::pimpl::Data>> valuesData() {
                     auto request = protocol::codec::replicatedmap_values_encode(getName());
                     return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(
-                            request, targetPartitionId);
+                            request, target_partition_id_);
                 }
 
                 boost::future<EntryVector> entrySetData() {
                     auto request = protocol::codec::replicatedmap_entryset_encode(getName());
-                    return invokeAndGetFuture<EntryVector>(request, targetPartitionId);
+                    return invokeAndGetFuture<EntryVector>(request, target_partition_id_);
                 }
 
                 boost::future<std::vector<serialization::pimpl::Data>> keySetData() {
                     auto request = protocol::codec::replicatedmap_keyset_encode(getName());
                     return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(
-                            request, targetPartitionId);
+                            request, target_partition_id_);
                 }
 
                 boost::future<boost::optional<serialization::pimpl::Data>> getData(serialization::pimpl::Data &&key) {
@@ -206,8 +206,8 @@ namespace hazelcast {
                                     }
 
                                     auto sharedValue = std::make_shared<serialization::pimpl::Data>(std::move(*response));
-                                    if (nearCache) {
-                                        nearCache->put(sharedKey, sharedValue);
+                                    if (near_cache_) {
+                                        near_cache_->put(sharedKey, sharedValue);
                                     }
                                     return boost::make_optional(*sharedValue);
                                 } catch (...) {
@@ -218,24 +218,24 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<serialization::pimpl::Data> getCachedData(const std::shared_ptr<serialization::pimpl::Data> &key) {
-                    if (!nearCache) {
+                    if (!near_cache_) {
                         return nullptr;
                     }
-                    return nearCache->get(key);
+                    return near_cache_->get(key);
                 }
 
                 void onInitialize() override {
                     ProxyImpl::onInitialize();
 
                     int partitionCount = getContext().getPartitionService().getPartitionCount();
-                    targetPartitionId = rand() % partitionCount;
+                    target_partition_id_ = rand() % partitionCount;
 
                     initNearCache();
                 }
 
                 void postDestroy() override  {
                     try {
-                        if (nearCache) {
+                        if (near_cache_) {
                             removeNearCacheInvalidationListener();
                             getContext().getNearCacheManager().destroyNearCache(name);
                         }
@@ -250,25 +250,25 @@ namespace hazelcast {
                 ReplicatedMapImpl(const std::string &serviceName, const std::string &objectName,
                                   spi::ClientContext *context);
             private:
-                int targetPartitionId;
-                std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> nearCache;
-                boost::uuids::uuid invalidationListenerId;
+                int target_partition_id_;
+                std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> near_cache_;
+                boost::uuids::uuid invalidation_listener_id_;
                 
                 class NearCacheInvalidationListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    NearCacheInvalidationListenerMessageCodec(const std::string &name) : name(name) {}
+                    NearCacheInvalidationListenerMessageCodec(const std::string &name) : name_(name) {}
 
                     protocol::ClientMessage encodeAddRequest(bool localOnly) const override{
-                        return protocol::codec::replicatedmap_addnearcacheentrylistener_encode(name, false, localOnly);
+                        return protocol::codec::replicatedmap_addnearcacheentrylistener_encode(name_, false, localOnly);
                     }
 
                     protocol::ClientMessage
                     encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override{
-                        return protocol::codec::replicatedmap_removeentrylistener_encode(name, realRegistrationId);
+                        return protocol::codec::replicatedmap_removeentrylistener_encode(name_, realRegistrationId);
                     }
 
                 private:
-                    std::string name;
+                    std::string name_;
                 };
 
                 class ReplicatedMapAddEntryListenerToKeyWithPredicateMessageCodec
@@ -277,92 +277,92 @@ namespace hazelcast {
                     ReplicatedMapAddEntryListenerToKeyWithPredicateMessageCodec(const std::string &name,
                                                                                 serialization::pimpl::Data &&keyData,
                                                                                 serialization::pimpl::Data &&predicateData)
-                            : name(name), keyData(keyData), predicateData(predicateData) {}
+                            : name_(name), key_data_(keyData), predicate_data_(predicateData) {}
 
                     protocol::ClientMessage encodeAddRequest(bool localOnly) const override {
                         return protocol::codec::replicatedmap_addentrylistenertokeywithpredicate_encode(
-                                name, keyData, predicateData, localOnly);
+                                name_, key_data_, predicate_data_, localOnly);
                     }
 
                     protocol::ClientMessage
                     encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override{
-                        return protocol::codec::replicatedmap_removeentrylistener_encode(name, realRegistrationId);
+                        return protocol::codec::replicatedmap_removeentrylistener_encode(name_, realRegistrationId);
                     }
 
                 private:
-                    std::string name;
-                    serialization::pimpl::Data keyData;
-                    serialization::pimpl::Data predicateData;
+                    std::string name_;
+                    serialization::pimpl::Data key_data_;
+                    serialization::pimpl::Data predicate_data_;
                 };
 
                 class ReplicatedMapAddEntryListenerWithPredicateMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     ReplicatedMapAddEntryListenerWithPredicateMessageCodec(const std::string &name,
                                                                           serialization::pimpl::Data &&keyData)
-                            : name(name), predicateData(keyData) {}
+                            : name_(name), predicate_data_(keyData) {}
 
                     protocol::ClientMessage encodeAddRequest(bool localOnly) const override {
-                        return protocol::codec::replicatedmap_addentrylistenerwithpredicate_encode(name, predicateData, localOnly);
+                        return protocol::codec::replicatedmap_addentrylistenerwithpredicate_encode(name_, predicate_data_, localOnly);
                     }
 
                     protocol::ClientMessage
                     encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override {
-                        return protocol::codec::replicatedmap_removeentrylistener_encode(name, realRegistrationId);
+                        return protocol::codec::replicatedmap_removeentrylistener_encode(name_, realRegistrationId);
                     }
 
                 private:
-                    std::string name;
-                    serialization::pimpl::Data predicateData;
+                    std::string name_;
+                    serialization::pimpl::Data predicate_data_;
                 };
 
                 class ReplicatedMapAddEntryListenerToKeyMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     ReplicatedMapAddEntryListenerToKeyMessageCodec(const std::string &name,
-                                                                   serialization::pimpl::Data &&keyData) : name(name), keyData(keyData) {}
+                                                                   serialization::pimpl::Data &&keyData) : name_(name), key_data_(keyData) {}
 
                     protocol::ClientMessage encodeAddRequest(bool localOnly) const override {
-                        return protocol::codec::replicatedmap_addentrylistenertokey_encode(name, keyData, localOnly);
+                        return protocol::codec::replicatedmap_addentrylistenertokey_encode(name_, key_data_, localOnly);
                     }
 
                     protocol::ClientMessage
                     encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override {
-                        return protocol::codec::replicatedmap_removeentrylistener_encode(name, realRegistrationId);
+                        return protocol::codec::replicatedmap_removeentrylistener_encode(name_, realRegistrationId);
                     }
 
                 private:
-                    std::string name;
-                    serialization::pimpl::Data keyData;
+                    std::string name_;
+                    serialization::pimpl::Data key_data_;
                 };
 
                 class ReplicatedMapListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    ReplicatedMapListenerMessageCodec(const std::string &name) : name(name) {}
+                    ReplicatedMapListenerMessageCodec(const std::string &name) : name_(name) {}
 
                     protocol::ClientMessage encodeAddRequest(bool localOnly) const override {
-                        return protocol::codec::replicatedmap_addentrylistener_encode(name, localOnly);
+                        return protocol::codec::replicatedmap_addentrylistener_encode(name_, localOnly);
                     }
 
                     protocol::ClientMessage
                     encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override {
-                        return protocol::codec::replicatedmap_removeentrylistener_encode(name, realRegistrationId);
+                        return protocol::codec::replicatedmap_removeentrylistener_encode(name_, realRegistrationId);
                     }
 
                 private:
-                    std::string name;
+                    std::string name_;
                 };
 
                 class ReplicatedMapAddNearCacheEventHandler
                         : public protocol::codec::replicatedmap_addnearcacheentrylistener_handler {
                 public:
                     ReplicatedMapAddNearCacheEventHandler(
-                            const std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> &nearCache) : nearCache(nearCache) {}
+                            const std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> &nearCache) : near_cache_(nearCache) {}
 
                     void beforeListenerRegister() override {
-                        nearCache->clear();
+                        near_cache_->clear();
                     }
 
                     void onListenerRegister() override {
-                        nearCache->clear();
+                        near_cache_->clear();
                     }
 
                     void handle_entry(const boost::optional<Data> &key, const boost::optional<Data> &value,
@@ -374,11 +374,11 @@ namespace hazelcast {
                             case static_cast<int32_t>(EntryEvent::type::REMOVED):
                             case static_cast<int32_t>(EntryEvent::type::UPDATED):
                             case static_cast<int32_t>(EntryEvent::type::EVICTED): {
-                                nearCache->invalidate(std::make_shared<serialization::pimpl::Data>(std::move(*key)));
+                                near_cache_->invalidate(std::make_shared<serialization::pimpl::Data>(std::move(*key)));
                                 break;
                             }
                             case static_cast<int32_t>(EntryEvent::type::CLEAR_ALL):
-                                nearCache->clear();
+                                near_cache_->clear();
                                 break;
                             default:
                                 BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::IllegalArgumentException>(
@@ -388,7 +388,7 @@ namespace hazelcast {
                     }
 
                 private:
-                    std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> nearCache;
+                    std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, serialization::pimpl::Data>> near_cache_;
                 };
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec> createEntryListenerCodec(const std::string name) {
@@ -423,8 +423,8 @@ namespace hazelcast {
 
                 void registerInvalidationListener() {
                     try {
-                        invalidationListenerId = registerListener(createNearCacheInvalidationListenerCodec(),
-                                                                  std::shared_ptr<impl::BaseEventHandler>(new ReplicatedMapAddNearCacheEventHandler(nearCache))).get();
+                        invalidation_listener_id_ = registerListener(createNearCacheInvalidationListenerCodec(),
+                                                                  std::shared_ptr<impl::BaseEventHandler>(new ReplicatedMapAddNearCacheEventHandler(near_cache_))).get();
                     } catch (exception::IException &e) {
                         getContext().getLogger().severe("-----------------\nNear Cache is not initialized!\n-----------------" , e);
                     }
@@ -433,7 +433,7 @@ namespace hazelcast {
                 void initNearCache() {
                     auto nearCacheConfig = getContext().getClientConfig().template getNearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>(name);
                     if (nearCacheConfig.get() != NULL) {
-                        nearCache = getContext().getNearCacheManager().template getOrCreateNearCache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(
+                        near_cache_ = getContext().getNearCacheManager().template getOrCreateNearCache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(
                                 name, *nearCacheConfig);
                         if (nearCacheConfig->isInvalidateOnChange()) {
                             registerInvalidationListener();
@@ -443,25 +443,25 @@ namespace hazelcast {
                 }
 
                 void removeNearCacheInvalidationListener() {
-                    if (nearCache) {
-                        if (!invalidationListenerId.is_nil()) {
-                            deregisterListener(invalidationListenerId).get();
+                    if (near_cache_) {
+                        if (!invalidation_listener_id_.is_nil()) {
+                            deregisterListener(invalidation_listener_id_).get();
                         }
                     }
                 }
 
                 void invalidate(serialization::pimpl::Data &&key) {
-                    if (!nearCache) {
+                    if (!near_cache_) {
                         return;
                     }
-                    nearCache->invalidate(std::make_shared<serialization::pimpl::Data>(key));
+                    near_cache_->invalidate(std::make_shared<serialization::pimpl::Data>(key));
                 }
 
                 void invalidate(const std::shared_ptr<serialization::pimpl::Data> &key) {
-                    if (!nearCache) {
+                    if (!near_cache_) {
                         return;
                     }
-                    nearCache->invalidate(key);
+                    near_cache_->invalidate(key);
                 }
             };
         }

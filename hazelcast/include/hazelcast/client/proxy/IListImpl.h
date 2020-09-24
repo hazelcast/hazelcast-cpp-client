@@ -100,11 +100,11 @@ namespace hazelcast {
                     protocol::ClientMessage
                     encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
                 private:
-                    std::string name;
-                    bool includeValue;
+                    std::string name_;
+                    bool include_value_;
                 };
 
-                int partitionId;
+                int partition_id_;
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
