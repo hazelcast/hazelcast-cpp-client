@@ -139,6 +139,26 @@ namespace hazelcast {
 
             DEFINE_EXCEPTION_CLASS(MutationDisallowedException, protocol::MUTATION_DISALLOWED_EXCEPTION, true);
 
+            DEFINE_EXCEPTION_CLASS(SessionExpiredException, protocol::SESSION_EXPIRED_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(WaitKeyCancelledException, protocol::WAIT_KEY_CANCELLED_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(LockAcquireLimitReachedException, protocol::LOCK_ACQUIRE_LIMIT_REACHED_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(LockOwnershipLostException, protocol::LOCK_OWNERSHIP_LOST_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(CPGroupDestroyedException, protocol::CP_GROUP_DESTROYED_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(CannotReplicateException, protocol::CANNOT_REPLICATE_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(LeaderDemotedException, protocol::LEADER_DEMOTED_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(StaleAppendRequestException, protocol::STALE_APPEND_REQUEST_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(NotLeaderException, protocol::NOT_LEADER_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(VersionMismatchException, protocol::VERSION_MISMATCH_EXCEPTION, true);
+
             class HAZELCAST_API RetryableHazelcastException : public HazelcastException {
             public:
                 RetryableHazelcastException(const std::string &errorName, int32_t errorCode, const std::string &source,
