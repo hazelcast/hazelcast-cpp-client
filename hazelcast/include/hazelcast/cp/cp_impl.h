@@ -16,9 +16,12 @@
 
 #pragma once
 
-#include <string>
+#include <unordered_map>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/thread/future.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/cp/cp.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,7 +29,98 @@
 #endif
 
 namespace hazelcast {
+    namespace client { namespace spi { class ClientContext; } }
     namespace cp {
+        namespace internal {
+            namespace session {
+                class HAZELCAST_API proxy_session_manager {
+                public:
+                    /**
+                     * Represents absence of a Raft session
+                     */
+                    static constexpr int64_t NO_SESSION_ID = -1;
+
+                    proxy_session_manager(client::spi::ClientContext &client);
+
+                    /**
+                     * Increments acquire count of the session.
+                     * Creates a new session if there is no session yet.
+                     */
+                    int64_t acquire_session(const raft_group_id &group_id);
+
+                    /**
+                     * Decrements acquire count of the session.
+                     * Returns silently if no session exists for the given id.
+                     */
+                    void release_session(const raft_group_id &group_id, int64_t session_id);
+
+                    void release_session(const raft_group_id &group_id, int64_t session_id, int32_t count);
+
+                    /**
+                     * Invalidates the given session.
+                     * No more heartbeats will be sent for the given session.
+                     */
+                    void invalidate_session(const raft_group_id &group_id, int64_t session_id);
+
+                    int64_t get_session(const raft_group_id &group_id);
+
+                    /**
+                     * Invokes a shutdown call on server to close all existing sessions.
+                     */
+                    void shutdown();
+
+                    // for testing
+                    int64_t get_session_acquire_count(const raft_group_id &group_id, int64_t session_id);
+
+                private:
+                    struct session_state {
+                        session_state(int64_t id, int64_t ttlMillis);
+                        session_state(const session_state &rhs);
+
+                        int64_t id;
+                        std::chrono::milliseconds ttl;
+                        std::chrono::steady_clock::time_point creation_time;
+                        std::atomic_int32_t acquire_count = {0};
+
+                        bool is_valid() const;
+
+                        bool is_in_use() const;
+
+                        bool is_expired() const;
+
+                        int64_t acquire(int32_t count);
+
+                        void release(int32_t count);
+                    };
+
+                    struct session_response {
+                        int64_t id;
+                        int64_t ttl_millis;
+                        int64_t heartbeat_millis;
+                    };
+
+                    client::spi::ClientContext &client_;
+                    boost::shared_mutex lock_;
+                    bool running_ = true;
+                    std::atomic_bool scheduled_heartbeat_= {false};
+                    std::unordered_map<raft_group_id, session_state> sessions_;
+                    std::shared_ptr<boost::asio::steady_timer> heartbeat_timer_;
+
+                    session_state &get_or_create_session(const raft_group_id &group_id);
+
+                    std::unordered_map<raft_group_id, session_state>::iterator
+                    create_new_session(const raft_group_id &group_id);
+
+                    session_response request_new_session(const raft_group_id &group_id);
+
+                    void schedule_heartbeat_task(int64_t hearbeat_millis);
+
+                    boost::future<client::protocol::ClientMessage> heartbeat(const raft_group_id &group_id, int64_t session_id);
+
+                    void close_session(const raft_group_id &group_id, int64_t session_id);
+                };
+            }
+        }
     }
 }
 

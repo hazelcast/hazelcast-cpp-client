@@ -22,6 +22,7 @@
 
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,24 +40,50 @@ namespace hazelcast {
 
         class raft_proxy_factory;
 
-        struct raft_group_id {
+        struct HAZELCAST_API raft_group_id {
             std::string name;
             int64_t seed;
             int64_t group_id;
+
+            bool operator==(const raft_group_id &rhs) const;
+
+            bool operator!=(const raft_group_id &rhs) const;
         };
 
-        class cp_proxy : public client::proxy::ProxyImpl {
+        class HAZELCAST_API cp_proxy : public client::proxy::ProxyImpl {
         public:
             cp_proxy(const std::string &serviceName, const std::string &proxyName, client::spi::ClientContext *context,
                      const raft_group_id &groupId, const std::string &objectName);
 
-            const raft_group_id &getGroupId() const;
+            const raft_group_id &get_group_id() const;
 
         protected:
             raft_group_id group_id_;
             std::string object_name_;
 
             void onDestroy() override;
+        };
+
+        namespace internal {
+            namespace session {
+                class proxy_session_manager;
+            }
+        }
+        class HAZELCAST_API session_aware_proxy : public cp_proxy {
+        public:
+            session_aware_proxy(const std::string &serviceName, const std::string &proxyName,
+                                client::spi::ClientContext *context, const raft_group_id &groupId,
+                                const std::string &objectName,
+                                internal::session::proxy_session_manager &sessionManager);
+
+        protected:
+            internal::session::proxy_session_manager &session_manager_;
+
+            /**
+             * Decrements acquire count of the session.
+             * Returns silently if no session exists for the given id.
+             */
+            void release_session(int64_t session_id);
         };
 
         /**
@@ -306,24 +333,103 @@ namespace hazelcast {
             latch(const std::string &name, client::spi::ClientContext &context, const raft_group_id &groupId,
                   const std::string &objectName);
 
+            /**
+             * Sets the count to the given value if the current count is zero.
+             * <p>
+             * If count is not zero, then this method does nothing and returns \false.
+             *
+             * @param count the number of times \count_down must be invoked
+             *              before threads can pass through \wait_for
+             * @return \true if the new count was set, \false if the current count is not zero
+             * @throws IllegalArgumentException if \count is not positive number
+             */
             boost::future<bool> try_set_count(int32_t count);
 
+            /**
+             * Returns the current count.
+             *
+             * @return the current count
+             */
             boost::future<int32_t> get_count();
 
+            /**
+             * Decrements the count of the latch, releasing all waiting threads if
+             * the count reaches zero.
+             * <p>
+             * If the current count is greater than zero, then it is decremented.
+             * If the new count is zero:
+             * <ul>
+             * <li>All waiting threads are re-enabled for thread scheduling purposes, and
+             * <li>Countdown owner is set to \null.
+             * </ul>
+             * If the current count equals zero, then nothing happens.
+             */
             boost::future<void> count_down();
 
+            /**
+             * see https://en.cppreference.com/w/cpp/thread/latch/try_wait
+             *
+             * @return true only if the internal counter has reached zero. This function may spuriously return false with
+             * very low probability even if the internal counter has reached zero.
+             */
             boost::future<bool> try_wait();
 
+            /**
+             * see https://en.cppreference.com/w/cpp/thread/latch/wait
+             *
+             * Blocks the calling thread until the internal counter reaches 0 or server thread is interrupted (e.g. cluster shutdown).
+             * If it is zero already, returns immediately.
+             *
+             * @return when the latch count becaomes 0.
+             */
             boost::future<void> wait();
 
+            /**
+             * Causes the current thread to wait until the latch has counted down to
+             * zero, or an exception is thrown, or the specified waiting time elapses.
+             * <p>
+             * If the current count is zero then this method returns immediately
+             * with the value \no_timeout.
+             * <p>
+             * If the current count is greater than zero, then the current
+             * thread becomes disabled for thread scheduling purposes and lies
+             * dormant until one of five things happen:
+             * <ul>
+             * <li>the count reaches zero due to invocations of the \count_down method,
+             * <li>this \latch instance is destroyed,
+             * <li>the countdown owner becomes disconnected,
+             * <li>some other thread interrupts the current server thread, or
+             * <li>the specified waiting time elapses.
+             * </ul>
+             * If the count reaches zero, then the method returns with the
+             * value \no_timeout.
+             * <p>
+             * If the specified waiting time elapses then the value \timeout
+             * is returned.  If the time is less than or equal to zero, the method
+             * will not wait at all.
+             *
+             * @param rel_time the maximum time to wait
+             * @return \no_timeout if the count reached zero, \timeout
+             * if the waiting time elapsed before the count reached zero
+             * @throws IllegalStateException if the Hazelcast instance is shutdown while waiting
+             */
             template<typename Rep, typename Period>
             boost::future<std::cv_status> wait_for(const std::chrono::duration<Rep, Period> &rel_time) {
                 using namespace std::chrono;
                 return wait_for(duration_cast<milliseconds>(rel_time).count());
             }
 
+            /**
+             * see \wait_for for details of the operation.
+             *
+             * @tparam Clock The clock type used
+             * @tparam Duration The duration type used
+             * @param timeout_time The time to wait until.
+             * @return \no_timeout if the count reached zero, \timeout
+             * if the waiting time elapsed before the count reached zero
+             */
             template<typename Clock, typename Duration>
-            boost::future<std::cv_status> wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time ) {
+            boost::future<std::cv_status> wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time) {
                 using namespace std::chrono;
                 return wait_for(duration_cast<milliseconds>(timeout_time - Clock::now()).count());
             }
@@ -338,8 +444,468 @@ namespace hazelcast {
             boost::future<std::cv_status> wait_for(int64_t milliseconds);
         };
 
-        class HAZELCAST_API fenced_lock {
+        /**
+         * Client-side proxy of Raft-based lock API
+         */
+        class HAZELCAST_API fenced_lock : public session_aware_proxy {
+        public:
+            /**
+             * Representation of a failed lock attempt where
+             * the caller thread has not acquired the lock
+             */
+            static constexpr int64_t INVALID_FENCE = 0L;
 
+            fenced_lock(const std::string &name, client::spi::ClientContext &context,
+                             const raft_group_id &groupId, const std::string &objectName);
+
+            /**
+             * Acquires the lock.
+             * <p>
+             * When the caller already holds the lock and the current lock() call is
+             * reentrant, the call can fail with
+             * \LockAcquireLimitReachedException if the lock acquire limit is
+             * already reached. Please see server side FencedLockConfig for more
+             * information.
+             * <p>
+             * If the lock is not available then the current thread becomes disabled
+             * for thread scheduling purposes and lies dormant until the lock has been
+             * acquired.
+             * <p>
+             * Consider the following scenario:
+             * <pre>
+             *     auto lock = ...;
+             *     lock->lock().get();
+             *     // The caller thread hits a long pause
+             *     // and its CP session is closed on the CP group.
+             *     lock->lock().get();
+             * </pre>
+             * In this scenario, a thread acquires the lock, then user process
+             * encounters a long pause, which is longer than
+             * server side CPSubsystemConfig#getSessionTimeToLiveSeconds config. In this case,
+             * its CP session will be closed on the corresponding CP group because
+             * it could not commit session heartbeats in the meantime. After the user pause
+             * wakes up again, the same thread attempts to acquire the lock
+             * reentrantly. In this case, the second lock() call fails by throwing
+             * \LockOwnershipLostException. If the caller wants to deal with
+             * its session loss by taking some custom actions, it can handle the thrown
+             * \LockOwnershipLostException instance.
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while locking reentrantly
+             * @throws LockAcquireLimitReachedException if the lock call is reentrant
+             *         and the configured lock acquire limit is already reached.
+             */
+            boost::future<void> lock();
+
+            /**
+             * Acquires the lock and returns the fencing token assigned to the current
+             * thread for this lock acquire. If the lock is acquired reentrantly,
+             * the same fencing token is returned, or the lock() call can fail with
+             * \LockAcquireLimitReachedException if the lock acquire limit is
+             * already reached. Please see server FencedLockConfig for more
+             * information.
+             * <p>
+             * If the lock is not available then the current thread becomes disabled
+             * for thread scheduling purposes and lies dormant until the lock has been
+             * acquired.
+             * <p>
+             * This is a convenience method for the following pattern:
+             * <pre>
+             *     auto lock = ...;
+             *     lock.lock().get();
+             *     return lock->get_fence().get();
+             * </pre>
+             * <p>
+             * Consider the following scenario:
+             * <pre>
+             *     auto lock = ...;
+             *     lock->lock_and_get_fence().get();
+             *     // The caller thread hits a long pause
+             *     // and its CP session is closed on the CP group.
+             *     lock->lock_and_get_fence().get();
+             * </pre>
+             * In this scenario, a thread acquires the lock, then user process
+             * encounters a long pause, which is longer than
+             * server side CPSubsystemConfig#getSessionTimeToLiveSeconds config. In this case,
+             * its CP session will be closed on the corresponding CP group because
+             * it could not commit session heartbeats in the meantime. After the user pause
+             * wakes up again, the same thread attempts to acquire the lock
+             * reentrantly. In this case, the second lock() call fails by throwing
+             * \LockOwnershipLostException. If the caller wants to deal with
+             * its session loss by taking some custom actions, it can handle the thrown
+             * \LockOwnershipLostException instance.
+             *
+             * Fencing tokens are monotonic numbers that are incremented each time
+             * the lock switches from the free state to the acquired state. They are
+             * simply used for ordering lock holders. A lock holder can pass
+             * its fencing to the shared resource to fence off previous lock holders.
+             * When this resource receives an operation, it can validate the fencing
+             * token in the operation.
+             * <p>
+             * Consider the following scenario where the lock is free initially:
+             * <pre>
+             *     auto lock = ...; // the lock is free
+             *     auto fence1 = lock->lock_and_get_fence().get(); // (1)
+             *     long fence2 = lock->lock_and_get_fence().get(); // (2)
+             *     assert(fence1 == fence2);
+             *     lock->unlock().get();
+             *     lock->unlock().get();
+             *     long fence3 = lock->lock_and_get_fence().get(); // (3)
+             *     assert(fence3 &gt; fence1);
+             * </pre>
+             * In this scenario, the lock is acquired by a thread in the cluster. Then,
+             * the same thread reentrantly acquires the lock again. The fencing token
+             * returned from the second acquire is equal to the one returned from the
+             * first acquire, because of reentrancy. After the second acquire, the lock
+             * is released 2 times, hence becomes free. There is a third lock acquire
+             * here, which returns a new fencing token. Because this last lock acquire
+             * is not reentrant, its fencing token is guaranteed to be larger than the
+             * previous tokens, independent of the thread that has acquired the lock.
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while locking reentrantly
+             * @throws LockAcquireLimitReachedException if the lock call is reentrant
+             *         and the configured lock acquire limit is already reached.
+             */
+            boost::future<int64_t> lock_and_get_fence();
+
+            /**
+             * Acquires the lock if it is available or already held by the current
+             * thread at the time of invocation &amp; the acquire limit is not exceeded,
+             * and immediately returns with the value \true. If the lock is not
+             * available, then this method immediately returns with the value
+             * \false. When the call is reentrant, it can return \false
+             * if the lock acquire limit is exceeded. Please see
+             * server FencedLockConfig for more information.
+             * <p>
+             * A typical usage idiom for this method would be:
+             * <pre>
+             *     auto lock = ...;
+             *     if (lock->try_lock().get()) {
+             *         try {
+             *             // manipulate protected state
+             *             lock->unlock().get();
+             *         } catch(...) {
+             *             lock->unlock().get();
+             *         }
+             *     } else {
+             *         // perform alternative actions
+             *     }
+             * </pre>
+             * This usage ensures that the lock is unlocked if it was acquired,
+             * and doesn't try to unlock if the lock was not acquired.
+             *
+             * @return \true if the lock was acquired and
+             *         \false otherwise
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while locking reentrantly
+             */
+            boost::future<bool> try_lock();
+
+            /**
+             * Acquires the lock if it is free within the given waiting time,
+             * or already held by the current thread.
+             * <p>
+             * If the lock is available, this method returns immediately with the value
+             * \true. When the call is reentrant, it immediately returns
+             * \true if the lock acquire limit is not exceeded. Otherwise,
+             * it returns \false on the reentrant lock attempt if the acquire
+             * limit is exceeded. Please see server FencedLockConfig for more
+             * information.
+             * <p>
+             * If the lock is not available then the current thread becomes disabled
+             * for thread scheduling purposes and lies dormant until the lock is
+             * acquired by the current thread or the specified waiting time elapses.
+             * <p>
+             * If the lock is acquired, then the value \true is returned.
+             * <p>
+             * If the specified waiting time elapses, then the value \false
+             * is returned. If the time is less than or equal to zero, the method does
+             * not wait at all.
+             *
+             * @param timeout the maximum time to wait for the lock
+             * @return \true if the lock was acquired and \false
+             *         if the waiting time elapsed before the lock was acquired
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while locking reentrantly
+             */
+            boost::future<bool> try_lock(std::chrono::steady_clock::duration timeout);
+
+            /**
+             * Acquires the lock only if it is free or already held by the current
+             * thread at the time of invocation &amp; the acquire limit is not exceeded,
+             * and returns the fencing token assigned to the current thread for this
+             * lock acquire. If the lock is acquired reentrantly, the same fencing
+             * token is returned. If the lock is already held by another caller or
+             * the lock acquire limit is exceeded, then this method immediately returns
+             * \INVALID_FENCE that represents a failed lock attempt.
+             * Please see server FencedLockConfig for more information.
+             * <p>
+             * This is a convenience method for the following pattern:
+             * <pre>
+             *     auto lock = ...;
+             *     if (lock->try_lock().get()) {
+             *         return lock->get_fence().get();
+             *     } else {
+             *         return INVALID_FENCE;
+             *     }
+             * </pre>
+             * <p>
+             * Consider the following scenario where the lock is free initially:
+             * <pre>
+             *     auto lock = ...; // the lock is free
+             *     lock->try_lock_and_get_fence().get();
+             *     // JVM of the caller thread hits a long pause
+             *     // and its CP session is closed on the CP group.
+             *     lock->try_lock_and_get_fence().get();
+             * </pre>
+             * In this scenario, a thread acquires the lock, then its JVM instance
+             * encounters a long pause, which is longer than
+             * server config CPSubsystemConfig#getSessionTimeToLiveSeconds. In this case,
+             * its CP session will be closed on the corresponding CP group because
+             * it could not commit session heartbeats in the meantime. After the JVM
+             * instance wakes up again, the same thread attempts to acquire the lock
+             * reentrantly. In this case, the second lock() call fails by throwing
+             * \LockOwnershipLostException which extends
+             * \IllegalMonitorStateException. If the caller wants to deal with
+             * its session loss by taking some custom actions, it can handle the thrown
+             * \LockOwnershipLostException instance.
+             * <p>
+             * Fencing tokens are monotonic numbers that are incremented each time
+             * the lock switches from the free state to the acquired state. They are
+             * simply used for ordering lock holders. A lock holder can pass
+             * its fencing to the shared resource to fence off previous lock holders.
+             * When this resource receives an operation, it can validate the fencing
+             * token in the operation.
+             * <p>
+             * Consider the following scenario where the lock is free initially:
+             * <pre>
+             *     auto lock = ...; // the lock is free
+             *     long fence1 = lock->try_lock_and_get_fence(); // (1)
+             *     long fence2 = lock->try_lock_and_get_fence(); // (2)
+             *     assert fence1 == fence2;
+             *     lock->unlock().get();
+             *     lock->unlock().get();
+             *     long fence3 = lock->try_lock_and_get_fence(); // (3)
+             *     assert fence3 &gt; fence1;
+             * </pre>
+             * In this scenario, the lock is acquired by a thread in the cluster. Then,
+             * the same thread reentrantly acquires the lock again. The fencing token
+             * returned from the second acquire is equal to the one returned from the
+             * first acquire, because of reentrancy. After the second acquire, the lock
+             * is released 2 times, hence becomes free. There is a third lock acquire
+             * here, which returns a new fencing token. Because this last lock acquire
+             * is not reentrant, its fencing token is guaranteed to be larger than the
+             * previous tokens, independent of the thread that has acquired the lock.
+             *
+             * @return the fencing token if the lock was acquired and
+             *         \INVALID_FENCE otherwise
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while locking reentrantly
+             */
+            boost::future<int64_t> try_lock_and_get_fence();
+
+            /**
+             * Acquires the lock if it is free within the given waiting time,
+             * or already held by the current thread at the time of invocation &amp;
+             * the acquire limit is not exceeded, and returns the fencing token
+             * assigned to the current thread for this lock acquire. If the lock is
+             * acquired reentrantly, the same fencing token is returned. If the lock
+             * acquire limit is exceeded, then this method immediately returns
+             * \INVALID_FENCE that represents a failed lock attempt.
+             * Please see server FencedLockConfig for more information.
+             * <p>
+             * If the lock is not available then the current thread becomes disabled
+             * for thread scheduling purposes and lies dormant until the lock is
+             * acquired by the current thread or the specified waiting time elapses.
+             * <p>
+             * If the specified waiting time elapses, then \INVALID_FENCE
+             * is returned. If the time is less than or equal to zero, the method does
+             * not wait at all.
+             * <p>
+             * This is a convenience method for the following pattern:
+             * <pre>
+             *     auto lock = ...;
+             *     if (lock->try_lock(timeout).get()) {
+             *         return lock->get_fence().get();
+             *     } else {
+             *         return INVALID_FENCE;
+             *     }
+             * </pre>
+             * <p>
+             * Consider the following scenario where the lock is free initially:
+             * <pre>
+             *      auto lock = ...; // the lock is free
+             *      lock->try_lock_and_get_fence(timeout).get();
+             *      // The caller process hits a long pause and its CP session
+             *      is closed on the CP group.
+             *      lock->try_lock_and_get_fence(timeout).get();
+             * </pre>
+             * In this scenario, a thread acquires the lock, then its process
+             * encounters a long pause, which is longer than
+             * server config \CPSubsystemConfig#getSessionTimeToLiveSeconds. In this case,
+             * its CP session will be closed on the corresponding CP group because
+             * it could not commit session heartbeats in the meantime. After the process
+             * wakes up again, the same thread attempts to acquire the lock
+             * reentrantly. In this case, the second lock() call fails by throwing
+             * \LockOwnershipLostException which extends
+             * {@link IllegalMonitorStateException}. If the caller wants to deal with
+             * its session loss by taking some custom actions, it can handle the thrown
+             * \LockOwnershipLostException instance.
+             * <p>
+             * Fencing tokens are monotonic numbers that are incremented each time
+             * the lock switches from the free state to the acquired state. They are
+             * simply used for ordering lock holders. A lock holder can pass
+             * its fencing to the shared resource to fence off previous lock holders.
+             * When this resource receives an operation, it can validate the fencing
+             * token in the operation.
+             * <p>
+             * Consider the following scenario where the lock is free initially:
+             * <pre>
+             *     auto lock = ...; // the lock is free
+             *     long fence1 = lock->try_lock_and_get_fence(timeout).get(); // (1)
+             *     long fence2 = lock->try_lock_and_get_fence(timeout).get(); // (2)
+             *     assert fence1 == fence2;
+             *     lock->unlock().get();
+             *     lock->unlock().get();
+             *     long fence3 = lock->try_lock_and_get_fence(timeout).get(); // (3)
+             *     assert fence3 &gt; fence1;
+             * </pre>
+             * In this scenario, the lock is acquired by a thread in the cluster. Then,
+             * the same thread reentrantly acquires the lock again. The fencing token
+             * returned from the second acquire is equal to the one returned from the
+             * first acquire, because of reentrancy. After the second acquire, the lock
+             * is released 2 times, hence becomes free. There is a third lock acquire
+             * here, which returns a new fencing token. Because this last lock acquire
+             * is not reentrant, its fencing token is guaranteed to be larger than the
+             * previous tokens, independent of the thread that has acquired the lock.
+             *
+             * @param timeout the maximum time to wait for the lock
+             * @return the fencing token if the lock was acquired and
+             *         \INVALID_FENCE otherwise
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while locking reentrantly
+             */
+            boost::future<int64_t> try_lock_and_get_fence(std::chrono::steady_clock::duration timeout);
+
+            /**
+             * Releases the lock if the lock is currently held by the current thread.
+             *
+             * @throws IllegalMonitorStateException if the lock is not held by
+             *         the current thread
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed before the current thread releases the lock
+             */
+            boost::future<void> unlock();
+
+            /**
+             * Returns the fencing token if the lock is held by the current thread.
+             * <p>
+             * Fencing tokens are monotonic numbers that are incremented each time
+             * the lock switches from the free state to the acquired state. They are
+             * simply used for ordering lock holders. A lock holder can pass
+             * its fencing to the shared resource to fence off previous lock holders.
+             * When this resource receives an operation, it can validate the fencing
+             * token in the operation.
+             *
+             * @return the fencing token if the lock is held by the current thread
+             *
+             * @throws IllegalMonitorStateException if the lock is not held by
+             *         the current thread
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while the current thread is holding the lock
+             */
+            boost::future<int64_t> get_fence();
+
+            /**
+             * Returns whether this lock is locked or not.
+             *
+             * @return \true if this lock is locked by any thread
+             *         in the cluster, \false otherwise.
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while the current thread is holding the lock
+             */
+            boost::future<bool> is_locked();
+
+            /**
+             * Returns whether the lock is held by the current thread or not.
+             *
+             * @return \true if the lock is held by the current thread or not,
+             *         \false otherwise.
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while the current thread is holding the lock
+             */
+            boost::future<bool> is_locked_by_current_thread();
+
+            /**
+             * Returns the reentrant lock count if the lock is held by any thread
+             * in the cluster.
+             *
+             * @return the reentrant lock count if the lock is held by any thread
+             *         in the cluster
+             *
+             * @throws LockOwnershipLostException if the underlying CP session is
+             *         closed while the current thread is holding the lock
+             */
+            boost::future<int32_t> get_lock_count();
+
+            /**
+             * Returns id of the CP group that runs this \fenced_lock instance
+             *
+             * @return id of the CP group that runs this \fenced_lock instance
+             */
+            const raft_group_id &get_group_id();
+
+            friend bool operator==(const fenced_lock &lhs, const fenced_lock &rhs);
+
+        protected:
+            void postDestroy() override;
+
+        private:
+            struct lock_ownership_state {
+                int64_t fence;
+                int32_t lock_count;
+                int64_t session_id;
+                int64_t thread_id;
+
+                bool is_locked_by(int64_t session, int64_t thread);
+
+                bool is_locked();
+            };
+
+            static constexpr const char *SERVICE_NAME = "hz:raft:lockService";
+
+            // thread id -> id of the session that has acquired the lock
+            util::SynchronizedMap<int64_t, int64_t> locked_session_ids_;
+
+            void
+            verify_locked_session_id_if_present(int64_t thread_id, int64_t session_id, bool should_release);
+
+            void throw_lock_ownership_lost(int64_t session_id) const;
+
+            void throw_illegal_monitor_state() const;
+
+            boost::future<int64_t>
+            do_lock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid);
+
+            boost::future<int64_t>
+            do_try_lock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid,
+                        std::chrono::steady_clock::duration timeout);
+
+            boost::future<bool>
+            do_unlock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid);
+
+            boost::future<lock_ownership_state> do_get_lock_ownership_state();
+
+            void invalidate_session(int64_t session_id);
+
+            void verify_no_locked_session_id_present(int64_t thread_id);
         };
 
         class HAZELCAST_API semaphore {
@@ -350,7 +916,7 @@ namespace hazelcast {
          * Client-side Raft-based proxy implementation of atomic reference
          *
          */
-        class raft_proxy_factory {
+        class HAZELCAST_API raft_proxy_factory {
         public:
             raft_proxy_factory(client::spi::ClientContext &context);
 
@@ -541,6 +1107,13 @@ namespace hazelcast {
             cp_subsystem(client::spi::ClientContext &context);
         };
     }
+}
+
+namespace std {
+    template<>
+    struct HAZELCAST_API hash<hazelcast::cp::raft_group_id> {
+        std::size_t operator()(const hazelcast::cp::raft_group_id &group_id) const noexcept;
+    };
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
