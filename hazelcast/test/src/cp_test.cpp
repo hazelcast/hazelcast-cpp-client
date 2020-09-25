@@ -357,30 +357,33 @@ namespace hazelcast {
 
                 TEST_F(basic_latch_test, test_wait_for) {
                     latch_->try_set_count(1).get();
-                    std::thread([=]() {
+                    std::thread bg([=]() {
                         latch_->count_down().get();
-                    }).detach();
+                    });
 
                     ASSERT_OPEN_EVENTUALLY_ASYNC(latch_);
+                    bg.join();
                 }
 
                 TEST_F(basic_latch_test, test_wait_until) {
                     latch_->try_set_count(1).get();
-                    std::thread([=]() {
+                    std::thread bg([=]() {
                         latch_->count_down().get();
-                    }).detach();
+                    });
 
                     ASSERT_EQ(std::cv_status::no_timeout,
                               latch_->wait_until(std::chrono::steady_clock::now() + std::chrono::seconds(120)).get());
+                    bg.join();
                 }
 
                 TEST_F(basic_latch_test, test_wait) {
                     latch_->try_set_count(1).get();
-                    std::thread([=]() {
+                    std::thread bg([=]() {
                         latch_->count_down().get();
-                    }).detach();
+                    });
 
                     latch_->wait().get();
+                    bg.join();
                 }
 
                 TEST_F(basic_latch_test, test_wait_for_when_timeout) {
