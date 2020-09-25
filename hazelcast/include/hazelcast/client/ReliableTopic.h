@@ -137,7 +137,7 @@ namespace hazelcast {
                         name(topicName), executor(rb, logger), serializationService(service),
                         config(reliableTopicConfig) {
                     // we are going to listen to next publication. We don't care about what already has been published.
-                    int64_t initialSequence = listener.initial_sequence_;
+                    int64_t initialSequence = listener.initial_sequence_id_;
                     if (initialSequence == -1) {
                         initialSequence = ringbuffer->tailSequence().get() + 1;
                     }
@@ -169,7 +169,7 @@ namespace hazelcast {
                     // but we'll process whatever was received in 1 go.
                     for (auto &item : allMessages->getItems()) {
                         try {
-                            listener.store_sequence_(sequence);
+                            listener.store_sequence_id_(sequence);
                             process(item.get<topic::impl::reliable::ReliableTopicMessage>().get_ptr());
                         } catch (exception::IException &e) {
                             if (terminate(e)) {

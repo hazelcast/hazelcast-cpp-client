@@ -37,8 +37,8 @@ namespace hazelcast {
              *             
              * <h1>Durable Subscription</h1>
              * ReliableListener allows you to control where you want to start processing a message when the listener is
-             * registered. This makes it possible to create a durable subscription by storing the sequence of the last message and
-             * using this sequenceId as the sequenceId to start from.
+             * registered. This makes it possible to create a durable subscription by storing the sequence-id of the last message and
+             * using this id as the id to start from.
              *
              * <h1>Exception handling</h1>
              * ReliableListener also gives the ability to deal with exceptions via the method ReliableListener::terminate_on_exception.
@@ -48,12 +48,12 @@ namespace hazelcast {
              * there will only be gaps if it is too slow. For more information see {@link #isLossTolerant()}.
              *
              * <h1>Delivery guarantees</h1>
-             * Because the ReliableMessageListener controls which item it wants to continue from upon restart, it is very easy to provide
-             * an at-least-once or at-most-once delivery guarantee. The storeSequence is always called before a message is processed;
-             * so it can be persisted on some non-volatile storage. When the {@link #retrieveInitialSequence()} returns the stored
-             * sequence, then an at-least-once delivery is implemented since the same item is now being processed twice. To implement
-             * an at-most-once delivery guarantee, add 1 to the stored sequence when the {@link #retrieveInitialSequence()} is called.
-             *
+             * Because the ReliableListener controls which item it wants to continue from upon restart, it is very easy to provide
+             * an at-least-once or at-most-once delivery guarantee. The function set via ReliableListener::on_store_sequence_id is always 
+             * called before a message is processed; so the id can be persisted on some non-volatile storage. When the the stored
+             * sequence-id is then passed to ReliableListener::ReliableListener, an at-least-once delivery is implemented since the same 
+             * item is now being processed twice. To implement an at-most-once delivery guarantee, add 1 to the stored sequence-id before 
+             * passing it to ReliableListener::ReliableListener.
              */
             class HAZELCAST_API ReliableListener final {
                 friend class client::ReliableTopic;
@@ -63,14 +63,14 @@ namespace hazelcast {
                  * promises to be reliable, it can be that the listener is too slow. Eventually the message won't be 
                  * available anymore. If the ReliableListener is not loss tolerant and the topic detects that there are
                  * missing messages, it will terminate the ReliableListener.
-                 * \param initial_sequence the initial sequence from which this listener should start. -1 if there is 
-                 * no initial sequence and you want to start from the next published message. If you intent to create a 
+                 * \param initial_sequence_id the initial sequence-id from which this listener should start. -1 if there is 
+                 * no initial sequence-id and you want to start from the next published message. If you intent to create a 
                  * durable subscriber so you continue from where you stopped the previous time, load the previous 
-                 * sequence and add 1. If you don't add one, then you will be receiving the same message twice.
+                 * sequence-id and add 1. If you don't add one, then you will be receiving the same message twice.
                  */
-                ReliableListener(bool loss_tolerant, int64_t initial_sequence = -1)
+                ReliableListener(bool loss_tolerant, int64_t initial_sequence_id = -1)
                     : loss_tolerant_(loss_tolerant)
-                    , initial_sequence_(initial_sequence) {}
+                    , initial_sequence_id_(initial_sequence_id) {}
 
                 /**
                  * Set an handler function to be invoked when a message is received for the added topic. 
@@ -107,8 +107,8 @@ namespace hazelcast {
                  */
                 template<typename Handler,
                          typename = util::enable_if_rvalue_ref_t<Handler &&>>
-                ReliableListener &on_store_sequence(Handler &&h) & {
-                    store_sequence_ = std::move(h);
+                ReliableListener &on_store_sequence_id(Handler &&h) & {
+                    store_sequence_id_ = std::move(h);
                     return *this;
                 }
 
@@ -117,8 +117,8 @@ namespace hazelcast {
                  */
                 template<typename Handler,
                          typename = util::enable_if_rvalue_ref_t<Handler &&>>
-                ReliableListener &&on_store_sequence(Handler &&h) && {
-                    on_store_sequence(std::move(h));
+                ReliableListener &&on_store_sequence_id(Handler &&h) && {
+                    on_store_sequence_id(std::move(h));
                     return std::move(*this);
                 }
 
@@ -148,14 +148,14 @@ namespace hazelcast {
 
             private:
                 using received_handler_t = std::function<void(Message &&)>;
-                using store_sequence_handler_t = std::function<void(int64_t)>;
+                using store_sequence_id_handler_t = std::function<void(int64_t)>;
                 using exception_handler_t = std::function<bool(const exception::IException &)>;
 
                 bool loss_tolerant_;
-                int64_t initial_sequence_;
+                int64_t initial_sequence_id_;
 
                 received_handler_t received_{ util::noop<Message &&> };
-                store_sequence_handler_t store_sequence_ { util::noop<int64_t> };
+                store_sequence_id_handler_t store_sequence_id_ { util::noop<int64_t> };
                 exception_handler_t terminal_{ 
                     [](const exception::IException &){
                         return false;

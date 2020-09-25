@@ -15,10 +15,10 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 
-hazelcast::client::topic::ReliableListener makeListener(std::atomic<int> &nReceivedMessages, int64_t sequence = -1) {
+hazelcast::client::topic::ReliableListener makeListener(std::atomic<int> &nReceivedMessages, int64_t sequence_id = -1) {
     using namespace hazelcast::client::topic;
 
-    return ReliableListener(false, sequence)
+    return ReliableListener(false, sequence_id)
         .on_received([&nReceivedMessages](Message &&message){
             ++nReceivedMessages;
 
