@@ -22,19 +22,39 @@
 namespace hazelcast {
     namespace client {
         namespace test {
+            extern std::shared_ptr<RemoteControllerClient> remoteController;
+
             namespace cp {
-                class basic_atomic_long_test : public ClientTestSupport {
+                template<typename T>
+                class cp_test  : public ClientTestSupport {
                 protected:
+                    virtual std::shared_ptr<T> get_cp_structure(const std::string &name) = 0;
+
                     virtual void SetUp() {
                         auto test_name = getTestName();
-                        atomic_long_ = client->get_cp_subsystem().get_atomic_long(
-                                test_name + "@" + test_name + "_group");
+                        cp_structure_ = get_cp_structure(test_name + "@" + test_name + "_group");
+                    }
+
+                    virtual void TearDown() {
+                        cp_structure_->destroy();
+                    }
+
+                    static int get_cluster_size(int start_order) {
+                        std::ostringstream script;
+                        script << "result = instance_" << start_order << ".getCluster().getMembers().size().toString();";
+
+                        Response response;
+                        remoteController->executeOnController(response, g_srvFactory->getClusterId(), script.str().c_str(), Lang::JAVASCRIPT);
+                        return response.success ? std::atoi(response.result.c_str()) : -1;
                     }
 
                     static void SetUpTestCase() {
                         server1 = new HazelcastServer(*g_srvFactory);
                         server2 = new HazelcastServer(*g_srvFactory);
                         server3 = new HazelcastServer(*g_srvFactory);
+                        ASSERT_EQ_EVENTUALLY(3, get_cluster_size(0));
+                        ASSERT_EQ_EVENTUALLY(3, get_cluster_size(1));
+                        ASSERT_EQ_EVENTUALLY(3, get_cluster_size(2));
                         client = new HazelcastClient(getConfig());
                     }
 
@@ -50,145 +70,124 @@ namespace hazelcast {
                     static HazelcastServer *server3;
                     static HazelcastClient *client;
 
-                    std::shared_ptr<atomic_long> atomic_long_;
+                    std::shared_ptr<T> cp_structure_;
                 };
 
-                HazelcastServer *basic_atomic_long_test::server1 = nullptr;
-                HazelcastServer *basic_atomic_long_test::server2 = nullptr;
-                HazelcastServer *basic_atomic_long_test::server3 = nullptr;
-                HazelcastClient *basic_atomic_long_test::client = nullptr;
+                template<typename T> HazelcastServer *cp_test<T>::server1 = nullptr;
+                template<typename T> HazelcastServer *cp_test<T>::server2 = nullptr;
+                template<typename T> HazelcastServer *cp_test<T>::server3 = nullptr;
+                template<typename T> HazelcastClient *cp_test<T>::client = nullptr;
 
+                class basic_atomic_long_test : public cp_test<atomic_long> {
+                protected:
+                    std::shared_ptr<atomic_long> get_cp_structure(const std::string &name) override {
+                        return client->get_cp_subsystem().get_atomic_long(name);
+                    }
+                };
+                
                 TEST_F(basic_atomic_long_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client->get_cp_subsystem().get_atomic_long("long@METADATA"),
                                  exception::IllegalArgumentException);
                 }
 
                 TEST_F(basic_atomic_long_test, test_set) {
-                    atomic_long_->set(271).get();
-                    ASSERT_EQ(271, atomic_long_->get().get());
+                    cp_structure_->set(271).get();
+                    ASSERT_EQ(271, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_get) {
-                    ASSERT_EQ(0, atomic_long_->get().get());
+                    ASSERT_EQ(0, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_decrement_and_get) {
-                    ASSERT_EQ(-1, atomic_long_->decrement_and_get().get());
-                    ASSERT_EQ(-2, atomic_long_->decrement_and_get().get());
+                    ASSERT_EQ(-1, cp_structure_->decrement_and_get().get());
+                    ASSERT_EQ(-2, cp_structure_->decrement_and_get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_increment_and_get) {
-                    ASSERT_EQ(1, atomic_long_->increment_and_get().get());
-                    ASSERT_EQ(2, atomic_long_->increment_and_get().get());
+                    ASSERT_EQ(1, cp_structure_->increment_and_get().get());
+                    ASSERT_EQ(2, cp_structure_->increment_and_get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_get_and_set) {
-                    ASSERT_EQ(0, atomic_long_->get_and_set(271).get());
-                    ASSERT_EQ(271, atomic_long_->get().get());
+                    ASSERT_EQ(0, cp_structure_->get_and_set(271).get());
+                    ASSERT_EQ(271, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_add_and_get) {
-                    ASSERT_EQ(271, atomic_long_->add_and_get(271).get());
-                    ASSERT_EQ(271, atomic_long_->get().get());
+                    ASSERT_EQ(271, cp_structure_->add_and_get(271).get());
+                    ASSERT_EQ(271, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_get_and_add) {
-                    ASSERT_EQ(0, atomic_long_->get_and_add(271).get());
-                    ASSERT_EQ(271, atomic_long_->get().get());
+                    ASSERT_EQ(0, cp_structure_->get_and_add(271).get());
+                    ASSERT_EQ(271, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_compare_and_set_when_success) {
-                    ASSERT_TRUE(atomic_long_->compare_and_set(0, 271).get());
-                    ASSERT_EQ(271, atomic_long_->get().get());
+                    ASSERT_TRUE(cp_structure_->compare_and_set(0, 271).get());
+                    ASSERT_EQ(271, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_compare_and_set_when_not_success) {
-                    ASSERT_FALSE(atomic_long_->compare_and_set(172, 0).get());
-                    ASSERT_EQ(0, atomic_long_->get().get());
+                    ASSERT_FALSE(cp_structure_->compare_and_set(172, 0).get());
+                    ASSERT_EQ(0, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_alter) {
-                    atomic_long_->set(2).get();
-                    ASSERT_NO_THROW(atomic_long_->alter(multiplication{5}).get());
-                    ASSERT_EQ(10, atomic_long_->get().get());
+                    cp_structure_->set(2).get();
+                    ASSERT_NO_THROW(cp_structure_->alter(multiplication{5}).get());
+                    ASSERT_EQ(10, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_alter_and_get) {
-                    atomic_long_->set(2).get();
-                    auto result = atomic_long_->alter_and_get(multiplication{5}).get();
+                    cp_structure_->set(2).get();
+                    auto result = cp_structure_->alter_and_get(multiplication{5}).get();
                     ASSERT_EQ(10, result);
-                    ASSERT_EQ(10, atomic_long_->get().get());
+                    ASSERT_EQ(10, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_get_and_alter) {
-                    atomic_long_->set(2).get();
-                    auto result = atomic_long_->get_and_alter(multiplication{5}).get();
+                    cp_structure_->set(2).get();
+                    auto result = cp_structure_->get_and_alter(multiplication{5}).get();
                     ASSERT_EQ(2, result);
-                    ASSERT_EQ(10, atomic_long_->get().get());
+                    ASSERT_EQ(10, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_apply) {
-                    atomic_long_->set(2).get();
-                    auto result = atomic_long_->apply<multiplication, int64_t>({5}).get();
+                    cp_structure_->set(2).get();
+                    auto result = cp_structure_->apply<multiplication, int64_t>({5}).get();
                     ASSERT_TRUE(result);
                     ASSERT_EQ(10, *result);
-                    ASSERT_EQ(2, atomic_long_->get().get());
+                    ASSERT_EQ(2, cp_structure_->get().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_use_after_destroy) {
-                    atomic_long_->destroy().get();
-                    ASSERT_THROW(atomic_long_->increment_and_get().get(),
+                    cp_structure_->destroy().get();
+                    ASSERT_THROW(cp_structure_->increment_and_get().get(),
                                  exception::DistributedObjectDestroyedException);
                 }
 
                 TEST_F(basic_atomic_long_test, test_create_after_destroy) {
-                    auto name = atomic_long_->getName();
-                    atomic_long_->destroy().get();
+                    auto name = cp_structure_->getName();
+                    cp_structure_->destroy().get();
 
-                    atomic_long_ = client->get_cp_subsystem().get_atomic_long(name);
-                    ASSERT_THROW(atomic_long_->increment_and_get().get(),
+                    cp_structure_ = client->get_cp_subsystem().get_atomic_long(name);
+                    ASSERT_THROW(cp_structure_->increment_and_get().get(),
                                  exception::DistributedObjectDestroyedException);
                 }
 
                 TEST_F(basic_atomic_long_test, test_multiple_destroy) {
-                    ASSERT_NO_THROW(atomic_long_->destroy().get());
-                    ASSERT_NO_THROW(atomic_long_->destroy().get());
+                    ASSERT_NO_THROW(cp_structure_->destroy().get());
+                    ASSERT_NO_THROW(cp_structure_->destroy().get());
                 }
 
-                class basic_atomic_ref_test : public ClientTestSupport {
+                class basic_atomic_ref_test : public cp_test<atomic_reference> {
                 protected:
-                    virtual void SetUp() {
-                        auto test_name = getTestName();
-                        atomic_ref_ = client->get_cp_subsystem().get_atomic_reference(
-                                test_name + "@" + test_name + "_group");
+                    std::shared_ptr<atomic_reference> get_cp_structure(const std::string &name) override {
+                        return client->get_cp_subsystem().get_atomic_reference(name);
                     }
-
-                    static void SetUpTestCase() {
-                        server1 = new HazelcastServer(*g_srvFactory);
-                        server2 = new HazelcastServer(*g_srvFactory);
-                        server3 = new HazelcastServer(*g_srvFactory);
-                        client = new HazelcastClient(getConfig());
-                    }
-
-                    static void TearDownTestCase() {
-                        delete client;
-                        delete server1;
-                        delete server2;
-                        delete server3;
-                    }
-
-                    static HazelcastServer *server1;
-                    static HazelcastServer *server2;
-                    static HazelcastServer *server3;
-                    static HazelcastClient *client;
-
-                    std::shared_ptr<atomic_reference> atomic_ref_;
                 };
-
-                HazelcastServer *basic_atomic_ref_test::server1 = nullptr;
-                HazelcastServer *basic_atomic_ref_test::server2 = nullptr;
-                HazelcastServer *basic_atomic_ref_test::server3 = nullptr;
-                HazelcastClient *basic_atomic_ref_test::client = nullptr;
 
                 TEST_F(basic_atomic_ref_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client->get_cp_subsystem().get_atomic_reference("ref@METADATA"),
@@ -196,129 +195,102 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_atomic_ref_test, test_set) {
-                    atomic_ref_->set(std::string("str1")).get();
-                    ASSERT_EQ("str1", *atomic_ref_->get<std::string>().get());
-                    ASSERT_EQ("str1", *atomic_ref_->get_and_set<std::string>("str2").get());
-                    ASSERT_EQ("str2", *atomic_ref_->get<std::string>().get());
+                    cp_structure_->set(std::string("str1")).get();
+                    ASSERT_EQ("str1", *cp_structure_->get<std::string>().get());
+                    ASSERT_EQ("str1", *cp_structure_->get_and_set<std::string>("str2").get());
+                    ASSERT_EQ("str2", *cp_structure_->get<std::string>().get());
                 }
 
                 TEST_F(basic_atomic_ref_test, test_compare_and_set) {
                     std::string str1("str1");
                     std::string str2("str2");
-                    ASSERT_TRUE(atomic_ref_->compare_and_set(static_cast<std::string *>(nullptr), &str1).get());
-                    ASSERT_EQ(str1, *atomic_ref_->get<std::string>().get());
-                    ASSERT_FALSE(atomic_ref_->compare_and_set(static_cast<std::string *>(nullptr), &str1).get());
-                    ASSERT_TRUE(atomic_ref_->compare_and_set(str1, str2).get());
-                    ASSERT_EQ(str2, *atomic_ref_->get<std::string>().get());
-                    ASSERT_FALSE(atomic_ref_->compare_and_set(str1, str2).get());
-                    ASSERT_TRUE(atomic_ref_->compare_and_set(&str2, static_cast<std::string *>(nullptr)).get());
-                    ASSERT_FALSE(atomic_ref_->get<std::string>().get());
-                    ASSERT_FALSE(atomic_ref_->compare_and_set(&str2, static_cast<std::string *>(nullptr)).get());
+                    ASSERT_TRUE(cp_structure_->compare_and_set(static_cast<std::string *>(nullptr), &str1).get());
+                    ASSERT_EQ(str1, *cp_structure_->get<std::string>().get());
+                    ASSERT_FALSE(cp_structure_->compare_and_set(static_cast<std::string *>(nullptr), &str1).get());
+                    ASSERT_TRUE(cp_structure_->compare_and_set(str1, str2).get());
+                    ASSERT_EQ(str2, *cp_structure_->get<std::string>().get());
+                    ASSERT_FALSE(cp_structure_->compare_and_set(str1, str2).get());
+                    ASSERT_TRUE(cp_structure_->compare_and_set(&str2, static_cast<std::string *>(nullptr)).get());
+                    ASSERT_FALSE(cp_structure_->get<std::string>().get());
+                    ASSERT_FALSE(cp_structure_->compare_and_set(&str2, static_cast<std::string *>(nullptr)).get());
                 }
 
                 TEST_F(basic_atomic_ref_test, test_is_null) {
-                    ASSERT_TRUE(atomic_ref_->is_null().get());
-                    atomic_ref_->set(std::string("str1")).get();
-                    ASSERT_FALSE(atomic_ref_->is_null().get());
+                    ASSERT_TRUE(cp_structure_->is_null().get());
+                    cp_structure_->set(std::string("str1")).get();
+                    ASSERT_FALSE(cp_structure_->is_null().get());
                 }
 
                 TEST_F(basic_atomic_ref_test, test_clear) {
-                    atomic_ref_->set(std::string("str1")).get();
-                    atomic_ref_->clear().get();
-                    ASSERT_TRUE(atomic_ref_->is_null().get());
+                    cp_structure_->set(std::string("str1")).get();
+                    cp_structure_->clear().get();
+                    ASSERT_TRUE(cp_structure_->is_null().get());
                 }
 
                 TEST_F(basic_atomic_ref_test, test_contains) {
                     std::string str1("str1");
-                    ASSERT_TRUE(atomic_ref_->contains(static_cast<std::string *>(nullptr)).get());
-                    ASSERT_FALSE(atomic_ref_->contains(str1).get());
+                    ASSERT_TRUE(cp_structure_->contains(static_cast<std::string *>(nullptr)).get());
+                    ASSERT_FALSE(cp_structure_->contains(str1).get());
 
-                    atomic_ref_->set(str1).get();
+                    cp_structure_->set(str1).get();
 
-                    ASSERT_FALSE(atomic_ref_->contains(static_cast<std::string *>(nullptr)).get());
-                    ASSERT_TRUE(atomic_ref_->contains(str1).get());
+                    ASSERT_FALSE(cp_structure_->contains(static_cast<std::string *>(nullptr)).get());
+                    ASSERT_TRUE(cp_structure_->contains(str1).get());
                 }
 
                 TEST_F(basic_atomic_ref_test, test_alter) {
-                    atomic_ref_->set(std::string("str1")).get();
+                    cp_structure_->set(std::string("str1")).get();
 
-                    atomic_ref_->alter(test::append_string{"str2"}).get();
+                    cp_structure_->alter(test::append_string{"str2"}).get();
 
-                    ASSERT_EQ("str1str2", *atomic_ref_->get<std::string>().get());
+                    ASSERT_EQ("str1str2", *cp_structure_->get<std::string>().get());
 
-                    auto val = atomic_ref_->alter_and_get<std::string>(test::append_string{"str3"}).get();
+                    auto val = cp_structure_->alter_and_get<std::string>(test::append_string{"str3"}).get();
                     ASSERT_TRUE(val);
                     ASSERT_EQ("str1str2str3", *val);
 
-                    val = atomic_ref_->get_and_alter<std::string>(test::append_string{"str4"}).get();
+                    val = cp_structure_->get_and_alter<std::string>(test::append_string{"str4"}).get();
                     ASSERT_TRUE(val);
                     ASSERT_EQ("str1str2str3", *val);
 
-                    ASSERT_EQ("str1str2str3str4", *atomic_ref_->get<std::string>().get());
+                    ASSERT_EQ("str1str2str3str4", *cp_structure_->get<std::string>().get());
                 }
 
                 TEST_F(basic_atomic_ref_test, test_apply) {
-                    atomic_ref_->set(std::string("str1")).get();
+                    cp_structure_->set(std::string("str1")).get();
 
-                    auto val = atomic_ref_->apply<std::string>(test::append_string{"str2"}).get();
+                    auto val = cp_structure_->apply<std::string>(test::append_string{"str2"}).get();
                     ASSERT_TRUE(val);
                     ASSERT_EQ("str1str2", *val);
-                    ASSERT_EQ("str1", *atomic_ref_->get<std::string>().get());
+                    ASSERT_EQ("str1", *cp_structure_->get<std::string>().get());
                 }
 
                 TEST_F(basic_atomic_ref_test, test_use_after_destroy) {
-                    atomic_ref_->destroy().get();
-                    ASSERT_THROW((atomic_ref_->set(std::string("str1")).get()),
+                    cp_structure_->destroy().get();
+                    ASSERT_THROW((cp_structure_->set(std::string("str1")).get()),
                                  exception::DistributedObjectDestroyedException);
                 }
 
                 TEST_F(basic_atomic_ref_test, test_create_after_destroy) {
-                    auto name = atomic_ref_->getName();
-                    atomic_ref_->destroy().get();
+                    auto name = cp_structure_->getName();
+                    cp_structure_->destroy().get();
 
-                    atomic_ref_ = client->get_cp_subsystem().get_atomic_reference(name);
-                    ASSERT_THROW(atomic_ref_->set(std::string("str1")).get(),
+                    cp_structure_ = client->get_cp_subsystem().get_atomic_reference(name);
+                    ASSERT_THROW(cp_structure_->set(std::string("str1")).get(),
                                  exception::DistributedObjectDestroyedException);
                 }
 
                 TEST_F(basic_atomic_ref_test, test_multiple_destroy) {
-                    ASSERT_NO_THROW(atomic_ref_->destroy().get());
-                    ASSERT_NO_THROW(atomic_ref_->destroy().get());
+                    ASSERT_NO_THROW(cp_structure_->destroy().get());
+                    ASSERT_NO_THROW(cp_structure_->destroy().get());
                 }
 
-                class basic_latch_test : public ClientTestSupport {
+                class basic_latch_test : public cp_test<latch> {
                 protected:
-                    virtual void SetUp() {
-                        auto test_name = getTestName();
-                        latch_ = client->get_cp_subsystem().get_latch(test_name + "@" + test_name + "_group");
+                    std::shared_ptr<latch> get_cp_structure(const std::string &name) override {
+                        return client->get_cp_subsystem().get_latch(name);
                     }
-
-                    static void SetUpTestCase() {
-                        server1 = new HazelcastServer(*g_srvFactory);
-                        server2 = new HazelcastServer(*g_srvFactory);
-                        server3 = new HazelcastServer(*g_srvFactory);
-                        client = new HazelcastClient(getConfig());
-                    }
-
-                    static void TearDownTestCase() {
-                        delete client;
-                        delete server1;
-                        delete server2;
-                        delete server3;
-                    }
-
-                    static HazelcastServer *server1;
-                    static HazelcastServer *server2;
-                    static HazelcastServer *server3;
-                    static HazelcastClient *client;
-
-                    std::shared_ptr<latch> latch_;
                 };
-
-                HazelcastServer *basic_latch_test::server1 = nullptr;
-                HazelcastServer *basic_latch_test::server2 = nullptr;
-                HazelcastServer *basic_latch_test::server3 = nullptr;
-                HazelcastClient *basic_latch_test::client = nullptr;
 
                 TEST_F(basic_latch_test, create_proxy_on_metadata_cp_group) {
                     ASSERT_THROW(client->get_cp_subsystem().get_latch("ref@METADATA"),
@@ -326,86 +298,410 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_latch_test, test_try_set_count_when_argument_negative) {
-                    ASSERT_THROW(latch_->try_set_count(-20).get(), exception::IllegalArgumentException);
+                    ASSERT_THROW(cp_structure_->try_set_count(-20).get(), exception::IllegalArgumentException);
+                }
+
+                TEST_F(basic_latch_test, test_try_set_count_when_argument_zero) {
+                    ASSERT_THROW(cp_structure_->try_set_count(0).get(), exception::IllegalArgumentException);
                 }
 
                 TEST_F(basic_latch_test, test_try_set_count_when_count_is_not_zero) {
-                    ASSERT_TRUE(latch_->try_set_count(10).get());
+                    ASSERT_TRUE(cp_structure_->try_set_count(10).get());
 
-                    ASSERT_FALSE(latch_->try_set_count(20).get());
-                    ASSERT_FALSE(latch_->try_set_count(0).get());
-                    ASSERT_EQ(10, latch_->get_count().get());
+                    ASSERT_FALSE(cp_structure_->try_set_count(20).get());
+                    ASSERT_FALSE(cp_structure_->try_set_count(1).get());
+                    ASSERT_EQ(10, cp_structure_->get_count().get());
+                }
+
+                TEST_F(basic_latch_test, test_try_set_count_when_already_set) {
+                    ASSERT_TRUE(cp_structure_->try_set_count(10).get());
+
+                    ASSERT_FALSE(cp_structure_->try_set_count(20).get());
+                    ASSERT_FALSE(cp_structure_->try_set_count(100).get());
+                    ASSERT_FALSE(cp_structure_->try_set_count(1).get());
+                    ASSERT_EQ(10, cp_structure_->get_count().get());
                 }
 
                 TEST_F(basic_latch_test, test_count_down) {
-                    latch_->try_set_count(20).get();
+                    cp_structure_->try_set_count(20).get();
 
                     for (int i = 19; i >= 0; i--) {
-                        latch_->count_down().get();
-                        ASSERT_EQ(i, latch_->get_count().get());
+                        cp_structure_->count_down().get();
+                        ASSERT_EQ(i, cp_structure_->get_count().get());
                     }
 
-                    latch_->count_down().get();
-                    ASSERT_EQ(0, latch_->get_count().get());
+                    cp_structure_->count_down().get();
+                    ASSERT_EQ(0, cp_structure_->get_count().get());
                 }
 
                 TEST_F(basic_latch_test, test_get_count) {
-                    latch_->try_set_count(20).get();
+                    cp_structure_->try_set_count(20).get();
 
-                    ASSERT_EQ(20, latch_->get_count().get());
+                    ASSERT_EQ(20, cp_structure_->get_count().get());
                 }
 
                 TEST_F(basic_latch_test, test_wait_for) {
-                    latch_->try_set_count(1).get();
+                    cp_structure_->try_set_count(1).get();
                     std::thread bg([=]() {
-                        latch_->count_down().get();
+                        cp_structure_->count_down().get();
                     });
 
-                    ASSERT_OPEN_EVENTUALLY_ASYNC(latch_);
+                    ASSERT_OPEN_EVENTUALLY_ASYNC(cp_structure_);
                     bg.join();
                 }
 
                 TEST_F(basic_latch_test, test_wait_until) {
-                    latch_->try_set_count(1).get();
+                    cp_structure_->try_set_count(1).get();
                     std::thread bg([=]() {
-                        latch_->count_down().get();
+                        cp_structure_->count_down().get();
                     });
 
                     ASSERT_EQ(std::cv_status::no_timeout,
-                              latch_->wait_until(std::chrono::steady_clock::now() + std::chrono::seconds(120)).get());
+                              cp_structure_->wait_until(std::chrono::steady_clock::now() + std::chrono::seconds(120)).get());
                     bg.join();
                 }
 
                 TEST_F(basic_latch_test, test_wait) {
-                    latch_->try_set_count(1).get();
+                    cp_structure_->try_set_count(1).get();
                     std::thread bg([=]() {
-                        latch_->count_down().get();
+                        cp_structure_->count_down().get();
                     });
 
-                    latch_->wait().get();
+                    cp_structure_->wait().get();
                     bg.join();
                 }
 
                 TEST_F(basic_latch_test, test_wait_for_when_timeout) {
-                    latch_->try_set_count(1).get();
+                    cp_structure_->try_set_count(1).get();
                     auto start = std::chrono::steady_clock::now();
-                    ASSERT_EQ(std::cv_status::timeout, latch_->wait_for(std::chrono::milliseconds(100)).get());
+                    ASSERT_EQ(std::cv_status::timeout, cp_structure_->wait_for(std::chrono::milliseconds(100)).get());
                     auto elapsed = std::chrono::steady_clock::now() - start;
                     ASSERT_GE(std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count(), 100);
-                    ASSERT_EQ(1, latch_->get_count().get());
+                    ASSERT_EQ(1, cp_structure_->get_count().get());
                 }
 
                 TEST_F(basic_latch_test, test_count_down_after_destroy) {
-                    latch_->destroy().get();
+                    cp_structure_->destroy().get();
 
-                    ASSERT_THROW(latch_->count_down().get(), exception::DistributedObjectDestroyedException);
+                    ASSERT_THROW(cp_structure_->count_down().get(), exception::DistributedObjectDestroyedException);
                 }
 
                 TEST_F(basic_latch_test, test_multiple_destroy) {
-                    ASSERT_NO_THROW(latch_->destroy().get());
-                    ASSERT_NO_THROW(latch_->destroy().get());
+                    ASSERT_NO_THROW(cp_structure_->destroy().get());
+                    ASSERT_NO_THROW(cp_structure_->destroy().get());
                 }
 
+                class basic_lock_test : public cp_test<fenced_lock> {
+                protected:
+                    static constexpr size_t LOCK_SERVICE_WAIT_TIMEOUT_TASK_UPPER_BOUND_MILLIS = 1500; // msecs
+
+                    std::shared_ptr<fenced_lock> get_cp_structure(const std::string &name) override {
+                        return client->get_cp_subsystem().get_lock(name);
+                    }
+
+                    void try_lock(const std::chrono::milliseconds timeout) {
+                        std::async([=] () {
+                            cp_structure_->lock().get();
+                        }).get();
+
+                        auto fence = cp_structure_->try_lock_and_get_fence(timeout).get();
+
+                        ASSERT_EQ(fenced_lock::INVALID_FENCE, fence);
+                        ASSERT_TRUE(cp_structure_->is_locked().get());
+                        ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
+                        ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                    }
+
+                    void close_session(const raft_group_id &group_id, int64_t session_id) {
+                        auto request = client::protocol::codec::cpsession_closesession_encode(group_id, session_id);
+                        auto context = spi::ClientContext(*client);
+                        spi::impl::ClientInvocation::create(context, request, "sessionManager")->invoke().get();
+                    }
+
+                    void test_when_session_closed(std::function<void()> f) {
+                        auto fence = cp_structure_->lock_and_get_fence().get();
+                        ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+
+                        auto group_id = cp_structure_->get_group_id();
+                        auto session_id = spi::ClientContext(*client).get_proxy_session_manager().get_session(group_id);
+                        close_session(group_id, session_id);
+
+                        ASSERT_THROW(f(), exception::LockOwnershipLostException);
+                    }
+
+                    void test_when_new_session_created(std::function<void()> f) {
+                        auto fence = cp_structure_->lock_and_get_fence().get();
+                        ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+
+                        auto group_id = cp_structure_->get_group_id();
+                        auto session_id = spi::ClientContext(*client).get_proxy_session_manager().get_session(group_id);
+                        close_session(group_id, session_id);
+
+                        std::async([=] () {cp_structure_->lock().get(); }).get();
+
+                        // now we have a new session
+                        try {
+                            f();
+                        } catch (exception::LockOwnershipLostException &) {
+                            // ignored
+                        }
+
+                        ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
+                    }
+                };
+
+                TEST_F(basic_lock_test, test_lock_when_not_locked) {
+                    auto fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                    ASSERT_EQ(fence, cp_structure_->get_fence().get());
+                }
+
+                TEST_F(basic_lock_test, test_lock_when_locked_by_self) {
+                    auto fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+
+                    auto new_fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_EQ(fence, new_fence);
+                    ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_EQ(2, cp_structure_->get_lock_count().get());
+                }
+
+                TEST_F(basic_lock_test, test_lock_when_locked_by_other) {
+                    auto fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_TRUE(cp_structure_->is_locked().get());
+                    ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                    ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
+
+                    boost::latch start(1);
+                    auto f = std::async([=, &start] () {
+                        auto invocation = cp_structure_->lock();
+                        start.count_down();
+                        invocation.get();
+                       return true;
+                    });
+
+                    ASSERT_EQ(boost::cv_status::no_timeout, start.wait_for(boost::chrono::seconds(120)));
+                    ASSERT_EQ(std::future_status::timeout, f.wait_for(std::chrono::seconds(3)));
+                    // the following line is ready for the async task to finish and hence the test can finish
+                    cp_structure_->destroy().get();
+                }
+
+                TEST_F(basic_lock_test, test_unlock_when_free) {
+                    ASSERT_THROW(cp_structure_->unlock().get(), exception::IllegalMonitorStateException);
+                }
+
+                TEST_F(basic_lock_test, test_get_fence_when_free) {
+                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::IllegalMonitorStateException);
+                }
+
+                TEST_F(basic_lock_test, test_is_locked_when_free) {
+                    ASSERT_FALSE(cp_structure_->is_locked().get());
+                }
+
+                TEST_F(basic_lock_test, test_lock_is_acquired_by_current_thread_when_free) {
+                    ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
+                }
+
+                TEST_F(basic_lock_test, test_get_lock_count_when_free) {
+                    ASSERT_EQ(0,cp_structure_->get_lock_count().get());
+                }
+
+                TEST_F(basic_lock_test, test_unlock_when_locked_by_self) {
+                    cp_structure_->lock().get();
+
+                    cp_structure_->unlock().get();
+
+                    ASSERT_FALSE(cp_structure_->is_locked().get());
+                    ASSERT_EQ(0, cp_structure_->get_lock_count().get());
+
+                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::IllegalMonitorStateException);
+                }
+
+                TEST_F(basic_lock_test, test_unlock_when_reentrantly_locked_by_self) {
+                    auto fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    cp_structure_->lock().get();
+                    cp_structure_->unlock().get();
+
+                    ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_TRUE(cp_structure_->is_locked().get());
+                    ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                    ASSERT_EQ(fence, cp_structure_->get_fence().get());
+                }
+
+                TEST_F(basic_lock_test, test_lock_unlock_then_lock) {
+                    auto fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    cp_structure_->unlock().get();
+
+                    auto f = std::async([=] () {
+                        return cp_structure_->lock_and_get_fence().get();
+                    });
+
+                    ASSERT_EQ(std::future_status::ready, f.wait_for(std::chrono::seconds(120)));
+
+                    ASSERT_GE(f.get(), fence);
+                    ASSERT_TRUE(cp_structure_->is_locked().get());
+                    ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                    ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
+
+                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::IllegalMonitorStateException);
+                }
+
+
+                TEST_F(basic_lock_test, test_lock_unlock_when_pending_lock_of_other_thread) {
+                    auto fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+
+                    boost::latch start(1);
+                    auto f = std::async([=, &start] () {
+                        auto invocation = cp_structure_->try_lock_and_get_fence(std::chrono::seconds(60));
+                        start.count_down();
+                        return invocation.get();
+                    });
+
+                    ASSERT_EQ(boost::cv_status::no_timeout, start.wait_for(boost::chrono::seconds(120)));
+
+                    cp_structure_->unlock().get();
+
+                    ASSERT_EQ(std::future_status::ready, f.wait_for(std::chrono::seconds(120)));
+                    ASSERT_GE(f.get(), fence);
+
+                    ASSERT_TRUE(cp_structure_->is_locked().get());
+                    ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                    ASSERT_THROW(cp_structure_->get_fence().get(), exception::IllegalMonitorStateException);
+                }
+
+                TEST_F(basic_lock_test, test_unlock_when_locked_by_other) {
+                    std::async([=] () {
+                        cp_structure_->lock().get();
+                    }).get();
+
+                    ASSERT_THROW(cp_structure_->unlock().get(), exception::IllegalMonitorStateException);
+
+                    ASSERT_TRUE(cp_structure_->is_locked().get());
+                    ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                }
+
+                TEST_F(basic_lock_test, test_try_lock_when_not_locked) {
+                    auto fence = cp_structure_->try_lock_and_get_fence().get();
+
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_EQ(fence, cp_structure_->get_fence().get());
+                    ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                }
+
+                TEST_F(basic_lock_test, test_try_lock_when_locked_by_self) {
+                    auto fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+
+                    auto new_fence = cp_structure_->try_lock_and_get_fence().get();
+                    ASSERT_EQ(fence, new_fence);
+                    ASSERT_EQ(fence, cp_structure_->get_fence().get());
+                    ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_EQ(2, cp_structure_->get_lock_count().get());
+                }
+
+                TEST_F(basic_lock_test, test_try_lock_timeout) {
+                    auto fence = cp_structure_->try_lock_and_get_fence(std::chrono::seconds(1)).get();
+
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_EQ(1, cp_structure_->get_lock_count().get());
+                }
+
+                TEST_F(basic_lock_test, test_try_lock_timeout_when_locked_by_self) {
+                    auto fence = cp_structure_->lock_and_get_fence().get();
+                    ASSERT_NE(fenced_lock::INVALID_FENCE, fence);
+
+                    auto new_fence = cp_structure_->try_lock_and_get_fence(std::chrono::seconds(1)).get();
+
+                    ASSERT_EQ(fence, new_fence);
+                    ASSERT_EQ(fence, cp_structure_->get_fence().get());
+                    ASSERT_TRUE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_EQ(2, cp_structure_->get_lock_count().get());
+                }
+
+                TEST_F(basic_lock_test, test_try_lock_timeout_when_locked_by_other) {
+                    try_lock(std::chrono::milliseconds(100));
+                }
+
+                TEST_F(basic_lock_test, test_try_lock_long_timeout_when_locked_by_other) {
+                    try_lock(std::chrono::milliseconds(LOCK_SERVICE_WAIT_TIMEOUT_TASK_UPPER_BOUND_MILLIS + 1));
+                }
+
+                TEST_F(basic_lock_test, test_reentrant_lock_fails_when_session_closed) {
+                    test_when_session_closed([=] () { cp_structure_->lock().get(); });
+                }
+
+                TEST_F(basic_lock_test, test_reentrant_try_lock_fails_when_session_closed) {
+                    test_when_session_closed([=] () { cp_structure_->try_lock().get(); });
+                }
+
+                TEST_F(basic_lock_test, test_reentrant_try_lock_with_timeout_fails_when_session_closed) {
+                    test_when_session_closed([=] () { cp_structure_->try_lock(std::chrono::seconds(1)).get(); });
+                }
+
+                TEST_F(basic_lock_test, test_reentrant_unlock_fails_when_session_closed) {
+                    test_when_session_closed([=] () { cp_structure_->unlock().get(); });
+
+                    ASSERT_FALSE(cp_structure_->is_locked_by_current_thread().get());
+                    ASSERT_FALSE(cp_structure_->is_locked().get());
+                }
+
+                TEST_F(basic_lock_test, test_unlock_fails_when_session_created) {
+                    test_when_new_session_created([=] () { cp_structure_->unlock().get(); });
+                }
+
+                TEST_F(basic_lock_test, test_get_fence_fails_when_session_created) {
+                    test_when_new_session_created([=] () { cp_structure_->get_fence().get(); });
+                }
+
+                TEST_F(basic_lock_test, test_failed_try_lock_does_not_acquire_session) {
+                    std::async([=] () {cp_structure_->lock().get(); }).get();
+
+                    auto group_id = cp_structure_->get_group_id();
+                    auto &session_manager = spi::ClientContext(*client).get_proxy_session_manager();
+                    auto session_id = session_manager.get_session(group_id);
+                    ASSERT_NE(::hazelcast::cp::internal::session::proxy_session_manager::NO_SESSION_ID, session_id);
+                    ASSERT_EQ(1, session_manager.get_session_acquire_count(group_id, session_id));
+
+                    auto fence = cp_structure_->try_lock_and_get_fence().get();
+                    ASSERT_EQ(fenced_lock::INVALID_FENCE, fence);
+                    ASSERT_EQ(1, session_manager.get_session_acquire_count(group_id, session_id));
+                }
+
+                TEST_F(basic_lock_test, test_destroy) {
+                    cp_structure_->try_lock().get();
+                    cp_structure_->destroy().get();
+
+                    ASSERT_THROW(cp_structure_->try_lock().get(), exception::DistributedObjectDestroyedException);
+                }
+
+                TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown) {
+                    HazelcastClient c(getConfig());
+                    auto l = c.get_cp_subsystem().get_lock(getTestName());
+                    auto proxy_name = l->getName();
+                    l->lock().get();
+
+                    c.shutdown();
+
+                    std::ostringstream script;
+                    script << "result = instance_0.getCPSubsystem().getLock(\"" << proxy_name
+                           << "\").isLocked() ? \"1\" : \"0\";";
+
+                    Response response;
+                    remoteController->executeOnController(response, g_srvFactory->getClusterId(), script.str().c_str(),
+                                                          Lang::JAVASCRIPT);
+                    ASSERT_TRUE(response.success);
+                    ASSERT_EQ("0", response.result);
+                }
             }
         }
     }

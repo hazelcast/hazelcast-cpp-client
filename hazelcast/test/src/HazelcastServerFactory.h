@@ -47,11 +47,11 @@ namespace hazelcast {
 
                 remote::Member startServer();
 
-                bool setAttributes(int memberStartOrder);
-
                 bool shutdownServer(const remote::Member &member);
 
                 bool terminateServer(const remote::Member &member);
+
+                const std::string &getClusterId() const;
 
                 ~HazelcastServerFactory();
 
