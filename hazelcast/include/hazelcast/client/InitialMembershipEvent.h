@@ -34,10 +34,8 @@ namespace hazelcast {
         class Cluster;
 
         /**
-         * A event that is send when a InitialMembershipListener} registers itself on a Cluster. For more
-         * information see the InitialMembershipListener.
+         * A event that is sent when a MembershipListener is registered.
          *
-         * @see InitialMembershipListener
          * @see MembershipListener
          * @see MembershipEvent
          */
@@ -46,7 +44,7 @@ namespace hazelcast {
             InitialMembershipEvent(Cluster &cluster, std::unordered_set<Member> members);
 
             /**
-             * Returns an immutable set of ordered members at the moment this InitialMembershipListener is
+             * Returns an immutable set of ordered members at the moment this MembershipListener is
              * registered. See Cluster#getMembers() for more information.
              *
              * @return a set of members.

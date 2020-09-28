@@ -16,7 +16,6 @@
 #pragma once
 
 #include "hazelcast/client/Member.h"
-#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include <mutex>
 
@@ -32,7 +31,7 @@ namespace hazelcast {
         class Cluster;
 
         namespace impl {
-            class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer, public InitialMembershipListener {
+            class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer {
             public:
                 AbstractLoadBalancer();
 
@@ -46,13 +45,7 @@ namespace hazelcast {
 
                 void init(Cluster &cluster) override;
 
-                void memberAdded(const MembershipEvent &membershipEvent) override;
-
-                void memberRemoved(const MembershipEvent &membershipEvent) override;
-
                 ~AbstractLoadBalancer() override;
-
-                void init(InitialMembershipEvent event) override;
 
             private:
                 mutable std::mutex membersLock;
