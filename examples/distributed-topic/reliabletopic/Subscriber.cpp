@@ -15,47 +15,22 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 
-class MyListener : public hazelcast::client::topic::ReliableMessageListener {
-public:
-    MyListener(std::atomic<int> &numberOfMessagesReceived, int64_t sequence) : numberOfMessagesReceived(
-            numberOfMessagesReceived), startSequence(sequence), lastReceivedSequence(-1) {}
+hazelcast::client::topic::ReliableListener makeListener(std::atomic<int> &nReceivedMessages, int64_t sequence_id = -1) {
+    using namespace hazelcast::client::topic;
 
-    MyListener(std::atomic<int> &numberOfMessagesReceived) : numberOfMessagesReceived(
-            numberOfMessagesReceived), startSequence(-1), lastReceivedSequence(-1) {}
+    return ReliableListener(false, sequence_id)
+        .on_received([&nReceivedMessages](Message &&message){
+            ++nReceivedMessages;
 
-    void onMessage(hazelcast::client::topic::Message &&message) override {
-        ++numberOfMessagesReceived;
-
-        auto object = message.getMessageObject().get<std::string>();
-        if (object) {
-            std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.getName();
-        } else {
-            std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
-            message.getName();
-        }
-    }
-
-    int64_t retrieveInitialSequence() const override {
-        return startSequence;
-    }
-
-    void storeSequence(int64_t sequence) override {
-        lastReceivedSequence = sequence;
-    }
-
-    bool isLossTolerant() const override {
-        return false;
-    }
-
-    bool isTerminal(const hazelcast::client::exception::IException &failure) const override {
-        return false;
-    }
-
-private:
-    std::atomic<int> &numberOfMessagesReceived;
-    int64_t startSequence;
-    int64_t lastReceivedSequence;
-};
+            auto object = message.getMessageObject().get<std::string>();
+            if (object) {
+                std::cout << "[GenericListener::onMessage] Received message: " << *object << " for topic:" << message.getName();
+            } else {
+                std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
+                message.getName();
+            }
+        });
+}
 
 void listenWithDefaultConfig() {
     hazelcast::client::HazelcastClient client;
@@ -64,7 +39,7 @@ void listenWithDefaultConfig() {
     auto topic = client.getReliableTopic(topicName);
 
     std::atomic<int> numberOfMessagesReceived{0};
-    auto listenerId = topic->addMessageListener(MyListener(numberOfMessagesReceived));
+    auto listenerId = topic->addMessageListener(makeListener(numberOfMessagesReceived));
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
@@ -90,7 +65,7 @@ void listenWithConfig() {
     auto topic = client.getReliableTopic(topicName);
 
     std::atomic<int> numberOfMessagesReceived{0};
-    auto listenerId = topic->addMessageListener(MyListener(numberOfMessagesReceived));
+    auto listenerId = topic->addMessageListener(makeListener(numberOfMessagesReceived));
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
