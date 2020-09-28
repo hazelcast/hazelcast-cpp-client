@@ -564,7 +564,7 @@ namespace hazelcast {
         }
 
         ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(NULL), redoOperation(false),
-                                       socketInterceptor(NULL), executorPoolSize(-1) {}
+                                       socketInterceptor(), executorPoolSize(-1) {}
 
         ClientConfig &ClientConfig::setGroupConfig(const GroupConfig &groupConfig) {
             this->groupConfig = groupConfig;
@@ -609,40 +609,8 @@ namespace hazelcast {
             return *this;
         }
 
-        ClientConfig &ClientConfig::addListener(MembershipListener *listener) {
-            if (listener == NULL) {
-                BOOST_THROW_EXCEPTION(exception::NullPointerException("ClientConfig::addListener(MembershipListener *)",
-                                                                      "listener can't be null"));
-            }
-
-            membershipListeners.insert(listener);
-            managedMembershipListeners.insert(
-                    std::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
-            return *this;
-        }
-
-        ClientConfig &ClientConfig::addListener(InitialMembershipListener *listener) {
-            if (listener == NULL) {
-                BOOST_THROW_EXCEPTION(
-                        exception::NullPointerException("ClientConfig::addListener(InitialMembershipListener *)",
-                                                        "listener can't be null"));
-            }
-
-            membershipListeners.insert(listener);
-            managedMembershipListeners.insert(
-                    std::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
-            return *this;
-        }
-
-        ClientConfig &ClientConfig::addListener(const std::shared_ptr<MembershipListener> &listener) {
-            membershipListeners.insert(listener.get());
-            managedMembershipListeners.insert(listener);
-            return *this;
-        }
-
-        ClientConfig &ClientConfig::addListener(const std::shared_ptr<InitialMembershipListener> &listener) {
-            membershipListeners.insert(listener.get());
-            managedMembershipListeners.insert(listener);
+        ClientConfig &ClientConfig::addListener(MembershipListener &&listener) {
+            membershipListeners.emplace_back(std::move(listener));
             return *this;
         }
 
@@ -650,16 +618,16 @@ namespace hazelcast {
             return lifecycleListeners;
         }
 
-        const std::unordered_set<MembershipListener *> &ClientConfig::getMembershipListeners() const {
+        const std::vector<MembershipListener> &ClientConfig::getMembershipListeners() const {
             return membershipListeners;
         }
 
-        ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor *interceptor) {
-            this->socketInterceptor = interceptor;
+        ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor &&interceptor) {
+            this->socketInterceptor = std::move(interceptor);
             return *this;
         }
 
-        SocketInterceptor *ClientConfig::getSocketInterceptor() {
+        const SocketInterceptor &ClientConfig::getSocketInterceptor() const {
             return socketInterceptor;
         }
 
@@ -764,10 +732,6 @@ namespace hazelcast {
         ClientConfig::addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
             flakeIdGeneratorConfigMap.put(config->getName(), config);
             return *this;
-        }
-
-        const std::unordered_set<std::shared_ptr<MembershipListener> > &ClientConfig::getManagedMembershipListeners() const {
-            return managedMembershipListeners;
         }
 
         const std::string &ClientConfig::getClusterName() const {

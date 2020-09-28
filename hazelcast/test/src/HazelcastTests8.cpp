@@ -62,7 +62,6 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
@@ -950,50 +949,14 @@ namespace hazelcast {
                     hazelcast::util::ConcurrentQueue<topic::Message> messages;
                 };
 
-                class GenericListener : public topic::ReliableMessageListener {
-                public:
-                    explicit GenericListener(std::shared_ptr<ListenerState> state) : state_(std::move(state)) {}
-
-                    ~GenericListener() override {
-                        topic::Message *m = nullptr;
-                        while ((m = state_->messages.poll()) != nullptr) {
-                            delete (m);
-                        }
-                    }
-
-                    void onMessage(topic::Message &&message) override {
-                        ++state_->numberOfMessagesReceived;
-                        state_->messages.offer(new topic::Message(std::move(message)));
-                        state_->latch1.count_down();
-                    }
-
-                    int64_t retrieveInitialSequence() const override {
-                        return state_->startSequence;
-                    }
-
-                    void storeSequence(int64_t sequence) override {
-                    }
-
-                    bool isLossTolerant() const override {
-                        return false;
-                    }
-
-                    bool isTerminal(const exception::IException &failure) const override {
-                        return false;
-                    }
-
-                    int getNumberOfMessagesReceived() {
-                        int value = state_->numberOfMessagesReceived;
-                        return value;
-                    }
-
-                    hazelcast::util::ConcurrentQueue<topic::Message> &getMessages() {
-                        return state_->messages;
-                    }
-
-                private:
-                    std::shared_ptr<ListenerState> state_;
-                };
+                topic::ReliableListener makeListener(std::shared_ptr<ListenerState> state) {
+                    return topic::ReliableListener(false, state->startSequence)
+                        .on_received([state](topic::Message &&message){
+                            ++state->numberOfMessagesReceived;
+                            state->messages.offer(new topic::Message(std::move(message)));
+                            state->latch1.count_down();
+                        });
+                }
 
             protected:
                 void TearDown() override {
@@ -1029,7 +992,7 @@ namespace hazelcast {
                 ASSERT_EQ("testBasics", topic->getName());
 
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
 
                 Employee empl1("first", 20);
                 ASSERT_NO_THROW(topic->publish(empl1).get());
@@ -1055,7 +1018,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic->publish(empl2).get());
 
                 auto state = std::make_shared<ListenerState>(1, 1);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
 
                 ASSERT_OPEN_EVENTUALLY(state->latch1);
                 ASSERT_EQ(1, state->numberOfMessagesReceived);
@@ -1073,7 +1036,7 @@ namespace hazelcast {
                 Employee empl1("first", 10);
 
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
 
                 // remove listener
                 ASSERT_TRUE(topic->removeMessageListener(listenerId));
@@ -1095,7 +1058,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic = client->getReliableTopic("publishMultiple"));
 
                 auto state = std::make_shared<ListenerState>(5);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
 
                 std::vector<std::string> items;
                 for (int k = 0; k < 5; k++) {
@@ -1127,7 +1090,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic = configClient.getReliableTopic("testConfig"));
 
                 auto state = std::make_shared<ListenerState>(5);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
 
                 std::vector<std::string> items;
                 for (int k = 0; k < 5; k++) {
@@ -1152,7 +1115,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic = client->getReliableTopic("testMessageFieldSetCorrectly"));
 
                 auto state = std::make_shared<ListenerState>(1);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
 
                 auto timeBeforePublish = std::chrono::system_clock::now();
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -1180,7 +1143,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(topic->publish(3).get());
 
                 auto state = std::make_shared<ListenerState>(3);
-                ASSERT_NO_THROW(listenerId = topic->addMessageListener(GenericListener(state)));
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(makeListener(state)));
 
                 std::vector<int> expectedValues = {4, 5, 6};
                 // spawn a thread for publishing new data

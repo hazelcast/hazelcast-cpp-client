@@ -64,8 +64,6 @@
 
 namespace hazelcast {
     namespace client {
-        SocketInterceptor::~SocketInterceptor() = default;
-
         namespace connection {
             constexpr size_t ClientConnectionManagerImpl::EXECUTOR_CORE_POOL_SIZE;
             constexpr int32_t ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
@@ -214,9 +212,7 @@ namespace hazelcast {
                 connection->connect();
 
                 // call the interceptor from user thread
-                if (socketInterceptor) {
-                    socketInterceptor->onConnect(connection->getSocket());
-                }
+                socketInterceptor.connect(connection->getSocket());
 
                 authenticate_on_cluster(connection);
 

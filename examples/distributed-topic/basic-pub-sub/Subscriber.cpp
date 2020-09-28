@@ -15,7 +15,7 @@
  */
 
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/topic/MessageListener.h>
+#include <hazelcast/client/topic/Listener.h>
 
 int main() {
     hazelcast::client::HazelcastClient hz;

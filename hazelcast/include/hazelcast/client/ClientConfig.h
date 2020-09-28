@@ -40,6 +40,7 @@
 #include "hazelcast/client/config/LoggerConfig.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/MembershipListener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,10 +49,6 @@
 
 namespace hazelcast {
     namespace client {
-        class MembershipListener;
-
-        class InitialMembershipListener;
-
         class InitialMembershipEvent;
 
         namespace connection {
@@ -205,12 +202,12 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            ClientConfig &setSocketInterceptor(SocketInterceptor *interceptor);
+            ClientConfig &setSocketInterceptor(SocketInterceptor &&interceptor);
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
             */
-            SocketInterceptor *getSocketInterceptor();
+            const SocketInterceptor &getSocketInterceptor() const;
 
             /**
             * Adds a listener to configuration to be registered when HazelcastClient starts.
@@ -219,7 +216,7 @@ namespace hazelcast {
             *
             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
             *
-            * \param listener LifecycleListener *listener
+            * \param listener LifecycleListener
             * \return itself ClientConfig
             */
             ClientConfig &addListener(LifecycleListener &&listener);
@@ -251,43 +248,17 @@ namespace hazelcast {
             *
             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
             *
-            * \param listener MembershipListener *listener
+            * \param listener MembershipListener
             * \return itself ClientConfig
             */
-            ClientConfig &addListener(const std::shared_ptr<MembershipListener> &listener);
+            ClientConfig &addListener(MembershipListener &&listener);
 
             /**
             * Returns registered membershipListeners
             *
             * \return registered membershipListeners
             */
-            const std::unordered_set<MembershipListener *> &getMembershipListeners() const;
-
-            /**
-             * Returns registered membershipListeners
-             *
-             * \return registered membership listeners. This method returns the same list as the
-             * getMembershipListeners method but as a set of shared_ptr.
-             */
-            const std::unordered_set<std::shared_ptr<MembershipListener> > &getManagedMembershipListeners() const;
-
-            /**
-            * \deprecated Please use addListener(const std::shared_ptr<InitialMembershipListener> &listener)
-            *
-            * Adds a listener to configuration to be registered when HazelcastClient starts.
-            *
-            * \param listener InitialMembershipListener *listener
-            * \return itself ClientConfig
-            */
-            ClientConfig &addListener(InitialMembershipListener *listener);
-
-            /**
-            * Adds a listener to configuration to be registered when HazelcastClient starts.
-            *
-            * \param listener InitialMembershipListener *listener
-            * \return itself ClientConfig
-            */
-            ClientConfig &addListener(const std::shared_ptr<InitialMembershipListener> &listener);
+            const std::vector<MembershipListener> &getMembershipListeners() const;
 
             /**
             * Used to distribute the operations to multiple Endpoints.
@@ -521,8 +492,7 @@ namespace hazelcast {
 
             impl::RoundRobinLB defaultLoadBalancer;
 
-            std::unordered_set<MembershipListener *> membershipListeners;
-            std::unordered_set<std::shared_ptr<MembershipListener> > managedMembershipListeners;
+            std::vector<MembershipListener> membershipListeners;
 
             std::vector<LifecycleListener> lifecycleListeners;
 
@@ -530,7 +500,7 @@ namespace hazelcast {
 
             bool redoOperation;
 
-            SocketInterceptor *socketInterceptor;
+            SocketInterceptor socketInterceptor;
 
             boost::shared_ptr<security::credentials> credentials_;
 

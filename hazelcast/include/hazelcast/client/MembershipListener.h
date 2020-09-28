@@ -17,8 +17,11 @@
 #pragma once
 
 #include <string>
+#include <boost/uuid/uuid.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/type_traits.h"
+#include "hazelcast/util/noop.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,8 +32,7 @@ namespace hazelcast {
     namespace client {
 
         class MembershipEvent;
-
-        class MemberAttributeEvent;
+        class InitialMembershipEvent;
 
         namespace spi {
             namespace impl {
@@ -44,63 +46,90 @@ namespace hazelcast {
          * The MembershipListener will never be called concurrently and all MembershipListeners will receive the events
          * in the same order.
          *
-         * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+         * \warning
+         * 1 - If listener should do a time consuming operation, off-load the operation to another thread.
          * otherwise it will slow down the system.
+         * \warning
+         * 2 - Do not make a call to hazelcast. It can cause deadlock.
          *
-         * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
-         *
-         * @see InitialMembershipListener
-         * @see Cluster#addMembershipListener(MembershipListener*)
+         * \see Cluster::addMembershipListener
          */
-
-        class HAZELCAST_API MembershipListener {
+        class HAZELCAST_API MembershipListener final {
             friend class Cluster;
-            friend class MembershipListenerDelegator;
-            friend class InitialMembershipListenerDelegator;
             friend class spi::impl::ClientClusterServiceImpl;
         public:
-            virtual ~MembershipListener();
+            /**
+             * Set an handler function to be invoked when a new member joins the cluster.
+             * \param h a `void` function object that is callable with a single parameter of type `const MembershipEvent &`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener& on_joined(Handler &&h) & {
+                joined_ = std::forward<Handler>(h);
+                return *this;
+            };
 
             /**
-             * Invoked when a new member is added to the cluster.
-             *
-             * @param membershipEvent membership event
+             * \copydoc MembershipListener::on_joined
              */
-            virtual void memberAdded(const MembershipEvent &membershipEvent) = 0;
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener&& on_joined(Handler &&h) && {
+                on_joined(std::forward<Handler>(h));
+                return std::move(*this);
+            };
+            
+            /**
+             * Set an handler function to be invoked when an existing member leaves the cluster.
+             * \param h a `void` function object that is callable with a single parameter of type `const MembershipEvent &`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener& on_left(Handler &&h) & {
+                left_ = std::forward<Handler>(h);
+                return *this;
+            };
 
             /**
-             * Invoked when an existing member leaves the cluster.
-             *
-             * @param membershipEvent membership event
+             * \copydoc MembershipListener::on_left
              */
-            virtual void memberRemoved(const MembershipEvent &membershipEvent) = 0;
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener&& on_left(Handler &&h) && {
+                on_left(std::forward<Handler>(h));
+                return std::move(*this);
+            };
 
-        protected:
-            boost::uuids::uuid registrationId;
+            /**
+             * Set an handler function to be invoked once when this listener is registered.
+             * \param h a `void` function object that is callable with a single parameter of type `const InitialMembershipEvent &`
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener& on_init(Handler &&h) & {
+                init_ = std::forward<Handler>(h);
+                return *this;
+            };
 
-            virtual bool shouldRequestInitialMembers() const;
+            /**
+             * \copydoc MembershipListener::on_init
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            MembershipListener&& on_init(Handler &&h) && {
+                on_init(std::forward<Handler>(h));
+                return std::move(*this);
+            };
 
-            virtual boost::uuids::uuid  getRegistrationId() const;
+        private:
+            using handler_t = std::function<void(const MembershipEvent &)>;
+            using init_handler_t = std::function<void(const InitialMembershipEvent &)>;
+            
+            static constexpr auto noop_handler = util::noop<const MembershipEvent &>;
 
-            virtual void setRegistrationId(boost::uuids::uuid registrationId);
-        };
-
-        class MembershipListenerDelegator : public MembershipListener {
-        public:
-            explicit MembershipListenerDelegator(MembershipListener *listener);
-
-            void memberAdded(const MembershipEvent &membershipEvent) override;
-
-            void memberRemoved(const MembershipEvent &membershipEvent) override;
-
-        protected:
-            MembershipListener *listener;
-
-            bool shouldRequestInitialMembers() const override;
-
-            void setRegistrationId(boost::uuids::uuid registrationId) override;
-
-            boost::uuids::uuid  getRegistrationId() const override;
+            handler_t left_{ noop_handler },
+                      joined_{ noop_handler };
+            init_handler_t init_{};
         };
     }
 }
