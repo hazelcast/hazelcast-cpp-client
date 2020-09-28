@@ -564,7 +564,7 @@ namespace hazelcast {
         }
 
         ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(NULL), redoOperation(false),
-                                       socketInterceptor(NULL), executorPoolSize(-1) {}
+                                       socketInterceptor(), executorPoolSize(-1) {}
 
         ClientConfig &ClientConfig::setGroupConfig(const GroupConfig &groupConfig) {
             this->groupConfig = groupConfig;
@@ -622,12 +622,12 @@ namespace hazelcast {
             return membershipListeners;
         }
 
-        ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor *interceptor) {
-            this->socketInterceptor = interceptor;
+        ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor &&interceptor) {
+            this->socketInterceptor = std::move(interceptor);
             return *this;
         }
 
-        SocketInterceptor *ClientConfig::getSocketInterceptor() {
+        const SocketInterceptor &ClientConfig::getSocketInterceptor() const {
             return socketInterceptor;
         }
 

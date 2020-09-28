@@ -1081,20 +1081,14 @@ namespace hazelcast {
             class SocketInterceptorTest : public ClientTestSupport {
             };
 
-            class MySocketInterceptor : public SocketInterceptor {
-            public:
-                MySocketInterceptor(boost::latch &latch1) : interceptorLatch(latch1) {
-                }
-
-                void onConnect(const hazelcast::client::Socket &connectedSocket) override {
-                    ASSERT_EQ("127.0.0.1", connectedSocket.getAddress().getHost());
-                    ASSERT_NE(0, connectedSocket.getAddress().getPort());
-                    interceptorLatch.count_down();
-                }
-
-            private:
-                boost::latch &interceptorLatch;
-            };
+            SocketInterceptor makeSocketInterceptor(boost::latch &l) {
+                return SocketInterceptor()
+                    .on_connect([&l](const hazelcast::client::Socket &connected_sock) {
+                        ASSERT_EQ("127.0.0.1", connected_sock.getAddress().getHost());
+                        ASSERT_NE(0, connected_sock.getAddress().getPort());
+                        l.count_down();
+                    });
+            }
 
 #ifdef HZ_BUILD_WITH_SSL
             TEST_F(SocketInterceptorTest, interceptSSLBasic) {
@@ -1102,8 +1096,8 @@ namespace hazelcast {
                 HazelcastServer instance(sslFactory);
                 ClientConfig config = getConfig(true);
                 boost::latch interceptorLatch(1);
-                MySocketInterceptor interceptor(interceptorLatch);
-                config.setSocketInterceptor(&interceptor);
+                auto interceptor = makeSocketInterceptor(interceptorLatch);
+                config.setSocketInterceptor(std::move(interceptor));
                 HazelcastClient client(config);
                 interceptorLatch.wait_for(boost::chrono::seconds(2));
             }
@@ -1114,8 +1108,8 @@ namespace hazelcast {
                 HazelcastServer instance(*g_srvFactory);
                 ClientConfig config = getConfig();
                 boost::latch interceptorLatch(1);
-                MySocketInterceptor interceptor(interceptorLatch);
-                config.setSocketInterceptor(&interceptor);
+                auto interceptor = makeSocketInterceptor(interceptorLatch);
+                config.setSocketInterceptor(std::move(interceptor));
                 HazelcastClient client(config);
                 interceptorLatch.wait_for(boost::chrono::seconds(2));
             }

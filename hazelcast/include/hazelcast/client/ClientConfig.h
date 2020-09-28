@@ -202,12 +202,12 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            ClientConfig &setSocketInterceptor(SocketInterceptor *interceptor);
+            ClientConfig &setSocketInterceptor(SocketInterceptor &&interceptor);
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
             */
-            SocketInterceptor *getSocketInterceptor();
+            const SocketInterceptor &getSocketInterceptor() const;
 
             /**
             * Adds a listener to configuration to be registered when HazelcastClient starts.
@@ -500,7 +500,7 @@ namespace hazelcast {
 
             bool redoOperation;
 
-            SocketInterceptor *socketInterceptor;
+            SocketInterceptor socketInterceptor;
 
             boost::shared_ptr<security::credentials> credentials_;
 

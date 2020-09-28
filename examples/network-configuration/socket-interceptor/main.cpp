@@ -16,18 +16,16 @@
 
 #include <hazelcast/client/HazelcastAll.h>
 
-class MyInterceptor : public hazelcast::client::SocketInterceptor {
-public:
-    void onConnect(const hazelcast::client::Socket &connectedSocket) override {
-        std::cout << "[MyInterceptor::onConnect] Connected to remote host " <<
-        connectedSocket.getAddress() << std::endl;
-    }
-};
-
 int main() {
     hazelcast::client::ClientConfig config;
-    MyInterceptor interceptor;
-    config.setSocketInterceptor(&interceptor);
+    config.setSocketInterceptor(
+        SocketInterceptor()
+            .on_connect([](const hazelcast::client::Socket &connectedSocket) {
+                std::cout << "Connected to remote host " 
+                    << connectedSocket.getAddress() << std::endl;
+            })
+    );
+
     hazelcast::client::HazelcastClient hz(config);
 
     std::cout << "Finished" << std::endl;
