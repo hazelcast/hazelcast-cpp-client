@@ -27,7 +27,6 @@
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/ItemEvent.h"
