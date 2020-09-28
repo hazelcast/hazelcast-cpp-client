@@ -408,7 +408,39 @@ namespace hazelcast {
                 registerException(NATIVE_OUT_OF_MEMORY_ERROR,
                                   new ExceptionFactoryImpl<exception::NativeOutOfMemoryError>());
                 registerException(SERVICE_NOT_FOUND, new ExceptionFactoryImpl<exception::ServiceNotFoundException>());
-                registerException(CONSISTENCY_LOST_EXCEPTION, new ExceptionFactoryImpl<exception::ConsistencyLostException>());
+                registerException(STALE_TASK_ID, new ExceptionFactoryImpl<exception::StaleTaskIdException>());
+                registerException(DUPLICATE_TASK, new ExceptionFactoryImpl<exception::DuplicateTaskException>());
+                registerException(STALE_TASK, new ExceptionFactoryImpl<exception::StaleTaskException>());
+                registerException(LOCAL_MEMBER_RESET, new ExceptionFactoryImpl<exception::LocalMemberResetException>());
+                registerException(INDETERMINATE_OPERATION_STATE,
+                                  new ExceptionFactoryImpl<exception::IndeterminateOperationStateException>());
+                registerException(FLAKE_ID_NODE_ID_OUT_OF_RANGE_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::NodeIdOutOfRangeException>());
+                registerException(TARGET_NOT_REPLICA_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::TargetNotReplicaException>());
+                registerException(MUTATION_DISALLOWED_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::MutationDisallowedException>());
+                registerException(CONSISTENCY_LOST_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::ConsistencyLostException>());
+                registerException(SESSION_EXPIRED_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::SessionExpiredException>());
+                registerException(WAIT_KEY_CANCELLED_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::WaitKeyCancelledException>());
+                registerException(LOCK_ACQUIRE_LIMIT_REACHED_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::LockAcquireLimitReachedException>());
+                registerException(LOCK_OWNERSHIP_LOST_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::LockOwnershipLostException>());
+                registerException(CP_GROUP_DESTROYED_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::CPGroupDestroyedException>());
+                registerException(CANNOT_REPLICATE_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::CannotReplicateException>());
+                registerException(LEADER_DEMOTED_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::LeaderDemotedException>());
+                registerException(STALE_APPEND_REQUEST_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::StaleAppendRequestException>());
+                registerException(NOT_LEADER_EXCEPTION, new ExceptionFactoryImpl<exception::NotLeaderException>());
+                registerException(VERSION_MISMATCH_EXCEPTION,
+                                  new ExceptionFactoryImpl<exception::VersionMismatchException>());
             }
 
             ClientExceptionFactory::~ClientExceptionFactory() {

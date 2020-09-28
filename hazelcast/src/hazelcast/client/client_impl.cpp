@@ -136,7 +136,7 @@ namespace hazelcast {
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(),
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
                       id(++CLIENT_ID), random_generator_(id), uuid_generator_{random_generator_},
-                      cp_subsystem_(clientContext) {
+                      cp_subsystem_(clientContext), proxy_session_manager_(clientContext) {
                 const std::shared_ptr<std::string> &name = clientConfig.getInstanceName();
                 if (name.get() != NULL) {
                     instanceName = *name;

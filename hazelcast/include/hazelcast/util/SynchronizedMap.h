@@ -138,7 +138,7 @@ namespace hazelcast {
                             return true;
                         }
                     }
-                    if (*value == *foundValue) {
+                    if (value == foundValue || *value == *foundValue) {
                         internalMap.erase(foundIter);
                         return true;
                     }

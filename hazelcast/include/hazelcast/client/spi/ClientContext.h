@@ -30,6 +30,13 @@ namespace hazelcast {
     namespace util {
         class ILogger;
     }
+    namespace cp {
+        namespace internal {
+            namespace session {
+                class proxy_session_manager;
+            }
+        }
+    }
     namespace client {
         class Cluster;
         class HazelcastClient;
@@ -139,6 +146,8 @@ namespace hazelcast {
                 spi::impl::listener::cluster_view_listener &get_cluster_view_listener();
 
                 boost::uuids::uuid random_uuid();
+
+                cp::internal::session::proxy_session_manager &get_proxy_session_manager();
             private:
                 client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };
