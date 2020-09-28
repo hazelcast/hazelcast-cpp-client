@@ -253,7 +253,7 @@ namespace hazelcast {
             MultiMapImpl::MultiMapEntryListenerToKeyCodec::MultiMapEntryListenerToKeyCodec(std::string name,
                                                                                            bool includeValue,
                                                                                            serialization::pimpl::Data &&key)
-                    : name(std::move(name)), includeValue(includeValue), key(key) {}
+                    : name(std::move(name)), includeValue(includeValue), key(std::move(key)) {}
 
 
             ReliableTopicImpl::ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context)
@@ -1360,7 +1360,7 @@ namespace hazelcast {
             IMapImpl::createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags,
                                                   serialization::pimpl::Data &&key) {
                 return std::shared_ptr<spi::impl::ListenerMessageCodec>(
-                        new MapEntryListenerToKeyCodec(getName(), includeValue, listenerFlags, key));
+                        new MapEntryListenerToKeyCodec(getName(), includeValue, listenerFlags, std::move(key)));
             }
 
             void IMapImpl::onInitialize() {
@@ -1407,7 +1407,7 @@ namespace hazelcast {
             IMapImpl::MapEntryListenerWithPredicateMessageCodec::MapEntryListenerWithPredicateMessageCodec(
                     std::string name, bool includeValue, int32_t listenerFlags,
                     serialization::pimpl::Data &&predicate) : name(std::move(name)), includeValue(includeValue),
-                                                             listenerFlags(listenerFlags), predicate(predicate) {}
+                                                             listenerFlags(listenerFlags), predicate(std::move(predicate)) {}
 
             protocol::ClientMessage
             IMapImpl::MapEntryListenerWithPredicateMessageCodec::encodeAddRequest(bool localOnly) const {
@@ -1625,7 +1625,7 @@ namespace hazelcast {
             DataEntryView::DataEntryView(Data &&key, Data &&value, int64_t cost, int64_t creationTime,
                                          int64_t expirationTime, int64_t hits, int64_t lastAccessTime,
                                          int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version, int64_t ttl,
-                                         int64_t maxIdle) : key(key), value(value), cost(cost),
+                                         int64_t maxIdle) : key(std::move(key)), value(std::move(value)), cost(cost),
                                                             creationTime(creationTime), expirationTime(expirationTime),
                                                             hits(hits), lastAccessTime(lastAccessTime),
                                                             lastStoredTime(lastStoredTime),
@@ -1700,7 +1700,8 @@ namespace hazelcast {
                     ReliableTopicMessage::ReliableTopicMessage(
                             hazelcast::client::serialization::pimpl::Data &&payloadData,
                             std::unique_ptr<Address> address)
-                            : publishTime(std::chrono::system_clock::now()), payload(payloadData) {
+                            : publishTime(std::chrono::system_clock::now())
+                            , payload(std::move(payloadData)) {
                         if (address) {
                             publisherAddress = boost::make_optional(*address);
                         }
