@@ -57,10 +57,18 @@ namespace hazelcast {
             }
         }
 
-        std::shared_ptr<semaphore>
+        std::shared_ptr<counting_semaphore>
         raft_proxy_factory::create_semaphore(raft_group_id &&group_id, const std::string &proxy_name,
                                              const std::string &object_name) {
-            return nullptr;
+            auto request = protocol::codec::semaphore_getsemaphoretype_encode(proxy_name);
+            auto is_sessionless = spi::impl::ClientInvocation::create(context_, request, object_name)->invoke().get().get_first_fixed_sized_field<bool>();
+            if (is_sessionless) {
+                return std::shared_ptr<counting_semaphore>(new sessionless_semaphore(proxy_name, &context_, group_id, object_name,
+                                                                                     context_.get_proxy_session_manager()));
+            } else {
+                return std::shared_ptr<counting_semaphore>(new session_semaphore(proxy_name, &context_, group_id, object_name,
+                                                                                 context_.get_proxy_session_manager()));
+            }
         }
 
         std::string raft_proxy_factory::without_default_group_name(const std::string &n) {
@@ -123,6 +131,10 @@ namespace hazelcast {
 
         std::shared_ptr<fenced_lock> cp_subsystem::get_lock(const std::string &name) {
             return proxy_factory_.create_proxy<fenced_lock>(name);
+        }
+
+        std::shared_ptr<counting_semaphore> cp_subsystem::get_semaphore(const std::string &name) {
+            return proxy_factory_.create_proxy<counting_semaphore>(name);
         }
 
         cp_proxy::cp_proxy(const std::string &serviceName, const std::string &proxyName,
@@ -653,6 +665,257 @@ namespace hazelcast {
         bool fenced_lock::lock_ownership_state::is_locked() {
             return fence != INVALID_FENCE;
         }
+
+        counting_semaphore::counting_semaphore(const std::string &proxyName, spi::ClientContext *context,
+                                               const raft_group_id &groupId, const std::string &objectName,
+                                               internal::session::proxy_session_manager &sessionManager) : session_aware_proxy(SERVICE_NAME,
+                                                                                                     proxyName, context,
+                                                                                                     groupId,
+                                                                                                     objectName, sessionManager) {}
+
+        boost::future<bool> counting_semaphore::init(int32_t permits) {
+            util::Preconditions::checkNotNegative(permits, "Permits must be non-negative!");
+
+            auto request = client::protocol::codec::semaphore_init_encode(group_id_, object_name_, permits);
+            return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                    boost::launch::deferred, [](boost::future<protocol::ClientMessage> f) {
+                        return f.get().get_first_fixed_sized_field<bool>();
+                    });
+        }
+
+        boost::future<bool> counting_semaphore::try_acquire(int32_t permits) {
+            return try_acquire_for(std::chrono::milliseconds::zero(), permits);
+        }
+
+        boost::future<void> counting_semaphore::do_release(int32_t permits, int64_t thread_id) {
+            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto request = codec::semaphore_release_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, thread_id, invocation_uid, permits);
+            return toVoidFuture(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+        }
+
+        boost::future<int32_t> counting_semaphore::available_permits() {
+            auto request = codec::semaphore_availablepermits_encode(group_id_, object_name_);
+            return decode<int32_t>(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+        }
+
+        boost::future<void> counting_semaphore::reduce_permits(int32_t reduction) {
+            util::Preconditions::checkNotNegative(reduction, "Reduction must be non-negative!");
+            if (reduction == 0) {
+                return boost::make_ready_future();
+            }
+            return do_change_permits(-reduction);
+        }
+
+        boost::future<void> counting_semaphore::increase_permits(int32_t increase) {
+            util::Preconditions::checkNotNegative(increase, "Increase must be non-negative!");
+            if (increase == 0) {
+                return boost::make_ready_future();
+            }
+            return do_change_permits(increase);
+        }
+
+        sessionless_semaphore::sessionless_semaphore(const std::string &proxyName, spi::ClientContext *context,
+                                                     const raft_group_id &groupId, const std::string &objectName,
+                                                     internal::session::proxy_session_manager &sessionManager)
+                                                     : counting_semaphore(proxyName, context, groupId, objectName, sessionManager) {}
+
+        boost::future<void> sessionless_semaphore::acquire(int32_t permits) {
+            util::Preconditions::checkPositive(permits, "permits must be positive number.");
+
+            return toVoidFuture(do_try_acquire(permits, std::chrono::milliseconds(-1)));
+        }
+
+        boost::future<bool>
+        sessionless_semaphore::do_try_acquire(int32_t permits, std::chrono::milliseconds timeout_ms) {
+            auto cluster_wide_threadId = get_thread_id();
+            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto request = client::protocol::codec::semaphore_acquire_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid, permits, timeout_ms.count());
+            return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                try {
+                    return f.get().get_first_fixed_sized_field<bool>();
+                } catch (exception::WaitKeyCancelledException &) {
+                    throw exception::IllegalStateException("sessionless_semaphore::acquire",
+                                                           (boost::format(
+                                                                   "Semaphore[%1%] ] not acquired because the acquire call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
+                                                            object_name_).str());
+                }
+            });
+        }
+
+        boost::future<bool> sessionless_semaphore::try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) {
+            util::Preconditions::checkPositive(permits, "Permits must be positive!");
+
+            return do_try_acquire(permits, timeout > std::chrono::milliseconds::zero() ? timeout : std::chrono::milliseconds::zero());
+        }
+
+        boost::future<void> sessionless_semaphore::release(int32_t permits) {
+            util::Preconditions::checkPositive(permits, "Permits must be positive!");
+            auto thread_id = get_thread_id();
+            return do_release(permits, thread_id);
+        }
+
+        int64_t sessionless_semaphore::get_thread_id() {
+            return session_manager_.get_or_create_unique_thread_id(group_id_);
+        }
+
+        boost::future<int32_t> sessionless_semaphore::drain_permits() {
+            auto cluster_wide_threadId = get_thread_id();
+            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto request = client::protocol::codec::semaphore_drain_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid);
+            return decode<int32_t>(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+        }
+
+        boost::future<void> sessionless_semaphore::do_change_permits(int32_t delta) {
+            auto cluster_wide_threadId = get_thread_id();
+            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto request = client::protocol::codec::semaphore_change_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid, delta);
+            return toVoidFuture(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+        }
+
+        session_semaphore::session_semaphore(const std::string &proxyName, spi::ClientContext *context,
+                                                     const raft_group_id &groupId, const std::string &objectName,
+                                                     internal::session::proxy_session_manager &sessionManager)
+                                                     : counting_semaphore(proxyName, context, groupId, objectName, sessionManager) {}
+
+        boost::future<void> session_semaphore::acquire(int32_t permits) {
+            return toVoidFuture(try_acquire_for_millis(permits, std::chrono::milliseconds(-1)));
+        }
+
+        boost::future<bool>
+        session_semaphore::try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) {
+            util::Preconditions::checkNotNegative(permits, "permits must not be negative number.");
+
+            auto thread_id = get_thread_id();
+            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+
+            auto do_try_acquire_once = ([=] () {
+                auto start = std::chrono::steady_clock::now();
+                auto use_timeout = timeout >= std::chrono::milliseconds::zero();
+                auto session_id = session_manager_.acquire_session(group_id_, permits);
+                auto request = client::protocol::codec::semaphore_acquire_encode(group_id_, object_name_,
+                                                                                 internal::session::proxy_session_manager::NO_SESSION_ID,
+                                                                                 thread_id, invocation_uid, permits,
+                                                                                 timeout.count());
+                return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                        boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                            try {
+                                auto acquired = f.get().get_first_fixed_sized_field<bool>();
+                                if (!acquired) {
+                                    session_manager_.release_session(group_id_, session_id);
+                                }
+                                // first bool means acquired or not, second bool means if should try again
+                                return std::make_pair(acquired, false);
+                            } catch (exception::SessionExpiredException &) {
+                                session_manager_.invalidate_session(group_id_, session_id);
+                                if (use_timeout && (timeout - (std::chrono::steady_clock::now() - start) <= std::chrono::milliseconds::zero())) {
+                                    return std::make_pair(false, false);
+                                }
+                                return std::make_pair(false, true);
+                            } catch (exception::WaitKeyCancelledException &) {
+                                session_manager_.release_session(group_id_, session_id, permits);
+                                if (!use_timeout) {
+                                    BOOST_THROW_EXCEPTION(
+                                            exception::IllegalStateException("session_semaphore::try_acquire_for_millis", (boost::format(
+                                                    "Semaphore[%1%] not acquired because the acquire call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %
+                                                                                                            object_name_).str()));
+                                }
+                                return std::make_pair(false, false);
+                            }
+                        });
+            });
+
+            return do_try_acquire_once().then(boost::launch::deferred, [=] (boost::future<std::pair<bool, bool>> f) {
+                auto result = f.get();
+                if (result.second) {
+                    return result.first;
+                }
+                for (;result.second;result = do_try_acquire_once().get());
+                return result.first;
+            });
+        }
+
+        boost::future<void> session_semaphore::release(int32_t permits) {
+            auto session_id = session_manager_.get_session(group_id_);
+            if (session_id == internal::session::proxy_session_manager::NO_SESSION_ID) {
+                BOOST_THROW_EXCEPTION(illegal_state_exception(nullptr));
+            }
+
+            auto thread_id = get_thread_id();
+            return do_release(permits, thread_id).then([=] (boost::future<void> f) {
+                try {
+                    f.get();
+                    session_manager_.release_session(group_id_, session_id, permits);
+                } catch(exception::SessionExpiredException &) {
+                    session_manager_.invalidate_session(group_id_, session_id);
+                    session_manager_.release_session(group_id_, session_id, permits);
+                    BOOST_THROW_EXCEPTION(illegal_state_exception(std::current_exception()));
+                }
+            });
+        }
+
+        exception::IllegalStateException session_semaphore::illegal_state_exception(std::exception_ptr e) {
+            try {
+                std::rethrow_exception(e);
+            } catch (...) {
+                std::throw_with_nested(exception::IllegalStateException("session_semaphore::illegal_state_exception", "No valid session!"));
+            }
+        }
+
+        int64_t session_semaphore::get_thread_id() {
+            return util::getCurrentThreadId();
+        }
+
+        boost::future<int32_t> session_semaphore::drain_permits() {
+            auto thread_id = get_thread_id();
+            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+
+            auto do_drain_once = ([=] () {
+                auto session_id = session_manager_.acquire_session(group_id_, DRAIN_SESSION_ACQ_COUNT);
+                auto request = client::protocol::codec::semaphore_drain_encode(group_id_, object_name_,
+                                                                                 internal::session::proxy_session_manager::NO_SESSION_ID,
+                                                                                 thread_id, invocation_uid);
+                return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                        boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                            try {
+                                auto count = f.get().get_first_fixed_sized_field<int32_t>();
+                                session_manager_.release_session(group_id_, session_id,DRAIN_SESSION_ACQ_COUNT - count);
+                                return count;
+                            } catch (exception::SessionExpiredException &) {
+                                session_manager_.invalidate_session(group_id_, session_id);
+                                return -1;
+                            }
+                        });
+            });
+
+            return do_drain_once().then(boost::launch::deferred, [=] (boost::future<int32_t> f) {
+                int32_t count = f.get();
+                if (count != -1) {
+                    return count;
+                }
+                while((count = do_drain_once().get()) == -1) {}
+                return count;
+            });
+        }
+
+        boost::future<void> session_semaphore::do_change_permits(int32_t delta) {
+            auto session_id = session_manager_.acquire_session(group_id_, DRAIN_SESSION_ACQ_COUNT);
+            auto thread_id = get_thread_id();
+            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+
+            auto request = client::protocol::codec::semaphore_change_encode(group_id_, object_name_,
+                                                                           internal::session::proxy_session_manager::NO_SESSION_ID,
+                                                                           thread_id, invocation_uid, delta);
+            return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
+                    boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
+                        try {
+                            f.get();
+                            session_manager_.release_session(group_id_, session_id);
+                        } catch (exception::SessionExpiredException &) {
+                            session_manager_.invalidate_session(group_id_, session_id);
+                            BOOST_THROW_EXCEPTION(illegal_state_exception(std::current_exception()));
+                        }
+                    });
+        }
     }
 }
 
@@ -664,6 +927,13 @@ namespace std {
         boost::hash_combine(seed, group_id.seed);
         boost::hash_combine(seed, group_id.group_id);
         return seed;
+    }
+}
+
+namespace boost {
+    std::size_t
+    hash<hazelcast::cp::raft_group_id>::operator()(const hazelcast::cp::raft_group_id &group_id) const noexcept {
+        return std::hash<hazelcast::cp::raft_group_id>()(group_id);
     }
 }
 

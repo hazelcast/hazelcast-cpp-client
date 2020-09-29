@@ -908,8 +908,321 @@ namespace hazelcast {
             void verify_no_locked_session_id_present(int64_t thread_id);
         };
 
-        class HAZELCAST_API semaphore {
+        /**
+         * \counting_semaphore is a fault-tolerant distributed alternative to the
+         * stl \counting_semaphore (@see https://en.cppreference.com/w/cpp/thread/counting_semaphore). Semaphores are
+         * often used to restrict the number of threads than can access some physical or logical resource.
+         * <p>
+         * \counting_semaphore is a cluster-wide counting semaphore. Conceptually, it maintains
+         * a set of permits. Each \acquire blocks if necessary until a permit
+         * is available, and then takes it. Dually, each \release adds a
+         * permit, potentially releasing a blocking acquirer. However, no actual permit
+         * objects are used; the semaphore just keeps a count of the number available
+         * and acts accordingly.
+         * <p>
+         * Hazelcast's distributed semaphore implementation guarantees that threads
+         * invoking any of the \acquire methods are selected to
+         * obtain permits in the order of their invocations (first-in-first-out; FIFO).
+         * Note that FIFO ordering implies the order which the primary replica of an
+         * \counting_semaphore receives these acquire requests. Therefore, it is
+         * possible for one member to invoke \acquire before another member,
+         * but its request hits the primary replica after the other member.
+         * <p>
+         * This class also provides convenience methods to work
+         * with multiple permits at once. Beware of the increased risk of
+         * indefinite postponement when using the multiple-permit acquire. If permits
+         * are released one by one, a thread waiting for one permit will acquire
+         * it before a thread waiting for multiple permits regardless of the call order.
+         * <p>
+         * Correct usage of a semaphore is established by programming convention
+         * in the application.
+         * <p>
+         * \counting_semaphore works on top of the Raft consensus algorithm. It offers linearizability during crash
+         * failures and network partitions. It is CP with respect to the CAP principle.
+         * If a network partition occurs, it remains available on at most one side of
+         * the partition.
+         * <p>
+         * It has 2 variations:
+         * <ul>
+         * <li>
+         * The default impl is session-aware. In this
+         * one, when a caller makes its very first \acquire call, it starts
+         * a new CP session with the underlying CP group. Then, liveliness of the
+         * caller is tracked via this CP session. When the caller fails, permits
+         * acquired by this caller are automatically and safely released. However,
+         * the session-aware version comes with a limitation, that is,
+         * a HazelcastInstance cannot release permits before acquiring them
+         * first. In other words, a Hazelcast client can release only
+         * the permits it has acquired earlier. It means, you can acquire a permit
+         * from one thread and release it from another thread using the same
+         * Hazelcast client, but not different instances of Hazelcast client. You can use
+         * the session-aware CP \counting_semaphore impl by disabling server side JDK compatibility
+         * server SemaphoreConfig#setJDKCompatible(boolean). Although
+         * the session-aware impl has a minor difference to the JDK Semaphore, we think
+         * it is a better fit for distributed environments because of its safe
+         * auto-cleanup mechanism for acquired permits.
+         * </li>
+         * <li>
+         * The second impl is sessionless. This impl
+         * does not perform auto-cleanup of acquired permits on failures. Acquired
+         * permits are not bound to threads and permits can be released without
+         * acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast
+         * server or a client fails while holding some permits, they will not be
+         * automatically released. You can use the sessionless CP \counting_semaphore
+         * impl by enabling server side config SemaphoreConfig#setJDKCompatible(boolean).
+         * </li>
+         * </ul>
+         * <p>
+         * There is a subtle difference between the lock and semaphore abstractions.
+         * A lock can be assigned to at most one endpoint at a time, so we have a total
+         * order among its holders. However, permits of a semaphore can be assigned to
+         * multiple endpoints at a time, which implies that we may not have a total
+         * order among permit holders. In fact, permit holders are partially ordered.
+         * For this reason, the fencing token approach, which is explained in
+         * \fenced_lock, does not work for the semaphore abstraction. Moreover,
+         * each permit is an independent entity. Multiple permit acquires and reentrant
+         * lock acquires of a single endpoint are not equivalent. The only case where
+         * a semaphore behaves like a lock is the binary case, where the semaphore has
+         * only 1 permit (similar to stl \binary_semaphore). In this case, the semaphore works like a non-reentrant lock.
+         * <p>
+         * All of the API methods in the new CP \fenced_lock impl offer
+         * the exactly-once execution semantics for the session-aware version.
+         * For instance, even if a \release call is internally retried
+         * because of a crashed Hazelcast member, the permit is released only once.
+         * However, this guarantee is not given for the sessionless, a.k.a,
+         * JDK-compatible CP \counting_semaphore. For this version, you can tune
+         * execution semantics via server side config CPSubsystemConfig#setFailOnIndeterminateOperationState(boolean).
+         */
+        class HAZELCAST_API counting_semaphore : public session_aware_proxy {
+        public:
+            //---- std::counting_semaphore method impl starts ---------
+            /**
+             * Acquires a permit if \permits are available, and returns immediately,
+             * reducing the number of available permits by one.
+             * <p>
+             * If no permit is available, then the current thread becomes
+             * disabled for thread scheduling purposes and lies dormant until
+             * one of three things happens:
+             * <ul>
+             * <li>some other thread invokes one of the \release methods for this
+             * semaphore and the current thread is next to be assigned a permit,</li>
+             * <li>this counting_semaphore instance is destroyed, or</li>
+             * <li>some other thread interrupts the current server thread.</li>
+             * </ul>
+             * <p>If the current server thread:
+             * <ul>
+             * <li>has its interrupted status set on entry to this method; or</li>
+             * <li>is interrupted while waiting for a permit,</li>
+             * </ul>
+             * then \InterruptedException is thrown and the current thread's
+             * interrupted status is cleared.
+             *
+             * @param permits the number of permits to acquire
+             * @throws IllegalArgumentException if \permits is negative or zero
+             * @throws IllegalStateException if hazelcast instance is shutdown while waiting
+             */
+            virtual boost::future<void> acquire(int32_t permits = 1) = 0;
 
+            /**
+             * Releases a permit and increases the number of available permits by one.
+             * If some threads in the cluster are blocked for acquiring a permit, one
+             * of them will unblock by acquiring the permit released by this call.
+             * <p>
+             * If the underlying \counting_semaphore is configured as non-JDK compatible
+             * via server side SemaphoreConfig then a thread can only release a permit which
+             * it has acquired before. In other words, a thread cannot release a permit
+             * without acquiring it first.
+             * <p>
+             * Otherwise, which means the underlying impl is the JDK compatible
+             * Semaphore is configured via server side SemaphoreConfig, there is no requirement
+             * that a thread that releases a permit must have acquired that permit by
+             * calling one of the \acquire methods. A thread can freely
+             * release a permit without acquiring it first. In this case, correct usage
+             * of a semaphore is established by programming convention in the application.
+             *
+             * @param permits The number of permits to release.
+             * @throws IllegalArgumentException if \permits is negative or zero
+             * @throws IllegalStateException if the Semaphore is non-JDK-compatible
+             *         and the caller does not have a permit
+             */
+            virtual boost::future<void> release(int32_t permits = 1 ) = 0;
+
+            /**
+             * Acquires if the given number of permits available, and returns \true
+             * immediately. If no permit is available, returns \false immediately.
+             *
+             * @param permits the number of permits to acquire
+             * @return {@code true} if a permit was acquired, {@code false} otherwise
+             */
+            boost::future<bool> try_acquire(int32_t permits = 1);
+
+            /**
+             * Acquires the number of permits and returns , if one becomes available
+             * during the given waiting time and the current server thread has not been
+             * interrupted. If a permit is acquired,
+             * the number of available permits in the \counting_semaphore instance is
+             * also reduced by number of permits.
+             * <p>
+             * If no permit is available, then the current thread becomes
+             * disabled for thread scheduling purposes and lies dormant until
+             * one of three things happens:
+             * <ul>
+             * <li>some other thread releases a permit and the current thread is next
+             * to be assigned a permit,</li>
+             * <li>or this \counting_semaphore instance is destroyed,</li>
+             * <li>or some other thread interrupts the current server thread,</li>
+             * <li>or the specified waiting time elapses.</li>
+             * </ul>
+             * <p>
+             * Returns \true if a permit is successfully acquired.
+             * <p>
+             * Returns \false if the specified waiting time elapses without
+             * acquiring a permit. If the time is less than or equal to zero,
+             * the method will not wait at all.
+             * <p>
+             *
+             * @param the number of permits to acquire
+             * @param rel_time the maximum time to wait for a permit. The supported resolution is milliseconds.
+             * @return \true if a permit was acquired and {@code false}
+             * if the waiting time elapsed before a permit was acquired
+             * @throws InterruptedException  if the current server thread is interrupted
+             * @throws IllegalStateException if hazelcast instance is shutdown while waiting
+             */
+            template<class Rep, class Period>
+            boost::future<bool> try_acquire_for(const std::chrono::duration<Rep, Period>& rel_time, int32_t permits = 1) {
+                auto timout = rel_time;
+                if (timout < std::chrono::milliseconds::zero()) {
+                    timout = std::chrono::duration<Rep, Period>::zero();
+                }
+                return try_acquire_for_millis(permits, timout);
+            }
+
+            /**
+             * Same as \try_acquire_for except that the wait time is calculated from the \abs_time point.
+             */
+            template<class Clock, class Duration>
+            boost::future<bool> try_acquire_until(const std::chrono::time_point<Clock, Duration>& abs_time, int32_t permits = 1) {
+                auto now = Clock::now();
+                return try_acquire_for(permits, abs_time - now);
+            }
+
+            //---- std::counting_semaphore method impl ends ----------
+
+            // --- extended methods
+            /**
+             * Tries to initialize this counting_semaphore instance with the given permit count
+             *
+             * @param permits the given permit count
+             * @return true if initialization success. false if already initialized
+             * @throws IllegalArgumentException if \permits is negative
+             */
+            boost::future<bool> init(int32_t permits);
+
+            /**
+             * Returns the current number of permits currently available in this semaphore.
+             * <p>
+             * This method is typically used for debugging and testing purposes.
+             *
+             * @return the number of permits available in this semaphore
+             */
+            boost::future<int32_t> available_permits();
+
+            /**
+             * Acquires and returns all permits that are available at invocation time.
+             *
+             * @return the number of permits drained
+             */
+            virtual boost::future<int32_t> drain_permits() = 0;
+
+            /**
+             * Reduces the number of available permits by the indicated amount. This
+             * method differs from \acquire as it does not block until permits
+             * become available. Similarly, if the caller has acquired some permits,
+             * they are not released with this call.
+             *
+             * @param reduction the number of permits to reduce
+             * @throws IllegalArgumentException if \reduction is negative
+             */
+            boost::future<void> reduce_permits(int32_t reduction);
+
+            /**
+             * Increases the number of available permits by the indicated amount. If
+             * there are some threads waiting for permits to become available, they
+             * will be notified. Moreover, if the caller has acquired some permits,
+             * they are not released with this call.
+             *
+             * @param increase the number of permits to increase
+             * @throws IllegalArgumentException if \increase is negative
+             */
+            boost::future<void> increase_permits(int32_t increase);
+
+        protected:
+            static constexpr const char *SERVICE_NAME = "hz:raft:semaphoreService";
+
+            counting_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
+                               const raft_group_id &groupId, const std::string &objectName,
+                               internal::session::proxy_session_manager &sessionManager);
+
+            virtual boost::future<bool> try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) = 0;
+
+            virtual int64_t get_thread_id() = 0;
+
+            virtual boost::future<void> do_change_permits(int32_t delta) = 0;
+
+            boost::future<void> do_release(int32_t permits, int64_t thread_id);
+        };
+
+        class HAZELCAST_API sessionless_semaphore : public counting_semaphore {
+        public:
+            sessionless_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
+                                  const raft_group_id &groupId, const std::string &objectName,
+                                  internal::session::proxy_session_manager &sessionManager);
+
+            boost::future<void> acquire(int32_t permits) override;
+
+            boost::future<void> release(int32_t permits) override;
+
+            boost::future<int32_t> drain_permits() override;
+
+        protected:
+            boost::future<bool> try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) override;
+
+            int64_t get_thread_id() override;
+
+            boost::future<void> do_change_permits(int32_t delta) override;
+
+        private:
+            boost::future<bool> do_try_acquire(int32_t permits, std::chrono::milliseconds timeout_ms);
+        };
+
+        class HAZELCAST_API session_semaphore : public counting_semaphore {
+        public:
+            session_semaphore(const std::string &proxyName, client::spi::ClientContext *context,
+                                  const raft_group_id &groupId, const std::string &objectName,
+                                  internal::session::proxy_session_manager &sessionManager);
+
+            boost::future<void> acquire(int32_t permits) override;
+
+            boost::future<void> release(int32_t permits) override;
+
+            boost::future<int32_t> drain_permits() override;
+
+        protected:
+            /**
+             * Since a proxy does not know how many permits will be drained on
+             * the Raft group, it uses this constant to increment its local session
+             * acquire count. Then, it adjusts the local session acquire count after
+             * the drain response is returned.
+             */
+            static constexpr int32_t DRAIN_SESSION_ACQ_COUNT = 1024;
+
+            boost::future<bool> try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) override;
+
+            client::exception::IllegalStateException illegal_state_exception(std::exception_ptr e);
+
+            int64_t get_thread_id() override;
+
+            boost::future<void> do_change_permits(int32_t delta) override;
         };
 
         /**
@@ -959,11 +1272,11 @@ namespace hazelcast {
                 return create_fenced_lock(std::move(group_id), proxy_name, object_name);
             }
 
-            std::shared_ptr<semaphore>
+            std::shared_ptr<counting_semaphore>
             create_semaphore(raft_group_id &&group_id, const std::string &proxy_name, const std::string &object_name);
 
-            template<typename T, typename = typename std::enable_if<std::is_same<semaphore, T>::value>::type>
-            std::shared_ptr<semaphore>
+            template<typename T, typename = typename std::enable_if<std::is_same<counting_semaphore, T>::value>::type>
+            std::shared_ptr<counting_semaphore>
             create(raft_group_id &&group_id, const std::string &proxy_name, const std::string &object_name) {
                 return create_semaphore(std::move(group_id), proxy_name, object_name);
             }
@@ -1082,7 +1395,7 @@ namespace hazelcast {
              * <tt>java.util.concurrent.Semaphore</tt>. If no group name is given
              * within the "name" parameter, then the semaphore instance will
              * be created on the DEFAULT CP group. If a group name is given, like
-             * cp_subsystem::get_atomic_reference("mySemaphore@group1"), the given group will be
+             * cp_subsystem::get_semaphore("mySemaphore@group1"), the given group will be
              * initialized first, if not initialized already, and then the
              * semaphore instance will be created on this group. Returned
              * semaphore instance offers linearizability. When a network
@@ -1095,9 +1408,8 @@ namespace hazelcast {
              * @param name name of the semaphore proxy
              * @return semaphore proxy for the given name
              * @throws HazelcastException if CP Subsystem is not enabled
-             * @see SemaphoreConfig
              */
-            std::shared_ptr<semaphore> getSemaphore(const std::string &name);
+            std::shared_ptr<counting_semaphore> get_semaphore(const std::string &name);
 
         private:
             friend client::impl::HazelcastClientInstanceImpl;
@@ -1110,6 +1422,13 @@ namespace hazelcast {
 }
 
 namespace std {
+    template<>
+    struct HAZELCAST_API hash<hazelcast::cp::raft_group_id> {
+        std::size_t operator()(const hazelcast::cp::raft_group_id &group_id) const noexcept;
+    };
+}
+
+namespace boost {
     template<>
     struct HAZELCAST_API hash<hazelcast::cp::raft_group_id> {
         std::size_t operator()(const hazelcast::cp::raft_group_id &group_id) const noexcept;

@@ -26,11 +26,16 @@ namespace hazelcast {
 
             namespace cp {
                 template<typename T>
-                class cp_test  : public ClientTestSupport {
+                class cp_test : public ClientTestSupport {
                 protected:
                     virtual std::shared_ptr<T> get_cp_structure(const std::string &name) = 0;
 
+                    virtual ClientConfig get_client_config() {
+                        return getConfig();
+                    }
+
                     virtual void SetUp() {
+                        client = new HazelcastClient(get_client_config());
                         auto test_name = getTestName();
                         cp_structure_ = get_cp_structure(test_name + "@" + test_name + "_group");
                     }
@@ -49,13 +54,14 @@ namespace hazelcast {
                     }
 
                     static void SetUpTestCase() {
-                        server1 = new HazelcastServer(*g_srvFactory);
-                        server2 = new HazelcastServer(*g_srvFactory);
-                        server3 = new HazelcastServer(*g_srvFactory);
-                        ASSERT_EQ_EVENTUALLY(3, get_cluster_size(0));
-                        ASSERT_EQ_EVENTUALLY(3, get_cluster_size(1));
-                        ASSERT_EQ_EVENTUALLY(3, get_cluster_size(2));
-                        client = new HazelcastClient(getConfig());
+                        if (std::string(testing::UnitTest::GetInstance()->current_test_suite()->name()) == "basic_sessionless_semaphore_test") {
+                            factory = new HazelcastServerFactory("hazelcast/test/resources/hazelcast-cp-sessionless-semaphore.xml");
+                        } else {
+                            factory = new HazelcastServerFactory("hazelcast/test/resources/hazelcast-cp.xml");
+                        }
+                        server1 = new HazelcastServer(*factory);
+                        server2 = new HazelcastServer(*factory);
+                        server3 = new HazelcastServer(*factory);
                     }
 
                     static void TearDownTestCase() {
@@ -63,8 +69,10 @@ namespace hazelcast {
                         delete server1;
                         delete server2;
                         delete server3;
+                        delete factory;
                     }
 
+                    static HazelcastServerFactory *factory;
                     static HazelcastServer *server1;
                     static HazelcastServer *server2;
                     static HazelcastServer *server3;
@@ -73,6 +81,7 @@ namespace hazelcast {
                     std::shared_ptr<T> cp_structure_;
                 };
 
+                template<typename T> HazelcastServerFactory *cp_test<T>::factory = nullptr;
                 template<typename T> HazelcastServer *cp_test<T>::server1 = nullptr;
                 template<typename T> HazelcastServer *cp_test<T>::server2 = nullptr;
                 template<typename T> HazelcastServer *cp_test<T>::server3 = nullptr;
@@ -699,6 +708,212 @@ namespace hazelcast {
                     ASSERT_TRUE(response.success);
                     ASSERT_EQ("0", response.result);
                 }
+
+                class basic_sessionless_semaphore_test : public cp_test<counting_semaphore> {
+                protected:
+                    std::shared_ptr<counting_semaphore> get_cp_structure(const std::string &name) override {
+                        return client->get_cp_subsystem().get_semaphore(name);
+                    }
+
+                    ClientConfig get_client_config() override {
+                        return cp_test::get_client_config().setClusterName("sessionless-semaphore");
+                    }
+                };
+
+                TEST_F(basic_sessionless_semaphore_test, create_proxy_on_metadata_cp_group) {
+                    ASSERT_THROW(client->get_cp_subsystem().get_semaphore("semaphore@METADATA"),
+                                 exception::IllegalArgumentException);
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_init) {
+                    ASSERT_TRUE(cp_structure_->init(7).get());
+                    ASSERT_EQ(7, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_init_when_already_initialized) {
+                    ASSERT_TRUE(cp_structure_->init(7).get());
+                    ASSERT_FALSE(cp_structure_->init(5).get());
+                    ASSERT_EQ(7, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_acquire) {
+                    int32_t number_of_permits = 20;
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    for (int32_t i = 0; i < number_of_permits; ++i) {
+                        ASSERT_EQ(number_of_permits - i, cp_structure_->available_permits().get());
+                        cp_structure_->acquire().get();
+                    }
+
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_acquire_when_no_permits) {
+                    ASSERT_TRUE(cp_structure_->init(0).get());
+                    auto f = std::async([=] () {
+                        cp_structure_->acquire().get();
+                    });
+
+                    ASSERT_TRUE_ALL_THE_TIME((f.wait_for(std::chrono::seconds::zero()) == std::future_status::timeout &&
+                                              cp_structure_->available_permits().get() == 0), 3);
+
+                    // let the async task finish
+                    cp_structure_->destroy().get();
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_acquire_when_no_permits_and_semaphore_destroyed) {
+                    ASSERT_TRUE(cp_structure_->init(0).get());
+                    auto f = std::async([=] () {
+                        cp_structure_->acquire().get();
+                    });
+
+                    cp_structure_->destroy().get();
+
+                    try {
+                        f.get();
+                    } catch (exception::IException &e) {
+                        std::cout << e << '\n';
+                    }
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_release) {
+                    int32_t number_of_permits = 20;
+                    for (int32_t i = 0; i < number_of_permits; ++i) {
+                        ASSERT_EQ(i, cp_structure_->available_permits().get());
+                        cp_structure_->release().get();
+                    }
+
+                    ASSERT_EQ(number_of_permits, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_allow_negative_permits) {
+                    ASSERT_TRUE(cp_structure_->init(10).get());
+
+                    cp_structure_->reduce_permits(15).get();
+
+                    ASSERT_EQ(-5, cp_structure_->available_permits().get());
+
+                    cp_structure_->release(10).get();
+
+                    ASSERT_EQ(5, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_allow_negative_permits_juc_compatibility) {
+                    ASSERT_TRUE(cp_structure_->init(0).get());
+
+                    cp_structure_->reduce_permits(100).get();
+                    cp_structure_->release(10).get();
+
+                    ASSERT_EQ(-90, cp_structure_->available_permits().get());
+                    ASSERT_EQ(-90, cp_structure_->drain_permits().get());
+
+                    cp_structure_->release(10).get();
+
+                    ASSERT_EQ(10, cp_structure_->available_permits().get());
+                    ASSERT_EQ(10, cp_structure_->drain_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_increase_permits) {
+                    ASSERT_TRUE(cp_structure_->init(10).get());
+
+                    ASSERT_EQ(10, cp_structure_->available_permits().get());
+
+                    cp_structure_->increase_permits(100).get();
+
+                    ASSERT_EQ(110, cp_structure_->drain_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_release_when_argument_negative) {
+                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::IllegalArgumentException);
+
+                    ASSERT_EQ(0, cp_structure_->drain_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_release_when_blocked_acquire_thread) {
+                    ASSERT_TRUE(cp_structure_->init(0).get());
+
+                    auto f = std::async([=] () {
+                        cp_structure_->acquire().get();
+                    });
+
+                    cp_structure_->release().get();
+
+                    ASSERT_EQ_EVENTUALLY(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_multiple_acquire) {
+                    int32_t number_of_permits = 20;
+
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    for (int32_t i = 0; i < number_of_permits; i += 5) {
+                        ASSERT_EQ(number_of_permits - i, cp_structure_->available_permits().get());
+                        cp_structure_->acquire(5).get();
+                    }
+
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_multiple_acquire_when_negative) {
+                    int32_t number_of_permits = 10;
+
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+
+                    ASSERT_THROW(cp_structure_->acquire(-5).get(), exception::IllegalArgumentException);
+
+                    ASSERT_EQ(number_of_permits, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_multiple_acquire_when_not_enough_permits) {
+                    int32_t number_of_permits = 5;
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+
+                    auto f = std::async([=] () {
+                       cp_structure_->acquire(6).get();
+                       ASSERT_EQ(number_of_permits, cp_structure_->available_permits().get());
+                       cp_structure_->acquire(6).get();
+                       ASSERT_EQ(number_of_permits, cp_structure_->available_permits().get());
+                    });
+
+                    ASSERT_TRUE_ALL_THE_TIME((f.wait_for(std::chrono::seconds::zero()) == std::future_status::timeout &&
+                                              cp_structure_->available_permits().get() == number_of_permits), 3);
+
+                    // let the async task finish
+                    cp_structure_->destroy().get();
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_multiple_release) {
+                    int32_t number_of_permits = 20;
+
+                    for (int32_t i = 0; i < number_of_permits; i += 5) {
+                        ASSERT_EQ(i, cp_structure_->available_permits().get());
+                        cp_structure_->release(5).get();
+                    }
+
+                    ASSERT_EQ(number_of_permits, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_multiple_release_when_negative) {
+                    ASSERT_TRUE(cp_structure_->init(0).get());
+
+                    ASSERT_THROW(cp_structure_->release(-5).get(), exception::IllegalArgumentException);
+
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_multiple_release_when_bblocked_acquire_threads) {
+                    int32_t number_of_permits = 10;
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    ASSERT_NO_THROW(cp_structure_->acquire(number_of_permits).get());
+
+                    auto f = std::async([=] () {
+                        cp_structure_->acquire().get();
+                    });
+
+                    ASSERT_NO_THROW(cp_structure_->release().get());
+
+                    ASSERT_NO_THROW(f.get());
+                }
+
+
             }
         }
     }
