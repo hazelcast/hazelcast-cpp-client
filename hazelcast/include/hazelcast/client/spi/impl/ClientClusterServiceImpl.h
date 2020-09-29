@@ -22,8 +22,8 @@
 #include <boost/functional/hash.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
+#include "hazelcast/client/MembershipEvent.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/Sync.h"
@@ -45,7 +45,7 @@ namespace hazelcast {
                 class MemberSelector;
             }
         }
-        class InitialMembershipListener;
+        
         class InitialMembershipEvent;
 
         namespace spi {
@@ -71,7 +71,7 @@ namespace hazelcast {
 
                     Client getLocalClient() const;
 
-                    boost::uuids::uuid addMembershipListener(const std::shared_ptr<MembershipListener> &listener);
+                    boost::uuids::uuid addMembershipListener(MembershipListener &&listener);
 
                     bool removeMembershipListener(boost::uuids::uuid registrationId);
 
@@ -90,8 +90,8 @@ namespace hazelcast {
 
                     ClientContext &client_;
                     std::shared_ptr<ClientMembershipListener> client_membership_listener_;
-                    util::Sync<std::unordered_map<Address, std::shared_ptr<Member> > > members_;
-                    util::SynchronizedMap<boost::uuids::uuid, MembershipListener, boost::hash<boost::uuids::uuid>> listeners_;
+                    std::unordered_map<boost::uuids::uuid, MembershipListener, boost::hash<boost::uuids::uuid>> listeners_;
+                    std::mutex listeners_lock_;
                     std::mutex cluster_view_lock_;
                     boost::atomic_shared_ptr<member_list_snapshot> member_list_snapshot_;
                     const std::unordered_set<std::string> labels_;
@@ -99,7 +99,7 @@ namespace hazelcast {
 
                     static const boost::shared_ptr<member_list_snapshot> EMPTY_SNAPSHOT;
 
-                    boost::uuids::uuid addMembershipListenerWithoutInit(const std::shared_ptr<MembershipListener> &listener);
+                    boost::uuids::uuid addMembershipListenerWithoutInit(MembershipListener &&listener);
 
                     void fireInitialMembershipEvent(const InitialMembershipEvent &event);
 

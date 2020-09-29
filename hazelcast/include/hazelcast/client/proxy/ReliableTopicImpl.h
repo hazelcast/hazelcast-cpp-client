@@ -21,7 +21,7 @@
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/topic/ReliableMessageListener.h"
+#include "hazelcast/client/topic/ReliableListener.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"

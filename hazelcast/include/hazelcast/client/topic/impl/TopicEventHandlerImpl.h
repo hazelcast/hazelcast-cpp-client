@@ -18,7 +18,7 @@
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/topic/MessageListener.h"
+#include "hazelcast/client/topic/Listener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

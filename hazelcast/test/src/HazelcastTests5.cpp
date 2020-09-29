@@ -602,19 +602,6 @@ namespace hazelcast {
                 return member;
             }
 
-            bool HazelcastServerFactory::setAttributes(int memberStartOrder) {
-                std::ostringstream script;
-                script << "function attrs() { "
-                          "var member = instance_" << memberStartOrder << R"delimiter(.getCluster().getLocalMember(); "
-                                                                          "member.setAttribute("stringKey", "stringValue");} "
-                                                                          " result=1; )delimiter";
-
-
-                Response response;
-                remoteController->executeOnController(response, clusterId, script.str().c_str(), Lang::JAVASCRIPT);
-                return response.success;
-            }
-
             bool HazelcastServerFactory::shutdownServer(const remote::Member &member) {
                 return remoteController->shutdownMember(clusterId, member.uuid);
             }
@@ -643,6 +630,10 @@ namespace hazelcast {
                 xmlFile.close();
 
                 return buffer.str();
+            }
+
+            const std::string &HazelcastServerFactory::getClusterId() const {
+                return clusterId;
             }
 
         }

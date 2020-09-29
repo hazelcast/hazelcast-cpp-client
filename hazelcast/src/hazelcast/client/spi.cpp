@@ -264,6 +264,10 @@ namespace hazelcast {
                 return hazelcast_client_.random_uuid();
             }
 
+            cp::internal::session::proxy_session_manager &ClientContext::get_proxy_session_manager() {
+                return hazelcast_client_.proxy_session_manager_;
+            }
+
             LifecycleService::LifecycleService(ClientContext &clientContext,
                                                const std::vector<LifecycleListener> &listeners,
                                                LoadBalancer *const loadBalancer, Cluster &cluster) : 
@@ -318,6 +322,7 @@ namespace hazelcast {
                 }
                 try {
                     fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
+                    client_context_.get_proxy_session_manager().shutdown();
                     client_context_.getClientstatistics().shutdown();
                     client_context_.getProxyManager().destroy();
                     client_context_.getConnectionManager().shutdown();
@@ -677,10 +682,10 @@ namespace hazelcast {
                 }
 
                 boost::uuids::uuid ClientClusterServiceImpl::addMembershipListenerWithoutInit(
-                        const std::shared_ptr<MembershipListener> &listener) {
+                        MembershipListener &&listener) {
+                    std::lock_guard<std::mutex> g(listeners_lock_);
                     auto id = client_.random_uuid();
-                    listeners_.put(id, listener);
-                    listener->setRegistrationId(id);
+                    listeners_.emplace(id, std::move(listener));
                     return id;
                 }
 
@@ -705,15 +710,18 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::start() {
-                    for (auto &listener : client_.getClientConfig().getManagedMembershipListeners()) {
-                        addMembershipListener(listener);
+                    for (auto &listener : client_.getClientConfig().getMembershipListeners()) {
+                        addMembershipListener(MembershipListener(listener));
                     }
                 }
 
                 void ClientClusterServiceImpl::fireInitialMembershipEvent(const InitialMembershipEvent &event) {
-                    for (const std::shared_ptr<MembershipListener> &listener : listeners_.values()) {
-                        if (listener->shouldRequestInitialMembers()) {
-                            ((InitialMembershipListener *) listener.get())->init(event);
+                    std::lock_guard<std::mutex> g(listeners_lock_);
+
+                    for (auto &item : listeners_) {
+                        MembershipListener &listener = item.second;
+                        if (listener.init_) {
+                            listener.init_(event);
                         }
                     }
                 }
@@ -723,12 +731,15 @@ namespace hazelcast {
                 }
 
                 boost::uuids::uuid
-                ClientClusterServiceImpl::addMembershipListener(const std::shared_ptr<MembershipListener> &listener) {
-                    util::Preconditions::checkNotNull(listener, "listener can't be null");
+                ClientClusterServiceImpl::addMembershipListener(MembershipListener &&listener) {
+                    std::lock_guard<std::mutex> cluster_view_g(cluster_view_lock_);
 
-                    std::lock_guard<std::mutex> guard(cluster_view_lock_);
-                    auto id = addMembershipListenerWithoutInit(listener);
-                    if (listener->shouldRequestInitialMembers()) {
+                    auto id = addMembershipListenerWithoutInit(std::move(listener));
+
+                    std::lock_guard<std::mutex> listeners_g(listeners_lock_);
+                    auto added_listener = listeners_[id];
+
+                    if (added_listener.init_) {
                         auto &cluster = client_.getCluster();
                         auto members_ptr = member_list_snapshot_.load();
                         if (!members_ptr->members.empty()) {
@@ -736,7 +747,7 @@ namespace hazelcast {
                             for (const auto &e : members_ptr->members) {
                                 members.insert(e.second);
                             }
-                            std::static_pointer_cast<InitialMembershipListener>(listener)->init(InitialMembershipEvent(cluster, members));
+                            added_listener.init_(InitialMembershipEvent(cluster, members));
                         }
                     }
 
@@ -744,7 +755,8 @@ namespace hazelcast {
                 }
 
                 bool ClientClusterServiceImpl::removeMembershipListener(boost::uuids::uuid registrationId) {
-                    return listeners_.remove(registrationId).get();
+                    std::lock_guard<std::mutex> g(listeners_lock_);
+                    return listeners_.erase(registrationId) == 1;
                 }
 
                 std::vector<Member>
@@ -849,10 +861,11 @@ namespace hazelcast {
                     for(auto const &e : snapshot->members) {
                         members.insert(e.second);
                     }
-                    for (auto &listener : listeners_.values()) {
-                        if (listener->shouldRequestInitialMembers()) {
-                            std::static_pointer_cast<InitialMembershipListener>(listener)->init(
-                                    InitialMembershipEvent(client_.getCluster(), members));
+                    std::lock_guard<std::mutex> g(listeners_lock_);
+                    for (auto &item : listeners_) {
+                        MembershipListener &listener = item.second;
+                        if (listener.init_) {
+                            listener.init_(InitialMembershipEvent(client_.getCluster(), members));
                         }
                     }
                 }
@@ -872,7 +885,7 @@ namespace hazelcast {
 
                     // removal events should be added before added events
                     for (auto const &e : previous_members) {
-                        events.emplace_back(client_.getCluster(), e.second, MembershipEvent::MembershipEventType::MEMBER_REMOVED, current_members);
+                        events.emplace_back(client_.getCluster(), e.second, MembershipEvent::MembershipEventType::MEMBER_LEFT, current_members);
                         auto connection = client_.getConnectionManager().getConnection(e.second.getUuid());
                         if (connection) {
                             connection->close("", std::make_exception_ptr(exception::TargetDisconnectedException(
@@ -882,7 +895,7 @@ namespace hazelcast {
                         }
                     }
                     for (auto const &member : new_members) {
-                        events.emplace_back(client_.getCluster(), member, MembershipEvent::MembershipEventType::MEMBER_ADDED, current_members);
+                        events.emplace_back(client_.getCluster(), member, MembershipEvent::MembershipEventType::MEMBER_JOINED, current_members);
                     }
 
                     if (!events.empty()) {
@@ -895,12 +908,15 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::fire_events(std::vector<MembershipEvent> events) {
+                    std::lock_guard<std::mutex> g(listeners_lock_);
+                    
                     for (auto const &event : events) {
-                        for (auto listener : listeners_.values()) {
-                            if (event.getEventType() == MembershipEvent::MembershipEventType::MEMBER_ADDED) {
-                                listener->memberAdded(event);
+                        for (auto &item : listeners_) {
+                            MembershipListener &listener = item.second;
+                            if (event.getEventType() == MembershipEvent::MembershipEventType::MEMBER_JOINED) {
+                                listener.joined_(event);
                             } else {
-                                listener->memberRemoved(event);
+                                listener.left_(event);
                             }
                         }
                     }

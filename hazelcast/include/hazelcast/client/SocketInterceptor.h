@@ -15,25 +15,57 @@
  */
 #pragma once
 
+#include <functional>
+#include <utility>
+
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/noop.h"
+#include "hazelcast/util/type_traits.h"
 
 namespace hazelcast {
     namespace client {
         class Socket;
 
+        namespace connection {
+            class ClientConnectionManagerImpl;
+        }
+
         /**
-         * Base class for socketInterceptor classes to inherit from.
+         * An interface that provides the ability to intercept the creation of sockets.
          *
-         * @see ClientConfig#setSocketInterceptor(SocketInterceptor *socketInterceptor);
+         * \see ClientConfig::setSocketInterceptor
          */
-        class HAZELCAST_API SocketInterceptor {
+        class HAZELCAST_API SocketInterceptor final {
         public:
             /**
-             * Will be called with the Socket, each time client creates a connection to any Member.
+             * Set an handler function that will be called with a Socket, 
+             * each time the client creates a connection to any Member.
+             * \param h a `void` function object that is callable with a single parameter of type `const Socket &`
              */
-            virtual void onConnect(const Socket &connectedSocket) = 0;
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            SocketInterceptor &on_connect(Handler &&h) & {
+                connect_ = std::forward<Handler>(h);
+                return *this;
+            }
 
-            virtual ~SocketInterceptor();
+            /**
+             * \copydoc SocketInterceptor::on_connect
+             */
+            template<typename Handler,
+                     typename = util::enable_if_rvalue_ref_t<Handler &&>>
+            SocketInterceptor &&on_connect(Handler &&h) && {
+                on_connect(std::forward<Handler>(h));
+                return std::move(*this);
+            }
+
+
+        private:
+            friend class connection::ClientConnectionManagerImpl;
+
+            using handler_t = std::function<void(const Socket &)>;
+
+            handler_t connect_{ util::noop<const Socket &> };
         };
     }
 }

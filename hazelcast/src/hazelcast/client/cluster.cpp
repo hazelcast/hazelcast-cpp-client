@@ -36,7 +36,6 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -52,35 +51,16 @@ namespace hazelcast {
                 : cluster_service_(clusterService) {
         }
 
-        void Cluster::addMembershipListener(MembershipListener *listener) {
-            cluster_service_.addMembershipListener(
-                    std::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
-        }
-
-        bool Cluster::removeMembershipListener(MembershipListener *listener) {
-            return cluster_service_.removeMembershipListener(listener->getRegistrationId());
-        }
-
         std::vector<Member> Cluster::getMembers() {
             return cluster_service_.getMemberList();
         }
 
-        boost::uuids::uuid Cluster::addMembershipListener(const std::shared_ptr<MembershipListener> &listener) {
-            return cluster_service_.addMembershipListener(listener);
+        boost::uuids::uuid Cluster::addMembershipListener(MembershipListener &&listener) {
+            return cluster_service_.addMembershipListener(std::move(listener));
         }
 
         bool Cluster::removeMembershipListener(boost::uuids::uuid registrationId) {
             return cluster_service_.removeMembershipListener(registrationId);
-        }
-
-        boost::uuids::uuid Cluster::addMembershipListener(const std::shared_ptr<InitialMembershipListener> &listener) {
-            return cluster_service_.addMembershipListener(listener);
-        }
-
-        boost::uuids::uuid Cluster::addMembershipListener(InitialMembershipListener *listener) {
-            return cluster_service_.addMembershipListener(
-                    std::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
-
         }
 
         Member::Member() : lite_member_(false) {
@@ -186,80 +166,6 @@ namespace hazelcast {
             return name_;
         }
 
-        MembershipListener::~MembershipListener() = default;
-
-        boost::uuids::uuid  MembershipListener::getRegistrationId() const {
-            return registrationId;
-        }
-
-        void MembershipListener::setRegistrationId(boost::uuids::uuid registrationId) {
-            this->registrationId = registrationId;
-        }
-
-        bool MembershipListener::shouldRequestInitialMembers() const {
-            return false;
-        }
-
-        MembershipListenerDelegator::MembershipListenerDelegator(
-                MembershipListener *listener) : listener(listener) {}
-
-        void MembershipListenerDelegator::memberAdded(
-                const MembershipEvent &membershipEvent) {
-            listener->memberAdded(membershipEvent);
-        }
-
-        void MembershipListenerDelegator::memberRemoved(
-                const MembershipEvent &membershipEvent) {
-            listener->memberRemoved(membershipEvent);
-        }
-
-        bool MembershipListenerDelegator::shouldRequestInitialMembers() const {
-            return listener->shouldRequestInitialMembers();
-        }
-
-        void MembershipListenerDelegator::setRegistrationId(boost::uuids::uuid registrationId) {
-            listener->setRegistrationId(registrationId);
-        }
-
-        boost::uuids::uuid  MembershipListenerDelegator::getRegistrationId() const {
-            return listener->getRegistrationId();
-        }
-
-        InitialMembershipListener::~InitialMembershipListener() = default;
-
-        bool InitialMembershipListener::shouldRequestInitialMembers() const {
-            return true;
-        }
-
-        void InitialMembershipListenerDelegator::init(InitialMembershipEvent event) {
-            listener_->init(std::move(event));
-        }
-
-        void InitialMembershipListenerDelegator::memberRemoved(
-                const MembershipEvent &membershipEvent) {
-            listener_->memberRemoved(membershipEvent);
-        }
-
-        void InitialMembershipListenerDelegator::memberAdded(
-                const MembershipEvent &membershipEvent) {
-            listener_->memberAdded(membershipEvent);
-        }
-
-        InitialMembershipListenerDelegator::InitialMembershipListenerDelegator(
-                InitialMembershipListener *listener) : listener_(listener) {}
-
-        bool InitialMembershipListenerDelegator::shouldRequestInitialMembers() const {
-            return listener_->shouldRequestInitialMembers();
-        }
-
-        boost::uuids::uuid  InitialMembershipListenerDelegator::getRegistrationId() const {
-            return listener_->getRegistrationId();
-        }
-
-        void InitialMembershipListenerDelegator::setRegistrationId(boost::uuids::uuid registrationId) {
-            listener_->setRegistrationId(registrationId);
-        }
-
         namespace impl {
             RoundRobinLB::RoundRobinLB() = default;
 
@@ -296,20 +202,24 @@ namespace hazelcast {
             void AbstractLoadBalancer::init(Cluster &cluster) {
                 this->cluster_ = &cluster;
                 setMembersRef();
-                cluster.addMembershipListener(this);
+
+                cluster.addMembershipListener(
+                    MembershipListener()
+                        .on_init([this](const InitialMembershipEvent &){
+                            setMembersRef();
+                        })
+                        .on_joined([this](const MembershipEvent &){
+                            setMembersRef();
+                        })
+                        .on_left([this](const MembershipEvent &){
+                            setMembersRef();
+                        })
+                );
             }
 
             void AbstractLoadBalancer::setMembersRef() {
                 std::lock_guard<std::mutex> lg(members_lock_);
                 members_ref_ = cluster_->getMembers();
-            }
-
-            void AbstractLoadBalancer::memberAdded(const MembershipEvent &membershipEvent) {
-                setMembersRef();
-            }
-
-            void AbstractLoadBalancer::memberRemoved(const MembershipEvent &membershipEvent) {
-                setMembersRef();
             }
 
             std::vector<Member> AbstractLoadBalancer::getMembers() {
@@ -320,10 +230,6 @@ namespace hazelcast {
             AbstractLoadBalancer::~AbstractLoadBalancer() = default;
 
             AbstractLoadBalancer::AbstractLoadBalancer() : cluster_(NULL) {
-            }
-
-            void AbstractLoadBalancer::init(InitialMembershipEvent event) {
-                setMembersRef();
             }
         }
 

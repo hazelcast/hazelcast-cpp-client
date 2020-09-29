@@ -64,8 +64,6 @@
 
 namespace hazelcast {
     namespace client {
-        SocketInterceptor::~SocketInterceptor() = default;
-
         namespace connection {
             constexpr size_t ClientConnectionManagerImpl::EXECUTOR_CORE_POOL_SIZE;
             constexpr int32_t ClientConnectionManagerImpl::DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
@@ -214,9 +212,7 @@ namespace hazelcast {
                 connection->connect();
 
                 // call the interceptor from user thread
-                if (socket_interceptor_) {
-                    socket_interceptor_->onConnect(connection->getSocket());
-                }
+                socket_interceptor_.connect_(connection->getSocket());
 
                 authenticate_on_cluster(connection);
 
@@ -987,10 +983,9 @@ namespace hazelcast {
 
                 auto now = std::chrono::steady_clock::now();
                 if (now - connection->lastReadTime() > heartbeat_timeout_) {
-                    if (connection->isAlive()) {
-                        logger_.warning("Heartbeat failed over the connection: ", *connection);
-                        onHeartbeatStopped(connection, "Heartbeat timed out");
-                    }
+                    logger_.warning("Heartbeat failed over the connection: ", *connection);
+                    onHeartbeatStopped(connection, "Heartbeat timed out");
+                    return;
                 }
 
                 if (now - connection->lastReadTime() > heartbeat_interval_) {
