@@ -1169,7 +1169,7 @@ namespace hazelcast {
 
             virtual boost::future<void> do_change_permits(int32_t delta) = 0;
 
-            boost::future<void> do_release(int32_t permits, int64_t thread_id);
+            boost::future<void> do_release(int32_t permits, int64_t thread_id, int64_t session_id);
         };
 
         class HAZELCAST_API sessionless_semaphore : public counting_semaphore {
@@ -1218,7 +1218,7 @@ namespace hazelcast {
 
             boost::future<bool> try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) override;
 
-            client::exception::IllegalStateException illegal_state_exception(std::exception_ptr e);
+            void throw_illegal_state_exception(std::exception_ptr e);
 
             int64_t get_thread_id() override;
 

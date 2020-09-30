@@ -687,9 +687,9 @@ namespace hazelcast {
             return try_acquire_for(std::chrono::milliseconds::zero(), permits);
         }
 
-        boost::future<void> counting_semaphore::do_release(int32_t permits, int64_t thread_id) {
+        boost::future<void> counting_semaphore::do_release(int32_t permits, int64_t thread_id, int64_t session_id) {
             auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
-            auto request = codec::semaphore_release_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, thread_id, invocation_uid, permits);
+            auto request = codec::semaphore_release_encode(group_id_, object_name_, session_id, thread_id, invocation_uid, permits);
             return toVoidFuture(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
@@ -751,7 +751,7 @@ namespace hazelcast {
         boost::future<void> sessionless_semaphore::release(int32_t permits) {
             util::Preconditions::checkPositive(permits, "Permits must be positive!");
             auto thread_id = get_thread_id();
-            return do_release(permits, thread_id);
+            return do_release(permits, thread_id, internal::session::proxy_session_manager::NO_SESSION_ID);
         }
 
         int64_t sessionless_semaphore::get_thread_id() {
@@ -793,7 +793,7 @@ namespace hazelcast {
                 auto use_timeout = timeout >= std::chrono::milliseconds::zero();
                 auto session_id = session_manager_.acquire_session(group_id_, permits);
                 auto request = client::protocol::codec::semaphore_acquire_encode(group_id_, object_name_,
-                                                                                 internal::session::proxy_session_manager::NO_SESSION_ID,
+                                                                                 session_id,
                                                                                  thread_id, invocation_uid, permits,
                                                                                  timeout.count());
                 return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
@@ -826,7 +826,7 @@ namespace hazelcast {
 
             return do_try_acquire_once().then(boost::launch::deferred, [=] (boost::future<std::pair<bool, bool>> f) {
                 auto result = f.get();
-                if (result.second) {
+                if (!result.second) {
                     return result.first;
                 }
                 for (;result.second;result = do_try_acquire_once().get());
@@ -835,29 +835,36 @@ namespace hazelcast {
         }
 
         boost::future<void> session_semaphore::release(int32_t permits) {
+            util::Preconditions::checkPositive(permits, "Permits must be positive!");
             auto session_id = session_manager_.get_session(group_id_);
             if (session_id == internal::session::proxy_session_manager::NO_SESSION_ID) {
-                BOOST_THROW_EXCEPTION(illegal_state_exception(nullptr));
+                throw_illegal_state_exception(nullptr);
             }
 
             auto thread_id = get_thread_id();
-            return do_release(permits, thread_id).then([=] (boost::future<void> f) {
+            return do_release(permits, thread_id, session_id).then([=] (boost::future<void> f) {
                 try {
                     f.get();
                     session_manager_.release_session(group_id_, session_id, permits);
                 } catch(exception::SessionExpiredException &) {
                     session_manager_.invalidate_session(group_id_, session_id);
                     session_manager_.release_session(group_id_, session_id, permits);
-                    BOOST_THROW_EXCEPTION(illegal_state_exception(std::current_exception()));
+                    throw_illegal_state_exception(std::current_exception());
                 }
             });
         }
 
-        exception::IllegalStateException session_semaphore::illegal_state_exception(std::exception_ptr e) {
+        void session_semaphore::throw_illegal_state_exception(std::exception_ptr e) {
+            auto ise = boost::enable_current_exception(
+                    exception::IllegalStateException("session_semaphore::illegal_state_exception",
+                                                     "No valid session!"));
+            if (!e) {
+                throw ise;
+            }
             try {
                 std::rethrow_exception(e);
             } catch (...) {
-                std::throw_with_nested(exception::IllegalStateException("session_semaphore::illegal_state_exception", "No valid session!"));
+                std::throw_with_nested(ise);
             }
         }
 
@@ -872,7 +879,7 @@ namespace hazelcast {
             auto do_drain_once = ([=] () {
                 auto session_id = session_manager_.acquire_session(group_id_, DRAIN_SESSION_ACQ_COUNT);
                 auto request = client::protocol::codec::semaphore_drain_encode(group_id_, object_name_,
-                                                                                 internal::session::proxy_session_manager::NO_SESSION_ID,
+                                                                                 session_id,
                                                                                  thread_id, invocation_uid);
                 return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
                         boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
@@ -903,7 +910,7 @@ namespace hazelcast {
             auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
 
             auto request = client::protocol::codec::semaphore_change_encode(group_id_, object_name_,
-                                                                           internal::session::proxy_session_manager::NO_SESSION_ID,
+                                                                           session_id,
                                                                            thread_id, invocation_uid, delta);
             return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
                     boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
@@ -912,7 +919,7 @@ namespace hazelcast {
                             session_manager_.release_session(group_id_, session_id);
                         } catch (exception::SessionExpiredException &) {
                             session_manager_.invalidate_session(group_id_, session_id);
-                            BOOST_THROW_EXCEPTION(illegal_state_exception(std::current_exception()));
+                            throw_illegal_state_exception(std::current_exception());
                         }
                     });
         }
