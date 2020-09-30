@@ -44,15 +44,6 @@ namespace hazelcast {
                         cp_structure_->destroy();
                     }
 
-                    static int get_cluster_size(int start_order) {
-                        std::ostringstream script;
-                        script << "result = instance_" << start_order << ".getCluster().getMembers().size().toString();";
-
-                        Response response;
-                        remoteController->executeOnController(response, g_srvFactory->getClusterId(), script.str().c_str(), Lang::JAVASCRIPT);
-                        return response.success ? std::atoi(response.result.c_str()) : -1;
-                    }
-
                     static void SetUpTestCase() {
                         if (std::string(testing::UnitTest::GetInstance()->current_test_suite()->name()) == "basic_sessionless_semaphore_test") {
                             factory = new HazelcastServerFactory("hazelcast/test/resources/hazelcast-cp-sessionless-semaphore.xml");
@@ -730,7 +721,7 @@ namespace hazelcast {
                     ASSERT_EQ(7, cp_structure_->available_permits().get());
                 }
 
-                TEST_F(basic_sessionless_semaphore_test, test_init_when_already_initialized) {
+                TEST_F(basic_sessionless_semaphore_test, test_init_fails_when_already_initialized) {
                     ASSERT_TRUE(cp_structure_->init(7).get());
                     ASSERT_FALSE(cp_structure_->init(5).get());
                     ASSERT_EQ(7, cp_structure_->available_permits().get());
@@ -899,7 +890,7 @@ namespace hazelcast {
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
                 }
 
-                TEST_F(basic_sessionless_semaphore_test, test_multiple_release_when_bblocked_acquire_threads) {
+                TEST_F(basic_sessionless_semaphore_test, test_multiple_release_when_blocked_acquire_threads) {
                     int32_t number_of_permits = 10;
                     ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
                     ASSERT_NO_THROW(cp_structure_->acquire(number_of_permits).get());
@@ -913,7 +904,86 @@ namespace hazelcast {
                     ASSERT_NO_THROW(f.get());
                 }
 
+                TEST_F(basic_sessionless_semaphore_test, test_drain) {
+                    int32_t number_of_permits = 20;
 
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    ASSERT_NO_THROW(cp_structure_->acquire(5).get());
+                    ASSERT_EQ(number_of_permits - 5, cp_structure_->drain_permits().get());
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_drain_when_no_permits) {
+                    ASSERT_TRUE(cp_structure_->init(0).get());
+                    ASSERT_EQ(0, cp_structure_->drain_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_reduce) {
+                    int32_t number_of_permits = 20;
+
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    for (int32_t i = 0; i < number_of_permits; i += 5) {
+                        ASSERT_EQ(number_of_permits - i, cp_structure_->available_permits().get());
+                        ASSERT_NO_THROW(cp_structure_->reduce_permits(5).get());
+                    }
+
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_reduce_when_negative) {
+                    ASSERT_THROW(cp_structure_->reduce_permits(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_increase_when_negative) {
+                    ASSERT_THROW(cp_structure_->increase_permits(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_try_acquire) {
+                    int32_t number_of_permits = 20;
+
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    for (int32_t i = 0; i < number_of_permits; ++i) {
+                        ASSERT_EQ(number_of_permits - i, cp_structure_->available_permits().get());
+                        ASSERT_TRUE(cp_structure_->try_acquire().get());
+                    }
+
+                    ASSERT_FALSE(cp_structure_->try_acquire().get());
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_try_acquire_multiple) {
+                    int32_t number_of_permits = 20;
+
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    for (int32_t i = 0; i < number_of_permits; i += 5) {
+                        ASSERT_EQ(number_of_permits - i, cp_structure_->available_permits().get());
+                        ASSERT_TRUE(cp_structure_->try_acquire(5).get());
+                    }
+
+                    ASSERT_FALSE(cp_structure_->try_acquire().get());
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_try_acquire_multiple_when_argument_negative) {
+                    ASSERT_TRUE(cp_structure_->init(0).get());
+                    ASSERT_THROW(cp_structure_->try_acquire(-5).get(), exception::IllegalArgumentException);
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_destroy) {
+                    ASSERT_NO_THROW(cp_structure_->destroy().get());
+                    ASSERT_THROW(cp_structure_->init(1).get(), exception::DistributedObjectDestroyedException);
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_acquire_on_multiple_proxies) {
+                    HazelcastClient client2(ClientConfig().setClusterName(client->getClientConfig().getClusterName()));
+                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->getName());
+                    ASSERT_TRUE(cp_structure_->init(1).get());
+                    ASSERT_TRUE(cp_structure_->try_acquire().get());
+                    ASSERT_FALSE(semaphore2->try_acquire().get());
+                }
             }
         }
     }

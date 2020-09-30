@@ -998,7 +998,7 @@ namespace hazelcast {
             //---- std::counting_semaphore method impl starts ---------
             /**
              * Acquires a permit if \permits are available, and returns immediately,
-             * reducing the number of available permits by one.
+             * reducing the number of available permits by number of permits.
              * <p>
              * If no permit is available, then the current thread becomes
              * disabled for thread scheduling purposes and lies dormant until
