@@ -31,7 +31,7 @@ namespace hazelcast {
                     virtual std::shared_ptr<T> get_cp_structure(const std::string &name) = 0;
 
                     virtual ClientConfig get_client_config() {
-                        return getConfig();
+                        return getConfig().setClusterName("cp-test");
                     }
 
                     virtual void SetUp() {
