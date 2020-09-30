@@ -1090,11 +1090,11 @@ namespace hazelcast {
              */
             template<class Rep, class Period>
             boost::future<bool> try_acquire_for(const std::chrono::duration<Rep, Period>& rel_time, int32_t permits = 1) {
-                auto timout = rel_time;
-                if (timout < std::chrono::milliseconds::zero()) {
-                    timout = std::chrono::duration<Rep, Period>::zero();
+                auto timeout = rel_time;
+                if (timeout < std::chrono::milliseconds::zero()) {
+                    timeout = std::chrono::duration<Rep, Period>::zero();
                 }
-                return try_acquire_for_millis(permits, timout);
+                return try_acquire_for_millis(permits, std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
             }
 
             /**
@@ -1103,7 +1103,7 @@ namespace hazelcast {
             template<class Clock, class Duration>
             boost::future<bool> try_acquire_until(const std::chrono::time_point<Clock, Duration>& abs_time, int32_t permits = 1) {
                 auto now = Clock::now();
-                return try_acquire_for(permits, abs_time - now);
+                return try_acquire_for(abs_time - now, permits);
             }
 
             //---- std::counting_semaphore method impl ends ----------

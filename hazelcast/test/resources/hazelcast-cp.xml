@@ -42,4 +42,30 @@
     <cp-subsystem>
         <cp-member-count>3</cp-member-count>
     </cp-subsystem>
+
+    <serialization>
+        <portable-version>0</portable-version>
+        <use-native-byte-order>false</use-native-byte-order>
+        <byte-order>BIG_ENDIAN</byte-order>
+        <data-serializable-factories>
+            <data-serializable-factory factory-id="666">com.hazelcast.client.test.IdentifiedDataSerializableFactory
+            </data-serializable-factory>
+            <data-serializable-factory factory-id="66">com.hazelcast.client.test.IdentifiedFactory
+            </data-serializable-factory>
+        </data-serializable-factories>
+        <portable-factories>
+            <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory</portable-factory>
+        </portable-factories>
+        <serializers>
+            <serializer type-class="com.hazelcast.client.test.Person"
+                        class-name="com.hazelcast.client.test.PersonSerializer"/>
+            <serializer type-class="com.hazelcast.client.test.BaseCustom"
+                        class-name="com.hazelcast.client.test.BaseCustomSerializer"/>
+            <serializer type-class="com.hazelcast.client.test.Derived1Custom"
+                        class-name="com.hazelcast.client.test.Derived1CustomSerializer"/>
+            <serializer type-class="com.hazelcast.client.test.Derived2Custom"
+                        class-name="com.hazelcast.client.test.Derived2CustomSerializer"/>
+        </serializers>
+        <check-class-def-errors>true</check-class-def-errors>
+    </serialization>
 </hazelcast>

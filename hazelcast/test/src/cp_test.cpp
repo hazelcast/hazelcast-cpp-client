@@ -35,13 +35,15 @@ namespace hazelcast {
                     }
 
                     virtual void SetUp() {
-                        client = new HazelcastClient(get_client_config());
+                        client.reset(new HazelcastClient(get_client_config()));
                         auto test_name = getTestName();
-                        cp_structure_ = get_cp_structure(test_name + "@" + test_name + "_group");
+                        cp_structure_ = get_cp_structure(test_name + "@cp_test_group");
                     }
 
                     virtual void TearDown() {
-                        cp_structure_->destroy();
+                        if (cp_structure_) {
+                            cp_structure_->destroy();
+                        }
                     }
 
                     static void SetUpTestCase() {
@@ -56,7 +58,6 @@ namespace hazelcast {
                     }
 
                     static void TearDownTestCase() {
-                        delete client;
                         delete server1;
                         delete server2;
                         delete server3;
@@ -67,7 +68,7 @@ namespace hazelcast {
                     static HazelcastServer *server1;
                     static HazelcastServer *server2;
                     static HazelcastServer *server3;
-                    static HazelcastClient *client;
+                    std::unique_ptr<HazelcastClient> client;
 
                     std::shared_ptr<T> cp_structure_;
                 };
@@ -76,7 +77,6 @@ namespace hazelcast {
                 template<typename T> HazelcastServer *cp_test<T>::server1 = nullptr;
                 template<typename T> HazelcastServer *cp_test<T>::server2 = nullptr;
                 template<typename T> HazelcastServer *cp_test<T>::server3 = nullptr;
-                template<typename T> HazelcastClient *cp_test<T>::client = nullptr;
 
                 class basic_atomic_long_test : public cp_test<atomic_long> {
                 protected:
@@ -951,6 +951,40 @@ namespace hazelcast {
 
                     ASSERT_FALSE(cp_structure_->try_acquire().get());
                     ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_try_acquire_for) {
+                    int32_t number_of_permits = 20;
+
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    for (int32_t i = 0; i < number_of_permits; ++i) {
+                        ASSERT_EQ(number_of_permits - i, cp_structure_->available_permits().get());
+                        ASSERT_TRUE(cp_structure_->try_acquire_for(std::chrono::seconds(120)).get());
+                    }
+
+                    ASSERT_FALSE(cp_structure_->try_acquire_for(std::chrono::seconds(0)).get());
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_try_acquire_for_when_no_permit) {
+                    ASSERT_FALSE(cp_structure_->try_acquire_for(std::chrono::seconds(2)).get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_try_acquire_until) {
+                    int32_t number_of_permits = 20;
+
+                    ASSERT_TRUE(cp_structure_->init(number_of_permits).get());
+                    for (int32_t i = 0; i < number_of_permits; ++i) {
+                        ASSERT_EQ(number_of_permits - i, cp_structure_->available_permits().get());
+                        ASSERT_TRUE(cp_structure_->try_acquire_until(std::chrono::steady_clock::now() + std::chrono::seconds(120)).get());
+                    }
+
+                    ASSERT_FALSE(cp_structure_->try_acquire().get());
+                    ASSERT_EQ(0, cp_structure_->available_permits().get());
+                }
+
+                TEST_F(basic_sessionless_semaphore_test, test_try_acquire_until_when_no_permit) {
+                    ASSERT_FALSE(cp_structure_->try_acquire_until(std::chrono::steady_clock::now() + std::chrono::seconds(2)).get());
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_try_acquire_multiple) {
