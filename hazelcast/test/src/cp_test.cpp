@@ -682,9 +682,9 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown) {
-                    HazelcastClient c(getConfig());
-                    auto l = c.get_cp_subsystem().get_lock(getTestName());
-                    auto proxy_name = l->getName();
+                    HazelcastClient c(getConfig().setClusterName(client->getClientConfig().getClusterName()));
+                    auto proxy_name = getTestName();
+                    auto l = c.get_cp_subsystem().get_lock(proxy_name);
                     l->lock().get();
 
                     c.shutdown();
@@ -694,7 +694,7 @@ namespace hazelcast {
                            << "\").isLocked() ? \"1\" : \"0\";";
 
                     Response response;
-                    remoteController->executeOnController(response, g_srvFactory->getClusterId(), script.str().c_str(),
+                    remoteController->executeOnController(response, factory->getClusterId(), script.str().c_str(),
                                                           Lang::JAVASCRIPT);
                     ASSERT_TRUE(response.success);
                     ASSERT_EQ("0", response.result);
