@@ -49,6 +49,12 @@ namespace hazelcast {
                     int64_t acquire_session(const raft_group_id &group_id);
 
                     /**
+                     * Increments acquire count of the session.
+                     * Creates a new session if there is no session yet.
+                     */
+                    int64_t acquire_session(const raft_group_id &group_id, int32_t count);
+
+                    /**
                      * Decrements acquire count of the session.
                      * Returns silently if no session exists for the given id.
                      */
@@ -63,6 +69,8 @@ namespace hazelcast {
                     void invalidate_session(const raft_group_id &group_id, int64_t session_id);
 
                     int64_t get_session(const raft_group_id &group_id);
+
+                    int64_t get_or_create_unique_thread_id(const raft_group_id &group_id);
 
                     /**
                      * Invokes a shutdown call on server to close all existing sessions.
@@ -104,6 +112,8 @@ namespace hazelcast {
                     bool running_ = true;
                     std::atomic_bool scheduled_heartbeat_= {false};
                     std::unordered_map<raft_group_id, session_state> sessions_;
+                    typedef std::pair<raft_group_id, int64_t> key_type;
+                    std::unordered_map<key_type, int64_t, boost::hash<key_type>> thread_ids_;
                     std::shared_ptr<boost::asio::steady_timer> heartbeat_timer_;
 
                     session_state &get_or_create_session(const raft_group_id &group_id);
@@ -118,6 +128,8 @@ namespace hazelcast {
                     boost::future<client::protocol::ClientMessage> heartbeat(const raft_group_id &group_id, int64_t session_id);
 
                     void close_session(const raft_group_id &group_id, int64_t session_id);
+
+                    int64_t generate_thread_id(const raft_group_id &group_id);
                 };
             }
         }

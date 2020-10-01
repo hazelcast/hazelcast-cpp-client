@@ -38,6 +38,10 @@ namespace hazelcast {
                     return get_or_create_session(group_id).acquire(1);
                 }
 
+                int64_t proxy_session_manager::acquire_session(const raft_group_id &group_id, int32_t count) {
+                    return get_or_create_session(group_id).acquire(count);
+                }
+
                 proxy_session_manager::session_state &
                 proxy_session_manager::get_or_create_session(const raft_group_id &group_id) {
                     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
@@ -156,6 +160,27 @@ namespace hazelcast {
                     return session == sessions_.end() ? NO_SESSION_ID : session->second.id;
                 }
 
+                int64_t proxy_session_manager::get_or_create_unique_thread_id(const raft_group_id &group_id) {
+                    boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
+                    auto key = std::make_pair(group_id, util::getCurrentThreadId());
+                    auto global_thread_id_it = thread_ids_.find(key);
+                    if (global_thread_id_it != thread_ids_.end()) {
+                        return global_thread_id_it->second;
+                    }
+
+                    auto global_thread_id = generate_thread_id(group_id);
+
+                    // upgrade to write lock
+                    boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(read_lock);
+                    global_thread_id_it = thread_ids_.find(key);
+                    if (global_thread_id_it != thread_ids_.end()) {
+                        return global_thread_id_it->second;
+                    }
+
+                    thread_ids_.emplace(std::move(key), global_thread_id);
+                    return global_thread_id;
+                }
+
                 void proxy_session_manager::shutdown() {
                     boost::unique_lock<boost::shared_mutex> write_lock(lock_);
                     if (scheduled_heartbeat_ && heartbeat_timer_) {
@@ -178,6 +203,12 @@ namespace hazelcast {
                     boost::upgrade_lock<boost::shared_mutex> read_lock(lock_);
                     auto session = sessions_.find(group_id);
                     return session != sessions_.end() && session->second.id == session_id ? session->second.acquire_count.load() : 0;
+                }
+
+                int64_t proxy_session_manager::generate_thread_id(const raft_group_id &group_id) {
+                    auto request = client::protocol::codec::cpsession_generatethreadid_encode(group_id);
+                    return spi::impl::ClientInvocation::create(client_, request,
+                                                               "sessionManager")->invoke().get().get_first_fixed_sized_field<int64_t>();
                 }
 
                 bool proxy_session_manager::session_state::is_valid() const {
