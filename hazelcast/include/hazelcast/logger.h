@@ -5,12 +5,12 @@
 #include <mutex>
 
 #ifndef HZ_LOGGING_DISABLED
-	#define HZ_LOG(logger, level, msg_expr) \
+	#define HZ_LOG(logger, level, msg) \
 		if ((logger).enabled( log_level::level )) { \
-			(logger).log(log_level::level, ( msg_expr )); \
+			(logger).log(log_level::level, ( msg )); \
 		}
 #else
-	#define HZ_LOG(logger_ptr, level, msg_expr) 
+	#define HZ_LOG(logger_ptr, level, msg) 
 #endif
 
 namespace hazelcast {
@@ -34,7 +34,8 @@ public:
  
 class default_logger final : public logger {
 public:
-	default_logger(std::ostream &os, log_level level);
+	default_logger(std::ostream &os, log_level level, 
+		std::string instance_name, std::string group_name);
 
 	bool enabled(log_level level) noexcept override; 
 	void log(log_level level, const std::string &msg) noexcept override;
@@ -43,6 +44,8 @@ private:
 	std::ostream &os_;
 	log_level level_;
 	std::mutex mut_;
+	std::string instance_name_;
+	std::string group_name_;
 };
 
 } // namespace hazelcast

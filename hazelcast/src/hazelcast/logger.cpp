@@ -33,9 +33,11 @@ std::ostream& operator<<(std::ostream &os, log_level level) {
 logger::~logger() = default;
 bool logger::enabled(log_level level) noexcept { return true; } 
 
-default_logger::default_logger(std::ostream &os, log_level level) 
+default_logger::default_logger(std::ostream &os, log_level level, std::string instance_name, std::string group_name) 
 	: os_(os)
-	, level_(level) {}
+	, level_(level)
+	, instance_name_(std::move(instance_name))
+	, group_name_(std::move(group_name)) {}
 
 bool default_logger::enabled(log_level level) noexcept {
 	return level >= level_;
@@ -46,11 +48,13 @@ void default_logger::log(log_level level, const std::string &msg) noexcept {
 
 	std::lock_guard<std::mutex> g(mut_);
 	
-	os_ << std::put_time(std::localtime(&t), "%d/%m/%Y %H.%M.%S "); // TODO add millis, cache this
-
-	os_ << level << ": [" << std::this_thread::get_id() << "] " << msg << "\n"; // TODO endl vs \n
-
-	// TODO instance name group name
+	os_ << std::put_time(std::localtime(&t), "%d/%m/%Y %H.%M.%S ")  // timestamp  // TODO add milliseconds
+		// TODO maybe cache the last result of localtime() and use that directly if we are still in the same second.
+		<< level << ": [" << std::this_thread::get_id() << "] " // level, thread id
+		<< instance_name_ << '[' << group_name_ << "] " 
+		<< "[4.0] " // version  // TODO once we have an API for getting the current version, replace this with that
+		<< msg // message
+		<< '\n'; // line break  // TODO should we flush or not ?
 }
 
 } // namespace hazelcast
