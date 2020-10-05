@@ -56,7 +56,7 @@ TEST(default_logger_test, test_formatting) {
 }
 
 TEST(custom_logger_test, test_enabled_when_not_overridden) {
-    struct custom_logger :	 logger {
+    struct custom_logger : logger {
         void log(log_level, const std::string&) noexcept override {}
     };
 
