@@ -38,7 +38,7 @@ TEST(default_logger_test, test_formatting) {
 	default_logger dlg{ os, log_level::info, "instance0", "group0" };
 	logger &lg = dlg;
 
-	lg.log(log_level::info, "foo");
+	lg.log(log_level::info, "message");
 
 	int day, mon, year, hr, mn, sec;
 	char lev[16], tid[16], msg[16], ins_grp[32], ver[16];
@@ -52,7 +52,7 @@ TEST(default_logger_test, test_formatting) {
 	ASSERT_EQ("INFO:", std::string(lev));
 	ASSERT_EQ("instance0[group0]", std::string(ins_grp));
 	ASSERT_EQ("[4.0]", std::string(ver));
-	ASSERT_EQ("foo", std::string(msg));
+	ASSERT_EQ("message", std::string(msg));
 }
 
 TEST(custom_logger_test, test_enabled_when_not_overridden) {

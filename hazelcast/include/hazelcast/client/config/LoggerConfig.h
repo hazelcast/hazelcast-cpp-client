@@ -18,6 +18,7 @@
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,75 +27,22 @@
 
 namespace hazelcast {
     namespace client {
-        class HAZELCAST_API LoggerLevel {
-        public:
-            enum Level {
-                SEVERE = 100, WARNING = 90, INFO = 50, FINEST = 20
-            };
-        };
-
-        enum LogLevel {
-            SEVERE = LoggerLevel::SEVERE,
-            WARNING = LoggerLevel::WARNING,
-            INFO = LoggerLevel::INFO,
-            FINEST = LoggerLevel::FINEST
-        };
-
         namespace config {
             class HAZELCAST_API LoggerConfig {
+                // TODO too much typing here, alias the std::function or the signature.
             public:
-                class Type {
-                public:
-                    enum LoggerType {
-                        EASYLOGGINGPP
-                    };
-                };
-
                 LoggerConfig();
 
-                /**
-                 *
-                 * @return The type of the logger configured. see LoggerConfig::Type enum for possible loggers.
-                 */
-                Type::LoggerType getType() const;
+                void logger_factory(std::function<std::unique_ptr<logger>(std::string, std::string)> make_logger) {
+                    make_logger_ = std::move(make_logger);
+                }
 
-                /**
-                 *
-                 * @param type The type of the logger that is configured.
-                 */
-                void setType(Type::LoggerType type);
-
-                /**
-                 *
-                 * @return The logger configuration file. If this file is configured, no other configuration will be
-                 * applied but only what is configured in the file will be applied. All log levels will work based on
-                 * the provided configuration and setLogLevel will not be effective (You can enable disable any level
-                 * in the configuration file).
-                 */
-                const std::string &getConfigurationFileName() const;
-
-                /**
-                 *
-                 * @param fileName configuration file for the logger.
-                 */
-                void setConfigurationFileName(const std::string &fileName);
-
-                /**
-                 *
-                 * @return The level for which the logs will be printed.
-                 */
-                LoggerLevel::Level getLogLevel() const;
-
-                /**
-                 *
-                 * @param logLevel Set the log level for which the logs will be printed.
-                 */
-                void setLogLevel(LoggerLevel::Level logLevel);
+                std::function<std::unique_ptr<logger>(std::string, std::string)> logger_factory() {
+                    return make_logger_;
+                }
 
             private:
-                Type::LoggerType type;
-                std::string configurationFileName;
-                LoggerLevel::Level logLevel;
+                std::function<std::unique_ptr<logger>(std::string, std::string)> make_logger_{};
             };
         }
     }

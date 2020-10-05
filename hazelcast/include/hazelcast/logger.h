@@ -4,6 +4,8 @@
 #include <iosfwd>
 #include <mutex>
 
+// TODO the `logger` interface and the implementation `default_logger` can be declared in different header files.
+
 #ifndef HZ_LOGGING_DISABLED
 	#define HZ_LOG(logger, level, msg) \
 		if ((logger).enabled( log_level::level )) { \
@@ -32,7 +34,7 @@ public:
 	virtual void log(log_level level, const std::string &msg) noexcept = 0;
 };
  
-class default_logger final : public logger {
+class default_logger : public logger {
 public:
 	default_logger(std::ostream &os, log_level level, 
 		std::string instance_name, std::string group_name);
