@@ -33,16 +33,16 @@ namespace hazelcast {
             public:
                 LoggerConfig();
 
-                void logger_factory(std::function<std::unique_ptr<logger>(std::string, std::string)> make_logger) {
+                void logger_factory(std::function<std::shared_ptr<logger>(std::string, std::string)> make_logger) {
                     make_logger_ = std::move(make_logger);
                 }
 
-                std::function<std::unique_ptr<logger>(std::string, std::string)> logger_factory() {
+                std::function<std::shared_ptr<logger>(std::string, std::string)> logger_factory() {
                     return make_logger_;
                 }
 
             private:
-                std::function<std::unique_ptr<logger>(std::string, std::string)> make_logger_{};
+                std::function<std::shared_ptr<logger>(std::string, std::string)> make_logger_{};
             };
         }
     }
