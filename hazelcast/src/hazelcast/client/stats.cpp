@@ -58,7 +58,7 @@ namespace hazelcast {
                 Statistics::Statistics(spi::ClientContext &clientContext) : clientContext(clientContext),
                                                                             clientProperties(
                                                                                     clientContext.getClientProperties()),
-                                                                            logger(clientContext.getLogger()),
+                                                                            logger_(clientContext.getLogger()),
                                                                             periodicStats(*this) {
                     this->enabled = clientProperties.getBoolean(clientProperties.getStatisticsEnabled());
                 }
@@ -73,17 +73,23 @@ namespace hazelcast {
 
                         int64_t defaultValue = util::IOUtil::to_value<int64_t>(
                                 clientProperties.getStatisticsPeriodSeconds().getDefaultValue());
-                        logger.warning("Provided client statistics ",
-                                       clientProperties.getStatisticsPeriodSeconds().getName(),
-                                       " cannot be less than or equal to 0. You provided ", periodSeconds,
-                                       " seconds as the configuration. Client will use the default value of ",
-                                       defaultValue, " instead.");
+                        HZ_LOG(logger_, warning,
+                            boost::str(boost::format(
+                                "Provided client statistics %1% cannot be less than or equal to 0. "
+                                "You provided %2% seconds as the configuration. "
+                                "Client will use the default value of %3% instead.")
+                                % clientProperties.getStatisticsPeriodSeconds().getName()
+                                % periodSeconds % defaultValue)
+                        );
                         periodSeconds = defaultValue;
                     }
 
                     schedulePeriodicStatisticsSendTask(periodSeconds);
 
-                    logger.info("Client statistics is enabled with period ", periodSeconds, " seconds.");
+                    HZ_LOG(logger_, info,
+                        boost::str(boost::format("Client statistics is enabled with period %1% seconds.")
+                                                 % periodSeconds)
+                    );
                 }
 
                 void Statistics::shutdown() {
@@ -103,7 +109,7 @@ namespace hazelcast {
                                 std::chrono::system_clock::now().time_since_epoch()).count();
                         std::shared_ptr<connection::Connection> connection = getConnection();
                         if (!connection) {
-                            logger.finest("annot send client statistics to the server. No connection found.");
+                            HZ_LOG(logger_, finest, "Cannot send client statistics to the server. No connection found.");
                             return;
                         }
 
@@ -129,9 +135,9 @@ namespace hazelcast {
                         spi::impl::ClientInvocation::create(clientContext, request, "", connection)->invoke();
                     } catch (exception::IException &e) {
                         // suppress exception, do not print too many messages
-                        if (logger.isFinestEnabled()) {
-                            logger.finest("Could not send stats ", e);
-                        }
+                        HZ_LOG(logger_, finest,
+                            boost::str(boost::format("Could not sent stats %1%") % e)
+                        );
                     }
                 }
 

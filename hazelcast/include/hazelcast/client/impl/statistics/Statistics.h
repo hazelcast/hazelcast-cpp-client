@@ -26,9 +26,8 @@
 #include "hazelcast/util/Sync.h"
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
+    class logger;
+
     namespace client {
         class Address;
 
@@ -100,7 +99,7 @@ namespace hazelcast {
 
                     spi::ClientContext &clientContext;
                     ClientProperties &clientProperties;
-                    util::ILogger &logger;
+                    logger &logger_;
                     bool enabled;
                     PeriodicStatistics periodicStats;
                     util::Sync<std::shared_ptr<Address> > cachedOwnerAddress;

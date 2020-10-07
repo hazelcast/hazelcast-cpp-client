@@ -23,8 +23,8 @@
 #include <vector>
 #include <boost/asio.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
-#include <hazelcast/util/sync_associative_container.h>
 
+#include <hazelcast/util/sync_associative_container.h>
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/ConcurrentSet.h"
 #include "hazelcast/client/LifecycleEvent.h"
@@ -38,6 +38,7 @@
 #include "hazelcast/client/connection/HeartbeatManager.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/SocketInterceptor.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -113,7 +114,7 @@ namespace hazelcast {
 
                 void addConnectionListener(const std::shared_ptr<ConnectionListener> &connectionListener) override;
 
-                util::ILogger &getLogger();
+                logger &getLogger();
 
                 std::shared_ptr<Connection> get_random_connection();
 
@@ -179,7 +180,7 @@ namespace hazelcast {
                 void handleSuccessfulAuth(const std::shared_ptr<Connection> &connection, auth_response response);
 
                 std::atomic_bool alive;
-                util::ILogger &logger;
+                logger &logger_;
                 std::chrono::steady_clock::duration connectionTimeoutMillis;
                 spi::ClientContext &client;
                 std::unique_ptr<boost::asio::io_context> ioContext;

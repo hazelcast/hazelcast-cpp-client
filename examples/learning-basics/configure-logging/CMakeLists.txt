@@ -14,5 +14,4 @@
 # limitations under the License.
 #
 add_executable(setLogLevel ./setLogLevel.cpp)
-add_executable(configureEasyLoggingLogger ./configureEasyLoggingLogger.cpp)
 

@@ -37,9 +37,7 @@
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
+    class logger;
 
     namespace client {
         class Address;
@@ -139,7 +137,7 @@ namespace hazelcast {
                     static constexpr int MAX_FAST_INVOCATION_COUNT = 5;
                     static constexpr int UNASSIGNED_PARTITION = -1;
 
-                    util::ILogger &logger;
+                    logger &logger_;
                     LifecycleService &lifecycleService;
                     ClientClusterServiceImpl &clientClusterService;
                     ClientInvocationServiceImpl &invocationService;

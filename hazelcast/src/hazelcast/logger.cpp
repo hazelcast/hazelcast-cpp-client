@@ -1,4 +1,5 @@
 #include <iomanip>
+#include <iostream>
 #include <mutex>
 #include <ostream>
 #include <sstream>
@@ -73,8 +74,8 @@ void default_logger::log(log_level level, const std::string &msg) noexcept {
 
     sstrm << timestamp << ' ' // timestamp
           << level << ": [" << std::this_thread::get_id() << "] " // level, thread id
-          << instance_name_ << '[' << cluster_name_ << "] " 
-          << "[4.0] " // version  // TODO once we have an API for getting the current version, replace this with that
+          << instance_name_ << '[' << cluster_name_ << "] ["
+          << HAZELCAST_VERSION << "] " // version  // TODO once we have an API for getting the current version, replace this with that
           << msg // message
           << '\n'; // line break
 
@@ -82,6 +83,11 @@ void default_logger::log(log_level level, const std::string &msg) noexcept {
         std::lock_guard<std::mutex> g(mut_);
         os_ << sstrm.str(); // TODO should we flush or not ?
     }
+}
+
+std::shared_ptr<logger> make_default_logger(std::string instance_name, std::string cluster_name) {
+    return std::make_shared<default_logger>(std::cout, log_level::info, 
+                                            std::move(instance_name), std::move(cluster_name));
 }
 
 } // namespace hazelcast

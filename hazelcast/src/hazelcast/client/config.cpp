@@ -245,32 +245,6 @@ namespace hazelcast {
                 return socketOptions;
             }
 
-            const std::string &LoggerConfig::getConfigurationFileName() const {
-                return configurationFileName;
-            }
-
-            void LoggerConfig::setConfigurationFileName(const std::string &fileName) {
-                LoggerConfig::configurationFileName = fileName;
-            }
-
-            LoggerConfig::LoggerConfig() : type(Type::EASYLOGGINGPP), logLevel(LoggerLevel::INFO) {}
-
-            LoggerConfig::Type::LoggerType LoggerConfig::getType() const {
-                return type;
-            }
-
-            void LoggerConfig::setType(LoggerConfig::Type::LoggerType type) {
-                LoggerConfig::type = type;
-            }
-
-            LoggerLevel::Level LoggerConfig::getLogLevel() const {
-                return logLevel;
-            }
-
-            void LoggerConfig::setLogLevel(LoggerLevel::Level logLevel) {
-                LoggerConfig::logLevel = logLevel;
-            }
-
             ClientConnectionStrategyConfig::ClientConnectionStrategyConfig() : asyncStart(false), reconnectMode(ON) {
             }
 
@@ -592,11 +566,6 @@ namespace hazelcast {
 
         ClientConfig &ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
             this->loadBalancer = loadBalancer;
-            return *this;
-        }
-
-        ClientConfig &ClientConfig::setLogLevel(LogLevel loggerLevel) {
-            this->loggerConfig.setLogLevel((LoggerLevel::Level) loggerLevel);
             return *this;
         }
 

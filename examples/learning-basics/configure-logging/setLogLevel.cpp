@@ -14,12 +14,27 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <memory>
 
+#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/logger.h>
 
 int main() {
     hazelcast::client::ClientConfig config;
-    config.setLogLevel(hazelcast::client::FINEST);
+
+    // To modify the default behaviour of loggers,
+    // a logger factory must be provided.
+    // A logger factory function takes instance and cluster name of the client
+    // and return an hazelcast::logger.
+    // Here, we instantiate an hazelcast::default_logger with its level
+    // set to "finest". 
+    config.getLoggerConfig().logger_factory(
+        [](std::string instance_name, std::string cluster_name) {
+            return std::make_shared<hazelcast::default_logger>(
+                std::cout, hazelcast::log_level::finest, instance_name, cluster_name);
+        }
+    );
+
     hazelcast::client::HazelcastClient hz(config);
 
     std::cout << "Finished" << std::endl;

@@ -29,9 +29,8 @@
 namespace pt = boost::property_tree;
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
+    class logger;
+
     namespace client {
         namespace config {
             class ClientAwsConfig;
@@ -50,7 +49,7 @@ namespace hazelcast {
                      * @return map from private to public IP or empty map in case of exceptions
                      */
                     static std::unordered_map<std::string, std::string> unmarshalTheResponse(std::istream &stream,
-                            util::ILogger &logger);
+                            logger &lg);
 
                     static void unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
                                                       std::unordered_map<std::string, std::string> &attributes);

@@ -20,6 +20,7 @@
 #include <chrono>
 #include <functional>
 #include "hazelcast/client/LifecycleEvent.h"
+#include "hazelcast/logger.h"
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/ClientConfig.h>
@@ -40,7 +41,6 @@
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
-#include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/LifecycleListener.h>
 #include "serialization/Serializables.h"
 #include <unordered_set>
@@ -769,8 +769,8 @@ namespace hazelcast {
     namespace util {
         StartedThread::StartedThread(const std::string &name, void (*func)(ThreadArgs &),
                                      void *arg0, void *arg1, void *arg2, void *arg3)
-                : name(name), logger(new hazelcast::util::ILogger("StartedThread", "StartedThread", "testversion",
-                                                                  client::config::LoggerConfig())) {
+                : name(name)
+                , logger_(client::config::LoggerConfig().logger_factory()("StartedThread", "StartedThread")) {
             init(func, arg0, arg1, arg2, arg3);
         }
 
@@ -779,10 +779,7 @@ namespace hazelcast {
                                      void *arg1,
                                      void *arg2,
                                      void *arg3)
-                : name("hz.unnamed"),
-                  logger(new hazelcast::util::ILogger("StartedThread", "StartedThread", "testversion",
-                                                      client::config::LoggerConfig())) {
-            init(func, arg0, arg1, arg2, arg3);
+                : StartedThread("hz.unnamed", func, arg0, arg1, arg2, arg3) {
         }
 
         void StartedThread::init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3) {
@@ -791,10 +788,6 @@ namespace hazelcast {
             threadArgs.arg2 = arg2;
             threadArgs.arg3 = arg3;
             threadArgs.func = func;
-            if (!logger->start()) {
-                throw (client::exception::ExceptionBuilder<client::exception::IllegalStateException>(
-                        "StartedThread::init") << "Could not start logger " << logger->getInstanceName()).build();
-            }
 
             thread = std::thread([=]() { func(threadArgs); });
         }

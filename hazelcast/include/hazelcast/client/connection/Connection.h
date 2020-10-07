@@ -25,13 +25,12 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
-
 #include "hazelcast/util/Closeable.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -139,7 +138,7 @@ namespace hazelcast {
                 // TODO: check if they need to be atomic
                 boost::optional<Address> remote_address_;
                 boost::uuids::uuid remote_uuid_;
-                util::ILogger &logger;
+                logger &logger_;
                 std::atomic_bool alive;
             };
         }

@@ -24,6 +24,7 @@
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,9 +39,9 @@ namespace hazelcast {
             public:
                 EntryEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,
-                                  EntryListener &&listener, bool includeValue, util::ILogger &log)
+                                  EntryListener &&listener, bool includeValue, logger &lg)
                 : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
-                , listener(std::move(listener)), includeValue(includeValue), logger(log) {}
+                , listener(std::move(listener)), includeValue(includeValue), logger_(lg) {}
 
                 void handle_entry(const boost::optional<serialization::pimpl::Data> &key,
                                   const boost::optional<serialization::pimpl::Data> &value,
@@ -122,8 +123,11 @@ namespace hazelcast {
                             listener.merged(std::move(entryEvent));
                             break;
                         default:
-                            logger.warning("Received unrecognized event with type: ", static_cast<int32_t>(type),
-                                           " Dropping the event!!!");
+                            HZ_LOG(logger_, warning,
+                                boost::str(boost::format("Received unrecognized event with type: %1% "
+                                                          "Dropping the event!!!")
+                                                          % static_cast<int32_t>(type))
+                            );
                     }
                 }
             private:
@@ -132,7 +136,7 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService& serializationService;
                 EntryListener listener;
                 bool includeValue;
-                util::ILogger &logger;
+                logger &logger_;
             };
         }
     }

@@ -22,7 +22,7 @@
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/impl/Partition.h"
-#include "hazelcast/util/ILogger.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -95,7 +95,7 @@ namespace hazelcast {
                     convert_to_map(const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
                     ClientContext &client;
-                    util::ILogger &logger_;
+                    logger &logger_;
                     std::atomic<int32_t> partitionCount;
                     boost::atomic_shared_ptr<partition_table> partition_table_;
                 };

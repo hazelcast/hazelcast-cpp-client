@@ -15,10 +15,12 @@
  */
 #pragma once
 
+#include <stdexcept>
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/logger.h"
+#include "hazelcast/util/Preconditions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,20 +31,21 @@ namespace hazelcast {
     namespace client {
         namespace config {
             class HAZELCAST_API LoggerConfig {
-                // TODO too much typing here, alias the std::function or the signature.
-            public:
-                LoggerConfig();
+                using logger_factory_t = std::function<std::shared_ptr<logger>(std::string, std::string)>;
 
-                void logger_factory(std::function<std::shared_ptr<logger>(std::string, std::string)> make_logger) {
+            public:
+                void logger_factory(logger_factory_t make_logger) {
+                    util::Preconditions::checkTrue(make_logger, "invalid logger factory");
+                    
                     make_logger_ = std::move(make_logger);
                 }
 
-                std::function<std::shared_ptr<logger>(std::string, std::string)> logger_factory() {
+                logger_factory_t logger_factory() {
                     return make_logger_;
                 }
 
             private:
-                std::function<std::shared_ptr<logger>(std::string, std::string)> make_logger_{};
+                logger_factory_t make_logger_{ make_default_logger };
             };
         }
     }

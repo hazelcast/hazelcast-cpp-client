@@ -28,9 +28,8 @@
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
+    class logger;
+
     namespace client {
         namespace spi {
             class ClientContext;
@@ -70,7 +69,7 @@ namespace hazelcast {
                 private:
                     class HAZELCAST_API ResponseProcessor {
                     public:
-                        ResponseProcessor(util::ILogger &invocationLogger,
+                        ResponseProcessor(logger &lg,
                                           ClientInvocationServiceImpl &invocationService,
                                           ClientContext &clientContext);
 
@@ -84,7 +83,7 @@ namespace hazelcast {
                                      const std::shared_ptr<ClientMessage> &response);
 
                     private:
-                        util::ILogger &invocationLogger;
+                        logger &logger_;
                         ClientContext &client;
                         std::unique_ptr<hazelcast::util::hz_thread_pool> pool;
 
@@ -93,7 +92,7 @@ namespace hazelcast {
                     };
 
                     ClientContext &client;
-                    util::ILogger &invocationLogger;
+                    logger &logger_;
                     std::atomic<bool> isShutdown{ false };
                     std::chrono::steady_clock::duration invocationTimeout;
                     std::chrono::steady_clock::duration invocationRetryPause;

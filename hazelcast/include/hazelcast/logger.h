@@ -3,6 +3,7 @@
 #include <string>
 #include <iosfwd>
 #include <mutex>
+#include <memory>
 
 
 #ifndef HZ_LOGGING_DISABLED
@@ -48,5 +49,7 @@ private:
     std::string instance_name_;
     std::string cluster_name_;
 };
+
+std::shared_ptr<logger> make_default_logger(std::string instance_name, std::string cluster_name);
 
 } // namespace hazelcast

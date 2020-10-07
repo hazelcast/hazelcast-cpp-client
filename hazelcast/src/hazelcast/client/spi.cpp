@@ -107,11 +107,12 @@ namespace hazelcast {
                         auto proxy = p.second.get();
                         p.second.get()->onShutdown();
                     } catch (std::exception &se) {
-                        auto &logger = client.getLogger();
-                        if (logger.isFinestEnabled()) {
-                            logger.finest("Proxy was not created, hence onShutdown can be called. Exception:",
-                                          se.what());
-                        }
+                        auto &lg = client.getLogger();
+                        HZ_LOG(lg, finest,
+                            boost::str(boost::format("Proxy was not created, "
+                                                     "hence onShutdown can be called. Exception: %1%")
+                                                     % se.what())
+                        );
                     }
                 }
                 proxies.clear();
@@ -248,8 +249,8 @@ namespace hazelcast {
                 return hazelcastClient.getProxyManager();
             }
 
-            util::ILogger &ClientContext::getLogger() {
-                return *hazelcastClient.logger;
+            logger &ClientContext::getLogger() {
+                return *hazelcastClient.logger_;
             }
 
             client::impl::statistics::Statistics &ClientContext::getClientstatistics() {
@@ -335,7 +336,10 @@ namespace hazelcast {
                     clientContext.getSerializationService().dispose();
                     shutdownCompletedLatch.count_down();
                 } catch (std::exception &e) {
-                    clientContext.getLogger().info("An exception occured during LifecycleService shutdown. ", e.what());
+                    HZ_LOG(clientContext.getLogger(), info,
+                        boost::str(boost::format("An exception occured during LifecycleService shutdown. %1%")
+                                                 % e.what())
+                    );
                     shutdownCompletedLatch.count_down();
                 }
             }
@@ -348,13 +352,13 @@ namespace hazelcast {
             }
 
             bool LifecycleService::removeListener(const boost::uuids::uuid &registrationId) {
-                std::lock_guard<std::mutex> lg(listenerLock);
+                std::lock_guard<std::mutex> guard(listenerLock);
                 return listeners.erase(registrationId) == 1;
             }
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
-                std::lock_guard<std::mutex> lg(listenerLock);
-                util::ILogger &logger = clientContext.getLogger();
+                std::lock_guard<std::mutex> guard(listenerLock);
+                logger &lg = clientContext.getLogger();
 
                 std::function<void(LifecycleListener &)> fire_one;
 
@@ -368,7 +372,7 @@ namespace hazelcast {
                         char msg[100];
                         util::hz_snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(),
                                           commitId.c_str());
-                        logger.info(msg);
+                        HZ_LOG(lg, info, msg);
 
                         fire_one = [](LifecycleListener &listener) {
                             listener.starting();
@@ -376,7 +380,7 @@ namespace hazelcast {
                         break;
                     }
                     case LifecycleEvent::STARTED : {
-                        logger.info("LifecycleService::LifecycleEvent STARTED");
+                        HZ_LOG(lg, info, "LifecycleService::LifecycleEvent STARTED");
 
                         fire_one = [](LifecycleListener &listener) {
                             listener.started();
@@ -384,7 +388,7 @@ namespace hazelcast {
                         break;
                     }
                     case LifecycleEvent::SHUTTING_DOWN : {
-                        logger.info("LifecycleService::LifecycleEvent SHUTTING_DOWN");
+                        HZ_LOG(lg, info, "LifecycleService::LifecycleEvent SHUTTING_DOWN");
 
                         fire_one = [](LifecycleListener &listener) {
                             listener.shutting_down();
@@ -392,7 +396,7 @@ namespace hazelcast {
                         break;
                     }
                     case LifecycleEvent::SHUTDOWN : {
-                        logger.info("LifecycleService::LifecycleEvent SHUTDOWN");
+                        HZ_LOG(lg, info, "LifecycleService::LifecycleEvent SHUTDOWN");
 
                         fire_one = [](LifecycleListener &listener) {
                             listener.shutdown();
@@ -400,7 +404,7 @@ namespace hazelcast {
                         break;
                     }
                     case LifecycleEvent::CLIENT_CONNECTED : {
-                        logger.info("LifecycleService::LifecycleEvent CLIENT_CONNECTED");
+                        HZ_LOG(lg, info, "LifecycleService::LifecycleEvent CLIENT_CONNECTED");
 
                         fire_one = [](LifecycleListener &listener) {
                             listener.connected();
@@ -408,7 +412,7 @@ namespace hazelcast {
                         break;
                     }
                     case LifecycleEvent::CLIENT_DISCONNECTED : {
-                        logger.info("LifecycleService::LifecycleEvent CLIENT_DISCONNECTED");
+                        HZ_LOG(lg, info, "LifecycleService::LifecycleEvent CLIENT_DISCONNECTED");
 
                         fire_one = [](LifecycleListener &listener) {
                             listener.disconnected();
@@ -536,12 +540,12 @@ namespace hazelcast {
                 }
 
                 ClientInvocationServiceImpl::ClientInvocationServiceImpl(ClientContext &client)
-                        : client(client), invocationLogger(client.getLogger()),
+                        : client(client), logger_(client.getLogger()),
                           invocationTimeout(std::chrono::seconds(client.getClientProperties().getInteger(
                                   client.getClientProperties().getInvocationTimeoutSeconds()))),
                           invocationRetryPause(std::chrono::milliseconds(client.getClientProperties().getLong(
                                   client.getClientProperties().getInvocationRetryPauseMillis()))),
-                          responseThread(invocationLogger, *this, client),
+                          responseThread(logger_, *this, client),
                           smart_routing_(client.getClientConfig().getNetworkConfig().isSmartRouting()) {
                 }
 
@@ -599,18 +603,16 @@ namespace hazelcast {
                 bool ClientInvocationServiceImpl::invoke(std::shared_ptr<ClientInvocation> invocation) {
                     auto connection = client.getConnectionManager().get_random_connection();
                     if (!connection) {
-                        if (invocationLogger.isFinestEnabled()) {
-                            invocationLogger.finest("No connection found to invoke");
-                        }
+                        HZ_LOG(logger_, finest, "No connection found to invoke");
                         return false;
                     }
                     return send(invocation, connection);
                 }
 
-                ClientInvocationServiceImpl::ResponseProcessor::ResponseProcessor(util::ILogger &invocationLogger,
+                ClientInvocationServiceImpl::ResponseProcessor::ResponseProcessor(logger &lg,
                                                                                   ClientInvocationServiceImpl &invocationService,
                                                                                   ClientContext &clientContext)
-                        : invocationLogger(invocationLogger), client(clientContext) {
+                        : logger_(lg), client(clientContext) {
                 }
 
                 void ClientInvocationServiceImpl::ResponseProcessor::processInternal(
@@ -624,7 +626,10 @@ namespace hazelcast {
                             invocation->notify(response);
                         }
                     } catch (std::exception &e) {
-                        invocationLogger.severe("Failed to process response for ", *invocation, ". ", e.what());
+                        HZ_LOG(logger_, severe, 
+                            boost::str(boost::format("Failed to process response for %1%. %2%")
+                                                     % *invocation % e.what())
+                        );
                     }
                 }
 
@@ -781,10 +786,8 @@ namespace hazelcast {
 
                 void ClientClusterServiceImpl::clear_member_list_version() {
                     std::lock_guard<std::mutex> g(cluster_view_lock_);
-                    auto &logger = client.getLogger();
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Resetting the member list version ");
-                    }
+                    auto &lg = client.getLogger();
+                    HZ_LOG(lg, finest, "Resetting the member list version ");
                     auto cluster_view_snapshot = member_list_snapshot_.load();
                     //This check is necessary so that `clear_member_list_version` when handling auth response will not
                     //intervene with client failover logic
@@ -796,12 +799,13 @@ namespace hazelcast {
 
                 void
                 ClientClusterServiceImpl::handle_event(int32_t version, const std::vector<Member> &memberInfos) {
-                    auto &logger = client.getLogger();
-                    if (logger.isFinestEnabled()) {
-                        auto snapshot = create_snapshot(version, memberInfos);
-                        logger.finest("Handling new snapshot with membership version: ", version, ", membersString "
-                                      , members_string(snapshot));
-                    }
+                    auto &lg = client.getLogger();
+                    HZ_LOG(lg, finest, 
+                        boost::str(boost::format("Handling new snapshot with membership version: %1%, "
+                                                 "membersString %2%")
+                                                 % version
+                                                 % members_string(create_snapshot(version, memberInfos)))
+                    );
                     auto cluster_view_snapshot = member_list_snapshot_.load();
                     if (cluster_view_snapshot == EMPTY_SNAPSHOT) {
                         std::lock_guard<std::mutex> g(cluster_view_lock_);
@@ -856,7 +860,7 @@ namespace hazelcast {
                 ClientClusterServiceImpl::apply_initial_state(int32_t version, const std::vector<Member> &memberInfos) {
                     auto snapshot = boost::make_shared<member_list_snapshot>(create_snapshot(version, memberInfos));
                     member_list_snapshot_.store(snapshot);
-                    client.getLogger().info(members_string(*snapshot));
+                    HZ_LOG(client.getLogger(), info, members_string(*snapshot));
                     std::unordered_set<Member> members;
                     for(auto const &e : snapshot->members) {
                         members.insert(e.second);
@@ -901,7 +905,7 @@ namespace hazelcast {
                     if (!events.empty()) {
                         auto snapshot = member_list_snapshot_.load();
                         if (!snapshot->members.empty()) {
-                            client.getLogger().info(members_string(*snapshot));
+                            HZ_LOG(client.getLogger(), info, members_string(*snapshot));
                         }
                     }
                     return events;
@@ -941,9 +945,10 @@ namespace hazelcast {
                         const std::shared_ptr<ClientInvocation> &invocation, int partitionId) {
                     auto partition_owner = client.getPartitionService().getPartitionOwner(partitionId);
                     if (partition_owner.is_nil()) {
-                        if (invocationLogger.isFinestEnabled()) {
-                            invocationLogger.finest("Partition owner is not assigned yet for partition ", partitionId);
-                        }
+                        HZ_LOG(logger_, finest, 
+                            boost::str(boost::format("Partition owner is not assigned yet for partition %1%")
+                                                     % partitionId)
+                        );
                         return false;
                     }
                     return invokeOnTarget(invocation, partition_owner);
@@ -954,9 +959,10 @@ namespace hazelcast {
                     assert (!uuid.is_nil());
                     auto connection = client.getConnectionManager().getConnection(uuid);
                     if (!connection) {
-                        if (invocationLogger.isFinestEnabled()) {
-                            invocationLogger.finest("Client is not connected to target : " , uuid);
-                        }
+                        HZ_LOG(logger_, finest, 
+                            boost::str(boost::format("Client is not connected to target : %1%")
+                                                     % uuid)
+                        );
                         return false;
                     }
                     return send(invocation, connection);
@@ -1015,7 +1021,7 @@ namespace hazelcast {
                                                    int partition,
                                                    const std::shared_ptr<connection::Connection> &conn,
                                                    boost::uuids::uuid uuid) :
-                        logger(clientContext.getLogger()),
+                        logger_(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),
@@ -1133,8 +1139,11 @@ namespace hazelcast {
                         invocationPromise.set_exception(std::move(exceptionPtr));
                     } catch (boost::promise_already_satisfied &se) {
                         if (!eventHandler) {
-                            logger.warning("Failed to set the exception for invocation. ", se.what(), ", ", *this,
-                                           " Exception to be set: ", e);
+                            HZ_LOG(logger_, warning,
+                                boost::str(boost::format("Failed to set the exception for invocation. "
+                                                         "%1%, %2% Exception to be set: %3%")
+                                                         % se.what() % *this % e)
+                            );
                         }
                     }
                 }
@@ -1163,11 +1172,10 @@ namespace hazelcast {
 
                         auto timePassed = std::chrono::steady_clock::now() - startTime;
                         if (timePassed > invocationService.getInvocationTimeout()) {
-                            if (logger.isFinestEnabled()) {
-                                std::ostringstream out;
-                                out << "Exception will not be retried because invocation timed out. " << iex.what();
-                                logger.finest(out.str());
-                            }
+                            HZ_LOG(logger_, finest,
+                                boost::str(boost::format("Exception will not be retried because "
+                                                         "invocation timed out. %1%") % iex.what())
+                            );
 
                             auto now = std::chrono::steady_clock::now();
 
@@ -1325,8 +1333,11 @@ namespace hazelcast {
                         // TODO: move msg content here?
                         invocationPromise.set_value(*msg);
                     } catch (std::exception &e) {
-                        logger.warning("Failed to set the response for invocation. Dropping the response. ", e.what(),
-                                       ", ",*this, " Response: ", *msg);
+                        HZ_LOG(logger_, warning,
+                            boost::str(boost::format("Failed to set the response for invocation. "
+                                                     "Dropping the response. %1%, %2% Response: %3%")
+                                                     % e.what() % *this % *msg)
+                        );
                     }
                 }
 
@@ -1383,10 +1394,11 @@ namespace hazelcast {
                 }
 
                 void ClientInvocation::log_exception(exception::IException &e) {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Invocation got an exception ", *this, ", invoke count : ", invokeCount.load(),
-                                      ", exception : ", e);
-                    }
+                    HZ_LOG(logger_, finest,
+                        boost::str(boost::format("Invocation got an exception %1%, invoke count : %2%, "
+                                                 "exception : %3%")
+                                                 % *this % invokeCount.load() % e)
+                    );
                 }
 
                 ClientContext &impl::ClientTransactionManagerServiceImpl::getClient() const {
@@ -1481,8 +1493,8 @@ namespace hazelcast {
                 }
 
                 AwsAddressProvider::AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort,
-                                                       util::ILogger &logger) : awsMemberPort(
-                        util::IOUtil::to_string<int>(awsMemberPort)), logger(logger), awsClient(awsConfig, logger) {
+                                                       logger &lg) : awsMemberPort(
+                        util::IOUtil::to_string<int>(awsMemberPort)), logger_(lg), awsClient(awsConfig, lg) {
                 }
 
                 std::vector<Address> AwsAddressProvider::loadAddresses() {
@@ -1493,7 +1505,7 @@ namespace hazelcast {
                     typedef std::unordered_map<std::string, std::string> LookupTable;
                     for (const LookupTable::value_type &privateAddress : lookupTable) {
                         std::vector<Address> possibleAddresses = util::AddressHelper::getSocketAddresses(
-                                privateAddress.first + ":" + awsMemberPort, logger);
+                                privateAddress.first + ":" + awsMemberPort, logger_);
                         addresses.insert(addresses.begin(), possibleAddresses.begin(),
                                          possibleAddresses.end());
                     }
@@ -1504,7 +1516,9 @@ namespace hazelcast {
                     try {
                         privateToPublic = awsClient.getAddresses();
                     } catch (exception::IException &e) {
-                        logger.warning("Aws addresses failed to load: ", e.getMessage());
+                        HZ_LOG(logger_, warning,
+                            boost::str(boost::format("Aws addresses failed to load: %1%") % e.getMessage())
+                        );
                     }
                 }
 
@@ -1529,9 +1543,10 @@ namespace hazelcast {
 
                 void ClientPartitionServiceImpl::handle_event(const std::shared_ptr<connection::Connection>& connection, int32_t version,
                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) {
-                    if (logger_.isFinestEnabled()) {
-                        logger_.finest("Handling new partition table with  partitionStateVersion: " , version);
-                    }
+                    HZ_LOG(logger_, finest,
+                        boost::str(boost::format("Handling new partition table with partitionStateVersion: %1%") % version)
+                    );
+
                     while (true) {
                         auto current = partition_table_.load();
                         if (!should_be_applied(connection, version, partitions, *current)) {
@@ -1539,9 +1554,9 @@ namespace hazelcast {
                         }
                         if (partition_table_.compare_exchange_strong(current, boost::shared_ptr<partition_table>(
                                 new partition_table{connection, version, convert_to_map(partitions)}))) {
-                            if (logger_.isFinestEnabled()) {
-                                logger_.finest("Applied partition table with partitionStateVersion : ", version);
-                            }
+                            HZ_LOG(logger_, finest,
+                                boost::str(boost::format("Applied partition table with partitionStateVersion : %1%") % version)
+                            );
                             return;
                         }
 
@@ -1587,28 +1602,30 @@ namespace hazelcast {
                                                               int32_t version,
                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions,
                                                               const partition_table &current) {
-                    auto &logger = client.getLogger();
+                    auto &lg = client.getLogger();
                     if (partitions.empty()) {
-                        if (logger.isFinestEnabled()) {
+                        if (logger_.enabled(log_level::finest)) {
                             log_failure(connection, version, current, "response is empty");
                         }
                         return false;
                     }
                     if (!current.connection || *connection != *current.connection) {
-                        if (logger.isFinestEnabled()) {
+                        if (lg.enabled(log_level::finest)) {
+                            auto frmt = boost::format("Event coming from a new connection. Old connection: %1%, "
+                                                      "new connection %2%");
+
                             if (current.connection) {
-                                logger.finest("Event coming from a new connection. Old connection: ", *current.connection
-                                        , ", new connection ", *connection);
+                                frmt = frmt % *current.connection;
                             } else {
-                                logger.finest(
-                                        "Event coming from a new connection. Old connection: nullptr, new connection ",
-                                        *connection);
+                                frmt = frmt % "nullptr";
                             }
+
+                            lg.log(log_level::finest, boost::str(frmt % *connection));
                         }
                         return true;
                     }
                     if (version <= current.version) {
-                        if (logger.isFinestEnabled()) {
+                        if (lg.enabled(log_level::finest)) {
                             log_failure(connection, version, current, "response state version is old");
                         }
                         return false;
@@ -1620,18 +1637,20 @@ namespace hazelcast {
                                                              int32_t version,
                                                              const ClientPartitionServiceImpl::partition_table &current,
                                                              const std::string &cause) {
-                    if (logger_.isFinestEnabled()) {
-                        if (current.connection) {
-                            logger_.finest(" We will not apply the response, since " + cause + " . Response is from ", *connection
-                                    , ". Current connection ", *current.connection
-                                    , " response state version:", version
-                                    , ". Current state version: ", current.version);
-                        } else {
-                            logger_.finest(" We will not apply the response, since " + cause + " . Response is from ", *connection
-                                    , ". Current connection : nnullptr, response state version:", version
-                                    , ". Current state version: ", current.version);
-                        }
-                    }
+                    HZ_LOG(logger_, finest,
+                        [&](){
+                            auto frmt = boost::format(" We will not apply the response, since %1% ."
+                                                      " Response is from %2%. "
+                                                      "Current connection %3%, response state version:%4%. "
+                                                      "Current state version: %5%");
+                            if (current.connection) {
+                                return boost::str(frmt % cause % *connection % *current.connection % version % current.version);
+                            }
+                            else {
+                                return boost::str(frmt % cause % *connection % "nullptr" % version % current.version);
+                            }
+                        }()
+                    );
                 }
 
                 void ClientPartitionServiceImpl::reset() {
@@ -1811,7 +1830,7 @@ namespace hazelcast {
                                                                  int32_t eventThreadCount)
                             : clientContext(clientContext),
                               serializationService(clientContext.getSerializationService()),
-                              logger(clientContext.getLogger()),
+                              logger_(clientContext.getLogger()),
                               clientConnectionManager(clientContext.getConnectionManager()),
                               numberOfEventThreads(eventThreadCount),
                               smart_(clientContext.getClientConfig().getNetworkConfig().isSmartRouting()) {
@@ -1884,8 +1903,10 @@ namespace hazelcast {
 
                         } catch (const std::exception &e) {
                             if (clientContext.getLifecycleService().isRunning()) {
-                                logger.warning("Delivery of event message to event handler failed. ", e.what(),
-                                               ", *response, "", ", *invocation);
+                                HZ_LOG(logger_, warning,
+                                    boost::str(boost::format("Delivery of event message to event handler failed. %1%, %2%, %3%")
+                                                             % e.what() % *response % *invocation)
+                                );
                             }
                         }
                     }
@@ -1962,9 +1983,13 @@ namespace hazelcast {
                                     } else {
                                         endpoint << "null";
                                     }
-                                    logger.warning("ClientListenerService::deregisterListenerInternal",
-                                                   "Deregistration of listener with ID ", userRegistrationId,
-                                                   " has failed to address ", subscriber->getRemoteAddress(), e);
+                                    HZ_LOG(logger_, warning,
+                                        boost::str(boost::format("ClientListenerService::deregisterListenerInternal "
+                                                                 "Deregistration of listener with ID %1% "
+                                                                 "has failed to address %2% %3%")
+                                                                 % userRegistrationId 
+                                                                 % subscriber->getRemoteAddress() % e)
+                                    );
                                 }
                             }
                         }
@@ -1995,8 +2020,11 @@ namespace hazelcast {
                         try {
                             invoke(listener_registration, connection);
                         } catch (exception::IException &e) {
-                            logger.warning("Listener with pointer", listener_registration.get(),
-                                           " can not be added to a new connection: ", *connection, ", reason: ", e);
+                            HZ_LOG(logger_, warning,
+                                boost::str(boost::format("Listener with pointer %1% can not be added to "
+                                                         "a new connection: %2%, reason: %3%")
+                                                         % listener_registration.get() % *connection % e)
+                            );
                         }
                     }
 
@@ -2032,8 +2060,11 @@ namespace hazelcast {
                         auto eventHandler = invocation->getEventHandler();
                         if (!eventHandler) {
                             if (clientContext.getLifecycleService().isRunning()) {
-                                logger.warning("No eventHandler for invocation. Ignoring this invocation response. ",
-                                               *invocation);
+                                HZ_LOG(logger_, warning,
+                                    boost::str(boost::format("No eventHandler for invocation. "
+                                                             "Ignoring this invocation response. %1%")
+                                                             % *invocation)
+                                );
                             }
 
                             return;
@@ -2043,8 +2074,10 @@ namespace hazelcast {
                             eventHandler->handle(*response);
                         } catch (std::exception &e) {
                             if (clientContext.getLifecycleService().isRunning()) {
-                                logger.warning("Delivery of event message to event handler failed. ", e.what(),
-                                               ", *response, "", ", *invocation);
+                                HZ_LOG(logger_, warning,
+                                    boost::str(boost::format("Delivery of event message to event handler failed. %1%, %2%, %3%")
+                                                             % e.what() % *response % *invocation)
+                                );
                             }
                         }
                     }
@@ -2121,17 +2154,19 @@ namespace hazelcast {
 
                     void cluster_view_listener::event_handler::beforeListenerRegister() {
                         view_listener_.client_context_.getClientClusterService().clear_member_list_version();
-                        auto &logger = view_listener_.client_context_.getLogger();
-                        if (logger.isFinestEnabled()) {
-                            logger.finest("Register attempt of ClusterViewListenerHandler to ", *connection_);
-                        }
+                        auto &lg = view_listener_.client_context_.getLogger();
+                        HZ_LOG(lg, finest,
+                            boost::str(boost::format("Register attempt of ClusterViewListenerHandler to %1%")
+                                                    % *connection_)
+                        );
                     }
 
                     void cluster_view_listener::event_handler::onListenerRegister() {
-                        auto &logger = view_listener_.client_context_.getLogger();
-                        if (logger.isFinestEnabled()) {
-                            logger.finest("Registered ClusterViewListenerHandler to ", *connection_);
-                        }
+                        auto &lg = view_listener_.client_context_.getLogger();
+                        HZ_LOG(lg, finest,
+                            boost::str(boost::format("Registered ClusterViewListenerHandler to %1%") 
+                                                     % *connection_)
+                        );
                     }
 
                     cluster_view_listener::event_handler::event_handler(

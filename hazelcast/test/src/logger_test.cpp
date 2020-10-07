@@ -58,7 +58,7 @@ TEST(default_logger_test, test_formatting) {
     ASSERT_TRUE(0 <= ms && ms <= 999);
     ASSERT_EQ("INFO:", std::string(lev));
     ASSERT_EQ("instance0[cluster0]", std::string(ins_grp));
-    ASSERT_EQ("[4.0]", std::string(ver));
+    ASSERT_EQ(std::string("") + "[" + HAZELCAST_VERSION + "]", std::string(ver));
     ASSERT_EQ("message", std::string(msg));
 }
 

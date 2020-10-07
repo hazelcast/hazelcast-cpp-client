@@ -54,6 +54,7 @@
 #include "hazelcast/client/Client.h"
 #include "hazelcast/cp/cp.h"
 #include "hazelcast/cp/cp_impl.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -202,7 +203,7 @@ namespace hazelcast {
 
                 spi::ProxyManager &getProxyManager();
 
-                const std::shared_ptr <util::ILogger> &getLogger() const;
+                const std::shared_ptr<logger> &getLogger() const;
 
                 boost::uuids::uuid random_uuid();
 
@@ -230,7 +231,7 @@ namespace hazelcast {
                 static std::atomic<int32_t> CLIENT_ID;
                 int32_t id;
                 std::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
-                std::shared_ptr<util::ILogger> logger;
+                std::shared_ptr<logger> logger_;
                 std::shared_ptr<spi::impl::listener::cluster_view_listener> cluster_listener_;
                 std::mt19937 random_generator_;
                 boost::uuids::basic_random_generator<std::mt19937> uuid_generator_;

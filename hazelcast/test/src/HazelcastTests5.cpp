@@ -34,7 +34,6 @@
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
-#include <hazelcast/util/ILogger.h>
 #include <ctime>
 #include <hazelcast/client/LifecycleListener.h>
 #include <hazelcast/client/HazelcastJsonValue.h>
@@ -46,6 +45,7 @@
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <string>
 #include <boost/asio.hpp>
+#include <fstream>
 
 #ifdef HZ_BUILD_WITH_SSL
 
@@ -575,15 +575,8 @@ namespace hazelcast {
 
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverAddress,
                                                            const std::string &serverXmlConfigFilePath)
-                    : logger("HazelcastServerFactory", "HazelcastServerFactory", "testversion", config::LoggerConfig()),
+                    : logger_(config::LoggerConfig().logger_factory()("HazelcastServerFactory", "HazelcastServerFactory")),
                       serverAddress(serverAddress) {
-
-                if (!logger.start()) {
-                    throw (client::exception::ExceptionBuilder<client::exception::IllegalStateException>(
-                            "HazelcastServerFactory::HazelcastServerFactory") << "Could not start logger "
-                                                                              << logger.getInstanceName()).build();
-                }
-
                 std::string xmlConfig = readFromXmlFile(serverXmlConfigFilePath);
 
                 remote::Cluster cluster;

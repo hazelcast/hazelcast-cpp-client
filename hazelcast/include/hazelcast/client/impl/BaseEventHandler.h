@@ -17,11 +17,12 @@
 
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include <memory>
+
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/EventHandler.h"
-#include "hazelcast/util/ILogger.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -60,12 +61,12 @@ namespace hazelcast {
                 void onListenerRegister() override {
                 }
 
-                void setLogger(util::ILogger *iLogger);
+                void setLogger(logger *lg);
 
-                util::ILogger *getLogger() const;
+                logger *getLogger() const;
 
             protected:
-                util::ILogger *logger;
+                logger *logger_;
             };
         }
     }

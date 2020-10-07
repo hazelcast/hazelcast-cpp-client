@@ -45,11 +45,11 @@
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/aws/impl/Filter.h"
 #include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/SyncHttpClient.h"
+#include "hazelcast/logger.h"
 
 // openssl include should be after the other so that winsock.h and winsock2.h conflict does not occur at windows
 #ifdef HZ_BUILD_WITH_SSL
@@ -316,10 +316,10 @@ namespace hazelcast {
                     return filters;
                 }
 
-                AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &awsConfig, util::ILogger &logger)
-                        : logger(logger) {
+                AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &awsConfig, logger &lg)
+                        : logger_(lg) {
                     if (awsConfig.isEnabled() && !awsConfig.isInsideAws()) {
-                        awsClient = std::unique_ptr<AWSClient>(new AWSClient(awsConfig, logger));
+                        awsClient = std::unique_ptr<AWSClient>(new AWSClient(awsConfig, lg));
                     }
                 }
 
@@ -351,7 +351,8 @@ namespace hazelcast {
                         privateToPublic = std::shared_ptr<std::unordered_map<std::string, std::string> >(
                                 new std::unordered_map<std::string, std::string>(awsClient->getAddresses()));
                     } catch (exception::IException &e) {
-                        logger.warning(std::string("AWS addresses failed to load: ") + e.what());
+                        HZ_LOG(logger_, warning,
+                            boost::str(boost::format("AWS addresses failed to load: %1%") % e.what()));
                     }
                 }
 
@@ -380,8 +381,8 @@ namespace hazelcast {
                 const std::string DescribeInstances::IAM_TASK_ROLE_ENDPOINT = "169.254.170.2";
 
                 DescribeInstances::DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint,
-                                                     util::ILogger &logger) : awsConfig(awsConfig), endpoint(endpoint),
-                                                                              logger(logger) {
+                                                     logger &lg) : awsConfig(awsConfig), endpoint(endpoint),
+                                                                              logger_(lg) {
                     checkKeysFromIamRoles();
 
                     std::string timeStamp = getFormattedTimestamp();
@@ -404,7 +405,7 @@ namespace hazelcast {
                     attributes["X-Amz-Signature"] = signature;
 
                     std::istream &stream = callService();
-                    return utility::CloudUtility::unmarshalTheResponse(stream, logger);
+                    return utility::CloudUtility::unmarshalTheResponse(stream, logger_);
                 }
 
                 std::string DescribeInstances::getFormattedTimestamp() {
@@ -563,15 +564,15 @@ namespace hazelcast {
                 }
 
                 std::unordered_map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream,
-                                                                                      util::ILogger &logger) {
+                                                                                      logger &lg) {
                     std::unordered_map<std::string, std::string> privatePublicPairs;
 
                     pt::ptree tree;
                     try {
                         pt::read_xml(stream, tree);
                     } catch (pt::xml_parser_error &e) {
-                        logger.warning(
-                                std::string("The parsed xml stream has errors: ") + e.what());
+                        HZ_LOG(lg, warning, 
+                            boost::str(boost::format("The parsed xml stream has errors: %1%") % e.what()));
                         return privatePublicPairs;
                     }
 
@@ -587,14 +588,11 @@ namespace hazelcast {
 
                             if (privateIp) {
                                 privatePublicPairs[prIp] = pubIp;
-                                if (logger.isFinestEnabled()) {
-                                    auto instName = instanceItem.second.get_optional<std::string>(
-                                            "tagset.item.value").value_or("");
-
-                                    logger.finest(
-                                            std::string("Accepting EC2 instance [") + instName +
-                                            "][" + prIp + "]");
-                                }
+                                HZ_LOG(lg, finest, 
+                                    boost::str(boost::format("Accepting EC2 instance [%1%][%2%]")
+                                               % instanceItem.second.get_optional<std::string>("tagset.item.value").value_or("")
+                                               % prIp)
+                                );
                             }
                         }
                     }
@@ -612,8 +610,8 @@ namespace hazelcast {
 
             }
 
-            AWSClient::AWSClient(config::ClientAwsConfig &awsConfig, util::ILogger &logger) : awsConfig(awsConfig),
-                                                                                              logger(logger) {
+            AWSClient::AWSClient(config::ClientAwsConfig &awsConfig, logger &lg) : awsConfig(awsConfig),
+                                                                                              logger_(lg) {
                 this->endpoint = awsConfig.getHostHeader();
                 if (!awsConfig.getRegion().empty() && awsConfig.getRegion().length() > 0) {
                     if (awsConfig.getHostHeader().find("ec2.") != 0) {
@@ -625,7 +623,7 @@ namespace hazelcast {
             }
 
             std::unordered_map<std::string, std::string> AWSClient::getAddresses() {
-                return impl::DescribeInstances(awsConfig, endpoint, logger).execute();
+                return impl::DescribeInstances(awsConfig, endpoint, logger_).execute();
             }
 
         }

@@ -48,7 +48,6 @@
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
-#include <hazelcast/util/ILogger.h>
 #include <ctime>
 #include <cerrno>
 #include <hazelcast/client/LifecycleListener.h>

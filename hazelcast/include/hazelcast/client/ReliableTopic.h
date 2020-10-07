@@ -24,6 +24,7 @@
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/util/concurrent/Cancellable.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -85,7 +86,7 @@ namespace hazelcast {
                 int id = ++runnerCounter;
                 std::shared_ptr<MessageRunner < Listener>>
                 runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer, getName(),
-                                                   getSerializationService(), *config, logger));
+                                                   getSerializationService(), *config, logger_));
                 runnersMap.put(id, runner);
                 runner->next();
                 return std::to_string(id);
@@ -132,9 +133,9 @@ namespace hazelcast {
             public:
                 MessageRunner(int id, Listener &&listener, const std::shared_ptr<Ringbuffer> &rb,
                               const std::string &topicName, serialization::pimpl::SerializationService &service,
-                              const config::ReliableTopicConfig &reliableTopicConfig, util::ILogger &logger)
-                        : listener(listener), id(id), ringbuffer(rb), cancelled(false), logger(logger),
-                        name(topicName), executor(rb, logger), serializationService(service),
+                              const config::ReliableTopicConfig &reliableTopicConfig, logger &lg)
+                        : listener(listener), id(id), ringbuffer(rb), cancelled(false), logger_(lg),
+                        name(topicName), executor(rb, lg), serializationService(service),
                         config(reliableTopicConfig) {
                     // we are going to listen to next publication. We don't care about what already has been published.
                     int64_t initialSequence = listener.initial_sequence_id_;
@@ -201,10 +202,11 @@ namespace hazelcast {
                             causeErrorCode = causeException.getErrorCode();
                         }
                         if (protocol::TIMEOUT == err) {
-                            if (logger.isFinestEnabled()) {
-                                logger.finest("MessageListener on topic: ", name, " timed out. ",
-                                              "Continuing from last known sequence: ", sequence);
-                            }
+                            HZ_LOG(logger_, finest, 
+                                boost::str(boost::format("MessageListener on topic: %1% timed out. "
+                                                         "Continuing from last known sequence: %2%")
+                                                         % name % sequence) 
+                            );
                             next();
                             return;
                         } else if (protocol::EXECUTION == err &&
@@ -213,45 +215,43 @@ namespace hazelcast {
                             int64_t remoteHeadSeq = ringbuffer->headSequence().get();
 
                             if (listener.loss_tolerant_) {
-                                if (logger.isFinestEnabled()) {
-                                    std::ostringstream out;
-                                    out << "MessageListener " << id << " on topic: " << name
-                                        << " ran into a stale sequence. "
-                                        << "Jumping from oldSequence: " << sequence << " to sequence: "
-                                        << remoteHeadSeq;
-                                    logger.finest(out.str());
-                                }
+                                HZ_LOG(logger_, finest, 
+                                    boost::str(boost::format("MessageListener %1% on topic: %2% "
+                                                             "ran into a stale sequence. "
+                                                             "Jumping from old sequence: %3% "
+                                                             "to sequence: %4%")
+                                                             % id % name % sequence % remoteHeadSeq)
+                                );
                                 sequence = remoteHeadSeq;
                                 next();
                                 return;
                             }
 
-                            std::ostringstream out;
-                            out << "Terminating MessageListener:" << id << " on topic: " << name
-                                << "Reason: The listener "
-                                   "was too slow or the retention period of the message has been violated. "
-                                << "head: "
-                                << remoteHeadSeq << " sequence:" << sequence;
-                            logger.warning(out.str());
+                            HZ_LOG(logger_, warning,
+                                boost::str(boost::format("Terminating MessageListener: %1% on topic: %2%"
+                                                         "Reason: The listener was too slow or the retention "
+                                                         "period of the message has been violated. "
+                                                         "head: %3% sequence: %4%")
+                                                         % id % name % remoteHeadSeq % sequence)
+                            );
                         } else if (protocol::HAZELCAST_INSTANCE_NOT_ACTIVE == err) {
-                            if (logger.isFinestEnabled()) {
-                                std::ostringstream out;
-                                out << "Terminating MessageListener " << id << " on topic: " << name << ". "
-                                    << " Reason: HazelcastInstance is shutting down";
-                                logger.finest(out.str());
-                            }
+                            HZ_LOG(logger_, finest, 
+                                boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
+                                                         "Reason: HazelcastInstance is shutting down")
+                                                        % id % name) 
+                            );
                         } else if (protocol::DISTRIBUTED_OBJECT_DESTROYED == err) {
-                            if (logger.isFinestEnabled()) {
-                                std::ostringstream out;
-                                out << "Terminating MessageListener " << id << " on topic: " << name
-                                    << " Reason: Topic is destroyed";
-                                logger.finest(out.str());
-                            }
+                            HZ_LOG(logger_, finest, 
+                                boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
+                                                         "Reason: Topic is destroyed")
+                                                        % id % name) 
+                            );
                         } else {
-                            std::ostringstream out;
-                            out << "Terminating MessageListener " << id << " on topic: " << name << ". "
-                                << " Reason: Unhandled exception, details:" << ie.what();
-                            logger.warning(out.str());
+                            HZ_LOG(logger_, warning, 
+                                boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
+                                                         "Reason: Unhandled exception, details: %3%")
+                                                        % id % name % ie.what()) 
+                            );
                         }
 
                         cancel();
@@ -290,26 +290,27 @@ namespace hazelcast {
                     try {
                         bool terminate = listener.terminal_(failure);
                         if (terminate) {
-                            std::ostringstream out;
-                            out << "Terminating MessageListener " << id << " on topic: " << name << ". "
-                                << " Reason: Unhandled exception, details: " << failure.what();
-                            logger.warning(out.str());
+                            HZ_LOG(logger_, warning,
+                                boost::str(boost::format("Terminating ReliableListener %1% "
+                                                         "on topic: %2%. "
+                                                         "Reason: Unhandled exception, details: %3%")
+                                                         % id % name % failure.what())
+                            );
                         } else {
-                            if (logger.isFinestEnabled()) {
-                                std::ostringstream out;
-                                out << "MessageListener " << id << " on topic: " << name << ". "
-                                    << " ran into an exception, details:" << failure.what();
-                                logger.finest(out.str());
-                            }
+                            HZ_LOG(logger_, finest,
+                                boost::str(boost::format("ReliableListener %1% on topic: %2% "
+                                                         "ran into an exception, details: %3%")
+                                                         % id % name % failure.what())
+                            );
                         }
                         return terminate;
                     } catch (exception::IException &t) {
-                        std::ostringstream out;
-                        out << "Terminating ReliableListener " << id << " on topic: " << name << ". "
-                            << " Reason: Unhandled exception while calling the function set by ReliableListener::terminate_on_exception. "
-                            << t.what();
-                        logger.warning(out.str());
-
+                        HZ_LOG(logger_, warning,
+                            boost::str(boost::format("Terminating ReliableListener %1% on topic: %2%. "
+                                                     "Reason: Unhandled exception while calling the function set by "
+                                                     "ReliableListener::terminate_on_exception. %3%")
+                                                     % id % name % t.what())
+                        );
                         return true;
                     }
                 }
@@ -320,7 +321,7 @@ namespace hazelcast {
                 std::shared_ptr<Ringbuffer> ringbuffer;
                 int64_t sequence;
                 std::atomic<bool> cancelled;
-                util::ILogger &logger;
+                logger &logger_;
                 const std::string &name;
                 topic::impl::reliable::ReliableTopicExecutor executor;
                 serialization::pimpl::SerializationService &serializationService;
