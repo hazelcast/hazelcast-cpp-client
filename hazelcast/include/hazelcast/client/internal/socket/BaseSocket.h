@@ -96,25 +96,29 @@ namespace hazelcast {
                                                                       *invocation % *connection).str()))));
                                 return;
                             }
-                            auto correlationId = message->getCorrelationId();
-                            auto result = connection->invocations.insert({correlationId, invocation});
-                            if (!result.second) {
-                                auto existingEntry = *result.first;
-                                invocation->notifyException(std::make_exception_ptr(
-                                        boost::enable_current_exception(
-                                                exception::IllegalStateException("Connection::write", (boost::format(
-                                                        "There is already an existing invocation with the same correlation id: %1%. Existing: %2% New invocation:%3%") %
-                                                                                                       correlationId %
-                                                                                                       (*existingEntry.second) %
-                                                                                                       *invocation).str()))));
-                                return;
-                            }
+
+                            bool success;
+                            int64_t message_call_id;
+                            do {
+                                auto call_id = ++call_id_counter_;
+                                struct correlation_id {
+                                    int32_t connnection_id;
+                                    int32_t call_id;
+                                };
+                                union {
+                                    int64_t id;
+                                    correlation_id composed_id;
+                                } c_id_union;
+                                c_id_union.composed_id = {connection->getConnectionId(), call_id};
+                                message_call_id = c_id_union.id;
+                                message->setCorrelationId(c_id_union.id);
+                                success = connection->invocations.insert({message_call_id, invocation}).second;
+                            } while (!success);
 
                             auto handler = [=](const boost::system::error_code &ec,
                                                std::size_t bytesWritten) {
                                 if (ec) {
-                                    auto invocationIt = connection->invocations.find(
-                                            correlationId);
+                                    auto invocationIt = connection->invocations.find(message_call_id);
 
                                     assert(invocationIt != connection->invocations.end());
 
@@ -240,6 +244,7 @@ namespace hazelcast {
                     std::chrono::steady_clock::duration connectTimeout;
                     boost::asio::ip::tcp::resolver &resolver;
                     T socket_;
+                    int32_t call_id_counter_;
                 };
             }
         }

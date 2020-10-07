@@ -67,8 +67,12 @@ namespace hazelcast {
                     void handleClientMessage(const std::shared_ptr<ClientInvocation> &invocation,
                                              const std::shared_ptr<ClientMessage> &response) override;
 
+                    const std::chrono::milliseconds &getBackupTimeout() const;
+
+                    bool fail_on_indeterminate_state() const;
+
                 private:
-                    class HAZELCAST_API ResponseProcessor {
+                    class ResponseProcessor {
                     public:
                         ResponseProcessor(util::ILogger &invocationLogger,
                                           ClientInvocationServiceImpl &invocationService,
@@ -92,6 +96,19 @@ namespace hazelcast {
                                              const std::shared_ptr<protocol::ClientMessage> &response);
                     };
 
+                    class BackupListenerMessageCodec : public ListenerMessageCodec {
+                    public:
+                        protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
+
+                        protocol::ClientMessage
+                        encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
+                    };
+
+                    class noop_backup_event_handler : public protocol::codec::client_localbackuplistener_handler {
+                    public:
+                        void handle_backup(int64_t sourceInvocationCorrelationId) override;
+                    };
+
                     ClientContext &client;
                     util::ILogger &invocationLogger;
                     std::atomic<bool> isShutdown{ false };
@@ -99,6 +116,9 @@ namespace hazelcast {
                     std::chrono::steady_clock::duration invocationRetryPause;
                     ResponseProcessor responseThread;
                     bool smart_routing_;
+                    bool backup_acks_enabled_;
+                    bool fail_on_indeterminate_operation_state_;
+                    std::chrono::milliseconds backup_timeout_;
 
                     static void writeToConnection(connection::Connection &connection,
                                            const std::shared_ptr<ClientInvocation> &clientInvocation);

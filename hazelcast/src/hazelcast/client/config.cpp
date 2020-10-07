@@ -756,7 +756,16 @@ namespace hazelcast {
             labels_.insert(label);
             return *this;
         }
-        
+
+        ClientConfig &ClientConfig::backup_acks_enabled(bool enabled) {
+            backup_acks_enabled_ = enabled;
+            return *this;
+        }
+
+        bool ClientConfig::backup_acks_enabled() {
+            return backup_acks_enabled_;
+        }
+
         namespace security {
             username_password_credentials::username_password_credentials(const std::string &name,
                                                                                    const std::string &password) : name_(

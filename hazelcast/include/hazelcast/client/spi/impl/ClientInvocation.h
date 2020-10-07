@@ -118,6 +118,8 @@ namespace hazelcast {
 
                     void notifyException(std::exception_ptr exception);
 
+                    void notify_backup();
+
                     std::shared_ptr<connection::Connection> getSendConnection() const;
 
                     std::shared_ptr<connection::Connection> getSendConnectionOrWait() const;
@@ -135,6 +137,7 @@ namespace hazelcast {
 
                     boost::promise<protocol::ClientMessage> &getPromise();
 
+                    void detect_and_handle_backup_timeout(const std::chrono::milliseconds &backupTimeout);
                 private:
                     static constexpr int MAX_FAST_INVOCATION_COUNT = 5;
                     static constexpr int UNASSIGNED_PARTITION = -1;
@@ -158,6 +161,25 @@ namespace hazelcast {
                     boost::promise<protocol::ClientMessage> invocationPromise;
                     bool urgent_;
                     bool smart_routing_;
+
+                    int32_t backup_acks_received_ = 0;
+
+                    /**
+                     * Number of expected backups. It is set correctly as soon as the pending response is set.
+                     */
+                    int8_t backup_acks_expected_ = -1;
+
+                    /**
+                     * Contains the pending response from the primary. It is pending because it could be that backups
+                     * need to complete. Note that we do not need thread safety since these are only read/write from
+                     * the same io thread for the connection.
+                     */
+                    std::shared_ptr<protocol::ClientMessage> pending_response_;
+
+                    /**
+                     * The time when the response of the primary has been received.
+                     */
+                    std::chrono::steady_clock::time_point pending_response_received_time_;
 
                     ClientInvocation(spi::ClientContext &clientContext,
                                      std::shared_ptr<protocol::ClientMessage> &&message,
@@ -185,6 +207,8 @@ namespace hazelcast {
                     void setException(const exception::IException &e, boost::exception_ptr exceptionPtr);
 
                     void log_exception(exception::IException &e);
+
+                    void erase_invocation() const;
                 };
             }
         }
