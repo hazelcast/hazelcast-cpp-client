@@ -71,6 +71,7 @@ namespace hazelcast {
 
                     bool fail_on_indeterminate_state() const;
 
+                    void add_backup_listener();
                 private:
                     class ResponseProcessor {
                     public:

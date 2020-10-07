@@ -713,6 +713,9 @@ namespace hazelcast {
                 c_id_union.id = call_id;
                 auto connection_id = c_id_union.composed_id.connnection_id;
                 auto connection = active_connection_ids_.get(connection_id);
+                if (!connection) {
+                    return;
+                }
                 boost::asio::post(connection->getSocket().get_executor(), [=] () {
                     auto invocation_it = connection->invocations.find(call_id);
                     if (invocation_it != connection->invocations.end()) {
@@ -857,11 +860,12 @@ namespace hazelcast {
                     return;
                 }
                 auto invocation = invocationIterator->second;
-                if (message->is_flag_set(message->getHeaderFlags(), protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
+                auto flags = message->getHeaderFlags();
+                if (message->is_flag_set(flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
                     message->rd_ptr(protocol::ClientMessage::EVENT_HEADER_LEN);
                     correlationId = message->get<int64_t>();
                     clientContext.getConnectionManager().notify_backup(correlationId);
-                } else if (message->is_flag_set(message->getHeaderFlags(), protocol::ClientMessage::IS_EVENT_FLAG)) {
+                } else if (message->is_flag_set(flags, protocol::ClientMessage::IS_EVENT_FLAG)) {
                     clientContext.getClientListenerService().handleClientMessage(invocation, message);
                 } else {
                     invocationService.handleClientMessage(invocation, message);

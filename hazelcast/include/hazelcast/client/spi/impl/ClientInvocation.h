@@ -209,6 +209,10 @@ namespace hazelcast {
                     void log_exception(exception::IException &e);
 
                     void erase_invocation() const;
+
+                    void complete(const std::shared_ptr<protocol::ClientMessage> &msg);
+
+                    void complete_with_pending_response();
                 };
             }
         }

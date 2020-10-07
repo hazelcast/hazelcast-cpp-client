@@ -86,14 +86,10 @@ namespace hazelcast {
 
                     void asyncWrite(const std::shared_ptr<connection::Connection> connection,
                                     const std::shared_ptr<spi::impl::ClientInvocation> invocation) override {
+                        check_connection(connection, invocation);
                         auto message = invocation->getClientMessage();
                         boost::asio::post(socket_.get_executor(), [=]() {
-                            if (!socket_.lowest_layer().is_open()) {
-                                invocation->notifyException(
-                                        std::make_exception_ptr(boost::enable_current_exception(exception::IOException(
-                                                "Connection::write", (boost::format{
-                                                        "Socket closed. Invocation write for %1% on connection %2% failed"} %
-                                                                      *invocation % *connection).str()))));
+                            if (!check_connection(connection, invocation)) {
                                 return;
                             }
 
@@ -235,6 +231,20 @@ namespace hazelcast {
                     }
 
                     virtual void post_connect() {
+                    }
+
+                    bool check_connection(const std::shared_ptr<connection::Connection> &connection,
+                                          const std::shared_ptr<spi::impl::ClientInvocation> &invocation) {
+                        if (!connection->isAlive()) {
+                            invocation->notifyException(
+                                    std::make_exception_ptr(boost::enable_current_exception(exception::IOException(
+                                            "Connection::write", (boost::format{
+                                                    "Socket closed. Invocation write for %1% on connection %2% failed"} %
+                                                                  *invocation % *connection).str()))));
+                            return false;
+                        }
+
+                        return true;
                     }
 
                     client::config::SocketOptions &socketOptions;

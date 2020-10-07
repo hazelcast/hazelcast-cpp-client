@@ -307,6 +307,8 @@ namespace hazelcast {
                     clientContext.getConnectionManager().connect_to_all_cluster_members();
                 }
 
+                clientContext.getInvocationService().add_backup_listener();
+
                 loadBalancer->init(cluster);
 
                 clientContext.getClientstatistics().start();
@@ -549,8 +551,11 @@ namespace hazelcast {
 
                 void ClientInvocationServiceImpl::start() {
                     responseThread.start();
-                    if (backup_acks_enabled_) {
-                        auto &listener_service = client.getClientListenerService();
+                }
+
+                void ClientInvocationServiceImpl::add_backup_listener() {
+                    if (this->backup_acks_enabled_) {
+                        auto &listener_service = this->client.getClientListenerService();
                         listener_service.registerListener(std::make_shared<BackupListenerMessageCodec>(),
                                                           std::make_shared<noop_backup_event_handler>()).get();
                     }
@@ -1228,7 +1233,7 @@ namespace hazelcast {
                         if (sent_connection) {
                             auto this_invocation = shared_from_this();
                             boost::asio::post(sent_connection->getSocket().get_executor(), [=] () {
-                                this_invocation->erase_invocation();
+                                sent_connection->invocations.erase(this_invocation->getClientMessage()->getCorrelationId());
                             });
                         }
                     }
@@ -1381,15 +1386,18 @@ namespace hazelcast {
                     // we are going to notify the future that a response is available; this can happen when:
                     // - we had a regular operation (so no backups we need to wait for) that completed
                     // - we had a backup-aware operation that has completed, but also all its backups have completed
+                    complete(msg);
+                }
+
+                void ClientInvocation::complete(const std::shared_ptr<protocol::ClientMessage> &msg) {
                     try {
                         // TODO: move msg content here?
-                        invocationPromise.set_value(*msg);
+                        this->invocationPromise.set_value(*msg);
                     } catch (std::exception &e) {
-                        logger.warning("Failed to set the response for invocation. Dropping the response. ", e.what(),
-                                       ", ", *this, " Response: ", *msg);
+                        this->logger.warning("Failed to set the response for invocation. Dropping the response. ", e.what(),
+                                             ", ", *this, " Response: ", *msg);
                     }
-
-                    erase_invocation();
+                    this->erase_invocation();
                 }
 
                 std::shared_ptr<protocol::ClientMessage> ClientInvocation::getClientMessage() const {
@@ -1467,7 +1475,7 @@ namespace hazelcast {
 
                     // we are the lucky one since we just managed to complete the last backup for this invocation and since the
                     // pendingResponse is set, we can set it on the future
-                    invocationService.handleClientMessage(shared_from_this(), pending_response_);
+                    complete_with_pending_response();
                 }
 
                 void
@@ -1485,7 +1493,7 @@ namespace hazelcast {
                     }
 
                     // if this has not yet expired (so has not been in the system for a too long period) we ignore it
-                    if (pending_response_received_time_ + backupTimeout < std::chrono::steady_clock::now()) {
+                    if (pending_response_received_time_ + backupTimeout >= std::chrono::steady_clock::now()) {
                         return;
                     }
 
@@ -1498,7 +1506,11 @@ namespace hazelcast {
                     }
 
                     // the backups have not yet completed, but we are going to release the future anyway if a pendingResponse has been set
-                    notify(pending_response_);
+                    complete_with_pending_response();
+                }
+
+                void ClientInvocation::complete_with_pending_response() {
+                    complete(pending_response_);
                 }
 
                 ClientContext &impl::ClientTransactionManagerServiceImpl::getClient() const {
