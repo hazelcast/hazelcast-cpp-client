@@ -1,3 +1,6 @@
+#include <array>
+#include <string>
+#include <thread>
 #include <sstream>
 
 #include <gtest/gtest.h>
@@ -35,22 +38,26 @@ TEST(default_logger_test, test_enabled) {
 TEST(default_logger_test, test_formatting) {
     std::ostringstream os;
 
-    default_logger dlg{ os, log_level::info, "instance0", "group0" };
+    default_logger dlg{ os, log_level::info, "instance0", "cluster0" };
     logger &lg = dlg;
 
     lg.log(log_level::info, "message");
 
-    int day, mon, year, hr, mn, sec;
+    int day, mon, year, hr, mn, sec, ms;
     char lev[16], tid[16], msg[16], ins_grp[32], ver[16];
-    int read = std::sscanf(os.str().c_str(), "%02d/%02d/%04d %02d.%02d.%02d %s %s %s %s %s\n", 
-        &day, &mon, &year, &hr, &mn, &sec, lev, tid, ins_grp, ver, msg);
+    int read = std::sscanf(os.str().c_str(), "%02d/%02d/%04d %02d.%02d.%02d.%03d %s %s %s %s %s\n", 
+        &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, msg);
 
-    ASSERT_EQ(11, read);
+    ASSERT_EQ(12, read);
     ASSERT_TRUE(0 <= day && day <= 31);
     ASSERT_TRUE(1 <= mon && mon <= 12);
     ASSERT_TRUE(0 <= year && year <= 9999);
+    ASSERT_TRUE(0 <= hr && hr <= 23);
+    ASSERT_TRUE(0 <= mn && mn <= 59);
+    ASSERT_TRUE(0 <= sec && sec <= 59);
+    ASSERT_TRUE(0 <= ms && ms <= 999);
     ASSERT_EQ("INFO:", std::string(lev));
-    ASSERT_EQ("instance0[group0]", std::string(ins_grp));
+    ASSERT_EQ("instance0[cluster0]", std::string(ins_grp));
     ASSERT_EQ("[4.0]", std::string(ver));
     ASSERT_EQ("message", std::string(msg));
 }
