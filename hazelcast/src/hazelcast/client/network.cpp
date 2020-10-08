@@ -591,8 +591,8 @@ namespace hazelcast {
                     client.getHazelcastClientImplementation()->on_cluster_restart();
                 }
 
-                activeConnections.put(response.member_uuid, connection);
                 active_connection_ids_.put(connection->getConnectionId(), connection);
+                activeConnections.put(response.member_uuid, connection);
 
                 if (initial_connection) {
                     cluster_id_ = new_cluster_id;
