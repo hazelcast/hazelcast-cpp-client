@@ -5,6 +5,7 @@
 #include <mutex>
 #include <memory>
 
+#include <hazelcast/util/HazelcastDll.h>
 
 #ifndef HZ_LOGGING_DISABLED
     #define HZ_LOG(logger, level, msg) \
@@ -26,7 +27,7 @@ enum class log_level : int {
 
 std::ostream& operator<<(std::ostream&, log_level level);
 
-class logger {
+class HAZELCAST_API logger {
 public:
     virtual ~logger();
 
@@ -34,7 +35,7 @@ public:
     virtual void log(log_level level, const std::string &msg) noexcept = 0;
 };
  
-class default_logger : public logger {
+class HAZELCAST_API default_logger : public logger {
 public:
     default_logger(std::ostream &os, log_level level, 
         std::string instance_name, std::string cluster_name);
@@ -50,6 +51,6 @@ private:
     std::string cluster_name_;
 };
 
-std::shared_ptr<logger> make_default_logger(std::string instance_name, std::string cluster_name);
+std::shared_ptr<logger> HAZELCAST_API make_default_logger(std::string instance_name, std::string cluster_name);
 
 } // namespace hazelcast
