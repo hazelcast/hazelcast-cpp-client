@@ -456,7 +456,7 @@ namespace hazelcast {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("Unable to get alive cluster connection, try in "
                                                      "%1% ms later, attempt %2% of %3%.")
-                                                     % std::max(0LL, remainingTime)
+                                                     % (remainingTime > 0 ? remainingTime : 0)
                                                      % attempt % connectionAttemptLimit)
                         );
 
