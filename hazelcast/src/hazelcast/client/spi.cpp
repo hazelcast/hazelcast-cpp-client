@@ -1377,10 +1377,8 @@ namespace hazelcast {
                         // can assume the invocation is complete because there is a response and no backups need to respond
                         pending_response_ = msg;
 
-                        if (backup_acks_received_ != expected_backups) {
-                            // we are done since not all backups have completed. Therefore we should not notify the future
-                            return;
-                        }
+                        // we are done since not all backups have completed. Therefore we should not notify the future
+                        return;
                     }
 
                     // we are going to notify the future that a response is available; this can happen when:
