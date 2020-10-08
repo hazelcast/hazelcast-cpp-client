@@ -168,6 +168,10 @@ namespace hazelcast {
             return invokeAndGetFuture<bool>(request);
         }
 
+        boost::future<int64_t> atomic_long::get_and_decrement() {
+            return get_and_add(-1);
+        }
+
         boost::future<int64_t> atomic_long::decrement_and_get() {
             return add_and_get(-1);
         }
