@@ -35,7 +35,7 @@ int main() {
 
         // Set to 0 atomically if the current value is 42
         auto result = atomic_counter->compare_and_set(42, 0).get();
-        std::cout << "result: " << value << "\n";
+        std::cout << "result: " << result << "\n";
         // Prints:
         // CAS operation result: 1
     });

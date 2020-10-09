@@ -35,6 +35,7 @@
   * [5.6. Setting Connection Attempt Period](#56-setting-connection-attempt-period)
   * [5.7. Enabling Client TLS/SSL](#57-enabling-client-tlsssl)
   * [5.8. Enabling Hazelcast AWS Cloud Discovery](#58-enabling-hazelcast-aws-cloud-discovery)
+  * [5.9. Configuring Backup Acknowledgment](#59-configuring-backup-acknowledgment)
 * [6. Securing Client Connection](#6-securing-client-connection)
   * [6.1. TLS/SSL](#61-tlsssl)
     * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
@@ -1092,6 +1093,27 @@ clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
 You need to enable the discovery by calling the `setEnabled(true)`. You can set your access key and secret in the configuration as shown in this example. You can filter the instances by setting which tags they have or by the security group setting. You can set the region for which the instances will be retrieved from, the default region is `us-east-1`.
  
 The C++ client works the same way as the Java client. For details, see [AWSClient Configuration] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#awsclient-configuration) and [Hazelcast AWS Plugin] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md). 
+
+## 5.9. Configuring Backup Acknowledgment
+
+When an operation with sync backup is sent by a client to the Hazelcast member(s), the acknowledgment of the operation's backup is sent to the client by the backup replica member(s). This improves the performance of the client operations.
+
+To disable backup acknowledgement, you should use the `backup_acks_enabled` configuration option.
+
+```C++
+    // Disable the default backup ack feature
+    HazelcastClient hz(ClientConfig().backup_acks_enabled(false));
+
+```
+
+Its default value is `true`. This option has no effect for unisocket clients.
+
+You can also fine-tune this feature using entries of the `properties` config option as described below:
+
+- `hazelcast.client.operation.backup.timeout.millis`: Default value is `5000` milliseconds. If an operation has
+backups, this property specifies how long (in milliseconds) the invocation waits for acks from the backup replicas. If acks are not received from some of the backups, there will not be any rollback on the other successful replicas.
+
+- `hazelcast.client.operation.fail.on.indeterminate.state`: Default value is `false`. When it is `true`, if an operation has sync backups and acks are not received from backup replicas in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails. However, even if the invocation fails, there will not be any rollback on other successful replicas.
 
 # 6. Securing Client Connection
 
