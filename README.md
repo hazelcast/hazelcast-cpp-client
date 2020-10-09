@@ -64,7 +64,13 @@
     * [7.4.8. Using Reliable Topic](#748-using-reliable-topic) 
     * [7.4.9. Using PN Counter](#7412-using-pn-counter)
     * [7.4.10. Using Flake ID Generator](#7413-using-flake-id-generator)
-    * [7.4.11. Using Transactions](#7414-using-transactions)
+    * [7.4.11. CP Subsystem](#7411-cp-subsystem)
+      * [7.4.11.1. Using Atomic Long](#74111-using-atomic-long)
+      * [7.4.11.2. Using Lock](#74112-using-lock)
+      * [7.4.11.3. Using counting_semaphore](#74113-using-counting-semaphore)
+      * [7.4.11.4. Using latch](#74114-using-latch)
+      * [7.4.11.5. Using atomic_reference](#74115-using-atomic-reference)
+    * [7.4.12. Using Transactions](#7412-using-transactions)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Cluster Events](#751-cluster-events)
       * [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
@@ -586,6 +592,11 @@ Hazelcast C++ client supports the following data structures and features:
 * Reliable Topic
 * CRDT PN Counter
 * Flake ID Generator
+* fenced_lock (CP Subsystem)
+* counting_semaphore (CP Subsystem)
+* atomic_long (CP Subsystem)
+* atomic_reference (CP Subsystem)
+* latch (CP Subsystem)
 * Event Listeners
 * Distributed Executor Service
 * Entry Processor
@@ -1694,7 +1705,206 @@ A Flake ID Generator usage example is shown below.
     std::cout << "Id : " << generator.newId() << std::endl; // Id : <some unique number>
 ```
 
-### 7.4.11. Using Transactions
+### 7.4.11. CP Subsystem
+
+Hazelcast IMDG 4.0 introduced CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
+
+All data structures within CP Subsystem are available through `HazelcastClient::getCPSubsystem()` API.
+
+Before using CP structures, CP Subsystem has to be enabled on cluster-side. Refer to [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
+
+Data structures in CP Subsystem run in CP groups. Each CP group elects its own Raft leader and runs the Raft consensus algorithm independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit is performed on the METADATA CP group every time you fetch a proxy from this interface. Hence, callers should cache returned proxy objects. Second, if you call `DistributedObject::destroy()` on a CP data structure proxy, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.
+
+#### 7.4.11.1. Using Atomic Long
+
+Hazelcast `atomic_long` is the distributed implementation of atomic 64-bit integer counter. It offers various atomic operations such as `get`, `set`, `get_and_set`, `compare_and_set`, `increment_and_get`. This data structure is a part of CP Subsystem.
+
+An Atomic Long usage example is shown below.
+
+```C++
+    // also present the future continuation capability. you can use sync version as well.
+    // Get current value (returns a int64_t)
+    auto future = atomic_counter->get().then(boost::launch::deferred, [=] (boost::future<int64_t> f) {
+        // Prints:
+        // Value: 0
+        std::cout << "Value: " << f.get() << "\n";
+
+        // Increment by 42
+        auto value = atomic_counter->add_and_get(42).get();
+        std::cout << "New value: " << value << "\n";
+
+        // Set to 0 atomically if the current value is 42
+        auto result = atomic_counter->compare_and_set(42, 0).get();
+        std::cout << "result: " << value << "\n";
+        // Prints:
+        // CAS operation result: 1
+    });
+
+    future.get();
+```
+
+atomic_long implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+
+#### 7.4.11.2. Using fenced_lock
+
+Hazelcast `fenced_lock` is the distributed implementation of a linearizable lock. It offers multiple  operations for acquiring the lock. This data structure is a part of CP Subsystem.
+
+A basic Lock usage example is shown below.
+
+```C++
+    // Get an fenced_lock named 'my-lock'
+    auto lock = hz.get_cp_subsystem().get_lock("my-lock");
+
+    // Acquire the lock
+    lock->lock().get();
+    try {
+        // Your guarded code goes here
+    } catch (...) {
+            // Make sure to release the lock
+            lock->unlock().get();
+    }
+```
+
+fenced_lock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to [CP Session](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-sessions) documentation for more information.
+
+Distributed locks are unfortunately *not equivalent* to single-node mutexes because of the complexities in distributed systems, such as uncertain communication patterns, and independent and partial failures. In an asynchronous network, no lock service can guarantee mutual exclusion, because there is no way to distinguish between a slow and a crashed process. Consider the following scenario, where a Hazelcast client acquires a fenced_lock, then hits a long GC pause. Since it will not be able to commit session heartbeats while paused, its CP session will be eventually closed. After this moment, another Hazelcast client can acquire this lock. If the first client wakes up again, it may not immediately notice that it has lost ownership of the lock. In this case, multiple clients think they hold the lock. If they attempt to perform an operation on a shared resource, they can break the system. To prevent such situations, you can choose to use an infinite session timeout, but this time probably you are going to deal with liveliness issues. For the scenario above, even if the first client actually crashes, requests sent by 2 clients can be re-ordered in the network and hit the external resource in reverse order.
+
+There is a simple solution for this problem. Lock holders are ordered by a monotonic fencing token, which increments each time the lock is assigned to a new owner. This fencing token can be passed to external services or resources to ensure sequential execution of side effects performed by lock holders.
+
+You can read more about the fencing token idea in Martin Kleppmann's "How to do distributed locking" blog post and Google's Chubby paper.
+
+As an alternative approach, you can use the `tryLock()` method of fenced_lock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or `undefined`. It also accepts an optional `timeout` argument which specifies the timeout (in milliseconds resolution) to acquire the lock before giving up.
+
+```C++
+    // Try to acquire the lock
+    auto success = lock->try_lock().get();
+    // Check for valid fencing token
+    if (success) {
+        try {
+            // Your guarded code goes here
+        } catch (...) {
+                // Make sure to release the lock
+                lock->unlock().get();
+        }
+    }
+```
+
+#### 7.4.11.3. Using counting_semaphore
+
+Hazelcast `counting_semaphore` is the distributed implementation of a linearizable and distributed semaphore. It offers multiple operations for acquiring the permits. This data structure is a part of CP Subsystem.
+
+counting_semaphore is a cluster-wide counting semaphore. Conceptually, it maintains a set of permits. Each `acquire()` waits if necessary until a permit is available, and then takes it. Dually, each `release()` adds a permit, potentially releasing a waiting acquirer. However, no actual permit objects are used; the semaphore just keeps a count of the number available and acts accordingly.
+
+A basic counting_semaphore usage example is shown below.
+
+```C++
+    // Get counting_semaphore named 'my-semaphore'
+    auto semaphore = hz.get_cp_subsystem().get_semaphore("my-semaphore");
+    // Try to initialize the semaphore
+    // (does nothing if the semaphore is already initialized)
+    semaphore->init(3).get();
+    // Acquire 3 permits out of 3
+    semaphore->acquire(3).get();
+    // Release 2 permits
+    semaphore->release(2).get();
+    // Check available permits
+    auto available = semaphore->available_permits().get();
+    std::cout << "Available:" << available << "\n";
+    // Prints:
+    // Available: 1
+```
+
+Beware of the increased risk of indefinite postponement when using the multiple-permit acquire. If permits are released one by one, a caller waiting for one permit will acquire it before a caller waiting for multiple permits regardless of the call order. Correct usage of a semaphore is established by programming convention in the application.
+
+As an alternative, potentially safer approach to the multiple-permit acquire, you can use the `try_acquire()` method of counting_semaphore. It tries to acquire the permits in optimistic manner and immediately returns with a `boolean` operation result. It also accepts an optional `timeout` argument which specifies the timeout (in milliseconds resolution) to acquire the permits before giving up.
+
+```C++
+    // Try to acquire 1 permit
+    auto success = semaphore->try_acquire(1).get();
+    // Check for valid fencing token
+    if (success) {
+        try {
+            // Your guarded code goes here
+        } catch (...) {
+            // Make sure to release the permits
+            semaphore->release(1).get();
+        }
+    }
+```
+
+ counting_semaphore data structure has two variations:
+
+ * The default implementation is session-aware. In this one, when a caller makes its very first `acquire()` call, it starts a new CP session with the underlying CP group. Then, liveliness of the caller is tracked via this CP session. When the caller fails, permits acquired by this caller are automatically and safely released. However, the session-aware version comes with a limitation, that is, a Hazelcast client cannot release permits before acquiring them first. In other words, a client can release only the permits it has acquired earlier.
+ * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or a client fails while holding some permits, they will not be automatically released. You can use the sessionless CP counting_semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to [counting_semaphore configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#semaphore-configuration) documentation for more details.
+
+#### 7.4.11.4. Using latch
+
+Hazelcast `latch` is the distributed implementation of a linearizable and distributed countdown latch. This data structure is a cluster-wide synchronization aid that allows one or more callers to wait until a set of operations being performed in other callers completes. This data structure is a part of CP Subsystem.
+
+A basic latch usage example is shown below.
+
+```C++
+    // Get a latch called 'my-latch'
+    auto latch = hz.get_cp_subsystem().get_latch("my-latch'");
+
+    // Try to initialize the latch
+    // (does nothing if the count is not zero)
+    auto initialized = latch->try_set_count(1).get();
+    std::cout << "Initialized:" << initialized << "\n";
+    // Check count
+    auto count = latch->get_count().get();
+    std::cout << "Count:" << count << "\n";
+    // Prints:
+    // Count: 1
+    // Bring the count down to zero after 10ms
+    auto f = std::async([=] () {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        latch->count_down().get();
+    });
+    // Wait up to 1 second for the count to become zero up
+    auto status = latch->wait_for(std::chrono::seconds(1)).get();
+    if (status == std::cv_status::no_timeout) {
+        std::cout << "latch is count down\n";
+    }
+```
+
+> **NOTE: latch count can be reset with `try_set_count()` after a count_down has finished, but not during an active count.**
+
+#### 7.4.11.5. Using atomic_reference
+
+Hazelcast `atomic_reference` is the distributed implementation of a linearizable object reference. It provides a set of atomic operations allowing to modify the value behind the reference. This data structure is a part of CP Subsystem.
+
+A basic atomic_reference usage example is shown below.
+
+```C++
+    // Get an atomic_reference named 'my-ref'
+    auto ref = hz.get_cp_subsystem().get_atomic_reference("my-ref'");
+
+    // Set the value atomically
+    ref->set(42).get();
+    // Read the value
+    auto value = ref->get<int>().get();
+    std::cout << "Value:" << value << "\n";
+    // Prints:
+    // Value: 42
+    // Try to replace the value with 'value'
+    // with a compare-and-set atomic operation
+    auto result = ref->compare_and_set(42, "value").get();
+    std::cout << "CAS result:" << result << "\n";
+    // Prints:
+    // CAS result: 1
+```
+
+The following are some considerations you need to know when you use atomic_reference:
+
+* atomic_reference works based on the byte-content and not on the object-reference. If you use the `compare_and_set()` method, do not change to the original value because its serialized content will then be different.
+* All methods returning an object return a private copy. You can modify the private copy, but the rest of the world is shielded from your changes. If you want these changes to be visible to the rest of the world, you need to write the change back to the atomic_reference; but be careful about introducing a data-race.
+* The 'in-memory format' of an atomic_reference is `binary`. The receiving side does not need to have the class definition available unless it needs to be deserialized on the other side., e.g., because a method like `alter()` is executed. This deserialization is done for every call that needs to have the object instead of the binary content, so be careful with expensive object graphs that need to be deserialized.
+* If you have an object with many fields or an object graph and you only need to calculate some information or need a subset of fields, you can use the `apply()` method. With the `apply()` method, the whole object does not need to be sent over the line; only the information that is relevant is sent.
+
+atomic_reference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+
+### 7.4.12. Using Transactions
 
 Hazelcast C++ client provides transactional operations like beginning transactions, committing transactions and retrieving transactional data structures like the `TransactionalMap`, `TransactionalSet`, `TransactionalList`, `TransactionalQueue` and `TransactionalMultiMap`.
 
