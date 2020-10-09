@@ -46,24 +46,12 @@
     </serialization>
 
     <network>
-        <port auto-increment="true" port-count="100">5701</port>
-        <outbound-ports>
-            <!--
-            Allowed port range when connecting to other nodes.
-            0 or * means use system provided port.
-            -->
-            <ports>0</ports>
-        </outbound-ports>
         <join>
-            <multicast enabled="true">
-                <multicast-group>224.7.7.7</multicast-group>
-                <multicast-port>54327</multicast-port>
+            <multicast enabled="false">
             </multicast>
-            <tcp-ip enabled="false">
-                <interface>127.0.0.1</interface>
+            <tcp-ip enabled="true">
             </tcp-ip>
         </join>
-        <public-address>127.0.0.1</public-address>
         <ssl enabled="true">
           <factory-class-name>
             com.hazelcast.nio.ssl.BasicSSLContextFactory

@@ -661,6 +661,8 @@ namespace hazelcast {
                   statisticsPeriodSeconds(STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT),
                   ioThreadCount(IO_THREAD_COUNT, IO_THREAD_COUNT_DEFAULT),
                   responseExecutorThreadCount(RESPONSE_EXECUTOR_THREAD_COUNT, RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT),
+                  backup_timeout_millis_(OPERATION_BACKUP_TIMEOUT_MILLIS, OPERATION_BACKUP_TIMEOUT_MILLIS_DEFAULT),
+                  fail_on_indeterminate_state_(FAIL_ON_INDETERMINATE_OPERATION_STATE, FAIL_ON_INDETERMINATE_OPERATION_STATE_DEFAULT),
                   propertiesMap(properties) {
         }
 
@@ -748,6 +750,14 @@ namespace hazelcast {
 
         const ClientProperty &ClientProperties::getResponseExecutorThreadCount() const {
             return responseExecutorThreadCount;
+        }
+
+        const ClientProperty &ClientProperties::backup_timeout_millis() const {
+            return backup_timeout_millis_;
+        }
+
+        const ClientProperty &ClientProperties::fail_on_indeterminate_state() const {
+            return fail_on_indeterminate_state_;
         }
 
         namespace exception {
