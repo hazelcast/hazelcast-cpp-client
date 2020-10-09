@@ -2889,26 +2889,23 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 
 ### 7.9.2. Logging Configuration
 
-By default, the Hazelcast logger prints out the INFO level and above logs to the standard output. The following log levels exist:
+Hazelcast C++ client emits log messages to provide information about important events and errors. The log levels in increasing order of severity are: `FINEST`, `INFO`, `WARNING` and `SEVERE`.
 
-* FINEST (DEBUG)
-* INFO
-* WARNING
-* SEVERE (FATAL)
+If no logging configuration is made by the user, the client prints log messages of level `INFO` or above to the standard output. 
 
-The order is in increasing order. Hence, for INFO level configuration the INFO, WARNING and SEVERE logs are written.
+The library provides two classes for customizing the logging behaviour: an abstract base class `hazelcast::logger` that defines the common interface for all Hazelcast loggers and a derived one `hazelcast::default_logger` that implements a basic `std::ostream`-based logger with level filtering support. 
 
-In some applications you may want to use your custom logging statements, you may want to direct the logs to a file instead of standard output, and enable/disable certain log levels. This can be done using the LoggerConfig in the ClientConfig object which is used to configure the client. Each client may have a separate configuration. The customized options needs to be configured using a configuration file. E.g.:
-
+The logging can be configured by setting a factory on the client configuration object:
+```C++
+clientConfig.getLoggerConfig().logger_factory(
+    [](std::string instance_name, std::string cluster_name) -> std::shared_ptr<hazelcast::logger> {
+        return make_shared<my_logger>(/* ... */);
+    }
+);
 ```
-clientConfig.getLoggerConfig().setConfigurationFileName("logger-config.txt");
-```
+`hazelcast::client::HazelcastClient` objects that are provided with the above configuration will call the factory function with their instance and cluster names to get a pointer to an `hazelcast::logger`.
 
-The file name is relative path to the application working directory or should be an absolute path. The configuration file will use the format as supported by the configured logger type. Currently, only the easylogging++ (https://github.com/muflihun/easyloggingpp/tree/v8.91) logger is supported, hence the configuration should be done in accordance with the easylogging++ configuration: https://github.com/muflihun/easyloggingpp/tree/v8.91#configuration-file 
-
-If you provide a non-existent or invalid logger configuration file, the library will fail fast by throwing exception::IllegalStateException with the cause of the problem.
-
-> **IMPORTANT NOTE: If you configured the logger configuration file, then the `ClientConfig::setLogLevel` will not be effective since the levels will be controlled from the configuration file.**
+If you want to redirect logs emitted by the client to your application's log handling mechanism or use a sink other than an `std::ostream`, you can derive from `hazelcast::logger` and return an instance of the derived class in the logger factory. If you simply want logs to be printed to a different `std::ostream` (e.g.: `std::cerr`) or change the filtering level, you can still use `hazelcast::default_logger`. Refer to the examples directory and the API documentation for details.
 
 ## 7.10. Raw Pointer API
 

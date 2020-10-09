@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(setLogLevel ./setLogLevel.cpp)
+add_executable(level_and_ostream ./level_and_ostream.cpp)
 
