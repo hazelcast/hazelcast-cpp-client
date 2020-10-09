@@ -45,7 +45,7 @@ TEST(default_logger_test, test_formatting) {
 
     int day, mon, year, hr, mn, sec, ms;
     char lev[64], tid[64], msg[64], ins_grp[64], ver[64];
-    int read = std::sscanf(os.str().c_str(), "%02d/%02d/%04d %02d.%02d.%02d.%03d %s %s %s %s %s\n", 
+    int read = std::sscanf(os.str().c_str(), "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s\n", 
         &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, msg);
 
     ASSERT_EQ(12, read);

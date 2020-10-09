@@ -17,7 +17,7 @@ std::ostream &timestamp(std::ostream &os) {
     auto tp = std::chrono::system_clock::now();
 
     auto t = std::chrono::system_clock::to_time_t(tp);
-    os << std::put_time(std::localtime(&t), "%d/%m/%Y %H.%M.%S.");
+    os << std::put_time(std::localtime(&t), "%d/%m/%Y %H:%M:%S.");
 
     auto dur = tp.time_since_epoch();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(dur);
