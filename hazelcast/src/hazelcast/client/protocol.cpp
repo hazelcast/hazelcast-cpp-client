@@ -189,8 +189,16 @@ namespace hazelcast {
                 return boost::endian::load_little_u16(&data_buffer[0][FLAGS_FIELD_OFFSET]);
             }
 
+            void ClientMessage::setHeaderFlags(uint16_t new_flags) {
+                return boost::endian::store_little_u16(&data_buffer[0][FLAGS_FIELD_OFFSET], new_flags);
+            }
+
             int64_t ClientMessage::getCorrelationId() const {
                 return boost::endian::load_little_s64(&data_buffer[0][CORRELATION_ID_FIELD_OFFSET]);
+            }
+
+            int8_t ClientMessage::get_number_of_backups() const {
+                return data_buffer[0][RESPONSE_BACKUP_ACKS_FIELD_OFFSET];
             }
 
             int32_t ClientMessage::getPartitionId() const {

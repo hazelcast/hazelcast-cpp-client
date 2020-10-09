@@ -125,6 +125,8 @@ namespace hazelcast {
 
                 void connect_to_all_cluster_members();
 
+                void notify_backup(int64_t call_id);
+
             private:
                 static constexpr size_t EXECUTOR_CORE_POOL_SIZE = 10;
                 static constexpr int32_t DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC = 2;
@@ -187,6 +189,7 @@ namespace hazelcast {
                 spi::impl::ClientExecutionServiceImpl &executionService;
                 std::shared_ptr<AddressTranslator> translator;
                 util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> activeConnections;
+                util::SynchronizedMap<int32_t, Connection> active_connection_ids_;
                 util::sync_associative_container<std::unordered_map<Address, std::unique_ptr<std::mutex>>> conn_locks_;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
@@ -197,7 +200,7 @@ namespace hazelcast {
                 int32_t ioThreadCount;
                 bool shuffleMemberList;
                 std::vector<std::shared_ptr<AddressProvider> > addressProviders;
-                std::atomic<int> connectionIdGen;
+                std::atomic<int32_t> connectionIdGen;
                 std::unique_ptr<boost::asio::ip::tcp::resolver> ioResolver;
                 std::unique_ptr<internal::socket::SocketFactory> socketFactory;
                 HeartbeatManager heartbeat;
