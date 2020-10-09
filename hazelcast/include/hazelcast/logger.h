@@ -25,7 +25,7 @@ enum class log_level : int {
     severe = 100
 };
 
-std::ostream& operator<<(std::ostream&, log_level level);
+std::ostream& HAZELCAST_API operator<<(std::ostream&, log_level level);
 
 class HAZELCAST_API logger {
 public:
