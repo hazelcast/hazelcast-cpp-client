@@ -32,7 +32,6 @@
 
 #include <vector>
 #include <functional>
-#include <easylogging++.h>
 #include <boost/format.hpp>
 
 #include "hazelcast/util/Util.h"
@@ -63,8 +62,6 @@
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
 #endif
-
-INITIALIZE_EASYLOGGINGPP
 
 namespace hazelcast {
     namespace client {

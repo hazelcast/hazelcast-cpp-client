@@ -547,7 +547,7 @@ namespace hazelcast {
                                   client.getClientProperties().getInvocationTimeoutSeconds()))),
                           invocationRetryPause(std::chrono::milliseconds(client.getClientProperties().getLong(
                                   client.getClientProperties().getInvocationRetryPauseMillis()))),
-                          responseThread(invocationLogger, *this, client),
+                          responseThread(logger_, *this, client),
                           smart_routing_(client.getClientConfig().getNetworkConfig().isSmartRouting()),
                           backup_acks_enabled_(smart_routing_ && client.getClientConfig().backup_acks_enabled()),
                           fail_on_indeterminate_operation_state_(client.getClientProperties().getBoolean(client.getClientProperties().fail_on_indeterminate_state())),

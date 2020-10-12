@@ -90,7 +90,6 @@ ENDIF (${IS_BIG_ENDIAN})
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
-set(EXTERNAL_SOURCES "${PROJECT_SOURCE_DIR}/external/src/easylogging++.cc")
 FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/src/*h")
