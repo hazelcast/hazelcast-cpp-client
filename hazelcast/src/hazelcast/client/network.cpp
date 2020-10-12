@@ -390,8 +390,8 @@ namespace hazelcast {
                     } catch (exception::IException &e) {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("Could not connect to any cluster, "
-                                                    "shutting down the client: %1%")
-                                                    % e)
+                                                     "shutting down the client: %1%")
+                                                     % e)
                         );
 
                         shutdownWithExternalThread(client.getHazelcastClientImplementation());

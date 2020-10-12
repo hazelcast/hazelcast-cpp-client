@@ -18,17 +18,13 @@ std::ostream &timestamp(std::ostream &os) {
 
     auto t = std::chrono::system_clock::to_time_t(tp);
     os << std::put_time(std::localtime(&t), "%d/%m/%Y %H:%M:%S.");
-
+    
     auto dur = tp.time_since_epoch();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(dur);
     
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur - sec).count();
 
-    auto old_f = os.fill('0');
-    auto old_w = os.width(3);
-    os << ms;
-    os.fill(old_f);
-    os.width(old_w);
+    os << std::setfill('0') << std::setw(3) << ms;
 
     return os;
 }

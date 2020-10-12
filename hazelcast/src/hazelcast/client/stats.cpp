@@ -136,7 +136,7 @@ namespace hazelcast {
                     } catch (exception::IException &e) {
                         // suppress exception, do not print too many messages
                         HZ_LOG(logger_, finest,
-                            boost::str(boost::format("Could not sent stats %1%") % e)
+                            boost::str(boost::format("Could not send stats %1%") % e)
                         );
                     }
                 }

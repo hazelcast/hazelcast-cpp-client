@@ -34,7 +34,7 @@ HAZELCAST_API std::ostream& operator<<(std::ostream&, log_level level);
 /**
  * Base class for all Hazelcast loggers
  * 
- * The user can inherit from this class to customize the logging behaviour
+ * The user can inherit from this class to customize the logging behavior
  * of the client.
  */
 class HAZELCAST_API logger {
@@ -68,8 +68,8 @@ public:
  * The default logger class
  *
  * This class is used as the default hazelcast::logger implementation. It prints each
- * log message as a line to a given std::ostream. Lines contain timestamp, 
- * severity level, thread id, instance name, cluster name, library version 
+ * log message as a single line into a given std::ostream. Lines contain the 
+ * timestamp, severity level, thread id, instance name, cluster name, library version, 
  * and the message itself.
  */
 class HAZELCAST_API default_logger : public logger {

@@ -238,19 +238,19 @@ namespace hazelcast {
                             HZ_LOG(logger_, finest, 
                                 boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
                                                          "Reason: HazelcastInstance is shutting down")
-                                                        % id % name) 
+                                                         % id % name) 
                             );
                         } else if (protocol::DISTRIBUTED_OBJECT_DESTROYED == err) {
                             HZ_LOG(logger_, finest, 
                                 boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
                                                          "Reason: Topic is destroyed")
-                                                        % id % name) 
+                                                         % id % name) 
                             );
                         } else {
                             HZ_LOG(logger_, warning, 
                                 boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
                                                          "Reason: Unhandled exception, details: %3%")
-                                                        % id % name % ie.what()) 
+                                                         % id % name % ie.what()) 
                             );
                         }
 

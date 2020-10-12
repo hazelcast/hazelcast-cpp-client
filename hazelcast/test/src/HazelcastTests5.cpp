@@ -21,6 +21,7 @@
 #include "serialization/Serializables.h"
 #include <regex>
 #include <vector>
+#include <fstream>
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/ClientConfig.h>
 #include <hazelcast/client/HazelcastClient.h>
@@ -45,7 +46,7 @@
 #include <hazelcast/client/spi/impl/sequence/FailFastCallIdSequence.h>
 #include <string>
 #include <boost/asio.hpp>
-#include <fstream>
+
 
 #ifdef HZ_BUILD_WITH_SSL
 
