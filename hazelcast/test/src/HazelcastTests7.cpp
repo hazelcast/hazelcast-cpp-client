@@ -570,13 +570,15 @@ namespace hazelcast {
                 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(getConfig());
+                    instance2 = new HazelcastServer(*g_srvFactory);
+                    client = new HazelcastClient(getConfig().backup_acks_enabled(false));
                     q = client->getQueue("MyQueue");
                 }
 
                 static void TearDownTestCase() {
                     delete client;
                     delete instance;
+                    delete instance2;
 
                     q = nullptr;
                     client = nullptr;
@@ -584,11 +586,13 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
+                static HazelcastServer *instance2;
                 static HazelcastClient *client;
                 static std::shared_ptr<IQueue> q;
             };
 
             HazelcastServer *ClientQueueTest::instance = nullptr;
+            HazelcastServer *ClientQueueTest::instance2 = nullptr;
             HazelcastClient *ClientQueueTest::client = nullptr;
             std::shared_ptr<IQueue> ClientQueueTest::q;
 

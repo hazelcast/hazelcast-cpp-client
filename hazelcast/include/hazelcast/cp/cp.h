@@ -116,6 +116,13 @@ namespace hazelcast {
             /**
              * Atomically decrements the current value by one.
              *
+             * @return the old value.
+             */
+            boost::future<int64_t> get_and_decrement();
+
+            /**
+             * Atomically decrements the current value by one.
+             *
              * @return the updated value, the current value decremented by one
              */
             boost::future<int64_t> decrement_and_get();

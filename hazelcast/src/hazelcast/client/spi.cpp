@@ -308,6 +308,8 @@ namespace hazelcast {
                     clientContext.getConnectionManager().connect_to_all_cluster_members();
                 }
 
+                clientContext.getInvocationService().add_backup_listener();
+
                 loadBalancer->init(cluster);
 
                 clientContext.getClientstatistics().start();
@@ -545,12 +547,22 @@ namespace hazelcast {
                                   client.getClientProperties().getInvocationTimeoutSeconds()))),
                           invocationRetryPause(std::chrono::milliseconds(client.getClientProperties().getLong(
                                   client.getClientProperties().getInvocationRetryPauseMillis()))),
-                          responseThread(logger_, *this, client),
-                          smart_routing_(client.getClientConfig().getNetworkConfig().isSmartRouting()) {
-                }
+                          responseThread(invocationLogger, *this, client),
+                          smart_routing_(client.getClientConfig().getNetworkConfig().isSmartRouting()),
+                          backup_acks_enabled_(smart_routing_ && client.getClientConfig().backup_acks_enabled()),
+                          fail_on_indeterminate_operation_state_(client.getClientProperties().getBoolean(client.getClientProperties().fail_on_indeterminate_state())),
+                          backup_timeout_(std::chrono::milliseconds(client.getClientProperties().getInteger(client.getClientProperties().backup_timeout_millis()))) {}
 
                 void ClientInvocationServiceImpl::start() {
                     responseThread.start();
+                }
+
+                void ClientInvocationServiceImpl::add_backup_listener() {
+                    if (this->backup_acks_enabled_) {
+                        auto &listener_service = this->client.getClientListenerService();
+                        listener_service.registerListener(std::make_shared<BackupListenerMessageCodec>(),
+                                                          std::make_shared<noop_backup_event_handler>()).get();
+                    }
                 }
 
                 void ClientInvocationServiceImpl::shutdown() {
@@ -583,6 +595,10 @@ namespace hazelcast {
                         BOOST_THROW_EXCEPTION(
                                 exception::HazelcastClientNotActiveException("ClientInvocationServiceImpl::send",
                                                                              "Client is shut down"));
+                    }
+
+                    if (backup_acks_enabled_) {
+                        invocation->getClientMessage()->add_flag(protocol::ClientMessage::BACKUP_AWARE_FLAG);
                     }
 
                     writeToConnection(*connection, invocation);
@@ -972,6 +988,14 @@ namespace hazelcast {
                     return smart_routing_;
                 }
 
+                const std::chrono::milliseconds &ClientInvocationServiceImpl::getBackupTimeout() const {
+                    return backup_timeout_;
+                }
+
+                bool ClientInvocationServiceImpl::fail_on_indeterminate_state() const {
+                    return fail_on_indeterminate_operation_state_;
+                }
+
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const ClientProperties &properties,
                                                                        int32_t poolSize,
@@ -1043,7 +1067,8 @@ namespace hazelcast {
 
                 boost::future<protocol::ClientMessage> ClientInvocation::invoke() {
                     assert (clientMessage.load());
-                    clientMessage.load()->get()->setCorrelationId(callIdSequence->next());
+                    // for back pressure
+                    callIdSequence->next();
                     invokeOnSelection();
                     return invocationPromise.get_future().then(boost::launch::sync,
                                                                [=](boost::future<protocol::ClientMessage> f) {
@@ -1055,7 +1080,8 @@ namespace hazelcast {
                 boost::future<protocol::ClientMessage> ClientInvocation::invokeUrgent() {
                     assert(clientMessage.load());
                     urgent_ = true;
-                    clientMessage.load()->get()->setCorrelationId(callIdSequence->forceNext());
+                    // for back pressure
+                    callIdSequence->forceNext();
                     invokeOnSelection();
                     return invocationPromise.get_future().then(boost::launch::sync,
                                                                [=](boost::future<protocol::ClientMessage> f) {
@@ -1139,7 +1165,7 @@ namespace hazelcast {
                         invocationPromise.set_exception(std::move(exceptionPtr));
                     } catch (boost::promise_already_satisfied &se) {
                         if (!eventHandler) {
-                            HZ_LOG(logger_, warning,
+                            HZ_LOG(logger_, finest,
                                 boost::str(boost::format("Failed to set the exception for invocation. "
                                                          "%1%, %2% Exception to be set: %3%")
                                                          % se.what() % *this % e)
@@ -1149,6 +1175,7 @@ namespace hazelcast {
                 }
 
                 void ClientInvocation::notifyException(std::exception_ptr exception) {
+                    erase_invocation();
                     try {
                         std::rethrow_exception(exception);
                     } catch (exception::IException &iex) {
@@ -1205,6 +1232,18 @@ namespace hazelcast {
                         }
                     } catch (...) {
                         assert(false);
+                    }
+                }
+
+                void ClientInvocation::erase_invocation() const {
+                    if (!this->eventHandler) {
+                        auto sent_connection = getSendConnection();
+                        if (sent_connection) {
+                            auto this_invocation = shared_from_this();
+                            boost::asio::post(sent_connection->getSocket().get_executor(), [=] () {
+                                sent_connection->invocations.erase(this_invocation->getClientMessage()->getCorrelationId());
+                            });
+                        }
                     }
                 }
 
@@ -1329,9 +1368,37 @@ namespace hazelcast {
                     if (!msg) {
                         BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("response can't be null"));
                     }
+
+                    int8_t expected_backups = msg->get_number_of_backups();
+
+                    // if a regular response comes and there are backups, we need to wait for the backups
+                    // when the backups complete, the response will be send by the last backup or backup-timeout-handle mechanism kicks on
+                    if (expected_backups > backup_acks_received_) {
+                        // so the invocation has backups and since not all backups have completed, we need to wait
+                        // (it could be that backups arrive earlier than the response)
+
+                        pending_response_received_time_ = std::chrono::steady_clock::now();
+
+                        backup_acks_expected_ = expected_backups;
+
+                        // it is very important that the response is set after the backupsAcksExpected is set, else the system
+                        // can assume the invocation is complete because there is a response and no backups need to respond
+                        pending_response_ = msg;
+
+                        // we are done since not all backups have completed. Therefore we should not notify the future
+                        return;
+                    }
+
+                    // we are going to notify the future that a response is available; this can happen when:
+                    // - we had a regular operation (so no backups we need to wait for) that completed
+                    // - we had a backup-aware operation that has completed, but also all its backups have completed
+                    complete(msg);
+                }
+
+                void ClientInvocation::complete(const std::shared_ptr<protocol::ClientMessage> &msg) {
                     try {
                         // TODO: move msg content here?
-                        invocationPromise.set_value(*msg);
+                        this->invocationPromise.set_value(*msg);
                     } catch (std::exception &e) {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("Failed to set the response for invocation. "
@@ -1339,6 +1406,7 @@ namespace hazelcast {
                                                      % e.what() % *this % *msg)
                         );
                     }
+                    this->erase_invocation();
                 }
 
                 std::shared_ptr<protocol::ClientMessage> ClientInvocation::getClientMessage() const {
@@ -1399,6 +1467,60 @@ namespace hazelcast {
                                                  "exception : %3%")
                                                  % *this % invokeCount.load() % e)
                     );
+                }
+
+                void ClientInvocation::notify_backup() {
+                    ++backup_acks_received_;
+
+                    if (!pending_response_) {
+                        // no pendingResponse has been set, so we are done since the invocation on the primary needs to complete first
+                        return;
+                    }
+
+                    // if a pendingResponse is set, then the backupsAcksExpected has been set (so we can now safely read backupsAcksExpected)
+                    if (backup_acks_expected_ != backup_acks_received_) {
+                        // we managed to complete a backup, but we were not the one completing the last backup, so we are done
+                        return;
+                    }
+
+                    // we are the lucky one since we just managed to complete the last backup for this invocation and since the
+                    // pendingResponse is set, we can set it on the future
+                    complete_with_pending_response();
+                }
+
+                void
+                ClientInvocation::detect_and_handle_backup_timeout(const std::chrono::milliseconds &backupTimeout) {
+                    // if the backups have completed, we are done; this also filters out all non backup-aware operations
+                    // since the backupsAcksExpected will always be equal to the backupsAcksReceived
+                    if (backup_acks_expected_ == backup_acks_received_) {
+                        return;
+                    }
+
+                    // if no response has yet been received, we we are done; we are only going to re-invoke an operation
+                    // if the response of the primary has been received, but the backups have not replied
+                    if (!pending_response_) {
+                        return;
+                    }
+
+                    // if this has not yet expired (so has not been in the system for a too long period) we ignore it
+                    if (pending_response_received_time_ + backupTimeout >= std::chrono::steady_clock::now()) {
+                        return;
+                    }
+
+                    if (invocationService.fail_on_indeterminate_state()) {
+                        auto exception = boost::enable_current_exception((exception::ExceptionBuilder<exception::IndeterminateOperationStateException>(
+                                "ClientInvocation::detect_and_handle_backup_timeout") << *this
+                                                                                      << " failed because backup acks missed.").build());
+                        notifyException(std::make_exception_ptr(exception));
+                        return;
+                    }
+
+                    // the backups have not yet completed, but we are going to release the future anyway if a pendingResponse has been set
+                    complete_with_pending_response();
+                }
+
+                void ClientInvocation::complete_with_pending_response() {
+                    complete(pending_response_);
                 }
 
                 ClientContext &impl::ClientTransactionManagerServiceImpl::getClient() const {
@@ -2175,6 +2297,21 @@ namespace hazelcast {
                                                                    view_listener_(viewListener) {}
                 }
 
+                protocol::ClientMessage
+                ClientInvocationServiceImpl::BackupListenerMessageCodec::encodeAddRequest(bool localOnly) const {
+                    return protocol::codec::client_localbackuplistener_encode();
+                }
+
+                protocol::ClientMessage ClientInvocationServiceImpl::BackupListenerMessageCodec::encodeRemoveRequest(
+                        boost::uuids::uuid realRegistrationId) const {
+                    assert(0);
+                    return protocol::ClientMessage(0);
+                }
+
+                void ClientInvocationServiceImpl::noop_backup_event_handler::handle_backup(
+                        int64_t sourceInvocationCorrelationId) {
+                    assert(0);
+                }
             }
         }
     }

@@ -97,6 +97,10 @@ namespace hazelcast {
 
             const ClientProperty &getResponseExecutorThreadCount() const;
 
+            const ClientProperty &backup_timeout_millis() const;
+
+            const ClientProperty &fail_on_indeterminate_state() const;
+
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
             * passing between client and member within the given time via this property in milliseconds the connection
@@ -246,6 +250,22 @@ namespace hazelcast {
             static const std::string RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT;
 
             /**
+             * If an operation has backups, this property specifies how long the invocation will wait for acks from the backup replicas.
+             * If acks are not received from some backups, there will not be any rollback on other successful replicas.
+             */
+            static constexpr const char * OPERATION_BACKUP_TIMEOUT_MILLIS = "hazelcast.client.operation.backup.timeout.millis";
+            static constexpr const char * OPERATION_BACKUP_TIMEOUT_MILLIS_DEFAULT = "5000";
+
+            /**
+             * When this configuration is enabled, if an operation has sync backups and acks are not received from backup replicas
+             * in time, or the member which owns primary replica of the target partition leaves the cluster, then the invocation fails
+             * with \IndeterminateOperationStateException. However, even if the invocation fails,
+             * there will not be any rollback on other successful replicas.
+             */
+            static constexpr const char * FAIL_ON_INDETERMINATE_OPERATION_STATE = "hazelcast.client.operation.fail.on.indeterminate.state";
+            static constexpr const char * FAIL_ON_INDETERMINATE_OPERATION_STATE_DEFAULT = "false";
+
+            /**
              * Returns the configured boolean value of a {@link ClientProperty}.
              *
              * @param property the {@link ClientProperty} to get the value from
@@ -295,6 +315,8 @@ namespace hazelcast {
             ClientProperty statisticsPeriodSeconds;
             ClientProperty ioThreadCount;
             ClientProperty responseExecutorThreadCount;
+            ClientProperty backup_timeout_millis_;
+            ClientProperty fail_on_indeterminate_state_;
 
             std::unordered_map<std::string, std::string> propertiesMap;
         };

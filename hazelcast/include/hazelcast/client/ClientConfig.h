@@ -466,6 +466,25 @@ namespace hazelcast {
 
             ClientConfig &addLabel(const std::string &label);
 
+            /**
+             * This feature reduces number of hops and increase performance for smart clients.
+             * It is enabled by default for smart clients.
+             * This config has no effect for unisocket clients.
+             *
+             * @param enabled enables client to get backup acknowledgements directly from the member
+             *                that backups are applied
+             * @return configured \ClientConfig for chaining
+             */
+            ClientConfig &backup_acks_enabled(bool enabled);
+
+            /**
+             * Note that backup acks to client can be enabled only for smart client.
+             * This config has no effect for unisocket clients.
+             *
+             * @return true if backup acknowledgements comes to client
+             */
+            bool backup_acks_enabled();
+
         private:
             std::string cluster_name_;
 
@@ -511,6 +530,8 @@ namespace hazelcast {
             config::LoggerConfig loggerConfig;
 
             std::unordered_set<std::string> labels_;
+
+            bool backup_acks_enabled_ = true;
         };
 
     }

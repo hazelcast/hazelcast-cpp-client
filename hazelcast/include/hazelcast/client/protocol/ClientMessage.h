@@ -696,6 +696,11 @@ namespace hazelcast {
 
                 void setCorrelationId(int64_t id);
 
+                /**
+                 * @return the number of acks will be send for a request
+                 */
+                int8_t get_number_of_backups() const;
+
                 void setPartitionId(int32_t partitionId);
 
                 template<typename T>
@@ -850,6 +855,12 @@ namespace hazelcast {
                 int32_t getMessageType() const;
 
                 uint16_t getHeaderFlags() const;
+
+                void setHeaderFlags(uint16_t new_flags);
+
+                void inline add_flag(uint16_t flag) {
+                    setHeaderFlags(getHeaderFlags() | flag);
+                }
 
                 int64_t getCorrelationId() const;
 

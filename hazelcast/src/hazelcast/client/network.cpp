@@ -189,6 +189,7 @@ namespace hazelcast {
 
                 connectionListeners.clear();
                 activeConnections.clear();
+                active_connection_ids_.clear();
             }
 
             std::shared_ptr<Connection>
@@ -536,6 +537,8 @@ namespace hazelcast {
 
                 auto conn = connection.shared_from_this();
                 if (activeConnections.remove(member_uuid, conn)) {
+                    active_connection_ids_.remove(conn->getConnectionId());
+
                     HZ_LOG(logger_, info, 
                         boost::str(boost::format("Removed connection to endpoint: %1%, connection: %2%")
                                                  % *endpoint % connection)
@@ -616,6 +619,7 @@ namespace hazelcast {
                     client.getHazelcastClientImplementation()->on_cluster_restart();
                 }
 
+                active_connection_ids_.put(connection->getConnectionId(), connection);
                 activeConnections.put(response.member_uuid, connection);
 
                 if (initial_connection) {
@@ -731,6 +735,29 @@ namespace hazelcast {
                 }
             }
 
+            void ClientConnectionManagerImpl::notify_backup(int64_t call_id) {
+                struct correlation_id {
+                    int32_t connnection_id;
+                    int32_t call_id;
+                };
+                union {
+                    int64_t id;
+                    correlation_id composed_id;
+                } c_id_union;
+                c_id_union.id = call_id;
+                auto connection_id = c_id_union.composed_id.connnection_id;
+                auto connection = active_connection_ids_.get(connection_id);
+                if (!connection) {
+                    return;
+                }
+                boost::asio::post(connection->getSocket().get_executor(), [=] () {
+                    auto invocation_it = connection->invocations.find(call_id);
+                    if (invocation_it != connection->invocations.end()) {
+                        invocation_it->second->notify_backup();
+                    }
+                });
+            }
+
             ReadHandler::ReadHandler(Connection &connection, size_t bufferSize)
                     : buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize), builder(connection),
                       lastReadTimeDuration(std::chrono::steady_clock::now().time_since_epoch()) {
@@ -782,6 +809,25 @@ namespace hazelcast {
 
             void Connection::connect() {
                 socket->connect(shared_from_this());
+                backup_timer_.reset(new boost::asio::steady_timer(socket->get_executor()));
+                auto backupTimeout = static_cast<spi::impl::ClientInvocationServiceImpl &>(invocationService).getBackupTimeout();
+                auto this_connection = shared_from_this();
+                schedule_periodic_backup_cleanup(backupTimeout, this_connection);
+            }
+
+            void Connection::schedule_periodic_backup_cleanup(std::chrono::milliseconds backupTimeout,
+                                                              std::shared_ptr<Connection> this_connection) {
+                backup_timer_->expires_from_now(backupTimeout);
+                backup_timer_->async_wait([=] (boost::system::error_code ec) {
+                    if (ec) {
+                        return;
+                    }
+                    for (const auto &it : this_connection->invocations) {
+                        it.second->detect_and_handle_backup_timeout(backupTimeout);
+                    }
+
+                    schedule_periodic_backup_cleanup(backupTimeout, this_connection);
+                });
             }
 
             void Connection::close() {
@@ -799,6 +845,11 @@ namespace hazelcast {
                 }
 
                 closedTimeDuration.store(std::chrono::steady_clock::now().time_since_epoch());
+
+                if (backup_timer_) {
+                    boost::system::error_code ignored;
+                    backup_timer_->cancel(ignored);
+                }
 
                 closeCause = cause;
                 closeReason = reason;
@@ -818,7 +869,7 @@ namespace hazelcast {
 
                 auto thisConnection = shared_from_this();
                 boost::asio::post(socket->get_executor(), [=]() {
-                    for (auto &invocationEntry : invocations) {
+                    for (auto &invocationEntry : thisConnection->invocations) {
                         invocationEntry.second->notifyException(std::make_exception_ptr(boost::enable_current_exception(
                                 exception::TargetDisconnectedException("Connection::close",
                                                                        thisConnection->getCloseReason()))));
@@ -850,18 +901,19 @@ namespace hazelcast {
                     return;
                 }
                 auto invocation = invocationIterator->second;
-                if (!invocation->getEventHandler()) {
-                    // erase only for non-event messages
-                    invocations.erase(invocationIterator);
-                }
-                if (message->is_flag_set(message->getHeaderFlags(), protocol::ClientMessage::IS_EVENT_FLAG)) {
+                auto flags = message->getHeaderFlags();
+                if (message->is_flag_set(flags, protocol::ClientMessage::BACKUP_EVENT_FLAG)) {
+                    message->rd_ptr(protocol::ClientMessage::EVENT_HEADER_LEN);
+                    correlationId = message->get<int64_t>();
+                    clientContext.getConnectionManager().notify_backup(correlationId);
+                } else if (message->is_flag_set(flags, protocol::ClientMessage::IS_EVENT_FLAG)) {
                     clientContext.getClientListenerService().handleClientMessage(invocation, message);
                 } else {
                     invocationService.handleClientMessage(invocation, message);
                 }
             }
 
-            int Connection::getConnectionId() const {
+            int32_t Connection::getConnectionId() const {
                 return connectionId;
             }
 

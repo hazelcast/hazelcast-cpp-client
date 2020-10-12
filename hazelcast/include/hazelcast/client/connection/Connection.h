@@ -64,7 +64,7 @@ namespace hazelcast {
 
             class HAZELCAST_API Connection : public util::Closeable, public std::enable_shared_from_this<Connection> {
             public:
-                Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
+                Connection(const Address &address, spi::ClientContext &clientContext, int32_t connectionId,
                            internal::socket::SocketFactory &socketFactory,
                            ClientConnectionManagerImpl &clientConnectionManager,
                            std::chrono::steady_clock::duration &connectTimeoutInMillis);
@@ -131,7 +131,7 @@ namespace hazelcast {
                 spi::ClientContext &clientContext;
                 protocol::IMessageHandler &invocationService;
                 std::unique_ptr<Socket> socket;
-                int connectionId;
+                int32_t connectionId;
                 std::string closeReason;
                 std::exception_ptr closeCause;
                 std::string connectedServerVersionString;
@@ -140,6 +140,10 @@ namespace hazelcast {
                 boost::uuids::uuid remote_uuid_;
                 logger &logger_;
                 std::atomic_bool alive;
+                std::unique_ptr<boost::asio::steady_timer> backup_timer_;
+
+                void schedule_periodic_backup_cleanup(std::chrono::milliseconds backupTimeout,
+                                                      std::shared_ptr<Connection> this_connection);
             };
         }
     }
