@@ -74,7 +74,7 @@ namespace hazelcast {
                 std::string name_;
             };
 
-            class username_password_credentials : public credentials {
+            class HAZELCAST_API username_password_credentials : public credentials {
             public:
                 username_password_credentials(const std::string &name, const std::string &password);
 
@@ -86,7 +86,7 @@ namespace hazelcast {
                 std::string password_;
             };
 
-            class token_credentials : public credentials {
+            class HAZELCAST_API token_credentials : public credentials {
             public:
                 token_credentials(const std::vector<byte> &token);
 
