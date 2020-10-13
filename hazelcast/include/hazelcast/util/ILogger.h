@@ -38,7 +38,7 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API ILogger : public std::enable_shared_from_this<ILogger> {
         public:
-            ILogger(const std::string &instanceName, const std::string &groupName, const std::string &version,
+            ILogger(const std::string &instanceName, const std::string &clusterName, const std::string &version,
                     const client::config::LoggerConfig &loggerConfig);
 
             ~ILogger();
@@ -83,7 +83,6 @@ namespace hazelcast {
 
         private:
             const std::string instanceName;
-            const std::string groupName;
             const std::string version;
             std::string prefix;
             el::Logger *easyLogger;

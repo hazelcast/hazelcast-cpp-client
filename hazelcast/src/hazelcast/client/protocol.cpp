@@ -108,6 +108,11 @@ namespace hazelcast {
             }
 
             template<>
+            void ClientMessage::set(const std::vector<byte> &values, bool is_final) {
+                set_primitive_vector(values, is_final);
+            }
+
+            template<>
             void ClientMessage::set(const std::vector<int32_t> &values, bool is_final) {
                 set_primitive_vector(values, is_final);
             }

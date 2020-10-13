@@ -21,7 +21,6 @@
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/EntryView.h"
-#include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/IList.h"

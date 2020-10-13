@@ -76,7 +76,7 @@ namespace hazelcast {
                       client(client),
                       socketInterceptor(client.getClientConfig().getSocketInterceptor()),
                       executionService(client.getClientExecutionService()),
-                      translator(addressTranslator), current_credentials_(nullptr), connectionIdGen(0),
+                      translator(addressTranslator), connectionIdGen(0),
                       heartbeat(client, *this), partition_count_(-1),
                       async_start_(client.getClientConfig().getConnectionStrategyConfig().isAsyncStart()),
                       reconnect_mode_(client.getClientConfig().getConnectionStrategyConfig().getReconnectMode()),
@@ -296,33 +296,30 @@ namespace hazelcast {
             protocol::ClientMessage
             ClientConnectionManagerImpl::encodeAuthenticationRequest(serialization::pimpl::SerializationService &ss) {
                 byte serializationVersion = ss.getVersion();
-                auto cluster_name = client.getClientConfig().getClusterName();
+                ClientConfig &clientConfig = client.getClientConfig();
+                auto cluster_name = clientConfig.getClusterName();
 
-                auto credential = current_credentials_.load();
+                auto credential = clientConfig.getCredentials();
                 if (!credential) {
-                    GroupConfig &groupConfig = client.getClientConfig().getGroupConfig();
-                    credential = boost::make_shared<security::username_password_credentials>(groupConfig.getName(),
-                                                                                             groupConfig.getPassword());
-                    current_credentials_.store(
-                            boost::static_pointer_cast<security::credentials>(credential));
+                    return protocol::codec::client_authentication_encode(cluster_name, nullptr, nullptr,
+                                                                         client_uuid_, protocol::ClientTypes::CPP,
+                                                                         serializationVersion, HAZELCAST_VERSION,
+                                                                         client.getName(), labels_);
                 }
 
-                switch(credential->get_type()) {
-                    case security::credentials::type::username_password:
+                switch(credential->type()) {
+                    case security::credentials::credential_type::username_password:
                     {
-                        auto cr = boost::static_pointer_cast<security::username_password_credentials>(credential);
-                        const std::string *username = cr->get_name().empty() ? nullptr : &cr->get_name();
-                        const std::string *password = cr->get_password().empty() ? nullptr : &cr->get_password();
-                        return protocol::codec::client_authentication_encode(cluster_name, username, password,
+                        auto cr = std::static_pointer_cast<security::username_password_credentials>(credential);
+                        return protocol::codec::client_authentication_encode(cluster_name, &cr->name(), &cr->password(),
                                                                              client_uuid_, protocol::ClientTypes::CPP,
                                                                              serializationVersion, HAZELCAST_VERSION,
                                                                              client.getName(), labels_);
                     }
-                    case security::credentials::type::secret:
-                    case security::credentials::token:
+                    case security::credentials::credential_type::token:
                     {
-                        auto cr = boost::static_pointer_cast<security::token_credentials>(credential);
-                        return protocol::codec::client_authenticationcustom_encode(cluster_name, cr->get_secret(),
+                        auto cr = std::static_pointer_cast<security::token_credentials>(credential);
+                        return protocol::codec::client_authenticationcustom_encode(cluster_name, cr->token(),
                                                                                    client_uuid_, protocol::ClientTypes::CPP,
                                                                                    serializationVersion, HAZELCAST_VERSION,
                                                                                    client.getName(), labels_);
@@ -681,10 +678,6 @@ namespace hazelcast {
                             exception::IOException("ClientConnectionManagerImpl::check_invocation_allowed",
                                                    "No connection found to cluster."));
                 }
-            }
-
-            boost::shared_ptr<security::credentials> ClientConnectionManagerImpl::getCurrentCredentials() const {
-                return current_credentials_.load();
             }
 
             void ClientConnectionManagerImpl::connect_to_all_cluster_members() {

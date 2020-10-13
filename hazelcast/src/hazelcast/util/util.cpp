@@ -274,11 +274,11 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        ILogger::ILogger(const std::string &instanceName, const std::string &groupName, const std::string &version,
+        ILogger::ILogger(const std::string &instanceName, const std::string &clusterName, const std::string &version,
                          const client::config::LoggerConfig &loggerConfig)
-                : instanceName(instanceName), groupName(groupName), version(version), loggerConfig(loggerConfig) {
+                : instanceName(instanceName), version(version), loggerConfig(loggerConfig) {
             std::stringstream out;
-            out << instanceName << "[" << groupName << "] [" << HAZELCAST_VERSION << "]";
+            out << instanceName << "[" << clusterName << "] [" << HAZELCAST_VERSION << "]";
             prefix = out.str();
 
             easyLogger = el::Loggers::getLogger(instanceName);
