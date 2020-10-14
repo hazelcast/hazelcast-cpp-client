@@ -1157,9 +1157,6 @@ namespace hazelcast {
 
                     f();
 
-                    // populate near cache
-                    map->get<std::string, std::string>("key1").get();
-
                     // if near cache is enabled
                     if (nearCacheStatsImpl) {
                         ASSERT_TRUE_EVENTUALLY(

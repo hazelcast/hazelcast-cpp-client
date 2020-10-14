@@ -99,9 +99,19 @@ namespace hazelcast {
                     ASSERT_EQ(0, cp_structure_->get().get());
                 }
 
+                TEST_F(basic_atomic_long_test, test_get_and_decrement) {
+                    ASSERT_EQ(0, cp_structure_->get_and_decrement().get());
+                    ASSERT_EQ(-1, cp_structure_->get_and_decrement().get());
+                }
+
                 TEST_F(basic_atomic_long_test, test_decrement_and_get) {
                     ASSERT_EQ(-1, cp_structure_->decrement_and_get().get());
                     ASSERT_EQ(-2, cp_structure_->decrement_and_get().get());
+                }
+
+                TEST_F(basic_atomic_long_test, test_get_and_increment) {
+                    ASSERT_EQ(0, cp_structure_->get_and_increment().get());
+                    ASSERT_EQ(1, cp_structure_->get_and_increment().get());
                 }
 
                 TEST_F(basic_atomic_long_test, test_increment_and_get) {

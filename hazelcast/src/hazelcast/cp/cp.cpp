@@ -168,6 +168,10 @@ namespace hazelcast {
             return invokeAndGetFuture<bool>(request);
         }
 
+        boost::future<int64_t> atomic_long::get_and_decrement() {
+            return get_and_add(-1);
+        }
+
         boost::future<int64_t> atomic_long::decrement_and_get() {
             return add_and_get(-1);
         }
@@ -375,6 +379,9 @@ namespace hazelcast {
                         release_session(session_id);
                         BOOST_THROW_EXCEPTION(exception::LockAcquireLimitReachedException(
                                                       "fenced_lock::lock_and_get_fence", (boost::format("Lock [%1%] not acquired because the lock call on the CP group is cancelled, possibly because of another indeterminate call from the same thread.") %object_name_).str()));
+                    } catch (...) {
+                        release_session(session_id);
+                        throw;
                     }
                 });
             };
@@ -508,6 +515,9 @@ namespace hazelcast {
                     } catch(exception::WaitKeyCancelledException &) {
                         release_session(session_id);
                         return std::make_pair(INVALID_FENCE, false);
+                    } catch (...) {
+                        release_session(session_id);
+                        throw;
                     }
                 });
             };
