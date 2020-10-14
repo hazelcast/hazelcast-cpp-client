@@ -1108,7 +1108,7 @@ If you want to enable authentication, then the client can be configured in one o
 
 ## 5.9.1. Username Password Authentication
 
-The following is an examplecsonfiguration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
+The following is an example configuration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
 
 ```C++
     HazelcastClient hz(ClientConfig().setCredentials(
