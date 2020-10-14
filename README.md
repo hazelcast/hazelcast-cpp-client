@@ -66,8 +66,8 @@
     * [7.4.9. Using PN Counter](#7412-using-pn-counter)
     * [7.4.10. Using Flake ID Generator](#7413-using-flake-id-generator)
     * [7.4.11. CP Subsystem](#7411-cp-subsystem)
-      * [7.4.11.1. Using Atomic Long](#74111-using-atomic-long)
-      * [7.4.11.2. Using Lock](#74112-using-lock)
+      * [7.4.11.1. Using atomic_long](#74111-using-atomic-long)
+      * [7.4.11.2. Using fenced_lock](#74112-using-fenced-lock)
       * [7.4.11.3. Using counting_semaphore](#74113-using-counting-semaphore)
       * [7.4.11.4. Using latch](#74114-using-latch)
       * [7.4.11.5. Using atomic_reference](#74115-using-atomic-reference)
@@ -1074,7 +1074,7 @@ Its default value is `3000` milliseconds.
 ## 5.7. Enabling Client TLS/SSL
 
 You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
-for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#61-tlsssl).
+for the client-cluster connection, you should set an SSL configuration. Please see the [TLS/SSL section](#61-tlsssl).
 
 As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast C++ clients have certificate authorities used to define which members they can trust. 
 
@@ -1729,15 +1729,15 @@ A Flake ID Generator usage example is shown below.
 
 ### 7.4.11. CP Subsystem
 
-Hazelcast IMDG 4.0 introduced CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency to availability during network partitions and client or server failures.
+Hazelcast IMDG 4.0 introduced CP concurrency primitives with respect to the [CAP principle](http://awoc.wolski.fi/dlib/big-data/Brewer_podc_keynote_2000.pdf), i.e., they always maintain [linearizability](https://aphyr.com/posts/313-strong-consistency-models) and prefer consistency over availability during network partitions and client or server failures.
 
-All data structures within CP Subsystem are available through `HazelcastClient::getCPSubsystem()` API.
+All data structures within CP Subsystem are available through the `HazelcastClient::getCPSubsystem()` API.
 
-Before using CP structures, CP Subsystem has to be enabled on cluster-side. Refer to [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
+Before using the CP structures, CP Subsystem has to be enabled on the cluster-side. Refer to the [CP Subsystem](https://docs.hazelcast.org/docs/latest/manual/html-single/#cp-subsystem) documentation for more information.
 
-Data structures in CP Subsystem run in CP groups. Each CP group elects its own Raft leader and runs the Raft consensus algorithm independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit is performed on the METADATA CP group every time you fetch a proxy from this interface. Hence, callers should cache returned proxy objects. Second, if you call `DistributedObject::destroy()` on a CP data structure proxy, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.
+Data structures in CP Subsystem run in CP groups. Each CP group elects its own Raft leader and runs the Raft consensus algorithm independently. The CP data structures differ from the other Hazelcast data structures in two aspects. First, an internal commit is performed on the METADATA CP group every time you fetch a proxy from this interface. Hence, callers should cache the returned proxy objects. Second, if you call `DistributedObject::destroy()` on a CP data structure proxy, that data structure is terminated on the underlying CP group and cannot be reinitialized until the CP group is force-destroyed. For this reason, please make sure that you are completely done with a CP data structure before destroying its proxy.
 
-#### 7.4.11.1. Using Atomic Long
+#### 7.4.11.1. Using atomic_long
 
 Hazelcast `atomic_long` is the distributed implementation of atomic 64-bit integer counter. It offers various atomic operations such as `get`, `set`, `get_and_set`, `compare_and_set`, `increment_and_get`. This data structure is a part of CP Subsystem.
 
@@ -1765,7 +1765,7 @@ An Atomic Long usage example is shown below.
     future.get();
 ```
 
-atomic_long implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+atomic_long implementation does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see the [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
 #### 7.4.11.2. Using fenced_lock
 
@@ -1787,11 +1787,11 @@ A basic Lock usage example is shown below.
     }
 ```
 
-fenced_lock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to [CP Session](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-sessions) documentation for more information.
+fenced_lock works on top of CP sessions. It keeps a CP session open while the lock is acquired. Please refer to the [CP Session](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-sessions) documentation for more information.
 
 Distributed locks are unfortunately *not equivalent* to single-node mutexes because of the complexities in distributed systems, such as uncertain communication patterns, and independent and partial failures. In an asynchronous network, no lock service can guarantee mutual exclusion, because there is no way to distinguish between a slow and a crashed process. Consider the following scenario, where a Hazelcast client acquires a fenced_lock, then hits a long GC pause. Since it will not be able to commit session heartbeats while paused, its CP session will be eventually closed. After this moment, another Hazelcast client can acquire this lock. If the first client wakes up again, it may not immediately notice that it has lost ownership of the lock. In this case, multiple clients think they hold the lock. If they attempt to perform an operation on a shared resource, they can break the system. To prevent such situations, you can choose to use an infinite session timeout, but this time probably you are going to deal with liveliness issues. For the scenario above, even if the first client actually crashes, requests sent by 2 clients can be re-ordered in the network and hit the external resource in reverse order.
 
-There is a simple solution for this problem. Lock holders are ordered by a monotonic fencing token, which increments each time the lock is assigned to a new owner. This fencing token can be passed to external services or resources to ensure sequential execution of side effects performed by lock holders.
+There is a simple solution for this problem. Lock holders are ordered by a monotonic fencing token, which increments each time the lock is assigned to a new owner. This fencing token can be passed to external services or resources to ensure sequential execution of the side effects performed by the lock holders.
 
 You can read more about the fencing token idea in Martin Kleppmann's "How to do distributed locking" blog post and Google's Chubby paper.
 
@@ -1857,7 +1857,7 @@ As an alternative, potentially safer approach to the multiple-permit acquire, yo
  counting_semaphore data structure has two variations:
 
  * The default implementation is session-aware. In this one, when a caller makes its very first `acquire()` call, it starts a new CP session with the underlying CP group. Then, liveliness of the caller is tracked via this CP session. When the caller fails, permits acquired by this caller are automatically and safely released. However, the session-aware version comes with a limitation, that is, a Hazelcast client cannot release permits before acquiring them first. In other words, a client can release only the permits it has acquired earlier.
- * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or a client fails while holding some permits, they will not be automatically released. You can use the sessionless CP counting_semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to [counting_semaphore configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#semaphore-configuration) documentation for more details.
+ * The second implementation is sessionless. This one does not perform auto-cleanup of acquired permits on failures. Acquired permits are not bound to callers and permits can be released without acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast server or client fails while holding some permits, they will not be automatically released. You can use the sessionless CP counting_semaphore implementation by enabling JDK compatibility `jdk-compatible` server-side setting. Refer to the [counting_semaphore configuration](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#semaphore-configuration) documentation for more details.
 
 #### 7.4.11.4. Using latch
 
@@ -1922,9 +1922,9 @@ The following are some considerations you need to know when you use atomic_refer
 * atomic_reference works based on the byte-content and not on the object-reference. If you use the `compare_and_set()` method, do not change to the original value because its serialized content will then be different.
 * All methods returning an object return a private copy. You can modify the private copy, but the rest of the world is shielded from your changes. If you want these changes to be visible to the rest of the world, you need to write the change back to the atomic_reference; but be careful about introducing a data-race.
 * The 'in-memory format' of an atomic_reference is `binary`. The receiving side does not need to have the class definition available unless it needs to be deserialized on the other side., e.g., because a method like `alter()` is executed. This deserialization is done for every call that needs to have the object instead of the binary content, so be careful with expensive object graphs that need to be deserialized.
-* If you have an object with many fields or an object graph and you only need to calculate some information or need a subset of fields, you can use the `apply()` method. With the `apply()` method, the whole object does not need to be sent over the line; only the information that is relevant is sent.
+* If you have an object with many fields or an object graph, and you only need to calculate some information or need a subset of fields, you can use the `apply()` method. With the `apply()` method, the whole object does not need to be sent over the line; only the information that is relevant is sent.
 
-atomic_reference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
+atomic_reference does not offer exactly-once / effectively-once execution semantics. It goes with at-least-once execution semantics by default and can cause an API call to be committed multiple times in case of CP member failures. It can be tuned to offer at-most-once execution semantics. Please see the [`fail-on-indeterminate-operation-state`](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#cp-subsystem-configuration) server-side setting.
 
 ### 7.4.12. Using Transactions
 
