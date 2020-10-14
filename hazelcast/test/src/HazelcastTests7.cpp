@@ -566,7 +566,7 @@ namespace hazelcast {
                 }
                 
                 void TearDown() override {
-                    q->clear();
+                    q->clear().get();
                 }
                 
                 static void SetUpTestCase() {
