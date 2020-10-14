@@ -27,8 +27,8 @@ int main() {
     try {
         // Your guarded code goes here
     } catch (...) {
-            // Make sure to release the lock
-            lock->unlock().get();
+        // Make sure to release the lock
+        lock->unlock().get();
     }
 
     // Try to acquire the lock
@@ -38,8 +38,8 @@ int main() {
         try {
             // Your guarded code goes here
         } catch (...) {
-                // Make sure to release the lock
-                lock->unlock().get();
+            // Make sure to release the lock
+            lock->unlock().get();
         }
     }
 

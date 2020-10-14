@@ -1795,7 +1795,7 @@ There is a simple solution for this problem. Lock holders are ordered by a monot
 
 You can read more about the fencing token idea in Martin Kleppmann's "How to do distributed locking" blog post and Google's Chubby paper.
 
-As an alternative approach, you can use the `tryLock()` method of fenced_lock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or `undefined`. It also accepts an optional `timeout` argument which specifies the timeout (in milliseconds resolution) to acquire the lock before giving up.
+As an alternative approach, you can use the `try_lock()` method of fenced_lock. It tries to acquire the lock in optimistic manner and immediately returns with either a valid fencing token or `undefined`. It also accepts an optional `timeout` argument which specifies the timeout (in milliseconds resolution) to acquire the lock before giving up.
 
 ```C++
     // Try to acquire the lock
@@ -1805,8 +1805,8 @@ As an alternative approach, you can use the `tryLock()` method of fenced_lock. I
         try {
             // Your guarded code goes here
         } catch (...) {
-                // Make sure to release the lock
-                lock->unlock().get();
+            // Make sure to release the lock
+            lock->unlock().get();
         }
     }
 ```
