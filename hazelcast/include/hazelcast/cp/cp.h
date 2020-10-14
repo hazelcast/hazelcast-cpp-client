@@ -269,10 +269,10 @@ namespace hazelcast {
                         get_and_set_data(toData<typename std::remove_pointer<T>::type>(new_value)));
             }
 
-            template<typename T>
-            boost::future<bool> compare_and_set(T expect, T update) {
+            template<typename T, typename V>
+            boost::future<bool> compare_and_set(T expect, V update) {
                 return compare_and_set_data(toData<typename std::remove_pointer<T>::type>(expect),
-                                            toData<typename std::remove_pointer<T>::type>(update));
+                                            toData<typename std::remove_pointer<V>::type>(update));
             }
 
             boost::future<bool> is_null();

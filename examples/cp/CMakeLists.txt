@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(tcpip)
-add_subdirectory(socket-interceptor)
-add_subdirectory(shuffle-memberlist)
-add_subdirectory(connection-strategy)
-add_subdirectory(backup-ack)
+add_executable(atomic_long atomic_long.cpp)
+add_executable(fenced_lock fenced_lock.cpp)
+add_executable(counting_semphore counting_semphore.cpp)
+add_executable(latch latch.cpp)
+add_executable(atomic_reference atomic_reference.cpp)
