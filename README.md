@@ -35,7 +35,10 @@
   * [5.6. Setting Connection Attempt Period](#56-setting-connection-attempt-period)
   * [5.7. Enabling Client TLS/SSL](#57-enabling-client-tlsssl)
   * [5.8. Enabling Hazelcast AWS Cloud Discovery](#58-enabling-hazelcast-aws-cloud-discovery)
-  * [5.9. Configuring Backup Acknowledgment](#59-configuring-backup-acknowledgment)
+  * [5.9. Authentication](#59-authentication)
+    * [5.9.1. Username Password Authentication](#591-authentication)
+    * [5.9.2. Token Authentication](#591-authentication)
+  * [5.10. Configuring Backup Acknowledgment](#59-configuring-backup-acknowledgment)    
 * [6. Securing Client Connection](#6-securing-client-connection)
   * [6.1. TLS/SSL](#61-tlsssl)
     * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
@@ -1094,7 +1097,62 @@ You need to enable the discovery by calling the `setEnabled(true)`. You can set 
  
 The C++ client works the same way as the Java client. For details, see [AWSClient Configuration] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#awsclient-configuration) and [Hazelcast AWS Plugin] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md). 
 
-## 5.9. Configuring Backup Acknowledgment
+## 5.9. Authentication
+
+By default, the client does not use any authentication method and just uses the cluster "dev" to connect to. You can change which cluster to connect by using the configuration API `ClientConfig::setClusterName`. This way, you can have multiple clusters in the network but the client will only be able to connect to the cluster with the correct cluster name (server should also be started with the cluster name configured to the same name).
+
+If you want to enable authentication, then the client can be configured in one of the two different ways to authenticate:
+
+* Username password based authentication
+* Token based authentication
+
+## 5.9.1. Username Password Authentication
+
+The following is an examplecsonfiguration where we set the username `test-user` and password `test-pass` to be used while trying to connect to the cluster:
+
+```C++
+    HazelcastClient hz(ClientConfig().setCredentials(
+            std::make_shared<security::username_password_credentials>("test-user", "test-pass")));
+```
+
+Note that the server needs to be configured to use the same username and password. An example server xml config is:
+```xml
+    <security enabled="true">
+        <realms>
+            <realm name="usernamePasswordIdentityRealm">
+                <identity>
+                    <username-password username="test-user" password="test-pass" />
+                </identity>
+            </realm>
+        </realms>
+    </security>
+```
+
+## 5.9.2. Token Authentication
+
+The following is an example configuration where we set the secret token bytes to be used while trying to connect to the cluster:
+
+```C++
+    std::vector<hazelcast::byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
+
+    HazelcastClient hz(ClientConfig().setCredentials(
+            std::make_shared<security::token_credentials>(my_token)));
+```
+
+Note that the server needs to be configured to use the same token. An example server xml config is:
+```xml
+    <security enabled="true">
+        <realms>
+            <realm name="tokenIdentityRealm">
+                <identity>
+                    <token encoding="base64">SGF6ZW</token>
+                </identity>
+            </realm>
+        </realms>
+    </security>
+```
+
+## 5.10. Configuring Backup Acknowledgment
 
 When an operation with sync backup is sent by a client to the Hazelcast member(s), the acknowledgment of the operation's backup is sent to the client by the backup replica member(s). This improves the performance of the client operations.
 
@@ -1119,7 +1177,7 @@ backups, this property specifies how long (in milliseconds) the invocation waits
 
 This chapter describes the security features of Hazelcast C++ client. These include using TLS/SSL for connections between members and between clients and members. These security features require **Hazelcast IMDG Enterprise** edition.
 
-### 6.1. TLS/SSL
+## 6.1. TLS/SSL
 
 One of the offers of Hazelcast is the TLS/SSL protocol which you can use to establish an encrypted communication across your cluster with key stores and trust stores.
 
