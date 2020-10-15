@@ -1,11 +1,7 @@
 #pragma once
 
 #include <string>
-#include <iosfwd>
-#include <mutex>
-#include <memory>
-#include <chrono>
-#include <thread>
+#include <functional>
 
 #include <hazelcast/util/HazelcastDll.h>
 

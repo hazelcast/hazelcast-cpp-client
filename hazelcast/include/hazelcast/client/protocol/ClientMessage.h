@@ -970,6 +970,9 @@ namespace hazelcast {
             };
 
             template<>
+            void HAZELCAST_API ClientMessage::set(const std::vector<byte> &values, bool is_final);
+
+            template<>
             void HAZELCAST_API ClientMessage::set(const std::vector<int32_t> &values, bool is_final);
 
             template<>

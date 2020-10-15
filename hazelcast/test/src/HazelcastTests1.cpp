@@ -1149,11 +1149,19 @@ namespace hazelcast {
             class ClientAuthenticationTest : public ClientTestSupport {
             };
 
-            TEST_F(ClientAuthenticationTest, testSetGroupConfig) {
+            TEST_F(ClientAuthenticationTest, testUserPasswordCredentials) {
                 HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-username-password.xml");
                 HazelcastServer instance(factory);
-                HazelcastClient client(ClientConfig().setClusterName("username-pass-dev").setGroupConfig(
-                        GroupConfig("dev", "dev-pass")));
+                HazelcastClient client(ClientConfig().setClusterName("username-pass-dev").setCredentials(
+                        std::make_shared<security::username_password_credentials>("test-user", "test-pass")));
+            }
+
+            TEST_F(ClientAuthenticationTest, testTokenCredentials) {
+                HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-token-credentials.xml");
+                HazelcastServer instance(factory);
+                std::vector<byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
+                HazelcastClient client(ClientConfig().setClusterName("token-credentials-dev").setCredentials(
+                        std::make_shared<security::token_credentials>(my_token)));
             }
 
             TEST_F(ClientAuthenticationTest, testIncorrectGroupName) {

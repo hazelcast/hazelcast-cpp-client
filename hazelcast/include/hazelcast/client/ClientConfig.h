@@ -23,7 +23,6 @@
 #include <hazelcast/client/serialization/serialization.h>
 
 #include "hazelcast/client/Address.h"
-#include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/LoadBalancer.h"
@@ -55,60 +54,47 @@ namespace hazelcast {
         };
 
         namespace security {
-            class credentials {
+            class HAZELCAST_API credentials {
             public:
-                enum type {
+                enum credential_type {
                     username_password,
-                    token,
-                    secret
+                    token
                 };
+
+                credentials(const std::string &name);
 
                 virtual ~credentials();
 
-                virtual const std::string &get_name() const = 0;
-                virtual const type get_type() const = 0;
+                const std::string &name() const;
+
+                virtual const credential_type type() const = 0;
+
+            private:
+                std::string name_;
             };
 
-            class password_credentials : public credentials {
-            public:
-                virtual const std::string &get_password() const = 0;
-            };
-
-            class username_password_credentials : public password_credentials {
+            class HAZELCAST_API username_password_credentials : public credentials {
             public:
                 username_password_credentials(const std::string &name, const std::string &password);
 
-                const std::string &get_name() const override;
+                const std::string &password() const;
 
-                const std::string &get_password() const override;
-
-                const type get_type() const override;
+                const credential_type type() const override;
 
             private:
-                std::string name_;
                 std::string password_;
             };
 
-            class token_credentials : public credentials {
+            class HAZELCAST_API token_credentials : public credentials {
             public:
-                token_credentials(const std::string &name, const std::vector<byte> &secretData);
+                token_credentials(const std::vector<byte> &token);
 
-                const std::string &get_name() const override;
+                const std::vector<byte> &token() const;
 
-                const std::vector<byte> &get_secret() const;
-
-                const type get_type() const override;
+                const credential_type type() const override;
 
             private:
-                std::string name_;
-                std::vector<byte> secret_data_;
-            };
-
-            class secret_credential : public token_credentials {
-            public:
-                secret_credential(const std::string &name, const std::vector<byte> &secretData);
-
-                const type get_type() const override;
+                std::vector<byte> token_;
             };
         };
 
@@ -141,40 +127,13 @@ namespace hazelcast {
             ClientConfig &setClusterName(const std::string &clusterName);
 
             /**
-            * The Group Configuration properties like:
-            * Name and Password that is used to connect to the cluster.
-            *
-            * \param groupConfig
-            * \return itself ClientConfig
-            */
-            ClientConfig &setGroupConfig(const GroupConfig &groupConfig);
-
-            /**
-            *
-            * \return groupConfig
-            */
-            GroupConfig &getGroupConfig();
-
-            /**
+            *  There are two types of credentials you can provide, \username_password_credentials and \token_credentials
             *
             *  \return itself ClientConfig
             */
-            ClientConfig &setCredentials(const boost::shared_ptr<security::credentials> &credential) {
-                credentials_ = credential;
-                return *this;
-            }
+            ClientConfig &setCredentials(const std::shared_ptr<security::credentials> &credential);
 
-            /**
-            *
-            *  \return itself ClientConfig
-            */
-            template<typename T>
-            ClientConfig &setCredentials(const T &secret) {
-                serialization::pimpl::SerializationService ss(serializationConfig);
-                credentials_ = std::make_shared<security::secret_credential>(secret.get_name(),
-                                                                             ss.toData<T>(secret).toByteArray());
-                return *this;
-            }
+            const std::shared_ptr<security::credentials> &getCredentials() const;
 
             /**
             * If true, client will redo the operations that were executing on the server and client lost the connection.
@@ -488,8 +447,6 @@ namespace hazelcast {
         private:
             std::string cluster_name_;
 
-            GroupConfig groupConfig;
-
             config::ClientNetworkConfig networkConfig;
 
             SerializationConfig serializationConfig;
@@ -508,7 +465,7 @@ namespace hazelcast {
 
             SocketInterceptor socketInterceptor;
 
-            boost::shared_ptr<security::credentials> credentials_;
+            std::shared_ptr<security::credentials> credentials_;
 
             std::unordered_map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
 

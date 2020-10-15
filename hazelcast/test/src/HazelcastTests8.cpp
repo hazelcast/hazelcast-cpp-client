@@ -487,8 +487,11 @@ namespace hazelcast {
                 nearCachedMap->put<int, std::string>(1, "newValue").get();
 
                 // wait for the invalidation to be processed
-                WAIT_EQ_EVENTUALLY(size - 1, nearCache->size());
+                ASSERT_EQ(size - 1, nearCache->size());
                 ASSERT_EQ(1, stats->getInvalidations());
+                auto stats_impl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(stats);
+                // one from local and one from remote
+                ASSERT_EQ_EVENTUALLY(2, stats_impl->getInvalidationRequests());
 
                 int64_t expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
                 int64_t expectedHits = getExpectedHitsWithLocalUpdatePolicy();
@@ -1324,7 +1327,6 @@ namespace hazelcast {
                         std::cerr << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
                         ClientConfig clientConfig;
                         clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "10");
-                        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
                         auto member = server.getMember();
                         clientConfig.getNetworkConfig().addAddress(Address(member.host, member.port)).setConnectionAttemptPeriod(10 * 1000);
 
