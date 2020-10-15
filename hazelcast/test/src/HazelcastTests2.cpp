@@ -741,15 +741,17 @@ namespace hazelcast {
                 ASSERT_EQ(addresses, configuredAddressVector);
             }
 
-            TEST_F(ClientConfigTest, testSetGetGroupConfig) {
+            TEST_F(ClientConfigTest, testSetCredentials) {
                 ClientConfig clientConfig;
-                std::string groupName("myGroup");
+                std::string name("myGroup");
                 std::string password("myPass");
-                GroupConfig groupConfig(groupName, password);
-                clientConfig.setGroupConfig(groupConfig);
-                GroupConfig &clientGroupConfig = clientConfig.getGroupConfig();
-                ASSERT_EQ(groupName, clientGroupConfig.getName());
-                ASSERT_EQ(password, clientGroupConfig.getPassword());
+                clientConfig.setCredentials(std::make_shared<security::username_password_credentials>(name, password));
+                auto credentials = clientConfig.getCredentials();
+                ASSERT_EQ(security::credentials::credential_type::username_password, credentials->type());
+                auto user_pass_credential = std::static_pointer_cast<security::username_password_credentials>(
+                        credentials);
+                ASSERT_EQ(name, user_pass_credential->name());
+                ASSERT_EQ(password, user_pass_credential->password());
             }
         }
     }

@@ -44,7 +44,6 @@
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/config/LoggerConfig.h"
 #include "hazelcast/client/config/index_config.h"
-#include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
 #include "hazelcast/client/query/Predicates.h"
 #include "hazelcast/client/LifecycleListener.h"
@@ -539,41 +538,8 @@ namespace hazelcast {
             void index_config::add_attributes() {}
         }
 
-        GroupConfig::GroupConfig() {}
-
-        GroupConfig::GroupConfig(const std::string &name, const std::string &password)
-                : name(name), password(password) {
-        }
-
-        std::string GroupConfig::getName() const {
-            return name;
-        }
-
-        GroupConfig &GroupConfig::setName(const std::string &name) {
-            this->name = name;
-            return (*this);
-        }
-
-        GroupConfig &GroupConfig::setPassword(const std::string &password) {
-            this->password = password;
-            return (*this);
-        }
-
-        std::string GroupConfig::getPassword() const {
-            return password;
-        }
-
         ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(NULL), redoOperation(false),
                                        socketInterceptor(), executorPoolSize(-1) {}
-
-        ClientConfig &ClientConfig::setGroupConfig(const GroupConfig &groupConfig) {
-            this->groupConfig = groupConfig;
-            return *this;
-        }
-        
-        GroupConfig &ClientConfig::getGroupConfig() {
-            return groupConfig;
-        }
 
         ClientConfig &ClientConfig::setRedoOperation(bool redoOperation) {
             this->redoOperation = redoOperation;
@@ -766,46 +732,46 @@ namespace hazelcast {
             return backup_acks_enabled_;
         }
 
+        const std::shared_ptr<security::credentials> &ClientConfig::getCredentials() const {
+            return credentials_;
+        }
+
+        ClientConfig &ClientConfig::setCredentials(const std::shared_ptr<security::credentials> &credential) {
+            credentials_ = credential;
+            return *this;
+        }
+
         namespace security {
             username_password_credentials::username_password_credentials(const std::string &name,
-                                                                                   const std::string &password) : name_(
-                    name), password_(password) {}
+                                                                         const std::string &password) : credentials(name),
+                                                                                                        password_(password) {}
 
-            const std::string &username_password_credentials::get_name() const {
-                return name_;
-            }
-
-            const std::string &username_password_credentials::get_password() const {
+            const std::string &username_password_credentials::password() const {
                 return password_;
             }
 
-            const credentials::type username_password_credentials::get_type() const {
-                return credentials::type::username_password;
+            const credentials::credential_type username_password_credentials::type() const {
+                return credentials::credential_type::username_password;
             }
 
-            const std::string &token_credentials::get_name() const {
+            const std::vector<byte> &token_credentials::token() const {
+                return token_;
+            }
+
+            const credentials::credential_type token_credentials::type() const {
+                return credentials::credential_type::token;
+            }
+
+            token_credentials::token_credentials(const std::vector<byte> &token) : credentials(
+                    token.empty() ? "<empty>" : "<token>"), token_(token) {}
+
+            credentials::~credentials() {}
+
+            const std::string &credentials::name() const {
                 return name_;
             }
 
-            const std::vector<byte> &token_credentials::get_secret() const {
-                return secret_data_;
-            }
-
-            const credentials::type token_credentials::get_type() const {
-                return credentials::type::token;
-            }
-
-            token_credentials::token_credentials(const std::string &name, const std::vector<byte> &secretData) : name_(
-                    name), secret_data_(secretData) {}
-
-            secret_credential::secret_credential(const std::string &name, const std::vector<byte> &secretData)
-                    : token_credentials(name, secretData) {}
-
-            const credentials::type secret_credential::get_type() const {
-                return credentials::type::secret;
-            }
-
-            credentials::~credentials() {}
+            credentials::credentials(const std::string &name) : name_(name) {}
         }
     }
 }

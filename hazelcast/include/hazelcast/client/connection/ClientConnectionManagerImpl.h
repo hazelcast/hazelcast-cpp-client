@@ -121,8 +121,6 @@ namespace hazelcast {
 
                 void check_invocation_allowed();
 
-                boost::shared_ptr<security::credentials> getCurrentCredentials() const;
-
                 void connect_to_all_cluster_members();
 
                 void notify_backup(int64_t call_id);
@@ -193,7 +191,6 @@ namespace hazelcast {
                 util::sync_associative_container<std::unordered_map<Address, std::unique_ptr<std::mutex>>> conn_locks_;
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
-                boost::atomic_shared_ptr<security::credentials> current_credentials_;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;

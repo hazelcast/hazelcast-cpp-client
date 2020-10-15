@@ -1331,7 +1331,6 @@ namespace hazelcast {
                         std::cerr << " Remove Percentage: " << (100 - (PUT_PERCENTAGE + GET_PERCENTAGE)) << std::endl;
                         ClientConfig clientConfig;
                         clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "10");
-                        clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
                         auto member = server.getMember();
                         clientConfig.getNetworkConfig().addAddress(Address(member.host, member.port)).setConnectionAttemptPeriod(10 * 1000);
                         clientConfig.setLogLevel(FINEST);

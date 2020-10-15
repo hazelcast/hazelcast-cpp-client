@@ -146,7 +146,7 @@ namespace hazelcast {
                     instanceName = out.str();
                 }
 
-                logger.reset(new util::ILogger(instanceName, clientConfig.getGroupConfig().getName(), HAZELCAST_VERSION,
+                logger.reset(new util::ILogger(instanceName, clientConfig.getClusterName(), HAZELCAST_VERSION,
                                                clientConfig.getLoggerConfig()));
 
                 executionService = initExecutionService();
