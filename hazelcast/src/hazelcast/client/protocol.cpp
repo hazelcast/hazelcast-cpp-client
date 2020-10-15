@@ -209,18 +209,12 @@ namespace hazelcast {
             int32_t ClientMessage::getPartitionId() const {
                 return boost::endian::load_little_s32(&data_buffer[0][PARTITION_ID_FIELD_OFFSET]);
             }
-/*
-            void ClientMessage::append(const ClientMessage *msg) {
+
+            void ClientMessage::append(std::shared_ptr<ClientMessage> msg) {
                 // no need to double check if correlation ids match here,
                 // since we make sure that this is guaranteed at the caller that they are matching !
-                int32_t dataSize = msg->getDataSize();
-                int32_t existingFrameLen = getFrameLength();
-                int32_t newFrameLen = existingFrameLen + dataSize;
-                ensureBufferSize(newFrameLen);
-                memcpy(&buffer[existingFrameLen], &msg->buffer[0], (size_t) dataSize);
-                setFrameLength(newFrameLen);
+                data_buffer.insert(data_buffer.end(), msg->data_buffer.begin(), msg->data_buffer.end());
             }
-*/
 
             bool ClientMessage::isRetryable() const {
                 return retryable;
@@ -241,11 +235,28 @@ namespace hazelcast {
             std::ostream &operator<<(std::ostream &os, const ClientMessage &msg) {
                 os << "ClientMessage{length=" << msg.size()
                    << ", operation=" << msg.getOperationName()
-                   << ", correlationId=" << msg.getCorrelationId()
-                   << ", msgType=0x" << std::hex << msg.getMessageType() << std::dec
-                   << ", isRetryable=" << msg.isRetryable()
-                   << ", isEvent=" << ClientMessage::is_flag_set(msg.getHeaderFlags(), ClientMessage::IS_EVENT_FLAG)
-                   << "}";
+                   << ", isRetryable=" << msg.isRetryable();
+
+                auto begin_fragment = msg.is_flag_set(ClientMessage::BEGIN_FRAGMENT_FLAG);
+                auto unfragmented = msg.is_flag_set(ClientMessage::UNFRAGMENTED_MESSAGE);
+
+                // print correlation id, and message type only if it is unfragmented message or
+                // the first message of a fragmented message
+                if (unfragmented) {
+                    os << ", correlationId=" << msg.getCorrelationId()
+                       << ", messageType=0x" << std::hex << msg.getMessageType() << std::dec
+                       << ", isEvent=" << ClientMessage::is_flag_set(msg.getHeaderFlags(), ClientMessage::IS_EVENT_FLAG)
+                       << "}";
+                } else if (begin_fragment) {
+                    os << ", fragmentationId=" << boost::endian::load_little_s64(&msg.data_buffer[0][ClientMessage::FRAGMENTATION_ID_OFFSET])
+                       << ", correlationId=" << msg.getCorrelationId()
+                       << ", messageType=0x" << std::hex << msg.getMessageType() << std::dec
+                       << ", isEvent=" << ClientMessage::is_flag_set(msg.getHeaderFlags(), ClientMessage::IS_EVENT_FLAG)
+                       << "}";
+                } else {
+                    os << ", fragmentationId=" << boost::endian::load_little_s64(&msg.data_buffer[0][ClientMessage::FRAGMENTATION_ID_OFFSET]);
+                }
+                os << ", is_fragmented=" << (unfragmented ? "no" : "yes");
 
                 return os;
             }
@@ -283,6 +294,12 @@ namespace hazelcast {
 
             const ClientMessage::frame_header_t &ClientMessage::end_frame() {
                 return END_FRAME;
+            }
+
+
+            void ClientMessage::drop_fragmentation_frame() {
+                data_buffer[0].erase(data_buffer[0].begin(),
+                                     data_buffer[0].begin() + FRAGMENTATION_ID_OFFSET + INT64_SIZE);
             }
 
             void ClientMessage::set(const cp::raft_group_id &o, bool is_final) {
@@ -513,26 +530,21 @@ namespace hazelcast {
                     if (isCompleted) {
                         //MESSAGE IS COMPLETE HERE
                         message->wrap_for_read();
-                        connection.handleClientMessage(std::move(message));
                         isCompleted = true;
 
-                        //TODO: add fragmentation later
-/*
-                        if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
+                        if (message->is_flag_set(ClientMessage::UNFRAGMENTED_MESSAGE)) {
                             //MESSAGE IS COMPLETE HERE
                             connection.handleClientMessage(std::move(message));
-                            isCompleted = true;
                         } else {
-                            if (message->isFlagSet(ClientMessage::BEGIN_FLAG)) {
+                            message->drop_fragmentation_frame();
+                            if (message->is_flag_set(ClientMessage::BEGIN_FRAGMENT_FLAG)) {
                                 // put the message into the partial messages list
                                 addToPartialMessages(message);
-                            } else if (message->isFlagSet(ClientMessage::END_FLAG)) {
+                            } else if (message->is_flag_set(ClientMessage::END_FRAGMENT_FLAG)) {
                                 // This is the intermediate frame. Append at the previous message buffer
                                 appendExistingPartialMessage(message);
-                                isCompleted = true;
                             }
                         }
-*/
                     }
                 }
 
@@ -547,15 +559,15 @@ namespace hazelcast {
             bool ClientMessageBuilder::appendExistingPartialMessage(std::unique_ptr<ClientMessage> &msg) {
                 bool result = false;
 
-/* TODO
-                MessageMap::iterator foundItemIter = partialMessages.find(msg->getCorrelationId());
-                if (partialMessages.end() != foundItemIter) {
-                    foundItemIter->second->append(msg.get());
-                    if (msg->isFlagSet(ClientMessage::END_FLAG)) {
+                auto found = partialMessages.find(msg->getCorrelationId());
+                if (partialMessages.end() != found) {
+                    bool is_end_fragment = msg->is_flag_set(ClientMessage::END_FRAGMENT_FLAG);
+                    found->second->append(std::move(msg));
+                    if (is_end_fragment) {
                         // remove from message from map
-                        std::shared_ptr<ClientMessage> foundMessage(foundItemIter->second);
+                        std::shared_ptr<ClientMessage> foundMessage(found->second);
 
-                        partialMessages.erase(foundItemIter, foundItemIter);
+                        partialMessages.erase(found);
 
                         connection.handleClientMessage(foundMessage);
 
@@ -565,7 +577,6 @@ namespace hazelcast {
                     // Should never be here
                     assert(0);
                 }
-*/
 
                 return result;
             }
