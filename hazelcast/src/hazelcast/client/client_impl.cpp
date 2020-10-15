@@ -143,8 +143,9 @@ namespace hazelcast {
                     instanceName = out.str();
                 }
 
-                auto logger_factory = clientConfig.getLoggerConfig().logger_factory();
-                logger_ = logger_factory(instanceName, clientConfig.getGroupConfig().getName());
+                auto logger_config = clientConfig.getLoggerConfig();
+                logger_ = std::make_shared<logger>(instanceName, clientConfig.getGroupConfig().getName(),
+                                                   logger_config.min_level(), logger_config.handler());
 
                 executionService = initExecutionService();
 

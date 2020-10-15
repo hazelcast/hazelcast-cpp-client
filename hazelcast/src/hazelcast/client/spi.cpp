@@ -1726,28 +1726,31 @@ namespace hazelcast {
                                                               const partition_table &current) {
                     auto &lg = client.getLogger();
                     if (partitions.empty()) {
-                        if (logger_.enabled(log_level::finest)) {
+                        if (logger_.enabled(logger::level::finest)) {
                             log_failure(connection, version, current, "response is empty");
                         }
                         return false;
                     }
                     if (!current.connection || *connection != *current.connection) {
-                        if (lg.enabled(log_level::finest)) {
-                            auto frmt = boost::format("Event coming from a new connection. Old connection: %1%, "
-                                                      "new connection %2%");
+                        HZ_LOG(lg, finest, 
+                            ([&current, &connection](){
+                                auto frmt = boost::format("Event coming from a new connection. Old connection: %1%, "
+                                                          "new connection %2%");
 
-                            if (current.connection) {
-                                frmt = frmt % *current.connection;
-                            } else {
-                                frmt = frmt % "nullptr";
-                            }
+                                if (current.connection) {
+                                    frmt = frmt % *current.connection;
+                                } else {
+                                    frmt = frmt % "nullptr";
+                                }
 
-                            lg.log(log_level::finest, boost::str(frmt % *connection));
-                        }
+                                return boost::str(frmt % *connection);
+                            })()
+                        );
+                        
                         return true;
                     }
                     if (version <= current.version) {
-                        if (lg.enabled(log_level::finest)) {
+                        if (lg.enabled(logger::level::finest)) {
                             log_failure(connection, version, current, "response state version is old");
                         }
                         return false;

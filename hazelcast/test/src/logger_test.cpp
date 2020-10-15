@@ -1,4 +1,5 @@
 #include <array>
+#include <chrono>
 #include <string>
 #include <thread>
 #include <sstream>
@@ -7,112 +8,125 @@
 
 #include "hazelcast/logger.h"
 
-using namespace hazelcast;
+using hazelcast::logger;
+
+TEST(log_level_test, test_ordering) {
+    ASSERT_LT(logger::level::finest, logger::level::info);
+    ASSERT_LT(logger::level::info, logger::level::warning);
+    ASSERT_LT(logger::level::warning, logger::level::severe);
+    ASSERT_LT(logger::level::severe, logger::level::off);
+}
 
 TEST(log_level_test, test_output_operator) {
-    auto to_str = [](log_level lvl) {
+    auto to_str = [](logger::level lvl) {
         std::ostringstream os;
         os << lvl;
         return os.str();
     };
 
-    ASSERT_EQ("FINEST", to_str(log_level::finest));
-    ASSERT_EQ("INFO", to_str(log_level::info));
-    ASSERT_EQ("WARNING", to_str(log_level::warning));
-    ASSERT_EQ("SEVERE", to_str(log_level::severe));
-    ASSERT_EQ("123", to_str(static_cast<log_level>(123)));
+    ASSERT_EQ("FINEST", to_str(logger::level::finest));
+    ASSERT_EQ("INFO", to_str(logger::level::info));
+    ASSERT_EQ("WARNING", to_str(logger::level::warning));
+    ASSERT_EQ("SEVERE", to_str(logger::level::severe));
+    ASSERT_EQ("123", to_str(static_cast<logger::level>(123)));
 }
 
-TEST(default_logger_test, test_enabled) {
+TEST(logger_test, test_enabled) {
     std::ostringstream os;
 
-    default_logger dlg{ os, log_level::info, "", "" };
-    logger &lg = dlg;
+    logger lg{ "", "", logger::level::info, nullptr };
 
-    ASSERT_FALSE(lg.enabled(log_level::finest));
-    ASSERT_TRUE(lg.enabled(log_level::info));
-    ASSERT_TRUE(lg.enabled(log_level::warning));
-    ASSERT_TRUE(lg.enabled(log_level::severe));
+    ASSERT_FALSE(lg.enabled(logger::level::finest));
+    ASSERT_TRUE(lg.enabled(logger::level::info));
+    ASSERT_TRUE(lg.enabled(logger::level::warning));
+    ASSERT_TRUE(lg.enabled(logger::level::severe));
 }
 
-TEST(default_logger_test, test_formatting) {
-    std::ostringstream os;
 
-    default_logger dlg{ os, log_level::info, "instance0", "cluster0" };
-    logger &lg = dlg;
+TEST(logger_test, test_log) {
+    struct {
+        std::string instance_name_;
+        std::string cluster_name_;
+        std::string file_name_;
+        int line_;
+        logger::level level_;
+        std::string msg_;
+    } results;
 
-    lg.log(log_level::info, "message");
-
-    int day, mon, year, hr, mn, sec, ms;
-    char lev[64], tid[64], msg[64], ins_grp[64], ver[64];
-    int read = std::sscanf(os.str().c_str(), "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s\n", 
-        &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, msg);
-
-    ASSERT_EQ(12, read);
-    ASSERT_TRUE(0 <= day && day <= 31);
-    ASSERT_TRUE(1 <= mon && mon <= 12);
-    ASSERT_TRUE(0 <= year && year <= 9999);
-    ASSERT_TRUE(0 <= hr && hr <= 23);
-    ASSERT_TRUE(0 <= mn && mn <= 59);
-    ASSERT_TRUE(0 <= sec && sec <= 59);
-    ASSERT_TRUE(0 <= ms && ms <= 999);
-    ASSERT_EQ("INFO:", std::string(lev));
-    ASSERT_EQ("instance0[cluster0]", std::string(ins_grp));
-    ASSERT_EQ(std::string("") + "[" + HAZELCAST_VERSION + "]", std::string(ver));
-    ASSERT_EQ("message", std::string(msg));
-}
-
-TEST(custom_logger_test, test_enabled_when_not_overridden) {
-    struct custom_logger : logger {
-        void log(log_level, const std::string&) noexcept override {}
+    auto mock_handler = [&results](const std::string &instance_name,
+                                   const std::string &cluster_name, 
+                                   const char* file_name,
+                                   int line,
+                                   logger::level level, 
+                                   const std::string &msg) 
+    {
+        results.instance_name_ = instance_name;
+        results.cluster_name_ = cluster_name;
+        results.file_name_ = file_name;
+        results.line_ = line;
+        results.level_ = level;
+        results.msg_ = msg;
     };
 
-    custom_logger clg;
-    logger &lg = clg;
+    logger lg{ "instance0", "cluster0", logger::level::info, mock_handler };
 
-    ASSERT_TRUE(lg.enabled(log_level::finest));
-    ASSERT_TRUE(lg.enabled(log_level::info));
-    ASSERT_TRUE(lg.enabled(log_level::warning));
-    ASSERT_TRUE(lg.enabled(log_level::severe));
+    lg.log("file.cpp", 42, logger::level::info, "message");
+
+    ASSERT_EQ("instance0", results.instance_name_);
+    ASSERT_EQ("cluster0", results.cluster_name_);
+    ASSERT_EQ("file.cpp", results.file_name_);
+    ASSERT_EQ(42, results.line_);
+    ASSERT_EQ(logger::level::info, results.level_);
+    ASSERT_EQ("message", results.msg_);
 }
 
 TEST(log_macro_test, test_log_when_enabled) {
-    struct mock_logger : logger {
-        log_level level_;
+    struct mock_logger {
+        bool called_{ false };
+        std::string file_name_;
+        int line_;
+        logger::level level_;
         std::string msg_;
 
-        void log(log_level level, const std::string &msg) noexcept override {
+        bool enabled(logger::level level) {
+            return true;
+        }
+        void log(const char* file_name, int line, logger::level level, const std::string &msg) {
+            called_ = true;
+            file_name_ = file_name;
+            line_ = line;
             level_ = level;
             msg_ = msg;
         }
-
-        bool enabled(log_level) noexcept override { return true; }
     };
 
-    mock_logger mlg;
-    logger &lg = mlg;
+    mock_logger lg;
 
-    HZ_LOG(lg, warning, "bar");
+    #line 42
+    HZ_LOG(lg, warning, "message");
 
-    ASSERT_EQ(log_level::warning, mlg.level_);
-    ASSERT_EQ("bar", mlg.msg_);
+    ASSERT_TRUE(lg.called_);
+    ASSERT_EQ(__FILE__, lg.file_name_);
+    ASSERT_EQ(42, lg.line_);
+    ASSERT_EQ(logger::level::warning, lg.level_);
+    ASSERT_EQ("message", lg.msg_);
 }
 
 TEST(log_macro_test, test_log_when_disabled) {
-    struct mock_logger : logger {
+    struct mock_logger {
         bool called_{ false };
 
-        void log(log_level level, const std::string &msg) noexcept override {
+        bool enabled(logger::level level) {
+            return false;
+        }
+        void log(...) {
             called_ = true;
         }
-
-        bool enabled(log_level) noexcept override { return false; }
     };
 
-    mock_logger mlg;
-    logger &lg = mlg;
+    mock_logger lg;
 
-    HZ_LOG(lg, warning, "bar");
+    HZ_LOG(lg, warning, "");
 
-    ASSERT_FALSE(mlg.called_);
+    ASSERT_FALSE(lg.called_);
 }

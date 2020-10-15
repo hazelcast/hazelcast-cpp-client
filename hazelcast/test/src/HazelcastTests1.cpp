@@ -770,7 +770,8 @@ namespace hazelcast {
         StartedThread::StartedThread(const std::string &name, void (*func)(ThreadArgs &),
                                      void *arg0, void *arg1, void *arg2, void *arg3)
                 : name(name)
-                , logger_(client::config::LoggerConfig().logger_factory()("StartedThread", "StartedThread")) {
+                , logger_(std::make_shared<logger>("StartedThread", "StartedThread", 
+                                                   logger::level::info, logger::default_handler)) {
             init(func, arg0, arg1, arg2, arg3);
         }
 

@@ -1,7 +1,6 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
-#include <ostream>
 #include <sstream>
 #include <chrono>
 #include <ctime>
@@ -11,79 +10,75 @@
 
 namespace hazelcast {
 
-namespace {
+std::ostream& operator<<(std::ostream &os, logger::level lvl) {
+    switch (lvl) {
+        case logger::level::severe:
+            os << "SEVERE";
+            break;
+        case logger::level::warning:
+            os << "WARNING";
+            break;
+        case logger::level::info:
+            os << "INFO";
+            break;
+        case logger::level::finest:
+            os << "FINEST";
+            break;
+        default:
+            os << static_cast<int>(lvl);
+            break;
+    }
+    return os;
+}
 
-std::ostream &timestamp(std::ostream &os) {
+logger::logger(std::string instance_name, std::string cluster_name, level min_level, handler_type handler)
+    : instance_name_{ std::move(instance_name) }
+    , cluster_name_{ std::move(cluster_name) }
+    , min_level_{ min_level }
+    , handler_{ std::move(handler) } 
+{}
+
+bool logger::enabled(level lvl) noexcept {
+    return lvl >= min_level_;
+}
+
+void logger::log(const char *file_name, int line, 
+                 level lvl, const std::string &msg) noexcept {
+    handler_(instance_name_, cluster_name_, file_name, line, lvl, msg);
+}
+
+void logger::default_handler(const std::string &instance_name,
+                             const std::string &cluster_name, 
+                             const char* file_name,
+                             int line,
+                             level lvl, 
+                             const std::string &msg) noexcept {
+                             
     auto tp = std::chrono::system_clock::now();
-
     auto t = std::chrono::system_clock::to_time_t(tp);
-    os << std::put_time(std::localtime(&t), "%d/%m/%Y %H:%M:%S.");
     
     auto dur = tp.time_since_epoch();
     auto sec = std::chrono::duration_cast<std::chrono::seconds>(dur);
     
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(dur - sec).count();
 
-    os << std::setfill('0') << std::setw(3) << ms;
-
-    return os;
-}
-
-}
-
-std::ostream& operator<<(std::ostream &os, log_level level) {
-    switch (level) {
-        case log_level::severe:
-            os << "SEVERE";
-            break;
-        case log_level::warning:
-            os << "WARNING";
-            break;
-        case log_level::info:
-            os << "INFO";
-            break;
-        case log_level::finest:
-            os << "FINEST";
-            break;
-        default:
-            os << static_cast<int>(level);
-            break;
-    }
-    return os;
-}
-
-logger::~logger() = default;
-bool logger::enabled(log_level level) noexcept { return true; } 
-
-default_logger::default_logger(std::ostream &os, log_level level, std::string instance_name, std::string cluster_name) 
-    : os_(os)
-    , level_(level)
-    , instance_name_(std::move(instance_name))
-    , cluster_name_(std::move(cluster_name)) {}
-
-bool default_logger::enabled(log_level level) noexcept {
-    return level >= level_;
-}
-
-void default_logger::log(log_level level, const std::string &msg) noexcept {
     std::ostringstream sstrm;
 
-    sstrm << timestamp << ' ' // timestamp
-          << level << ": [" << std::this_thread::get_id() << "] " // level, thread id
-          << instance_name_ << '[' << cluster_name_ << "] ["
-          << HAZELCAST_VERSION << "] " // version  // TODO once we have an API for getting the current version, replace this with that
-          << msg // message
-          << '\n'; // line break
+    sstrm << std::put_time(std::localtime(&t), "%d/%m/%Y %H:%M:%S.")
+          << std::setfill('0') << std::setw(3) << ms << ' '
+          << lvl << ": [" << std::this_thread::get_id() << "] "
+          << instance_name << '[' << cluster_name << "] ["
+          << HAZELCAST_VERSION << "] [" // TODO once we have an API exposing library version, use that instead
+          << file_name << ':' << line << "] "
+          << msg
+          << '\n';
 
     {
-        std::lock_guard<std::mutex> g(mut_);
-        os_ << sstrm.str(); // TODO should we flush or not ?
+        static std::mutex cout_lock;
+        std::lock_guard<std::mutex> g(cout_lock);
+        std::cout << sstrm.str(); // TODO should we flush or not ?
     }
 }
 
-std::shared_ptr<logger> make_default_logger(std::string instance_name, std::string cluster_name) {
-    return std::make_shared<default_logger>(std::cout, log_level::info, 
-                                            std::move(instance_name), std::move(cluster_name));
-}
 
 } // namespace hazelcast

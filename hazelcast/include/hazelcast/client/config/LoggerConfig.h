@@ -18,8 +18,8 @@
 #include <stdexcept>
 #include <string>
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/logger.h"
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Preconditions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -31,21 +31,29 @@ namespace hazelcast {
     namespace client {
         namespace config {
             class HAZELCAST_API LoggerConfig {
-                using logger_factory_t = std::function<std::shared_ptr<logger>(std::string, std::string)>;
-
             public:
-                void logger_factory(logger_factory_t make_logger) {
-                    util::Preconditions::checkTrue(make_logger, "invalid logger factory");
-                    
-                    make_logger_ = std::move(make_logger);
+                logger::level min_level() {
+                    return min_level_;
                 }
 
-                logger_factory_t logger_factory() {
-                    return make_logger_;
+                LoggerConfig &min_level(logger::level level) {
+                    min_level_ = level;
+                    return *this;
+                }
+
+                logger::handler_type handler() {
+                    return handler_;
+                }
+
+                LoggerConfig &handler(logger::handler_type handler) {
+                    util::Preconditions::checkTrue(handler, "log handler cannot be empty");
+                    handler_ = std::move(handler);
+                    return *this;
                 }
 
             private:
-                logger_factory_t make_logger_{ make_default_logger };
+                logger::level min_level_{ logger::level::info };
+                logger::handler_type handler_{ logger::default_handler };
             };
         }
     }

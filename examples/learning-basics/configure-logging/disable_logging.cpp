@@ -22,23 +22,9 @@
 int main() {
     hazelcast::client::ClientConfig config;
 
-    // By default, the client prints log messages of severity log_level::info or above
-    // to standard output.
-    // To modify the default behaviour, a logger factory must be set in the configuration
-    // object. The logger factory function takes instance and cluster name of the client
-    // and return an hazelcast::logger.
-    // Here, we return an hazelcast::default_logger with level log_level::finest that uses
-    // std::cerr to print log messages.
-    config.getLoggerConfig().logger_factory(
-        [](std::string instance_name, std::string cluster_name) {
-            return std::make_shared<hazelcast::default_logger>(
-                std::cerr, hazelcast::log_level::finest, instance_name, cluster_name);
-        }
-    );
+    config.getLoggerConfig().min_level(hazelcast::logger::level::off);
 
     hazelcast::client::HazelcastClient hz(config);
-
-    std::cout << "Finished" << std::endl;
 
     return 0;
 }

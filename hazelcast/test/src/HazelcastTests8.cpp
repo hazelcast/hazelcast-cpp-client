@@ -1329,7 +1329,8 @@ namespace hazelcast {
                         clientConfig.getNetworkConfig().addAddress(Address(member.host, member.port)).setConnectionAttemptPeriod(10 * 1000);
 
                         Stats stats;
-                        auto lg = std::make_shared<default_logger>(std::cout, log_level::finest, "SimpleMapTest", "SimpleMapTest");
+                        auto lg = std::make_shared<logger>("SimpleMapTest", "SimpleMapTest",
+                                                           logger::level::finest, logger::default_handler);
 
                         auto monitor = std::async([&]() {
                             StatsPrinterTask(stats).run();
@@ -1479,7 +1480,8 @@ namespace hazelcast {
                 : factory(factory)
                 , isStarted(false)
                 , isShutdown(false)
-                , logger_(config::LoggerConfig().logger_factory()("HazelcastServer", "HazelcastServer")) {
+                , logger_(std::make_shared<logger>("HazelcastServer", "HazelcastServer", 
+                                                   logger::level::info, logger::default_handler)) {
                 start();
             }
 
@@ -1558,7 +1560,7 @@ namespace hazelcast {
                 std::ostringstream out;
                 out << testInfo->test_case_name() << "_" << testInfo->name();
                 testName = out.str();
-                logger_ = config::LoggerConfig().logger_factory()("Test", testName);
+                logger_ = std::make_shared<logger>("Test", testName, logger::level::info, logger::default_handler);
             }
 
             logger &ClientTestSupport::getLogger() {

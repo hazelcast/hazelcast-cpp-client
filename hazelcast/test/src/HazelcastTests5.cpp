@@ -576,7 +576,8 @@ namespace hazelcast {
 
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverAddress,
                                                            const std::string &serverXmlConfigFilePath)
-                    : logger_(config::LoggerConfig().logger_factory()("HazelcastServerFactory", "HazelcastServerFactory")),
+                    : logger_(std::make_shared<logger>("HazelcastServerFactory", "HazelcastServerFactory",
+                                                       logger::level::info, logger::default_handler)),
                       serverAddress(serverAddress) {
                 std::string xmlConfig = readFromXmlFile(serverXmlConfigFilePath);
 

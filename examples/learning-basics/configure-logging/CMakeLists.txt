@@ -13,5 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(level_and_ostream ./level_and_ostream.cpp)
+add_executable(disable_logging ./disable_logging.cpp)
+add_executable(set_minimum_level ./set_minimum_level.cpp)
 
