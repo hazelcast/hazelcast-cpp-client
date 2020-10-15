@@ -94,7 +94,7 @@ FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/src/*h")
 
-include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/src ${PROJECT_SOURCE_DIR}/external/release_include)
+include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/src)
 
 if (HZ_COMPILE_WITH_SSL)
 	message(STATUS "Building the library with SSL support.")

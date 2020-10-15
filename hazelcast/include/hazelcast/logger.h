@@ -39,12 +39,12 @@ public:
     void log(const char* file_name, int line, 
              level lvl, const std::string &msg) noexcept;
 
-    HAZELCAST_API static void default_handler(const std::string &instance_name,
-                                              const std::string &cluster_name,
-                                              const char *file_name,
-                                              int line,
-                                              level lvl,
-                                              const std::string &msg) noexcept;
+    static void default_handler(const std::string &instance_name,
+                                const std::string &cluster_name,
+                                const char *file_name,
+                                int line,
+                                level lvl,
+                                const std::string &msg) noexcept;
 
 private:
     const std::string instance_name_;

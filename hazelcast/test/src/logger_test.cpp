@@ -1,7 +1,5 @@
-#include <array>
 #include <chrono>
 #include <string>
-#include <thread>
 #include <sstream>
 
 #include <gtest/gtest.h>
@@ -102,12 +100,12 @@ TEST(log_macro_test, test_log_when_enabled) {
 
     mock_logger lg;
 
-    #line 42
-    HZ_LOG(lg, warning, "message");
+    HZ_LOG(lg, warning, "message"); 
+    int expected_line = __LINE__ - 1;
 
     ASSERT_TRUE(lg.called_);
     ASSERT_EQ(__FILE__, lg.file_name_);
-    ASSERT_EQ(42, lg.line_);
+    ASSERT_EQ(expected_line, lg.line_);
     ASSERT_EQ(logger::level::warning, lg.level_);
     ASSERT_EQ("message", lg.msg_);
 }
