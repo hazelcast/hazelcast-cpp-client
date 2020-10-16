@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-#include <memory>
-
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/logger.h>
+
 
 int main() {
     hazelcast::client::ClientConfig config;

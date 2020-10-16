@@ -36,6 +36,7 @@ logger::logger(std::string instance_name, std::string cluster_name, level min_le
     , cluster_name_{ std::move(cluster_name) }
     , min_level_{ min_level }
     , handler_{ std::move(handler) } 
+
 {}
 
 bool logger::enabled(level lvl) noexcept {
@@ -68,7 +69,7 @@ void logger::default_handler(const std::string &instance_name,
           << std::setfill('0') << std::setw(3) << ms << ' '
           << lvl << ": [" << std::this_thread::get_id() << "] "
           << instance_name << '[' << cluster_name << "] ["
-          << HAZELCAST_VERSION << "] [" // TODO once we have an API exposing library version, use that instead
+          << HAZELCAST_VERSION << "] [" // TODO once we have an API for the library version, use that instead
           << file_name << ':' << line << "] "
           << msg
           << '\n';
@@ -78,7 +79,7 @@ void logger::default_handler(const std::string &instance_name,
         std::lock_guard<std::mutex> g(cout_lock);
         std::cout << sstrm.str(); // TODO should we flush or not ?
     }
-}
+} 
 
 
 } // namespace hazelcast

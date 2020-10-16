@@ -3183,19 +3183,17 @@ Hazelcast C++ client emits log messages to provide information about important e
 
 If no logging configuration is made by the user, the client prints log messages of level `INFO` or above to the standard output. 
 
-The library provides two classes for customizing the logging behaviour: an abstract base class `hazelcast::logger` that defines the common interface for all Hazelcast loggers and a derived one `hazelcast::default_logger` that implements a basic `std::ostream`-based logger with level filtering support. 
-
-The logging can be configured by setting a factory on the client configuration object:
-```C++
-clientConfig.getLoggerConfig().logger_factory(
-    [](std::string instance_name, std::string cluster_name) -> std::shared_ptr<hazelcast::logger> {
-        return make_shared<my_logger>(/* ... */);
-    }
-);
+You can set the minimum level in which the log messages are printed using `LoggerConfig::min_level`:
+```c++
+clientConfig.getLoggerConfig().minimum_level(hazelcast::logger::level::warning);
 ```
-`hazelcast::client::HazelcastClient` objects that are provided with the above configuration will call the factory function with their instance and cluster names to get a pointer to an `hazelcast::logger`.
 
-If you want to redirect logs emitted by the client to your application's log handling mechanism or use a sink other than an `std::ostream`, you can derive from `hazelcast::logger` and return an instance of the derived class in the logger factory. If you simply want logs to be printed to a different `std::ostream` (e.g.: `std::cerr`) or change the filtering level, you can still use `hazelcast::default_logger`. Refer to the examples directory and the API documentation for details.
+You can set a callback function to be called on each log message: 
+```c++
+clientConfig.getLoggerConfig().handler(my_log_handler);
+```
+
+Refer to the examples directory and the API documentation for details.
 
 ## 7.10. Raw Pointer API
 

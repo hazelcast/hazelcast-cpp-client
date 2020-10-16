@@ -32,21 +32,44 @@ namespace hazelcast {
         namespace config {
             class HAZELCAST_API LoggerConfig {
             public:
+                /**
+                 * Minimum level of log messages to be printed.
+                 * Log messages with a severity level below the minimum level will be ignored.
+                 * \return minimum severity level 
+                 */
                 logger::level min_level() {
                     return min_level_;
                 }
 
+                /**
+                 * Set the minimum severity level of log messages to be printed.
+                 * Log messages with a severity level below the minimum level will be ignored.
+                 * \return *this
+                 */
                 LoggerConfig &min_level(logger::level level) {
                     min_level_ = level;
                     return *this;
                 }
 
+
+                /**
+                 * \return log handler function 
+                 */
                 logger::handler_type handler() {
                     return handler_;
                 }
 
+                /**
+                 * Set a log handler function to be invoked on each log message.
+                 * Setting this config will cause the default logging behaviour to be disabled.
+                 * The handler function takes the instance and cluster name of the client, the file
+                 * and the line number from which the log was emitted, the severity level, and the
+                 * log message. 
+                 * \warning The handler function must be thread-safe.
+                 * \return *this
+                 */
                 LoggerConfig &handler(logger::handler_type handler) {
-                    util::Preconditions::checkTrue(handler, "log handler cannot be empty");
+                    util::Preconditions::checkTrue(handler, "log handler may not be empty");
                     handler_ = std::move(handler);
                     return *this;
                 }

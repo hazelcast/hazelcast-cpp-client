@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#include <memory>
-
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/logger.h>
+
 
 int main() {
     hazelcast::client::ClientConfig config;
 
+    // Setting the minimum log level to hazelcast::logger::level::off
+    // will cause logs to be disabled.
     config.getLoggerConfig().min_level(hazelcast::logger::level::off);
 
     hazelcast::client::HazelcastClient hz(config);
