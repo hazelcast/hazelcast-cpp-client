@@ -21,8 +21,9 @@
 #include <memory>
 #include <iostream>
 
+#include <boost/thread/shared_mutex.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
-#include <mutex>
 
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -48,18 +49,18 @@ namespace hazelcast {
             }
 
             void operator=(const SynchronizedMap<K, V> &rhs) {
-                std::lock_guard<std::mutex> lg(mapLock);
-                std::lock_guard<std::mutex> lgRhs(rhs.mapLock);
+                boost::unique_lock<boost::shared_mutex> g1(mapLock);
+                boost::unique_lock<boost::shared_mutex> g2(rhs.mapLock);
                 internalMap = rhs.internalMap;
             }
 
             virtual ~SynchronizedMap() {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::unique_lock<boost::shared_mutex> g(mapLock);
                 internalMap.clear();
             }
 
             bool containsKey(const K &key) const {
-                std::lock_guard<std::mutex> guard(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 return internalMap.find(key) != internalMap.end();
             }
 
@@ -69,10 +70,17 @@ namespace hazelcast {
              *         or <tt>null</tt> if there was no mapping for the key
              */
             std::shared_ptr<V> putIfAbsent(const K &key, std::shared_ptr<V> value) {
-                std::lock_guard<std::mutex> lg(mapLock);
-                if (internalMap.count(key) > 0) {
-                    return internalMap[key];
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
+                auto found = internalMap.find(key);
+                if (found != internalMap.end()) {
+                    return found->second;
                 } else {
+                    // upgrade to write lock
+                    boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(read_lock);
+                    found = internalMap.find(key);
+                    if (found != internalMap.end()) {
+                        return found->second;
+                    }
                     internalMap[key] = value;
                     return nullptr;
                 }
@@ -84,13 +92,15 @@ namespace hazelcast {
              *         or <tt>null</tt> if there was no mapping for the key
              */
             std::shared_ptr<V> put(const K &key, std::shared_ptr<V> value) {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::unique_lock<boost::shared_mutex> write_lock(mapLock);
                 std::shared_ptr<V> returnValue;
                 auto foundIter = internalMap.find(key);
                 if (foundIter != internalMap.end()) {
                     returnValue = foundIter->second;
+                    foundIter->second = value;
+                } else {
+                    internalMap[key] = value;
                 }
-                internalMap[key] = value;
                 return returnValue;
             }
 
@@ -100,7 +110,7 @@ namespace hazelcast {
              *
              */
             std::shared_ptr<V> get(const K &key) {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 auto foundIter = internalMap.find(key);
                 if (foundIter != internalMap.end()) {
                     return foundIter->second;
@@ -116,11 +126,16 @@ namespace hazelcast {
             *
             */
             std::shared_ptr<V> remove(const K &key) {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 auto foundIter = internalMap.find(key);
                 if (foundIter != internalMap.end()) {
+                    // upgrade to write lock
+                    boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(read_lock);
+                    foundIter = internalMap.find(key);
                     std::shared_ptr<V> v = foundIter->second;
-                    internalMap.erase(foundIter);
+                    if (foundIter != internalMap.end()) {
+                        internalMap.erase(key);
+                    }
                     return v;
                 }
 
@@ -128,19 +143,21 @@ namespace hazelcast {
             }
 
             bool remove(const K &key, const std::shared_ptr<V> &value) {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 auto foundIter = internalMap.find(key);
                 if (foundIter != internalMap.end()) {
                     auto &foundValue = foundIter->second;
                     if (!value || !foundValue) {
                         if (value == foundValue) {
-                            internalMap.erase(foundIter);
-                            return true;
+                            // upgrade to write lock
+                            boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(read_lock);
+                            return internalMap.erase(key) > 0;
                         }
                     }
                     if (value == foundValue || *value == *foundValue) {
-                        internalMap.erase(foundIter);
-                        return true;
+                        // upgrade to write lock
+                        boost::upgrade_to_unique_lock<boost::shared_mutex> write_lock(read_lock);
+                        return internalMap.erase(key) > 0;
                     }
                 }
 
@@ -148,7 +165,7 @@ namespace hazelcast {
             }
 
             std::vector<std::pair<K, std::shared_ptr<V> > > entrySet() {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
                 entries.reserve(internalMap.size());
                 for (const auto &v : internalMap) {
@@ -158,7 +175,7 @@ namespace hazelcast {
             }
 
             std::vector<std::pair<K, std::shared_ptr<V> > > clear() {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::unique_lock<boost::shared_mutex> write_lock(mapLock);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
                 entries.reserve(internalMap.size());
                 for (const auto &v : internalMap) {
@@ -169,7 +186,7 @@ namespace hazelcast {
             }
 
             std::vector<std::shared_ptr<V> > values() {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 std::vector<std::shared_ptr<V> > valueArray;
                 for (const auto &v : internalMap) {
                     valueArray.emplace_back(v.second);
@@ -178,7 +195,7 @@ namespace hazelcast {
             }
 
             std::vector<K> keys() {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 std::vector<K> keysArray;
                 for (const auto &v : internalMap) {
                     keysArray.emplace_back(v.first);
@@ -197,12 +214,12 @@ namespace hazelcast {
             }
 
             virtual size_t size() const {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 return internalMap.size();
             }
 
             std::unique_ptr<std::pair<K, std::shared_ptr<V> > > getEntry(size_t index) const {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 if (index < 0 || index >= internalMap.size()) {
                     return std::unique_ptr<std::pair<K, std::shared_ptr<V> > >();
                 }
@@ -215,13 +232,13 @@ namespace hazelcast {
             }
 
             bool empty() const {
-                std::lock_guard<std::mutex> lg(mapLock);
+                boost::upgrade_lock<boost::shared_mutex> read_lock(mapLock);
                 return internalMap.empty();
             }
 
         private:
             std::unordered_map<K, std::shared_ptr<V>, Hash> internalMap;
-            mutable std::mutex mapLock;
+            mutable boost::shared_mutex mapLock;
         };
     }
 }

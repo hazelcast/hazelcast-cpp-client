@@ -1646,7 +1646,7 @@ namespace hazelcast {
 
                 ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client)
                         : client(client), logger_(client.getLogger()), partitionCount(0),
-                        partition_table_(boost::shared_ptr<partition_table>(new partition_table{nullptr, -1})) {
+                          partition_table_(boost::shared_ptr<partition_table>(new partition_table{nullptr, -1, std::make_shared<std::unordered_map<int32_t, boost::uuids::uuid>>()})) {
                 }
 
                 void ClientPartitionServiceImpl::handle_event(const std::shared_ptr<connection::Connection>& connection, int32_t version,
@@ -1672,8 +1672,8 @@ namespace hazelcast {
 
                 boost::uuids::uuid ClientPartitionServiceImpl::getPartitionOwner(int32_t partitionId) {
                     auto table_ptr = partition_table_.load();
-                    auto it = table_ptr->partitions.find(partitionId);
-                    if (it != table_ptr->partitions.end()) {
+                    auto it = table_ptr->partitions->find(partitionId);
+                    if (it != table_ptr->partitions->end()) {
                         return it->second;
                     }
                     return boost::uuids::nil_uuid();
@@ -1760,12 +1760,12 @@ namespace hazelcast {
                     partition_table_.store(nullptr);
                 }
 
-                std::unordered_map<int32_t, boost::uuids::uuid> ClientPartitionServiceImpl::convert_to_map(
+                std::shared_ptr<std::unordered_map<int32_t, boost::uuids::uuid>> ClientPartitionServiceImpl::convert_to_map(
                         const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) {
-                    std::unordered_map<int32_t, boost::uuids::uuid> new_partitions;
+                    auto new_partitions = std::make_shared<std::unordered_map<int32_t, boost::uuids::uuid>>();
                     for (auto const &e : partitions) {
                         for (auto pid: e.second) {
-                            new_partitions.insert({pid, e.first});
+                            new_partitions->insert({pid, e.first});
                         }
                     }
                     return new_partitions;

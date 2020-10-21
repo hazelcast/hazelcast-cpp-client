@@ -66,7 +66,7 @@ namespace hazelcast {
                     struct partition_table {
                         std::shared_ptr<connection::Connection> connection;
                         int32_t version;
-                        std::unordered_map<int32_t, boost::uuids::uuid> partitions;
+                        std::shared_ptr<std::unordered_map<int32_t, boost::uuids::uuid>> partitions;
                     };
 
                     class PartitionImpl : public client::impl::Partition {
@@ -91,7 +91,7 @@ namespace hazelcast {
                     void log_failure(const std::shared_ptr<connection::Connection> &connection, int32_t version,
                                      const partition_table &current, const std::string &cause);
 
-                    std::unordered_map<int32_t, boost::uuids::uuid>
+                    std::shared_ptr<std::unordered_map<int32_t, boost::uuids::uuid>>
                     convert_to_map(const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
                     ClientContext &client;
