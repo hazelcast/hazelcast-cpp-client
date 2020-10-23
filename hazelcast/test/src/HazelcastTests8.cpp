@@ -43,6 +43,7 @@
 #include <string>
 #include <cstdlib>
 #include <boost/asio.hpp>
+#include <hazelcast/client/protocol/ClientMessage.h>
 
 #ifdef HZ_BUILD_WITH_SSL
 
@@ -1631,17 +1632,65 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMessageTest: public ClientTestSupport {};
+            class ClientMessageTest: public ClientTestSupport {
+            protected:
+                struct BufferedMessageHandler {
+                    std::shared_ptr<ClientMessage> msg;
+
+                    void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message) {
+                        msg = message;
+                    }
+                };
+            };
             TEST_F(ClientMessageTest, testOperationNameGetSet) {
                 protocol::ClientMessage message(8);
                 constexpr const char* operation_name = "OPERATION_NAME";
                 message.setOperationName(operation_name);
                 ASSERT_EQ(message.getOperationName(), operation_name);
             }
+
             TEST_F(ClientMessageTest, testOperationNameAfterRequestEncoding) {
                 auto request = protocol::codec::map_size_encode("map_name");
                 ASSERT_EQ(request.getOperationName(), "Map.Size");
             }
+
+            TEST_F(ClientMessageTest, testFragmentedMessageHandling) {
+                std::ifstream file ("hazelcast/test/resources/fragments_bytes.bin", std::ios::in|std::ios::binary|std::ios::ate);
+                if (file.is_open())
+                {
+                    auto size = file.tellg();
+                    auto memblock = std::vector<char>(size);
+                    file.seekg (0, std::ios::beg);
+                    file.read (&memblock[0], size);
+                    file.close();
+
+                    util::ByteBuffer buffer(&memblock[0], size);
+
+                    BufferedMessageHandler handler;
+                    protocol::ClientMessageBuilder<BufferedMessageHandler> builder(handler);
+                    // it is important to check the onData return value since there may be left data less than a message
+                    // header size, and this may cause an infinite loop.
+                    while (buffer.hasRemaining() && builder.onData(buffer)) {
+                    }
+
+                    // the client message should be ready at this point
+                    // the expected message is
+                    ASSERT_TRUE(handler.msg);
+
+                    auto datas_opt = handler.msg->get_first_var_sized_field<std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data>>>();
+                    ASSERT_TRUE(datas_opt);
+                    auto &datas = datas_opt.value();
+                    ASSERT_EQ(10, datas.size());
+
+                    SerializationConfig serializationConfig;
+                    serialization::pimpl::SerializationService ss{serializationConfig};
+                    for (int32_t i = 0;i < 10; ++i) {
+                        ASSERT_EQ(i, ss.toObject<int32_t>(&datas[i].first));
+                        ASSERT_EQ(i, ss.toObject<int32_t>(&datas[i].second));
+                    }
+                }
+            }
+
         }
     }
 }

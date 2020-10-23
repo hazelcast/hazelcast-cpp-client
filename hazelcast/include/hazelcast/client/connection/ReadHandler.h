@@ -40,8 +40,6 @@ namespace hazelcast {
         namespace connection {
             class Connection;
 
-            class InSelector;
-
             class HAZELCAST_API ReadHandler {
             public:
                 ReadHandler(Connection &connection, size_t bufferSize);
@@ -56,7 +54,7 @@ namespace hazelcast {
                 util::ByteBuffer byteBuffer;
             private:
 
-                protocol::ClientMessageBuilder builder;
+                protocol::ClientMessageBuilder<Connection> builder;
                 std::atomic<std::chrono::steady_clock::duration> lastReadTimeDuration;
             };
         }
