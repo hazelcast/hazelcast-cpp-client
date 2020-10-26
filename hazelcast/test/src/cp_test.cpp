@@ -702,12 +702,13 @@ namespace hazelcast {
                     std::ostringstream script;
                     script << "result = instance_0.getCPSubsystem().getLock(\"" << proxy_name
                            << "\").isLocked() ? \"1\" : \"0\";";
-
                     Response response;
-                    remoteController->executeOnController(response, factory->getClusterId(), script.str().c_str(),
-                                                          Lang::JAVASCRIPT);
-                    ASSERT_TRUE(response.success);
-                    ASSERT_EQ("0", response.result);
+
+                    ASSERT_TRUE_EVENTUALLY((remoteController->executeOnController(response, factory->getClusterId(),
+                                                                                  script.str().c_str(),
+                                                                                  Lang::JAVASCRIPT), response.success &&
+                                                                                                     response.result ==
+                                                                                                     "0"));
                 }
 
                 class basic_sessionless_semaphore_test : public cp_test<counting_semaphore> {
