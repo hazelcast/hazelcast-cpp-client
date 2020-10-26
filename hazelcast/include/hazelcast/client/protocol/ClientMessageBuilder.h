@@ -13,29 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * ClientMessageBuilder.h
- *
- *  Created on: Apr 10, 2015
- *      Author: ihsan
- */
-
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
-
 #include <unordered_map>
-#include <list>
-#include <stdint.h>
-#include <memory>
-#include <memory>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace util {
@@ -43,10 +25,8 @@ namespace hazelcast {
     }
     namespace client {
         namespace protocol {
-            class IMessageHandler;
-
             template<typename MessageHandler>
-            class HAZELCAST_API ClientMessageBuilder {
+            class ClientMessageBuilder {
             public:
                 ClientMessageBuilder(MessageHandler &handler)  : message_handler_(handler) {}
 
@@ -144,9 +124,6 @@ namespace hazelcast {
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 
 
