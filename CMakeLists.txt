@@ -22,6 +22,7 @@
 #  -DHZ_BUILD_TESTS=ON
 #  -DHZ_BUILD_EXAMPLES=ON
 #  -DHZ_COMPILE_WITH_SSL=ON
+#  -DHZ_DISABLE_LOGGING=ON
 
 cmake_minimum_required (VERSION 3.12.4)
 
@@ -95,6 +96,11 @@ FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/src/*h")
 
 include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/src)
+
+if (HZ_DISABLE_LOGGING)
+	message(STATUS "Logging is disabled.")
+	add_definitions(-DHZ_LOGGING_DISABLED)
+endif()
 
 if (HZ_COMPILE_WITH_SSL)
 	message(STATUS "Building the library with SSL support.")

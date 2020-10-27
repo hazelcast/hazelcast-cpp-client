@@ -11,6 +11,7 @@
 using hazelcast::logger;
 
 TEST(log_level_test, test_ordering) {
+    ASSERT_LT(logger::level::all, logger::level::finest);
     ASSERT_LT(logger::level::finest, logger::level::finer);
     ASSERT_LT(logger::level::finer, logger::level::fine);
     ASSERT_LT(logger::level::fine, logger::level::info);
@@ -48,6 +49,18 @@ TEST(logger_test, test_enabled) {
     ASSERT_TRUE(lg.enabled(logger::level::severe));
 }
 
+TEST(logger_test, test_enabled_when_off) {
+    std::ostringstream os;
+
+    logger lg{ "", "", logger::level::off, nullptr };
+
+    ASSERT_FALSE(lg.enabled(logger::level::finest));
+    ASSERT_FALSE(lg.enabled(logger::level::finer));
+    ASSERT_FALSE(lg.enabled(logger::level::fine));
+    ASSERT_FALSE(lg.enabled(logger::level::info));
+    ASSERT_FALSE(lg.enabled(logger::level::warning));
+    ASSERT_FALSE(lg.enabled(logger::level::severe));
+}
 
 TEST(logger_test, test_log) {
     struct {

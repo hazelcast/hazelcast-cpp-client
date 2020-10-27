@@ -41,6 +41,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <cstdlib>
 #include <boost/asio.hpp>
 #include <hazelcast/client/protocol/ClientMessage.h>

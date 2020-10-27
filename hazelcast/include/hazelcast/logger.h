@@ -55,6 +55,7 @@ private:
 };
 
 enum class logger::level : int {
+    all = std::numeric_limits<int>::min(),
     finest = 300,
     finer = 400,
     fine = 500,
