@@ -20,9 +20,9 @@
 int main() {
     hazelcast::client::ClientConfig config;
 
-    // Setting the minimum log level to hazelcast::logger::level::off
-    // will cause logs to be disabled.
-    config.getLoggerConfig().min_level(hazelcast::logger::level::off);
+    // Setting the log level to hazelcast::logger::level::off
+    // will disable the logs completely.
+    config.getLoggerConfig().level(hazelcast::logger::level::off);
 
     hazelcast::client::HazelcastClient hz(config);
 

@@ -20,7 +20,7 @@
 int main() {
     hazelcast::client::ClientConfig config;
 
-    config.getLoggerConfig().min_level(hazelcast::logger::level::finest);
+    config.getLoggerConfig().level(hazelcast::logger::level::finest);
 
     hazelcast::client::HazelcastClient hz(config);
 

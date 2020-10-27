@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 add_executable(disable_logging ./disable_logging.cpp)
-add_executable(set_minimum_level ./set_minimum_level.cpp)
+add_executable(set_level ./set_level.cpp)
 add_executable(custom_log_handler ./custom_log_handler.cpp)
 

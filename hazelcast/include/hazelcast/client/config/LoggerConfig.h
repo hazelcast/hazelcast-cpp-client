@@ -34,20 +34,20 @@ namespace hazelcast {
             public:
                 /**
                  * Minimum level of log messages to be printed.
-                 * Log messages with a severity level below the minimum level will be ignored.
+                 * Log messages with a severity level below this level will be ignored.
                  * \return minimum severity level 
                  */
-                logger::level min_level() {
-                    return min_level_;
+                logger::level level() {
+                    return level_;
                 }
 
                 /**
                  * Set the minimum severity level of log messages to be printed.
-                 * Log messages with a severity level below the minimum level will be ignored.
+                 * Log messages with a severity level below this level will be ignored.
                  * \return *this
                  */
-                LoggerConfig &min_level(logger::level level) {
-                    min_level_ = level;
+                LoggerConfig &level(logger::level level) {
+                    level_ = level;
                     return *this;
                 }
 
@@ -75,7 +75,7 @@ namespace hazelcast {
                 }
 
             private:
-                logger::level min_level_{ logger::level::info };
+                logger::level level_{ logger::level::info };
                 logger::handler_type handler_{ logger::default_handler };
             };
         }

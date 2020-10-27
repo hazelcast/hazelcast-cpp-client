@@ -2,6 +2,7 @@
 
 #include <string>
 #include <functional>
+#include <limits>
 
 #include <hazelcast/util/HazelcastDll.h>
 
@@ -20,8 +21,8 @@ namespace hazelcast {
 class HAZELCAST_API logger {
 public:
     /**
-    * Log severity level
-    */
+     * Log severity level
+     */
     enum class level;
 
     using handler_type = std::function<void(const std::string &,
@@ -32,7 +33,7 @@ public:
                                             const std::string &)>;
 
     logger(std::string instance_name, std::string cluster_name,
-           level min_level, handler_type handler);
+           level lvl, handler_type handler);
 
     bool enabled(level lvl) noexcept;
 
@@ -49,16 +50,18 @@ public:
 private:
     const std::string instance_name_;
     const std::string cluster_name_;
-    const level min_level_;
+    const level level_;
     const handler_type handler_;
 };
 
 enum class logger::level : int {
-    finest = 20,
-    info = 50,
-    warning = 90,
-    severe = 100,
-    off = 999
+    finest = 300,
+    finer = 400,
+    fine = 500,
+    info = 800,
+    warning = 900,
+    severe = 1000,
+    off = std::numeric_limits<int>::max()
 };
 
 HAZELCAST_API std::ostream& operator<<(std::ostream&, logger::level level);

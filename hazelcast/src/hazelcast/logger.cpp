@@ -21,6 +21,12 @@ std::ostream& operator<<(std::ostream &os, logger::level lvl) {
         case logger::level::info:
             os << "INFO";
             break;
+        case logger::level::fine:
+            os << "FINE";
+            break;
+        case logger::level::finer:
+            os << "FINER";
+            break;
         case logger::level::finest:
             os << "FINEST";
             break;
@@ -31,16 +37,15 @@ std::ostream& operator<<(std::ostream &os, logger::level lvl) {
     return os;
 }
 
-logger::logger(std::string instance_name, std::string cluster_name, level min_level, handler_type handler)
+logger::logger(std::string instance_name, std::string cluster_name, level level, handler_type handler)
     : instance_name_{ std::move(instance_name) }
     , cluster_name_{ std::move(cluster_name) }
-    , min_level_{ min_level }
+    , level_{ level }
     , handler_{ std::move(handler) } 
-
 {}
 
 bool logger::enabled(level lvl) noexcept {
-    return lvl >= min_level_;
+    return lvl >= level_;
 }
 
 void logger::log(const char *file_name, int line, 

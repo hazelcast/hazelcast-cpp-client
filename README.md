@@ -3179,19 +3179,33 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 
 ### 7.9.2. Logging Configuration
 
-Hazelcast C++ client emits log messages to provide information about important events and errors. The log levels in increasing order of severity are: `FINEST`, `INFO`, `WARNING` and `SEVERE`.
+Hazelcast C++ client emits log messages to provide information about important events and errors. The log levels in increasing order of severity are: `FINEST`, `FINER`, `FINE`, `INFO`, `WARNING` and `SEVERE`.
 
 If no logging configuration is made by the user, the client prints log messages of level `INFO` or above to the standard output. 
 
-You can set the minimum level in which the log messages are printed using `LoggerConfig::min_level`:
+You can set the minimum level in which the log messages are printed using `LoggerConfig::level`:
 ```c++
-clientConfig.getLoggerConfig().minimum_level(hazelcast::logger::level::warning);
+clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
 ```
 
-You can set a callback function to be called on each log message: 
+You can set a callback function to be called on each log message via `LoggerConfig::handler`:
 ```c++
 clientConfig.getLoggerConfig().handler(my_log_handler);
 ```
+Setting a log handler will disable the default log handling behavior. 
+
+The handler takes instance name of the client object that emitted the message, cluster name that the client is connected, name of the source code and the line number where the log was produced, the severity level of the log message, and the log message itself. Here is the exact signature for a log handler function:
+```c++
+void my_log_handler(
+    const std::string &instance_name, // instance name of the client
+    const std::string &cluster_name,  // name of the cluster to which the client is connected
+    const char *file_name,            // name of the source file where the log was produced
+    int line,                         // line number where the log was produced
+    level lvl,                        // severity level of the message
+    const std::string &msg);          // the message
+```
+
+As the callback function is called from multiple threads, it must be thread-safe.
 
 Refer to the examples directory and the API documentation for details.
 
