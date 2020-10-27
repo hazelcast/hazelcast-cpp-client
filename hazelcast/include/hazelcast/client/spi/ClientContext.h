@@ -27,9 +27,8 @@
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
+    class logger;
+
     namespace cp {
         namespace internal {
             namespace session {
@@ -139,7 +138,7 @@ namespace hazelcast {
 
                 spi::ProxyManager &getProxyManager();
 
-                util::ILogger &getLogger();
+                logger &getLogger();
 
                 client::impl::statistics::Statistics &getClientstatistics();
 

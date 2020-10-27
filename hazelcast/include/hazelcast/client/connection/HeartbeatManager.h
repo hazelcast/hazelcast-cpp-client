@@ -19,10 +19,8 @@
 #include <chrono>
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
+    class logger;
 
-    }
     namespace client {
         namespace spi {
             class ClientContext;
@@ -48,7 +46,7 @@ namespace hazelcast {
             private:
                 spi::ClientContext &client;
                 ClientConnectionManagerImpl &clientConnectionManager;
-                util::ILogger &logger;
+                logger &logger_;
                 std::chrono::steady_clock::duration heartbeat_interval_;
                 std::chrono::steady_clock::duration heartbeat_timeout_;
                 std::shared_ptr<boost::asio::steady_timer> timer;

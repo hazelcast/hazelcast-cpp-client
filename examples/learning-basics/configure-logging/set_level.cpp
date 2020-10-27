@@ -19,10 +19,10 @@
 
 int main() {
     hazelcast::client::ClientConfig config;
-    config.setLogLevel(hazelcast::client::FINEST);
-    hazelcast::client::HazelcastClient hz(config);
 
-    std::cout << "Finished" << std::endl;
+    config.getLoggerConfig().level(hazelcast::logger::level::finest);
+
+    hazelcast::client::HazelcastClient hz(config);
 
     return 0;
 }

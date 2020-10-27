@@ -20,9 +20,9 @@
 
 #include <gtest/gtest.h>
 
-#include "ClientTestSupportBase.h"
+#include <hazelcast/logger.h>
 
-#include <hazelcast/util/ILogger.h>
+#include "ClientTestSupportBase.h"
 
 #define assertEquals ASSERT_EQ
 #define assertTrue ASSERT_TRUE
@@ -45,12 +45,12 @@ namespace hazelcast {
                 ClientTestSupport();
 
             protected:
-                util::ILogger &getLogger();
+                logger &getLogger();
 
                 const std::string &getTestName() const;
 
             private:
-                std::shared_ptr<hazelcast::util::ILogger> logger;
+                std::shared_ptr<logger> logger_;
                 std::string testName;
             };
 

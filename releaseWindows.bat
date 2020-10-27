@@ -53,22 +53,18 @@ call scripts\build-windows.bat 64 SHARED Release COMPILE_WITHOUT_SSL || exit /b 
 copy buildSHARED64Release\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\tls\shared\
 rd /s /q buildSHARED64Release
 
-echo "Copying external libraries and the examples"
-mkdir cpp\external\include
-xcopy external\release_include\* cpp\external\include\ /s
+echo "Copying the examples"
 mkdir cpp\examples\src
 xcopy examples\* cpp\examples\src\ /s
 
-echo "Linking to external libraries and examples for 32-bit release"
+echo "Linking to examples for 32-bit release"
 pushd cpp\Windows_32
 mklink /j examples ..\examples
-mklink /j external ..\external
 popd
 
-echo "Linking to external libraries and examples for 64-bit release"
+echo "Linking to examples for 64-bit release"
 pushd cpp\Windows_64
 mklink /j examples ..\examples
-mklink /j external ..\external
 popd
 
 @REM Verify release

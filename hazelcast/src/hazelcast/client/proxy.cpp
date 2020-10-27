@@ -258,7 +258,7 @@ namespace hazelcast {
 
             ReliableTopicImpl::ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context)
                     : proxy::ProxyImpl(ReliableTopic::SERVICE_NAME, instanceName, context),
-                      logger(context->getLogger()),
+                      logger_(context->getLogger()),
                       config(context->getClientConfig().getReliableTopicConfig(instanceName)) {
                 ringbuffer = context->getHazelcastClientImplementation()->getDistributedObject<Ringbuffer>(
                         std::string(TOPIC_RB_PREFIX) + name);
@@ -276,7 +276,7 @@ namespace hazelcast {
                                          spi::ClientContext *context)
                     : ProxyImpl(serviceName, objectName, context), maxConfiguredReplicaCount(0),
                       observedClock(std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
-                      logger(context->getLogger()) {
+                      logger_(context->getLogger()) {
             }
 
             std::ostream &operator<<(std::ostream &os, const PNCounterImpl &proxy) {
@@ -436,8 +436,11 @@ namespace hazelcast {
             PNCounterImpl::tryChooseANewTarget(std::shared_ptr<std::unordered_set<Member>> excludedAddresses,
                                                boost::shared_ptr<Member> lastTarget,
                                                const exception::HazelcastException &lastException) {
-                logger.finest("Exception occurred while invoking operation on target ", *lastTarget,
-                              ", choosing different target. Cause: ", lastException);
+                HZ_LOG(logger_, finest,
+                    boost::str(boost::format("Exception occurred while invoking operation on target %1%, "
+                                             "choosing different target. Cause: %2%")
+                                             % lastTarget % lastException)
+                );
                 if (excludedAddresses == EMPTY_ADDRESS_LIST) {
                     // TODO: Make sure that this only affects the local variable of the method
                     excludedAddresses = std::make_shared<std::unordered_set<Member>>();
@@ -1637,7 +1640,7 @@ namespace hazelcast {
             namespace impl {
                 namespace reliable {
                     ReliableTopicExecutor::ReliableTopicExecutor(std::shared_ptr<Ringbuffer> rb,
-                                                                 util::ILogger &logger)
+                                                                 logger &lg)
                             : ringbuffer(std::move(rb)), q(10), shutdown(false) {
                         runnerThread = std::thread([&]() { Task(ringbuffer, q, shutdown).run(); });
                     }

@@ -22,7 +22,7 @@
 
 #include "hazelcast/client/connection/ConnectionListener.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/util/ILogger.h"
+#include "hazelcast/logger.h"
 
 namespace hazelcast {
     namespace util {
@@ -117,7 +117,7 @@ namespace hazelcast {
 
                         ClientContext &clientContext;
                         serialization::pimpl::SerializationService &serializationService;
-                        util::ILogger &logger;
+                        logger &logger_;
                         connection::ClientConnectionManagerImpl &clientConnectionManager;
                         std::unique_ptr<hazelcast::util::hz_thread_pool> eventExecutor;
                         std::vector<boost::asio::strand<boost::asio::thread_pool::executor_type>> eventStrands;

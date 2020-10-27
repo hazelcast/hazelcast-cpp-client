@@ -22,6 +22,7 @@
 #  -DHZ_BUILD_TESTS=ON
 #  -DHZ_BUILD_EXAMPLES=ON
 #  -DHZ_COMPILE_WITH_SSL=ON
+#  -DHZ_DISABLE_LOGGING=ON
 
 cmake_minimum_required (VERSION 3.12.4)
 
@@ -90,12 +91,16 @@ ENDIF (${IS_BIG_ENDIAN})
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
-set(EXTERNAL_SOURCES "${PROJECT_SOURCE_DIR}/external/src/easylogging++.cc")
 FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/src/*h")
 
-include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/src ${PROJECT_SOURCE_DIR}/external/release_include)
+include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/src)
+
+if (HZ_DISABLE_LOGGING)
+	message(STATUS "Logging is disabled.")
+	add_definitions(-DHZ_LOGGING_DISABLED)
+endif()
 
 if (HZ_COMPILE_WITH_SSL)
 	message(STATUS "Building the library with SSL support.")
@@ -168,7 +173,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror -fsanitize=address -fno-omit-frame-pointer")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall")
 
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${EXTERNAL_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME})
 
@@ -188,7 +193,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pipe -g -Wall -Werror ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -O3 -Wall ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}")
 
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${EXTERNAL_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME} pthread rt)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -206,7 +211,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /EHsc /bigobj")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /EHsc /bigobj")
 
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${EXTERNAL_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME})
 

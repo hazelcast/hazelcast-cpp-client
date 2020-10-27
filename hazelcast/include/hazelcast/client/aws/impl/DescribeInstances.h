@@ -29,9 +29,8 @@
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
+    class logger;
+
     namespace client {
         namespace config {
             class ClientAwsConfig;
@@ -45,7 +44,7 @@ namespace hazelcast {
                 class HAZELCAST_API DescribeInstances {
                 public:
                     DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint,
-                                      util::ILogger &logger);
+                                      logger &lg);
 
                     virtual ~DescribeInstances();
 
@@ -79,7 +78,7 @@ namespace hazelcast {
                     const std::string &endpoint;
                     std::unordered_map<std::string, std::string> attributes;
                     std::unique_ptr<util::SyncHttpsClient> httpsClient;
-                    util::ILogger &logger;
+                    logger &logger_;
 
                     static const std::string QUERY_PREFIX;
                     static const std::string IAM_ROLE_ENDPOINT;

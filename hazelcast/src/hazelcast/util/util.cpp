@@ -46,7 +46,6 @@
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/AddressUtil.h"
 #include "hazelcast/util/HashUtil.h"
 #include "hazelcast/util/Util.h"
@@ -54,7 +53,6 @@
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/Clearable.h"
 #include "hazelcast/util/hz_thread_pool.h"
-#include <mutex>
 
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/util/Closeable.h"
@@ -67,6 +65,7 @@
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/ExceptionUtil.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -271,104 +270,7 @@ namespace hazelcast {
         Closeable::~Closeable() = default;
     }
 }
-
-namespace hazelcast {
-    namespace util {
-        ILogger::ILogger(const std::string &instanceName, const std::string &clusterName, const std::string &version,
-                         const client::config::LoggerConfig &loggerConfig)
-                : instanceName(instanceName), version(version), loggerConfig(loggerConfig) {
-            std::stringstream out;
-            out << instanceName << "[" << clusterName << "] [" << HAZELCAST_VERSION << "]";
-            prefix = out.str();
-
-            easyLogger = el::Loggers::getLogger(instanceName);
-        }
-
-        ILogger::~ILogger() = default;
-
-        bool ILogger::start() {
-            std::string configurationFileName = loggerConfig.getConfigurationFileName();
-            if (!configurationFileName.empty()) {
-                el::Configurations defaultConf(configurationFileName);
-                if (!defaultConf.parseFromFile(configurationFileName)) {
-                    return false;
-                }
-                return el::Loggers::reconfigureLogger(easyLogger, defaultConf) != nullptr;
-            }
-
-            el::Configurations defaultConf;
-
-            std::call_once(elOnceflag, el::Loggers::addFlag, el::LoggingFlag::DisableApplicationAbortOnFatalLog);
-
-            defaultConf.set(el::Level::Global, el::ConfigurationType::Format,
-                            std::string("%datetime{%d/%M/%Y %h:%m:%s.%g} %level: [%thread] ") + prefix + " %msg");
-
-            defaultConf.set(el::Level::Global, el::ConfigurationType::ToStandardOutput, "true");
-
-            defaultConf.set(el::Level::Global, el::ConfigurationType::ToFile, "false");
-
-            // Disable all levels first and then enable the desired levels
-            defaultConf.set(el::Level::Global, el::ConfigurationType::Enabled, "false");
-
-            client::LoggerLevel::Level logLevel = loggerConfig.getLogLevel();
-            if (logLevel <= client::LoggerLevel::FINEST) {
-                defaultConf.set(el::Level::Debug, el::ConfigurationType::Enabled, "true");
-            }
-            if (logLevel <= client::LoggerLevel::INFO) {
-                defaultConf.set(el::Level::Info, el::ConfigurationType::Enabled, "true");
-            }
-            if (logLevel <= client::LoggerLevel::WARNING) {
-                defaultConf.set(el::Level::Warning, el::ConfigurationType::Enabled, "true");
-            }
-            if (logLevel <= client::LoggerLevel::SEVERE) {
-                defaultConf.set(el::Level::Fatal, el::ConfigurationType::Enabled, "true");
-            }
-            return el::Loggers::reconfigureLogger(easyLogger, defaultConf) != nullptr;
-        }
-
-        bool ILogger::isEnabled(const client::LoggerLevel::Level &logLevel) const {
-            return logLevel >= this->loggerConfig.getLogLevel();
-        }
-
-        bool ILogger::isEnabled(int level) const {
-            return isEnabled(static_cast<client::LoggerLevel::Level>(level));
-        }
-
-        bool ILogger::isFinestEnabled() const {
-            return isEnabled(client::LoggerLevel::FINEST);
-        }
-
-        const std::string &ILogger::getInstanceName() const {
-            return instanceName;
-        }
-
-        void ILogger::log_str(el::Level level, const std::string &s) {
-            std::lock_guard<std::mutex> lock(mutex_);
-
-            switch (level) {
-                case el::Level::Debug:
-                    easyLogger->debug(s);
-                    break;
-                case el::Level::Info:
-                    easyLogger->info(s);
-                    break;
-                case el::Level::Warning:
-                    easyLogger->warn(s);
-                    break;
-                case el::Level::Fatal:
-                    easyLogger->fatal(s);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        bool ILogger::enabled(el::Level level) const {
-            return easyLogger->enabled(level);
-        }
-    }
-}
-
+        
 namespace hazelcast {
     namespace util {
         int32_t UTFUtil::isValidUTF8(const std::string &str) {
@@ -768,7 +670,7 @@ namespace hazelcast {
         const int AddressHelper::MAX_PORT_TRIES = 3;
         const int AddressHelper::INITIAL_FIRST_PORT = 5701;
 
-        std::vector<client::Address> AddressHelper::getSocketAddresses(const std::string &address, ILogger &logger) {
+        std::vector<client::Address> AddressHelper::getSocketAddresses(const std::string &address, logger &lg) {
             const AddressHolder addressHolder = AddressUtil::getAddressHolder(address, -1);
             const std::string scopedAddress = !addressHolder.getScopeId().empty()
                                               ? addressHolder.getAddress() + '%' + addressHolder.getScopeId()
@@ -779,17 +681,20 @@ namespace hazelcast {
             if (port == -1) {
                 maxPortTryCount = MAX_PORT_TRIES;
             }
-            return getPossibleSocketAddresses(port, scopedAddress, maxPortTryCount, logger);
+            return getPossibleSocketAddresses(port, scopedAddress, maxPortTryCount, lg);
         }
 
         std::vector<client::Address>
         AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount,
-                                                  ILogger &logger) {
+                                                  logger &lg) {
             std::unique_ptr<boost::asio::ip::address> inetAddress;
             try {
                 inetAddress.reset(new boost::asio::ip::address(AddressUtil::getByName(scopedAddress)));
             } catch (client::exception::UnknownHostException &ignored) {
-                logger.finest("Address ", scopedAddress, " ip number is not available", ignored.what());
+                HZ_LOG(lg, finest,
+                    boost::str(boost::format("Address %1% ip number is not available %2%")
+                                             % scopedAddress % ignored.what())
+                );
             }
 
             int possiblePort = port;
@@ -803,9 +708,10 @@ namespace hazelcast {
                     try {
                         addresses.push_back(client::Address(scopedAddress, possiblePort + i));
                     } catch (client::exception::UnknownHostException &ignored) {
-                        std::ostringstream out;
-                        out << "Address [" << scopedAddress << "] ip number is not available." << ignored.what();
-                        logger.finest(out.str());
+                        HZ_LOG(lg, finest,
+                            boost::str(boost::format("Address [%1%] ip number is not available. %2%")
+                                                     % scopedAddress % ignored.what())
+                        );
                     }
                 }
             } else if (inetAddress->is_v4() || inetAddress->is_v6()) {

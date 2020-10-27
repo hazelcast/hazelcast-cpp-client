@@ -18,6 +18,7 @@
 #include <memory>
 #include <atomic>
 #include <stdint.h>
+#include <thread>
 
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
@@ -48,7 +49,7 @@ namespace hazelcast {
                             std::shared_ptr<ExecutionCallback<ringbuffer::ReadResultSet>> callback;
                         };
 
-                        ReliableTopicExecutor(std::shared_ptr<Ringbuffer> rb, util::ILogger &logger);
+                        ReliableTopicExecutor(std::shared_ptr<Ringbuffer> rb, logger &lg);
 
                         virtual ~ReliableTopicExecutor();
 

@@ -3179,26 +3179,41 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 
 ### 7.9.2. Logging Configuration
 
-By default, the Hazelcast logger prints out the INFO level and above logs to the standard output. The following log levels exist:
+Hazelcast C++ client emits log messages to provide information about important events and errors. The log levels in increasing order of severity are: `FINEST`, `FINER`, `FINE`, `INFO`, `WARNING` and `SEVERE`.
 
-* FINEST (DEBUG)
-* INFO
-* WARNING
-* SEVERE (FATAL)
+If no logging configuration is made by the user, the client prints log messages of level `INFO` or above to the standard output. 
 
-The order is in increasing order. Hence, for INFO level configuration the INFO, WARNING and SEVERE logs are written.
-
-In some applications you may want to use your custom logging statements, you may want to direct the logs to a file instead of standard output, and enable/disable certain log levels. This can be done using the LoggerConfig in the ClientConfig object which is used to configure the client. Each client may have a separate configuration. The customized options needs to be configured using a configuration file. E.g.:
-
-```
-clientConfig.getLoggerConfig().setConfigurationFileName("logger-config.txt");
+You can set the minimum level in which the log messages are printed using `LoggerConfig::level`:
+```c++
+clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
 ```
 
-The file name is relative path to the application working directory or should be an absolute path. The configuration file will use the format as supported by the configured logger type. Currently, only the easylogging++ (https://github.com/muflihun/easyloggingpp/tree/v8.91) logger is supported, hence the configuration should be done in accordance with the easylogging++ configuration: https://github.com/muflihun/easyloggingpp/tree/v8.91#configuration-file 
+`hazelcast::logger::level::off` and `hazelcast::logger::level::all` can be used to enable or disable all levels:
+```c++
+clientConfig.getLoggerConfig().level(hazelcast::logger::level::off); // disables logging completely
+clientConfig.getLoggerConfig().level(hazelcast::logger::level::all); // enables all log levels
+```
 
-If you provide a non-existent or invalid logger configuration file, the library will fail fast by throwing exception::IllegalStateException with the cause of the problem.
+You can set a callback function to be called on each log message via `LoggerConfig::handler`:
+```c++
+clientConfig.getLoggerConfig().handler(my_log_handler);
+```
+Setting a log handler will disable the default log handling behavior. 
 
-> **IMPORTANT NOTE: If you configured the logger configuration file, then the `ClientConfig::setLogLevel` will not be effective since the levels will be controlled from the configuration file.**
+The handler takes instance name of the client object that emitted the message, cluster name that the client is connected, name of the source code and the line number where the log was produced, the severity level of the log message, and the log message itself. Here is the exact signature for a log handler function:
+```c++
+void my_log_handler(
+    const std::string &instance_name, // instance name of the client
+    const std::string &cluster_name,  // name of the cluster to which the client is connected
+    const char *file_name,            // name of the source file where the log was produced
+    int line,                         // line number where the log was produced
+    level lvl,                        // severity level of the message
+    const std::string &msg);          // the message
+```
+
+As the callback function is called from multiple threads, it must be thread-safe.
+
+Refer to the examples directory and the API documentation for details.
 
 ## 7.10. Raw Pointer API
 

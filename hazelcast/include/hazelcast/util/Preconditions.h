@@ -82,7 +82,6 @@ namespace hazelcast {
                 if (!argument) {
                     throw client::exception::IllegalArgumentException(errorMessage);
                 }
-                return argument;
             }
 
             /**

@@ -31,9 +31,8 @@
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
+    class logger;
+
     namespace client {
         namespace cluster {
             namespace impl {
@@ -329,7 +328,7 @@ namespace hazelcast {
                  * session consistency guarantees when reading from different replicas.
                  */
                 util::Sync<std::shared_ptr<cluster::impl::VectorClock> > observedClock;
-                util::ILogger &logger;
+                logger &logger_;
 
                 int64_t get_and_update_timestamps(boost::future<protocol::ClientMessage> f);
             };

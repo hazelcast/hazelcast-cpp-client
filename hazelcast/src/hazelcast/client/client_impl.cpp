@@ -32,12 +32,10 @@
 
 #include <vector>
 #include <functional>
-#include <easylogging++.h>
 #include <boost/format.hpp>
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/Cluster.h"
@@ -59,12 +57,11 @@
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/proxy/FlakeIdGeneratorImpl.h"
+#include "hazelcast/logger.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
 #endif
-
-INITIALIZE_EASYLOGGINGPP
 
 namespace hazelcast {
     namespace client {
@@ -146,8 +143,9 @@ namespace hazelcast {
                     instanceName = out.str();
                 }
 
-                logger.reset(new util::ILogger(instanceName, clientConfig.getClusterName(), HAZELCAST_VERSION,
-                                               clientConfig.getLoggerConfig()));
+                auto logger_config = clientConfig.getLoggerConfig();
+                logger_ = std::make_shared<logger>(instanceName, clientConfig.getClusterName(),
+                                                   logger_config.level(), logger_config.handler());
 
                 executionService = initExecutionService();
 
@@ -184,8 +182,6 @@ namespace hazelcast {
             HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() = default;
 
             void HazelcastClientInstanceImpl::start() {
-                startLogger();
-
                 lifecycleService.fireLifecycleEvent(LifecycleEvent::STARTING);
 
                 try {
@@ -197,19 +193,6 @@ namespace hazelcast {
                 } catch (std::exception &) {
                     lifecycleService.shutdown();
                     throw;
-                }
-            }
-
-            void HazelcastClientInstanceImpl::startLogger() {
-                try {
-                    if (!logger->start()) {
-                        throw (exception::ExceptionBuilder<exception::IllegalStateException>(
-                                "HazelcastClientInstanceImpl::initLogger")
-                                << "Could not start logger for instance " << instanceName).build();
-                    }
-                } catch (std::invalid_argument &ia) {
-                    BOOST_THROW_EXCEPTION(
-                            exception::IllegalStateException("HazelcastClientInstanceImpl::initLogger", ia.what()));
                 }
             }
 
@@ -273,9 +256,11 @@ namespace hazelcast {
                 std::shared_ptr<connection::AddressTranslator> addressTranslator;
                 if (awsConfig.isEnabled()) {
                     try {
-                        addressTranslator.reset(new aws::impl::AwsAddressTranslator(awsConfig, *logger));
+                        addressTranslator.reset(new aws::impl::AwsAddressTranslator(awsConfig, *logger_));
                     } catch (exception::InvalidConfigurationException &e) {
-                        logger->warning(std::string("Invalid aws configuration! ") + e.what());
+                        HZ_LOG(*logger_, warning,
+                            boost::str(boost::format("Invalid aws configuration! %1%") % e.what())
+                        );
                         throw;
                     }
                 } else {
@@ -287,7 +272,8 @@ namespace hazelcast {
             }
 
             void HazelcastClientInstanceImpl::on_cluster_restart() {
-                logger->info("Clearing local state of the client, because of a cluster restart");
+                HZ_LOG(*logger_, info,
+                    "Clearing local state of the client, because of a cluster restart");
 
                 nearCacheManager->clearAllNearCaches();
                 //clear the member list version
@@ -309,7 +295,7 @@ namespace hazelcast {
                                                                                        << " is not a valid port number. It should be between 0-65535 inclusive.").build();
                     }
                     addressProviders.push_back(std::shared_ptr<connection::AddressProvider>(
-                            new spi::impl::AwsAddressProvider(awsConfig, awsMemberPort, *logger)));
+                            new spi::impl::AwsAddressProvider(awsConfig, awsMemberPort, *logger_)));
                 }
 
                 addressProviders.push_back(std::shared_ptr<connection::AddressProvider>(
@@ -337,7 +323,7 @@ namespace hazelcast {
 
             void HazelcastClientInstanceImpl::initalizeNearCacheManager() {
                 nearCacheManager.reset(
-                        new internal::nearcache::NearCacheManager(executionService, serializationService, *logger));
+                        new internal::nearcache::NearCacheManager(executionService, serializationService, *logger_));
             }
 
             Client HazelcastClientInstanceImpl::getLocalEndpoint() const {
@@ -356,8 +342,8 @@ namespace hazelcast {
                 }
             }
 
-            const std::shared_ptr<util::ILogger> &HazelcastClientInstanceImpl::getLogger() const {
-                return logger;
+            const std::shared_ptr<logger> &HazelcastClientInstanceImpl::getLogger() const {
+                return logger_;
             }
 
             boost::uuids::uuid HazelcastClientInstanceImpl::random_uuid() {
@@ -371,14 +357,14 @@ namespace hazelcast {
 
             BaseEventHandler::~BaseEventHandler() = default;
 
-            BaseEventHandler::BaseEventHandler() : logger(NULL) {}
+            BaseEventHandler::BaseEventHandler() : logger_(nullptr) {}
 
-            void BaseEventHandler::setLogger(util::ILogger *iLogger) {
-                BaseEventHandler::logger = iLogger;
+            void BaseEventHandler::setLogger(logger *lg) {
+                BaseEventHandler::logger_ = lg;
             }
 
-            util::ILogger *BaseEventHandler::getLogger() const {
-                return logger;
+            logger *BaseEventHandler::getLogger() const {
+                return logger_;
             }
 
         }

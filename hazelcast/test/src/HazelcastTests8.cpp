@@ -16,6 +16,7 @@
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
+#include "hazelcast/logger.h"
 #include "serialization/Serializables.h"
 #include <memory>
 #include <utility>
@@ -34,13 +35,13 @@
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
-#include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/LifecycleListener.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
 #include <unordered_set>
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <cstdlib>
 #include <boost/asio.hpp>
 #include <hazelcast/client/protocol/ClientMessage.h>
@@ -69,7 +70,6 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
@@ -1250,8 +1250,8 @@ namespace hazelcast {
                     class Task {
                     public:
                         Task(Stats &stats, std::shared_ptr<IMap> map,
-                             std::shared_ptr<hazelcast::util::ILogger> logger) : stats(stats), map(map),
-                                                                                 logger(std::move(logger)) {
+                             std::shared_ptr<logger> lg) : stats(stats), map(map),
+                                                           logger_(std::move(lg)) {
                         }
 
                         void run() {
@@ -1278,16 +1278,13 @@ namespace hazelcast {
                                     }
                                     updateStats(updateIntervalCount, getCount, putCount, removeCount);
                                 } catch (hazelcast::client::exception::IOException &e) {
-                                    logger->warning(
-                                            std::string("[SimpleMapTest IOException] ") + e.what());
+                                    HZ_LOG(*logger_, warning, std::string("[SimpleMapTest IOException] ") + e.what());
                                 } catch (hazelcast::client::exception::HazelcastClientNotActiveException &e) {
-                                    logger->warning(
-                                            std::string("[SimpleMapTest::run] ") + e.what());
+                                    HZ_LOG(*logger_, warning, std::string("[SimpleMapTest::run] ") + e.what());
                                 } catch (hazelcast::client::exception::IException &e) {
-                                    logger->warning(
-                                            std::string("[SimpleMapTest:run] ") + e.what());
+                                    HZ_LOG(*logger_, warning, std::string("[SimpleMapTest::run] ") + e.what());
                                 } catch (...) {
-                                    logger->warning("[SimpleMapTest:run] unknown exception!");
+                                    HZ_LOG(*logger_, warning, "[SimpleMapTest:run] unknown exception!");
                                     running = false;
                                     throw;
                                 }
@@ -1318,7 +1315,7 @@ namespace hazelcast {
 
                         Stats &stats;
                         std::shared_ptr<IMap> map;
-                        std::shared_ptr<hazelcast::util::ILogger> logger;
+                        std::shared_ptr<logger> logger_;
                     };
 
 
@@ -1334,18 +1331,10 @@ namespace hazelcast {
                         clientConfig.setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "10");
                         auto member = server.getMember();
                         clientConfig.getNetworkConfig().addAddress(Address(member.host, member.port)).setConnectionAttemptPeriod(10 * 1000);
-                        clientConfig.setLogLevel(FINEST);
 
                         Stats stats;
-                        std::shared_ptr<hazelcast::util::ILogger> logger(
-                                new hazelcast::util::ILogger("SimpleMapTest", "SimpleMapTest", "testversion",
-                                                             config::LoggerConfig()));
-                        if (!logger->start()) {
-                            BOOST_THROW_EXCEPTION(
-                                    (client::exception::ExceptionBuilder<client::exception::IllegalStateException>(
-                                            "SimpleMapTest::start") << "Could not start logger "
-                                                                    << logger->getInstanceName()).build());
-                        }
+                        auto lg = std::make_shared<logger>("SimpleMapTest", "SimpleMapTest",
+                                                           logger::level::finest, logger::default_handler);
 
                         auto monitor = std::async([&]() {
                             StatsPrinterTask(stats).run();
@@ -1357,7 +1346,7 @@ namespace hazelcast {
 
                         std::vector<std::future<void>> futures;
                         for (int i = 0; i < THREAD_COUNT; i++) {
-                            futures.push_back(std::async([&]() { Task(stats, map, logger).run(); }));
+                            futures.push_back(std::async([&]() { Task(stats, map, lg).run(); }));
                         }
 
                         monitor.wait();
@@ -1491,24 +1480,16 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            HazelcastServer::HazelcastServer(HazelcastServerFactory &factory) : factory(factory), isStarted(false),
-                                                                                isShutdown(false),
-                                                                                logger(new hazelcast::util::ILogger(
-                                                                                        "HazelcastServer",
-                                                                                        "HazelcastServer",
-                                                                                        "testversion",
-                                                                                        config::LoggerConfig())) {
+            HazelcastServer::HazelcastServer(HazelcastServerFactory &factory) 
+                : factory(factory)
+                , isStarted(false)
+                , isShutdown(false)
+                , logger_(std::make_shared<logger>("HazelcastServer", "HazelcastServer", 
+                                                   logger::level::info, logger::default_handler)) {
                 start();
             }
 
             bool HazelcastServer::start() {
-                if (!logger->start()) {
-                    BOOST_THROW_EXCEPTION(
-                            (client::exception::ExceptionBuilder<client::exception::IllegalStateException>(
-                                    "HazelcastServer::start") << "Could not start logger "
-                                                              << logger->getInstanceName()).build());
-                }
-
                 bool expected = false;
                 if (!isStarted.compare_exchange_strong(expected, true)) {
                     return true;
@@ -1518,10 +1499,10 @@ namespace hazelcast {
                     member = factory.startServer();
                     isStarted = true;
                     return true;
-                } catch (exception::IllegalStateException &illegalStateException) {
-                    std::ostringstream out;
-                    out << "Could not start new member!!! " << illegalStateException.what();
-                    logger->severe(out.str());
+                } catch (exception::IllegalStateException &e) {
+                    HZ_LOG(*logger_, severe,
+                        boost::str(boost::format("Could not start new member!!! %1%") % e.what())
+                    );
                     isStarted = false;
                     return false;
                 }
@@ -1583,17 +1564,11 @@ namespace hazelcast {
                 std::ostringstream out;
                 out << testInfo->test_case_name() << "_" << testInfo->name();
                 testName = out.str();
-                logger = std::make_shared<hazelcast::util::ILogger>("Test", testName, "TestVersion",
-                                                                    config::LoggerConfig());
-                if (!logger->start()) {
-                    BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::IllegalStateException>(
-                            "ClientTestSupport::ClientTestSupport()") << "Could not start logger "
-                                                                      << testInfo->name()).build());
-                }
+                logger_ = std::make_shared<logger>("Test", testName, logger::level::info, logger::default_handler);
             }
 
-            hazelcast::util::ILogger &ClientTestSupport::getLogger() {
-                return *logger;
+            logger &ClientTestSupport::getLogger() {
+                return *logger_;
             }
 
             const std::string &ClientTestSupport::getTestName() const {

@@ -27,7 +27,6 @@
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
@@ -221,18 +220,6 @@ namespace hazelcast {
             * \return itself ClientConfig
             */
             ClientConfig &setLoadBalancer(LoadBalancer *loadBalancer);
-
-            /**
-            *  enum LogLevel { SEVERE, WARNING, INFO, FINEST };
-            *  set INFO to see every log.
-            *  set WARNING to see only possible warnings and serious errors.
-            *  set SEVERE to see only serious errors
-            *  set FINEST to see all messages including debug messages.
-            *
-            * \param loggerLevel The log level to be set.
-            * \return The configured client configuration for chaining.
-             */
-            ClientConfig &setLogLevel(LogLevel loggerLevel);
 
             /**
             *
