@@ -902,11 +902,6 @@ namespace hazelcast {
     }
 }
 
-
-
-
-
-
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -1049,10 +1044,6 @@ namespace hazelcast {
     }
 }
 
-
-
-
-
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -1117,9 +1108,6 @@ namespace hazelcast {
     }
 }
 
-
-
-
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -1145,9 +1133,6 @@ namespace hazelcast {
         }
     }
 }
-
-
-
 
 namespace hazelcast {
     namespace client {
@@ -2792,8 +2777,6 @@ namespace hazelcast {
         }
     }
 }
-
-
 
 namespace hazelcast {
     namespace client {

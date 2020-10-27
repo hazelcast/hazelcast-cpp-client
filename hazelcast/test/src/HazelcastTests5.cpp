@@ -340,7 +340,6 @@ namespace hazelcast {
 }
 */
 
-
 namespace hazelcast {
     namespace client {
 
@@ -387,7 +386,6 @@ namespace hazelcast {
         }
     }
 }
-
 
 namespace hazelcast {
     namespace client {
@@ -503,7 +501,6 @@ namespace hazelcast {
         }
     }
 }
-
 
 namespace hazelcast {
     namespace client {

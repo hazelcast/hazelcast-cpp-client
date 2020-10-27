@@ -1632,6 +1632,11 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
+            class VersionTest: public ClientTestSupport {};
+            TEST_F(VersionTest, test_client_version) {
+                ASSERT_EQ(HAZELCAST_VERSION, version());
+            }
+
             class ClientMessageTest: public ClientTestSupport {
             protected:
                 struct BufferedMessageHandler {
