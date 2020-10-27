@@ -15,6 +15,8 @@
  */
 #pragma once
 
+#include <boost/utility/string_view.hpp>
+
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -289,10 +291,23 @@ namespace hazelcast {
              */
             spi::LifecycleService &getLifecycleService();
 
+            /**
+             *
+             * @return the CP subsystem that offers a set of in-memory linearizable data structures
+             */
             cp::cp_subsystem &get_cp_subsystem();
+
         private:
             std::shared_ptr<impl::HazelcastClientInstanceImpl> clientImpl;
         };
+
+        /**
+         *
+         * @return the version of the client
+         */
+        constexpr boost::string_view version() {
+            return HAZELCAST_VERSION;
+        }
 
     }
 }
