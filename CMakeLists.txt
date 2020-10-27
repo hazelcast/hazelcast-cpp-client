@@ -127,17 +127,25 @@ ELSE ()
 ENDIF()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(BOOST_HINTS "C:\\\\Boost")
-endif ()
+	set(BOOST_HINTS "C:\\\\Boost")
+
+	if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+		set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+		set(Boost_USE_MULTITHREADED      ON)
+		set(Boost_USE_STATIC_RUNTIME     OFF)
+		set(Boost_USE_DEBUG_RUNTIME      OFF)
+
+		set(Boost_USE_DEBUG_LIBS         OFF) # ignore debug libs and
+		set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+	else()
+		set(Boost_USE_DEBUG_LIBS         ON) # ignore debug libs and
+		set(Boost_USE_RELEASE_LIBS       OFF)  # only find release libs
+	endif()
+	message(STATUS "Using Boost_USE_DEBUG_LIBS: ${Boost_USE_DEBUG_LIBS}")
+	message(STATUS "Using Boost_USE_RELEASE_LIBS: ${Boost_USE_RELEASE_LIBS}")
+endif()
 find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono HINTS ${BOOST_HINTS})
 include_directories(${Boost_INCLUDE_DIRS})
-if ("x${Boost_LIBRARY_DIRS}" STREQUAL "x")
-	if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-		message(STATUS "Could not locate boost lib directory at Windows. Setting Boost_LIBRARY_DIRS to ${Boost_LIBRARY_DIRS}")
-		set (Boost_LIBRARY_DIRS C:\\Boost\\lib)
-	endif()
-endif()
-link_directories(${Boost_LIBRARY_DIRS})
 link_libraries(Boost::thread Boost::chrono)
 add_definitions("-DBOOST_THREAD_VERSION=5")
 message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
