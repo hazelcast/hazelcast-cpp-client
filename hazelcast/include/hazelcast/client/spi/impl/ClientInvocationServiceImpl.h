@@ -72,7 +72,7 @@ namespace hazelcast {
 
                     void add_backup_listener();
                 private:
-                    class ResponseProcessor {
+                    class HAZELCAST_API ResponseProcessor {
                     public:
                         ResponseProcessor(logger &lg,
                                           ClientInvocationServiceImpl &invocationService,

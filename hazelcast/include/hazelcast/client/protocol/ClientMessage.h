@@ -222,7 +222,7 @@ namespace hazelcast {
                 static constexpr size_t EVENT_HEADER_LEN = PARTITION_ID_FIELD_OFFSET + INT32_SIZE;
                 static constexpr size_t RESPONSE_HEADER_LEN = RESPONSE_BACKUP_ACKS_FIELD_OFFSET + INT8_SIZE;
                 //offset valid for fragmentation frames only
-                static constexpr size_t FRAGMENTATION_ID_OFFSET = 0;
+                static constexpr size_t FRAGMENTATION_ID_OFFSET = SIZE_OF_FRAME_LENGTH_AND_FLAGS;
 
                 ClientMessage();
 
@@ -866,14 +866,16 @@ namespace hazelcast {
 
                 int32_t getPartitionId() const;
 
+                inline bool is_flag_set(uint16_t flag_mask) const {
+                    return flag_mask == (getHeaderFlags() & flag_mask);
+                }
+
                 static inline bool is_flag_set(uint16_t flags, uint16_t flag_mask) {
                     return flag_mask == (flags & flag_mask);
                 }
 
                 //Builder function
-/*
-                void append(const ClientMessage *msg);
-*/
+                void append(std::shared_ptr<ClientMessage> msg);
 
                 bool isRetryable() const;
 
@@ -893,6 +895,8 @@ namespace hazelcast {
                 static const frame_header_t &null_frame();
                 static const frame_header_t &begin_frame();
                 static const frame_header_t &end_frame();
+
+                void drop_fragmentation_frame();
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const ClientMessage &message);
 

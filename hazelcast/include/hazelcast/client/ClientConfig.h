@@ -186,20 +186,6 @@ namespace hazelcast {
             const std::vector<LifecycleListener> &getLifecycleListeners() const;
 
             /**
-            * \deprecated Please use addListener(const std::shared_ptr<MembershipListener> &listener) instead.
-            *
-            * Adds a listener to configuration to be registered when HazelcastClient starts.
-            * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
-            * otherwise it will slow down the system.
-            *
-            * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
-            *
-            * \param listener MembershipListener *listener
-            * \return itself ClientConfig
-            */
-            ClientConfig &addListener(MembershipListener *listener);
-
-            /**
             * Adds a listener to configuration to be registered when HazelcastClient starts.
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
             * otherwise it will slow down the system.

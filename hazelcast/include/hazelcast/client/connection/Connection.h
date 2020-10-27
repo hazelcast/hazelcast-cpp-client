@@ -89,7 +89,7 @@ namespace hazelcast {
 
                 void setRemoteUuid(boost::uuids::uuid remoteUuid);
 
-                virtual void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message);
+                void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message);
 
                 int getConnectionId() const;
 
