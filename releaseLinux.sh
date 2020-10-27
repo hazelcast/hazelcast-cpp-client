@@ -84,22 +84,18 @@ cp buildSTATIC64Release_SSL/libHazelcastClient* cpp/Linux_64/hazelcast/lib/tls/
 
 cp buildSHARED64Release_SSL/libHazelcastClient* cpp/Linux_64/hazelcast/lib/tls/
 
-echo "Copying external libraries and the examples"
-mkdir -p cpp/external
-cp -R external/release_include cpp/external/include
+echo "Copying the examples"
 mkdir -p cpp/examples
 cp -r examples cpp/examples/src
 
-echo "Linking to external libraries and examples for 32-bit release"
+echo "Linking to examples for 32-bit release"
 cd cpp/Linux_32
 ln -s ../examples .
-ln -s ../external .
 cd -
 
-echo "Linking to external libraries and examples for 64-bit release"
+echo "Linking to examples for 64-bit release"
 cd cpp/Linux_64
 ln -s ../examples .
-ln -s ../external .
 cd -
 
 # Verify release

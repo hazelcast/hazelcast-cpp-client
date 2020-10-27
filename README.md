@@ -3188,6 +3188,12 @@ You can set the minimum level in which the log messages are printed using `Logge
 clientConfig.getLoggerConfig().level(hazelcast::logger::level::warning);
 ```
 
+`hazelcast::logger::level::off` and `hazelcast::logger::level::all` can be used to enable or disable all levels:
+```c++
+clientConfig.getLoggerConfig().level(hazelcast::logger::level::off); // disables logging completely
+clientConfig.getLoggerConfig().level(hazelcast::logger::level::all); // enables all log levels
+```
+
 You can set a callback function to be called on each log message via `LoggerConfig::handler`:
 ```c++
 clientConfig.getLoggerConfig().handler(my_log_handler);
