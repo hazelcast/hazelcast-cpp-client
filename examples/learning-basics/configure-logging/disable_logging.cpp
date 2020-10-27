@@ -16,16 +16,15 @@
 
 #include <hazelcast/client/HazelcastClient.h>
 
+
 int main() {
     hazelcast::client::ClientConfig config;
 
-    // Configure logger using the configuration file,
-    // check https://github.com/muflihun/easyloggingpp/tree/v8.91#configuration-file for config file format
-    config.getLoggerConfig().setConfigurationFileName("./logger-config.txt");
+    // Setting the log level to hazelcast::logger::level::off
+    // will disable the logs completely.
+    config.getLoggerConfig().level(hazelcast::logger::level::off);
 
     hazelcast::client::HazelcastClient hz(config);
-
-    std::cout << "Finished" << std::endl;
 
     return 0;
 }

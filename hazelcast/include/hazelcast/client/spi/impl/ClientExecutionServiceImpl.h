@@ -31,7 +31,6 @@
 
 namespace hazelcast {
     namespace util {
-        class ILogger;
         class hz_thread_pool;
     }
 

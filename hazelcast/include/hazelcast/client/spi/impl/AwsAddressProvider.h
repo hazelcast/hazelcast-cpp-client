@@ -17,11 +17,12 @@
 #pragma once
 
 #include <unordered_map>
-#include "hazelcast/util/ILogger.h"
+
 #include "hazelcast/client/aws/AWSClient.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/connection/AddressProvider.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -37,7 +38,7 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API AwsAddressProvider : public connection::AddressProvider {
                 public:
-                    AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort, util::ILogger &logger);
+                    AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort, logger &lg);
 
                     ~AwsAddressProvider() override;
 
@@ -45,7 +46,7 @@ namespace hazelcast {
 
                 private:
                     std::string awsMemberPort;
-                    util::ILogger &logger;
+                    logger &logger_;
                     aws::AWSClient awsClient;
                     util::Sync<std::unordered_map<std::string, std::string> > privateToPublic;
 

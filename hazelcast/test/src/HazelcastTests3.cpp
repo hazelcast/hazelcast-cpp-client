@@ -45,7 +45,6 @@
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
-#include <hazelcast/util/ILogger.h>
 #include <ctime>
 #include <errno.h>
 #include <hazelcast/client/LifecycleListener.h>
@@ -91,7 +90,6 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"

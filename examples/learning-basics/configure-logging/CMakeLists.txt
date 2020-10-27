@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(setLogLevel ./setLogLevel.cpp)
-add_executable(configureEasyLoggingLogger ./configureEasyLoggingLogger.cpp)
+add_executable(disable_logging ./disable_logging.cpp)
+add_executable(set_level ./set_level.cpp)
+add_executable(custom_log_handler ./custom_log_handler.cpp)
 

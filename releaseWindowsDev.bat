@@ -17,7 +17,6 @@ cd ..
 echo "Moving 64bit libraries to target"
 mkdir .\cpp\Windows_64\hazelcast\lib
 mkdir .\cpp\Windows_64\hazelcast\include\hazelcast\
-mkdir .\cpp\Windows_64\external\include
 mkdir .\cpp\Windows_64\examples
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_64\hazelcast\include\hazelcast\
@@ -25,9 +24,6 @@ xcopy /S /Q hazelcast\generated-sources\include\hazelcast\* cpp\Windows_64\hazel
 
 copy ReleaseShared64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\
 copy ReleaseStatic64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\
-
-echo "Moving 64bit external libraries to target"
-xcopy /S /Q external\include\* cpp\Windows_64\external\include\
 
 echo "Moving 64bit examples to target"
 copy examples\*cpp  cpp\Windows_64\examples

@@ -18,11 +18,12 @@
 
 #pragma once
 
-#include "hazelcast/util/Closeable.h"
-#include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/exception/IException.h"
 #include <string>
 #include <sstream>
+
+#include "hazelcast/util/Closeable.h"
+#include "hazelcast/client/exception/IException.h"
+
 
 namespace hazelcast {
     namespace util {

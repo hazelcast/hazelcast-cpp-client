@@ -161,13 +161,19 @@ namespace hazelcast {
                                 TRANSACTION_EXISTS.store(false);
                                 f.get();
                             } catch (exception::IException &e) {
-                                clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:",
-                                                                  e);
+                                HZ_LOG(clientContext.getLogger(), warning,
+                                    boost::str(boost::format("Exception while rolling back the transaction. "
+                                                             "Exception: %1%")
+                                                             % e)
+                                );
                             }
                         });
                     } catch (exception::IException &exception) {
-                        clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:",
-                                                          exception);
+                        HZ_LOG(clientContext.getLogger(), warning,
+                            boost::str(boost::format("Exception while rolling back the transaction. "
+                                                     "Exception: %1%")
+                                                     % exception)
+                        );
                     }
                     state = TxnState::ROLLED_BACK;
                     TRANSACTION_EXISTS.store(false);

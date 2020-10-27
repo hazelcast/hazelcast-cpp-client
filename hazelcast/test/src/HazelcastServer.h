@@ -18,6 +18,8 @@
 
 #include <atomic>
 
+#include <hazelcast/logger.h>
+
 #include "HazelcastServerFactory.h"
 
 using namespace hazelcast::client::test::remote;
@@ -49,7 +51,7 @@ namespace hazelcast {
                 std::atomic_bool isStarted;
                 std::atomic_bool isShutdown;
                 remote::Member member;
-                std::shared_ptr<util::ILogger> logger;
+                std::shared_ptr<logger> logger_;
             };
         }
     }

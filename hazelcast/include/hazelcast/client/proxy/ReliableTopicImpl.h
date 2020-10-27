@@ -20,12 +20,12 @@
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 #include "hazelcast/client/Ringbuffer.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/topic/ReliableListener.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
+#include "hazelcast/logger.h"
 
 #include <memory>
 
@@ -49,7 +49,7 @@ namespace hazelcast {
                 boost::future<void> publish(serialization::pimpl::Data &&data);
             protected:
                 std::shared_ptr<Ringbuffer> ringbuffer;
-                util::ILogger &logger;
+                logger &logger_;
                 const config::ReliableTopicConfig *config;
             };
         }

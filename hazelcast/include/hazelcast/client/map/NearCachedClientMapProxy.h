@@ -32,6 +32,7 @@
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -56,7 +57,7 @@ namespace hazelcast {
                         : IMap(instanceName, context), cacheLocalEntries(false),
                           invalidateOnChange(false), keyStateMarker(NULL),
                           nearCacheConfig(*context->getClientConfig().getNearCacheConfig<K, V>(instanceName)),
-                          logger(context->getLogger()) {}
+                          logger_(context->getLogger()) {}
 
             protected:
                 typedef std::unordered_map<std::shared_ptr<serialization::pimpl::Data>, bool> MARKER_MAP;
@@ -400,10 +401,9 @@ namespace hazelcast {
                         invalidationListenerId = proxy::ProxyImpl::registerListener(createNearCacheEntryListenerCodec(),
                                                                                     handler).get();
                     } catch (exception::IException &e) {
-                        std::ostringstream out;
-                        out << "-----------------\n Near Cache is not initialized!!! \n-----------------";
-                        out << e.what();
-                        logger.severe(out.str());
+                        HZ_LOG(logger_, severe, 
+                            boost::str(boost::format("Near Cache is not initialized!!! %1%") % e.what()) 
+                        );
                     }
                 }
 
@@ -542,7 +542,7 @@ namespace hazelcast {
                 const config::NearCacheConfig<K, V> &nearCacheConfig;
                 std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V>> nearCache;
                 boost::uuids::uuid invalidationListenerId;
-                util::ILogger &logger;
+                logger &logger_;
             };
         }
     }

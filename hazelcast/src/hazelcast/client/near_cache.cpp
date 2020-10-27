@@ -42,8 +42,8 @@ namespace hazelcast {
                 		
                 NearCacheManager::NearCacheManager(const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
                                                    serialization::pimpl::SerializationService &ss,
-                                                   util::ILogger &logger)
-                        : executionService(es), serializationService(ss), logger(logger) {
+                                                   logger &lg)
+                        : executionService(es), serializationService(ss), logger_(lg) {
                 }
 
                 bool NearCacheManager::clearNearCache(const std::string &name) {

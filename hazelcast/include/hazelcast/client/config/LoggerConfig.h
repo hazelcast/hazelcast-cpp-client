@@ -15,9 +15,12 @@
  */
 #pragma once
 
+#include <stdexcept>
 #include <string>
 
+#include "hazelcast/logger.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Preconditions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,75 +29,54 @@
 
 namespace hazelcast {
     namespace client {
-        class HAZELCAST_API LoggerLevel {
-        public:
-            enum Level {
-                SEVERE = 100, WARNING = 90, INFO = 50, FINEST = 20
-            };
-        };
-
-        enum LogLevel {
-            SEVERE = LoggerLevel::SEVERE,
-            WARNING = LoggerLevel::WARNING,
-            INFO = LoggerLevel::INFO,
-            FINEST = LoggerLevel::FINEST
-        };
-
         namespace config {
             class HAZELCAST_API LoggerConfig {
             public:
-                class Type {
-                public:
-                    enum LoggerType {
-                        EASYLOGGINGPP
-                    };
-                };
-
-                LoggerConfig();
+                /**
+                 * Minimum level of log messages to be printed.
+                 * Log messages with a severity level below this level will be ignored.
+                 * \return minimum severity level 
+                 */
+                logger::level level() {
+                    return level_;
+                }
 
                 /**
-                 *
-                 * @return The type of the logger configured. see LoggerConfig::Type enum for possible loggers.
+                 * Set the minimum severity level of log messages to be printed.
+                 * Log messages with a severity level below this level will be ignored.
+                 * \return *this
                  */
-                Type::LoggerType getType() const;
+                LoggerConfig &level(logger::level level) {
+                    level_ = level;
+                    return *this;
+                }
+
 
                 /**
-                 *
-                 * @param type The type of the logger that is configured.
+                 * \return log handler function 
                  */
-                void setType(Type::LoggerType type);
+                logger::handler_type handler() {
+                    return handler_;
+                }
 
                 /**
-                 *
-                 * @return The logger configuration file. If this file is configured, no other configuration will be
-                 * applied but only what is configured in the file will be applied. All log levels will work based on
-                 * the provided configuration and setLogLevel will not be effective (You can enable disable any level
-                 * in the configuration file).
+                 * Set a log handler function to be invoked on each log message.
+                 * Setting this config will cause the default logging behaviour to be disabled.
+                 * The handler function takes the instance and cluster name of the client, the file
+                 * and the line number from which the log was emitted, the severity level, and the
+                 * log message. 
+                 * \warning The handler function must be thread-safe.
+                 * \return *this
                  */
-                const std::string &getConfigurationFileName() const;
-
-                /**
-                 *
-                 * @param fileName configuration file for the logger.
-                 */
-                void setConfigurationFileName(const std::string &fileName);
-
-                /**
-                 *
-                 * @return The level for which the logs will be printed.
-                 */
-                LoggerLevel::Level getLogLevel() const;
-
-                /**
-                 *
-                 * @param logLevel Set the log level for which the logs will be printed.
-                 */
-                void setLogLevel(LoggerLevel::Level logLevel);
+                LoggerConfig &handler(logger::handler_type handler) {
+                    util::Preconditions::checkTrue(handler, "log handler may not be empty");
+                    handler_ = std::move(handler);
+                    return *this;
+                }
 
             private:
-                Type::LoggerType type;
-                std::string configurationFileName;
-                LoggerLevel::Level logLevel;
+                logger::level level_{ logger::level::info };
+                logger::handler_type handler_{ logger::default_handler };
             };
         }
     }

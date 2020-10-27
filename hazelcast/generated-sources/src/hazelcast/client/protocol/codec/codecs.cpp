@@ -110,9 +110,11 @@ namespace hazelcast {
                         handle_partitionsview(version, partitions);
                         return;
                     }
-                    getLogger()->warning(
-                          "[client_addclusterviewlistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[client_addclusterviewlistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage client_createproxy_encode(const std::string  & name, const std::string  & serviceName) {
@@ -172,9 +174,11 @@ namespace hazelcast {
                         handle_partitionlost(partitionId, lostBackupCount, source);
                         return;
                     }
-                    getLogger()->warning(
-                          "[client_addpartitionlostlistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[client_addpartitionlostlistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage client_removepartitionlostlistener_encode(boost::uuids::uuid registrationId) {
@@ -228,9 +232,11 @@ namespace hazelcast {
                         handle_distributedobject(name, serviceName, eventType, source);
                         return;
                     }
-                    getLogger()->warning(
-                          "[client_adddistributedobjectlistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[client_adddistributedobjectlistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage client_removedistributedobjectlistener_encode(boost::uuids::uuid registrationId) {
@@ -325,9 +331,11 @@ namespace hazelcast {
                         handle_backup(sourceInvocationCorrelationId);
                         return;
                     }
-                    getLogger()->warning(
-                          "[client_localbackuplistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[client_localbackuplistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage client_triggerpartitionassignment_encode() {
@@ -759,9 +767,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[map_addentrylistenertokeywithpredicate_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[map_addentrylistenertokeywithpredicate_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage map_addentrylistenerwithpredicate_encode(const std::string  & name, const Data  & predicate, bool includeValue, int32_t listenerFlags, bool localOnly) {
@@ -799,9 +809,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[map_addentrylistenerwithpredicate_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[map_addentrylistenerwithpredicate_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage map_addentrylistenertokey_encode(const std::string  & name, const Data  & key, bool includeValue, int32_t listenerFlags, bool localOnly) {
@@ -839,9 +851,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[map_addentrylistenertokey_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[map_addentrylistenertokey_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage map_addentrylistener_encode(const std::string  & name, bool includeValue, int32_t listenerFlags, bool localOnly) {
@@ -877,9 +891,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[map_addentrylistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[map_addentrylistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage map_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId) {
@@ -923,9 +939,11 @@ namespace hazelcast {
                         handle_mappartitionlost(partitionId, uuid);
                         return;
                     }
-                    getLogger()->warning(
-                          "[map_addpartitionlostlistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[map_addpartitionlostlistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage map_removepartitionlostlistener_encode(const std::string  & name, boost::uuids::uuid registrationId) {
@@ -1532,9 +1550,11 @@ namespace hazelcast {
                         handle_imapbatchinvalidation(keys, sourceUuids, partitionUuids, sequences);
                         return;
                     }
-                    getLogger()->warning(
-                          "[map_addnearcacheinvalidationlistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[map_addnearcacheinvalidationlistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage map_fetchwithquery_encode(const std::string  & name, const std::vector<std::pair<int32_t, int32_t>>  & iterationPointers, int32_t batch, const Data  & projection, const Data  & predicate) {
@@ -1920,9 +1940,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[multimap_addentrylistenertokey_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[multimap_addentrylistenertokey_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage multimap_addentrylistener_encode(const std::string  & name, bool includeValue, bool localOnly) {
@@ -1957,9 +1979,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[multimap_addentrylistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[multimap_addentrylistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage multimap_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId) {
@@ -2390,9 +2414,11 @@ namespace hazelcast {
                         handle_item(item, uuid, eventType);
                         return;
                     }
-                    getLogger()->warning(
-                          "[queue_addlistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[queue_addlistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage queue_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId) {
@@ -2481,9 +2507,11 @@ namespace hazelcast {
                         handle_topic(item, publishTime, uuid);
                         return;
                     }
-                    getLogger()->warning(
-                          "[topic_addmessagelistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[topic_addmessagelistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage topic_removemessagelistener_encode(const std::string  & name, boost::uuids::uuid registrationId) {
@@ -2497,6 +2525,22 @@ namespace hazelcast {
 
                     msg.set(registrationId);
                     msg.set(name, true);
+
+                    return msg;
+                }
+
+                ClientMessage topic_publishall_encode(const std::string  & name, const std::vector<Data>  & messages) {
+                    size_t initial_frame_size = ClientMessage::REQUEST_HEADER_LEN ;
+                    ClientMessage msg(initial_frame_size);
+                    msg.setRetryable(false);
+                    msg.setOperationName("Topic.PublishAll");
+
+                    msg.setMessageType(static_cast<int32_t>(263168));
+                    msg.setPartitionId(-1);
+
+                    msg.set(name);
+
+                    msg.set(messages, true);
 
                     return msg;
                 }
@@ -2683,9 +2727,11 @@ namespace hazelcast {
                         handle_item(item, uuid, eventType);
                         return;
                     }
-                    getLogger()->warning(
-                          "[list_addlistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[list_addlistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage list_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId) {
@@ -3057,9 +3103,11 @@ namespace hazelcast {
                         handle_item(item, uuid, eventType);
                         return;
                     }
-                    getLogger()->warning(
-                          "[set_addlistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[set_addlistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage set_removelistener_encode(const std::string  & name, boost::uuids::uuid registrationId) {
@@ -3860,9 +3908,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[replicatedmap_addentrylistenertokeywithpredicate_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[replicatedmap_addentrylistenertokeywithpredicate_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage replicatedmap_addentrylistenerwithpredicate_encode(const std::string  & name, const Data  & predicate, bool localOnly) {
@@ -3898,9 +3948,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[replicatedmap_addentrylistenerwithpredicate_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[replicatedmap_addentrylistenerwithpredicate_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage replicatedmap_addentrylistenertokey_encode(const std::string  & name, const Data  & key, bool localOnly) {
@@ -3936,9 +3988,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[replicatedmap_addentrylistenertokey_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[replicatedmap_addentrylistenertokey_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage replicatedmap_addentrylistener_encode(const std::string  & name, bool localOnly) {
@@ -3972,9 +4026,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[replicatedmap_addentrylistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[replicatedmap_addentrylistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage replicatedmap_removeentrylistener_encode(const std::string  & name, boost::uuids::uuid registrationId) {
@@ -4066,9 +4122,11 @@ namespace hazelcast {
                         handle_entry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
-                    getLogger()->warning(
-                          "[replicatedmap_addnearcacheentrylistener_handler::handle] Unknown message type (",
-                          messageType, ") received on event handler.");
+                    HZ_LOG(*getLogger(), warning,
+                        boost::str(boost::format("[replicatedmap_addnearcacheentrylistener_handler::handle] "
+                                                 "Unknown message type (%1%) received on event handler.")
+                                                 % messageType)
+                    );
                 }
 
                 ClientMessage transactionalmap_containskey_encode(const std::string  & name, boost::uuids::uuid txnId, int64_t threadId, const Data  & key) {
