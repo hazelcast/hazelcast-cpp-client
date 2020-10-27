@@ -43,9 +43,9 @@ SET(HZ_VERSION 4.0-SNAPSHOT)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")
 	SET(CMAKE_BUILD_TYPE Debug)
-else()
-	message(STATUS "Build type is  ${CMAKE_BUILD_TYPE}")
 endif ()
+
+message(STATUS "Build type is  ${CMAKE_BUILD_TYPE}")
 
 add_definitions(-DHAZELCAST_VERSION="${HZ_VERSION}")
 
@@ -107,7 +107,7 @@ if (HZ_COMPILE_WITH_SSL)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
 
-	If(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		# This is a bug in CMake that causes it to prefer the system version over
 		# the one in the specified ROOT folder. see
 		# https://stackoverflow.com/questions/58446253/xcode-11-ld-error-your-binary-is-not-an-allowed-client-of-usr-lib-libcrypto-dy
@@ -131,9 +131,17 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif ()
 find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono HINTS ${BOOST_HINTS})
 include_directories(${Boost_INCLUDE_DIRS})
+if ("x${Boost_LIBRARY_DIRS}" STREQUAL "x")
+	if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+		message(STATUS "Could not locate boost lib directory at Windows. Setting Boost_LIBRARY_DIRS to ${Boost_LIBRARY_DIRS}")
+		set (Boost_LIBRARY_DIRS C:\\Boost\\lib)
+	endif()
+endif()
+link_directories(${Boost_LIBRARY_DIRS})
 link_libraries(Boost::thread Boost::chrono)
 add_definitions("-DBOOST_THREAD_VERSION=5")
 message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+message(STATUS "Using Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 
 IF (NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64"))
     message(STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)")
