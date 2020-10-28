@@ -96,7 +96,7 @@ namespace hazelcast {
 
                             try {
                                 token();
-                            } catch (std::exception &) {
+                            } catch (std::exception &e) {
                                 assert(false);
                             }
 

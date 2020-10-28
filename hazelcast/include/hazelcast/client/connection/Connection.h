@@ -111,7 +111,7 @@ namespace hazelcast {
 
                 boost::optional<Address> getLocalSocketAddress() const;
 
-                std::chrono::steady_clock::time_point getStartTime() const;
+                std::chrono::system_clock::time_point getStartTime() const;
 
                 Socket &getSocket();
 
@@ -126,7 +126,7 @@ namespace hazelcast {
 
                 void innerClose();
 
-                std::chrono::steady_clock::time_point startTime;
+                std::chrono::system_clock::time_point startTime;
                 std::atomic<std::chrono::steady_clock::duration> closedTimeDuration;
                 spi::ClientContext &clientContext;
                 protocol::IMessageHandler &invocationService;

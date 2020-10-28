@@ -789,7 +789,7 @@ namespace hazelcast {
                                    ClientConnectionManagerImpl &clientConnectionManager,
                                    std::chrono::steady_clock::duration &connectTimeoutInMillis)
                     : readHandler(*this, 16 << 10),
-                      startTime(std::chrono::steady_clock::now()),
+                      startTime(std::chrono::system_clock::now()),
                       closedTimeDuration(),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
@@ -1017,7 +1017,7 @@ namespace hazelcast {
                 return connectionId < rhs.connectionId;
             }
 
-            std::chrono::steady_clock::time_point Connection::getStartTime() const {
+            std::chrono::system_clock::time_point Connection::getStartTime() const {
                 return startTime;
             }
 
