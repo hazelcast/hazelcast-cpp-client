@@ -135,11 +135,11 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		set(Boost_USE_STATIC_RUNTIME     OFF)
 		set(Boost_USE_DEBUG_RUNTIME      OFF)
 
-		set(Boost_USE_DEBUG_LIBS         OFF) # ignore debug libs and
-		set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+		set(Boost_USE_DEBUG_LIBS         OFF)  # ignore debug libs and
+		set(Boost_USE_RELEASE_LIBS       ON)   # only find release libs
 	else()
-		set(Boost_USE_DEBUG_LIBS         ON) # ignore debug libs and
-		set(Boost_USE_RELEASE_LIBS       OFF)  # only find release libs
+		set(Boost_USE_DEBUG_LIBS         ON)   # only find debug libs
+		set(Boost_USE_RELEASE_LIBS       OFF)  # ignore release libs
 	endif()
 	message(STATUS "Using Boost_USE_DEBUG_LIBS: ${Boost_USE_DEBUG_LIBS}")
 	message(STATUS "Using Boost_USE_RELEASE_LIBS: ${Boost_USE_RELEASE_LIBS}")
