@@ -43,9 +43,9 @@ SET(HZ_VERSION 4.0-SNAPSHOT)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")
 	SET(CMAKE_BUILD_TYPE Debug)
-else()
-	message(STATUS "Build type is  ${CMAKE_BUILD_TYPE}")
 endif ()
+
+message(STATUS "Build type is  ${CMAKE_BUILD_TYPE}")
 
 add_definitions(-DHAZELCAST_VERSION="${HZ_VERSION}")
 
@@ -107,7 +107,7 @@ if (HZ_COMPILE_WITH_SSL)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
 
-	If(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		# This is a bug in CMake that causes it to prefer the system version over
 		# the one in the specified ROOT folder. see
 		# https://stackoverflow.com/questions/58446253/xcode-11-ld-error-your-binary-is-not-an-allowed-client-of-usr-lib-libcrypto-dy
@@ -127,13 +127,29 @@ ELSE ()
 ENDIF()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(BOOST_HINTS "C:\\\\Boost")
-endif ()
+	set(BOOST_HINTS "C:\\\\Boost")
+
+	if (${CMAKE_BUILD_TYPE} MATCHES "Release")
+		set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+		set(Boost_USE_MULTITHREADED      ON)
+		set(Boost_USE_STATIC_RUNTIME     OFF)
+		set(Boost_USE_DEBUG_RUNTIME      OFF)
+
+		set(Boost_USE_DEBUG_LIBS         OFF)  # ignore debug libs and
+		set(Boost_USE_RELEASE_LIBS       ON)   # only find release libs
+	else()
+		set(Boost_USE_DEBUG_LIBS         ON)   # only find debug libs
+		set(Boost_USE_RELEASE_LIBS       OFF)  # ignore release libs
+	endif()
+	message(STATUS "Using Boost_USE_DEBUG_LIBS: ${Boost_USE_DEBUG_LIBS}")
+	message(STATUS "Using Boost_USE_RELEASE_LIBS: ${Boost_USE_RELEASE_LIBS}")
+endif()
 find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono HINTS ${BOOST_HINTS})
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(Boost::thread Boost::chrono)
 add_definitions("-DBOOST_THREAD_VERSION=5")
 message(STATUS "Using Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+message(STATUS "Using Boost_LIBRARY_DIRS: ${Boost_LIBRARY_DIRS}")
 
 IF (NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64"))
     message(STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)")

@@ -85,7 +85,7 @@ namespace hazelcast {
             auto group_name = name.substr(index + 1);
             boost::trim(group_name);
             if (group_name == DEFAULT_GROUP_NAME) {
-                name.substr(0, index);
+                return name.substr(0, index);
             }
             return name;
         }
