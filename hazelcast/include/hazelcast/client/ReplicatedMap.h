@@ -23,6 +23,7 @@
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/MapEvent.h"
 #include "hazelcast/client/query/Predicates.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -262,9 +263,9 @@ namespace hazelcast {
             public:
                 EntryEventHandler(const std::string &instanceName, spi::impl::ClientClusterServiceImpl &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,
-                                  EntryListener &&listener, util::ILogger &log)
+                                  EntryListener &&listener, logger &lg)
                         : instanceName(instanceName), clusterService(clusterService), serializationService(serializationService)
-                        , listener(std::move(listener)), logger(log) {}
+                        , listener(std::move(listener)), logger_(lg) {}
 
                 void handle_entry(const boost::optional<Data> &key, const boost::optional<Data> &value,
                                   const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
@@ -327,8 +328,11 @@ namespace hazelcast {
                             listener.evicted(std::move(entryEvent));
                             break;
                         default:
-                            logger.warning("Received unrecognized event with type: ", static_cast<int>(type),
-                                           " Dropping the event!!!");
+                            HZ_LOG(logger_, warning, 
+                                boost::str(boost::format("Received unrecognized event with type: %1% "
+                                                         "Dropping the event!!!")
+                                                         % static_cast<int>(type))
+                            );
                     }
                 }
             private:
@@ -336,7 +340,7 @@ namespace hazelcast {
                 spi::impl::ClientClusterServiceImpl &clusterService;
                 serialization::pimpl::SerializationService& serializationService;
                 EntryListener listener;
-                util::ILogger &logger;
+                logger &logger_;
             };
         };
     }

@@ -23,9 +23,9 @@
 #include <stdint.h>
 
 #include <TestHelperFunctions.h>
-#include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/Member.h>
 #include <hazelcast/client/spi/ClientContext.h>
+#include <hazelcast/logger.h>
 
 namespace hazelcast {
     namespace client {
@@ -98,7 +98,7 @@ namespace hazelcast {
             ThreadArgs threadArgs;
             std::string name;
             std::thread thread;
-            std::shared_ptr<util::ILogger> logger;
+            std::shared_ptr<logger> logger_;
 
             void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3);
         };

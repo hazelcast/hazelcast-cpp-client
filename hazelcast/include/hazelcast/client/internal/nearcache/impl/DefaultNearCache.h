@@ -29,7 +29,7 @@
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/util/ILogger.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -47,9 +47,9 @@ namespace hazelcast {
                         DefaultNearCache(const std::string &cacheName,
                                          const client::config::NearCacheConfig<K, V> &config,
                                          const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
-                                         serialization::pimpl::SerializationService &ss, util::ILogger &logger)
+                                         serialization::pimpl::SerializationService &ss, logger &lg)
                                 : name(cacheName), nearCacheConfig(config), executionService(es),
-                                  serializationService(ss), logger(logger) {
+                                  serializationService(ss), logger_(lg) {
                         }
 
                         ~DefaultNearCache() override = default;
@@ -157,27 +157,30 @@ namespace hazelcast {
                         void scheduleExpirationTask() {
                             if (nearCacheConfig.getMaxIdleSeconds() > 0L ||
                                 nearCacheConfig.getTimeToLiveSeconds() > 0L) {
-                                expirationTimer = executionService->scheduleWithRepetition([=]() {
-                                                                                               std::atomic_bool expirationInProgress(false);
-                                                                                               while (!expiration_cancelled_) {
-                                                                                                   bool expected = false;
-                                                                                                   if (expirationInProgress.compare_exchange_strong(expected, true)) {
-                                                                                                       try {
-                                                                                                           nearCacheRecordStore->doExpiration();
-                                                                                                       } catch (exception::IException &e) {
-                                                                                                           expirationInProgress.store(false);
-                                                                                                           // TODO: What to do here
-                                                                                                           logger.info("ExpirationTask nearCacheRecordStore.doExpiration failed. ",
-                                                                                                     e.what(),
-                                                                                                     " This may NOT be a vital problem since this doExpiration "
-                                                                                                     "runs periodically and it should recover eventually.");
-                                                                                     }
-                                                                                 }
-                                                                             }
-                                                                         }, std::chrono::seconds(
-                                        NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
-                                                                                           std::chrono::seconds(
-                                                                                 NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS));
+                                expirationTimer = executionService->scheduleWithRepetition(
+                                    [=]() {
+                                        std::atomic_bool expirationInProgress(false);
+                                        while (!expiration_cancelled_) {
+                                            bool expected = false;
+                                            if (expirationInProgress.compare_exchange_strong(expected, true)) {
+                                                try {
+                                                    nearCacheRecordStore->doExpiration();
+                                                } catch (exception::IException &e) {
+                                                    expirationInProgress.store(false);
+                                                    // TODO: What to do here
+                                                    HZ_LOG(logger_, info,
+                                                        boost::str(boost::format(
+                                                            "ExpirationTask nearCacheRecordStore.doExpiration failed. "
+                                                            "%1% This may NOT be a vital problem since this doExpiration "
+                                                            "runs periodically and it should recover eventually.")
+                                                            % e.what())
+                                                    );
+                                                }
+                                            }
+                                        }
+                                    },
+                                    std::chrono::seconds(NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
+                                    std::chrono::seconds(NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS));
                             }
                         }
 
@@ -185,7 +188,7 @@ namespace hazelcast {
                         const client::config::NearCacheConfig<K, V> &nearCacheConfig;
                         std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
                         serialization::pimpl::SerializationService &serializationService;
-                        util::ILogger &logger;
+                        logger &logger_;
 
                         std::unique_ptr<NearCacheRecordStore<KS, V> > nearCacheRecordStore;
                         std::atomic_bool expiration_cancelled_;

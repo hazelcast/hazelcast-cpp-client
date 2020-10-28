@@ -426,7 +426,12 @@ namespace hazelcast {
                         invalidationListenerId = registerListener(createNearCacheInvalidationListenerCodec(),
                                                                   std::shared_ptr<impl::BaseEventHandler>(new ReplicatedMapAddNearCacheEventHandler(nearCache))).get();
                     } catch (exception::IException &e) {
-                        getContext().getLogger().severe("-----------------\nNear Cache is not initialized!\n-----------------" , e);
+                        HZ_LOG(getContext().getLogger(), severe,
+                            boost::str(boost::format("-----------------\n"
+                                                     "Near Cache is not initialized!\n"
+                                                     "-----------------"
+                                                     "%1%") % e)
+                        );
                     }
                 }
 

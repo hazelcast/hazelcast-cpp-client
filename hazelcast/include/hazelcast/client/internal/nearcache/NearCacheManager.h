@@ -23,6 +23,7 @@
 #include "hazelcast/client/internal/nearcache/impl/DefaultNearCache.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,7 +40,7 @@ namespace hazelcast {
                 class HAZELCAST_API NearCacheManager {
                 public:
                     NearCacheManager(const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
-                                     serialization::pimpl::SerializationService &ss, util::ILogger &logger);
+                                     serialization::pimpl::SerializationService &ss, logger &lg);
 
                     /**
                      * Gets the {@link NearCache} instance associated with given {@code name}.
@@ -125,12 +126,12 @@ namespace hazelcast {
                             const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                         return std::unique_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
-                                        name, nearCacheConfig, executionService, serializationService, logger));
+                                        name, nearCacheConfig, executionService, serializationService, logger_));
                     }
                 private:
                     std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
                     serialization::pimpl::SerializationService &serializationService;
-                    util::ILogger &logger;
+                    logger &logger_;
                     util::SynchronizedMap<std::string, BaseNearCache> nearCacheMap;
                     std::mutex mutex;
                 };

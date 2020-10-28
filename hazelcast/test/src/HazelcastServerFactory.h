@@ -25,8 +25,8 @@
 #include <memory>
 #include <ostream>
 
-#include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/Address.h>
+#include <hazelcast/logger.h>
 
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
@@ -56,7 +56,7 @@ namespace hazelcast {
                 ~HazelcastServerFactory();
 
             private:
-                util::ILogger logger;
+                std::shared_ptr<logger> logger_;
                 std::string serverAddress;
                 std::string clusterId;
 

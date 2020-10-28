@@ -18,6 +18,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/IOUtil.h"

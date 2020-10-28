@@ -72,7 +72,7 @@ namespace hazelcast {
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
                                                                      const std::shared_ptr<AddressTranslator> &addressTranslator,
                                                                      const std::vector<std::shared_ptr<AddressProvider> > &addressProviders)
-                    : alive(false), logger(client.getLogger()), connectionTimeoutMillis(std::chrono::milliseconds::max()),
+                    : alive(false), logger_(client.getLogger()), connectionTimeoutMillis(std::chrono::milliseconds::max()),
                       client(client),
                       socketInterceptor(client.getClientConfig().getSocketInterceptor()),
                       executionService(client.getClientExecutionService()),
@@ -355,10 +355,13 @@ namespace hazelcast {
 
                     try {
                         clientInstance->getLifecycleService().shutdown();
-                    } catch (exception::IException &exception) {
-                        clientInstance->getLogger()->severe("Exception during client shutdown ",
-                                                            clientInstance->getName() + ".clientShutdown-", ":",
-                                                            exception);
+                    } catch (exception::IException &e) {
+                        HZ_LOG(*clientInstance->getLogger(), severe, 
+                            boost::str(boost::format("Exception during client shutdown "
+                                                     "%1%.clientShutdown-:%2%")
+                                                     % clientInstance->getName()
+                                                     % e)
+                        );
                     }
                 }).detach();
             }
@@ -374,16 +377,21 @@ namespace hazelcast {
                         do_connect_to_cluster();
                         connect_to_cluster_task_submitted_ = false;
                         if (activeConnections.empty()) {
-                            if (logger.isFinestEnabled()) {
-                                boost::uuids::uuid cluster_id = cluster_id_;
-                                logger.warning("No connection to cluster: ", cluster_id);
-                            }
+                            HZ_LOG(logger_, finest, 
+                                boost::str(boost::format("No connection to cluster: %1%")
+                                                         % cluster_id_)
+                            );
 
                             submit_connect_to_cluster_task();
                         }
 
                     } catch (exception::IException &e) {
-                        logger.warning("Could not connect to any cluster, shutting down the client: ", e);
+                        HZ_LOG(logger_, warning,
+                            boost::str(boost::format("Could not connect to any cluster, "
+                                                     "shutting down the client: %1%")
+                                                     % e)
+                        );
+
                         shutdownWithExternalThread(client.getHazelcastClientImplementation());
                     }
                 });
@@ -443,17 +451,23 @@ namespace hazelcast {
 
                     if (attempt < connectionAttemptLimit) {
                         const int64_t remainingTime = nextTry - util::currentTimeMillis();
-                        logger.warning("Unable to get alive cluster connection, try in ",
-                                       (remainingTime > 0 ? remainingTime : 0), " ms later, attempt ", attempt,
-                                       " of ", connectionAttemptLimit, ".");
+                        HZ_LOG(logger_, warning,
+                            boost::str(boost::format("Unable to get alive cluster connection, try in "
+                                                     "%1% ms later, attempt %2% of %3%.")
+                                                     % (remainingTime > 0 ? remainingTime : 0)
+                                                     % attempt % connectionAttemptLimit)
+                        );
 
                         if (remainingTime > 0) {
                             // TODO use a condition variable here
                             std::this_thread::sleep_for(std::chrono::milliseconds(remainingTime));
                         }
                     } else {
-                        logger.warning("Unable to get alive cluster connection, attempt ", attempt, " of ",
-                                       connectionAttemptLimit, ".");
+                        HZ_LOG(logger_, warning, 
+                            boost::str(boost::format("Unable to get alive cluster connection, "
+                                                     "attempt %1% of %2%.")
+                                                     % attempt % connectionAttemptLimit)
+                        );
                     }
                 }
                 std::ostringstream out;
@@ -510,17 +524,23 @@ namespace hazelcast {
                 auto socket_remote_address = connection.getSocket().getRemoteEndpoint();
 
                 if (!endpoint) {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Destroying ", connection, ", but it has end-point set to null ",
-                                      "-> not removing it from a connection map");
-                    }
+                    HZ_LOG(logger_, finest,
+                        boost::str(boost::format("Destroying %1% , but it has end-point set to null "
+                                                 "-> not removing it from a connection map")
+                                                 % connection)
+                    );
                     return;
                 }
 
                 auto conn = connection.shared_from_this();
                 if (activeConnections.remove(member_uuid, conn)) {
                     active_connection_ids_.remove(conn->getConnectionId());
-                    logger.info("Removed connection to endpoint: ", *endpoint, ", connection: ", connection);
+
+                    HZ_LOG(logger_, info, 
+                        boost::str(boost::format("Removed connection to endpoint: %1%, connection: %2%")
+                                                 % *endpoint % connection)
+                    );
+
                     if (activeConnections.empty()) {
                         fire_life_cycle_event(LifecycleEvent::LifecycleState::CLIENT_DISCONNECTED);
 
@@ -529,10 +549,11 @@ namespace hazelcast {
 
                     fireConnectionRemovedEvent(connection.shared_from_this());
                 } else {
-                    if (logger.isFinestEnabled()) {
-                        logger.finest("Destroying a connection, but there is no mapping ", endpoint, " -> ",
-                                      connection, " in the connection map.");
-                    }
+                    HZ_LOG(logger_, finest,
+                        boost::str(boost::format("Destroying a connection, but there is no mapping "
+                                                 "%1% -> %2% in the connection map.")
+                                                 % endpoint % connection)
+                    );
                 }
             }
 
@@ -546,7 +567,7 @@ namespace hazelcast {
                 shutdown();
             }
 
-            util::ILogger &ClientConnectionManagerImpl::getLogger() {
+            logger &ClientConnectionManagerImpl::getLogger() {
                 return client.getLogger();
             }
 
@@ -559,10 +580,13 @@ namespace hazelcast {
 
             std::shared_ptr<Connection> ClientConnectionManagerImpl::connect(const Address &address) {
                 try {
-                    logger.info("Trying to connect to ", address);
+                    HZ_LOG(logger_, info, 
+                        boost::str(boost::format("Trying to connect to %1%") % address));
                     return getOrConnect(address);
                 } catch (std::exception &e) {
-                    logger.warning("Exception during initial connection to ", address, ": ", e.what());
+                    HZ_LOG(logger_, warning,
+                        boost::str(boost::format("Exception during initial connection to %1%: %2%")
+                                                 % address % e.what()));
                     return nullptr;
                 }
             }
@@ -577,14 +601,18 @@ namespace hazelcast {
                 auto new_cluster_id = response.cluster_id;
                 boost::uuids::uuid current_cluster_id = cluster_id_;
 
-                if (logger.isFinestEnabled()) {
-                    logger.finest("Checking the cluster: ", new_cluster_id, ", current cluster: ", current_cluster_id);
-                }
+                HZ_LOG(logger_, finest, 
+                    boost::str(boost::format("Checking the cluster: %1%, current cluster: %2%") 
+                                             % new_cluster_id % current_cluster_id)    
+                );
 
                 auto initial_connection = activeConnections.empty();
                 auto changedCluster = initial_connection && !current_cluster_id.is_nil() && !(new_cluster_id == current_cluster_id);
                 if (changedCluster) {
-                    logger.warning("Switching from current cluster: ", current_cluster_id, " to new cluster: ", new_cluster_id);
+                    HZ_LOG(logger_, warning,
+                        boost::str(boost::format("Switching from current cluster: %1%  to new cluster: %2%")
+                                                 % current_cluster_id % new_cluster_id)
+                    );
                     client.getHazelcastClientImplementation()->on_cluster_restart();
                 }
 
@@ -598,13 +626,19 @@ namespace hazelcast {
 
                 auto local_address = connection->getLocalSocketAddress();
                 if (local_address) {
-                    logger.info("Authenticated with server ", response.address , ":", response.member_uuid
-                            , ", server version: " , response.server_version
-                            , ", local address: ", *local_address);
+                    HZ_LOG(logger_, info,
+                        boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
+                                                 "local address: %4%")
+                                                 % response.address % response.member_uuid
+                                                 % response.server_version % *local_address)
+                    );
                 } else {
-                    logger.info("Authenticated with server ", response.address , ":", response.member_uuid
-                            , ", server version: " , response.server_version
-                            , ", no local address (connection disconnected ?)");
+                    HZ_LOG(logger_, info,
+                        boost::str(boost::format("Authenticated with server %1%:%2%, server version: %3%, "
+                                                 "no local address: (connection disconnected ?)")
+                                                 % response.address % response.member_uuid
+                                                 % response.server_version)
+                    );
                 }
 
                 fireConnectionAddedEvent(connection);
@@ -626,7 +660,7 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::trigger_cluster_reconnection() {
                 if (reconnect_mode_ == config::ClientConnectionStrategyConfig::ReconnectMode::OFF) {
-                    logger.info("RECONNECT MODE is off. Shutting down the client.");
+                    HZ_LOG(logger_, info, "RECONNECT MODE is off. Shutting down the client.");
                     shutdownWithExternalThread(client.getHazelcastClientImplementation());
                     return;
                 }
@@ -760,7 +794,7 @@ namespace hazelcast {
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       connectionId(connectionId),
-                      remote_uuid_(boost::uuids::nil_uuid()), logger(clientContext.getLogger()), alive(true) {
+                      remote_uuid_(boost::uuids::nil_uuid()), logger_(clientContext.getLogger()), alive(true) {
                 socket = socketFactory.create(address, connectTimeoutInMillis);
             }
 
@@ -818,7 +852,10 @@ namespace hazelcast {
                 try {
                     innerClose();
                 } catch (exception::IException &e) {
-                    clientContext.getLogger().warning("Exception while closing connection", e.getMessage());
+                    HZ_LOG(clientContext.getLogger(), warning,
+                        boost::str(boost::format("Exception while closing connection %1%")
+                                                 % e.getMessage())
+                    );
                 }
 
                 clientContext.getConnectionManager().on_connection_close(*this, closeCause);
@@ -849,7 +886,11 @@ namespace hazelcast {
                 auto correlationId = message->getCorrelationId();
                 auto invocationIterator = invocations.find(correlationId);
                 if (invocationIterator == invocations.end()) {
-                    logger.warning("No invocation for callId: ", correlationId, ". Dropping this message: ", *message);
+                    HZ_LOG(logger_, warning, 
+                        boost::str(boost::format("No invocation for callId:  %1%. "
+                                                 "Dropping this message: %2%")
+                                                 % correlationId % *message)
+                    );
                     return;
                 }
                 auto invocation = invocationIterator->second;
@@ -894,26 +935,30 @@ namespace hazelcast {
 
                 if (clientContext.getLifecycleService().isRunning()) {
                     if (!closeCause) {
-                        logger.info(message.str());
+                        HZ_LOG(logger_, info, message.str());
                     } else {
                         try {
                             std::rethrow_exception(closeCause);
                         } catch (exception::IException &ie) {
-                            logger.warning(message.str(), ie);
+                            HZ_LOG(logger_, warning, 
+                                boost::str(boost::format("%1%%2%") % message.str() % ie)
+                            );
                         }
                     }
                 } else {
-                    if (logger.isFinestEnabled()) {
-                        if (!closeCause) {
-                            logger.finest(message.str());
-                        } else {
-                            try {
-                                std::rethrow_exception(closeCause);
-                            } catch (exception::IException &ie) {
-                                logger.finest(message.str(), ie);
+                    HZ_LOG(logger_, finest,
+                        message.str() +
+                        [this]() -> std::string {
+                            if (closeCause) {
+                                try {
+                                    std::rethrow_exception(closeCause);
+                                } catch (exception::IException &ie) {
+                                    return ie.what();
+                                }
                             }
-                        }
-                    }
+                            return "";
+                        }()
+                    );
                 }
             }
 
@@ -994,7 +1039,7 @@ namespace hazelcast {
 
             HeartbeatManager::HeartbeatManager(spi::ClientContext &client,
                                                ClientConnectionManagerImpl &connectionManager)
-                    : client(client), clientConnectionManager(connectionManager), logger(client.getLogger()) {
+                    : client(client), clientConnectionManager(connectionManager), logger_(client.getLogger()) {
                 ClientProperties &clientProperties = client.getClientProperties();
                 auto timeout_millis = clientProperties.getLong(clientProperties.getHeartbeatTimeout());
                 heartbeat_timeout_ = std::chrono::milliseconds(
@@ -1027,7 +1072,9 @@ namespace hazelcast {
 
                 auto now = std::chrono::steady_clock::now();
                 if (now - connection->lastReadTime() > heartbeat_timeout_) {
-                    logger.warning("Heartbeat failed over the connection: ", *connection);
+                    HZ_LOG(logger_, warning, 
+                        boost::str(boost::format("Heartbeat failed over the connection: %1%") % *connection)
+                    );
                     onHeartbeatStopped(connection, "Heartbeat timed out");
                     return;
                 }
@@ -1078,25 +1125,28 @@ namespace hazelcast {
 
                         const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
                         bool success = true;
-                        util::ILogger &logger = clientContext.getLogger();
+                        logger &lg = clientContext.getLogger();
                         for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
                              ++it) {
                             boost::system::error_code ec;
                             sslContext->load_verify_file(*it, ec);
                             if (ec) {
-                                logger.warning(
-                                        std::string("SocketFactory::start: Failed to load CA "
-                                                    "verify file at ") + *it + " "
-                                        + ec.message());
+                                HZ_LOG(lg, warning, 
+                                    boost::str(boost::format("SocketFactory::start: Failed to load CA "
+                                                             "verify file at %1% %2%")
+                                                             % *it % ec.message())
+                                );
                                 success = false;
                             }
                         }
 
                         if (!success) {
                             sslContext.reset();
-                            logger.warning("SocketFactory::start: Failed to load one or more "
-                                           "configured CA verify files (PEM files). Please "
-                                           "correct the files and retry.");
+                            HZ_LOG(lg, warning,
+                                "SocketFactory::start: Failed to load one or more "
+                                "configured CA verify files (PEM files). Please "
+                                "correct the files and retry."
+                            );
                             return false;
                         }
 
@@ -1104,10 +1154,11 @@ namespace hazelcast {
                         const std::string &cipherList = sslConfig.getCipherList();
                         if (!cipherList.empty()) {
                             if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
-                                logger.warning(
-                                        std::string("SocketFactory::start: Could not load any "
-                                                    "of the ciphers in the config provided "
-                                                    "ciphers:") + cipherList);
+                                HZ_LOG(lg, warning, 
+                                    std::string("SocketFactory::start: Could not load any "
+                                                "of the ciphers in the config provided "
+                                                "ciphers:") + cipherList
+                                );
                                 return false;
                             }
                         }
