@@ -192,15 +192,22 @@ namespace hazelcast {
 
                 void produceSomeStats(std::shared_ptr<IMap> &map) {
                     map->put(5, 10).get();
+                    auto nearCacheStatsImpl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(
+                            map->getLocalMapStats().getNearCacheStats());
+
+                    auto invalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
+                    // When for invalidation to come from server for the put operation
+                    ASSERT_EQ_EVENTUALLY(
+                            invalidationRequests + 1, nearCacheStatsImpl->getInvalidationRequests());
+
                     ASSERT_EQ(10, (*map->get<int, int>(5).get()));
                     ASSERT_EQ(10, (*map->get<int, int>(5).get()));
                 }
 
                 std::string toString(const std::map<std::string, std::string> &map) {
                     std::ostringstream out;
-                    typedef std::map<std::string, std::string> StringMap;
                     out << "Map {" << std::endl;
-                    BOOST_FOREACH(const StringMap::value_type &entry, map) {
+                    for(const auto &entry : map) {
                         out << "\t\t(" << entry.first << " , " << entry.second << ")" << std::endl;
                     }
                     out << "}" << std::endl;
@@ -322,19 +329,26 @@ namespace hazelcast {
             }
 
             TEST_F(ClientStatisticsTest, testStatisticsCollectionNonDefaultPeriod) {
+                auto statsMap = getStats();
+                std::string previous_stat_time;
+                if (!statsMap.empty()) {
+                    previous_stat_time = statsMap["clusterConnectionTimestamp"];
+                }
+
                 std::unique_ptr<HazelcastClient> client = createHazelcastClient();
 
                 int64_t clientConnectionTime = util::currentTimeMillis();
 
                 // wait enough time for statistics collection
                 waitForFirstStatisticsCollection();
+                ASSERT_TRUE_EVENTUALLY(previous_stat_time != getStats()["clusterConnectionTimestamp"]);
 
                 Response statsResponse = getClientStatsFromServer();
                 ASSERT_TRUE(statsResponse.success);
                 auto &stats = statsResponse.result;
                 ASSERT_TRUE(!stats.empty());
 
-                std::map<std::string, std::string> statsMap = getStatsFromResponse(statsResponse);
+                statsMap = getStatsFromResponse(statsResponse);
 
                 ASSERT_EQ(1U, statsMap.count("clusterConnectionTimestamp"))
                                             << "clusterConnectionTimestamp stat should exist (" << stats << ")";
