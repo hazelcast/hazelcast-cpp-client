@@ -18,7 +18,6 @@
 #include "ClientTestSupport.h"
 #include <vector>
 #include <chrono>
-#include <functional>
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/logger.h"
 #include "ringbuffer/StartsWithStringFilter.h"
@@ -48,11 +47,9 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/thread/future.hpp>
-#include <cassert>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/foreach.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
 #include <openssl/crypto.h>
@@ -114,9 +111,9 @@ namespace hazelcast {
                     return escapedValue;
                 }
 
-                std::map<std::string, std::string>
+                std::unordered_map<std::string, std::string>
                 getStatsFromResponse(const Response &statsResponse) {
-                    std::map<std::string, std::string> statsMap;
+                    std::unordered_map<std::string, std::string> statsMap;
                     if (statsResponse.success && !statsResponse.result.empty()) {
                         std::vector<std::string> keyValuePairs;
                         boost::split(keyValuePairs, statsResponse.result, boost::is_any_of(","));
@@ -137,7 +134,7 @@ namespace hazelcast {
                     return statsMap;
                 }
 
-                std::map<std::string, std::string> getStats() {
+                std::unordered_map<std::string, std::string> getStats() {
                     auto statsResponse = getClientStatsFromServer();
 
                     return getStatsFromResponse(statsResponse);
@@ -204,7 +201,7 @@ namespace hazelcast {
                     ASSERT_EQ(10, (*map->get<int, int>(5).get()));
                 }
 
-                std::string toString(const std::map<std::string, std::string> &map) {
+                std::string toString(const std::unordered_map<std::string, std::string> &map) {
                     std::ostringstream out;
                     out << "Map {" << std::endl;
                     for(const auto &entry : map) {
@@ -413,7 +410,7 @@ namespace hazelcast {
                 // wait enough time for statistics collection
                 waitForFirstStatisticsCollection();
 
-                std::map<std::string, std::string> initialStats = getStats();
+                std::unordered_map<std::string, std::string> initialStats = getStats();
 
                 // produce map stat
                 produceSomeStats(*client);
