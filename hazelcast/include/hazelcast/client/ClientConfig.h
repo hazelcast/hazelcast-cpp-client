@@ -268,7 +268,7 @@ namespace hazelcast {
              * \param name the name of the reliable topic
              * \return the found config. If none is found, a default configured one is returned.
              */
-            const config::ReliableTopicConfig *getReliableTopicConfig(const std::string &name);
+            const config::ReliableTopicConfig &getReliableTopicConfig(const std::string &name);
 
             /**
              * Helper method to add a new NearCacheConfig

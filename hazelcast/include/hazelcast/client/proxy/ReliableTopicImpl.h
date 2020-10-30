@@ -50,7 +50,7 @@ namespace hazelcast {
             protected:
                 std::shared_ptr<Ringbuffer> ringbuffer;
                 logger &logger_;
-                const config::ReliableTopicConfig *config;
+                const config::ReliableTopicConfig &config;
             };
         }
     }
