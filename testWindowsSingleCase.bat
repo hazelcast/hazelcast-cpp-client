@@ -7,6 +7,12 @@
 
 @SET EXECUTABLE_NAME=clientTest_%HZ_LIB_TYPE%_%HZ_BIT_VERSION%.exe
 
+if %HZ_BIT_VERSION% == 32 (
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"
+) else (
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
+)
+
 call scripts/build-windows.bat %HZ_BIT_VERSION% %HZ_LIB_TYPE% %HZ_BUILD_TYPE% %COMPILE_WITHOUT_SSL% || (
     echo "Failed to build the project!"
     exit /b 1
