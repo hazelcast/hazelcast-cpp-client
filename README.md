@@ -8,6 +8,12 @@
       * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
+    * [1.3.1 Compiling Your Project](#131-compiling-your-project)
+        * [1.3.1.1 Mac Client](#1311-mac-client)
+        * [1.3.1.2 Linux Client](#1312-linux-client)
+        * [1.3.1.3 Windows Client](#1313-windows-client)
+    * [1.3.2 Building Hazelcast From Source Code](#132-building-hazelcast-from-source)
+    * [1.3.3 Building Hazelcast Tests From Source Code](#133-building-hazelcast-tests-from-source)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-cpp-client)
@@ -300,6 +306,46 @@ When compiling for Windows environment, you should specify one of the following 
 
 - `HAZELCAST_USE_STATIC`: You want the application to use the static Hazelcast library.
 - `HAZELCAST_USE_SHARED`: You want the application to use the shared Hazelcast library.
+
+### 1.3.2 Building Hazelcast From Source Code
+The simplest way to build the project from source code is to run the script `scripts/build-linux.sh` for Linux and Mac OS, `scripts/build-windows.bat` for windows. The script uses the following parameters:
+
+`scripts/build-linux.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
+
+- Use `32` if you want to generate 32-bit library. 
+- Use `SHARED` if you want to generate SHARED library.
+- Use `STATIC` if you want to generate STATIC library.
+- Use `Debug` if you want to generate Debug version of the library.
+- Use `Release` if you want to generate Release version of the library.
+- Use `COMPILE_WITHOUT_SSL` if you want to generate the library that is not TLS enabled and has no OpenSSL dependency.
+
+The exact same options work for the windows batch script `scripts/build-windows.bat`.
+
+The project depends on an up-to-date [Boost](http://boost.org/) library version.
+It also depends on OpenSSL only if you compile the project enabled with the TLS feature (i.e. if `COMPILE_WITHOUT_SSL` is NOT provided) 
+
+### 1.3.3 Building Hazelcast Tests Source Code
+
+The Hazelcast project uses the [CMake](https://cmake.org/) build system.
+
+The easiest way to compile and run the tests is to use the test scripts. The scripts are :
+- `testLinuxSingleCase.sh` for linux and MAC OS.
+- `testWindowsSingleCase.bat` for Windows.
+
+The scripts accept the following options:
+
+`testLinuxSingleCase.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
+
+- Use `32` if you want to generate 32-bit library. 
+- Use `SHARED` if you want to generate SHARED library.
+- Use `STATIC` if you want to generate STATIC library.
+- Use `Debug` if you want to generate Debug version of the library.
+- Use `Release` if you want to generate Release version of the library.
+- Use `COMPILE_WITHOUT_SSL` if you want to generate the library that is not TLS enabled and has no OpenSSL dependency.
+
+It runs the build script and if successfully builds the project including the examples, it starts the [remote controller](https://github.com/hazelcast/hazelcast-remote-controller) for managing server start and shutdowns during the test, then runs the test binary. The test framework uses [Google test](https://github.com/google/googletest)  
+
+The test sources depends on the Boost (thread and chrono), OpenSSL and [apache thrift](https://github.com/apache/thrift) (needed for communications to remote controller).
 
 ## 1.4. Basic Configuration
 
