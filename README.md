@@ -308,6 +308,8 @@ When compiling for Windows environment, you should specify one of the following 
 - `HAZELCAST_USE_SHARED`: You want the application to use the shared Hazelcast library.
 
 ### 1.3.2 Building Hazelcast From Source Code
+The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
+
 The simplest way to build the project from source code is to run the script `scripts/build-linux.sh` for Linux and Mac OS, `scripts/build-windows.bat` for windows. The script uses the following parameters:
 
 `scripts/build-linux.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
@@ -325,8 +327,7 @@ The project depends on an up-to-date [Boost](http://boost.org/) library version.
 It also depends on OpenSSL only if you compile the project enabled with the TLS feature (i.e. if `COMPILE_WITHOUT_SSL` is NOT provided) 
 
 ### 1.3.3 Building Hazelcast Tests Source Code
-
-The Hazelcast project uses the [CMake](https://cmake.org/) build system.
+The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
 
 The easiest way to compile and run the tests is to use the test scripts. The scripts are :
 - `testLinuxSingleCase.sh` for linux and MAC OS.
