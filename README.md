@@ -239,15 +239,28 @@ Unzip the file. Following is the directory structure for Linux 64-bit zip. The s
         - `lib`: Shared and static library directory.
             - `tls`: Contains the library with TLS (SSL) support enabled.
         - `include`: Directory you need to include when compiling your project.
-    - `external/include`: External directory that you need to include when compiling your project. Currently the only dependency is `boost/shared_ptr.hpp`.
-        - `boost`: External boost files for `boost/shared_ptr`.
     - `examples`: Contains various examples for each C++ client feature. Each example produces an executable which you can run in a cluster. You may need to set the server IP addresses for the examples to run.
     
 ### 1.3.1 Compiling Your Project
 
-For compilation, you need to include the `hazelcast/include` and `external/include` directories in your in your distribution. You also need to link your application to the appropriate static or shared library. 
+For compilation, you need to include the `hazelcast/include` directory in your in your distribution. You also need to link your application to the appropriate static or shared library. 
 
-If you want to use the TLS feature, use the `lib` directory with TLS support enabled, e.g., `cpp/Linux_64/hazelcast/lib/tls`.
+If you want to use the TLS feature, use the `lib` directory with TLS support enabled, e.g., `cpp/Linux_64/hazelcast/lib/tls`. If you are using TLS, then you also need to link to OpenSSL and link to the OpenSSL libraries. E.g. if you are using cmake, we do the following:
+```Cmake
+    include(FindOpenSSL)
+	find_package(OpenSSL REQUIRED)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	link_libraries(${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES})
+``` 
+
+Hazelcast also depends on Boost library. We specifically use the chrono and thread libraries. The thread library version also needs to be enough to support the Boost future continuations. Therefore, you can simply define BOOST_THREAD_VERSION=5 which enables all the needed flags. Make sure that you find and include the Boost include directory and also link to the boost threIf you are using cmake for compilation you can do the following:
+```Cmake
+    include(FindBoost)
+    find_package(Boost REQUIRED COMPONENTS thread chrono)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_libraries(Boost::thread Boost::chrono)
+    add_definitions("-DBOOST_THREAD_VERSION=5")
+``` 
 
 #### 1.3.1.1 Mac Client
 
