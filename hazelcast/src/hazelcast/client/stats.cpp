@@ -132,7 +132,7 @@ namespace hazelcast {
                     // TODO: implement metrics blob
                     auto request = protocol::codec::client_statistics_encode(timestamp, newStats, std::vector<byte>());
                     try {
-                        spi::impl::ClientInvocation::create(clientContext, request, "", connection)->invoke();
+                        spi::impl::ClientInvocation::create(clientContext, request, "", connection)->invoke().get();
                     } catch (exception::IException &e) {
                         // suppress exception, do not print too many messages
                         HZ_LOG(logger_, finest,
@@ -147,7 +147,8 @@ namespace hazelcast {
                     addStat(stats, "enterprise", false);
                     addStat(stats, "clientType", protocol::ClientTypes::CPP);
                     addStat(stats, "clientVersion", HAZELCAST_VERSION);
-                    addStat(stats, "clusterConnectionTimestamp", connection->getStartTime().time_since_epoch().count());
+                    addStat(stats, "clusterConnectionTimestamp", std::chrono::duration_cast<std::chrono::milliseconds>(
+                            connection->getStartTime().time_since_epoch()).count());
 
                     auto localSocketAddress = connection->getLocalSocketAddress();
                     stats << STAT_SEPARATOR << "clientAddress" << KEY_VALUE_SEPARATOR;
@@ -209,7 +210,7 @@ namespace hazelcast {
                     std::string escapedName = std::regex_replace(name, reComma, std::string("\\,"));
                     std::regex reEqual("=");
                     escapedName = std::regex_replace(escapedName, reEqual, std::string("\\="));
-                    std::regex reBackslash("\\");
+                    std::regex reBackslash("\\\\");
                     escapedName = std::regex_replace(escapedName, reBackslash, std::string("\\\\"));
 
                     return name[0] == '/' ? escapedName.substr(1) : escapedName;
