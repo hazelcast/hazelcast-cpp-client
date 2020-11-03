@@ -87,8 +87,8 @@ namespace hazelcast {
                       cluster_id_(boost::uuids::nil_uuid()),
                       load_balancer_(client.getClientConfig().getLoadBalancer()) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
-                int64_t connTimeout = networkConfig.getConnectionTimeout();
-                if (connTimeout > 0) {
+                auto connTimeout = networkConfig.getConnectionTimeout();
+                if (connTimeout.count() > 0) {
                     connectionTimeoutMillis = std::chrono::milliseconds(connTimeout);
                 }
 
@@ -434,7 +434,7 @@ namespace hazelcast {
 
                 while (attempt < connectionAttemptLimit) {
                     attempt++;
-                    int64_t nextTry = util::currentTimeMillis() + connectionAttemptPeriod;
+                    auto nextTryTime = std::chrono::steady_clock::now() + connectionAttemptPeriod;
 
                     for (const Address &address : getPossibleMemberAddresses()) {
                         check_client_active();
@@ -450,7 +450,8 @@ namespace hazelcast {
                     check_client_active();
 
                     if (attempt < connectionAttemptLimit) {
-                        const int64_t remainingTime = nextTry - util::currentTimeMillis();
+                        auto remainingTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                nextTryTime - std::chrono::steady_clock::now()).count();
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("Unable to get alive cluster connection, try in "
                                                      "%1% ms later, attempt %2% of %3%.")

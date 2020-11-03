@@ -848,7 +848,7 @@ namespace hazelcast {
             TEST_F(ClientConnectionTest, testTcpSocketTimeoutToOutsideNetwork) {
                 HazelcastServer instance(*g_srvFactory);
                 ClientConfig config;
-                config.getNetworkConfig().setConnectionAttemptPeriod(1000).setConnectionTimeout(2000).addAddress(
+                config.getNetworkConfig().setConnectionAttemptPeriod(std::chrono::seconds(1)).setConnectionTimeout(std::chrono::seconds (2)).addAddress(
                         Address("8.8.8.8", 5701));
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
@@ -859,7 +859,7 @@ namespace hazelcast {
                 HazelcastServer instance(sslFactory);
                 ClientConfig config;
                 config.setClusterName(get_ssl_cluster_name()).getNetworkConfig().
-                        setConnectionAttemptPeriod(1000).setConnectionTimeout(2000).addAddress(
+                        setConnectionAttemptPeriod(std::chrono::seconds(1)).setConnectionTimeout(std::chrono::seconds(2)).addAddress(
                         Address("8.8.8.8", 5701)).getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
@@ -964,7 +964,7 @@ namespace hazelcast {
                 std::unique_ptr<HazelcastServer> instance = startServer(clientConfig);
 
                 auto networkConfig = clientConfig.getNetworkConfig();
-                networkConfig.setConnectionAttemptPeriod(1000);
+                networkConfig.setConnectionAttemptPeriod(std::chrono::seconds(1));
                 networkConfig.setConnectionAttemptLimit(1);
                 boost::latch startingLatch(1);
                 boost::latch startedLatch(1);
@@ -991,8 +991,8 @@ namespace hazelcast {
 
             TEST_P(ClusterTest, testConnectionAttemptPeriod) {
                 ClientConfig clientConfig = GetParam();
-                clientConfig.getNetworkConfig().setConnectionAttemptPeriod(900).
-                        setConnectionTimeout(2000).setConnectionAttemptLimit(2);
+                clientConfig.getNetworkConfig().setConnectionAttemptPeriod(std::chrono::milliseconds(900)).
+                        setConnectionTimeout(std::chrono::seconds(2)).setConnectionAttemptLimit(2);
                 clientConfig.getNetworkConfig().addAddress(Address("8.8.8.8", 8000));
 
                 int64_t startTimeMillis = hazelcast::util::currentTimeMillis();

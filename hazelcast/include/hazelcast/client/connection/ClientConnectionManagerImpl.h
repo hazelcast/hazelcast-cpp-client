@@ -193,7 +193,7 @@ namespace hazelcast {
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
-                int32_t connectionAttemptPeriod;
+                std::chrono::milliseconds connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
                 int32_t ioThreadCount;
                 bool shuffleMemberList;

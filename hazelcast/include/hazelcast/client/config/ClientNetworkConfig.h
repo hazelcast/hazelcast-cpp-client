@@ -44,7 +44,7 @@ namespace hazelcast {
                 ClientNetworkConfig();
 
                 /**
-                 * Returns the current {@link SSLConfig}.
+                 * Returns the current \SSLConfig.
                  *
                  * @return the SSLConfig.
                  * @see #setSSLConfig(SSLConfig)
@@ -52,7 +52,7 @@ namespace hazelcast {
                 SSLConfig &getSSLConfig();
 
                 /**
-                 * Sets the {@link SSLConfig}.
+                 * Sets the SSLConfig
                  *
                  * @param config the SSLConfig.
                  * @return the updated ClientNetworkConfig.
@@ -61,19 +61,23 @@ namespace hazelcast {
                 ClientNetworkConfig &setSSLConfig(const config::SSLConfig &config);
 
                 /**
-                * @param connectionTimeout Timeout value in millis for nodes to accept client connection requests.
+                * @param connectionTimeout Timeout value for nodes to accept client connection requests.
                 *                          A zero value means wait until connection established or an error occurs.
+                *                          The resolution of time is up to milliseconds.
                 *
                 * @return itself ClientNetworkConfig
                 */
-                ClientNetworkConfig &setConnectionTimeout(int64_t connectionTimeoutInMillis);
+                template< class Rep, class Period >
+                ClientNetworkConfig &setConnectionTimeout(const std::chrono::duration<Rep, Period>& timeout) {
+                    return connection_timeout_msecs(std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
+                }
 
                 /**
-                * Timeout value for nodes to accept client connection requests.
+                * Connection timeout value for connecting to a member server.
                 *
-                * @return int connectionTimeout in millis
+                * @return connection timeout set for a single connection attempt.
                 */
-                int64_t getConnectionTimeout() const;
+                std::chrono::milliseconds getConnectionTimeout() const;
 
                 /**
                  * Sets configuration to connect nodes in aws environment.
@@ -84,14 +88,14 @@ namespace hazelcast {
                 ClientNetworkConfig &setAwsConfig(const ClientAwsConfig &clientAwsConfig);
 
                 /**
-                 * Returns the current {@link ClientAwsConfig}.
+                 * Returns the current ClientAwsConfig.
                  *
                  * @return ClientAwsConfig
                  */
                 ClientAwsConfig &getAwsConfig();
 
                 /**
-                 * See {@link com.hazelcast.client.config.ClientNetworkConfig#setSmartRouting(boolean)}  for details
+                 * See ClientNetworkConfig#setSmartRouting(boolean)  for details
                  *
                  * @return true if client is smart
                  */
@@ -99,7 +103,7 @@ namespace hazelcast {
 
                 /**
                  * If {@code true}, client will route the key based operations to owner of the key on best-effort basis.
-                 * Note that it uses a cached version of {@link com.hazelcast.core.PartitionService#getPartitions()} and doesn't
+                 * Note that it uses a cached version of PartitionService#getPartitions() and doesn't
                  * guarantee that the operation will always be executed on the owner. The cached table is updated every 10 seconds.
                  * <p>
                  * If {@code smartRouting == false}, all operations will be routed to single member. Operations will need two
@@ -109,45 +113,48 @@ namespace hazelcast {
                  * Default value is {@code true}.
                  *
                  * @param smartRouting true if smart routing should be enabled.
-                 * @return configured {@link com.hazelcast.client.config.ClientNetworkConfig} for chaining
+                 * @return configured ClientNetworkConfig for chaining
                  */
                 ClientNetworkConfig &setSmartRouting(bool smartRouting);
 
                 /**
-                 * See {@link ClientNetworkConfig#setConnectionAttemptLimit(int32_t)} for details
+                 * See ClientNetworkConfig#setConnectionAttemptLimit(int32_t) for details
                  *
                  * @return connection attempt Limit
                  */
                 int32_t getConnectionAttemptLimit() const;
 
                 /**
-                 * While client is trying to connect initially to one of the members in the {@link ClientNetworkConfig#addressList},
+                 * While client is trying to connect initially to one of the members in the ClientNetworkConfig#addressList,
                  * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
-                 * attempt to retry as much as {@link ClientNetworkConfig#connectionAttemptLimit} times.
+                 * attempt to retry as much as ClientNetworkConfig#connectionAttemptLimit() times.
                  *
                  * @param connectionAttemptLimit number of times to attempt to connect
                  *                               A zero value means try forever.
                  *                               A negative value means default value
-                 * @return configured {@link ClientNetworkConfig} for chaining
+                 * @return configured \ClientNetworkConfig for chaining
                  */
                 ClientNetworkConfig &setConnectionAttemptLimit(int32_t connectionAttemptLimit);
 
                 /**
                  * Period for the next attempt to find a member to connect.
                  * <p>
-                 * See {@link ClientNetworkConfig#connectionAttemptLimit}.
+                 * See \ClientNetworkConfig::connectionAttemptLimit
                  *
-                 * @return connection attempt period in millis
+                 * @return connection attempt period
                  */
-                int32_t getConnectionAttemptPeriod() const;
+                std::chrono::milliseconds getConnectionAttemptPeriod() const;
 
                 /**
                  * Period for the next attempt to find a member to connect.
                  *
-                 * @param connectionAttemptPeriod time to wait before another attempt in millis
-                 * @return configured {@link ClientNetworkConfig} for chaining
+                 * @param period time to wait before another attempt. The resolution of time is up to milliseconds.
+                 * @return configured \ClientNetworkConfig for chaining
                  */
-                ClientNetworkConfig  &setConnectionAttemptPeriod(int32_t connectionAttemptPeriod);
+                template< class Rep, class Period >
+                ClientNetworkConfig &setConnectionAttemptPeriod(const std::chrono::duration<Rep, Period>& period) {
+                    return connection_interval_msecs(std::chrono::duration_cast<std::chrono::milliseconds>(period));
+                }
 
                 /**
                  * Returns the list of candidate addresses that client will use to establish initial connection
@@ -160,7 +167,7 @@ namespace hazelcast {
                  * Adds given addresses to candidate address list that client will use to establish initial connection
                  *
                  * @param addresses to be added to initial address list
-                 * @return configured {@link com.hazelcast.client.config.ClientNetworkConfig} for chaining
+                 * @return configured \ClientNetworkConfig for chaining
                  */
                 ClientNetworkConfig &addAddresses(const std::vector<Address> &addresses);
 
@@ -168,7 +175,7 @@ namespace hazelcast {
                  * Adds given addresses to candidate address list that client will use to establish initial connection
                  *
                  * @param addresses to be added to initial address list
-                 * @return configured {@link ClientNetworkConfig} for chaining
+                 * @return configured \ClientNetworkConfig for chaining
                  */
                 ClientNetworkConfig &setAddresses(const std::vector<Address> &addresses);
 
@@ -176,7 +183,7 @@ namespace hazelcast {
                 * Adds given address to candidate address list that client will use to establish initial connection
                 *
                 * @param address to be added to initial address list
-                * @return configured {@link ClientNetworkConfig} for chaining
+                * @return configured \ClientNetworkConfig for chaining
                 */
                 ClientNetworkConfig &addAddress(const Address &address);
 
@@ -188,15 +195,18 @@ namespace hazelcast {
                 config::SSLConfig sslConfig;
                 config::ClientAwsConfig clientAwsConfig;
 
-                int64_t connectionTimeout;
+                std::chrono::milliseconds connectionTimeout;
                 bool smartRouting;
 
                 int32_t connectionAttemptLimit;
-                int32_t connectionAttemptPeriod;
+                std::chrono::milliseconds connectionAttemptPeriod;
 
                 std::vector<Address> addressList;
 
                 SocketOptions socketOptions;
+
+                ClientNetworkConfig &connection_timeout_msecs(const std::chrono::milliseconds &timeout);
+                ClientNetworkConfig &connection_interval_msecs(const std::chrono::milliseconds &interval);
             };
         }
     }
