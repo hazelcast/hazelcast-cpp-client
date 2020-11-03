@@ -39,10 +39,9 @@ namespace hazelcast {
              * Configuration for eviction.
              * You can set a limit for number of entries or total memory cost of entries.
              */
-            template<typename K, typename V>
-            class EvictionConfig : public internal::eviction::EvictionConfiguration<K, V> {
+            class HAZELCAST_API EvictionConfig {
             public:
-                ~EvictionConfig() override = default;
+                ~EvictionConfig()  = default;
 
                 /**
                  * Maximum Size Policy
@@ -76,124 +75,43 @@ namespace hazelcast {
                 /**
                  * Default maximum entry count.
                  */
-                static const int32_t DEFAULT_MAX_ENTRY_COUNT;
+                static constexpr int32_t DEFAULT_MAX_ENTRY_COUNT = INT32_MAX;
 
                 /**
                  * Default Max-Size Policy.
                  */
-                static const MaxSizePolicy DEFAULT_MAX_SIZE_POLICY;
+                static constexpr MaxSizePolicy DEFAULT_MAX_SIZE_POLICY = MaxSizePolicy::ENTRY_COUNT;
 
                 /**
                  * Default Eviction Policy.
                  */
-                static const EvictionPolicy DEFAULT_EVICTION_POLICY;
+                static constexpr EvictionPolicy DEFAULT_EVICTION_POLICY = EvictionPolicy::LRU;
 
-                EvictionConfig() : size(DEFAULT_MAX_ENTRY_COUNT), maxSizePolicy(DEFAULT_MAX_SIZE_POLICY),
-                            evictionPolicy(DEFAULT_EVICTION_POLICY) {
-                }
+                EvictionConfig();
 
+                int32_t getSize() const;
 
-                EvictionConfig(int size, MaxSizePolicy maxSizePolicy,
-                               const std::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > &comparator) {
-                    this->size = util::Preconditions::checkPositive(size, "Size must be positive number!");
-                    this->maxSizePolicy = maxSizePolicy;
-                    this->comparator = util::Preconditions::checkNotNull<internal::eviction::EvictionPolicyComparator>(
-                            comparator, "Comparator cannot be null!");
-                }
+                EvictionConfig &setSize(int32_t size);
 
-                int32_t getSize() const {
-                    return size;
-                }
+                MaxSizePolicy getMaximumSizePolicy() const;
 
-                EvictionConfig &setSize(int32_t size) {
-                    this->size = util::Preconditions::checkPositive(size, "Size must be positive number!");
-                    return *this;
-                }
+                EvictionConfig &setMaximumSizePolicy(const MaxSizePolicy &maxSizePolicy);
 
-                MaxSizePolicy getMaximumSizePolicy() const {
-                    return maxSizePolicy;
-                }
+                EvictionPolicy getEvictionPolicy() const;
 
-                EvictionConfig &setMaximumSizePolicy(const MaxSizePolicy &maxSizePolicy) {
-                    this->maxSizePolicy = maxSizePolicy;
-                    return *this;
-                }
+                EvictionConfig &setEvictionPolicy(EvictionPolicy policy);
 
-                EvictionPolicy getEvictionPolicy() const {
-                    return evictionPolicy;
-                }
+                internal::eviction::EvictionStrategyType::Type getEvictionStrategyType() const;
 
-                EvictionConfig<K, V> &setEvictionPolicy(EvictionPolicy policy) {
-                    this->evictionPolicy = policy;
-                    return *this;
-                }
-
-                const std::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > getComparator() const override {
-                    return comparator;
-                }
-
-                EvictionConfig &setComparator(
-                        const std::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > &comparator) {
-                    this->comparator = comparator;
-                    return *this;
-                }
-
-                internal::eviction::EvictionStrategyType::Type getEvictionStrategyType() const override {
-                    // TODO: add support for other/custom eviction strategies
-                    return internal::eviction::EvictionStrategyType::DEFAULT_EVICTION_STRATEGY;
-                }
-
-                internal::eviction::EvictionPolicyType getEvictionPolicyType() const override {
-                    if (evictionPolicy == LFU) {
-                        return internal::eviction::LFU;
-                    } else if (evictionPolicy == LRU) {
-                        return internal::eviction::LRU;
-                    } else if (evictionPolicy == RANDOM) {
-                        return internal::eviction::RANDOM;
-                    } else if (evictionPolicy == NONE) {
-                        return internal::eviction::NONE;
-                    } else {
-                        assert(0);
-                    }
-		            return internal::eviction::NONE;
-                }
+                internal::eviction::EvictionPolicyType getEvictionPolicyType() const;
 
             protected:
                 int32_t size;
                 MaxSizePolicy maxSizePolicy;
                 EvictionPolicy evictionPolicy;
-                std::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > comparator;
             };
 
-            template <typename K, typename V>
-            std::ostream &operator<<(std::ostream &out, const EvictionConfig<K, V> &config) {
-                out << "EvictionConfig{"
-                    << "size=" << config.getSize()
-                    << ", maxSizePolicy=" << config.getMaximumSizePolicy()
-                    << ", evictionPolicy=" << config.getEvictionPolicy()
-                    << ", comparator=" << config.getComparator()
-                    << '}';
-
-                return out;
-            }
-
-            /**
-             * Default maximum entry count.
-             */
-            template <typename K, typename V>
-            const int EvictionConfig<K, V>::DEFAULT_MAX_ENTRY_COUNT = INT32_MAX;
-
-            /**
-             * Default Max-Size Policy.
-             */
-            template <typename K, typename V>
-            const typename EvictionConfig<K, V>::MaxSizePolicy EvictionConfig<K, V>::DEFAULT_MAX_SIZE_POLICY = ENTRY_COUNT;
-
-            /**
-             * Default Eviction Policy.
-             */
-            template <typename K, typename V>
-            const EvictionPolicy EvictionConfig<K, V>::DEFAULT_EVICTION_POLICY = LRU;
+            std::ostream & HAZELCAST_API operator<<(std::ostream &out, const EvictionConfig &config);
         }
     }
 }

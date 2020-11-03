@@ -70,7 +70,7 @@ namespace hazelcast {
                      */
                     template<typename K, typename V, typename KS>
                     std::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
-                            const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                            const std::string &name, const client::config::NearCacheConfig &nearCacheConfig) {
                         std::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
                         if (NULL == nearCache.get()) {
                             {
@@ -123,7 +123,7 @@ namespace hazelcast {
                 protected:
                     template<typename K, typename V, typename KS>
                     std::unique_ptr<NearCache<KS, V> > createNearCache(
-                            const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                            const std::string &name, const client::config::NearCacheConfig &nearCacheConfig) {
                         return std::unique_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
                                         name, nearCacheConfig, executionService, serializationService, logger_));

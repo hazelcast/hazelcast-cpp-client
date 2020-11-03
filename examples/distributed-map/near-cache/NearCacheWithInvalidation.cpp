@@ -20,11 +20,11 @@ using namespace hazelcast::client;
 int main() {
     ClientConfig config;
     const char *mapName = "InvalidationMap";
-    std::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
-            new config::NearCacheConfig<int, std::string>(mapName, config::OBJECT));
+    std::shared_ptr<config::NearCacheConfig> nearCacheConfig(
+            new config::NearCacheConfig(mapName, config::OBJECT));
     nearCacheConfig->setInvalidateOnChange(true);
     nearCacheConfig->getEvictionConfig()->setEvictionPolicy(config::NONE)
-            .setMaximumSizePolicy(config::EvictionConfig<int, std::string>::ENTRY_COUNT);
+            .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);
 

@@ -436,7 +436,7 @@ namespace hazelcast {
                 }
 
                 void initNearCache() {
-                    auto nearCacheConfig = getContext().getClientConfig().template getNearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>(name);
+                    auto nearCacheConfig = getContext().getClientConfig().getNearCacheConfig(name);
                     if (nearCacheConfig.get() != NULL) {
                         nearCache = getContext().getNearCacheManager().template getOrCreateNearCache<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(
                                 name, *nearCacheConfig);

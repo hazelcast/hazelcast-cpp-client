@@ -151,8 +151,8 @@ namespace hazelcast {
                             .setProperty(ClientProperties::STATISTICS_PERIOD_SECONDS,
                                          std::to_string(STATS_PERIOD_SECONDS))
                                     // add IMap Near Cache config
-                            .addNearCacheConfig(std::shared_ptr<config::NearCacheConfig<int, int> >(
-                                    new config::NearCacheConfig<int, int>(getTestName())));
+                            .addNearCacheConfig(std::shared_ptr<config::NearCacheConfig>(
+                                    new config::NearCacheConfig(getTestName())));
 
                     clientConfig.getNetworkConfig().setConnectionAttemptLimit(20);
 
@@ -261,7 +261,7 @@ namespace hazelcast {
                 ClientConfig clientConfig;
                 std::string mapName = getTestName();
                 clientConfig.addNearCacheConfig(
-                        std::shared_ptr<config::NearCacheConfig<int, int> >(new config::NearCacheConfig<int, int>(
+                        std::shared_ptr<config::NearCacheConfig>(new config::NearCacheConfig(
                                 mapName.c_str())));
                 clientConfig.setProperty(ClientProperties::STATISTICS_ENABLED, "true").setProperty(
                         ClientProperties::STATISTICS_PERIOD_SECONDS, "1");

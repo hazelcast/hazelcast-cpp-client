@@ -24,11 +24,11 @@ int main() {
     const char *mapName = "BinaryMap";
     Address serverAddr("127.0.0.1", 5701);
     config.getNetworkConfig().addAddress(serverAddr);
-    std::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
-            new config::NearCacheConfig<int, std::string>(mapName, config::BINARY));
+    std::shared_ptr<config::NearCacheConfig> nearCacheConfig(
+            new config::NearCacheConfig(mapName, config::BINARY));
     nearCacheConfig->setInvalidateOnChange(false);
     nearCacheConfig->getEvictionConfig()->setEvictionPolicy(config::NONE)
-            .setMaximumSizePolicy(config::EvictionConfig<int, std::string>::ENTRY_COUNT);
+            .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);
 

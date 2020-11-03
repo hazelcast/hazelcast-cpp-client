@@ -15,15 +15,8 @@
  */
 #pragma once
 
-#include <string>
-#include <sstream>
-#include <stdint.h>
-#include <memory>
-
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/client/config/EvictionConfig.h"
-#include "hazelcast/client/config/NearCacheConfigBase.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -37,23 +30,22 @@ namespace hazelcast {
              * Contains the configuration for a Near Cache.
              * @BinaryInterface
              */
-            template<typename K = serialization::pimpl::Data, typename V = serialization::pimpl::Data>
-            class NearCacheConfig : public NearCacheConfigBase {
+            class HAZELCAST_API NearCacheConfig {
             public:
                 /**
                  * Default value of the time to live in seconds.
                  */
-                static const int32_t DEFAULT_TTL_SECONDS;
+                static constexpr int32_t DEFAULT_TTL_SECONDS = 0;
 
                 /**
                  * Default value of the idle time for eviction in seconds.
                  */
-                static const int32_t DEFAULT_MAX_IDLE_SECONDS;
+                static constexpr int32_t DEFAULT_MAX_IDLE_SECONDS = 0;
 
                 /**
                  * Default value for the in-memory format.
                  */
-                static const InMemoryFormat DEFAULT_MEMORY_FORMAT;
+                static constexpr InMemoryFormat DEFAULT_MEMORY_FORMAT = InMemoryFormat::BINARY;
 
                 /**
                  * Local Update Policy enum.
@@ -70,57 +62,14 @@ namespace hazelcast {
                             CACHE
                 };
 
-                NearCacheConfig() : name("default"), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
-                                    maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
-                                    inMemoryFormat(DEFAULT_MEMORY_FORMAT),
-                                    localUpdatePolicy(INVALIDATE), invalidateOnChange(true), cacheLocalEntries(false),
-                                    evictionConfig(new EvictionConfig<K, V>()) {
-                }
+                NearCacheConfig();
 
-                NearCacheConfig(const std::string &cacheName) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
-                                                         maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
-                                                         inMemoryFormat(DEFAULT_MEMORY_FORMAT),
-                                                         localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
-                                                         cacheLocalEntries(false),
-                                                         evictionConfig(new EvictionConfig<K, V>()) {
-                }
+                NearCacheConfig(const std::string &cacheName);
 
-                NearCacheConfig(const std::string &cacheName, InMemoryFormat memoryFormat) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
-                                                         maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
-                                                         inMemoryFormat(memoryFormat),
-                                                         localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
-                                                         cacheLocalEntries(false),
-                                                         evictionConfig(new EvictionConfig<K, V>()) {
-                }
+                NearCacheConfig(const std::string &cacheName, InMemoryFormat memoryFormat);
 
                 NearCacheConfig(int32_t timeToLiveSeconds, int32_t maxIdleSeconds, bool invalidateOnChange,
-                                InMemoryFormat inMemoryFormat, std::shared_ptr<EvictionConfig<K, V> > evictConfig)
-                        : evictionConfig(new EvictionConfig<K, V>()) {
-                    this->timeToLiveSeconds = timeToLiveSeconds;
-                    this->maxIdleSeconds = maxIdleSeconds;
-                    this->invalidateOnChange = invalidateOnChange;
-                    this->inMemoryFormat = inMemoryFormat;
-                    localUpdatePolicy= INVALIDATE;
-                    // EvictionConfig is not allowed to be NULL
-                    if (evictConfig.get() != NULL) {
-                        this->evictionConfig = evictConfig;
-                    }
-                    this->cacheLocalEntries = false;
-                }
-
-                NearCacheConfig(const NearCacheConfig<K, V> &config) {
-                    name = config.getName();
-                    inMemoryFormat = config.getInMemoryFormat();
-                    invalidateOnChange = config.isInvalidateOnChange();
-                    maxIdleSeconds = config.getMaxIdleSeconds();
-                    timeToLiveSeconds = config.getTimeToLiveSeconds();
-                    cacheLocalEntries = config.isCacheLocalEntries();
-                    localUpdatePolicy = config.localUpdatePolicy;
-                    // EvictionConfig is not allowed to be NULL
-                    if (config.evictionConfig.get() != NULL) {
-                        this->evictionConfig = config.evictionConfig;
-                    }
-                }
+                                InMemoryFormat inMemoryFormat, const EvictionConfig &evictConfig);
 
                 virtual ~NearCacheConfig() = default;
 
@@ -129,9 +78,7 @@ namespace hazelcast {
                  *
                  * @return The name of the Near Cache.
                  */
-                const std::string &getName() const {
-                    return name;
-                }
+                const std::string &getName() const;
 
                 /**
                  * Sets the name of the Near Cache.
@@ -139,10 +86,7 @@ namespace hazelcast {
                  * @param name The name of the Near Cache.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setName(const std::string &name) {
-                    this->name = name;
-                    return *this;
-                }
+                NearCacheConfig &setName(const std::string &name);
 
                 /**
                  * Gets the maximum number of seconds for each entry to stay in the Near Cache. Entries that are
@@ -150,9 +94,7 @@ namespace hazelcast {
                  *
                  * @return The maximum number of seconds for each entry to stay in the Near Cache.
                  */
-                int32_t getTimeToLiveSeconds() const {
-                    return timeToLiveSeconds;
-                }
+                int32_t getTimeToLiveSeconds() const;
 
                 /**
                  * Sets the maximum number of seconds for each entry to stay in the Near Cache. Entries that are
@@ -162,11 +104,7 @@ namespace hazelcast {
                  * @param timeToLiveSeconds The maximum number of seconds for each entry to stay in the Near Cache.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setTimeToLiveSeconds(int32_t timeToLiveSeconds) {
-                    this->timeToLiveSeconds = util::Preconditions::checkNotNegative(timeToLiveSeconds,
-                                                                                    "TTL seconds cannot be negative!");
-                    return *this;
-                }
+                NearCacheConfig &setTimeToLiveSeconds(int32_t timeToLiveSeconds);
 
                 /**
                  * Maximum number of seconds each entry can stay in the Near Cache as untouched (not-read).
@@ -176,9 +114,7 @@ namespace hazelcast {
                  * @return Maximum number of seconds each entry can stay in the Near Cache as
                  * untouched (not-read).
                  */
-                int32_t getMaxIdleSeconds() const {
-                    return maxIdleSeconds;
-                }
+                int32_t getMaxIdleSeconds() const;
 
                 /**
                  * Maximum number of seconds each entry can stay in the Near Cache as untouched (not-read).
@@ -190,11 +126,7 @@ namespace hazelcast {
                  *                       untouched (not-read).
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setMaxIdleSeconds(int32_t maxIdleSeconds) {
-                    this->maxIdleSeconds = util::Preconditions::checkNotNegative(maxIdleSeconds,
-                                                                                 "Max-Idle seconds cannot be negative!");
-                    return *this;
-                }
+                NearCacheConfig &setMaxIdleSeconds(int32_t maxIdleSeconds);
 
                 /**
                  * True to evict the cached entries if the entries are changed (updated or removed).
@@ -204,9 +136,7 @@ namespace hazelcast {
                  *
                  * @return This Near Cache config instance.
                  */
-                bool isInvalidateOnChange() const {
-                    return invalidateOnChange;
-                }
+                bool isInvalidateOnChange() const;
 
                 /**
                  * True to evict the cached entries if the entries are changed (updated or removed).
@@ -218,10 +148,7 @@ namespace hazelcast {
                  *                           changed (updated or removed), false otherwise.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setInvalidateOnChange(bool invalidateOnChange) {
-                    this->invalidateOnChange = invalidateOnChange;
-                    return *this;
-                }
+                NearCacheConfig &setInvalidateOnChange(bool invalidateOnChange);
 
                 /**
                  * Gets the data type used to store entries.
@@ -231,9 +158,7 @@ namespace hazelcast {
                  *
                  * @return The data type used to store entries.
                  */
-                const InMemoryFormat &getInMemoryFormat() const {
-                    return inMemoryFormat;
-                }
+                const InMemoryFormat &getInMemoryFormat() const;
 
                 /**
                  * Sets the data type used to store entries.
@@ -244,10 +169,7 @@ namespace hazelcast {
                  * @param inMemoryFormat The data type used to store entries.
                  * @return This Near Cache config instance.
                  */
-                virtual NearCacheConfig &setInMemoryFormat(const InMemoryFormat &inMemoryFormat) {
-                    this->inMemoryFormat = inMemoryFormat;
-                    return *this;
-                }
+                virtual NearCacheConfig &setInMemoryFormat(const InMemoryFormat &inMemoryFormat);
 
                 /**
                  * If true, cache local entries also.
@@ -255,9 +177,7 @@ namespace hazelcast {
                  *
                  * @return True if local entries are cached also.
                  */
-                bool isCacheLocalEntries() const {
-                    return cacheLocalEntries;
-                }
+                bool isCacheLocalEntries() const;
 
                 /**
                  * True to cache local entries also.
@@ -266,28 +186,18 @@ namespace hazelcast {
                  * @param cacheLocalEntries True to cache local entries also.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setCacheLocalEntries(bool cacheLocalEntries) {
-                    this->cacheLocalEntries = cacheLocalEntries;
-                    return *this;
-                }
+                NearCacheConfig &setCacheLocalEntries(bool cacheLocalEntries);
 
-                const LocalUpdatePolicy &getLocalUpdatePolicy() const {
-                    return localUpdatePolicy;
-                }
+                const LocalUpdatePolicy &getLocalUpdatePolicy() const;
 
-                NearCacheConfig &setLocalUpdatePolicy(const LocalUpdatePolicy &localUpdatePolicy) {
-                    this->localUpdatePolicy = localUpdatePolicy;
-                    return *this;
-                }
+                NearCacheConfig &setLocalUpdatePolicy(const LocalUpdatePolicy &localUpdatePolicy);
 
                 /**
                  * The eviction configuration.
                  *
                  * @return The eviction configuration.
                  */
-                const std::shared_ptr<EvictionConfig<K, V> > &getEvictionConfig() const {
-                    return evictionConfig;
-                }
+                EvictionConfig &getEvictionConfig();
 
                 /**
                  * Sets the eviction configuration.
@@ -295,25 +205,9 @@ namespace hazelcast {
                  * @param evictionConfig The eviction configuration.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setEvictionConfig(const std::shared_ptr<EvictionConfig<K, V> > &evictionConfig) {
-                    this->evictionConfig = util::Preconditions::checkNotNull<EvictionConfig<K, V> >(evictionConfig,
-                                                                                                    "EvictionConfig cannot be NULL!");
-                    return *this;
-                }
+                NearCacheConfig &setEvictionConfig(const EvictionConfig &evictionConfig);
 
-                std::ostream &operator<<(std::ostream &out) {
-                    out << "NearCacheConfig{"
-                        << "timeToLiveSeconds=" << timeToLiveSeconds
-                        << ", maxIdleSeconds=" << maxIdleSeconds
-                        << ", invalidateOnChange=" << invalidateOnChange
-                        << ", inMemoryFormat=" << inMemoryFormat
-                        << ", cacheLocalEntries=" << cacheLocalEntries
-                        << ", localUpdatePolicy=" << localUpdatePolicy
-                        << *evictionConfig;
-                    out << '}';
-
-                    return out;
-                }
+                friend std::ostream & HAZELCAST_API operator<<(std::ostream &out, const NearCacheConfig &cacheConfig);
             private:
                 std::string name;
 
@@ -335,22 +229,12 @@ namespace hazelcast {
                  * <li>LRU as eviction policy</li>
                  * </ul>
                  */
-                std::shared_ptr<EvictionConfig<K, V> > evictionConfig;
+                EvictionConfig evictionConfig;
 
-                int32_t calculateMaxSize(int32_t maxSize) {
-                    return (maxSize == 0) ? INT32_MAX : util::Preconditions::checkNotNegative(maxSize,
-                                                                                              "Max-size cannot be negative!");
-                }
+                int32_t calculateMaxSize(int32_t maxSize);
             };
 
-            template<typename K, typename V>
-            const int32_t NearCacheConfig<K, V>::DEFAULT_TTL_SECONDS = 0;
-
-            template<typename K, typename V>
-            const int32_t NearCacheConfig<K, V>::DEFAULT_MAX_IDLE_SECONDS = 0;
-
-            template<typename K, typename V>
-            const InMemoryFormat NearCacheConfig<K, V>::DEFAULT_MEMORY_FORMAT = BINARY;
+            std::ostream & HAZELCAST_API operator<<(std::ostream &out, const NearCacheConfig &cacheConfig);
 
         }
     }

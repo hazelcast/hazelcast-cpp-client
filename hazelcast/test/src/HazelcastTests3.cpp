@@ -249,7 +249,7 @@ namespace hazelcast {
                 }
 
                 static ClientConfig getClientConfigWithNearCacheInvalidationEnabled() {
-                    auto nearCacheConfig = std::make_shared<config::NearCacheConfig<serialization::pimpl::Data>>();
+                    auto nearCacheConfig = std::make_shared<config::NearCacheConfig>();
                     nearCacheConfig->setInvalidateOnChange(true).setInMemoryFormat(config::BINARY);
                     return getConfig().setClusterName("replicated-map-binary-test").addNearCacheConfig(nearCacheConfig);
                 }
@@ -698,8 +698,7 @@ namespace hazelcast {
                 }
 
                 void SetUp() override {
-                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>(
-                            GetParam(), getTestName());
+                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig(GetParam(), getTestName());
                 }
 
                 void TearDown() override {
@@ -729,11 +728,10 @@ namespace hazelcast {
                      * @param inMemoryFormat the {@link InMemoryFormat} to set
                      * @return the {@link NearCacheConfig}
                      */
-                    template<typename K, typename V>
-                    static std::shared_ptr<config::NearCacheConfig<K, V> > createNearCacheConfig(
+                    static std::shared_ptr<config::NearCacheConfig> createNearCacheConfig(
                             config::InMemoryFormat inMemoryFormat, const std::string &mapName) {
-                        std::shared_ptr<config::NearCacheConfig<K, V> > nearCacheConfig(
-                                new config::NearCacheConfig<K, V>());
+                        std::shared_ptr<config::NearCacheConfig> nearCacheConfig(
+                                new config::NearCacheConfig());
 
                         nearCacheConfig->setName(mapName).setInMemoryFormat(inMemoryFormat).setInvalidateOnChange(true);
 
@@ -748,15 +746,12 @@ namespace hazelcast {
                      * @param maxSizePolicy   the {@link MaxSizePolicy} to set
                      * @param maxSize         the max size to set
                      */
-                    template<typename K, typename V>
-                    static void setEvictionConfig(config::NearCacheConfig<K, V> &nearCacheConfig,
+                    static void setEvictionConfig(config::NearCacheConfig &nearCacheConfig,
                                                   config::EvictionPolicy evictionPolicy,
-                                                  typename config::EvictionConfig<K, V>::MaxSizePolicy maxSizePolicy,
+                                                  typename config::EvictionConfig::MaxSizePolicy maxSizePolicy,
                                                   int maxSize) {
-                        nearCacheConfig.getEvictionConfig()
-                                ->setEvictionPolicy(evictionPolicy)
-                                .setMaximumSizePolicy(maxSizePolicy)
-                                .setSize(maxSize);
+                        nearCacheConfig.getEvictionConfig().setEvictionPolicy(evictionPolicy)
+                                .setMaximumSizePolicy(maxSizePolicy).setSize(maxSize);
                     }
 
                     /**
@@ -908,7 +903,7 @@ namespace hazelcast {
 
                 int64_t getExpectedMissesWithLocalUpdatePolicy() {
                     if (nearCacheConfig->getLocalUpdatePolicy() ==
-                        config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>::CACHE) {
+                        config::NearCacheConfig::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
                         return stats->getMisses();
                     }
@@ -917,7 +912,7 @@ namespace hazelcast {
                 }
 
                 int64_t getExpectedHitsWithLocalUpdatePolicy() {
-                    if (nearCacheConfig->getLocalUpdatePolicy() == config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>::CACHE) {
+                    if (nearCacheConfig->getLocalUpdatePolicy() == config::NearCacheConfig::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
                         return stats->getHits() + 2;
                     }
@@ -964,7 +959,7 @@ namespace hazelcast {
                     ASSERT_EQ(0, nearCache->size()) << "Invalidation is not working on putAll()";
                 }
 
-                std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>> nearCacheConfig;
+                std::shared_ptr<config::NearCacheConfig> nearCacheConfig;
                 std::unique_ptr<HazelcastClient> client;
                 std::unique_ptr<HazelcastClient> nearCachedClient;
                 std::shared_ptr<ReplicatedMap> noNearCacheMap;
@@ -1036,8 +1031,8 @@ namespace hazelcast {
             TEST_P(BasicClientReplicatedMapNearCacheTest,
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnNearCacheAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
-                NearCacheTestUtils::setEvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>(*nearCacheConfig, config::NONE,
-                                                                        config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::ENTRY_COUNT,
+                NearCacheTestUtils::setEvictionConfig(*nearCacheConfig, config::NONE,
+                                                                        config::EvictionConfig::ENTRY_COUNT,
                                                                         size);
 
                 nearCacheConfig->setInvalidateOnChange(false);
@@ -1079,8 +1074,8 @@ namespace hazelcast {
             TEST_P(BasicClientReplicatedMapNearCacheTest,
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnDataAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
-                NearCacheTestUtils::setEvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>(*nearCacheConfig, config::NONE,
-                                                                        config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::ENTRY_COUNT,
+                NearCacheTestUtils::setEvictionConfig(*nearCacheConfig, config::NONE,
+                                                                        config::EvictionConfig::ENTRY_COUNT,
                                                                         size);
                 nearCacheConfig->setInvalidateOnChange(true);
 
@@ -1161,8 +1156,8 @@ namespace hazelcast {
             }
 
             TEST_P(BasicClientReplicatedMapNearCacheTest, testNearCacheEviction) {
-                NearCacheTestUtils::setEvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>(*nearCacheConfig, config::LRU,
-                                                                        config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::ENTRY_COUNT,
+                NearCacheTestUtils::setEvictionConfig(*nearCacheConfig, config::LRU,
+                                                                        config::EvictionConfig::ENTRY_COUNT,
                                                                         DEFAULT_RECORD_COUNT);
                 createNoNearCacheContext();
 
@@ -1233,16 +1228,16 @@ namespace hazelcast {
                     }
                 }
 
-                std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > newNoInvalidationNearCacheConfig() {
-                    std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > config(newNearCacheConfig());
+                std::shared_ptr<config::NearCacheConfig> newNoInvalidationNearCacheConfig() {
+                    std::shared_ptr<config::NearCacheConfig> config(newNearCacheConfig());
                     config->setInMemoryFormat(config::OBJECT);
                     config->setInvalidateOnChange(false);
                     return config;
                 }
 
-                static std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > newNearCacheConfig() {
-                    return std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> >(
-                            new config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>());
+                static std::shared_ptr<config::NearCacheConfig> newNearCacheConfig() {
+                    return std::shared_ptr<config::NearCacheConfig>(
+                            new config::NearCacheConfig());
                 }
 
                 static std::unique_ptr<ClientConfig> newClientConfig() {
@@ -1250,7 +1245,7 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<ReplicatedMap > getNearCachedMapFromClient(
-                        std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > config) {
+                        std::shared_ptr<config::NearCacheConfig> config) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
 
                     config->setName(mapName);
@@ -1276,7 +1271,7 @@ namespace hazelcast {
                 }
 
                 std::unique_ptr<ClientConfig> clientConfig;
-                std::shared_ptr<config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> > nearCacheConfig;
+                std::shared_ptr<config::NearCacheConfig> nearCacheConfig;
                 std::unique_ptr<HazelcastClient> client;
                 std::shared_ptr<ReplicatedMap> map;
                 static HazelcastServer *instance;
