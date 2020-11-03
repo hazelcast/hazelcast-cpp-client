@@ -8,6 +8,12 @@
       * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
+    * [1.3.1 Compiling Your Project](#131-compiling-your-project)
+        * [1.3.1.1 Mac Client](#1311-mac-client)
+        * [1.3.1.2 Linux Client](#1312-linux-client)
+        * [1.3.1.3 Windows Client](#1313-windows-client)
+    * [1.3.2 Building Hazelcast From Source Code](#132-building-hazelcast-from-source)
+    * [1.3.3 Building Hazelcast Tests From Source Code](#133-building-hazelcast-tests-from-source)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-cpp-client)
@@ -239,15 +245,28 @@ Unzip the file. Following is the directory structure for Linux 64-bit zip. The s
         - `lib`: Shared and static library directory.
             - `tls`: Contains the library with TLS (SSL) support enabled.
         - `include`: Directory you need to include when compiling your project.
-    - `external/include`: External directory that you need to include when compiling your project. Currently the only dependency is `boost/shared_ptr.hpp`.
-        - `boost`: External boost files for `boost/shared_ptr`.
     - `examples`: Contains various examples for each C++ client feature. Each example produces an executable which you can run in a cluster. You may need to set the server IP addresses for the examples to run.
     
 ### 1.3.1 Compiling Your Project
 
-For compilation, you need to include the `hazelcast/include` and `external/include` directories in your in your distribution. You also need to link your application to the appropriate static or shared library. 
+For compilation, you need to include the `hazelcast/include` directory in your in your distribution. You also need to link your application to the appropriate static or shared library. 
 
-If you want to use the TLS feature, use the `lib` directory with TLS support enabled, e.g., `cpp/Linux_64/hazelcast/lib/tls`.
+If you want to use the TLS feature, use the `lib` directory with TLS support enabled, e.g., `cpp/Linux_64/hazelcast/lib/tls`. If you are using TLS, then you also need to link to OpenSSL and link to the OpenSSL libraries. E.g. if you are using cmake, we do the following:
+```Cmake
+    include(FindOpenSSL)
+	find_package(OpenSSL REQUIRED)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	link_libraries(${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES})
+``` 
+
+Hazelcast also depends on Boost library. We specifically use the chrono and thread libraries. The thread library version also needs to be enough to support the Boost future continuations. Therefore, you can simply define BOOST_THREAD_VERSION=5 which enables all the needed flags. Make sure that you find and include the Boost include directory and also link to the boost threIf you are using cmake for compilation you can do the following:
+```Cmake
+    include(FindBoost)
+    find_package(Boost REQUIRED COMPONENTS thread chrono)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_libraries(Boost::thread Boost::chrono)
+    add_definitions("-DBOOST_THREAD_VERSION=5")
+``` 
 
 #### 1.3.1.1 Mac Client
 
@@ -287,6 +306,47 @@ When compiling for Windows environment, you should specify one of the following 
 
 - `HAZELCAST_USE_STATIC`: You want the application to use the static Hazelcast library.
 - `HAZELCAST_USE_SHARED`: You want the application to use the shared Hazelcast library.
+
+### 1.3.2 Building Hazelcast From Source Code
+The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
+
+The simplest way to build the project from source code is to run the script `scripts/build-linux.sh` for Linux and Mac OS, `scripts/build-windows.bat` for windows. The script uses the following parameters:
+
+`scripts/build-linux.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
+
+- Use `32` if you want to generate 32-bit library. 
+- Use `SHARED` if you want to generate SHARED library.
+- Use `STATIC` if you want to generate STATIC library.
+- Use `Debug` if you want to generate Debug version of the library.
+- Use `Release` if you want to generate Release version of the library.
+- Use `COMPILE_WITHOUT_SSL` if you want to generate the library that is not TLS enabled and has no OpenSSL dependency.
+
+The exact same options work for the windows batch script `scripts/build-windows.bat`.
+
+The project depends on an up-to-date [Boost](http://boost.org/) library version.
+It also depends on OpenSSL only if you compile the project enabled with the TLS feature (i.e. if `COMPILE_WITHOUT_SSL` is NOT provided) 
+
+### 1.3.3 Building Hazelcast Tests Source Code
+The Hazelcast project uses the [CMake](https://cmake.org/) build system. Hence, you should have cmake installed and visible to your environment Path.
+
+The easiest way to compile and run the tests is to use the test scripts. The scripts are :
+- `testLinuxSingleCase.sh` for linux and MAC OS.
+- `testWindowsSingleCase.bat` for Windows.
+
+The scripts accept the following options:
+
+`testLinuxSingleCase.sh <32|64> <SHARED|STATIC> <Debug|Release> [COMPILE_WITHOUT_SSL]`
+
+- Use `32` if you want to generate 32-bit library. 
+- Use `SHARED` if you want to generate SHARED library.
+- Use `STATIC` if you want to generate STATIC library.
+- Use `Debug` if you want to generate Debug version of the library.
+- Use `Release` if you want to generate Release version of the library.
+- Use `COMPILE_WITHOUT_SSL` if you want to generate the library that is not TLS enabled and has no OpenSSL dependency.
+
+It runs the build script and if successfully builds the project including the examples, it starts the [remote controller](https://github.com/hazelcast/hazelcast-remote-controller) for managing server start and shutdowns during the test, then runs the test binary. The test framework uses [Google test](https://github.com/google/googletest)  
+
+The test sources depends on the Boost (thread and chrono), OpenSSL and [apache thrift](https://github.com/apache/thrift) (needed for communications to remote controller).
 
 ## 1.4. Basic Configuration
 
