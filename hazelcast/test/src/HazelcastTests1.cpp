@@ -18,7 +18,6 @@
 #include "ClientTestSupport.h"
 #include <vector>
 #include <chrono>
-#include <functional>
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/logger.h"
 #include "ringbuffer/StartsWithStringFilter.h"
@@ -46,10 +45,11 @@
 #include <unordered_set>
 #include <cmath>
 #include <iostream>
-#include <string>
 #include <boost/asio.hpp>
 #include <boost/thread/future.hpp>
-#include <cassert>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
 #include <openssl/crypto.h>
@@ -79,7 +79,8 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            /**
+            extern std::shared_ptr<RemoteControllerClient> remoteController;
+
             class ClientStatisticsTest : public ClientTestSupport {
             protected:
                 static const int STATS_PERIOD_SECONDS = 1;
@@ -94,23 +95,19 @@ namespace hazelcast {
                     instance = nullptr;
                 }
 
-                Response getClientStatsFromServer() {
+                static Response getClientStatsFromServer() {
                     const char *script = "client0=instance_0.getClientService().getConnectedClients()."
-                                         "toArray()[0]\nresult=client0.getClientStatistics();";
+                                         "toArray()[0]\nresult=client0.getClientAttributes();";
 
                     Response response;
-                    RemoteControllerClient &controllerClient = g_srvFactory->getRemoteController();
-                    controllerClient.executeOnController(response, g_srvFactory->getClusterId(), script, Lang::PYTHON);
+                    remoteController->executeOnController(response, g_srvFactory->getClusterId(), script, Lang::PYTHON);
                     return response;
                 }
 
-                std::string unescapeSpecialCharacters(const std::string &value) {
-                    std::regex reBackslah("\\,");
-                    auto escapedValue = std::regex_replace(value, reBackslah, ",");
-                    std::regex reEqual("\\=");
-                    escapedValue = std::regex_replace(escapedValue, reEqual, "=");
-                    std::regex reDoubleBackslash("\\\\");
-                    escapedValue = std::regex_replace(escapedValue, reDoubleBackslash, "\\");
+                static std::string unescapeSpecialCharacters(const std::string &value) {
+                    std::string escapedValue = boost::replace_all_copy(value, "\\,", ",");
+                    boost::replace_all(escapedValue, "\\=", "=");
+                    boost::replace_all(escapedValue, "\\\\", "\\");
                     return escapedValue;
                 }
 
@@ -118,20 +115,15 @@ namespace hazelcast {
                 getStatsFromResponse(const Response &statsResponse) {
                     std::unordered_map<std::string, std::string> statsMap;
                     if (statsResponse.success && !statsResponse.result.empty()) {
-                        // passing -1 as the submatch index parameter performs splitting
-                        std::regex re(",");
-                        std::sregex_token_iterator first{statsResponse.result.begin(), statsResponse.result.end(), re,
-                                                         -1}, last;
+                        std::vector<std::string> keyValuePairs;
+                        boost::split(keyValuePairs, statsResponse.result, boost::is_any_of(","));
 
-                        while (first != last) {
-                            string input = unescapeSpecialCharacters(*first);
-                            std::regex reEqual("=");
-                            std::sregex_token_iterator tokenIt{input.begin(), input.end(), reEqual,
-                                                             -1}, tokenLast;
+                        for(const auto &pair : keyValuePairs) {
+                            std::vector<std::string> keyValuePair;
+                            auto input = unescapeSpecialCharacters(pair);
+                            boost::split(keyValuePair, input, boost::is_any_of("="));
 
-                            if (tokenIt->length() > 1) {
-                                auto pair = *tokenIt;
-                                pair.
+                            if (keyValuePair.size() > 1) {
                                 statsMap[keyValuePair[0]] = keyValuePair[1];
                             } else {
                                 statsMap[keyValuePair[0]] = "";
@@ -143,13 +135,13 @@ namespace hazelcast {
                 }
 
                 std::unordered_map<std::string, std::string> getStats() {
-                    HazelcastServerFactory::Response statsResponse = getClientStatsFromServer();
+                    auto statsResponse = getClientStatsFromServer();
 
                     return getStatsFromResponse(statsResponse);
                 }
 
                 bool verifyClientStatsFromServerIsNotEmpty() {
-                    HazelcastServerFactory::Response response = getClientStatsFromServer();
+                    auto response = getClientStatsFromServer();
                     return response.success && !response.result.empty();
                 }
 
@@ -157,7 +149,7 @@ namespace hazelcast {
                     ClientConfig clientConfig;
                     clientConfig.setProperty(ClientProperties::STATISTICS_ENABLED, "true")
                             .setProperty(ClientProperties::STATISTICS_PERIOD_SECONDS,
-                                         std::to_string<int>(STATS_PERIOD_SECONDS))
+                                         std::to_string(STATS_PERIOD_SECONDS))
                                     // add IMap Near Cache config
                             .addNearCacheConfig(std::shared_ptr<config::NearCacheConfig<int, int> >(
                                     new config::NearCacheConfig<int, int>(getTestName())));
@@ -175,15 +167,15 @@ namespace hazelcast {
                 std::string getClientLocalAddress(HazelcastClient &client) {
                     spi::ClientContext clientContext(client);
                     connection::ClientConnectionManagerImpl &connectionManager = clientContext.getConnectionManager();
-                    std::shared_ptr<connection::Connection> ownerConnection = connectionManager.getOwnerConnection();
-                    std::unique_ptr<Address> localSocketAddress = ownerConnection->getLocalSocketAddress();
+                    auto connection = connectionManager.get_random_connection();
+                    auto localSocketAddress = connection->getLocalSocketAddress();
                     std::ostringstream localAddressString;
                     localAddressString << localSocketAddress->getHost() << ":" << localSocketAddress->getPort();
                     return localAddressString.str();
                 }
 
                 bool isStatsUpdated(const std::string &lastStatisticsCollectionTime) {
-                    std::unordered_map<string, string> stats = getStats();
+                    auto stats = getStats();
                     if (stats["lastStatisticsCollectionTime"] != lastStatisticsCollectionTime) {
                         return true;
                     }
@@ -195,17 +187,24 @@ namespace hazelcast {
                     produceSomeStats(map);
                 }
 
-                void produceSomeStats(IMap<int, int> &map) {
-                    map->put<std::string, std::string>(5, 10);
-                    ASSERT_EQ(10, *map->get<std::string, std::string>(5));
-                    ASSERT_EQ(10, *map->get<std::string, std::string>(5));
+                void produceSomeStats(std::shared_ptr<IMap> &map) {
+                    map->put(5, 10).get();
+                    auto nearCacheStatsImpl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(
+                            map->getLocalMapStats().getNearCacheStats());
+
+                    auto invalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
+                    // When for invalidation to come from server for the put operation
+                    ASSERT_EQ_EVENTUALLY(
+                            invalidationRequests + 1, nearCacheStatsImpl->getInvalidationRequests());
+
+                    ASSERT_EQ(10, (*map->get<int, int>(5).get()));
+                    ASSERT_EQ(10, (*map->get<int, int>(5).get()));
                 }
 
                 std::string toString(const std::unordered_map<std::string, std::string> &map) {
                     std::ostringstream out;
-                    typedef std::unordered_map<std::string, std::string> StringMap;
                     out << "Map {" << std::endl;
-                    for (const StringMap::value_type &entry : map) {
+                    for(const auto &entry : map) {
                         out << "\t\t(" << entry.first << " , " << entry.second << ")" << std::endl;
                     }
                     out << "}" << std::endl;
@@ -216,7 +215,7 @@ namespace hazelcast {
                 static HazelcastServer *instance;
             };
 
-            HazelcastServer *ClientStatisticsTest::instance = nullptr;
+            HazelcastServer *ClientStatisticsTest::instance = NULL;
 
             TEST_F(ClientStatisticsTest, testClientStatisticsDisabledByDefault) {
 
@@ -228,7 +227,7 @@ namespace hazelcast {
                 // sleep twice the collection period
                 sleepSeconds(2);
 
-                HazelcastServerFactory::Response statsFromServer = getClientStatsFromServer();
+                Response statsFromServer = getClientStatsFromServer();
                 ASSERT_TRUE(statsFromServer.success);
                 ASSERT_TRUE(statsFromServer.message.empty()) << "Statistics should be disabled by default.";
             }
@@ -253,7 +252,7 @@ namespace hazelcast {
                 // sleep twice the collection period
                 sleepSeconds(2);
 
-                HazelcastServerFactory::Response statsFromServer = getClientStatsFromServer();
+                Response statsFromServer = getClientStatsFromServer();
                 ASSERT_TRUE(statsFromServer.success);
                 ASSERT_TRUE(statsFromServer.message.empty()) << "Statistics should not be enabled with wrong value.";
             }
@@ -275,7 +274,8 @@ namespace hazelcast {
                 // sleep twice the collection period
                 sleepSeconds(2);
 
-                HazelcastServerFactory::Response statsFromServer = getClientStatsFromServer();
+                Response statsFromServer;
+                ASSERT_TRUE_EVENTUALLY((statsFromServer = getClientStatsFromServer()).success && !statsFromServer.result.empty());
                 ASSERT_TRUE(statsFromServer.success);
                 ASSERT_FALSE(statsFromServer.result.empty());
 
@@ -326,19 +326,26 @@ namespace hazelcast {
             }
 
             TEST_F(ClientStatisticsTest, testStatisticsCollectionNonDefaultPeriod) {
+                auto statsMap = getStats();
+                std::string previous_stat_time;
+                if (!statsMap.empty()) {
+                    previous_stat_time = statsMap["clusterConnectionTimestamp"];
+                }
+
                 std::unique_ptr<HazelcastClient> client = createHazelcastClient();
 
-                int64_t clientConnectionTime = hazelcast::util::currentTimeMillis();
+                int64_t clientConnectionTime = util::currentTimeMillis();
 
                 // wait enough time for statistics collection
                 waitForFirstStatisticsCollection();
+                ASSERT_TRUE_EVENTUALLY(previous_stat_time != getStats()["clusterConnectionTimestamp"]);
 
                 Response statsResponse = getClientStatsFromServer();
                 ASSERT_TRUE(statsResponse.success);
-                string &stats = statsResponse.result;
+                auto &stats = statsResponse.result;
                 ASSERT_TRUE(!stats.empty());
 
-                std::unordered_map<std::string, std::string> statsMap = getStatsFromResponse(statsResponse);
+                statsMap = getStatsFromResponse(statsResponse);
 
                 ASSERT_EQ(1U, statsMap.count("clusterConnectionTimestamp"))
                                             << "clusterConnectionTimestamp stat should exist (" << stats << ")";
@@ -365,7 +372,7 @@ namespace hazelcast {
                 ASSERT_EQ(1U, statsMap.count("lastStatisticsCollectionTime"))
                                             << "lastStatisticsCollectionTime stat should exist (" << stats << ")";
                 std::string lastStatisticsCollectionTimeString = statsMap["lastStatisticsCollectionTime"];
-                ASSERT_NO_THROW((std::stoll(lastStatisticsCollectionTimeString)))
+                ASSERT_NO_THROW((boost::lexical_cast<int64_t>(lastStatisticsCollectionTimeString)))
                                             << "lastStatisticsCollectionTime value is not in correct (" << stats << ")";
 
                 // this creates empty map statistics
@@ -413,7 +420,6 @@ namespace hazelcast {
 
                 ASSERT_NE(initialStats, getStats()) << "initial statistics should not be the same as current stats";
             }
-*/
         }
     }
 }
