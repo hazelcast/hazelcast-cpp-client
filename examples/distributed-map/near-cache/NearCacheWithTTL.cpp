@@ -25,7 +25,7 @@ int main() {
     config::NearCacheConfig nearCacheConfig(mapName, config::OBJECT);
     nearCacheConfig.setInvalidateOnChange(false);
     nearCacheConfig.setTimeToLiveSeconds(1);
-    nearCacheConfig.getEvictionConfig()->setEvictionPolicy(config::NONE)
+    nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::NONE)
             .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
     config.addNearCacheConfig(nearCacheConfig);
     hazelcast::client::HazelcastClient hz(config);

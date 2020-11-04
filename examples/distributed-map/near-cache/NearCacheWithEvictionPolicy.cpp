@@ -20,9 +20,9 @@ using namespace hazelcast::client;
 int main() {
     ClientConfig config;
     const char *mapName = "EvictionPolicyMap";
-    config::NearCacheConfig nearCacheConfigmapName, config::OBJECT);
+    config::NearCacheConfig nearCacheConfig(mapName, config::OBJECT);
     nearCacheConfig.setInvalidateOnChange(false);
-    nearCacheConfig.getEvictionConfig()->setEvictionPolicy(config::LRU)
+    nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::LRU)
             .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT).setSize(100);
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);

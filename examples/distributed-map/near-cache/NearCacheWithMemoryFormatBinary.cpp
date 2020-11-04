@@ -26,7 +26,7 @@ int main() {
     config.getNetworkConfig().addAddress(serverAddr);
     config::NearCacheConfig nearCacheConfig(mapName, config::BINARY);
     nearCacheConfig.setInvalidateOnChange(false);
-    nearCacheConfig.getEvictionConfig()->setEvictionPolicy(config::NONE)
+    nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::NONE)
             .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);

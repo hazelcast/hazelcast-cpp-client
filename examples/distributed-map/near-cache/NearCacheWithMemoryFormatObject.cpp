@@ -22,10 +22,9 @@ int main() {
     const char *mapName = "ObjectMap";
     Address serverAddr("127.0.0.1", 5701);
     config.getNetworkConfig().addAddress(serverAddr);
-    config::NearCacheConfig nearCacheConfig(
-            new config::NearCacheConfig(mapName, config::OBJECT));
+    config::NearCacheConfig nearCacheConfig(mapName, config::OBJECT);
     nearCacheConfig.setInvalidateOnChange(false);
-    nearCacheConfig.getEvictionConfig()->setEvictionPolicy(config::NONE)
+    nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::NONE)
             .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);

@@ -22,7 +22,7 @@ int main() {
     const char *mapName = "InvalidationMap";
     config::NearCacheConfig nearCacheConfig(mapName, config::OBJECT);
     nearCacheConfig.setInvalidateOnChange(true);
-    nearCacheConfig.getEvictionConfig()->setEvictionPolicy(config::NONE)
+    nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::NONE)
             .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);
