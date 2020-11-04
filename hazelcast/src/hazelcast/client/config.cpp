@@ -779,20 +779,26 @@ namespace hazelcast {
             return networkConfig;
         }
 
-        ClientConfig &ClientConfig::addNearCacheConfig(const std::shared_ptr<config::NearCacheConfig> &nearCacheConfig) {
-            nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
+        ClientConfig &ClientConfig::addNearCacheConfig(const config::NearCacheConfig &nearCacheConfig) {
+            nearCacheConfigMap.emplace(nearCacheConfig.getName(), nearCacheConfig);
             return *this;
         }
 
-        const std::shared_ptr<config::NearCacheConfig> ClientConfig::getNearCacheConfig(const std::string &name) {
+        const config::NearCacheConfig *ClientConfig::getNearCacheConfig(const std::string &name) const {
             auto nearCacheConfig = internal::config::ConfigUtils::lookupByPattern(
                     configPatternMatcher, nearCacheConfigMap, name);
-            if (!nearCacheConfig) {
-                nearCacheConfig = nearCacheConfigMap.get("default");
+            if (nearCacheConfig) {
+                return nearCacheConfig;
             }
+
+            auto config_it = nearCacheConfigMap.find("default");
+            if (config_it != nearCacheConfigMap.end()) {
+                return &nearCacheConfigMap.find("default")->second;
+            }
+
             // not needed for c++ client since it is always native memory
             //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
-            return nearCacheConfig;
+            return nullptr;
         }
 
         ClientConfig &ClientConfig::setNetworkConfig(const config::ClientNetworkConfig &networkConfig) {
@@ -826,40 +832,40 @@ namespace hazelcast {
             return *this;
         }
 
-        std::shared_ptr<config::ClientFlakeIdGeneratorConfig>
+        const config::ClientFlakeIdGeneratorConfig *
         ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+            auto config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
                     configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
-            if (config.get() != NULL) {
+            if (config) {
                 return config;
             }
             return getFlakeIdGeneratorConfig("default");
         }
 
 
-        std::shared_ptr<config::ClientFlakeIdGeneratorConfig>
+        const config::ClientFlakeIdGeneratorConfig *
         ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+            auto config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
                     configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
-            if (config.get() != NULL) {
+            if (config) {
                 return config;
             }
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> defConfig = flakeIdGeneratorConfigMap.get("default");
-            if (defConfig.get() == NULL) {
-                defConfig.reset(new config::ClientFlakeIdGeneratorConfig("default"));
-                flakeIdGeneratorConfigMap.put(defConfig->getName(), defConfig);
+            auto defConfig = flakeIdGeneratorConfigMap.find("default");
+            if (defConfig == flakeIdGeneratorConfigMap.end()) {
+                flakeIdGeneratorConfigMap.emplace("default", config::ClientFlakeIdGeneratorConfig("default"));
             }
-            config.reset(new config::ClientFlakeIdGeneratorConfig(*defConfig));
-            config->setName(name);
-            flakeIdGeneratorConfigMap.put(config->getName(), config);
-            return config;
+            defConfig = flakeIdGeneratorConfigMap.find("default");
+            config::ClientFlakeIdGeneratorConfig new_config = defConfig->second;
+            new_config.setName(name);
+            flakeIdGeneratorConfigMap.emplace(name, std::move(new_config));
+            return &flakeIdGeneratorConfigMap.find(name)->second;
         }
 
         ClientConfig &
-        ClientConfig::addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
-            flakeIdGeneratorConfigMap.put(config->getName(), config);
+        ClientConfig::addFlakeIdGeneratorConfig(const config::ClientFlakeIdGeneratorConfig &config) {
+            flakeIdGeneratorConfigMap.emplace(config.getName(), config);
             return *this;
         }
 

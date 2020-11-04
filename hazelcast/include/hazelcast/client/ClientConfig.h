@@ -279,7 +279,7 @@ namespace hazelcast {
              * 
              * Memory ownership of the config is passed to the client config
              */
-            ClientConfig &addNearCacheConfig(const std::shared_ptr<config::NearCacheConfig> &nearCacheConfig);
+            ClientConfig &addNearCacheConfig(const config::NearCacheConfig &nearCacheConfig);
 
             /**
              * Gets the NearCacheConfig configured for the map / cache with name
@@ -288,7 +288,7 @@ namespace hazelcast {
              * \return Configured NearCacheConfig
              * @see NearCacheConfig
              */
-            const std::shared_ptr<config::NearCacheConfig> getNearCacheConfig(const std::string &name);
+            const config::NearCacheConfig *getNearCacheConfig(const std::string &name) const;
 
             /**
              * Gets {\link com.hazelcast.client.config.ClientNetworkConfig}
@@ -346,7 +346,7 @@ namespace hazelcast {
              * @see #setConfigPatternMatcher(ConfigPatternMatcher)
              * @see #getConfigPatternMatcher()
              */
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> findFlakeIdGeneratorConfig(const std::string &name);
+            const config::ClientFlakeIdGeneratorConfig *findFlakeIdGeneratorConfig(const std::string &name);
 
             /**
              * Returns the {\link ClientFlakeIdGeneratorConfig} for the given name, creating
@@ -373,7 +373,7 @@ namespace hazelcast {
              * @throws ConfigurationException if ambiguous configurations are found
              * @see StringPartitioningStrategy#getBaseName(std::string)
              */
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> getFlakeIdGeneratorConfig(const std::string &name);
+            const config::ClientFlakeIdGeneratorConfig *getFlakeIdGeneratorConfig(const std::string &name);
 
             /**
              * Adds a flake ID generator configuration. The configuration is saved under the config
@@ -383,7 +383,7 @@ namespace hazelcast {
              * \param config the flake ID configuration
              * \return this config instance
              */
-            ClientConfig &addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config);
+            ClientConfig &addFlakeIdGeneratorConfig(const config::ClientFlakeIdGeneratorConfig &config);
 
             /**
              *
@@ -441,7 +441,7 @@ namespace hazelcast {
 
             std::unordered_map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
 
-            util::SynchronizedMap<std::string, config::NearCacheConfig> nearCacheConfigMap;
+            std::unordered_map<std::string, config::NearCacheConfig> nearCacheConfigMap;
 
             std::shared_ptr<std::string> instanceName;
 
@@ -452,7 +452,7 @@ namespace hazelcast {
 
             config::ClientConnectionStrategyConfig connectionStrategyConfig;
 
-            util::SynchronizedMap<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap;
+            std::unordered_map<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap;
 
             config::matcher::MatchingPointConfigPatternMatcher configPatternMatcher;
 

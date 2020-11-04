@@ -151,8 +151,7 @@ namespace hazelcast {
                             .setProperty(ClientProperties::STATISTICS_PERIOD_SECONDS,
                                          std::to_string(STATS_PERIOD_SECONDS))
                                     // add IMap Near Cache config
-                            .addNearCacheConfig(std::shared_ptr<config::NearCacheConfig>(
-                                    new config::NearCacheConfig(getTestName())));
+                            .addNearCacheConfig(config::NearCacheConfig(getTestName()));
 
                     clientConfig.getNetworkConfig().setConnectionAttemptLimit(20);
 
@@ -260,9 +259,7 @@ namespace hazelcast {
             TEST_F(ClientStatisticsTest, testClientStatisticsContent) {
                 ClientConfig clientConfig;
                 std::string mapName = getTestName();
-                clientConfig.addNearCacheConfig(
-                        std::shared_ptr<config::NearCacheConfig>(new config::NearCacheConfig(
-                                mapName.c_str())));
+                clientConfig.addNearCacheConfig(config::NearCacheConfig(mapName));
                 clientConfig.setProperty(ClientProperties::STATISTICS_ENABLED, "true").setProperty(
                         ClientProperties::STATISTICS_PERIOD_SECONDS, "1");
 
@@ -1675,9 +1672,8 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     ClientConfig clientConfig = getConfig();
-                    std::shared_ptr<config::ClientFlakeIdGeneratorConfig> flakeIdConfig(
-                            new config::ClientFlakeIdGeneratorConfig("test*"));
-                    flakeIdConfig->setPrefetchCount(10).setPrefetchValidityDuration(std::chrono::seconds(20));
+                    config::ClientFlakeIdGeneratorConfig flakeIdConfig("test*");
+                    flakeIdConfig.setPrefetchCount(10).setPrefetchValidityDuration(std::chrono::seconds(20));
                     clientConfig.addFlakeIdGeneratorConfig(flakeIdConfig);
                     client = new HazelcastClient(clientConfig);
                 }

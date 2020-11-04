@@ -670,39 +670,26 @@ namespace hazelcast {
             class NearCachedDataMapClientConfig : public MapClientConfig {
             public:
                 NearCachedDataMapClientConfig() {
-                    addNearCacheConfig(std::shared_ptr<config::NearCacheConfig>(
-                            new config::NearCacheConfig(intMapName)));
+                    addNearCacheConfig(config::NearCacheConfig(intMapName));
 
-                    addNearCacheConfig(std::shared_ptr<config::NearCacheConfig>(
-                            new config::NearCacheConfig(employeesMapName)));
+                    addNearCacheConfig(config::NearCacheConfig(employeesMapName));
 
-                    addNearCacheConfig(
-                            std::shared_ptr<config::NearCacheConfig>(
-                                    new config::NearCacheConfig(imapName)));
+                    addNearCacheConfig(config::NearCacheConfig(imapName));
 
-                    addNearCacheConfig(
-                            std::shared_ptr<config::NearCacheConfig>(
-                                    new config::NearCacheConfig(ONE_SECOND_MAP_NAME)));
+                    addNearCacheConfig(config::NearCacheConfig(ONE_SECOND_MAP_NAME));
                 }
             };
 
             class NearCachedObjectMapClientConfig : public MapClientConfig {
             public:
                 NearCachedObjectMapClientConfig() {
-                    addNearCacheConfig(std::shared_ptr<config::NearCacheConfig>(
-                            new config::NearCacheConfig(intMapName, config::OBJECT)));
+                    addNearCacheConfig(config::NearCacheConfig(intMapName, config::OBJECT));
 
-                    addNearCacheConfig(std::shared_ptr<config::NearCacheConfig>(
-                            new config::NearCacheConfig(employeesMapName, config::OBJECT)));
+                    addNearCacheConfig(config::NearCacheConfig(employeesMapName, config::OBJECT));
 
-                    addNearCacheConfig(
-                            std::shared_ptr<config::NearCacheConfig>(
-                                    new config::NearCacheConfig(imapName, config::OBJECT)));
+                    addNearCacheConfig(config::NearCacheConfig(imapName, config::OBJECT));
 
-                    addNearCacheConfig(
-                            std::shared_ptr<config::NearCacheConfig>(
-                                    new config::NearCacheConfig(ONE_SECOND_MAP_NAME,
-                                                                                          config::OBJECT)));
+                    addNearCacheConfig(config::NearCacheConfig(ONE_SECOND_MAP_NAME, config::OBJECT));
                 }
             };
 

@@ -24,12 +24,11 @@ int main() {
     const char *mapName = "MaxIdleMap";
     Address serverAddr("127.0.0.1", 5701);
     config.getNetworkConfig().addAddress(serverAddr);
-    std::shared_ptr<config::NearCacheConfig> nearCacheConfig(
-            new config::NearCacheConfig(mapName, config::OBJECT));
-    nearCacheConfig->setInvalidateOnChange(false);
-    nearCacheConfig->getEvictionConfig()->setEvictionPolicy(config::NONE)
+    config::NearCacheConfig nearCacheConfigmapName, config::OBJECT);
+    nearCacheConfig.setInvalidateOnChange(false);
+    nearCacheConfig.getEvictionConfig()->setEvictionPolicy(config::NONE)
             .setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
-    nearCacheConfig->setMaxIdleSeconds(1);
+    nearCacheConfig.setMaxIdleSeconds(1);
     config.addNearCacheConfig(nearCacheConfig);
     HazelcastClient client(config);
 

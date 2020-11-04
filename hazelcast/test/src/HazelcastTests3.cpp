@@ -249,8 +249,8 @@ namespace hazelcast {
                 }
 
                 static ClientConfig getClientConfigWithNearCacheInvalidationEnabled() {
-                    auto nearCacheConfig = std::make_shared<config::NearCacheConfig>();
-                    nearCacheConfig->setInvalidateOnChange(true).setInMemoryFormat(config::BINARY);
+                    config::NearCacheConfig nearCacheConfig;
+                    nearCacheConfig.setInvalidateOnChange(true).setInMemoryFormat(config::BINARY);
                     return getConfig().setClusterName("replicated-map-binary-test").addNearCacheConfig(nearCacheConfig);
                 }
 
@@ -728,12 +728,10 @@ namespace hazelcast {
                      * @param inMemoryFormat the {@link InMemoryFormat} to set
                      * @return the {@link NearCacheConfig}
                      */
-                    static std::shared_ptr<config::NearCacheConfig> createNearCacheConfig(
+                    static config::NearCacheConfig createNearCacheConfig(
                             config::InMemoryFormat inMemoryFormat, const std::string &mapName) {
-                        std::shared_ptr<config::NearCacheConfig> nearCacheConfig(
-                                new config::NearCacheConfig());
-
-                        nearCacheConfig->setName(mapName).setInMemoryFormat(inMemoryFormat).setInvalidateOnChange(true);
+                        config::NearCacheConfig nearCacheConfig;
+                        nearCacheConfig.setName(mapName).setInMemoryFormat(inMemoryFormat).setInvalidateOnChange(true);
 
                         return nearCacheConfig;
                     }
@@ -873,7 +871,7 @@ namespace hazelcast {
 
                 void
                 assertNearCacheInvalidationRequests(monitor::NearCacheStats &stat, int64_t invalidationRequests) {
-                    if (nearCacheConfig->isInvalidateOnChange() && invalidationRequests > 0) {
+                    if (nearCacheConfig.isInvalidateOnChange() && invalidationRequests > 0) {
                         auto &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stat;
                         ASSERT_EQ_EVENTUALLY(invalidationRequests, nearCacheStatsImpl.getInvalidationRequests());
                         nearCacheStatsImpl.resetInvalidationEvents();
@@ -902,7 +900,7 @@ namespace hazelcast {
                 }
 
                 int64_t getExpectedMissesWithLocalUpdatePolicy() {
-                    if (nearCacheConfig->getLocalUpdatePolicy() ==
+                    if (nearCacheConfig.getLocalUpdatePolicy() ==
                         config::NearCacheConfig::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
                         return stats->getMisses();
@@ -912,7 +910,7 @@ namespace hazelcast {
                 }
 
                 int64_t getExpectedHitsWithLocalUpdatePolicy() {
-                    if (nearCacheConfig->getLocalUpdatePolicy() == config::NearCacheConfig::CACHE) {
+                    if (nearCacheConfig.getLocalUpdatePolicy() == config::NearCacheConfig::CACHE) {
                         // we expect the first and second get() to be hits, since the value should be already be cached
                         return stats->getHits() + 2;
                     }
@@ -959,7 +957,7 @@ namespace hazelcast {
                     ASSERT_EQ(0, nearCache->size()) << "Invalidation is not working on putAll()";
                 }
 
-                std::shared_ptr<config::NearCacheConfig> nearCacheConfig;
+                config::NearCacheConfig nearCacheConfig;
                 std::unique_ptr<HazelcastClient> client;
                 std::unique_ptr<HazelcastClient> nearCachedClient;
                 std::shared_ptr<ReplicatedMap> noNearCacheMap;
@@ -991,7 +989,7 @@ namespace hazelcast {
              * invalidation.
              */
             TEST_P(BasicClientReplicatedMapNearCacheTest, testContainsKey_withUpdateOnDataAdapter) {
-                nearCacheConfig->setInvalidateOnChange(true);
+                nearCacheConfig.setInvalidateOnChange(true);
                 testContainsKey(false);
             }
 
@@ -1031,11 +1029,11 @@ namespace hazelcast {
             TEST_P(BasicClientReplicatedMapNearCacheTest,
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnNearCacheAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
-                NearCacheTestUtils::setEvictionConfig(*nearCacheConfig, config::NONE,
+                NearCacheTestUtils::setEvictionConfig(nearCacheConfig, config::NONE,
                                                                         config::EvictionConfig::ENTRY_COUNT,
                                                                         size);
 
-                nearCacheConfig->setInvalidateOnChange(false);
+                nearCacheConfig.setInvalidateOnChange(false);
 
                 createNoNearCacheContext();
 
@@ -1074,10 +1072,10 @@ namespace hazelcast {
             TEST_P(BasicClientReplicatedMapNearCacheTest,
                    whenCacheIsFull_thenPutOnSameKeyShouldUpdateValue_withUpdateOnDataAdapter) {
                 int size = DEFAULT_RECORD_COUNT / 2;
-                NearCacheTestUtils::setEvictionConfig(*nearCacheConfig, config::NONE,
+                NearCacheTestUtils::setEvictionConfig(nearCacheConfig, config::NONE,
                                                                         config::EvictionConfig::ENTRY_COUNT,
                                                                         size);
-                nearCacheConfig->setInvalidateOnChange(true);
+                nearCacheConfig.setInvalidateOnChange(true);
 
                 createNoNearCacheContext();
 
@@ -1119,7 +1117,7 @@ namespace hazelcast {
              */
             TEST_P(BasicClientReplicatedMapNearCacheTest,
                    whenPutAllIsUsed_thenNearCacheShouldBeInvalidated_withUpdateOnDataAdapter) {
-                nearCacheConfig->setInvalidateOnChange(true);
+                nearCacheConfig.setInvalidateOnChange(true);
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(false);
             }
 
@@ -1156,7 +1154,7 @@ namespace hazelcast {
             }
 
             TEST_P(BasicClientReplicatedMapNearCacheTest, testNearCacheEviction) {
-                NearCacheTestUtils::setEvictionConfig(*nearCacheConfig, config::LRU,
+                NearCacheTestUtils::setEvictionConfig(nearCacheConfig, config::LRU,
                                                                         config::EvictionConfig::ENTRY_COUNT,
                                                                         DEFAULT_RECORD_COUNT);
                 createNoNearCacheContext();
@@ -1228,27 +1226,26 @@ namespace hazelcast {
                     }
                 }
 
-                std::shared_ptr<config::NearCacheConfig> newNoInvalidationNearCacheConfig() {
-                    std::shared_ptr<config::NearCacheConfig> config(newNearCacheConfig());
-                    config->setInMemoryFormat(config::OBJECT);
-                    config->setInvalidateOnChange(false);
+                config::NearCacheConfig newNoInvalidationNearCacheConfig() {
+                    config::NearCacheConfig config(newNearCacheConfig());
+                    config.setInMemoryFormat(config::OBJECT);
+                    config.setInvalidateOnChange(false);
                     return config;
                 }
 
-                static std::shared_ptr<config::NearCacheConfig> newNearCacheConfig() {
-                    return std::shared_ptr<config::NearCacheConfig>(
-                            new config::NearCacheConfig());
+                static config::NearCacheConfig newNearCacheConfig() {
+                    return config::NearCacheConfig();
                 }
 
                 static std::unique_ptr<ClientConfig> newClientConfig() {
                     return std::unique_ptr<ClientConfig>(new ClientConfig(getConfig()));
                 }
 
-                std::shared_ptr<ReplicatedMap > getNearCachedMapFromClient(
-                        std::shared_ptr<config::NearCacheConfig> config) {
+                std::shared_ptr<ReplicatedMap> getNearCachedMapFromClient(
+                        config::NearCacheConfig config) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
 
-                    config->setName(mapName);
+                    config.setName(mapName);
 
                     clientConfig = newClientConfig();
                     clientConfig->addNearCacheConfig(config);
@@ -1271,7 +1268,7 @@ namespace hazelcast {
                 }
 
                 std::unique_ptr<ClientConfig> clientConfig;
-                std::shared_ptr<config::NearCacheConfig> nearCacheConfig;
+                config::NearCacheConfig nearCacheConfig;
                 std::unique_ptr<HazelcastClient> client;
                 std::shared_ptr<ReplicatedMap> map;
                 static HazelcastServer *instance;
