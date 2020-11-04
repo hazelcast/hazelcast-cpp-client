@@ -1928,14 +1928,13 @@ namespace hazelcast {
                         }
 
                         void createNearCacheWithMaxSizePolicy(config::InMemoryFormat inMemoryFormat,
-                                                              config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::MaxSizePolicy maxSizePolicy,
+                                                              config::EvictionConfig::MaxSizePolicy maxSizePolicy,
                                                               int32_t size) {
                             auto nearCacheConfig = createNearCacheConfig(
                                     DEFAULT_NEAR_CACHE_NAME, inMemoryFormat);
-                            std::shared_ptr<config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data> > evictionConfig(
-                                    new config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>());
-                            evictionConfig->setMaximumSizePolicy(maxSizePolicy);
-                            evictionConfig->setSize(size);
+                            config::EvictionConfig evictionConfig;
+                            evictionConfig.setMaximumSizePolicy(maxSizePolicy);
+                            evictionConfig.setSize(size);
                             nearCacheConfig.setEvictionConfig(evictionConfig);
 
                             auto nearCacheRecordStore = createNearCacheRecordStore(nearCacheConfig, inMemoryFormat);
@@ -1948,12 +1947,10 @@ namespace hazelcast {
                             auto nearCacheConfig = createNearCacheConfig(
                                     DEFAULT_NEAR_CACHE_NAME, inMemoryFormat);
 
-                            std::shared_ptr<config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data> > evictionConfig(
-                                    new config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>());
-
-                            evictionConfig->setMaximumSizePolicy(config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::ENTRY_COUNT);
-                            evictionConfig->setSize(maxSize);
-                            evictionConfig->setEvictionPolicy(evictionPolicy);
+                            config::EvictionConfig evictionConfig;
+                            evictionConfig.setMaximumSizePolicy(config::EvictionConfig::ENTRY_COUNT);
+                            evictionConfig.setSize(maxSize);
+                            evictionConfig.setEvictionPolicy(evictionPolicy);
                             nearCacheConfig.setEvictionConfig(evictionConfig);
 
                             auto nearCacheRecordStore = createNearCacheRecordStore(nearCacheConfig, inMemoryFormat);
@@ -1966,7 +1963,7 @@ namespace hazelcast {
                         }
 
                         std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> > createNearCacheRecordStore(
-                                config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> &nearCacheConfig,
+                                config::NearCacheConfig &nearCacheConfig,
                                 config::InMemoryFormat inMemoryFormat) {
                             std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> > recordStore;
                             switch (inMemoryFormat) {
@@ -1992,10 +1989,10 @@ namespace hazelcast {
                             return recordStore;
                         }
 
-                        config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>
+                        config::NearCacheConfig
                         createNearCacheConfig(const char *name,
                                               config::InMemoryFormat inMemoryFormat) {
-                            config::NearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data> config;
+                            config::NearCacheConfig config;
                             config.setName(name).setInMemoryFormat(inMemoryFormat);
                             return config;
                         }
@@ -2055,7 +2052,7 @@ namespace hazelcast {
 
                     TEST_P(NearCacheRecordStoreTest, canCreateWithEntryCountMaxSizePolicy) {
                         createNearCacheWithMaxSizePolicy(GetParam(),
-                                                         config::EvictionConfig<serialization::pimpl::Data, serialization::pimpl::Data>::ENTRY_COUNT,
+                                                         config::EvictionConfig::ENTRY_COUNT,
                                                          1000);
                     }
 

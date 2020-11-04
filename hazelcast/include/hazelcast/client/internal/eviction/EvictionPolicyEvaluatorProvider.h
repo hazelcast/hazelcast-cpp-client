@@ -49,20 +49,12 @@ namespace hazelcast {
                      */
                     template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
                     static std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> > getEvictionPolicyEvaluator(
-                            const std::shared_ptr<EvictionConfiguration<MAPKEY, MAPVALUE> > &evictionConfig) {
-                        if (evictionConfig.get() == NULL) {
-                            return std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> >();
-                        }
+                            const client::config::EvictionConfig &evictionConfig) {
 
                         std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
 
-                        const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > &comparator = evictionConfig->getComparator();
-                        if (comparator.get() != NULL) {
-                            evictionPolicyComparator = comparator;
-                        } else {
-                            EvictionPolicyType evictionPolicyType = evictionConfig->getEvictionPolicyType();
-                            evictionPolicyComparator = createEvictionPolicyComparator<MAPKEY, MAPVALUE>(evictionPolicyType);
-                        }
+                        EvictionPolicyType evictionPolicyType = evictionConfig.getEvictionPolicyType();
+                        evictionPolicyComparator = createEvictionPolicyComparator<MAPKEY, MAPVALUE>(evictionPolicyType);
 
                         return std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> >(
                                 new impl::evaluator::DefaultEvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E>(

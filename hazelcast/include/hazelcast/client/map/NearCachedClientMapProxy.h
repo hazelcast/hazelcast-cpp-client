@@ -56,7 +56,7 @@ namespace hazelcast {
                 NearCachedClientMapProxy(const std::string &instanceName, spi::ClientContext *context)
                         : IMap(instanceName, context), cacheLocalEntries(false),
                           invalidateOnChange(false), keyStateMarker(NULL),
-                          nearCacheConfig(*context->getClientConfig().getNearCacheConfig<K, V>(instanceName)),
+                          nearCacheConfig(*context->getClientConfig().getNearCacheConfig(instanceName)),
                           logger_(context->getLogger()) {}
 
             protected:
@@ -539,7 +539,7 @@ namespace hazelcast {
                 bool cacheLocalEntries;
                 bool invalidateOnChange;
                 impl::nearcache::KeyStateMarker *keyStateMarker;
-                const config::NearCacheConfig<K, V> &nearCacheConfig;
+                const config::NearCacheConfig &nearCacheConfig;
                 std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V>> nearCache;
                 boost::uuids::uuid invalidationListenerId;
                 logger &logger_;
