@@ -49,26 +49,24 @@ namespace hazelcast {
                         class AbstractNearCacheRecordStore
                                 : public NearCacheRecordStore<KS, V>, public eviction::EvictionListener<KS, R> {
                         public:
-                            AbstractNearCacheRecordStore(const client::config::NearCacheConfig<K, V> &cacheConfig,
+                            AbstractNearCacheRecordStore(const client::config::NearCacheConfig &cacheConfig,
                                                          serialization::pimpl::SerializationService &ss)
                                     : nearCacheConfig(cacheConfig),
                                       timeToLiveMillis(cacheConfig.getTimeToLiveSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       maxIdleMillis(cacheConfig.getMaxIdleSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       serializationService(ss), nearCacheStats(new monitor::impl::NearCacheStatsImpl) {
-                                const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = cacheConfig.getEvictionConfig();
-                                if (NULL != evictionConfig.get()) {
-                                    evictionPolicyType = evictionConfig->getEvictionPolicyType();
-                                }
+                                auto &evictionConfig = const_cast<client::config::NearCacheConfig &>(cacheConfig).getEvictionConfig();
+                                evictionPolicyType = evictionConfig.getEvictionPolicyType();
                             }
 
                             void initialize() override {
-                                const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = nearCacheConfig.getEvictionConfig();
+                                auto &evictionConfig = const_cast<client::config::NearCacheConfig &>(nearCacheConfig).getEvictionConfig();
                                 this->records = createNearCacheRecordMap(nearCacheConfig);
                                 this->maxSizeChecker = createNearCacheMaxSizeChecker(evictionConfig, nearCacheConfig);
                                 this->evictionPolicyEvaluator = createEvictionPolicyEvaluator(evictionConfig);
                                 this->evictionChecker = createEvictionChecker(nearCacheConfig);
                                 this->evictionStrategy = createEvictionStrategy(evictionConfig);
-                                this->evictionPolicyType = evictionConfig->getEvictionPolicyType();
+                                this->evictionPolicyType = evictionConfig.getEvictionPolicyType();
                             }
 
 /*
@@ -204,14 +202,14 @@ namespace hazelcast {
                             }
                         protected:
                             virtual std::unique_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
-                                    const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
-                                    const client::config::NearCacheConfig<K, V> &) {
+                                    const client::config::EvictionConfig &evictionConfig,
+                                    const client::config::NearCacheConfig &) {
                                 assert(0);
                                 return std::unique_ptr<eviction::MaxSizeChecker>();
                             }
 
                             virtual std::unique_ptr<NCRM> createNearCacheRecordMap(
-                                    const client::config::NearCacheConfig<K, V> &) {
+                                    const client::config::NearCacheConfig &) {
                                 assert(0);
                                 return std::unique_ptr<NCRM>();
                             }
@@ -271,19 +269,19 @@ namespace hazelcast {
                             }
 
                             std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > createEvictionPolicyEvaluator(
-                                    const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig) {
+                                    const client::config::EvictionConfig &evictionConfig) {
                                 return eviction::EvictionPolicyEvaluatorProvider::getEvictionPolicyEvaluator<K, V, KS, R>(
                                         evictionConfig);
                             }
 
                             std::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > createEvictionStrategy(
-                                    const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig) {
+                                    const client::config::EvictionConfig &evictionConfig) {
                                 return eviction::EvictionStrategyProvider<K, V, KS, R, NCRM>::getEvictionStrategy(
                                         evictionConfig);
                             }
 
                             std::unique_ptr<eviction::EvictionChecker> createEvictionChecker(
-                                    const client::config::NearCacheConfig<K, V> &cacheConfig) {
+                                    const client::config::NearCacheConfig &cacheConfig) {
                                 return std::unique_ptr<eviction::EvictionChecker>(
                                         new MaxSizeEvictionChecker(maxSizeChecker.get()));
                             }
@@ -441,7 +439,7 @@ namespace hazelcast {
                             /*
                         static const int REFERENCE_SIZE = MEM_AVAILABLE ? MEM.arrayIndexScale(Object[].class) : (Integer.SIZE / Byte.SIZE);
 */
-                            const client::config::NearCacheConfig<K, V> &nearCacheConfig;
+                            const client::config::NearCacheConfig &nearCacheConfig;
                             const int64_t timeToLiveMillis;
                             const int64_t maxIdleMillis;
                             serialization::pimpl::SerializationService &serializationService;
