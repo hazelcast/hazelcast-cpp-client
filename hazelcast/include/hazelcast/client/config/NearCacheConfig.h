@@ -207,7 +207,7 @@ namespace hazelcast {
                  */
                 NearCacheConfig &setEvictionConfig(const EvictionConfig &evictionConfig);
 
-                friend std::ostream & HAZELCAST_API operator<<(std::ostream &out, const NearCacheConfig &cacheConfig);
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const NearCacheConfig &cacheConfig);
             private:
                 std::string name;
 
@@ -233,8 +233,6 @@ namespace hazelcast {
 
                 int32_t calculateMaxSize(int32_t maxSize);
             };
-
-            std::ostream & HAZELCAST_API operator<<(std::ostream &out, const NearCacheConfig &cacheConfig);
 
         }
     }

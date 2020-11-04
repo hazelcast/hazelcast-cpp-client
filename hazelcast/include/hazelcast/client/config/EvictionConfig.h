@@ -16,16 +16,11 @@
 #pragma once
 
 #include <string>
-#include <stdint.h>
-#include <memory>
 #include <ostream>
-#include <cassert>
 
-#include "hazelcast/client/internal/eviction/EvictionPolicyComparator.h"
-#include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/internal/eviction/EvictionConfiguration.h"
 #include "hazelcast/client/config/EvictionPolicy.h"
+#include "hazelcast/client/internal/eviction/EvictionStrategyType.h"
+#include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -105,13 +100,14 @@ namespace hazelcast {
 
                 internal::eviction::EvictionPolicyType getEvictionPolicyType() const;
 
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const EvictionConfig &config);
+
             protected:
                 int32_t size;
                 MaxSizePolicy maxSizePolicy;
                 EvictionPolicy evictionPolicy;
             };
 
-            std::ostream & HAZELCAST_API operator<<(std::ostream &out, const EvictionConfig &config);
         }
     }
 }
