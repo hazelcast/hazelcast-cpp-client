@@ -3142,7 +3142,7 @@ Following are the descriptions of all configuration elements:
 #### 7.8.2.2. Near Cache Example for Map
 The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 ```C++
-    config::NearCacheConfig> nearCacheConfig("mostlyReadMap", config::OBJECT);
+    config::NearCacheConfig nearCacheConfig("mostlyReadMap", config::OBJECT);
     nearCacheConfig.setInvalidateOnChange(true);
     nearCacheConfig.getEvictionConfig().setEvictionPolicy(config::LRU).setSize(5000);
     config.addNearCacheConfig(nearCacheConfig);
