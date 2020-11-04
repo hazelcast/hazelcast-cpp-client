@@ -49,7 +49,7 @@ namespace hazelcast {
                     ClientContext &client;
 
                     std::exception_ptr
-                    newOperationTimeoutException(std::exception_ptr cause, std::chrono::steady_clock::duration invocationTimeout,
+                    newOperationTimeoutException(std::exception_ptr cause, std::chrono::milliseconds invocationTimeout,
                                                  std::chrono::steady_clock::time_point startTime);
 
                     void throw_exception(bool smart_routing);

@@ -83,7 +83,7 @@ namespace hazelcast {
 
                 TxnState getState() const;
 
-                std::chrono::steady_clock::duration getTimeout() const;
+                std::chrono::milliseconds getTimeout() const;
 
                 boost::future<void> begin();
 

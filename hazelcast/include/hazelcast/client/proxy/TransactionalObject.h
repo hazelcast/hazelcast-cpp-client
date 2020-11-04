@@ -48,7 +48,7 @@ namespace hazelcast {
 
                 boost::uuids::uuid getTransactionId() const;
 
-                std::chrono::steady_clock::duration getTimeout() const;
+                std::chrono::milliseconds getTimeout() const;
 
                 const std::string serviceName;
                 const std::string name;

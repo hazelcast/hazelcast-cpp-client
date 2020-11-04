@@ -67,10 +67,7 @@ namespace hazelcast {
                 *
                 * @return itself ClientNetworkConfig
                 */
-                template< class Rep, class Period >
-                ClientNetworkConfig &setConnectionTimeout(const std::chrono::duration<Rep, Period>& timeout) {
-                    return connection_timeout_msecs(std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
-                }
+                ClientNetworkConfig &setConnectionTimeout(const std::chrono::milliseconds &timeout);
 
                 /**
                 * Connection timeout value for connecting to a member server.
@@ -151,10 +148,7 @@ namespace hazelcast {
                  * @param period time to wait before another attempt. The resolution of time is up to milliseconds.
                  * @return configured \ClientNetworkConfig for chaining
                  */
-                template< class Rep, class Period >
-                ClientNetworkConfig &setConnectionAttemptPeriod(const std::chrono::duration<Rep, Period>& period) {
-                    return connection_interval_msecs(std::chrono::duration_cast<std::chrono::milliseconds>(period));
-                }
+                ClientNetworkConfig &setConnectionAttemptPeriod(const std::chrono::milliseconds &interval);
 
                 /**
                  * Returns the list of candidate addresses that client will use to establish initial connection
@@ -204,9 +198,6 @@ namespace hazelcast {
                 std::vector<Address> addressList;
 
                 SocketOptions socketOptions;
-
-                ClientNetworkConfig &connection_timeout_msecs(const std::chrono::milliseconds &timeout);
-                ClientNetworkConfig &connection_interval_msecs(const std::chrono::milliseconds &interval);
             };
         }
     }

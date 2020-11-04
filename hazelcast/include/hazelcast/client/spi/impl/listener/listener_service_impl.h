@@ -122,8 +122,8 @@ namespace hazelcast {
                         std::unique_ptr<hazelcast::util::hz_thread_pool> eventExecutor;
                         std::vector<boost::asio::strand<boost::asio::thread_pool::executor_type>> eventStrands;
                         std::unique_ptr<hazelcast::util::hz_thread_pool> registrationExecutor;
-                        std::chrono::steady_clock::duration invocationTimeout;
-                        std::chrono::steady_clock::duration invocationRetryPause;
+                        std::chrono::milliseconds invocationTimeout;
+                        std::chrono::milliseconds invocationRetryPause;
                         util::SynchronizedMap<boost::uuids::uuid, listener_registration, boost::hash<boost::uuids::uuid>> registrations;
                         int numberOfEventThreads;
                         bool smart_;
