@@ -49,26 +49,26 @@ namespace hazelcast {
                         InvalidationAwareWrapper(
                                 std::shared_ptr<internal::nearcache::NearCache<K, V> > cache,
                                 int partitionCount)
-                                : nearCache(cache),
-                                  keyStateMarker(new internal::nearcache::impl::KeyStateMarkerImpl(partitionCount)) {
+                                : nearCache_(cache),
+                                  keyStateMarker_(new internal::nearcache::impl::KeyStateMarkerImpl(partitionCount)) {
                         }
 
                         ~InvalidationAwareWrapper() override = default;
 
                         void initialize() override {
-                            nearCache->initialize();
+                            nearCache_->initialize();
                         }
 
                         const std::string &getName() const override {
-                            return nearCache->getName();
+                            return nearCache_->getName();
                         }
 
                         std::shared_ptr<V> get(const std::shared_ptr<K> &key) override {
-                            return nearCache->get(key);
+                            return nearCache_->get(key);
                         }
 
                         void put(const std::shared_ptr<K> &key, const std::shared_ptr<V> &value) override {
-                            nearCache->put(key, value);
+                            nearCache_->put(key, value);
                         }
 
 /*
@@ -80,42 +80,42 @@ namespace hazelcast {
 */
 
                         bool invalidate(const std::shared_ptr<K> &key) override {
-                            keyStateMarker->tryRemove(*key);
-                            return nearCache->invalidate(key);
+                            keyStateMarker_->tryRemove(*key);
+                            return nearCache_->invalidate(key);
                         }
 
                         bool isInvalidatedOnChange() const override {
-                            return nearCache->isInvalidatedOnChange();
+                            return nearCache_->isInvalidatedOnChange();
                         }
 
                         void clear() override {
-                            keyStateMarker->init();
-                            nearCache->clear();
+                            keyStateMarker_->init();
+                            nearCache_->clear();
                         }
 
                         void destroy() override {
-                            keyStateMarker->init();
-                            nearCache->destroy();
+                            keyStateMarker_->init();
+                            nearCache_->destroy();
                         }
 
                         const config::InMemoryFormat getInMemoryFormat() const override {
-                            return nearCache->getInMemoryFormat();
+                            return nearCache_->getInMemoryFormat();
                         }
 
                         std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const override {
-                            return nearCache->getNearCacheStats();
+                            return nearCache_->getNearCacheStats();
                         }
 
                         int size() const override {
-                            return nearCache->size();
+                            return nearCache_->size();
                         }
 
                         KeyStateMarker *getKeyStateMarker() {
-                            return keyStateMarker.get();
+                            return keyStateMarker_.get();
                         }
                     private:
-                        std::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache;
-                        std::unique_ptr<KeyStateMarker> keyStateMarker;
+                        std::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache_;
+                        std::unique_ptr<KeyStateMarker> keyStateMarker_;
                     };
                 }
             }

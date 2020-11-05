@@ -64,12 +64,12 @@ TEST(logger_test, test_enabled_when_off) {
 
 TEST(logger_test, test_log) {
     struct {
-        std::string instance_name_;
-        std::string cluster_name_;
-        std::string file_name_;
-        int line_;
-        logger::level level_;
-        std::string msg_;
+        std::string instance_name;
+        std::string cluster_name;
+        std::string file_name;
+        int line;
+        logger::level level;
+        std::string msg;
     } results;
 
     auto mock_handler = [&results](const std::string &instance_name,
@@ -79,39 +79,39 @@ TEST(logger_test, test_log) {
                                    logger::level level, 
                                    const std::string &msg) 
     {
-        results.instance_name_ = instance_name;
-        results.cluster_name_ = cluster_name;
-        results.file_name_ = file_name;
-        results.line_ = line;
-        results.level_ = level;
-        results.msg_ = msg;
+        results.instance_name = instance_name;
+        results.cluster_name = cluster_name;
+        results.file_name = file_name;
+        results.line = line;
+        results.level = level;
+        results.msg = msg;
     };
 
     logger lg{ "instance0", "cluster0", logger::level::info, mock_handler };
 
     lg.log("file.cpp", 42, logger::level::info, "message");
 
-    ASSERT_EQ("instance0", results.instance_name_);
-    ASSERT_EQ("cluster0", results.cluster_name_);
-    ASSERT_EQ("file.cpp", results.file_name_);
-    ASSERT_EQ(42, results.line_);
-    ASSERT_EQ(logger::level::info, results.level_);
-    ASSERT_EQ("message", results.msg_);
+    ASSERT_EQ("instance0", results.instance_name);
+    ASSERT_EQ("cluster0", results.cluster_name);
+    ASSERT_EQ("file.cpp", results.file_name);
+    ASSERT_EQ(42, results.line);
+    ASSERT_EQ(logger::level::info, results.level);
+    ASSERT_EQ("message", results.msg);
 }
 
 class default_log_handler_test : public ::testing::Test {
 protected:
     void SetUp() override {
-        old_buffer = std::cout.rdbuf();
-        std::cout.rdbuf(sstrm.rdbuf());
+        old_buffer_ = std::cout.rdbuf();
+        std::cout.rdbuf(sstrm_.rdbuf());
     }
 
     void TearDown() override {
-        std::cout.rdbuf(old_buffer);
+        std::cout.rdbuf(old_buffer_);
     }
 
-    std::streambuf *old_buffer;
-    std::stringstream sstrm;
+    std::streambuf *old_buffer_;
+    std::stringstream sstrm_;
 };
 
 TEST_F(default_log_handler_test, test_format) {
@@ -121,7 +121,7 @@ TEST_F(default_log_handler_test, test_format) {
     int day, mon, year, hr, mn, sec, ms;
     char lev[64], tid[64], msg[64], ins_grp[64], ver[64], file_line[256];
 
-    int read = std::sscanf(sstrm.str().c_str(), 
+    int read = std::sscanf(sstrm_.str().c_str(), 
         "%02d/%02d/%04d %02d:%02d:%02d.%03d %s %s %s %s %s %s\n", 
          &day, &mon, &year, &hr, &mn, &sec, &ms, lev, tid, ins_grp, ver, file_line, msg);
 
@@ -146,21 +146,21 @@ TEST_F(default_log_handler_test, test_format) {
 
 TEST(log_macro_test, test_log_when_enabled) {
     struct mock_logger {
-        bool called_{ false };
-        std::string file_name_;
-        int line_;
-        logger::level level_;
-        std::string msg_;
+        bool called{ false };
+        std::string file_name;
+        int line;
+        logger::level level;
+        std::string msg;
 
         bool enabled(logger::level level) {
             return true;
         }
         void log(const char* file_name, int line, logger::level level, const std::string &msg) {
-            called_ = true;
-            file_name_ = file_name;
-            line_ = line;
-            level_ = level;
-            msg_ = msg;
+            called = true;
+            this->file_name = file_name;
+            this->line = line;
+            this->level = level;
+            this->msg = msg;
         }
     };
 
@@ -169,22 +169,22 @@ TEST(log_macro_test, test_log_when_enabled) {
     HZ_LOG(lg, warning, "message"); 
     int expected_line = __LINE__ - 1;
 
-    ASSERT_TRUE(lg.called_);
-    ASSERT_EQ(__FILE__, lg.file_name_);
-    ASSERT_EQ(expected_line, lg.line_);
-    ASSERT_EQ(logger::level::warning, lg.level_);
-    ASSERT_EQ("message", lg.msg_);
+    ASSERT_TRUE(lg.called);
+    ASSERT_EQ(__FILE__, lg.file_name);
+    ASSERT_EQ(expected_line, lg.line);
+    ASSERT_EQ(logger::level::warning, lg.level);
+    ASSERT_EQ("message", lg.msg);
 }
 
 TEST(log_macro_test, test_log_when_disabled) {
     struct mock_logger {
-        bool called_{ false };
+        bool called{ false };
 
         bool enabled(logger::level level) {
             return false;
         }
         void log(...) {
-            called_ = true;
+            called = true;
         }
     };
 
@@ -192,5 +192,5 @@ TEST(log_macro_test, test_log_when_disabled) {
 
     HZ_LOG(lg, warning, "");
 
-    ASSERT_FALSE(lg.called_);
+    ASSERT_FALSE(lg.called);
 }

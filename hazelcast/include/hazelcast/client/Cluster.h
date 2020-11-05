@@ -80,7 +80,7 @@ namespace hazelcast {
             std::vector<Member> getMembers();
 
         private:
-            spi::impl::ClientClusterServiceImpl &clusterService;
+            spi::impl::ClientClusterServiceImpl &clusterService_;
         };
     }
 }

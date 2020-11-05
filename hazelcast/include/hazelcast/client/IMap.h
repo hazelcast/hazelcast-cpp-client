@@ -470,7 +470,7 @@ namespace hazelcast {
             * @return registrationId of added listener that can be used to remove the entry listener.
             */
             boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener, bool includeValue) {
-                const auto listener_flags = listener.flags;
+                const auto listener_flags = listener.flags_;
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::map_addentrylistener_handler>(
@@ -498,7 +498,7 @@ namespace hazelcast {
             template<typename P>
             boost::future<boost::uuids::uuid>
             addEntryListener(EntryListener &&listener, const P &predicate, bool includeValue) {
-                const auto listener_flags = listener.flags;
+                const auto listener_flags = listener.flags_;
                 return proxy::IMapImpl::addEntryListener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::map_addentrylistenerwithpredicate_handler>(
@@ -523,7 +523,7 @@ namespace hazelcast {
             */
             template<typename K>
             boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener, bool includeValue, const K &key) {
-                const auto listener_flags = listener.flags;
+                const auto listener_flags = listener.flags_;
                 return proxy::IMapImpl::addEntryListener(
                         std::shared_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::map_addentrylistenertokey_handler>(
@@ -972,7 +972,7 @@ namespace hazelcast {
              * @return this map's local statistics.
              */
             monitor::LocalMapStats &getLocalMapStats() {
-                return localMapStats;
+                return localMapStats_;
             }
 
             template<typename K, typename V>
@@ -1001,7 +1001,7 @@ namespace hazelcast {
              */
             static constexpr std::chrono::milliseconds UNSET{-1};
 
-            monitor::impl::LocalMapStatsImpl localMapStats;
+            monitor::impl::LocalMapStatsImpl localMapStats_;
 
             virtual boost::future<boost::optional<serialization::pimpl::Data>> getInternal(const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::getData(keyData);

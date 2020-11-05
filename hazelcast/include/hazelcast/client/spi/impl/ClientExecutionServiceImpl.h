@@ -51,7 +51,7 @@ namespace hazelcast {
 
                     template<typename CompletionToken>
                     void execute(CompletionToken token) {
-                        boost::asio::post(internalExecutor->get_executor(), token);
+                        boost::asio::post(internalExecutor_->get_executor(), token);
                     }
 
                     template<typename CompletionToken>
@@ -64,7 +64,7 @@ namespace hazelcast {
                     std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetition(CompletionToken token,
                                                                                       const std::chrono::milliseconds &delay,
                                                                                       const std::chrono::milliseconds &period) {
-                        auto timer = std::make_shared<boost::asio::steady_timer>(internalExecutor->get_executor());
+                        auto timer = std::make_shared<boost::asio::steady_timer>(internalExecutor_->get_executor());
                         return scheduleWithRepetitionInternal(token, delay, period, timer);
                     }
 
@@ -72,11 +72,11 @@ namespace hazelcast {
 
                     static void shutdownThreadPool(hazelcast::util::hz_thread_pool *pool);
                 private:
-                    std::unique_ptr<hazelcast::util::hz_thread_pool> internalExecutor;
-                    std::unique_ptr<hazelcast::util::hz_thread_pool> userExecutor;
-                    spi::LifecycleService &lifecycleService;
-                    const ClientProperties &clientProperties;
-                    int userExecutorPoolSize;
+                    std::unique_ptr<hazelcast::util::hz_thread_pool> internalExecutor_;
+                    std::unique_ptr<hazelcast::util::hz_thread_pool> userExecutor_;
+                    spi::LifecycleService &lifecycleService_;
+                    const ClientProperties &clientProperties_;
+                    int userExecutorPoolSize_;
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetitionInternal(CompletionToken token,
@@ -100,7 +100,7 @@ namespace hazelcast {
                                 assert(false);
                             }
 
-                            if (lifecycleService.isRunning() && period.count()) {
+                            if (lifecycleService_.isRunning() && period.count()) {
                                 scheduleWithRepetitionInternal(token, std::chrono::seconds(-1), period, timer);
                             }
                         });

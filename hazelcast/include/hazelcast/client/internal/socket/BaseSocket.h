@@ -36,8 +36,8 @@ namespace hazelcast {
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::milliseconds &connectTimeoutInMillis)
-                            : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
-                              connectTimeout(connectTimeoutInMillis), resolver(ioResolver), socket_(socketStrand) {
+                            : socketOptions_(socketOptions), remoteEndpoint_(address), io_(io), socketStrand_(io),
+                              connectTimeout_(connectTimeoutInMillis), resolver_(ioResolver), socket_(socketStrand_) {
                     }
                     
 #ifdef HZ_BUILD_WITH_SSL
@@ -46,9 +46,9 @@ namespace hazelcast {
                             const Address &address, client::config::SocketOptions &socketOptions,
                             boost::asio::io_context &io, std::chrono::milliseconds &connectTimeoutInMillis,
                             CONTEXT &context)
-                            : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
-                              connectTimeout(connectTimeoutInMillis), resolver(ioResolver),
-                              socket_(socketStrand, context) {
+                            : socketOptions_(socketOptions), remoteEndpoint_(address), io_(io), socketStrand_(io),
+                              connectTimeout_(connectTimeoutInMillis), resolver_(ioResolver),
+                              socket_(socketStrand_, context) {
                     }
 #endif // HZ_BUILD_WITH_SSL
 
@@ -57,7 +57,7 @@ namespace hazelcast {
                         using namespace boost::asio::ip;
 
                         boost::asio::steady_timer connectTimer(socket_.get_executor());
-                        connectTimer.expires_from_now(connectTimeout);
+                        connectTimer.expires_from_now(connectTimeout_);
                         connectTimer.async_wait([=](const boost::system::error_code &ec) {
                             if (ec == boost::asio::error::operation_aborted) {
                                 return;
@@ -66,12 +66,12 @@ namespace hazelcast {
                             return;
                         });
                         try {
-                            auto addresses = resolver.resolve(remoteEndpoint.getHost(), std::to_string(remoteEndpoint.getPort()));
+                            auto addresses = resolver_.resolve(remoteEndpoint_.getHost(), std::to_string(remoteEndpoint_.getPort()));
                             boost::asio::async_connect(socket_.lowest_layer(), addresses,
                                                                      boost::asio::use_future).get();
                             post_connect();
                             connectTimer.cancel();
-                            setSocketOptions(socketOptions);
+                            setSocketOptions(socketOptions_);
                             static constexpr const char *PROTOCOL_TYPE_BYTES = "CP2";
                             write(socket_, boost::asio::buffer(PROTOCOL_TYPE_BYTES, 3));
                         } catch (...) {
@@ -154,7 +154,7 @@ namespace hazelcast {
 
                     Address getAddress() const override {
                         return Address(socket_.lowest_layer().remote_endpoint().address().to_string(),
-                                       remoteEndpoint.getPort());
+                                       remoteEndpoint_.getPort());
                     }
 
                     /**
@@ -174,7 +174,7 @@ namespace hazelcast {
                     }
 
                     const Address &getRemoteEndpoint() const override {
-                        return remoteEndpoint;
+                        return remoteEndpoint_;
                     }
 
                     boost::asio::executor get_executor() noexcept override {
@@ -210,8 +210,8 @@ namespace hazelcast {
                         using namespace boost::asio;
                         using namespace boost::asio::ip;
 
-                        socket_.async_read_some(buffer(connection->readHandler.byteBuffer.ix(),
-                                                        connection->readHandler.byteBuffer.remaining()),
+                        socket_.async_read_some(buffer(connection->read_handler.byte_buffer.ix(),
+                                                        connection->read_handler.byte_buffer.remaining()),
                                                  [=](const boost::system::error_code &ec, std::size_t bytesRead) {
                                                      if (ec) {
                                                          // prevent any exceptions
@@ -221,10 +221,10 @@ namespace hazelcast {
                                                          return;
                                                      }
 
-                                                     connection->readHandler.byteBuffer.safeIncrementPosition(
+                                                     connection->read_handler.byte_buffer.safeIncrementPosition(
                                                              bytesRead);
 
-                                                     connection->readHandler.handle();
+                                                     connection->read_handler.handle();
 
                                                      do_read(connection);
                                                  });
@@ -247,12 +247,12 @@ namespace hazelcast {
                         return true;
                     }
 
-                    client::config::SocketOptions &socketOptions;
-                    Address remoteEndpoint;
-                    boost::asio::io_context &io;
-                    boost::asio::io_context::strand socketStrand;
-                    std::chrono::milliseconds connectTimeout;
-                    boost::asio::ip::tcp::resolver &resolver;
+                    client::config::SocketOptions &socketOptions_;
+                    Address remoteEndpoint_;
+                    boost::asio::io_context &io_;
+                    boost::asio::io_context::strand socketStrand_;
+                    std::chrono::milliseconds connectTimeout_;
+                    boost::asio::ip::tcp::resolver &resolver_;
                     T socket_;
                     int32_t call_id_counter_;
                 };

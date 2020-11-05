@@ -47,77 +47,77 @@ namespace hazelcast {
                             typedef V RECORD_TYPE;
                             AbstractNearCacheRecord(const std::shared_ptr<V> &v, int64_t createTime,
                                                     int64_t expiryTime)
-                                    : value(v), creationTime(createTime), sequence(0), expirationTime(expiryTime),
-                                      accessTime(NearCacheRecord<V>::TIME_NOT_SET), accessHit(0) {
+                                    : value_(v), creationTime_(createTime), sequence_(0), expirationTime_(expiryTime),
+                                      accessTime_(NearCacheRecord<V>::TIME_NOT_SET), accessHit_(0) {
                             }
 
                             std::shared_ptr<V> getValue() const override {
-                                return value;
+                                return value_;
                             }
 
                             void setValue(const std::shared_ptr<V> &value) override {
-                                AbstractNearCacheRecord::value = value;
+                                AbstractNearCacheRecord::value_ = value;
                             }
 
                             int64_t getCreationTime() const override {
-                                return creationTime;
+                                return creationTime_;
                             }
 
                             void setCreationTime(int64_t creationTime) override {
-                                AbstractNearCacheRecord::creationTime = creationTime;
+                                AbstractNearCacheRecord::creationTime_ = creationTime;
                             }
 
                             boost::uuids::uuid getUuid() const {
-                                return uuid;
+                                return uuid_;
                             }
 
                             void setUuid(boost::uuids::uuid uuid) override {
-                                AbstractNearCacheRecord::uuid = uuid;
+                                AbstractNearCacheRecord::uuid_ = uuid;
                             }
 
                             int64_t getExpirationTime() const override {
-                                return expirationTime;
+                                return expirationTime_;
                             }
 
                             void setExpirationTime(int64_t expirationTime) override {
-                                AbstractNearCacheRecord::expirationTime = expirationTime;
+                                AbstractNearCacheRecord::expirationTime_ = expirationTime;
                             }
 
                             int64_t getLastAccessTime() override {
-                                return accessTime;
+                                return accessTime_;
                             }
 
                             void setAccessTime(int64_t accessTime) override {
-                                AbstractNearCacheRecord::accessTime = accessTime;
+                                AbstractNearCacheRecord::accessTime_ = accessTime;
                             }
 
                             int32_t getAccessHit() override {
-                                return accessHit;
+                                return accessHit_;
                             }
 
                             void setAccessHit(int32_t accessHit) override {
-                                AbstractNearCacheRecord::accessHit = accessHit;
+                                AbstractNearCacheRecord::accessHit_ = accessHit;
                             }
 
                             bool isExpiredAt(int64_t now) const override {
-                                int64_t expiration = expirationTime;
+                                int64_t expiration = expirationTime_;
                                 return (expiration > NearCacheRecord<V>::TIME_NOT_SET) && (expiration <= now);
                             }
 
                             void incrementAccessHit() override {
-                                ++accessHit;
+                                ++accessHit_;
                             }
 
                             void resetAccessHit() override {
-                                accessHit = 0;
+                                accessHit_ = 0;
                             }
 
                             bool isIdleAt(int64_t maxIdleMilliSeconds, int64_t now) override {
                                 if (maxIdleMilliSeconds > 0) {
-                                    if (accessTime > NearCacheRecord<V>::TIME_NOT_SET) {
-                                        return accessTime + maxIdleMilliSeconds < now;
+                                    if (accessTime_ > NearCacheRecord<V>::TIME_NOT_SET) {
+                                        return accessTime_ + maxIdleMilliSeconds < now;
                                     } else {
-                                        return creationTime + maxIdleMilliSeconds < now;
+                                        return creationTime_ + maxIdleMilliSeconds < now;
                                     }
                                 } else {
                                     return false;
@@ -125,26 +125,26 @@ namespace hazelcast {
                             }
 
                             int64_t getInvalidationSequence() const override {
-                                return sequence;
+                                return sequence_;
                             }
 
                             void setInvalidationSequence(int64_t seq) override {
-                                this->sequence = seq;
+                                this->sequence_ = seq;
                             }
 
                             bool hasSameUuid(boost::uuids::uuid thatUuid) const override {
-                                return uuid == thatUuid;
+                                return uuid_ == thatUuid;
                             }
 
                         protected:
-                            std::shared_ptr<V> value;
-                            int64_t creationTime;
-                            int64_t sequence;
-                            boost::uuids::uuid uuid;
+                            std::shared_ptr<V> value_;
+                            int64_t creationTime_;
+                            int64_t sequence_;
+                            boost::uuids::uuid uuid_;
 
-                            std::atomic<int64_t> expirationTime;
-                            std::atomic<int64_t> accessTime;
-                            std::atomic<int32_t> accessHit;
+                            std::atomic<int64_t> expirationTime_;
+                            std::atomic<int64_t> accessTime_;
+                            std::atomic<int32_t> accessHit_;
                         };
                     }
                 }

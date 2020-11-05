@@ -425,7 +425,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace ringbuffer {
-                StartsWithStringFilter::StartsWithStringFilter(const std::string &startString) : startString(
+                StartsWithStringFilter::StartsWithStringFilter(const std::string &startString) : startString_(
                         startString) {}
             }
         }
@@ -441,7 +441,7 @@ namespace hazelcast {
 
             void hz_serializer<test::ringbuffer::StartsWithStringFilter>::writeData(
                     const test::ringbuffer::StartsWithStringFilter &object, ObjectDataOutput &out) {
-                out.write(object.startString);
+                out.write(object.startString_);
             }
 
             test::ringbuffer::StartsWithStringFilter
@@ -460,23 +460,23 @@ namespace hazelcast {
                 public:
                     RingbufferTest() {
                         for (int i = 0; i < 11; ++i) {
-                            items.emplace_back(std::to_string(i));
+                            items_.emplace_back(std::to_string(i));
                         }
                     }
 
                 protected:
                     void SetUp() override {
                         std::string testName = getTestName();
-                        clientRingbuffer = client->getRingbuffer(testName);
-                        client2Ringbuffer = client2->getRingbuffer(testName);
+                        clientRingbuffer_ = client->getRingbuffer(testName);
+                        client2Ringbuffer_ = client2->getRingbuffer(testName);
                     }
 
                     void TearDown() override {
-                        if (clientRingbuffer) {
-                            clientRingbuffer->destroy().get();
+                        if (clientRingbuffer_) {
+                            clientRingbuffer_->destroy().get();
                         }
-                        if (client2Ringbuffer) {
-                            client2Ringbuffer->destroy().get();
+                        if (client2Ringbuffer_) {
+                            client2Ringbuffer_->destroy().get();
                         }
                     }
 
@@ -499,9 +499,9 @@ namespace hazelcast {
                     static HazelcastServer *instance;
                     static HazelcastClient *client;
                     static HazelcastClient *client2;
-                    std::shared_ptr<Ringbuffer> clientRingbuffer;
-                    std::shared_ptr<Ringbuffer> client2Ringbuffer;
-                    std::vector<std::string> items;
+                    std::shared_ptr<Ringbuffer> clientRingbuffer_;
+                    std::shared_ptr<Ringbuffer> client2Ringbuffer_;
+                    std::vector<std::string> items_;
 
                     static constexpr int64_t CAPACITY = 10;
                 };
@@ -568,8 +568,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, readManyAsync_whenHitsStale_useHeadAsStartSequence) {
-                    client2Ringbuffer->addAll(items, client::ringbuffer::OverflowPolicy::OVERWRITE);
-                    auto f = clientRingbuffer->readMany<std::string>(1, 1, 10);
+                    client2Ringbuffer_->addAll(items_, client::ringbuffer::OverflowPolicy::OVERWRITE);
+                    auto f = clientRingbuffer_->readMany<std::string>(1, 1, 10);
                     auto rs = f.get();
                     ASSERT_EQ(10, rs.readCount());
                     ASSERT_EQ(std::string("1"), *rs.getItems()[0].get<std::string>());
@@ -580,51 +580,51 @@ namespace hazelcast {
                     std::shared_ptr<boost::latch> latch1 = std::make_shared<boost::latch>(1);
                     std::thread([=] () {
                         try {
-                            clientRingbuffer->readOne<std::string>(0).get();
+                            clientRingbuffer_->readOne<std::string>(0).get();
                             latch1->count_down();
                         } catch (exception::StaleSequenceException &) {
                             latch1->count_down();
                         }
                     }).detach();
-                    client2Ringbuffer->addAll(items, client::ringbuffer::OverflowPolicy::OVERWRITE);
+                    client2Ringbuffer_->addAll(items_, client::ringbuffer::OverflowPolicy::OVERWRITE);
                     ASSERT_OPEN_EVENTUALLY(*latch1);
                 }
 
                 TEST_F(RingbufferTest, headSequence) {
                     for (int k = 0; k < 2 * CAPACITY; k++) {
-                        client2Ringbuffer->add<std::string>("foo").get();
+                        client2Ringbuffer_->add<std::string>("foo").get();
                     }
 
-                    ASSERT_EQ(client2Ringbuffer->headSequence().get(), clientRingbuffer->headSequence().get());
+                    ASSERT_EQ(client2Ringbuffer_->headSequence().get(), clientRingbuffer_->headSequence().get());
                 }
 
                 TEST_F(RingbufferTest, tailSequence) {
                     for (int k = 0; k < 2 * CAPACITY; k++) {
-                        client2Ringbuffer->add<std::string>("foo").get();
+                        client2Ringbuffer_->add<std::string>("foo").get();
                     }
 
-                    ASSERT_EQ(client2Ringbuffer->tailSequence().get(), clientRingbuffer->tailSequence().get());
+                    ASSERT_EQ(client2Ringbuffer_->tailSequence().get(), clientRingbuffer_->tailSequence().get());
                 }
 
                 TEST_F(RingbufferTest, size) {
-                    client2Ringbuffer->add<std::string>("foo").get();
+                    client2Ringbuffer_->add<std::string>("foo").get();
 
-                    ASSERT_EQ(client2Ringbuffer->tailSequence().get(), clientRingbuffer->tailSequence().get());
+                    ASSERT_EQ(client2Ringbuffer_->tailSequence().get(), clientRingbuffer_->tailSequence().get());
                 }
 
                 TEST_F(RingbufferTest, capacity) {
-                    ASSERT_EQ(client2Ringbuffer->capacity().get(), clientRingbuffer->capacity().get());
+                    ASSERT_EQ(client2Ringbuffer_->capacity().get(), clientRingbuffer_->capacity().get());
                 }
 
                 TEST_F(RingbufferTest, remainingCapacity) {
-                    client2Ringbuffer->add<std::string>("foo").get();
+                    client2Ringbuffer_->add<std::string>("foo").get();
 
-                    ASSERT_EQ(client2Ringbuffer->remainingCapacity().get(), clientRingbuffer->remainingCapacity().get());
+                    ASSERT_EQ(client2Ringbuffer_->remainingCapacity().get(), clientRingbuffer_->remainingCapacity().get());
                 }
 
                 TEST_F(RingbufferTest, add) {
-                    clientRingbuffer->add<std::string>("foo").get();
-                    auto value = client2Ringbuffer->readOne<std::string>(0).get();
+                    clientRingbuffer_->add<std::string>("foo").get();
+                    auto value = client2Ringbuffer_->readOne<std::string>(0).get();
                     ASSERT_TRUE(value.has_value());
                     ASSERT_EQ("foo", value.value());
                 }
@@ -633,32 +633,32 @@ namespace hazelcast {
                     std::vector<std::string> items;
                     items.push_back("foo");
                     items.push_back("bar");
-                    auto result = clientRingbuffer->addAll(items, client::ringbuffer::OverflowPolicy::OVERWRITE).get();
+                    auto result = clientRingbuffer_->addAll(items, client::ringbuffer::OverflowPolicy::OVERWRITE).get();
 
-                    ASSERT_EQ(client2Ringbuffer->tailSequence().get(), result);
-                    auto val0 = client2Ringbuffer->readOne<std::string>(0).get();
-                    auto val1 = client2Ringbuffer->readOne<std::string>(1).get();
+                    ASSERT_EQ(client2Ringbuffer_->tailSequence().get(), result);
+                    auto val0 = client2Ringbuffer_->readOne<std::string>(0).get();
+                    auto val1 = client2Ringbuffer_->readOne<std::string>(1).get();
                     ASSERT_TRUE(val0);
                     ASSERT_TRUE(val1);
                     ASSERT_EQ(val0.value(), "foo");
                     ASSERT_EQ(val1.value(), "bar");
-                    ASSERT_EQ(0, client2Ringbuffer->headSequence().get());
-                    ASSERT_EQ(1, client2Ringbuffer->tailSequence().get());
+                    ASSERT_EQ(0, client2Ringbuffer_->headSequence().get());
+                    ASSERT_EQ(1, client2Ringbuffer_->tailSequence().get());
                 }
 
                 TEST_F(RingbufferTest, readOne) {
-                    client2Ringbuffer->add<std::string>("foo").get();
-                    auto value = clientRingbuffer->readOne<std::string>(0).get();
+                    client2Ringbuffer_->add<std::string>("foo").get();
+                    auto value = clientRingbuffer_->readOne<std::string>(0).get();
                     ASSERT_TRUE(value.has_value());
                     ASSERT_EQ("foo", value.value());
                 }
 
                 TEST_F(RingbufferTest, readMany_noFilter) {
-                    client2Ringbuffer->add<std::string>("1");
-                    client2Ringbuffer->add<std::string>("2");
-                    client2Ringbuffer->add<std::string>("3");
+                    client2Ringbuffer_->add<std::string>("1");
+                    client2Ringbuffer_->add<std::string>("2");
+                    client2Ringbuffer_->add<std::string>("3");
 
-                    auto rs = clientRingbuffer->readMany(0, 3, 3).get();
+                    auto rs = clientRingbuffer_->readMany(0, 3, 3).get();
 
                     ASSERT_EQ(3, rs.readCount());
                     auto &items = rs.getItems();
@@ -669,14 +669,14 @@ namespace hazelcast {
 
                 // checks if the max count works. So if more results are available than needed, the surplus results should not be read.
                 TEST_F(RingbufferTest, readMany_maxCount) {
-                    client2Ringbuffer->add<std::string>("1").get();
-                    client2Ringbuffer->add<std::string>("2").get();
-                    client2Ringbuffer->add<std::string>("3").get();
-                    client2Ringbuffer->add<std::string>("4").get();
-                    client2Ringbuffer->add<std::string>("5").get();
-                    client2Ringbuffer->add<std::string>("6").get();
+                    client2Ringbuffer_->add<std::string>("1").get();
+                    client2Ringbuffer_->add<std::string>("2").get();
+                    client2Ringbuffer_->add<std::string>("3").get();
+                    client2Ringbuffer_->add<std::string>("4").get();
+                    client2Ringbuffer_->add<std::string>("5").get();
+                    client2Ringbuffer_->add<std::string>("6").get();
 
-                    client::ringbuffer::ReadResultSet rs = clientRingbuffer->readMany<std::string>(0, 3, 3).get();
+                    client::ringbuffer::ReadResultSet rs = clientRingbuffer_->readMany<std::string>(0, 3, 3).get();
 
                     ASSERT_EQ(3, rs.readCount());
                     auto &items1 = rs.getItems();
@@ -686,15 +686,15 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, readManyAsync_withFilter) {
-                    client2Ringbuffer->add<std::string>("good1").get();
-                    client2Ringbuffer->add<std::string>("bad1").get();
-                    client2Ringbuffer->add<std::string>("good2").get();
-                    client2Ringbuffer->add<std::string>("bad2").get();
-                    client2Ringbuffer->add<std::string>("good3").get();
-                    client2Ringbuffer->add<std::string>("bad3").get();
+                    client2Ringbuffer_->add<std::string>("good1").get();
+                    client2Ringbuffer_->add<std::string>("bad1").get();
+                    client2Ringbuffer_->add<std::string>("good2").get();
+                    client2Ringbuffer_->add<std::string>("bad2").get();
+                    client2Ringbuffer_->add<std::string>("good3").get();
+                    client2Ringbuffer_->add<std::string>("bad3").get();
 
                     StartsWithStringFilter filter("good");
-                    auto rs = clientRingbuffer->readMany<StartsWithStringFilter>(0, 3, 3, &filter).get();
+                    auto rs = clientRingbuffer_->readMany<StartsWithStringFilter>(0, 3, 3, &filter).get();
 
                     ASSERT_EQ(5, rs.readCount());
                     auto const &items = rs.getItems();
@@ -772,7 +772,7 @@ namespace hazelcast {
     namespace util {
         StartedThread::StartedThread(const std::string &name, void (*func)(ThreadArgs &),
                                      void *arg0, void *arg1, void *arg2, void *arg3)
-                : name(name)
+                : name_(name)
                 , logger_(std::make_shared<logger>("StartedThread", "StartedThread", 
                                                    logger::level::info, logger::default_handler)) {
             init(func, arg0, arg1, arg2, arg3);
@@ -787,28 +787,28 @@ namespace hazelcast {
         }
 
         void StartedThread::init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3) {
-            threadArgs.arg0 = arg0;
-            threadArgs.arg1 = arg1;
-            threadArgs.arg2 = arg2;
-            threadArgs.arg3 = arg3;
-            threadArgs.func = func;
+            threadArgs_.arg0 = arg0;
+            threadArgs_.arg1 = arg1;
+            threadArgs_.arg2 = arg2;
+            threadArgs_.arg3 = arg3;
+            threadArgs_.func = func;
 
-            thread = std::thread([=]() { func(threadArgs); });
+            thread_ = std::thread([=]() { func(threadArgs_); });
         }
 
         void StartedThread::run() {
-            threadArgs.func(threadArgs);
+            threadArgs_.func(threadArgs_);
         }
 
         const std::string StartedThread::getName() const {
-            return name;
+            return name_;
         }
 
         bool StartedThread::join() {
-            if (!thread.joinable()) {
+            if (!thread_.joinable()) {
                 return false;
             }
-            thread.join();
+            thread_.join();
             return true;
         }
 
@@ -904,7 +904,7 @@ namespace hazelcast {
         namespace test {
             class ClusterTest : public ClientTestSupportBase, public ::testing::TestWithParam<ClientConfig> {
             public:
-                ClusterTest() : sslFactory(g_srvFactory->getServerAddress(), getSslFilePath()) {}
+                ClusterTest() : sslFactory_(g_srvFactory->getServerAddress(), getSslFilePath()) {}
 
             protected:
                 LifecycleListener makeAllStatesListener(boost::latch &starting,
@@ -936,14 +936,14 @@ namespace hazelcast {
                 
                 std::unique_ptr<HazelcastServer> startServer(ClientConfig &clientConfig) {
                     if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
-                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(sslFactory));
+                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(sslFactory_));
                     } else {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                     }
                 }
 
             private:
-                HazelcastServerFactory sslFactory;
+                HazelcastServerFactory sslFactory_;
             };
 
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
@@ -1666,7 +1666,7 @@ namespace hazelcast {
             protected:
                 virtual void SetUp() {
                     ASSERT_TRUE(client);
-                    flakeIdGenerator = client->getFlakeIdGenerator(testing::UnitTest::GetInstance()->current_test_info()->name());
+                    flakeIdGenerator_ = client->getFlakeIdGenerator(testing::UnitTest::GetInstance()->current_test_info()->name());
                 }
 
                 static void SetUpTestCase() {
@@ -1690,14 +1690,14 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
 
-                std::shared_ptr<FlakeIdGenerator> flakeIdGenerator;
+                std::shared_ptr<FlakeIdGenerator> flakeIdGenerator_;
             };
 
             HazelcastServer *FlakeIdGeneratorApiTest::instance = nullptr;
             HazelcastClient *FlakeIdGeneratorApiTest::client = nullptr;
 
             TEST_F (FlakeIdGeneratorApiTest, testStartingValue) {
-                ASSERT_NO_THROW(flakeIdGenerator->newId().get());
+                ASSERT_NO_THROW(flakeIdGenerator_->newId().get());
             }
 
             TEST_F (FlakeIdGeneratorApiTest, testSmoke) {
@@ -1711,7 +1711,7 @@ namespace hazelcast {
                         std::unordered_set<int64_t> localIds;
                         startLatch.wait();
                         for (size_t j = 0; j < NUM_IDS_PER_THREAD; ++j) {
-                            localIds.insert(flakeIdGenerator->newId().get());
+                            localIds.insert(flakeIdGenerator_->newId().get());
                         }
 
                         return localIds;
@@ -1743,12 +1743,12 @@ namespace hazelcast {
                 ~ClientTxnMapTest() override;
 
             protected:
-                HazelcastServer instance;
-                ClientConfig clientConfig;
-                HazelcastClient client;
+                HazelcastServer instance_;
+                ClientConfig clientConfig_;
+                HazelcastClient client_;
             };
 
-            ClientTxnMapTest::ClientTxnMapTest() : instance(*g_srvFactory), client(getNewClient()) {
+            ClientTxnMapTest::ClientTxnMapTest() : instance_(*g_srvFactory), client_(getNewClient()) {
             }
 
             ClientTxnMapTest::~ClientTxnMapTest() = default;
@@ -1756,32 +1756,32 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testPutGet) {
                 std::string name = "testPutGet";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 context.commitTransaction().get();
 
-                ASSERT_EQ("value1", (client.getMap(name)->get<std::string, std::string>("key1").get().value()));
+                ASSERT_EQ("value1", (client_.getMap(name)->get<std::string, std::string>("key1").get().value()));
             }
 
             TEST_F(ClientTxnMapTest, testRemove) {
                 std::string name = "testRemove";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_FALSE((map->remove<std::string, std::string>("key2").get().has_value()));
@@ -1791,14 +1791,14 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                auto regularMap = client.getMap(name);
+                auto regularMap = client_.getMap(name);
                 ASSERT_TRUE(regularMap->isEmpty().get());
             }
 
             TEST_F(ClientTxnMapTest, testRemoveIfSame) {
                 std::string name = "testRemoveIfSame";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
@@ -1806,7 +1806,7 @@ namespace hazelcast {
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_FALSE((map->remove<std::string, std::string>("key2").get().has_value()));;
@@ -1814,14 +1814,14 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                auto regularMap = client.getMap(name);
+                auto regularMap = client_.getMap(name);
                 ASSERT_TRUE(regularMap->isEmpty().get());
             }
 
             TEST_F(ClientTxnMapTest, testDeleteEntry) {
                 std::string name = "testDeleteEntry";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
@@ -1830,7 +1830,7 @@ namespace hazelcast {
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_NO_THROW(map->deleteEntry("key1").get());
@@ -1839,34 +1839,34 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                auto regularMap = client.getMap(name);
+                auto regularMap = client_.getMap(name);
                 ASSERT_TRUE(regularMap->isEmpty().get());
             }
 
             TEST_F(ClientTxnMapTest, testReplace) {
                 std::string name = "testReplace";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_EQ("value1", (map->replace<std::string, std::string>("key1", "myNewValue").get().value()));
 
                 context.commitTransaction().get();
 
-                ASSERT_EQ("myNewValue", (client.getMap(name)->get<std::string, std::string>("key1").get().value()));
+                ASSERT_EQ("myNewValue", (client_.getMap(name)->get<std::string, std::string>("key1").get().value()));
             }
 
             TEST_F(ClientTxnMapTest, testSet) {
                 std::string name = "testSet";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
@@ -1877,7 +1877,7 @@ namespace hazelcast {
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ("value1", val.value());
 
-                val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_NO_THROW(map->set("key1", "myNewValue").get());
@@ -1888,7 +1888,7 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ("myNewValue", val.value());
             }
@@ -1896,7 +1896,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testContains) {
                 std::string name = "testContains";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
@@ -1913,21 +1913,21 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                auto regularMap = client.getMap(name);
+                auto regularMap = client_.getMap(name);
                 ASSERT_TRUE(regularMap->containsKey("key1").get());
             }
 
             TEST_F(ClientTxnMapTest, testReplaceIfSame) {
                 std::string name = "testReplaceIfSame";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
 
                 ASSERT_FALSE((map->put<std::string, std::string>("key1", "value1").get().has_value()));
                 ASSERT_EQ("value1", (map->get<std::string, std::string>("key1").get().value()));
-                auto val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                auto val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 ASSERT_FALSE(map->replace("key1", "valueNonExistent", "myNewValue").get());
@@ -1935,13 +1935,13 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                ASSERT_EQ("myNewValue", (client.getMap(name)->get<std::string, std::string>("key1").get().value()));
+                ASSERT_EQ("myNewValue", (client_.getMap(name)->get<std::string, std::string>("key1").get().value()));
             }
 
             TEST_F(ClientTxnMapTest, testPutIfSame) {
                 std::string name = "testPutIfSame";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
@@ -1951,7 +1951,7 @@ namespace hazelcast {
                 val = map->get<std::string, std::string>("key1").get();
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ("value1", val.value());
-                val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_FALSE(val.has_value());
 
                 val = map->putIfAbsent<std::string, std::string>("key1", "value1").get();
@@ -1960,7 +1960,7 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                val = client.getMap(name)->get<std::string, std::string>("key1").get();
+                val = client_.getMap(name)->get<std::string, std::string>("key1").get();
                 ASSERT_TRUE(val.has_value());
                 ASSERT_EQ("value1", val.value());
             }
@@ -2004,11 +2004,11 @@ namespace hazelcast {
 
             TEST_F(ClientTxnMapTest, testKeySetValues) {
                 std::string name = "testKeySetValues";
-                auto map = client.getMap(name);
+                auto map = client_.getMap(name);
                 map->put<std::string, std::string>("key1", "value1").get();
                 map->put<std::string, std::string>("key2", "value2").get();
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
                 auto txMap = context.getMap(name);
                 ASSERT_FALSE((txMap->put<std::string, std::string>("key3", "value3").get().has_value()));
@@ -2027,14 +2027,14 @@ namespace hazelcast {
 
             TEST_F(ClientTxnMapTest, testKeySetAndValuesWithPredicates) {
                 std::string name = "testKeysetAndValuesWithPredicates";
-                auto map = client.getMap(name);
+                auto map = client_.getMap(name);
 
                 Employee emp1("abc-123-xvz", 34);
                 Employee emp2("abc-123-xvz", 20);
 
                 map->put<Employee, Employee>(emp1, emp1).get();
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto txMap = context.getMap(name);
@@ -2042,10 +2042,10 @@ namespace hazelcast {
 
                 ASSERT_EQ(2, (int) txMap->size().get());
                 ASSERT_EQ(2, (int) txMap->keySet<Employee>().get().size());
-                query::SqlPredicate predicate(client, "a = 10");
+                query::SqlPredicate predicate(client_, "a = 10");
                 ASSERT_EQ(0, (int) txMap->keySet<Employee>(predicate).get().size());
                 ASSERT_EQ(0, (int) txMap->values<Employee>(predicate).get().size());
-                query::SqlPredicate predicate2(client, "a >= 10");
+                query::SqlPredicate predicate2(client_, "a >= 10");
                 ASSERT_EQ(2, (int) txMap->keySet<Employee>(predicate2).get().size());
                 ASSERT_EQ(2, (int) txMap->values<Employee>(predicate2).get().size());
 
@@ -2058,7 +2058,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testIsEmpty) {
                 std::string name = "testIsEmpty";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
 
                 auto map = context.getMap(name);
@@ -2072,7 +2072,7 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                auto regularMap = client.getMap(name);
+                auto regularMap = client_.getMap(name);
                 ASSERT_FALSE(regularMap->isEmpty().get());
             }
         }
@@ -2089,20 +2089,20 @@ namespace hazelcast {
                 ~ClientTxnSetTest() override;
 
             protected:
-                HazelcastServer instance;
-                HazelcastClient client;
+                HazelcastServer instance_;
+                HazelcastClient client_;
             };
 
-            ClientTxnSetTest::ClientTxnSetTest() : instance(*g_srvFactory), client(getNewClient()) {
+            ClientTxnSetTest::ClientTxnSetTest() : instance_(*g_srvFactory), client_(getNewClient()) {
             }
 
             ClientTxnSetTest::~ClientTxnSetTest() = default;
 
             TEST_F(ClientTxnSetTest, testAddRemove) {
-                auto s = client.getSet("testAddRemove");
+                auto s = client_.getSet("testAddRemove");
                 s->add<std::string>("item1").get();
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
                 auto set = context.getSet("testAddRemove");
                 ASSERT_TRUE(set->add<std::string>("item2").get());
@@ -2129,11 +2129,11 @@ namespace hazelcast {
                 ~ClientTxnTest() override;
 
             protected:
-                HazelcastServerFactory & hazelcastInstanceFactory;
-                std::unique_ptr<HazelcastServer> server;
-                std::unique_ptr<HazelcastServer> second;
-                std::unique_ptr<HazelcastClient> client;
-                std::unique_ptr<LoadBalancer> loadBalancer;
+                HazelcastServerFactory & hazelcastInstanceFactory_;
+                std::unique_ptr<HazelcastServer> server_;
+                std::unique_ptr<HazelcastServer> second_;
+                std::unique_ptr<HazelcastClient> client_;
+                std::unique_ptr<LoadBalancer> loadBalancer_;
             };
 
             class MyLoadBalancer : public impl::AbstractLoadBalancer {
@@ -2162,40 +2162,40 @@ namespace hazelcast {
             }
 
             ClientTxnTest::ClientTxnTest()
-                    : hazelcastInstanceFactory(*g_srvFactory) {
-                server.reset(new HazelcastServer(hazelcastInstanceFactory));
+                    : hazelcastInstanceFactory_(*g_srvFactory) {
+                server_.reset(new HazelcastServer(hazelcastInstanceFactory_));
                 ClientConfig clientConfig = getConfig();
                 //always start the txn on first member
-                loadBalancer.reset(new MyLoadBalancer());
-                clientConfig.setLoadBalancer(loadBalancer.get());
-                client.reset(new HazelcastClient(clientConfig));
-                second.reset(new HazelcastServer(hazelcastInstanceFactory));
+                loadBalancer_.reset(new MyLoadBalancer());
+                clientConfig.setLoadBalancer(loadBalancer_.get());
+                client_.reset(new HazelcastClient(clientConfig));
+                second_.reset(new HazelcastServer(hazelcastInstanceFactory_));
             }
 
             ClientTxnTest::~ClientTxnTest() {
-                client->shutdown();
-                server->shutdown();
-                second->shutdown();
+                client_->shutdown();
+                server_->shutdown();
+                second_->shutdown();
             }
 
             TEST_F(ClientTxnTest, testTxnConnectAfterClientShutdown) {
-                client->shutdown();
-                ASSERT_THROW(client->newTransactionContext(), exception::HazelcastClientNotActiveException);
+                client_->shutdown();
+                ASSERT_THROW(client_->newTransactionContext(), exception::HazelcastClientNotActiveException);
             }
 
             TEST_F(ClientTxnTest, testTxnCommitAfterClusterShutdown) {
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client_->newTransactionContext();
                 context.beginTransaction().get();
 
-                server->shutdown();
-                second->shutdown();
+                server_->shutdown();
+                second_->shutdown();
 
                 ASSERT_THROW(context.commitTransaction().get(), exception::TransactionException);
             }
 
             TEST_F(ClientTxnTest, testTxnCommit) {
                 std::string queueName = randomString();
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client_->newTransactionContext();
                 context.beginTransaction().get();
                 ASSERT_FALSE(context.getTxnId().is_nil());
                 auto queue = context.getQueue(queueName);
@@ -2204,7 +2204,7 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                auto q = client->getQueue(queueName);
+                auto q = client_->getQueue(queueName);
                 auto  retrievedElement = q->poll<std::string>().get();
                 ASSERT_TRUE(retrievedElement.has_value());
                 ASSERT_EQ(value, retrievedElement.value());
@@ -2237,7 +2237,7 @@ namespace hazelcast {
                 transactionOptions.setTransactionType(TransactionOptions::TransactionType::TWO_PHASE);
                 transactionOptions.setTimeout(std::chrono::seconds(60));
                 transactionOptions.setDurability(2);
-                TransactionContext context = client->newTransactionContext(transactionOptions);
+                TransactionContext context = client_->newTransactionContext(transactionOptions);
 
                 context.beginTransaction().get();
                 ASSERT_FALSE(context.getTxnId().is_nil());
@@ -2247,7 +2247,7 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                auto q = client->getQueue(queueName);
+                auto q = client_->getQueue(queueName);
                 auto  retrievedElement = q->poll<std::string>().get();
                 ASSERT_TRUE(retrievedElement.has_value());
                 ASSERT_EQ(value, retrievedElement.value());
@@ -2255,13 +2255,13 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnCommitAfterClientShutdown) {
                 std::string queueName = randomString();
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client_->newTransactionContext();
                 context.beginTransaction().get();
                 auto queue = context.getQueue(queueName);
                 std::string value = randomString();
                 queue->offer(value).get();
 
-                client->shutdown();
+                client_->shutdown();
 
                 ASSERT_THROW(context.commitTransaction().get(), exception::TransactionException);
             }
@@ -2269,11 +2269,11 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnRollback) {
                 std::string queueName = randomString();
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client_->newTransactionContext();
                 boost::latch txnRollbackLatch(1);
                 boost::latch memberRemovedLatch(1);
                 auto listener = makeMemberRemovedListener(memberRemovedLatch);
-                client->getCluster().addMembershipListener(std::move(listener));
+                client_->getCluster().addMembershipListener(std::move(listener));
 
                 try {
                     context.beginTransaction().get();
@@ -2281,7 +2281,7 @@ namespace hazelcast {
                     auto queue = context.getQueue(queueName);
                     queue->offer(randomString()).get();
 
-                    server->shutdown();
+                    server_->shutdown();
 
                     context.commitTransaction().get();
                     FAIL();
@@ -2293,7 +2293,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
                 ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
-                auto q = client->getQueue(queueName);
+                auto q = client_->getQueue(queueName);
                 ASSERT_FALSE(q->poll<std::string>().get().has_value())
                                             << "Poll result should be null since it is rolled back";
                 ASSERT_EQ(0, q->size().get());
@@ -2301,7 +2301,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash) {
                 std::string queueName = randomString();
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client_->newTransactionContext();
                 boost::latch txnRollbackLatch(1);
                 boost::latch memberRemovedLatch(1);
 
@@ -2311,9 +2311,9 @@ namespace hazelcast {
                 queue->offer("str").get();
 
                 auto listener = makeMemberRemovedListener(memberRemovedLatch);
-                client->getCluster().addMembershipListener(std::move(listener));
+                client_->getCluster().addMembershipListener(std::move(listener));
 
-                server->shutdown();
+                server_->shutdown();
 
                 ASSERT_THROW(context.commitTransaction().get(), exception::TransactionException);
 
@@ -2323,7 +2323,7 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
                 ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
-                auto q = client->getQueue(queueName);
+                auto q = client_->getQueue(queueName);
                 ASSERT_FALSE(q->poll<std::string>().get().has_value()) << "queue poll should return null";
                 ASSERT_EQ(0, q->size().get());
             }
@@ -2341,20 +2341,20 @@ namespace hazelcast {
                 ClientTxnListTest();
                 ~ClientTxnListTest() override;
             protected:
-                HazelcastServer instance;
-                ClientConfig clientConfig;
-                HazelcastClient client;
+                HazelcastServer instance_;
+                ClientConfig clientConfig_;
+                HazelcastClient client_;
             };
 
-            ClientTxnListTest::ClientTxnListTest() : instance(*g_srvFactory), client(getNewClient()) {}
+            ClientTxnListTest::ClientTxnListTest() : instance_(*g_srvFactory), client_(getNewClient()) {}
 
             ClientTxnListTest::~ClientTxnListTest() = default;
 
             TEST_F(ClientTxnListTest, testAddRemove) {
-                auto l = client.getList("testAddRemove");
+                auto l = client_.getList("testAddRemove");
                 l->add<std::string>("item1").get();
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
                 auto list = context.getList("testAddRemove");
                 ASSERT_TRUE(list->add<std::string>("item2").get());
@@ -2379,17 +2379,17 @@ namespace hazelcast {
                 ClientTxnMultiMapTest();
                 ~ClientTxnMultiMapTest() override;
             protected:
-                HazelcastServer instance;
-                HazelcastClient client;
+                HazelcastServer instance_;
+                HazelcastClient client_;
             };
 
             ClientTxnMultiMapTest::ClientTxnMultiMapTest()
-                    : instance(*g_srvFactory), client(getNewClient()) {}
+                    : instance_(*g_srvFactory), client_(getNewClient()) {}
 
             ClientTxnMultiMapTest::~ClientTxnMultiMapTest() = default;
 
             TEST_F(ClientTxnMultiMapTest, testRemoveIfExists) {
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
                 auto multiMap = context.getMultiMap("testRemoveIfExists");
                 std::string key("MyKey");
@@ -2406,12 +2406,12 @@ namespace hazelcast {
 
                 context.commitTransaction().get();
 
-                auto mm = client.getMultiMap("testRemoveIfExists");
+                auto mm = client_.getMultiMap("testRemoveIfExists");
                 ASSERT_EQ(2, (int) (mm->get<std::string, std::string>(key).get().size()));
             }
 
             TEST_F(ClientTxnMultiMapTest, testPutGetRemove) {
-                auto mm = client.getMultiMap("testPutGetRemove");
+                auto mm = client_.getMultiMap("testPutGetRemove");
                 constexpr int n = 10;
 
                 std::array<boost::future<void>, n> futures;
@@ -2419,8 +2419,8 @@ namespace hazelcast {
                     futures[i] = boost::async(std::packaged_task<void()>([&]() {
                         std::string key = std::to_string(hazelcast::util::getCurrentThreadId());
                         std::string key2 = key + "2";
-                        client.getMultiMap("testPutGetRemove")->put(key, "value").get();
-                        TransactionContext context = client.newTransactionContext();
+                        client_.getMultiMap("testPutGetRemove")->put(key, "value").get();
+                        TransactionContext context = client_.newTransactionContext();
                         context.beginTransaction().get();
                         auto multiMap = context.getMultiMap("testPutGetRemove");
                         ASSERT_FALSE(multiMap->put(key, "value").get());
@@ -2454,18 +2454,18 @@ namespace hazelcast {
                 ClientTxnQueueTest();
                 ~ClientTxnQueueTest() override;
             protected:
-                HazelcastServer instance;
-                HazelcastClient client;
+                HazelcastServer instance_;
+                HazelcastClient client_;
             };
 
-            ClientTxnQueueTest::ClientTxnQueueTest() : instance(*g_srvFactory), client(getNewClient()) {}
+            ClientTxnQueueTest::ClientTxnQueueTest() : instance_(*g_srvFactory), client_(getNewClient()) {}
 
             ClientTxnQueueTest::~ClientTxnQueueTest() = default;
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll1) {
                 std::string name = "defQueue";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
                 auto q = context.getQueue(name);
                 ASSERT_TRUE(q->offer("ali").get());
@@ -2473,13 +2473,13 @@ namespace hazelcast {
                 ASSERT_EQ("ali", q->poll<std::string>().get().value());
                 ASSERT_EQ(0, q->size().get());
                 context.commitTransaction().get();
-                ASSERT_EQ(0, client.getQueue(name)->size().get());
+                ASSERT_EQ(0, client_.getQueue(name)->size().get());
             }
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPollByteVector) {
                 std::string name = "defQueue";
 
-                TransactionContext context = client.newTransactionContext();
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
                 auto q = context.getQueue(name);
                 std::vector<byte> value(3);
@@ -2488,7 +2488,7 @@ namespace hazelcast {
                 ASSERT_EQ(value, q->poll<std::vector<byte>>().get().value());
                 ASSERT_EQ(0, q->size().get());
                 context.commitTransaction().get();
-                ASSERT_EQ(0, client.getQueue(name)->size().get());
+                ASSERT_EQ(0, client_.getQueue(name)->size().get());
             }
 
             void testTransactionalOfferPoll2Thread(hazelcast::util::ThreadArgs &args) {
@@ -2500,8 +2500,8 @@ namespace hazelcast {
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll2) {
                 boost::latch latch1(1);
-                hazelcast::util::StartedThread t(testTransactionalOfferPoll2Thread, &latch1, &client);
-                TransactionContext context = client.newTransactionContext();
+                hazelcast::util::StartedThread t(testTransactionalOfferPoll2Thread, &latch1, &client_);
+                TransactionContext context = client_.newTransactionContext();
                 context.beginTransaction().get();
                 auto q0 = context.getQueue("defQueue0");
                 auto q1 = context.getQueue("defQueue1");
@@ -2513,8 +2513,8 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(context.commitTransaction().get());
 
-                ASSERT_EQ(0, client.getQueue("defQueue0")->size().get());
-                ASSERT_EQ("item0", client.getQueue("defQueue1")->poll<std::string>().get().value());
+                ASSERT_EQ(0, client_.getQueue("defQueue0")->size().get());
+                ASSERT_EQ("item0", client_.getQueue("defQueue1")->poll<std::string>().get().value());
             }
         }
     }

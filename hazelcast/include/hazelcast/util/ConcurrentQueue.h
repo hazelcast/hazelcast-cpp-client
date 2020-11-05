@@ -35,16 +35,16 @@ namespace hazelcast {
             ConcurrentQueue() = default;
 
             void offer(T *e) {
-                std::lock_guard<std::mutex> lg(m);
-                internalQueue.push_back(e);
+                std::lock_guard<std::mutex> lg(m_);
+                internalQueue_.push_back(e);
             }
 
             T *poll() {
                 T *e = nullptr;
-                std::lock_guard<std::mutex> lg(m);
-                if (!internalQueue.empty()) {
-                    e = internalQueue.front();
-                    internalQueue.pop_front();
+                std::lock_guard<std::mutex> lg(m_);
+                if (!internalQueue_.empty()) {
+                    e = internalQueue_.front();
+                    internalQueue_.pop_front();
                 }
                 return e;
             }
@@ -56,15 +56,15 @@ namespace hazelcast {
              * @return number of items removed from the queue
              */
             int removeAll(const T *itemToBeRemoved) {
-                std::lock_guard<std::mutex> lg(m);
+                std::lock_guard<std::mutex> lg(m_);
                 int numErased = 0;
                 bool isFound;
                 do {
                     isFound = false;
-                    for (typename std::deque<T *>::iterator it = internalQueue.begin();it != internalQueue.end(); ++it) {
+                    for (typename std::deque<T *>::iterator it = internalQueue_.begin();it != internalQueue_.end(); ++it) {
                         T *e = *it;
                         if (itemToBeRemoved == e) {
-                            internalQueue.erase(it);
+                            internalQueue_.erase(it);
                             isFound = true;
                             ++numErased;
                             break;
@@ -75,12 +75,12 @@ namespace hazelcast {
             }
 
         private:
-            std::mutex m;
+            std::mutex m_;
             /**
              * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
-            std::deque<T *> internalQueue;
+            std::deque<T *> internalQueue_;
         };
     }
 }

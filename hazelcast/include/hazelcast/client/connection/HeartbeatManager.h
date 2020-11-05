@@ -44,12 +44,12 @@ namespace hazelcast {
                 std::chrono::milliseconds getHeartbeatTimeout() const;
 
             private:
-                spi::ClientContext &client;
-                ClientConnectionManagerImpl &clientConnectionManager;
+                spi::ClientContext &client_;
+                ClientConnectionManagerImpl &clientConnectionManager_;
                 logger &logger_;
                 std::chrono::milliseconds heartbeat_interval_;
                 std::chrono::milliseconds heartbeat_timeout_;
-                std::shared_ptr<boost::asio::steady_timer> timer;
+                std::shared_ptr<boost::asio::steady_timer> timer_;
 
                 void checkConnection(const std::shared_ptr<Connection> &connection);
 

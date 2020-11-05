@@ -258,8 +258,8 @@ namespace hazelcast {
 
                 serialization::pimpl::SerializationService &serializationService_;
                 spi::impl::ClientPartitionServiceImpl &partitionService_;
-                std::string name_;
-                spi::ClientContext &context_;
+                std::string object_name_;
+                spi::ClientContext &client_context_;
             };
 
             template<>

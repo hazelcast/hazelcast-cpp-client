@@ -84,10 +84,10 @@ namespace hazelcast {
 
             std::string toString() const;
         private:
-            std::string host;
-            int port;
-            byte type;
-            unsigned long scopeId;
+            std::string host_;
+            int port_;
+            byte type_;
+            unsigned long scopeId_;
 
             static const byte IPV4;
             static const byte IPV6;

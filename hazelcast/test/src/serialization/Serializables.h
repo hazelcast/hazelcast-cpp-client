@@ -65,29 +65,29 @@ namespace hazelcast {
                 bool operator<(const Employee &rhs) const;
 
             private:
-                int32_t age;
-                std::string name;
+                int32_t age_;
+                std::string name_;
 
                 // add all possible types
-                byte by;
-                bool boolean;
-                char c;
-                int16_t s;
-                int32_t i;
-                int64_t  l;
-                float f;
-                double d;
-                std::string str;
-                std::string utfStr;
+                byte by_;
+                bool boolean_;
+                char c_;
+                int16_t s_;
+                int32_t i_;
+                int64_t  l_;
+                float f_;
+                double d_;
+                std::string str_;
+                std::string utfStr_;
 
-                std::vector<byte> byteVec;
-                std::vector<char> cc;
-                std::vector<bool> ba;
-                std::vector<int16_t> ss;
-                std::vector<int32_t> ii;
-                std::vector<int64_t > ll;
-                std::vector<float> ff;
-                std::vector<double> dd;
+                std::vector<byte> byteVec_;
+                std::vector<char> cc_;
+                std::vector<bool> ba_;
+                std::vector<int16_t> ss_;
+                std::vector<int32_t> ii_;
+                std::vector<int64_t > ll_;
+                std::vector<float> ff_;
+                std::vector<double> dd_;
             };
 
             // Compares based on the employee age
@@ -141,7 +141,7 @@ namespace hazelcast {
                 std::vector<int64_t> ll;
                 std::vector<float> ff;
                 std::vector<double> dd;
-                std::vector<std::string> stringVector;
+                std::vector<std::string> string_vector;
                 std::vector<TestNamedPortable> nn;
 
                 friend bool operator==(const TestInnerPortable &lhs, const TestInnerPortable &rhs);
@@ -203,10 +203,10 @@ namespace hazelcast {
 
             template<typename P>
             struct ObjectCarryingPortable {
-                P carriedObject;
+                P carried_object;
 
                 friend bool operator==(const ObjectCarryingPortable &lhs, const ObjectCarryingPortable &rhs) {
-                    return lhs.carriedObject == rhs.carriedObject;
+                    return lhs.carried_object == rhs.carried_object;
                 }
             };
 
@@ -382,7 +382,7 @@ namespace hazelcast {
 
                 static void writePortable(const test::ObjectCarryingPortable<P> &object, PortableWriter &writer) {
                     auto &output = writer.getRawDataOutput();
-                    output.writeObject<P>(object.carriedObject);
+                    output.writeObject<P>(object.carried_object);
                 }
 
                 static test::ObjectCarryingPortable<P> readPortable(PortableReader &reader) {

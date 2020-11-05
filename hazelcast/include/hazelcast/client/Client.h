@@ -37,7 +37,7 @@ namespace hazelcast {
             const std::string &getName() const;
 
         private:
-            std::string name;
+            std::string name_;
             std::unordered_set<std::string> labels_;
         };
     }

@@ -109,11 +109,11 @@ namespace hazelcast {
                     encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
 
                 private:
-                    std::string name;
-                    bool includeValue;
+                    std::string name_;
+                    bool includeValue_;
                 };
 
-                int partitionId;
+                int partitionId_;
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };

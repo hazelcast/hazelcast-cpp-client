@@ -58,11 +58,11 @@ namespace hazelcast {
                 static const int ARG_MIN_PARK_PERIOD = 3;
                 static const int ARG_MAX_PARK_PERIOD = 4;
 
-                int64_t yieldThreshold;
-                int64_t parkThreshold;
-                int64_t minParkPeriodNs;
-                int64_t maxParkPeriodNs;
-                int maxShift;
+                int64_t yieldThreshold_;
+                int64_t parkThreshold_;
+                int64_t minParkPeriodNs_;
+                int64_t maxParkPeriodNs_;
+                int maxShift_;
 
             };
         }

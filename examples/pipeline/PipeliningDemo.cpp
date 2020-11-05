@@ -30,11 +30,11 @@ using namespace hazelcast::util;
 
 class PipeliningDemo {
 public:
-    PipeliningDemo() : client(clientConfig), map(client.getMap("map")), gen(rd()) {}
+    PipeliningDemo() : client_(clientConfig_), map_(client_.getMap("map")), gen_(rd_()) {}
 
     void init() {
         for (int l = 0; l < keyDomain; l++) {
-            map->put(l, std::to_string(l)).get();
+            map_->put(l, std::to_string(l)).get();
         }
     }
 
@@ -44,8 +44,8 @@ public:
         for (int i = 0; i < iterations; i++) {
             std::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(depth);
             for (long k = 0; k < getsPerIteration; k++) {
-                int key = dist(gen) % keyDomain;
-                pipelining->add(map->get<int, std::string>(key));
+                int key = dist_(gen_) % keyDomain;
+                pipelining->add(map_->get<int, std::string>(key));
             }
 
             // wait for completion
@@ -64,8 +64,8 @@ public:
         int64_t startMs = currentTimeMillis();
         for (int i = 0; i < iterations; i++) {
             for (long k = 0; k < getsPerIteration; k++) {
-                int key = dist(gen) % keyDomain;
-                map->get<int, std::string>(key).get();
+                int key = dist_(gen_) % keyDomain;
+                map_->get<int, std::string>(key).get();
             }
         }
         int64_t endMs = currentTimeMillis();
@@ -73,15 +73,15 @@ public:
     }
 
 private:
-    HazelcastClient client;
-    std::shared_ptr<IMap> map;
-    ClientConfig clientConfig;
+    HazelcastClient client_;
+    std::shared_ptr<IMap> map_;
+    ClientConfig clientConfig_;
     static const int keyDomain = 100000;
     static const int iterations = 500;
     static const int getsPerIteration = 1000;
-    std::random_device rd;
-    std::mt19937 gen;
-    std::uniform_int_distribution<int> dist;
+    std::random_device rd_;
+    std::mt19937 gen_;
+    std::uniform_int_distribution<int> dist_;
 };
 
 int main() {

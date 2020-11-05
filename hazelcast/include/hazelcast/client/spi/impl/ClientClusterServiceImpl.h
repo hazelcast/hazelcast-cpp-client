@@ -88,8 +88,8 @@ namespace hazelcast {
                         std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> members;
                     };
 
-                    ClientContext &client;
-                    std::shared_ptr<ClientMembershipListener> clientMembershipListener;
+                    ClientContext &client_;
+                    std::shared_ptr<ClientMembershipListener> clientMembershipListener_;
                     std::unordered_map<boost::uuids::uuid, MembershipListener, boost::hash<boost::uuids::uuid>> listeners_;
                     std::mutex listeners_lock_;
                     std::mutex cluster_view_lock_;

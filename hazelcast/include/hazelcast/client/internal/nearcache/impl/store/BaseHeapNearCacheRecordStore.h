@@ -45,7 +45,7 @@ namespace hazelcast {
                             }
 
                             const std::shared_ptr<R> getRecord(const std::shared_ptr<KS> &key) override {
-                                return ANCRS::records->get(key);
+                                return ANCRS::records_->get(key);
                             }
 
                             void onEvict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
@@ -53,12 +53,12 @@ namespace hazelcast {
                                 ANCRS::onEvict(key,
                                                record,
                                                wasExpired);
-                                ANCRS::nearCacheStats->decrementOwnedEntryMemoryCost(
+                                ANCRS::nearCacheStats_->decrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
                             }
 
                             void doExpiration() override {
-                                std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > > entries = ANCRS::records->entrySet();
+                                std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > > entries = ANCRS::records_->entrySet();
                                 for (typename std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > >::const_iterator it = entries.begin();
                                      it != entries.end(); ++it) {
                                     const std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > &entry = (*it);
@@ -79,7 +79,7 @@ namespace hazelcast {
                                     return std::unique_ptr<eviction::MaxSizeChecker>(
                                             new maxsize::EntryCountNearCacheMaxSizeChecker<K, V, KS, R>(
                                                     evictionConfig.getSize(),
-                                                    *ANCRS::records));
+                                                    *ANCRS::records_));
                                 }
                                 std::ostringstream out;
                                 out << "Invalid max-size policy " << '(' << (int) maxSizePolicy << ") for " <<
@@ -91,28 +91,28 @@ namespace hazelcast {
                             std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > createNearCacheRecordMap(
                                     const client::config::NearCacheConfig &nearCacheConfig) override {
                                 return std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
-                                        new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serializationService,
+                                        new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serializationService_,
                                                                                 DEFAULT_INITIAL_CAPACITY));
                             }
 
                             std::shared_ptr<R> putRecord(const std::shared_ptr<KS> &key,
                                                            const std::shared_ptr<R> &record) override {
-                                std::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
-                                ANCRS::nearCacheStats->incrementOwnedEntryMemoryCost(
+                                std::shared_ptr<R> oldRecord = ANCRS::records_->put(key, record);
+                                ANCRS::nearCacheStats_->incrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
                                 if (oldRecord.get() != NULL) {
-                                    ANCRS::nearCacheStats->decrementOwnedEntryMemoryCost(
+                                    ANCRS::nearCacheStats_->decrementOwnedEntryMemoryCost(
                                             ANCRS::getTotalStorageMemoryCost(key, oldRecord));
                                 }
                                 return oldRecord;
                             }
 
                             std::shared_ptr<R> removeRecord(const std::shared_ptr<KS> &key) override {
-                                return ANCRS::records->remove(key);
+                                return ANCRS::records_->remove(key);
                             }
 
                             bool containsRecordKey(const std::shared_ptr<KS> &key) const override {
-                                return ANCRS::records->containsKey(key);
+                                return ANCRS::records_->containsKey(key);
                             }
 
                             static const int32_t DEFAULT_INITIAL_CAPACITY = 1000;

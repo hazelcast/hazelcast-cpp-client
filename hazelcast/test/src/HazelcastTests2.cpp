@@ -297,12 +297,12 @@ namespace hazelcast {
                     public:
                         ConcurrentQueueTask(hazelcast::util::ConcurrentQueue<int> &q,
                                             boost::latch &startLatch,
-                                            boost::latch &startRemoveLatch, int removalValue) : q(q),
-                                                                                                startLatch(
+                                            boost::latch &startRemoveLatch, int removalValue) : q_(q),
+                                                                                                startLatch_(
                                                                                                         startLatch),
-                                                                                                startRemoveLatch(
+                                                                                                startRemoveLatch_(
                                                                                                         startRemoveLatch),
-                                                                                                removalValue(
+                                                                                                removalValue_(
                                                                                                         removalValue) {}
 
                         virtual void run() {
@@ -310,23 +310,23 @@ namespace hazelcast {
 
                             std::vector<int> values((size_t) numItems);
 
-                            startLatch.count_down();
+                            startLatch_.count_down();
 
-                            ASSERT_OPEN_EVENTUALLY(startLatch);
+                            ASSERT_OPEN_EVENTUALLY(startLatch_);
 
                             // insert items
                             for (int i = 0; i < numItems; ++i) {
                                 values[i] = i;
-                                q.offer(&values[i]);
+                                q_.offer(&values[i]);
                             }
 
-                            q.offer(&removalValue);
-                            startRemoveLatch.count_down();
+                            q_.offer(&removalValue_);
+                            startRemoveLatch_.count_down();
 
                             // poll items
                             for (int i = 0; i < numItems; ++i) {
                                 values[i] = i;
-                                ASSERT_NE((int *) nullptr, q.poll());
+                                ASSERT_NE((int *) nullptr, q_.poll());
                             }
                         }
 
@@ -335,10 +335,10 @@ namespace hazelcast {
                         }
 
                     private:
-                        hazelcast::util::ConcurrentQueue<int> &q;
-                        boost::latch &startLatch;
-                        boost::latch &startRemoveLatch;
-                        int removalValue;
+                        hazelcast::util::ConcurrentQueue<int> &q_;
+                        boost::latch &startLatch_;
+                        boost::latch &startRemoveLatch_;
+                        int removalValue_;
                     };
                 };
 
@@ -520,17 +520,17 @@ namespace hazelcast {
                 class ConfiguredBehaviourTest : public ClientTestSupport {
                 public:
                     ConfiguredBehaviourTest() {
-                        clientConfig.getNetworkConfig().setConnectionTimeout(std::chrono::seconds(2)).setConnectionAttemptLimit(2).
+                        clientConfig_.getNetworkConfig().setConnectionTimeout(std::chrono::seconds(2)).setConnectionAttemptLimit(2).
                                 setConnectionAttemptPeriod(std::chrono::seconds(1));
                     }
 
                 protected:
-                    ClientConfig clientConfig;
+                    ClientConfig clientConfig_;
                 };
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster) {
-                    clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
-                    HazelcastClient client(clientConfig);
+                    clientConfig_.getConnectionStrategyConfig().setAsyncStart(true);
+                    HazelcastClient client(clientConfig_);
 
                     ASSERT_THROW((client.getMap(randomMapName())),
                                  exception::HazelcastClientOfflineException);
@@ -539,8 +539,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster_thenShutdown) {
-                    clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
-                    HazelcastClient client(clientConfig);
+                    clientConfig_.getConnectionStrategyConfig().setAsyncStart(true);
+                    HazelcastClient client(clientConfig_);
                     client.shutdown();
                     ASSERT_THROW((client.getMap(randomMapName())), exception::HazelcastClientNotActiveException);
 
@@ -551,18 +551,18 @@ namespace hazelcast {
                     boost::latch connectedLatch(1);
 
                     // trying 8.8.8.8 address will delay the initial connection since no such server exist
-                    clientConfig.getNetworkConfig().addAddress(Address("8.8.8.8", 5701))
+                    clientConfig_.getNetworkConfig().addAddress(Address("8.8.8.8", 5701))
                             .addAddress(Address("127.0.0.1", 5701)).setConnectionAttemptLimit(INT32_MAX);
-                    clientConfig.setProperty("hazelcast.client.shuffle.member.list", "false");
-                    clientConfig.addListener(
+                    clientConfig_.setProperty("hazelcast.client.shuffle.member.list", "false");
+                    clientConfig_.addListener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
-                    clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
+                    clientConfig_.getConnectionStrategyConfig().setAsyncStart(true);
 
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(clientConfig_);
 
                     ASSERT_TRUE(client.getLifecycleService().isRunning());
 
@@ -579,9 +579,9 @@ namespace hazelcast {
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFSingleMember) {
                     HazelcastServer hazelcastInstance(*g_srvFactory);
 
-                    clientConfig.getConnectionStrategyConfig().setReconnectMode(
+                    clientConfig_.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(clientConfig_);
                     boost::latch shutdownLatch(1);
                     client.addLifecycleListener(
                         LifecycleListener()
@@ -606,9 +606,9 @@ namespace hazelcast {
                     HazelcastServer server1(*g_srvFactory);
                     HazelcastServer server2(*g_srvFactory);
 
-                    clientConfig.getConnectionStrategyConfig().setReconnectMode(
+                    clientConfig_.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(clientConfig_);
                     boost::latch shutdownLatch(1);
                     client.addLifecycleListener(
                         LifecycleListener()
@@ -633,9 +633,9 @@ namespace hazelcast {
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberInitiallyOffline) {
                     HazelcastServer hazelcastInstance(*g_srvFactory);
 
-                    clientConfig.getConnectionStrategyConfig().setReconnectMode(
+                    clientConfig_.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(clientConfig_);
                     boost::latch shutdownLatch(1);
                     client.addLifecycleListener(
                         LifecycleListener()
@@ -661,15 +661,15 @@ namespace hazelcast {
 
                     boost::latch connectedLatch(1);
 
-                    clientConfig.addListener(
+                    clientConfig_.addListener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
-                    clientConfig.getConnectionStrategyConfig().setReconnectMode(
+                    clientConfig_.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(clientConfig_);
                     ASSERT_TRUE(client.getLifecycleService().isRunning());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
@@ -685,16 +685,16 @@ namespace hazelcast {
                     boost::latch initialConnectionLatch(1);
                     boost::latch reconnectedLatch(1);
 
-                    clientConfig.getNetworkConfig().setConnectionAttemptLimit(INT32_MAX);
-                    clientConfig.addListener(
+                    clientConfig_.getNetworkConfig().setConnectionAttemptLimit(INT32_MAX);
+                    clientConfig_.addListener(
                         LifecycleListener()
                             .on_connected([&initialConnectionLatch](){
                                 initialConnectionLatch.try_count_down();
                             })
                     );
-                    clientConfig.getConnectionStrategyConfig().setReconnectMode(
+                    clientConfig_.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(clientConfig_);
 
                     ASSERT_OPEN_EVENTUALLY(initialConnectionLatch);
 
@@ -724,16 +724,16 @@ namespace hazelcast {
 
                     boost::latch connectedLatch(1), disconnectedLatch(1), reconnectedLatch(1);
 
-                    clientConfig.getNetworkConfig().setConnectionAttemptLimit(10);
-                    clientConfig.addListener(
+                    clientConfig_.getNetworkConfig().setConnectionAttemptLimit(10);
+                    clientConfig_.addListener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
-                    clientConfig.getConnectionStrategyConfig().setReconnectMode(
+                    clientConfig_.getConnectionStrategyConfig().setReconnectMode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig);
+                    HazelcastClient client(clientConfig_);
 
                     ASSERT_TRUE(client.getLifecycleService().isRunning());
 
@@ -854,36 +854,36 @@ namespace hazelcast {
                 public:
                     Child() = default;
 
-                    Child(std::string name) : name(name) {}
+                    Child(std::string name) : name_(name) {}
 
                     const std::string &getName() const {
-                        return name;
+                        return name_;
                     }
 
                     friend bool operator==(const Child &lhs, const Child &rhs) {
-                        return lhs.name == rhs.name;
+                        return lhs.name_ == rhs.name_;
                     }
 
                 private:
-                    std::string name;
+                    std::string name_;
                 };
 
                 class Parent {
                 public:
                     friend bool operator==(const Parent &lhs, const Parent &rhs) {
-                        return lhs.child == rhs.child;
+                        return lhs.child_ == rhs.child_;
                     }
 
                     Parent() = default;
 
-                    Parent(Child child) : child(child) {}
+                    Parent(Child child) : child_(child) {}
 
                     const Child &getChild() const {
-                        return child;
+                        return child_;
                     }
 
                 private:
-                    Child child;
+                    Child child_;
                 };
             };
 
@@ -959,17 +959,17 @@ namespace hazelcast {
             public:
                 class SimplePartitionAwareObject : public PartitionAware<int> {
                 public:
-                    SimplePartitionAwareObject() : testKey(5) {}
+                    SimplePartitionAwareObject() : testKey_(5) {}
 
                     const int *getPartitionKey() const override {
-                        return &testKey;
+                        return &testKey_;
                     }
 
                     int getTestKey() const {
-                        return testKey;
+                        return testKey_;
                     }
                 private:
-                    int testKey;
+                    int testKey_;
                 };
             };
 
@@ -1023,17 +1023,17 @@ namespace hazelcast {
         namespace test {
             class JsonValueSerializationTest : public ClientTestSupport {
             public:
-                JsonValueSerializationTest() : serializationService(config) {}
+                JsonValueSerializationTest() : serializationService_(config_) {}
 
             protected:
-                serialization::pimpl::SerializationService serializationService;
-                SerializationConfig config;
+                serialization::pimpl::SerializationService serializationService_;
+                SerializationConfig config_;
             };
 
             TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue) {
                 HazelcastJsonValue jsonValue("{ \"key\": \"value\" }");
-                serialization::pimpl::Data jsonData = serializationService.toData<HazelcastJsonValue>(&jsonValue);
-                auto jsonDeserialized = serializationService.toObject<HazelcastJsonValue>(jsonData);
+                serialization::pimpl::Data jsonData = serializationService_.toData<HazelcastJsonValue>(&jsonValue);
+                auto jsonDeserialized = serializationService_.toObject<HazelcastJsonValue>(jsonData);
                 ASSERT_TRUE(jsonDeserialized.has_value());
                 ASSERT_EQ(jsonValue, jsonDeserialized.value());
             }
@@ -1708,8 +1708,8 @@ namespace hazelcast {
                             : public ClientTestSupport, public ::testing::WithParamInterface<config::InMemoryFormat> {
                     public:
                         NearCacheRecordStoreTest() {
-                            ss = std::unique_ptr<serialization::pimpl::SerializationService>(
-                                    new serialization::pimpl::SerializationService(serializationConfig));
+                            ss_ = std::unique_ptr<serialization::pimpl::SerializationService>(
+                                    new serialization::pimpl::SerializationService(serializationConfig_));
                         }
 
                     protected:
@@ -1970,13 +1970,13 @@ namespace hazelcast {
                                 case config::BINARY:
                                     recordStore = std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> >(
                                             new hazelcast::client::internal::nearcache::impl::store::NearCacheDataRecordStore<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(
-                                                    DEFAULT_NEAR_CACHE_NAME, nearCacheConfig, *ss));
+                                                    DEFAULT_NEAR_CACHE_NAME, nearCacheConfig, *ss_));
                                     break;
                                 case config::OBJECT:
                                     recordStore = std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> >(
                                             new hazelcast::client::internal::nearcache::impl::store::NearCacheObjectRecordStore<serialization::pimpl::Data, serialization::pimpl::Data, serialization::pimpl::Data>(
                                                     DEFAULT_NEAR_CACHE_NAME,
-                                                    nearCacheConfig, *ss));
+                                                    nearCacheConfig, *ss_));
                                     break;
                                 default:
                                     std::ostringstream out;
@@ -2000,15 +2000,15 @@ namespace hazelcast {
                         std::shared_ptr<serialization::pimpl::Data> getSharedValue(int value) const {
                             char buf[30];
                             hazelcast::util::hz_snprintf(buf, 30, "Record-%ld", value);
-                            return ss->toSharedData(new std::string(buf));
+                            return ss_->toSharedData(new std::string(buf));
                         }
 
                         std::shared_ptr<serialization::pimpl::Data> getSharedKey(int value) {
-                            return ss->toSharedData<int>(&value);
+                            return ss_->toSharedData<int>(&value);
                         }
 
-                        std::unique_ptr<serialization::pimpl::SerializationService> ss;
-                        SerializationConfig serializationConfig;
+                        std::unique_ptr<serialization::pimpl::SerializationService> ss_;
+                        SerializationConfig serializationConfig_;
                     };
 
                     const int NearCacheRecordStoreTest::DEFAULT_RECORD_COUNT = 100;

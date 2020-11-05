@@ -86,11 +86,11 @@ namespace hazelcast {
                             std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecordInternal(
                                     const std::shared_ptr<V> &value) {
                                 int64_t creationTime = util::currentTimeMillis();
-                                if (ANCRS::timeToLiveMillis > 0) {
+                                if (ANCRS::timeToLiveMillis_ > 0) {
                                     return std::unique_ptr<record::NearCacheObjectRecord<V> >(
                                             new record::NearCacheObjectRecord<V>(value, creationTime,
                                                                                  creationTime +
-                                                                                 ANCRS::timeToLiveMillis));
+                                                                                 ANCRS::timeToLiveMillis_));
                                 } else {
                                     return std::unique_ptr<record::NearCacheObjectRecord<V> >(
                                             new record::NearCacheObjectRecord<V>(value, creationTime,

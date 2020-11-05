@@ -35,12 +35,12 @@ namespace hazelcast {
             : key(std::move(key))
             , value(std::move(value))
             , cost (rhs.getCost())
-            , creationTime (rhs.getCreationTime())
-            , expirationTime (rhs.getExpirationTime())
+            , creation_time (rhs.getCreationTime())
+            , expiration_time (rhs.getExpirationTime())
             , hits (rhs.getHits())
-            , lastAccessTime (rhs.getLastAccessTime())
-            , lastStoredTime (rhs.getLastStoredTime())
-            , lastUpdateTime (rhs.getLastUpdateTime())
+            , last_access_time (rhs.getLastAccessTime())
+            , last_stored_time (rhs.getLastStoredTime())
+            , last_update_time (rhs.getLastUpdateTime())
             , version (rhs.getVersion()) {};
 
             /**
@@ -58,11 +58,11 @@ namespace hazelcast {
             /**
              * entry creation time
              */
-            int64_t creationTime;
+            int64_t creation_time;
             /**
              * entry expiration time if ttl is defined.
              */
-            int64_t expirationTime;
+            int64_t expiration_time;
             /**
              * number of hits.
              */
@@ -70,15 +70,15 @@ namespace hazelcast {
             /**
              * last access time
              */
-            int64_t lastAccessTime;
+            int64_t last_access_time;
             /**
              * last stored time.
              */
-            int64_t lastStoredTime;
+            int64_t last_stored_time;
             /**
              * last update time.
              */
-            int64_t lastUpdateTime;
+            int64_t last_update_time;
             /**
              * version.
              */

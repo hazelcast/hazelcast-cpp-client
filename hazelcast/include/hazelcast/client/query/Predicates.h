@@ -42,7 +42,7 @@ namespace hazelcast {
             struct HAZELCAST_API BasePredicate : public Predicate {
                 explicit BasePredicate(HazelcastClient &client);
 
-                serialization::ObjectDataOutput outStream;
+                serialization::ObjectDataOutput out_stream;
             };
 
             class HAZELCAST_API NamedPredicate : public BasePredicate {
@@ -54,15 +54,15 @@ namespace hazelcast {
             public:
                 template<typename ...Args>
                 MultiPredicate(HazelcastClient &client, const Args &...values) : BasePredicate(client) {
-                    outStream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
-                    outStream.writeObjects(values...);
+                    out_stream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
+                    out_stream.writeObjects(values...);
                 }
 
                 template<typename ...Args>
                 MultiPredicate(const std::string attributeName, HazelcastClient &client, const Args &...values) : BasePredicate(client) {
-                    outStream.write(attributeName);
-                    outStream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
-                    outStream.writeObjects(values...);
+                    out_stream.write(attributeName);
+                    out_stream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
+                    out_stream.writeObjects(values...);
                 }
             };
 
@@ -111,7 +111,7 @@ namespace hazelcast {
                 template<typename T>
                 EqualPredicate(HazelcastClient &client, const std::string &attributeName, const T &value)
                         : NamedPredicate(client, attributeName) {
-                    outStream.writeObject(value);
+                    out_stream.writeObject(value);
                 }
             };
 
@@ -124,7 +124,7 @@ namespace hazelcast {
                 template<typename T>
                 NotEqualPredicate(HazelcastClient &client, const std::string &attributeName, const T &value)
                         : NamedPredicate(client, attributeName) {
-                    outStream.writeObject(value);
+                    out_stream.writeObject(value);
                 }
             };
 
@@ -140,9 +140,9 @@ namespace hazelcast {
                 GreaterLessPredicate(HazelcastClient &client, const std::string &attributeName, const T &value,
                                      bool isEqual, bool isLess)
                         : NamedPredicate(client, attributeName) {
-                    outStream.writeObject(value);
-                    outStream.write(isEqual);
-                    outStream.write(isLess);
+                    out_stream.writeObject(value);
+                    out_stream.write(isEqual);
+                    out_stream.write(isLess);
                 }
             };
 
@@ -157,8 +157,8 @@ namespace hazelcast {
                 BetweenPredicate(HazelcastClient &client, const std::string &attributeName, const FROM_TYPE &from,
                                  const TO_TYPE &to)
                         : NamedPredicate(client, attributeName) {
-                    outStream.writeObject(to);
-                    outStream.writeObject(from);
+                    out_stream.writeObject(to);
+                    out_stream.writeObject(from);
                 }
             };
 
@@ -248,7 +248,7 @@ namespace hazelcast {
             public:
                 template<typename T>
                 NotPredicate(HazelcastClient &client, const T &predicate) : BasePredicate(client) {
-                    outStream.writeObject(predicate);
+                    out_stream.writeObject(predicate);
                 }
             };
         }
@@ -268,7 +268,7 @@ namespace hazelcast {
                  * @param writer ObjectDataOutput
                  */
                 static void writeData(const T &object, ObjectDataOutput &out) {
-                    out.appendBytes(object.outStream.toByteArray());
+                    out.appendBytes(object.out_stream.toByteArray());
                 }
 
                 /**

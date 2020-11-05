@@ -22,38 +22,38 @@ namespace hazelcast {
         namespace test {
             Employee::Employee() = default;
 
-            Employee::Employee(std::string name, int32_t age) : age(age), name(name) {
-                by = 2;
-                boolean = true;
-                c = 'c';
-                s = 4;
-                i = 2000;
-                l = 321324141;
-                f = 3.14f;
-                d = 3.14334;
-                str = "Hello world";
-                utfStr = "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
+            Employee::Employee(std::string name, int32_t age) : age_(age), name_(name) {
+                by_ = 2;
+                boolean_ = true;
+                c_ = 'c';
+                s_ = 4;
+                i_ = 2000;
+                l_ = 321324141;
+                f_ = 3.14f;
+                d_ = 3.14334;
+                str_ = "Hello world";
+                utfStr_ = "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
 
                 byte byteArray[] = {50, 100, 150, 200};
-                byteVec = std::vector<byte>(byteArray, byteArray + 4);
+                byteVec_ = std::vector<byte>(byteArray, byteArray + 4);
                 char charArray[] = {'c', 'h', 'a', 'r'};
-                cc = std::vector<char>(charArray, charArray + 4);
+                cc_ = std::vector<char>(charArray, charArray + 4);
                 bool boolArray[] = {true, false, false, true};
-                ba = std::vector<bool>(boolArray, boolArray + 4);
+                ba_ = std::vector<bool>(boolArray, boolArray + 4);
                 int16_t shortArray[] = {3, 4, 5};
-                ss = std::vector<int16_t>(shortArray, shortArray + 3);
+                ss_ = std::vector<int16_t>(shortArray, shortArray + 3);
                 int32_t integerArray[] = {9, 8, 7, 6};
-                ii = std::vector<int32_t>(integerArray, integerArray + 4);
+                ii_ = std::vector<int32_t>(integerArray, integerArray + 4);
                 int64_t longArray[] = {0, 1, 5, 7, 9, 11};
-                ll = std::vector<int64_t>(longArray, longArray + 6);
+                ll_ = std::vector<int64_t>(longArray, longArray + 6);
                 float floatArray[] = {0.6543f, -3.56f, 45.67f};
-                ff = std::vector<float>(floatArray, floatArray + 3);
+                ff_ = std::vector<float>(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
-                dd = std::vector<double>(doubleArray, doubleArray + 3);
+                dd_ = std::vector<double>(doubleArray, doubleArray + 3);
             }
 
             bool Employee::operator==(const Employee &rhs) const {
-                return age == rhs.getAge() && name == rhs.getName();
+                return age_ == rhs.getAge() && name_ == rhs.getName();
             }
 
             bool Employee::operator!=(const Employee &employee) const {
@@ -61,15 +61,15 @@ namespace hazelcast {
             }
 
             int32_t Employee::getAge() const {
-                return age;
+                return age_;
             }
 
             const std::string &Employee::getName() const {
-                return name;
+                return name_;
             }
 
             bool Employee::operator<(const Employee &rhs) const {
-                return age < rhs.getAge();
+                return age_ < rhs.getAge();
             }
 
             int32_t EmployeeEntryComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
@@ -182,7 +182,7 @@ namespace hazelcast {
                        lhs.ll == rhs.ll &&
                        lhs.ff == rhs.ff &&
                        lhs.dd == rhs.dd &&
-                       lhs.stringVector == rhs.stringVector &&
+                       lhs.string_vector == rhs.string_vector &&
                        lhs.nn == rhs.nn;
             }
 
@@ -229,71 +229,71 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::Employee>::writePortable(const test::Employee &object, PortableWriter &writer) {
-                writer.write("n", object.name);
-                writer.write<int32_t>("a", object.age);
+                writer.write("n", object.name_);
+                writer.write<int32_t>("a", object.age_);
 
-                writer.write<byte>("b", object.by);
-                writer.write("c", object.c);
-                writer.write("bo", object.boolean);
-                writer.write<int16_t>("s", object.s);
-                writer.write<int32_t>("i", object.i);
-                writer.write<int64_t>("l", object.l);
-                writer.write<float>("f", object.f);
-                writer.write<double>("d", object.d);
-                writer.write("str", object.str);
-                writer.write("utfstr", &object.utfStr);
+                writer.write<byte>("b", object.by_);
+                writer.write("c", object.c_);
+                writer.write("bo", object.boolean_);
+                writer.write<int16_t>("s", object.s_);
+                writer.write<int32_t>("i", object.i_);
+                writer.write<int64_t>("l", object.l_);
+                writer.write<float>("f", object.f_);
+                writer.write<double>("d", object.d_);
+                writer.write("str", object.str_);
+                writer.write("utfstr", &object.utfStr_);
 
-                writer.write("bb", object.byteVec);
-                writer.write("cc", object.cc);
-                writer.write("ba", object.ba);
-                writer.write("ss", object.ss);
-                writer.write("ii", object.ii);
-                writer.write("ff", object.ff);
-                writer.write("dd", object.dd);
+                writer.write("bb", object.byteVec_);
+                writer.write("cc", object.cc_);
+                writer.write("ba", object.ba_);
+                writer.write("ss", object.ss_);
+                writer.write("ii", object.ii_);
+                writer.write("ff", object.ff_);
+                writer.write("dd", object.dd_);
 
                 serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                out.writeObject<byte>(&object.by);
-                out.writeObject<char>(object.c);
-                out.writeObject<bool>(&object.boolean);
-                out.writeObject<int16_t>(&object.s);
-                out.writeObject<int32_t>(&object.i);
-                out.writeObject<float>(&object.f);
-                out.writeObject<double>(&object.d);
-                out.writeObject<std::string>(&object.str);
-                out.writeObject<std::string>(&object.utfStr);
+                out.writeObject<byte>(&object.by_);
+                out.writeObject<char>(object.c_);
+                out.writeObject<bool>(&object.boolean_);
+                out.writeObject<int16_t>(&object.s_);
+                out.writeObject<int32_t>(&object.i_);
+                out.writeObject<float>(&object.f_);
+                out.writeObject<double>(&object.d_);
+                out.writeObject<std::string>(&object.str_);
+                out.writeObject<std::string>(&object.utfStr_);
             }
 
             test::Employee hz_serializer<test::Employee>::readPortable(PortableReader &reader) {
                 test::Employee employee;
-                employee.name = reader.read<std::string>("n");
-                employee.age = reader.read<int32_t>("a");
-                employee.by = reader.read<byte>("b");
-                employee.c = reader.read<char>("c");
-                employee.boolean = reader.read<bool>("bo");
-                employee.s = reader.read<int16_t>("s");
-                employee.i = reader.read<int32_t>("i");
-                employee.l = reader.read<int64_t>("l");
-                employee.f = reader.read<float>("f");
-                employee.d = reader.read<double>("d");
-                employee.str = reader.read<std::string>("str");
-                employee.utfStr = reader.read<std::string>("utfstr");
-                employee.byteVec = *reader.read<std::vector<byte>>("bb");
-                employee.cc = *reader.read<std::vector<char>>("cc");
-                employee.ba = *reader.read<std::vector<bool>>("ba");
-                employee.ss = *reader.read<std::vector<int16_t>>("ss");
-                employee.ii = *reader.read<std::vector<int32_t>>("ii");
-                employee.ff = *reader.read<std::vector<float>>("ff");
-                employee.dd = *reader.read<std::vector<double>>("dd");
+                employee.name_ = reader.read<std::string>("n");
+                employee.age_ = reader.read<int32_t>("a");
+                employee.by_ = reader.read<byte>("b");
+                employee.c_ = reader.read<char>("c");
+                employee.boolean_ = reader.read<bool>("bo");
+                employee.s_ = reader.read<int16_t>("s");
+                employee.i_ = reader.read<int32_t>("i");
+                employee.l_ = reader.read<int64_t>("l");
+                employee.f_ = reader.read<float>("f");
+                employee.d_ = reader.read<double>("d");
+                employee.str_ = reader.read<std::string>("str");
+                employee.utfStr_ = reader.read<std::string>("utfstr");
+                employee.byteVec_ = *reader.read<std::vector<byte>>("bb");
+                employee.cc_ = *reader.read<std::vector<char>>("cc");
+                employee.ba_ = *reader.read<std::vector<bool>>("ba");
+                employee.ss_ = *reader.read<std::vector<int16_t>>("ss");
+                employee.ii_ = *reader.read<std::vector<int32_t>>("ii");
+                employee.ff_ = *reader.read<std::vector<float>>("ff");
+                employee.dd_ = *reader.read<std::vector<double>>("dd");
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
-                employee.by = *in.readObject<byte>();
-                employee.c = *in.readObject<char>();
-                employee.boolean = *in.readObject<bool>();
-                employee.s = *in.readObject<int16_t>();
-                employee.i = *in.readObject<int32_t>();
-                employee.f = *in.readObject<float>();
-                employee.d = *in.readObject<double>();
-                employee.str = *in.readObject<std::string>();
-                employee.utfStr = *in.readObject<std::string>();
+                employee.by_ = *in.readObject<byte>();
+                employee.c_ = *in.readObject<char>();
+                employee.boolean_ = *in.readObject<bool>();
+                employee.s_ = *in.readObject<int16_t>();
+                employee.i_ = *in.readObject<int32_t>();
+                employee.f_ = *in.readObject<float>();
+                employee.d_ = *in.readObject<double>();
+                employee.str_ = *in.readObject<std::string>();
+                employee.utfStr_ = *in.readObject<std::string>();
                 return employee;
             }
 
@@ -459,7 +459,7 @@ namespace hazelcast {
                 writer.write("l", object.ll);
                 writer.write("f", object.ff);
                 writer.write("d", object.dd);
-                writer.write("stringVector", object.stringVector);
+                writer.write("stringVector", object.string_vector);
                 writer.writePortableArray("nn", &object.nn);
             }
 
@@ -473,7 +473,7 @@ namespace hazelcast {
                 object.ll = *reader.read<std::vector<int64_t>>("l");
                 object.ff = *reader.read<std::vector<float>>("f");
                 object.dd = *reader.read<std::vector<double>>("d");
-                object.stringVector = *reader.read<std::vector<std::string>>("stringVector");
+                object.string_vector = *reader.read<std::vector<std::string>>("stringVector");
                 object.nn = *reader.readPortableArray<test::TestNamedPortable>("nn");
                 return object;
             }

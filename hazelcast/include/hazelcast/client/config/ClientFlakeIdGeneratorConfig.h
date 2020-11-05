@@ -108,9 +108,9 @@ namespace hazelcast {
                 ClientFlakeIdGeneratorConfig &setPrefetchValidityDuration(std::chrono::milliseconds duration);
 
             private:
-                std::string name;
-                int32_t prefetchCount;
-                std::chrono::milliseconds prefetchValidityDuration;
+                std::string name_;
+                int32_t prefetchCount_;
+                std::chrono::milliseconds prefetchValidityDuration_;
             };
         }
     }

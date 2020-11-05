@@ -95,9 +95,9 @@ namespace hazelcast {
             virtual const std::string getName() const;
 
         private:
-            ThreadArgs threadArgs;
-            std::string name;
-            std::thread thread;
+            ThreadArgs threadArgs_;
+            std::string name_;
+            std::thread thread_;
             std::shared_ptr<logger> logger_;
 
             void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3);

@@ -53,8 +53,8 @@ namespace hazelcast {
                             virtual void handle_partitionsview(int32_t version,
                                                                const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
-                            std::shared_ptr<connection::Connection> connection_;
-                            cluster_view_listener &view_listener_;
+                            std::shared_ptr<connection::Connection> connection;
+                            cluster_view_listener &view_listener;
                         };
 
                         void try_register(std::shared_ptr<connection::Connection> connection);

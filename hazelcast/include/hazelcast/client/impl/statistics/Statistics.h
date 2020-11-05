@@ -85,7 +85,7 @@ namespace hazelcast {
                          */
                         void getNameWithPrefix(const std::string &name, std::ostringstream &out);
 
-                        Statistics &statistics;
+                        Statistics &statistics_;
                     };
 
                     void schedulePeriodicStatisticsSendTask(int64_t periodSeconds);
@@ -97,13 +97,13 @@ namespace hazelcast {
 
                     static std::string escapeSpecialCharacters(const std::string &name);
 
-                    spi::ClientContext &clientContext;
-                    ClientProperties &clientProperties;
+                    spi::ClientContext &clientContext_;
+                    ClientProperties &clientProperties_;
                     logger &logger_;
-                    bool enabled;
-                    PeriodicStatistics periodicStats;
-                    util::Sync<std::shared_ptr<Address> > cachedOwnerAddress;
-                    std::shared_ptr<boost::asio::steady_timer> sendTaskTimer;
+                    bool enabled_;
+                    PeriodicStatistics periodicStats_;
+                    util::Sync<std::shared_ptr<Address> > cachedOwnerAddress_;
+                    std::shared_ptr<boost::asio::steady_timer> sendTaskTimer_;
                 };
 
                 template<>

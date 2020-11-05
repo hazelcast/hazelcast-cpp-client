@@ -186,18 +186,18 @@ namespace hazelcast {
             private:
                 static int32_t CONNECTION_ATTEMPT_PERIOD;
 
-                config::SSLConfig sslConfig;
-                config::ClientAwsConfig clientAwsConfig;
+                config::SSLConfig sslConfig_;
+                config::ClientAwsConfig clientAwsConfig_;
 
-                std::chrono::milliseconds connectionTimeout;
-                bool smartRouting;
+                std::chrono::milliseconds connectionTimeout_;
+                bool smartRouting_;
 
-                int32_t connectionAttemptLimit;
-                std::chrono::milliseconds connectionAttemptPeriod;
+                int32_t connectionAttemptLimit_;
+                std::chrono::milliseconds connectionAttemptPeriod_;
 
-                std::vector<Address> addressList;
+                std::vector<Address> addressList_;
 
-                SocketOptions socketOptions;
+                SocketOptions socketOptions_;
             };
         }
     }

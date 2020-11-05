@@ -53,7 +53,7 @@ namespace hazelcast {
                 std::exception_ptr create_exception(std::vector<codec::ErrorHolder>::const_iterator begin,
                                                     std::vector<codec::ErrorHolder>::const_iterator end) const;
 
-                std::unordered_map<int32_t, ExceptionFactory *> errorCodeToFactory;
+                std::unordered_map<int32_t, ExceptionFactory *> errorCodeToFactory_;
             };
 
             class HAZELCAST_API ExceptionFactory {

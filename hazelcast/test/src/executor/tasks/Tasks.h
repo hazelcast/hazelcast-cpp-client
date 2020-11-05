@@ -45,7 +45,7 @@ namespace hazelcast {
                     };
 
                     struct CancellationAwareTask {
-                        int64_t sleepTime;
+                        int64_t sleep_time;
                     };
 
                     struct FailingCallable {
@@ -57,14 +57,14 @@ namespace hazelcast {
                     template<typename T>
                     struct MapPutPartitionAwareCallable : public PartitionAware<T> {
                         const T *getPartitionKey() const override {
-                            return &partitionKey;
+                            return &partition_key;
                         }
 
                         MapPutPartitionAwareCallable(const std::string &mapName, T partitionKey) :
-                                mapName(mapName), partitionKey(partitionKey) {}
+                                map_name(mapName), partition_key(partitionKey) {}
 
-                        std::string mapName;
-                        T partitionKey;
+                        std::string map_name;
+                        T partition_key;
                     };
 
                     struct NullCallable {
@@ -135,7 +135,7 @@ namespace hazelcast {
                 }
 
                 static void writeData(const test::executor::tasks::CancellationAwareTask &object, ObjectDataOutput &out) {
-                    out.write(object.sleepTime);
+                    out.write(object.sleep_time);
                 }
 
                 static test::executor::tasks::CancellationAwareTask readData(ObjectDataInput &in) {
@@ -166,8 +166,8 @@ namespace hazelcast {
                 }
 
                 static void writeData(const test::executor::tasks::MapPutPartitionAwareCallable<T> &object, ObjectDataOutput &out) {
-                    out.write(object.mapName);
-                    out.writeObject(object.partitionKey);
+                    out.write(object.map_name);
+                    out.writeObject(object.partition_key);
                 }
             };
 

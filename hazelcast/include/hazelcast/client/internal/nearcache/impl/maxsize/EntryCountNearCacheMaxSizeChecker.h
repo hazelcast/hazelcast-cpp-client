@@ -43,15 +43,15 @@ namespace hazelcast {
                         public:
                             EntryCountNearCacheMaxSizeChecker(int size,
                                                               const store::HeapNearCacheRecordMap<K, V, KS, R> &recordMap) :
-                                    nearCacheRecordMap(recordMap), maxSize(size) {
+                                    nearCacheRecordMap_(recordMap), maxSize_(size) {
                             }
 
                             bool isReachedToMaxSize() const override {
-                                return (int32_t) nearCacheRecordMap.size() >= maxSize;
+                                return (int32_t) nearCacheRecordMap_.size() >= maxSize_;
                             }
                         private:
-                            const store::HeapNearCacheRecordMap<K, V, KS, R> &nearCacheRecordMap;
-                            int32_t maxSize;
+                            const store::HeapNearCacheRecordMap<K, V, KS, R> &nearCacheRecordMap_;
+                            int32_t maxSize_;
                         };
                     }
                 }

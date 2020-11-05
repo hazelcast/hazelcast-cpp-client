@@ -29,7 +29,7 @@ namespace hazelcast {
                 public:
                     StartsWithStringFilter(const std::string &startString);
                 private:
-                    std::string startString;
+                    std::string startString_;
                 };
             }
         }

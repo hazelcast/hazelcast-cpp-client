@@ -46,9 +46,9 @@ namespace hazelcast {
 
                         serialization::pimpl::Data &getPayload();
                     private:
-                        std::chrono::system_clock::time_point publishTime;
-                        boost::optional<Address> publisherAddress;
-                        serialization::pimpl::Data payload;
+                        std::chrono::system_clock::time_point publishTime_;
+                        boost::optional<Address> publisherAddress_;
+                        serialization::pimpl::Data payload_;
                     };
                 }
             }

@@ -50,7 +50,7 @@ namespace hazelcast {
             template<typename Handler,
                      typename = util::enable_if_rvalue_ref_t<Handler &&>>
             SocketInterceptor &on_connect(Handler &&h) & {
-                connect = std::forward<Handler>(h);
+                connect_ = std::forward<Handler>(h);
                 return *this;
             }
 
@@ -70,7 +70,7 @@ namespace hazelcast {
 
             using handler_t = std::function<void(const Socket &)>;
 
-            handler_t connect{ util::noop<const Socket &> };
+            handler_t connect_{ util::noop<const Socket &> };
         };
     }
 }

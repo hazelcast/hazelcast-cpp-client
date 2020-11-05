@@ -48,37 +48,37 @@ namespace hazelcast {
                                          const client::config::NearCacheConfig &config,
                                          const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
                                          serialization::pimpl::SerializationService &ss, logger &lg)
-                                : name(cacheName), nearCacheConfig(config), executionService(es),
-                                  serializationService(ss), logger_(lg) {
+                                : name_(cacheName), nearCacheConfig_(config), executionService_(es),
+                                  serializationService_(ss), logger_(lg) {
                         }
 
                         ~DefaultNearCache() override = default;
 
                         void initialize() override {
-                            if (nearCacheRecordStore.get() == NULL) {
-                                nearCacheRecordStore = createNearCacheRecordStore(name, nearCacheConfig);
+                            if (nearCacheRecordStore_.get() == NULL) {
+                                nearCacheRecordStore_ = createNearCacheRecordStore(name_, nearCacheConfig_);
                             }
-                            nearCacheRecordStore->initialize();
+                            nearCacheRecordStore_->initialize();
 
                             scheduleExpirationTask();
                         }
 
                         const std::string &getName() const override {
-                            return name;
+                            return name_;
                         }
 
                         std::shared_ptr<V> get(const std::shared_ptr<KS> &key) override {
                             util::Preconditions::checkNotNull(key, "key cannot be null on get!");
 
-                            return nearCacheRecordStore->get(key);
+                            return nearCacheRecordStore_->get(key);
                         }
 
                         void put(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value) override {
                             util::Preconditions::checkNotNull<KS>(key, "key cannot be null on put!");
 
-                            nearCacheRecordStore->doEvictionIfRequired();
+                            nearCacheRecordStore_->doEvictionIfRequired();
 
-                            nearCacheRecordStore->put(key, value);
+                            nearCacheRecordStore_->put(key, value);
                         }
 
                         //@Override
@@ -96,28 +96,28 @@ namespace hazelcast {
                         bool invalidate(const std::shared_ptr<KS> &key) override {
                             util::Preconditions::checkNotNull<KS>(key, "key cannot be null on invalidate!");
 
-                            return nearCacheRecordStore->invalidate(key);
+                            return nearCacheRecordStore_->invalidate(key);
                         }
 
                         bool isInvalidatedOnChange() const override {
-                            return nearCacheConfig.isInvalidateOnChange();
+                            return nearCacheConfig_.isInvalidateOnChange();
                         }
 
                         void clear() override {
-                            nearCacheRecordStore->clear();
+                            nearCacheRecordStore_->clear();
                         }
 
                         void destroy() override {
                             expiration_cancelled_.store(true);
-                            if (expirationTimer) {
+                            if (expirationTimer_) {
                                 boost::system::error_code ignored;
-                                expirationTimer->cancel(ignored);
+                                expirationTimer_->cancel(ignored);
                             }
-                            nearCacheRecordStore->destroy();
+                            nearCacheRecordStore_->destroy();
                         }
 
                         const client::config::InMemoryFormat getInMemoryFormat() const override {
-                            return nearCacheConfig.getInMemoryFormat();
+                            return nearCacheConfig_.getInMemoryFormat();
                         }
 
                         /**
@@ -126,11 +126,11 @@ namespace hazelcast {
                          * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                          */
                         std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const override {
-                            return nearCacheRecordStore->getNearCacheStats();
+                            return nearCacheRecordStore_->getNearCacheStats();
                         }
 
                         int size() const override {
-                            return nearCacheRecordStore->size();
+                            return nearCacheRecordStore_->size();
                         }
 
                     private:
@@ -142,11 +142,11 @@ namespace hazelcast {
                                 case client::config::BINARY:
                                     return std::unique_ptr<NearCacheRecordStore<KS, V> >(
                                             new store::NearCacheDataRecordStore<K, V, KS>(name, nearCacheConfig,
-                                                                                          serializationService));
+                                                                                          serializationService_));
                                 case client::config::OBJECT:
                                     return std::unique_ptr<NearCacheRecordStore<KS, V> >(
                                             new store::NearCacheObjectRecordStore<K, V, KS>(name, nearCacheConfig,
-                                                                                            serializationService));
+                                                                                            serializationService_));
                                 default:
                                     std::ostringstream out;
                                     out << "Invalid in memory format: " << (int) inMemoryFormat;
@@ -155,16 +155,16 @@ namespace hazelcast {
                         }
 
                         void scheduleExpirationTask() {
-                            if (nearCacheConfig.getMaxIdleSeconds() > 0L ||
-                                nearCacheConfig.getTimeToLiveSeconds() > 0L) {
-                                expirationTimer = executionService->scheduleWithRepetition(
+                            if (nearCacheConfig_.getMaxIdleSeconds() > 0L ||
+                                nearCacheConfig_.getTimeToLiveSeconds() > 0L) {
+                                expirationTimer_ = executionService_->scheduleWithRepetition(
                                     [=]() {
                                         std::atomic_bool expirationInProgress(false);
                                         while (!expiration_cancelled_) {
                                             bool expected = false;
                                             if (expirationInProgress.compare_exchange_strong(expected, true)) {
                                                 try {
-                                                    nearCacheRecordStore->doExpiration();
+                                                    nearCacheRecordStore_->doExpiration();
                                                 } catch (exception::IException &e) {
                                                     expirationInProgress.store(false);
                                                     // TODO: What to do here
@@ -184,15 +184,15 @@ namespace hazelcast {
                             }
                         }
 
-                        const std::string &name;
-                        const client::config::NearCacheConfig &nearCacheConfig;
-                        std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
-                        serialization::pimpl::SerializationService &serializationService;
+                        const std::string &name_;
+                        const client::config::NearCacheConfig &nearCacheConfig_;
+                        std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService_;
+                        serialization::pimpl::SerializationService &serializationService_;
                         logger &logger_;
 
-                        std::unique_ptr<NearCacheRecordStore<KS, V> > nearCacheRecordStore;
+                        std::unique_ptr<NearCacheRecordStore<KS, V> > nearCacheRecordStore_;
                         std::atomic_bool expiration_cancelled_;
-                        std::shared_ptr<boost::asio::steady_timer> expirationTimer;
+                        std::shared_ptr<boost::asio::steady_timer> expirationTimer_;
                     };
                 }
             }

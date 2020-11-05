@@ -53,8 +53,8 @@ namespace hazelcast {
             const char *getSystemProperty() const;
 
         private:
-            std::string name;
-            std::string defaultValue;
+            std::string name_;
+            std::string defaultValue_;
         };
 
 
@@ -298,27 +298,27 @@ namespace hazelcast {
             std::string getString(const ClientProperty &property) const;
 
         private:
-            ClientProperty heartbeatTimeout;
-            ClientProperty heartbeatInterval;
-            ClientProperty retryCount;
-            ClientProperty retryWaitTime;
-            ClientProperty awsMemberPort;
-            ClientProperty cleanResourcesPeriod;
-            ClientProperty invocationRetryPauseMillis;
-            ClientProperty invocationTimeoutSeconds;
-            ClientProperty eventThreadCount;
-            ClientProperty internalExecutorPoolSize;
-            ClientProperty shuffleMemberList;
-            ClientProperty maxConcurrentInvocations;
-            ClientProperty backpressureBackoffTimeoutMillis;
-            ClientProperty statisticsEnabled;
-            ClientProperty statisticsPeriodSeconds;
-            ClientProperty ioThreadCount;
-            ClientProperty responseExecutorThreadCount;
+            ClientProperty heartbeatTimeout_;
+            ClientProperty heartbeatInterval_;
+            ClientProperty retryCount_;
+            ClientProperty retryWaitTime_;
+            ClientProperty awsMemberPort_;
+            ClientProperty cleanResourcesPeriod_;
+            ClientProperty invocationRetryPauseMillis_;
+            ClientProperty invocationTimeoutSeconds_;
+            ClientProperty eventThreadCount_;
+            ClientProperty internalExecutorPoolSize_;
+            ClientProperty shuffleMemberList_;
+            ClientProperty maxConcurrentInvocations_;
+            ClientProperty backpressureBackoffTimeoutMillis_;
+            ClientProperty statisticsEnabled_;
+            ClientProperty statisticsPeriodSeconds_;
+            ClientProperty ioThreadCount_;
+            ClientProperty responseExecutorThreadCount_;
             ClientProperty backup_timeout_millis_;
             ClientProperty fail_on_indeterminate_state_;
 
-            std::unordered_map<std::string, std::string> propertiesMap;
+            std::unordered_map<std::string, std::string> propertiesMap_;
         };
 
     }

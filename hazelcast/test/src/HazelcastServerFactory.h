@@ -57,8 +57,8 @@ namespace hazelcast {
 
             private:
                 std::shared_ptr<logger> logger_;
-                std::string serverAddress;
-                std::string clusterId;
+                std::string serverAddress_;
+                std::string clusterId_;
 
                 std::string readFromXmlFile(const std::string &xmlFilePath);
             };

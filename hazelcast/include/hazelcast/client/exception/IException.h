@@ -77,14 +77,14 @@ namespace hazelcast {
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
 
             protected:
-                std::string src;
-                std::string msg;
-                std::string details;
-                int32_t errorCode;
+                std::string src_;
+                std::string msg_;
+                std::string details_;
+                int32_t errorCode_;
                 std::exception_ptr cause_;
-                bool runtimeException;
-                bool retryable;
-                std::string report;
+                bool runtimeException_;
+                bool retryable_;
+                std::string report_;
             };
 
             std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
@@ -92,11 +92,11 @@ namespace hazelcast {
             template<typename EXCEPTIONCLASS>
             class ExceptionBuilder {
             public:
-                explicit ExceptionBuilder(const std::string &source) : source(source) {}
+                explicit ExceptionBuilder(const std::string &source) : source_(source) {}
 
                 template<typename T>
                 ExceptionBuilder &operator<<(const T &message) {
-                    msg << message;
+                    msg_ << message;
                     return *this;
                 }
 
@@ -105,11 +105,11 @@ namespace hazelcast {
                  * @return The constructed exception.
                  */
                 boost::exception_detail::clone_impl<EXCEPTIONCLASS> build() {
-                    return boost::enable_current_exception(EXCEPTIONCLASS(source, msg.str()));
+                    return boost::enable_current_exception(EXCEPTIONCLASS(source_, msg_.str()));
                 }
             private:
-                std::string source;
-                std::ostringstream msg;
+                std::string source_;
+                std::ostringstream msg_;
             };
 
         }

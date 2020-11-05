@@ -83,11 +83,11 @@ namespace hazelcast {
             */
             template<typename Listener>
             std::string addMessageListener(Listener &&listener) {
-                int id = ++runnerCounter;
+                int id = ++runnerCounter_;
                 std::shared_ptr<MessageRunner < Listener>>
-                runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer, getName(),
-                                                   getSerializationService(), config, logger_));
-                runnersMap.put(id, runner);
+                runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer_, getName(),
+                                                   getSerializationService(), config_, logger_));
+                runnersMap_.put(id, runner);
                 runner->next();
                 return std::to_string(id);
             }
@@ -102,23 +102,23 @@ namespace hazelcast {
             */
             bool removeMessageListener(const std::string &registrationId) {
                 int id = util::IOUtil::to_value<int>(registrationId);
-                auto runner = runnersMap.get(id);
+                auto runner = runnersMap_.get(id);
                 if (!runner) {
                     return false;
                 }
                 runner->cancel();
-                runnersMap.remove(id);
+                runnersMap_.remove(id);
                 return true;
             };
         protected:
             void onDestroy() override {
                 // cancel all runners
-                for (auto &entry : runnersMap.clear()) {
+                for (auto &entry : runnersMap_.clear()) {
                     entry.second->cancel();
                 }
 
                 // destroy the underlying ringbuffer
-                ringbuffer->destroy();
+                ringbuffer_->destroy();
             }
 
         private:
@@ -134,35 +134,35 @@ namespace hazelcast {
                 MessageRunner(int id, Listener &&listener, const std::shared_ptr<Ringbuffer> &rb,
                               const std::string &topicName, serialization::pimpl::SerializationService &service,
                               const config::ReliableTopicConfig &reliableTopicConfig, logger &lg)
-                        : listener(listener), id(id), ringbuffer(rb), cancelled(false), logger_(lg),
-                        name(topicName), executor(rb, lg), serializationService(service),
-                        config(reliableTopicConfig) {
+                        : listener_(listener), id_(id), ringbuffer_(rb), cancelled_(false), logger_(lg),
+                        name_(topicName), executor_(rb, lg), serializationService_(service),
+                        config_(reliableTopicConfig) {
                     // we are going to listen to next publication. We don't care about what already has been published.
                     int64_t initialSequence = listener.initial_sequence_id_;
                     if (initialSequence == -1) {
-                        initialSequence = ringbuffer->tailSequence().get() + 1;
+                        initialSequence = ringbuffer_->tailSequence().get() + 1;
                     }
-                    sequence = initialSequence;
+                    sequence_ = initialSequence;
                 }
 
                 ~MessageRunner() override = default;
 
                 void next() {
-                    if (cancelled) {
+                    if (cancelled_) {
                         return;
                     }
 
                     topic::impl::reliable::ReliableTopicExecutor::Message m;
                     m.type = topic::impl::reliable::ReliableTopicExecutor::GET_ONE_MESSAGE;
                     m.callback = this->shared_from_this();
-                    m.sequence = sequence;
-                    m.maxCount = config.getReadBatchSize();
-                    executor.execute(std::move(m));
+                    m.sequence = sequence_;
+                    m.max_count = config_.getReadBatchSize();
+                    executor_.execute(std::move(m));
                 }
 
                 // This method is called from the provided executor.
                 void onResponse(const boost::optional<ringbuffer::ReadResultSet> &allMessages) override {
-                    if (cancelled) {
+                    if (cancelled_) {
                         return;
                     }
 
@@ -170,7 +170,7 @@ namespace hazelcast {
                     // but we'll process whatever was received in 1 go.
                     for (auto &item : allMessages->getItems()) {
                         try {
-                            listener.store_sequence_id_(sequence);
+                            listener_.store_sequence_id_(sequence_);
                             process(item.get<topic::impl::reliable::ReliableTopicMessage>().get_ptr());
                         } catch (exception::IException &e) {
                             if (terminate(e)) {
@@ -179,7 +179,7 @@ namespace hazelcast {
                             }
                         }
 
-                        sequence++;
+                        sequence_++;
                     }
 
                     next();
@@ -187,7 +187,7 @@ namespace hazelcast {
 
                 // This method is called from the provided executor.
                 void onFailure(std::exception_ptr throwable) override {
-                    if (cancelled) {
+                    if (cancelled_) {
                         return;
                     }
 
@@ -205,24 +205,24 @@ namespace hazelcast {
                             HZ_LOG(logger_, finest, 
                                 boost::str(boost::format("MessageListener on topic: %1% timed out. "
                                                          "Continuing from last known sequence: %2%")
-                                                         % name % sequence) 
+                                                         % name_ % sequence_)
                             );
                             next();
                             return;
                         } else if (protocol::EXECUTION == err &&
                                    protocol::STALE_SEQUENCE == causeErrorCode) {
                             // StaleSequenceException.getHeadSeq() is not available on the client-side, see #7317
-                            int64_t remoteHeadSeq = ringbuffer->headSequence().get();
+                            int64_t remoteHeadSeq = ringbuffer_->headSequence().get();
 
-                            if (listener.loss_tolerant_) {
+                            if (listener_.loss_tolerant_) {
                                 HZ_LOG(logger_, finest, 
                                     boost::str(boost::format("MessageListener %1% on topic: %2% "
                                                              "ran into a stale sequence. "
                                                              "Jumping from old sequence: %3% "
                                                              "to sequence: %4%")
-                                                             % id % name % sequence % remoteHeadSeq)
+                                                             % id_ % name_ % sequence_ % remoteHeadSeq)
                                 );
-                                sequence = remoteHeadSeq;
+                                sequence_ = remoteHeadSeq;
                                 next();
                                 return;
                             }
@@ -232,25 +232,25 @@ namespace hazelcast {
                                                          "Reason: The listener was too slow or the retention "
                                                          "period of the message has been violated. "
                                                          "head: %3% sequence: %4%")
-                                                         % id % name % remoteHeadSeq % sequence)
+                                                         % id_ % name_ % remoteHeadSeq % sequence_)
                             );
                         } else if (protocol::HAZELCAST_INSTANCE_NOT_ACTIVE == err) {
                             HZ_LOG(logger_, finest, 
                                 boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
                                                          "Reason: HazelcastInstance is shutting down")
-                                                         % id % name) 
+                                                         % id_ % name_)
                             );
                         } else if (protocol::DISTRIBUTED_OBJECT_DESTROYED == err) {
                             HZ_LOG(logger_, finest, 
                                 boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
                                                          "Reason: Topic is destroyed")
-                                                         % id % name) 
+                                                         % id_ % name_)
                             );
                         } else {
                             HZ_LOG(logger_, warning, 
                                 boost::str(boost::format("Terminating MessageListener %1% on topic: %2%. "
                                                          "Reason: Unhandled exception, details: %3%")
-                                                         % id % name % ie.what()) 
+                                                         % id_ % name_ % ie.what())
                             );
                         }
 
@@ -259,17 +259,17 @@ namespace hazelcast {
                 }
 
                 bool cancel() override {
-                    cancelled.store(true);
-                    return executor.stop();
+                    cancelled_.store(true);
+                    return executor_.stop();
                 }
 
                 bool isCancelled() override {
-                    return cancelled.load();
+                    return cancelled_.load();
                 }
             private:
                 void process(topic::impl::reliable::ReliableTopicMessage *message) {
                     //  proxy.localTopicStats.incrementReceives();
-                    listener.received_(toMessage(message));
+                    listener_.received_(toMessage(message));
                 }
 
                 topic::Message toMessage(topic::impl::reliable::ReliableTopicMessage *m) {
@@ -278,29 +278,29 @@ namespace hazelcast {
                     if (addr.has_value()) {
                         member = boost::make_optional<Member>(addr.value());
                     }
-                    return topic::Message(name, TypedData(std::move(m->getPayload()), serializationService),
+                    return topic::Message(name_, TypedData(std::move(m->getPayload()), serializationService_),
                                           m->getPublishTime(), std::move(member));
                 }
 
                 bool terminate(const exception::IException &failure) {
-                    if (cancelled) {
+                    if (cancelled_) {
                         return true;
                     }
 
                     try {
-                        bool terminate = listener.terminal_(failure);
+                        bool terminate = listener_.terminal_(failure);
                         if (terminate) {
                             HZ_LOG(logger_, warning,
                                 boost::str(boost::format("Terminating ReliableListener %1% "
                                                          "on topic: %2%. "
                                                          "Reason: Unhandled exception, details: %3%")
-                                                         % id % name % failure.what())
+                                                         % id_ % name_ % failure.what())
                             );
                         } else {
                             HZ_LOG(logger_, finest,
                                 boost::str(boost::format("ReliableListener %1% on topic: %2% "
                                                          "ran into an exception, details: %3%")
-                                                         % id % name % failure.what())
+                                                         % id_ % name_ % failure.what())
                             );
                         }
                         return terminate;
@@ -309,27 +309,27 @@ namespace hazelcast {
                             boost::str(boost::format("Terminating ReliableListener %1% on topic: %2%. "
                                                      "Reason: Unhandled exception while calling the function set by "
                                                      "ReliableListener::terminate_on_exception. %3%")
-                                                     % id % name % t.what())
+                                                     % id_ % name_ % t.what())
                         );
                         return true;
                     }
                 }
 
             private:
-                Listener listener;
-                int id;
-                std::shared_ptr<Ringbuffer> ringbuffer;
-                int64_t sequence;
-                std::atomic<bool> cancelled;
+                Listener listener_;
+                int id_;
+                std::shared_ptr<Ringbuffer> ringbuffer_;
+                int64_t sequence_;
+                std::atomic<bool> cancelled_;
                 logger &logger_;
-                const std::string &name;
-                topic::impl::reliable::ReliableTopicExecutor executor;
-                serialization::pimpl::SerializationService &serializationService;
-                const config::ReliableTopicConfig &config;
+                const std::string &name_;
+                topic::impl::reliable::ReliableTopicExecutor executor_;
+                serialization::pimpl::SerializationService &serializationService_;
+                const config::ReliableTopicConfig &config_;
             };
 
-            util::SynchronizedMap<int, util::concurrent::Cancellable> runnersMap;
-            std::atomic<int> runnerCounter{ 0 };
+            util::SynchronizedMap<int, util::concurrent::Cancellable> runnersMap_;
+            std::atomic<int> runnerCounter_{ 0 };
         };
     }
 }

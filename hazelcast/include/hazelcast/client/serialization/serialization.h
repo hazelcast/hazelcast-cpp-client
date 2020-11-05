@@ -109,9 +109,9 @@ namespace hazelcast {
                 struct HAZELCAST_API ObjectType {
                     ObjectType();
 
-                    SerializationConstants typeId;
-                    int32_t factoryId;
-                    int32_t classId;
+                    SerializationConstants type_id;
+                    int32_t factory_id;
+                    int32_t class_id;
 
                 };
 
@@ -155,8 +155,8 @@ namespace hazelcast {
             const serialization::pimpl::Data &getData() const;
 
         private:
-            serialization::pimpl::Data data;
-            serialization::pimpl::SerializationService *ss;
+            serialization::pimpl::Data data_;
+            serialization::pimpl::SerializationService *ss_;
         };
 
         bool HAZELCAST_API operator<(const TypedData &lhs, const TypedData &rhs);
@@ -485,12 +485,12 @@ namespace hazelcast {
                 friend std::ostream &operator<<(std::ostream &os, const FieldDefinition &definition);
 
             private:
-                int index;
-                std::string fieldName;
-                FieldType type;
-                int classId;
-                int factoryId;
-                int version;
+                int index_;
+                std::string fieldName_;
+                FieldType type_;
+                int classId_;
+                int factoryId_;
+                int version_;
             };
 
             class HAZELCAST_API ClassDefinition {
@@ -580,17 +580,17 @@ namespace hazelcast {
                 friend std::ostream &operator<<(std::ostream &os, const ClassDefinition &definition);
 
             private:
-                int factoryId;
-                int classId;
-                int version;
+                int factoryId_;
+                int classId_;
+                int version_;
 
                 ClassDefinition(const ClassDefinition &) = delete;
 
                 ClassDefinition &operator=(const ClassDefinition &rhs) = delete;
 
-                std::unordered_map<std::string, FieldDefinition> fieldDefinitionsMap;
+                std::unordered_map<std::string, FieldDefinition> fieldDefinitionsMap_;
 
-                std::unique_ptr<std::vector<byte> > binary;
+                std::unique_ptr<std::vector<byte> > binary_;
 
             };
 
@@ -622,13 +622,13 @@ namespace hazelcast {
 
                 int getVersion();
             private:
-                int factoryId;
-                int classId;
-                int version;
-                int index;
-                bool done;
+                int factoryId_;
+                int classId_;
+                int version_;
+                int index_;
+                bool done_;
 
-                std::vector<FieldDefinition> fieldDefinitions;
+                std::vector<FieldDefinition> fieldDefinitions_;
 
                 void check();
             };
@@ -701,8 +701,8 @@ namespace hazelcast {
                 inline readObject(int32_t typeId);
 
             private:
-                pimpl::PortableSerializer &portableSerializer;
-                pimpl::DataSerializer &dataSerializer;
+                pimpl::PortableSerializer &portableSerializer_;
+                pimpl::DataSerializer &dataSerializer_;
                 std::shared_ptr<serialization::global_serializer> globalSerializer_;
             };
 
@@ -763,12 +763,12 @@ namespace hazelcast {
                 template<typename T>
                 inline void writeBytes(const T &s) {
                     for (auto c : s) {
-                        outputStream.push_back(c);
+                        outputStream_.push_back(c);
                     }
                 }
 
             private:
-                pimpl::PortableSerializer *portableSerializer;
+                pimpl::PortableSerializer *portableSerializer_;
                 std::shared_ptr<serialization::global_serializer> globalSerializer_;
             };
 
@@ -883,8 +883,8 @@ namespace hazelcast {
 
                     void operator=(const PortableContext &) = delete;
 
-                    util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
-                    const SerializationConfig &serializationConfig;
+                    util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap_;
+                    const SerializationConfig &serializationConfig_;
                 };
 
                 class ClassDefinitionContext {
@@ -903,10 +903,10 @@ namespace hazelcast {
                 private:
                     int64_t combineToLong(int x, int y) const;
 
-                    const int factoryId;
-                    util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
-                    util::SynchronizedMap<int, int> currentClassVersions;
-                    PortableContext *portableContext;
+                    const int factoryId_;
+                    util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions_;
+                    util::SynchronizedMap<int, int> currentClassVersions_;
+                    PortableContext *portableContext_;
                 };
 
                 class HAZELCAST_API ClassDefinitionWriter {
@@ -916,7 +916,7 @@ namespace hazelcast {
                     template <typename T>
                     void write(const std::string &fieldName, T value) {
                         typedef typename std::remove_pointer<typename std::remove_reference<typename std::remove_cv<T>::type>::type>::type value_type;
-                        builder.addField(fieldName, PortableContext::getType<value_type>());
+                        builder_.addField(fieldName, PortableContext::getType<value_type>());
                     }
 
                     template<typename T>
@@ -924,15 +924,15 @@ namespace hazelcast {
                         T portable;
                         int32_t factoryId = hz_serializer<T>::getFactoryId();
                         int32_t classId = hz_serializer<T>::getClassId();
-                        std::shared_ptr<ClassDefinition> nestedClassDef = context.lookupClassDefinition(factoryId,
+                        std::shared_ptr<ClassDefinition> nestedClassDef = context_.lookupClassDefinition(factoryId,
                                                                                                         classId,
-                                                                                                        context.getVersion());
+                                                                                                        context_.getVersion());
                         if (!nestedClassDef) {
                             BOOST_THROW_EXCEPTION(
                                     exception::HazelcastSerializationException("ClassDefWriter::writeNullPortable",
                                                                                "Cannot write null portable without explicitly registering class definition!"));
                         }
-                        builder.addPortableField(fieldName, nestedClassDef);
+                        builder_.addPortableField(fieldName, nestedClassDef);
                     }
 
                     template<typename T>
@@ -944,7 +944,7 @@ namespace hazelcast {
                         }
 
                         std::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef(*portable);
-                        builder.addPortableField(fieldName, nestedClassDef);
+                        builder_.addPortableField(fieldName, nestedClassDef);
                     };
 
                     template<typename T>
@@ -955,7 +955,7 @@ namespace hazelcast {
                                                                   "Cannot write null portable array without explicitly registering class definition!"));
                         }
                         std::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef((*portables)[0]);
-                        builder.addPortableArrayField(fieldName, nestedClassDef);
+                        builder_.addPortableArrayField(fieldName, nestedClassDef);
                     };
 
                     std::shared_ptr<ClassDefinition> registerAndGet();
@@ -968,9 +968,9 @@ namespace hazelcast {
                     template<typename T>
                     std::shared_ptr<ClassDefinition> createNestedClassDef(const T &portable);
 
-                    ClassDefinitionBuilder &builder;
-                    PortableContext &context;
-                    ObjectDataOutput emptyDataOutput;
+                    ClassDefinitionBuilder &builder_;
+                    PortableContext &context_;
+                    ObjectDataOutput emptyDataOutput_;
                 };
 
                 class HAZELCAST_API PortableReaderBase {
@@ -992,14 +992,14 @@ namespace hazelcast {
                                             std::is_same<std::string, typename std::remove_cv<T>::type>::value, T>::type
                         read(const std::string &fieldName) {
                         setPosition(fieldName, PortableContext::getType<T>());
-                        return dataInput->read<T>();
+                        return dataInput_->read<T>();
                     }
 
                     template <typename T>
                     typename std::enable_if<std::is_same<boost::optional<std::string>, typename std::remove_cv<T>::type>::value, T>::type
                         read(const std::string &fieldName) {
                         setPosition(fieldName, PortableContext::getType<T>());
-                        return dataInput->read<T>();
+                        return dataInput_->read<T>();
                     }
 
                     template <typename T>
@@ -1014,7 +1014,7 @@ namespace hazelcast {
                                             std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value, boost::optional<T>>::type
                                     read(const std::string &fieldName) {
                         setPosition(fieldName, PortableContext::getType<T>());
-                        return dataInput->read<T>();
+                        return dataInput_->read<T>();
                     }
 
                     ObjectDataInput &getRawDataInput();
@@ -1029,13 +1029,13 @@ namespace hazelcast {
                     template<typename T>
                     boost::optional<T> getPortableInstance(const std::string &fieldName);
 
-                    std::shared_ptr<ClassDefinition> cd;
-                    ObjectDataInput *dataInput;
-                    PortableSerializer *portableSerializer;
+                    std::shared_ptr<ClassDefinition> cd_;
+                    ObjectDataInput *dataInput_;
+                    PortableSerializer *portableSerializer_;
                 private:
-                    int finalPosition;
-                    int offset;
-                    bool raw;
+                    int finalPosition_;
+                    int offset_;
+                    bool raw_;
 
                 };
 
@@ -1063,10 +1063,10 @@ namespace hazelcast {
                                             std::is_same<float, typename std::remove_cv<T>::type>::value ||
                                             std::is_same<double, typename std::remove_cv<T>::type>::value, T>::type
                     read(const std::string &fieldName) {
-                        if (!cd->hasField(fieldName)) {
+                        if (!cd_->hasField(fieldName)) {
                             return 0;
                         }
-                        const FieldType &currentFieldType = cd->getFieldType(fieldName);
+                        const FieldType &currentFieldType = cd_->getFieldType(fieldName);
                         return readMorphing<T>(currentFieldType, fieldName);
                     }
 
@@ -1076,7 +1076,7 @@ namespace hazelcast {
                                             std::is_same<char16_t, typename std::remove_cv<T>::type>::value ||
                                             std::is_same<bool, typename std::remove_cv<T>::type>::value, T>::type
                     read(const std::string &fieldName) {
-                        if (!cd->hasField(fieldName)) {
+                        if (!cd_->hasField(fieldName)) {
                             return 0;
                         }
                         return PortableReaderBase::read<T>(fieldName);
@@ -1085,7 +1085,7 @@ namespace hazelcast {
                     template <typename T>
                     typename std::enable_if<std::is_same<std::string, typename std::remove_cv<T>::type>::value, T>::type
                     read(const std::string &fieldName) {
-                        if (!cd->hasField(fieldName)) {
+                        if (!cd_->hasField(fieldName)) {
                             return std::string();
                         }
                         return PortableReaderBase::read<T>(fieldName);
@@ -1094,7 +1094,7 @@ namespace hazelcast {
                     template <typename T>
                     typename std::enable_if<std::is_same<boost::optional<std::string>, typename std::remove_cv<T>::type>::value, T>::type
                     read(const std::string &fieldName) {
-                        if (!cd->hasField(fieldName)) {
+                        if (!cd_->hasField(fieldName)) {
                             return boost::none;
                         }
                         return PortableReaderBase::read<T>(fieldName);
@@ -1111,7 +1111,7 @@ namespace hazelcast {
                                             std::is_same<std::vector<double>, typename std::remove_cv<T>::type>::value ||
                                             std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value, boost::optional<T>>::type
                     read(const std::string &fieldName) {
-                        if (!cd->hasField(fieldName)) {
+                        if (!cd_->hasField(fieldName)) {
                             return boost::none;
                         }
                         return PortableReaderBase::read<T>(fieldName);
@@ -1203,7 +1203,7 @@ namespace hazelcast {
                     void write(const T &object, ObjectDataOutput &out);
 
                 private:
-                    PortableContext &context;
+                    PortableContext &context_;
 
                     template<typename T>
                     int findPortableVersion(int factoryId, int classId) const;
@@ -1270,7 +1270,7 @@ namespace hazelcast {
                     void write(const std::string &fieldName, T value) {
                         typedef typename std::remove_pointer<typename std::remove_reference<typename std::remove_cv<T>::type>::type>::type value_type;
                         setPosition(fieldName, PortableContext::getType<value_type>());
-                        objectDataOutput.write(value);
+                        objectDataOutput_.write(value);
                     }
 
                     void end();
@@ -1290,13 +1290,13 @@ namespace hazelcast {
                     template<typename T>
                     void checkPortableAttributes(const FieldDefinition &fd);
 
-                    bool raw;
-                    PortableSerializer &portableSerializer;
-                    ObjectDataOutput &objectDataOutput;
-                    size_t begin;
-                    size_t offset;
-                    std::unordered_set<std::string> writtenFields;
-                    std::shared_ptr<ClassDefinition> cd;
+                    bool raw_;
+                    PortableSerializer &portableSerializer_;
+                    ObjectDataOutput &objectDataOutput_;
+                    size_t begin_;
+                    size_t offset_;
+                    std::unordered_set<std::string> writtenFields_;
+                    std::shared_ptr<ClassDefinition> cd_;
                 };
 
                 class HAZELCAST_API SerializationService : public util::Disposable {
@@ -1309,7 +1309,7 @@ namespace hazelcast {
 
                     template<typename T>
                     inline Data toData(const T *object) {
-                        ObjectDataOutput output(false, &portableSerializer, serializationConfig.getGlobalSerializer());
+                        ObjectDataOutput output(false, &portableSerializer_, serializationConfig_.getGlobalSerializer());
 
                         writeHash<T>(object, output);
 
@@ -1320,7 +1320,7 @@ namespace hazelcast {
 
                     template<typename T>
                     inline Data toData(const T &object) {
-                        ObjectDataOutput output(false, &portableSerializer, serializationConfig.getGlobalSerializer());
+                        ObjectDataOutput output(false, &portableSerializer_, serializationConfig_.getGlobalSerializer());
 
                         writeHash<T>(&object, output);
 
@@ -1358,8 +1358,8 @@ namespace hazelcast {
 
                         // Constant 8 is Data::DATA_OFFSET. Windows DLL export does not
                         // let usage of static member.
-                        ObjectDataInput objectDataInput(data.toByteArray(), 8, portableSerializer, dataSerializer,
-                                                        serializationConfig.getGlobalSerializer());
+                        ObjectDataInput objectDataInput(data.toByteArray(), 8, portableSerializer_, dataSerializer_,
+                                                        serializationConfig_.getGlobalSerializer());
                         return objectDataInput.readObject<T>(typeId);
                     }
 
@@ -1402,10 +1402,10 @@ namespace hazelcast {
 
                     SerializationService &operator=(const SerializationService &) = delete;
 
-                    const SerializationConfig &serializationConfig;
-                    PortableContext portableContext;
-                    serialization::pimpl::PortableSerializer portableSerializer;
-                    serialization::pimpl::DataSerializer dataSerializer;
+                    const SerializationConfig &serializationConfig_;
+                    PortableContext portableContext_;
+                    serialization::pimpl::PortableSerializer portableSerializer_;
+                    serialization::pimpl::DataSerializer dataSerializer_;
 
                     static bool isNullData(const Data &data);
 
@@ -1455,9 +1455,9 @@ namespace hazelcast {
                                         std::is_same<bool, typename std::remove_cv<T>::type>::value ||
                                         std::is_same<std::string, typename std::remove_cv<T>::type>::value, T>::type
                 read(const std::string &fieldName) {
-                    if (isDefaultReader)
-                        return defaultPortableReader->read<T>(fieldName);
-                    return morphingPortableReader->read<T>(fieldName);
+                    if (isDefaultReader_)
+                        return defaultPortableReader_->read<T>(fieldName);
+                    return morphingPortableReader_->read<T>(fieldName);
                 }
 
                 /**
@@ -1475,9 +1475,9 @@ namespace hazelcast {
                                         std::is_same<std::vector<double>, typename std::remove_cv<T>::type>::value ||
                                         std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value, boost::optional<T>>::type
                 read(const std::string &fieldName) {
-                    if (isDefaultReader)
-                        return defaultPortableReader->read<T>(fieldName);
-                    return morphingPortableReader->read<T>(fieldName);
+                    if (isDefaultReader_)
+                        return defaultPortableReader_->read<T>(fieldName);
+                    return morphingPortableReader_->read<T>(fieldName);
                 }
 
                 /**
@@ -1513,9 +1513,9 @@ namespace hazelcast {
                 void end();
 
             private:
-                bool isDefaultReader;
-                boost::optional<pimpl::DefaultPortableReader> defaultPortableReader;
-                boost::optional<pimpl::MorphingPortableReader> morphingPortableReader;
+                bool isDefaultReader_;
+                boost::optional<pimpl::DefaultPortableReader> defaultPortableReader_;
+                boost::optional<pimpl::MorphingPortableReader> morphingPortableReader_;
             };
 
             /**
@@ -1536,10 +1536,10 @@ namespace hazelcast {
 
                 template <typename T>
                 void write(const std::string &fieldName, T value) {
-                    if(isDefaultWriter) {
-                        defaultPortableWriter->write(fieldName, value);
+                    if(isDefaultWriter_) {
+                        defaultPortableWriter_->write(fieldName, value);
                     } else {
-                        classDefinitionWriter->write(fieldName, value);
+                        classDefinitionWriter_->write(fieldName, value);
                     }
                 }
 
@@ -1588,16 +1588,16 @@ namespace hazelcast {
                 ObjectDataOutput &getRawDataOutput();
 
             private:
-                pimpl::DefaultPortableWriter *defaultPortableWriter;
-                pimpl::ClassDefinitionWriter *classDefinitionWriter;
-                bool isDefaultWriter;
+                pimpl::DefaultPortableWriter *defaultPortableWriter_;
+                pimpl::ClassDefinitionWriter *classDefinitionWriter_;
+                bool isDefaultWriter_;
             };
 
             template<typename T>
             boost::optional<T> PortableReader::readPortable(const std::string &fieldName) {
-                if (isDefaultReader)
-                    return defaultPortableReader->readPortable<T>(fieldName);
-                return morphingPortableReader->readPortable<T>(fieldName);
+                if (isDefaultReader_)
+                    return defaultPortableReader_->readPortable<T>(fieldName);
+                return morphingPortableReader_->readPortable<T>(fieldName);
             }
 
             /**
@@ -1608,16 +1608,16 @@ namespace hazelcast {
             */
             template<typename T>
             boost::optional<std::vector<T>> PortableReader::readPortableArray(const std::string &fieldName) {
-                if (isDefaultReader)
-                    return defaultPortableReader->readPortableArray<T>(fieldName);
-                return morphingPortableReader->readPortableArray<T>(fieldName);
+                if (isDefaultReader_)
+                    return defaultPortableReader_->readPortableArray<T>(fieldName);
+                return morphingPortableReader_->readPortableArray<T>(fieldName);
             };
 
             template<typename T>
             void PortableWriter::writeNullPortable(const std::string &fieldName) {
-                if (isDefaultWriter)
-                    return defaultPortableWriter->writeNullPortable<T>(fieldName);
-                return classDefinitionWriter->writeNullPortable<T>(fieldName);
+                if (isDefaultWriter_)
+                    return defaultPortableWriter_->writeNullPortable<T>(fieldName);
+                return classDefinitionWriter_->writeNullPortable<T>(fieldName);
             }
 
             /**
@@ -1628,9 +1628,9 @@ namespace hazelcast {
             */
             template<typename T>
             void PortableWriter::writePortable(const std::string &fieldName, const T *portable) {
-                if (isDefaultWriter)
-                    return defaultPortableWriter->writePortable(fieldName, portable);
-                return classDefinitionWriter->writePortable(fieldName, portable);
+                if (isDefaultWriter_)
+                    return defaultPortableWriter_->writePortable(fieldName, portable);
+                return classDefinitionWriter_->writePortable(fieldName, portable);
 
             }
 
@@ -1642,14 +1642,14 @@ namespace hazelcast {
             */
             template<typename T>
             void PortableWriter::writePortableArray(const std::string &fieldName, const std::vector<T> *values) {
-                if (isDefaultWriter)
-                    return defaultPortableWriter->writePortableArray(fieldName, values);
-                return classDefinitionWriter->writePortableArray(fieldName, values);
+                if (isDefaultWriter_)
+                    return defaultPortableWriter_->writePortableArray(fieldName, values);
+                return classDefinitionWriter_->writePortableArray(fieldName, values);
             }
 
             template<typename T>
             void ObjectDataOutput::writeObject(const T *object) {
-                if (isNoWrite) { return; }
+                if (isNoWrite_) { return; }
                 if (!object) {
                     write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_NULL));
                     return;
@@ -1661,7 +1661,7 @@ namespace hazelcast {
             template<typename T>
             typename std::enable_if<!(std::is_array<T>::value && std::is_same<typename std::remove_all_extents<T>::type, char>::value), void>::type
             ObjectDataOutput::writeObject(const boost::optional<T> &object) {
-                if (isNoWrite) { return; }
+                if (isNoWrite_) { return; }
                 if (!object) {
                     write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_NULL));
                     return;
@@ -1673,7 +1673,7 @@ namespace hazelcast {
             template<typename T>
             typename std::enable_if<std::is_base_of<identified_data_serializer, hz_serializer<T>>::value, void>::type
             inline ObjectDataOutput::writeObject(const T &object) {
-                if (isNoWrite) { return; }
+                if (isNoWrite_) { return; }
                 write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_DATA));
                 pimpl::DataSerializer::write<T>(object, *this);
             }
@@ -1681,15 +1681,15 @@ namespace hazelcast {
             template<typename T>
             typename std::enable_if<std::is_base_of<portable_serializer, hz_serializer<T>>::value, void>::type
             inline ObjectDataOutput::writeObject(const T &object) {
-                if (isNoWrite) { return; }
+                if (isNoWrite_) { return; }
                 write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE));
-                portableSerializer->write<T>(object, *this);
+                portableSerializer_->write<T>(object, *this);
             }
 
             template<typename T>
             typename std::enable_if<std::is_base_of<builtin_serializer, hz_serializer<T>>::value, void>::type
             inline ObjectDataOutput::writeObject(const T &object) {
-                if (isNoWrite) { return; }
+                if (isNoWrite_) { return; }
                 write<int32_t>(static_cast<int32_t>((hz_serializer<T>::getTypeId())));
                 write < T > (object);
             }
@@ -1703,7 +1703,7 @@ namespace hazelcast {
             template<typename T>
             typename std::enable_if<std::is_base_of<custom_serializer, hz_serializer<T>>::value, void>::type
             inline ObjectDataOutput::writeObject(const T &object) {
-                if (isNoWrite) { return; }
+                if (isNoWrite_) { return; }
                 static_assert(hz_serializer<T>::getTypeId() > 0, "Custom serializer type id can not be negative!");
                 write<int32_t>(hz_serializer<T>::getTypeId());
                 hz_serializer<T>::write(object, *this);
@@ -1727,7 +1727,7 @@ namespace hazelcast {
                     throw exception::HazelcastSerializationException("ObjectDataOutput::writeObject",
                             (boost::format("No serializer found for type(%1%).") %typeid(T).name()).str());
                 }
-                if (isNoWrite) { return; }
+                if (isNoWrite_) { return; }
                 write<int32_t>(static_cast<int32_t>(global_serializer::getTypeId()));
                 globalSerializer_->write(boost::any(std::move(object)), *this);
             }
@@ -1761,7 +1761,7 @@ namespace hazelcast {
                                                                   "but received data type id is %1%") % typeId).str()));
                 }
 
-                return dataSerializer.readObject<T>(*this);
+                return dataSerializer_.readObject<T>(*this);
             }
 
             template<typename T>
@@ -1775,7 +1775,7 @@ namespace hazelcast {
                                                                   "but received data type id is %1%") % typeId).str()));
                 }
 
-                return portableSerializer.readObject<T>(*this);
+                return portableSerializer_.readObject<T>(*this);
             }
 
             template<typename T>
@@ -1837,28 +1837,28 @@ namespace hazelcast {
                 boost::optional<std::vector<T>> DefaultPortableReader::readPortableArray(const std::string &fieldName) {
                     PortableReaderBase::setPosition(fieldName, FieldType::TYPE_PORTABLE_ARRAY);
 
-                    dataInput->read<int32_t>();
+                    dataInput_->read<int32_t>();
                     std::vector<T> portables;
 
                     setPosition(fieldName, FieldType::TYPE_PORTABLE_ARRAY);
 
-                    int32_t len = dataInput->read<int32_t>();
+                    int32_t len = dataInput_->read<int32_t>();
                     if (len == util::Bits::NULL_ARRAY) {
                         return boost::none;
                     }
-                    int32_t factoryId = dataInput->read<int32_t>();
-                    int32_t classId = dataInput->read<int32_t>();
+                    int32_t factoryId = dataInput_->read<int32_t>();
+                    int32_t classId = dataInput_->read<int32_t>();
 
-                    checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
+                    checkFactoryAndClass(cd_->getField(fieldName), factoryId, classId);
 
                     if (len > 0) {
-                        int offset = dataInput->position();
+                        int offset = dataInput_->position();
                         for (int i = 0; i < len; i++) {
-                            dataInput->position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
-                            int32_t start = dataInput->read<int32_t>();
-                            dataInput->position(start);
+                            dataInput_->position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
+                            int32_t start = dataInput_->read<int32_t>();
+                            dataInput_->position(start);
 
-                            portables.push_back(portableSerializer->read<T>(*dataInput, factoryId, classId));
+                            portables.push_back(portableSerializer_->read<T>(*dataInput_, factoryId, classId));
                         }
                     }
                     return portables;
@@ -1873,29 +1873,29 @@ namespace hazelcast {
                 boost::optional<std::vector<T>> MorphingPortableReader::readPortableArray(const std::string &fieldName) {
                     PortableReaderBase::setPosition(fieldName, FieldType::TYPE_PORTABLE_ARRAY);
 
-                    dataInput->read<int32_t>();
+                    dataInput_->read<int32_t>();
                     std::vector<T> portables;
 
                     setPosition(fieldName, FieldType::TYPE_PORTABLE_ARRAY);
 
-                    int32_t len = dataInput->read<int32_t>();
+                    int32_t len = dataInput_->read<int32_t>();
                     if (len == util::Bits::NULL_ARRAY) {
                         return boost::none;
                     }
-                    int32_t factoryId = dataInput->read<int32_t>();
-                    int32_t classId = dataInput->read<int32_t>();
+                    int32_t factoryId = dataInput_->read<int32_t>();
+                    int32_t classId = dataInput_->read<int32_t>();
 
-                    checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
+                    checkFactoryAndClass(cd_->getField(fieldName), factoryId, classId);
 
                     if (len > 0) {
                         portables.reserve(static_cast<size_t>(len));
-                        int offset = dataInput->position();
+                        int offset = dataInput_->position();
                         for (int i = 0; i < len; i++) {
-                            dataInput->position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
-                            int32_t start = dataInput->read<int32_t>();
-                            dataInput->position(start);
+                            dataInput_->position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
+                            int32_t start = dataInput_->read<int32_t>();
+                            dataInput_->position(start);
 
-                            portables.emplace_back(portableSerializer->read<T>(*dataInput, factoryId, classId));
+                            portables.emplace_back(portableSerializer_->read<T>(*dataInput_, factoryId, classId));
                         }
                     }
 
@@ -1940,7 +1940,7 @@ namespace hazelcast {
 
                 template<typename T>
                 void PortableSerializer::writeInternal(const T &object, ObjectDataOutput &out) {
-                    auto cd = context.lookupOrRegisterClassDefinition<T>(object);
+                    auto cd = context_.lookupOrRegisterClassDefinition<T>(object);
                     writeInternal(object, cd, out);
                 }
 
@@ -1957,16 +1957,16 @@ namespace hazelcast {
 
                 template<typename T>
                 std::shared_ptr<ClassDefinition> PortableSerializer::lookupOrRegisterClassDefinition(const T &portable) {
-                    return context.lookupOrRegisterClassDefinition<T>(portable);
+                    return context_.lookupOrRegisterClassDefinition<T>(portable);
                 }
 
                 template<typename T>
                 int PortableSerializer::findPortableVersion(int factoryId, int classId) const {
-                    int currentVersion = context.getClassVersion(factoryId, classId);
+                    int currentVersion = context_.getClassVersion(factoryId, classId);
                     if (currentVersion < 0) {
-                        currentVersion = PortableVersionHelper::getVersion<T>(context.getVersion());
+                        currentVersion = PortableVersionHelper::getVersion<T>(context_.getVersion());
                         if (currentVersion > 0) {
-                            context.setClassVersion(factoryId, classId, currentVersion);
+                            context_.setClassVersion(factoryId, classId, currentVersion);
                         }
                     }
                     return currentVersion;
@@ -1984,7 +1984,7 @@ namespace hazelcast {
                 std::shared_ptr<ClassDefinition>
                 PortableContext::lookupOrRegisterClassDefinition(const T &portable) {
                     int portableVersion = PortableVersionHelper::getVersion<T>(
-                            serializationConfig.getPortableVersion());
+                            serializationConfig_.getPortableVersion());
                     std::shared_ptr<ClassDefinition> cd = lookupClassDefinition(hz_serializer<T>::getFactoryId(),
                                                                                 hz_serializer<T>::getClassId(),
                                                                                 portableVersion);
@@ -2003,42 +2003,42 @@ namespace hazelcast {
                 boost::optional<T> PortableReaderBase::getPortableInstance(const std::string &fieldName) {
                     setPosition(fieldName, FieldType::TYPE_PORTABLE);
 
-                    bool isNull = dataInput->read<bool>();
-                    int32_t factoryId = dataInput->read<int32_t>();
-                    int32_t classId = dataInput->read<int32_t>();
+                    bool isNull = dataInput_->read<bool>();
+                    int32_t factoryId = dataInput_->read<int32_t>();
+                    int32_t classId = dataInput_->read<int32_t>();
 
-                    checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
+                    checkFactoryAndClass(cd_->getField(fieldName), factoryId, classId);
 
                     if (isNull) {
                         return boost::none;
                     } else {
-                        return portableSerializer->read<T>(*dataInput, factoryId, classId);
+                        return portableSerializer_->read<T>(*dataInput_, factoryId, classId);
                     }
                 }
 
                 template<typename T>
                 void DefaultPortableWriter::writeNullPortable(const std::string &fieldName) {
                     setPosition(fieldName, FieldType::TYPE_PORTABLE);
-                    objectDataOutput.write<bool>(true);
-                    objectDataOutput.write<int32_t>(hz_serializer<T>::getFactoryId());
-                    objectDataOutput.write<int32_t>(hz_serializer<T>::getClassId());
+                    objectDataOutput_.write<bool>(true);
+                    objectDataOutput_.write<int32_t>(hz_serializer<T>::getFactoryId());
+                    objectDataOutput_.write<int32_t>(hz_serializer<T>::getClassId());
                 }
 
                 template<typename T>
                 void DefaultPortableWriter::writePortable(const std::string &fieldName, const T *portable) {
                     FieldDefinition const &fd = setPosition(fieldName, FieldType::TYPE_PORTABLE);
                     bool isNull = (nullptr == portable);
-                    objectDataOutput.write<bool>(isNull);
+                    objectDataOutput_.write<bool>(isNull);
 
-                    objectDataOutput.write<int32_t>(hz_serializer<T>::getFactoryId());
-                    objectDataOutput.write<int32_t>(hz_serializer<T>::getClassId());
+                    objectDataOutput_.write<int32_t>(hz_serializer<T>::getFactoryId());
+                    objectDataOutput_.write<int32_t>(hz_serializer<T>::getClassId());
 
                     if (!isNull) {
                         checkPortableAttributes<T>(fd);
-                        portableSerializer.writeInternal(*portable, objectDataOutput);
+                        portableSerializer_.writeInternal(*portable, objectDataOutput_);
                     }
 
-                    portableSerializer.write(*portable, objectDataOutput);
+                    portableSerializer_.write(*portable, objectDataOutput_);
                 }
 
                 template<typename T>
@@ -2047,20 +2047,20 @@ namespace hazelcast {
                     checkPortableAttributes<T>(fd);
 
                     int32_t len = (values ? static_cast<int32_t>(values->size()) : util::Bits::NULL_ARRAY);
-                    objectDataOutput.write<int32_t>(len);
+                    objectDataOutput_.write<int32_t>(len);
 
-                    objectDataOutput.write<int32_t>(fd.getFactoryId());
-                    objectDataOutput.write<int32_t>(fd.getClassId());
+                    objectDataOutput_.write<int32_t>(fd.getFactoryId());
+                    objectDataOutput_.write<int32_t>(fd.getClassId());
 
                     if (len > 0) {
-                        std::shared_ptr<ClassDefinition> classDefinition = portableSerializer.lookupOrRegisterClassDefinition<T>(
+                        std::shared_ptr<ClassDefinition> classDefinition = portableSerializer_.lookupOrRegisterClassDefinition<T>(
                                 (*values)[0]);
-                        size_t currentOffset = objectDataOutput.position();
-                        objectDataOutput.position(currentOffset + len * util::Bits::INT_SIZE_IN_BYTES);
+                        size_t currentOffset = objectDataOutput_.position();
+                        objectDataOutput_.position(currentOffset + len * util::Bits::INT_SIZE_IN_BYTES);
                         for (int32_t i = 0; i < len; i++) {
-                            size_t position = objectDataOutput.position();
-                            objectDataOutput.writeAt(currentOffset + i * util::Bits::INT_SIZE_IN_BYTES, static_cast<int32_t>(position));
-                            portableSerializer.writeInternal((*values)[i], classDefinition, objectDataOutput);
+                            size_t position = objectDataOutput_.position();
+                            objectDataOutput_.writeAt(currentOffset + i * util::Bits::INT_SIZE_IN_BYTES, static_cast<int32_t>(position));
+                            portableSerializer_.writeInternal((*values)[i], classDefinition, objectDataOutput_);
                         }
                     }
                 }
@@ -2083,21 +2083,21 @@ namespace hazelcast {
 
                 template<typename T>
                 std::shared_ptr<ClassDefinition> ClassDefinitionWriter::createNestedClassDef(const T &portable) {
-                    int version = PortableVersionHelper::getVersion<T>(context.getVersion());
+                    int version = PortableVersionHelper::getVersion<T>(context_.getVersion());
                     ClassDefinitionBuilder definitionBuilder(hz_serializer<T>::getFactoryId(), hz_serializer<T>::getClassId(),
                                                              version);
 
-                    ClassDefinitionWriter nestedWriter(context, definitionBuilder);
+                    ClassDefinitionWriter nestedWriter(context_, definitionBuilder);
                     PortableWriter portableWriter(&nestedWriter);
                     hz_serializer<T>::writePortable(portable, portableWriter);
-                    return context.registerClassDefinition(definitionBuilder.build());
+                    return context_.registerClassDefinition(definitionBuilder.build());
                 }
             }
         }
 
         template <typename T>
         boost::optional<T> TypedData::get() const {
-            return ss->toObject<T>(data);
+            return ss_->toObject<T>(data_);
         }
     }
 }

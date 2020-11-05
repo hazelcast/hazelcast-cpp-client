@@ -209,17 +209,17 @@ namespace hazelcast {
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const NearCacheConfig &cacheConfig);
             private:
-                std::string name;
+                std::string name_;
 
-                int32_t timeToLiveSeconds;
-                int32_t maxIdleSeconds;
+                int32_t timeToLiveSeconds_;
+                int32_t maxIdleSeconds_;
 
-                InMemoryFormat inMemoryFormat;
+                InMemoryFormat inMemoryFormat_;
 
-                LocalUpdatePolicy localUpdatePolicy;
+                LocalUpdatePolicy localUpdatePolicy_;
 
-                bool invalidateOnChange;
-                bool cacheLocalEntries;
+                bool invalidateOnChange_;
+                bool cacheLocalEntries_;
 
                 /**
                  * Default value of eviction config is
@@ -229,7 +229,7 @@ namespace hazelcast {
                  * <li>LRU as eviction policy</li>
                  * </ul>
                  */
-                EvictionConfig evictionConfig;
+                EvictionConfig evictionConfig_;
 
                 int32_t calculateMaxSize(int32_t maxSize);
             };

@@ -105,23 +105,23 @@ namespace hazelcast {
                     std::string toString() override;
 
                 private:
-                    std::atomic<int64_t> creationTime;
-                    std::atomic<int64_t> ownedEntryCount;
-                    std::atomic<int64_t> ownedEntryMemoryCost;
-                    std::atomic<int64_t> hits;
-                    std::atomic<int64_t> misses;
-                    std::atomic<int64_t> evictions;
-                    std::atomic<int64_t> expirations;
+                    std::atomic<int64_t> creationTime_;
+                    std::atomic<int64_t> ownedEntryCount_;
+                    std::atomic<int64_t> ownedEntryMemoryCost_;
+                    std::atomic<int64_t> hits_;
+                    std::atomic<int64_t> misses_;
+                    std::atomic<int64_t> evictions_;
+                    std::atomic<int64_t> expirations_;
 
-                    std::atomic<int64_t> invalidations;
-                    std::atomic<int64_t> invalidationRequests;
+                    std::atomic<int64_t> invalidations_;
+                    std::atomic<int64_t> invalidationRequests_;
 
-                    std::atomic<int64_t> persistenceCount;
-                    std::atomic<int64_t> lastPersistenceTime;
-                    std::atomic<int64_t> lastPersistenceDuration;
-                    std::atomic<int64_t> lastPersistenceWrittenBytes;
-                    std::atomic<int64_t> lastPersistenceKeyCount;
-                    util::Sync<std::string> lastPersistenceFailure;
+                    std::atomic<int64_t> persistenceCount_;
+                    std::atomic<int64_t> lastPersistenceTime_;
+                    std::atomic<int64_t> lastPersistenceDuration_;
+                    std::atomic<int64_t> lastPersistenceWrittenBytes_;
+                    std::atomic<int64_t> lastPersistenceKeyCount_;
+                    util::Sync<std::string> lastPersistenceFailure_;
 
                     static const double PERCENTAGE;
                 };

@@ -119,27 +119,27 @@ namespace hazelcast {
 
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
-                ReadHandler readHandler;
+                ReadHandler read_handler;
                 std::unordered_map<int64_t, std::shared_ptr<spi::impl::ClientInvocation>> invocations;
             private:
                 void logClose();
 
                 void innerClose();
 
-                std::chrono::system_clock::time_point startTime;
-                std::atomic<std::chrono::milliseconds> closedTimeDuration;
-                spi::ClientContext &clientContext;
-                protocol::IMessageHandler &invocationService;
-                std::unique_ptr<Socket> socket;
-                int32_t connectionId;
-                std::string closeReason;
-                std::exception_ptr closeCause;
-                std::string connectedServerVersionString;
+                std::chrono::system_clock::time_point startTime_;
+                std::atomic<std::chrono::milliseconds> closedTimeDuration_;
+                spi::ClientContext &clientContext_;
+                protocol::IMessageHandler &invocationService_;
+                std::unique_ptr<Socket> socket_;
+                int32_t connectionId_;
+                std::string closeReason_;
+                std::exception_ptr closeCause_;
+                std::string connectedServerVersionString_;
                 // TODO: check if they need to be atomic
                 boost::optional<Address> remote_address_;
                 boost::uuids::uuid remote_uuid_;
                 logger &logger_;
-                std::atomic_bool alive;
+                std::atomic_bool alive_;
                 std::unique_ptr<boost::asio::steady_timer> backup_timer_;
 
                 void schedule_periodic_backup_cleanup(std::chrono::milliseconds backupTimeout,

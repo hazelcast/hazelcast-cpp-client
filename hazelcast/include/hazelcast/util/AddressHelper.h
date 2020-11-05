@@ -47,9 +47,9 @@ namespace hazelcast {
             friend std::ostream &operator<<(std::ostream &os, const AddressHolder &holder);
 
         private:
-            std::string address;
-            std::string scopeId;
-            int port;
+            std::string address_;
+            std::string scopeId_;
+            int port_;
         };
 
 

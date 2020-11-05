@@ -104,10 +104,10 @@ namespace hazelcast {
             bool operator<(const Member &rhs) const;
 
         private:
-            Address address;
-            boost::uuids::uuid uuid;
-            bool liteMember;
-            std::unordered_map<std::string, std::string> attributes;
+            Address address_;
+            boost::uuids::uuid uuid_;
+            bool liteMember_;
+            std::unordered_map<std::string, std::string> attributes_;
         };
 
         std::ostream HAZELCAST_API &operator<<(std::ostream &out, const Member &member);

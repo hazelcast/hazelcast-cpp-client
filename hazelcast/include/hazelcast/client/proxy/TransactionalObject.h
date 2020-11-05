@@ -50,9 +50,9 @@ namespace hazelcast {
 
                 std::chrono::milliseconds getTimeout() const;
 
-                const std::string serviceName;
-                const std::string name;
-                txn::TransactionProxy &context;
+                const std::string serviceName_;
+                const std::string name_;
+                txn::TransactionProxy &context_;
             };
         }
     }

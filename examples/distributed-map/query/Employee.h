@@ -42,29 +42,29 @@ namespace hazelcast {
                 bool operator<(const Employee &rhs) const;
 
             private:
-                int32_t age;
-                std::string name;
+                int32_t age_;
+                std::string name_;
 
                 // add all possible types
-                byte by;
-                bool boolean;
-                char c;
-                int16_t s;
-                int32_t i;
-                int64_t  l;
-                float f;
-                double d;
-                std::string str;
-                std::string utfStr;
+                byte by_;
+                bool boolean_;
+                char c_;
+                int16_t s_;
+                int32_t i_;
+                int64_t  l_;
+                float f_;
+                double d_;
+                std::string str_;
+                std::string utfStr_;
 
-                std::vector<byte> byteVec;
-                std::vector<char> cc;
-                std::vector<bool> ba;
-                std::vector<int16_t> ss;
-                std::vector<int32_t> ii;
-                std::vector<int64_t > ll;
-                std::vector<float> ff;
-                std::vector<double> dd;
+                std::vector<byte> byteVec_;
+                std::vector<char> cc_;
+                std::vector<bool> ba_;
+                std::vector<int16_t> ss_;
+                std::vector<int32_t> ii_;
+                std::vector<int64_t > ll_;
+                std::vector<float> ff_;
+                std::vector<double> dd_;
             };
 
             // Compares based on the employee age

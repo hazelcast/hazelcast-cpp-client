@@ -92,7 +92,7 @@ namespace hazelcast {
                             std::shared_ptr<V> recordToValue(const record::NearCacheDataRecord *record) override {
                                 const std::shared_ptr<serialization::pimpl::Data> value = record->getValue();
                                 if (value.get() == NULL) {
-                                    ANCRS::nearCacheStats->incrementMisses();
+                                    ANCRS::nearCacheStats_->incrementMisses();
                                     return std::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
                                 return ANCRS::dataToValue(value, (V *)NULL);
@@ -106,10 +106,10 @@ namespace hazelcast {
                             std::unique_ptr<record::NearCacheDataRecord> valueToRecordInternal(
                                     const std::shared_ptr<serialization::pimpl::Data> &data) {
                                 int64_t creationTime = util::currentTimeMillis();
-                                if (ANCRS::timeToLiveMillis > 0) {
+                                if (ANCRS::timeToLiveMillis_ > 0) {
                                     return std::unique_ptr<record::NearCacheDataRecord>(
                                             new record::NearCacheDataRecord(data, creationTime,
-                                                                            creationTime + ANCRS::timeToLiveMillis));
+                                                                            creationTime + ANCRS::timeToLiveMillis_));
                                 } else {
                                     return std::unique_ptr<record::NearCacheDataRecord>(
                                             new record::NearCacheDataRecord(data, creationTime,

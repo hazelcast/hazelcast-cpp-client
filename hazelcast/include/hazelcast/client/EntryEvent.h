@@ -110,13 +110,13 @@ namespace hazelcast {
             friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const EntryEvent &event);
 
         protected:
-            std::string name;
-            Member member;
-            type eventType;
-            TypedData key;
-            TypedData value;
-            TypedData oldValue;
-            TypedData mergingValue;
+            std::string name_;
+            Member member_;
+            type eventType_;
+            TypedData key_;
+            TypedData value_;
+            TypedData oldValue_;
+            TypedData mergingValue_;
         };
     }
 }

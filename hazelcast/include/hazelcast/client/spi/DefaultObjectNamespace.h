@@ -50,8 +50,8 @@ namespace hazelcast {
                 bool operator==(const DefaultObjectNamespace &rhs) const;
 
             private:
-                std::string serviceName;
-                std::string objectName;
+                std::string serviceName_;
+                std::string objectName_;
             };
         }
     }

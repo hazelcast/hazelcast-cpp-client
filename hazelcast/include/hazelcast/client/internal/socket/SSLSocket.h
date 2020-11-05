@@ -37,7 +37,7 @@ namespace hazelcast {
                 public:
                     struct CipherInfo {
                         std::string name;
-                        int numberOfBits;
+                        int number_of_bits;
                         std::string version;
                         std::string description;
                     };

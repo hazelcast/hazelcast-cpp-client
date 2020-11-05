@@ -20,7 +20,7 @@ using namespace hazelcast::client;
 struct PortableSerializableSample {
     std::string name;
     int32_t id;
-    int64_t lastOrder;
+    int64_t last_order;
 };
 
 namespace hazelcast {
@@ -40,7 +40,7 @@ namespace hazelcast {
                                           hazelcast::client::serialization::PortableWriter &out) {
                     out.write("name", object.name);
                     out.write("id", object.id);
-                    out.write("lastOrder", object.lastOrder);
+                    out.write("lastOrder", object.last_order);
                 }
 
                 static PortableSerializableSample readPortable(hazelcast::client::serialization::PortableReader &in) {

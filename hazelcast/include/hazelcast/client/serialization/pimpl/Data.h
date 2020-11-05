@@ -70,8 +70,8 @@ namespace hazelcast {
                     friend bool HAZELCAST_API operator==(const Data &lhs, const Data &rhs);
 
                 private:
-                    std::vector<byte> data;
-                    int cachedHashValue;
+                    std::vector<byte> data_;
+                    int cachedHashValue_;
 
                     inline int calculateHash() const;
                 };

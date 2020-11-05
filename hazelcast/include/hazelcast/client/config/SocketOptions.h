@@ -129,15 +129,15 @@ namespace hazelcast {
             private:
                 // socket options
 
-                bool tcpNoDelay;
+                bool tcpNoDelay_;
 
-                bool keepAlive;
+                bool keepAlive_;
 
-                bool reuseAddress;
+                bool reuseAddress_;
 
-                int lingerSeconds;
+                int lingerSeconds_;
 
-                int bufferSize;
+                int bufferSize_;
 
             };
 

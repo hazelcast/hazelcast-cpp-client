@@ -103,9 +103,9 @@ namespace hazelcast {
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const EvictionConfig &config);
 
             protected:
-                int32_t size;
-                MaxSizePolicy maxSizePolicy;
-                EvictionPolicy evictionPolicy;
+                int32_t size_;
+                MaxSizePolicy maxSizePolicy_;
+                EvictionPolicy evictionPolicy_;
             };
 
         }

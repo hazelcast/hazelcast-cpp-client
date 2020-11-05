@@ -48,9 +48,9 @@ namespace hazelcast {
 
                 boost::future<void> publish(serialization::pimpl::Data &&data);
             protected:
-                std::shared_ptr<Ringbuffer> ringbuffer;
+                std::shared_ptr<Ringbuffer> ringbuffer_;
                 logger &logger_;
-                const config::ReliableTopicConfig &config;
+                const config::ReliableTopicConfig config_;
             };
         }
     }

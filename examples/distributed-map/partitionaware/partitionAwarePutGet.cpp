@@ -17,13 +17,13 @@
 #include <hazelcast/client/PartitionAware.h>
 
 struct PartitionAwareString : public hazelcast::client::PartitionAware<std::string> {
-    PartitionAwareString(const std::string &actualKey) : actualKey(actualKey) {}
+    PartitionAwareString(const std::string &actualKey) : actual_key(actualKey) {}
 
     const std::string *getPartitionKey() const override {
         return &desiredPartitionString;
     }
 
-    std::string actualKey;
+    std::string actual_key;
     static const std::string desiredPartitionString;
 };
 
@@ -42,7 +42,7 @@ namespace hazelcast {
 
                 static void
                 writeData(const PartitionAwareString &object, hazelcast::client::serialization::ObjectDataOutput &out) {
-                    out.write(object.actualKey);
+                    out.write(object.actual_key);
                 }
 
                 static PartitionAwareString readData(hazelcast::client::serialization::ObjectDataInput &in) {
@@ -67,7 +67,7 @@ int main() {
     map->put<PartitionAwareString, std::string>(partitionKey, "Tokyo").get();
     auto value = map->get<PartitionAwareString, std::string>(partitionKey).get();
 
-    std::cout << "Got the value for key " << partitionKey.actualKey << ". PartitionAwareString is:" << value.value()
+    std::cout << "Got the value for key " << partitionKey.actual_key << ". PartitionAwareString is:" << value.value()
               << '\n';
 
     std::cout << "Finished" << std::endl;

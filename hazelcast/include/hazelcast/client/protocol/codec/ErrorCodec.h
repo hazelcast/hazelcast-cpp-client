@@ -32,17 +32,17 @@ namespace hazelcast {
 
             namespace codec {
                 struct HAZELCAST_API StackTraceElement {
-                    std::string declaringClass;
-                    std::string methodName;
-                    boost::optional<std::string> fileName;
-                    int lineNumber;
+                    std::string declaring_class;
+                    std::string method_name;
+                    boost::optional<std::string> file_name;
+                    int line_number;
                 };
 
                 struct HAZELCAST_API ErrorHolder {
-                    int32_t errorCode;
-                    std::string className;
+                    int32_t error_code;
+                    std::string class_name;
                     boost::optional<std::string> message;
-                    std::vector<codec::StackTraceElement> stackTrace;
+                    std::vector<codec::StackTraceElement> stack_trace;
 
                     std::string toString() const;
                 };

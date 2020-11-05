@@ -65,155 +65,155 @@
 
 namespace hazelcast {
     namespace client {
-        HazelcastClient::HazelcastClient() : clientImpl(new impl::HazelcastClientInstanceImpl(ClientConfig())) {
-            clientImpl->start();
+        HazelcastClient::HazelcastClient() : clientImpl_(new impl::HazelcastClientInstanceImpl(ClientConfig())) {
+            clientImpl_->start();
         }
 
-        HazelcastClient::HazelcastClient(const ClientConfig &config) : clientImpl(
+        HazelcastClient::HazelcastClient(const ClientConfig &config) : clientImpl_(
                 new impl::HazelcastClientInstanceImpl(config)) {
-            clientImpl->start();
+            clientImpl_->start();
         }
 
         const std::string &HazelcastClient::getName() const {
-            return clientImpl->getName();
+            return clientImpl_->getName();
         }
 
         ClientConfig &HazelcastClient::getClientConfig() {
-            return clientImpl->getClientConfig();
+            return clientImpl_->getClientConfig();
         }
 
         TransactionContext HazelcastClient::newTransactionContext() {
-            return clientImpl->newTransactionContext();
+            return clientImpl_->newTransactionContext();
         }
 
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions &options) {
-            return clientImpl->newTransactionContext(options);
+            return clientImpl_->newTransactionContext(options);
         }
 
         Cluster &HazelcastClient::getCluster() {
-            return clientImpl->getCluster();
+            return clientImpl_->getCluster();
         }
 
         boost::uuids::uuid HazelcastClient::addLifecycleListener(LifecycleListener &&lifecycleListener) {
-            return clientImpl->addLifecycleListener(std::move(lifecycleListener));
+            return clientImpl_->addLifecycleListener(std::move(lifecycleListener));
         }
 
         bool HazelcastClient::removeLifecycleListener(const boost::uuids::uuid &registrationId) {
-            return clientImpl->removeLifecycleListener(registrationId);
+            return clientImpl_->removeLifecycleListener(registrationId);
         }
 
         void HazelcastClient::shutdown() {
-            clientImpl->shutdown();
+            clientImpl_->shutdown();
         }
 
         spi::LifecycleService &HazelcastClient::getLifecycleService() {
-            return clientImpl->getLifecycleService();
+            return clientImpl_->getLifecycleService();
         }
 
         Client HazelcastClient::getLocalEndpoint() const {
-            return clientImpl->getLocalEndpoint();
+            return clientImpl_->getLocalEndpoint();
         }
 
         HazelcastClient::~HazelcastClient() {
-            clientImpl->shutdown();
+            clientImpl_->shutdown();
         }
 
         cp::cp_subsystem &HazelcastClient::get_cp_subsystem() {
-            return clientImpl->get_cp_subsystem();
+            return clientImpl_->get_cp_subsystem();
         }
 
         namespace impl {
             std::atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
             HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
-                    : clientConfig(config), clientProperties(config.getProperties()),
-                      clientContext(*this),
-                      serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
-                      transactionManager(clientContext), cluster(clusterService),
-                      lifecycleService(clientContext, clientConfig.getLifecycleListeners(),
-                                       clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
-                      id(++CLIENT_ID), random_generator_(id), uuid_generator_{random_generator_},
-                      cp_subsystem_(clientContext), proxy_session_manager_(clientContext) {
-                const std::shared_ptr<std::string> &name = clientConfig.getInstanceName();
+                    : clientConfig_(config), clientProperties_(config.getProperties()),
+                      clientContext_(*this),
+                      serializationService_(clientConfig_.getSerializationConfig()), clusterService_(clientContext_),
+                      transactionManager_(clientContext_), cluster_(clusterService_),
+                      lifecycleService_(clientContext_, clientConfig_.getLifecycleListeners(),
+                                       clientConfig_.getLoadBalancer(), cluster_), proxyManager_(clientContext_),
+                      id_(++CLIENT_ID), random_generator_(id_), uuid_generator_{random_generator_},
+                      cp_subsystem_(clientContext_), proxy_session_manager_(clientContext_) {
+                const std::shared_ptr<std::string> &name = clientConfig_.getInstanceName();
                 if (name.get() != NULL) {
-                    instanceName = *name;
+                    instanceName_ = *name;
                 } else {
                     std::ostringstream out;
-                    out << "hz.client_" << id;
-                    instanceName = out.str();
+                    out << "hz.client_" << id_;
+                    instanceName_ = out.str();
                 }
 
-                auto logger_config = clientConfig.getLoggerConfig();
-                logger_ = std::make_shared<logger>(instanceName, clientConfig.getClusterName(),
+                auto logger_config = clientConfig_.getLoggerConfig();
+                logger_ = std::make_shared<logger>(instanceName_, clientConfig_.getClusterName(),
                                                    logger_config.level(), logger_config.handler());
 
-                executionService = initExecutionService();
+                executionService_ = initExecutionService();
 
                 initalizeNearCacheManager();
 
-                int32_t maxAllowedConcurrentInvocations = clientProperties.getInteger(
-                        clientProperties.getMaxConcurrentInvocations());
-                int64_t backofftimeoutMs = clientProperties.getLong(
-                        clientProperties.getBackpressureBackoffTimeoutMillis());
+                int32_t maxAllowedConcurrentInvocations = clientProperties_.getInteger(
+                        clientProperties_.getMaxConcurrentInvocations());
+                int64_t backofftimeoutMs = clientProperties_.getLong(
+                        clientProperties_.getBackpressureBackoffTimeoutMillis());
                 bool isBackPressureEnabled = maxAllowedConcurrentInvocations != INT32_MAX;
-                callIdSequence = spi::impl::sequence::CallIdFactory::newCallIdSequence(isBackPressureEnabled,
+                callIdSequence_ = spi::impl::sequence::CallIdFactory::newCallIdSequence(isBackPressureEnabled,
                                                                                        maxAllowedConcurrentInvocations,
                                                                                        backofftimeoutMs);
 
                 std::vector<std::shared_ptr<connection::AddressProvider>> addressProviders = createAddressProviders();
 
-                connectionManager = initConnectionManagerService(addressProviders);
+                connectionManager_ = initConnectionManagerService(addressProviders);
 
-                cluster_listener_.reset(new spi::impl::listener::cluster_view_listener(clientContext));
+                cluster_listener_.reset(new spi::impl::listener::cluster_view_listener(clientContext_));
 
-                partitionService.reset(new spi::impl::ClientPartitionServiceImpl(clientContext));
+                partitionService_.reset(new spi::impl::ClientPartitionServiceImpl(clientContext_));
 
-                invocationService.reset(new spi::impl::ClientInvocationServiceImpl(clientContext));
+                invocationService_.reset(new spi::impl::ClientInvocationServiceImpl(clientContext_));
 
-                listenerService = initListenerService();
+                listenerService_ = initListenerService();
 
-                proxyManager.init();
+                proxyManager_.init();
 
-                lockReferenceIdGenerator.reset(new impl::ClientLockReferenceIdGenerator());
+                lockReferenceIdGenerator_.reset(new impl::ClientLockReferenceIdGenerator());
 
-                statistics.reset(new statistics::Statistics(clientContext));
+                statistics_.reset(new statistics::Statistics(clientContext_));
             }
 
             HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() = default;
 
             void HazelcastClientInstanceImpl::start() {
-                lifecycleService.fireLifecycleEvent(LifecycleEvent::STARTING);
+                lifecycleService_.fireLifecycleEvent(LifecycleEvent::STARTING);
 
                 try {
-                    if (!lifecycleService.start()) {
-                        lifecycleService.shutdown();
+                    if (!lifecycleService_.start()) {
+                        lifecycleService_.shutdown();
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("HazelcastClient",
                                                                                "HazelcastClient could not be started!"));
                     }
                 } catch (std::exception &) {
-                    lifecycleService.shutdown();
+                    lifecycleService_.shutdown();
                     throw;
                 }
             }
 
             ClientConfig &HazelcastClientInstanceImpl::getClientConfig() {
-                return clientConfig;
+                return clientConfig_;
             }
 
             Cluster &HazelcastClientInstanceImpl::getCluster() {
-                return cluster;
+                return cluster_;
             }
 
             boost::uuids::uuid HazelcastClientInstanceImpl::addLifecycleListener(LifecycleListener &&lifecycleListener) {
-                return lifecycleService.addListener(std::move(lifecycleListener));
+                return lifecycleService_.addListener(std::move(lifecycleListener));
             }
 
             bool HazelcastClientInstanceImpl::removeLifecycleListener(const boost::uuids::uuid &registrationId) {
-                return lifecycleService.removeListener(registrationId);
+                return lifecycleService_.removeListener(registrationId);
             }
 
             void HazelcastClientInstanceImpl::shutdown() {
-                lifecycleService.shutdown();
+                lifecycleService_.shutdown();
             }
 
             TransactionContext HazelcastClientInstanceImpl::newTransactionContext() {
@@ -222,37 +222,37 @@ namespace hazelcast {
             }
 
             TransactionContext HazelcastClientInstanceImpl::newTransactionContext(const TransactionOptions &options) {
-                return TransactionContext(transactionManager, options);
+                return TransactionContext(transactionManager_, options);
             }
 
             internal::nearcache::NearCacheManager &HazelcastClientInstanceImpl::getNearCacheManager() {
-                return *nearCacheManager;
+                return *nearCacheManager_;
             }
 
             serialization::pimpl::SerializationService &HazelcastClientInstanceImpl::getSerializationService() {
-                return serializationService;
+                return serializationService_;
             }
 
             const protocol::ClientExceptionFactory &HazelcastClientInstanceImpl::getExceptionFactory() const {
-                return exceptionFactory;
+                return exceptionFactory_;
             }
 
             std::shared_ptr<spi::impl::listener::listener_service_impl> HazelcastClientInstanceImpl::initListenerService() {
-                auto eventThreadCount = clientProperties.getInteger(clientProperties.getEventThreadCount());
-                return std::make_shared<spi::impl::listener::listener_service_impl>(clientContext, eventThreadCount);
+                auto eventThreadCount = clientProperties_.getInteger(clientProperties_.getEventThreadCount());
+                return std::make_shared<spi::impl::listener::listener_service_impl>(clientContext_, eventThreadCount);
             }
 
             std::shared_ptr<spi::impl::ClientExecutionServiceImpl>
             HazelcastClientInstanceImpl::initExecutionService() {
-                return std::make_shared<spi::impl::ClientExecutionServiceImpl>(instanceName, clientProperties,
-                                                                               clientConfig.getExecutorPoolSize(),
-                                                                               lifecycleService);
+                return std::make_shared<spi::impl::ClientExecutionServiceImpl>(instanceName_, clientProperties_,
+                                                                               clientConfig_.getExecutorPoolSize(),
+                                                                               lifecycleService_);
             }
 
             std::shared_ptr<connection::ClientConnectionManagerImpl>
             HazelcastClientInstanceImpl::initConnectionManagerService(
                     const std::vector<std::shared_ptr<connection::AddressProvider>> &addressProviders) {
-                config::ClientAwsConfig &awsConfig = clientConfig.getNetworkConfig().getAwsConfig();
+                config::ClientAwsConfig &awsConfig = clientConfig_.getNetworkConfig().getAwsConfig();
                 std::shared_ptr<connection::AddressTranslator> addressTranslator;
                 if (awsConfig.isEnabled()) {
                     try {
@@ -267,7 +267,7 @@ namespace hazelcast {
                     addressTranslator.reset(new spi::impl::DefaultAddressTranslator());
                 }
                 return std::make_shared<connection::ClientConnectionManagerImpl>(
-                        clientContext, addressTranslator, addressProviders);
+                        clientContext_, addressTranslator, addressProviders);
 
             }
 
@@ -275,9 +275,9 @@ namespace hazelcast {
                 HZ_LOG(*logger_, info,
                     "Clearing local state of the client, because of a cluster restart");
 
-                nearCacheManager->clearAllNearCaches();
+                nearCacheManager_->clearAllNearCaches();
                 //clear the member list version
-                clusterService.clear_member_list_version();
+                clusterService_.clear_member_list_version();
             }
 
             std::vector<std::shared_ptr<connection::AddressProvider>>
@@ -287,7 +287,7 @@ namespace hazelcast {
                 std::vector<std::shared_ptr<connection::AddressProvider>> addressProviders;
 
                 if (awsConfig.isEnabled()) {
-                    int awsMemberPort = clientProperties.getInteger(clientProperties.getAwsMemberPort());
+                    int awsMemberPort = clientProperties_.getInteger(clientProperties_.getAwsMemberPort());
                     if (awsMemberPort < 0 || awsMemberPort > 65535) {
                         throw (exception::ExceptionBuilder<exception::InvalidConfigurationException>(
                                 "HazelcastClientInstanceImpl::createAddressProviders") << "Configured aws member port "
@@ -305,39 +305,39 @@ namespace hazelcast {
             }
 
             const std::string &HazelcastClientInstanceImpl::getName() const {
-                return instanceName;
+                return instanceName_;
             }
 
             spi::LifecycleService &HazelcastClientInstanceImpl::getLifecycleService() {
-                return lifecycleService;
+                return lifecycleService_;
             }
 
             const std::shared_ptr<ClientLockReferenceIdGenerator> &
             HazelcastClientInstanceImpl::getLockReferenceIdGenerator() const {
-                return lockReferenceIdGenerator;
+                return lockReferenceIdGenerator_;
             }
 
             spi::ProxyManager &HazelcastClientInstanceImpl::getProxyManager() {
-                return proxyManager;
+                return proxyManager_;
             }
 
             void HazelcastClientInstanceImpl::initalizeNearCacheManager() {
-                nearCacheManager.reset(
-                        new internal::nearcache::NearCacheManager(executionService, serializationService, *logger_));
+                nearCacheManager_.reset(
+                        new internal::nearcache::NearCacheManager(executionService_, serializationService_, *logger_));
             }
 
             Client HazelcastClientInstanceImpl::getLocalEndpoint() const {
-                return clusterService.getLocalClient();
+                return clusterService_.getLocalClient();
             }
 
             template<>
             std::shared_ptr<IMap> HazelcastClientInstanceImpl::getDistributedObject(const std::string& name) {
-                auto nearCacheConfig = clientConfig.getNearCacheConfig(name);
+                auto nearCacheConfig = clientConfig_.getNearCacheConfig(name);
                 if (nearCacheConfig) {
-                    return proxyManager.getOrCreateProxy<map::NearCachedClientMapProxy<serialization::pimpl::Data, serialization::pimpl::Data>>(
+                    return proxyManager_.getOrCreateProxy<map::NearCachedClientMapProxy<serialization::pimpl::Data, serialization::pimpl::Data>>(
                             IMap::SERVICE_NAME, name);
                 } else {
-                    return proxyManager.getOrCreateProxy<IMap>(IMap::SERVICE_NAME, name);
+                    return proxyManager_.getOrCreateProxy<IMap>(IMap::SERVICE_NAME, name);
                 }
             }
 
@@ -375,19 +375,19 @@ namespace hazelcast {
         const byte Address::IPV4 = 4;
         const byte Address::IPV6 = 6;
 
-        Address::Address() : host("localhost"), type(IPV4), scopeId(0) {
+        Address::Address() : host_("localhost"), type_(IPV4), scopeId_(0) {
         }
 
         Address::Address(const std::string &url, int port)
-                : host(url), port(port), type(IPV4), scopeId(0) {
+                : host_(url), port_(port), type_(IPV4), scopeId_(0) {
         }
 
-        Address::Address(const std::string &hostname, int port, unsigned long scopeId) : host(hostname), port(port),
-                                                                                         type(IPV6), scopeId(scopeId) {
+        Address::Address(const std::string &hostname, int port, unsigned long scopeId) : host_(hostname), port_(port),
+                                                                                         type_(IPV6), scopeId_(scopeId) {
         }
 
         bool Address::operator==(const Address &rhs) const {
-            return rhs.port == port && rhs.type == type && 0 == rhs.host.compare(host);
+            return rhs.port_ == port_ && rhs.type_ == type_ && 0 == rhs.host_.compare(host_);
         }
 
         bool Address::operator!=(const Address &rhs) const {
@@ -395,35 +395,35 @@ namespace hazelcast {
         }
 
         int Address::getPort() const {
-            return port;
+            return port_;
         }
 
         const std::string &Address::getHost() const {
-            return host;
+            return host_;
         }
 
         bool Address::operator<(const Address &rhs) const {
-            if (host < rhs.host) {
+            if (host_ < rhs.host_) {
                 return true;
             }
-            if (rhs.host < host) {
+            if (rhs.host_ < host_) {
                 return false;
             }
-            if (port < rhs.port) {
+            if (port_ < rhs.port_) {
                 return true;
             }
-            if (rhs.port < port) {
+            if (rhs.port_ < port_) {
                 return false;
             }
-            return type < rhs.type;
+            return type_ < rhs.type_;
         }
 
         bool Address::isIpV4() const {
-            return type == IPV4;
+            return type_ == IPV4;
         }
 
         unsigned long Address::getScopeId() const {
-            return scopeId;
+            return scopeId_;
         }
 
         std::string Address::toString() const {
@@ -446,22 +446,22 @@ namespace hazelcast {
             }
 
             void hz_serializer<Address>::writeData(const Address &object, ObjectDataOutput &out) {
-                out.write<int32_t>(object.port);
-                out.write<byte>(object.type);
-                out.write(object.host);
+                out.write<int32_t>(object.port_);
+                out.write<byte>(object.type_);
+                out.write(object.host_);
             }
 
             Address hz_serializer<Address>::readData(ObjectDataInput &in) {
                 Address object;
-                object.port = in.read<int32_t>();
-                object.type = in.read<byte>();
-                object.host = in.read<std::string>();
+                object.port_ = in.read<int32_t>();
+                object.type_ = in.read<byte>();
+                object.host_ = in.read<std::string>();
                 return object;
             }
         }
 
         IExecutorService::IExecutorService(const std::string &name, spi::ClientContext *context) : ProxyImpl(
-                SERVICE_NAME, name, context), consecutiveSubmits(0), lastSubmitTime(0) {
+                SERVICE_NAME, name, context), consecutiveSubmits_(0), lastSubmitTime_(0) {
         }
 
         std::vector<Member>
@@ -508,15 +508,15 @@ namespace hazelcast {
         bool IExecutorService::isSyncComputation(bool preventSync) {
             int64_t now = util::currentTimeMillis();
 
-            int64_t last = lastSubmitTime;
-            lastSubmitTime = now;
+            int64_t last = lastSubmitTime_;
+            lastSubmitTime_ = now;
 
             if (last + MIN_TIME_RESOLUTION_OF_CONSECUTIVE_SUBMITS < now) {
-                consecutiveSubmits = 0;
+                consecutiveSubmits_ = 0;
                 return false;
             }
 
-            return !preventSync && (consecutiveSubmits++ % MAX_CONSECUTIVE_SUBMITS == 0);
+            return !preventSync && (consecutiveSubmits_++ % MAX_CONSECUTIVE_SUBMITS == 0);
         }
 
         Address IExecutorService::getMemberAddress(const Member &member) {
@@ -600,15 +600,15 @@ namespace hazelcast {
         const std::string ClientProperties::RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT = "0";
 
         ClientProperty::ClientProperty(const std::string &name, const std::string &defaultValue)
-                : name(name), defaultValue(defaultValue) {
+                : name_(name), defaultValue_(defaultValue) {
         }
 
         const std::string &ClientProperty::getName() const {
-            return name;
+            return name_;
         }
 
         const std::string &ClientProperty::getDefaultValue() const {
-            return defaultValue;
+            return defaultValue_;
         }
 
         const char *ClientProperty::getSystemProperty() const {
@@ -616,100 +616,100 @@ namespace hazelcast {
             #pragma warning(push)
 #pragma warning(disable: 4996) //for 'getenv': This function or variable may be unsafe.
 #endif
-            return std::getenv(name.c_str());
+            return std::getenv(name_.c_str());
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
             #pragma warning(pop)
 #endif
         }
 
         ClientProperties::ClientProperties(const std::unordered_map<std::string, std::string> &properties)
-                : heartbeatTimeout(PROP_HEARTBEAT_TIMEOUT, PROP_HEARTBEAT_TIMEOUT_DEFAULT),
-                  heartbeatInterval(PROP_HEARTBEAT_INTERVAL, PROP_HEARTBEAT_INTERVAL_DEFAULT),
-                  retryCount(PROP_REQUEST_RETRY_COUNT, PROP_REQUEST_RETRY_COUNT_DEFAULT),
-                  retryWaitTime(PROP_REQUEST_RETRY_WAIT_TIME, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT),
-                  awsMemberPort(PROP_AWS_MEMBER_PORT, PROP_AWS_MEMBER_PORT_DEFAULT),
-                  cleanResourcesPeriod(CLEAN_RESOURCES_PERIOD_MILLIS,
+                : heartbeatTimeout_(PROP_HEARTBEAT_TIMEOUT, PROP_HEARTBEAT_TIMEOUT_DEFAULT),
+                  heartbeatInterval_(PROP_HEARTBEAT_INTERVAL, PROP_HEARTBEAT_INTERVAL_DEFAULT),
+                  retryCount_(PROP_REQUEST_RETRY_COUNT, PROP_REQUEST_RETRY_COUNT_DEFAULT),
+                  retryWaitTime_(PROP_REQUEST_RETRY_WAIT_TIME, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT),
+                  awsMemberPort_(PROP_AWS_MEMBER_PORT, PROP_AWS_MEMBER_PORT_DEFAULT),
+                  cleanResourcesPeriod_(CLEAN_RESOURCES_PERIOD_MILLIS,
                                        CLEAN_RESOURCES_PERIOD_MILLIS_DEFAULT),
-                  invocationRetryPauseMillis(INVOCATION_RETRY_PAUSE_MILLIS,
+                  invocationRetryPauseMillis_(INVOCATION_RETRY_PAUSE_MILLIS,
                                              INVOCATION_RETRY_PAUSE_MILLIS_DEFAULT),
-                  invocationTimeoutSeconds(INVOCATION_TIMEOUT_SECONDS,
+                  invocationTimeoutSeconds_(INVOCATION_TIMEOUT_SECONDS,
                                            INVOCATION_TIMEOUT_SECONDS_DEFAULT),
-                  eventThreadCount(EVENT_THREAD_COUNT, EVENT_THREAD_COUNT_DEFAULT),
-                  internalExecutorPoolSize(INTERNAL_EXECUTOR_POOL_SIZE,
+                  eventThreadCount_(EVENT_THREAD_COUNT, EVENT_THREAD_COUNT_DEFAULT),
+                  internalExecutorPoolSize_(INTERNAL_EXECUTOR_POOL_SIZE,
                                            INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT),
-                  shuffleMemberList(SHUFFLE_MEMBER_LIST, SHUFFLE_MEMBER_LIST_DEFAULT),
-                  maxConcurrentInvocations(MAX_CONCURRENT_INVOCATIONS,
+                  shuffleMemberList_(SHUFFLE_MEMBER_LIST, SHUFFLE_MEMBER_LIST_DEFAULT),
+                  maxConcurrentInvocations_(MAX_CONCURRENT_INVOCATIONS,
                                            MAX_CONCURRENT_INVOCATIONS_DEFAULT),
-                  backpressureBackoffTimeoutMillis(BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS,
+                  backpressureBackoffTimeoutMillis_(BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS,
                                                    BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT),
-                  statisticsEnabled(STATISTICS_ENABLED, STATISTICS_ENABLED_DEFAULT),
-                  statisticsPeriodSeconds(STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT),
-                  ioThreadCount(IO_THREAD_COUNT, IO_THREAD_COUNT_DEFAULT),
-                  responseExecutorThreadCount(RESPONSE_EXECUTOR_THREAD_COUNT, RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT),
+                  statisticsEnabled_(STATISTICS_ENABLED, STATISTICS_ENABLED_DEFAULT),
+                  statisticsPeriodSeconds_(STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT),
+                  ioThreadCount_(IO_THREAD_COUNT, IO_THREAD_COUNT_DEFAULT),
+                  responseExecutorThreadCount_(RESPONSE_EXECUTOR_THREAD_COUNT, RESPONSE_EXECUTOR_THREAD_COUNT_DEFAULT),
                   backup_timeout_millis_(OPERATION_BACKUP_TIMEOUT_MILLIS, OPERATION_BACKUP_TIMEOUT_MILLIS_DEFAULT),
                   fail_on_indeterminate_state_(FAIL_ON_INDETERMINATE_OPERATION_STATE, FAIL_ON_INDETERMINATE_OPERATION_STATE_DEFAULT),
-                  propertiesMap(properties) {
+                  propertiesMap_(properties) {
         }
 
         const ClientProperty &ClientProperties::getHeartbeatTimeout() const {
-            return heartbeatTimeout;
+            return heartbeatTimeout_;
         }
 
         const ClientProperty &ClientProperties::getHeartbeatInterval() const {
-            return heartbeatInterval;
+            return heartbeatInterval_;
         }
 
         const ClientProperty &ClientProperties::getAwsMemberPort() const {
-            return awsMemberPort;
+            return awsMemberPort_;
         }
 
         const ClientProperty &ClientProperties::getCleanResourcesPeriodMillis() const {
-            return cleanResourcesPeriod;
+            return cleanResourcesPeriod_;
         }
 
         const ClientProperty &ClientProperties::getInvocationRetryPauseMillis() const {
-            return invocationRetryPauseMillis;
+            return invocationRetryPauseMillis_;
         }
 
         const ClientProperty &ClientProperties::getInvocationTimeoutSeconds() const {
-            return invocationTimeoutSeconds;
+            return invocationTimeoutSeconds_;
         }
 
         const ClientProperty &ClientProperties::getEventThreadCount() const {
-            return eventThreadCount;
+            return eventThreadCount_;
         }
 
         const ClientProperty &ClientProperties::getInternalExecutorPoolSize() const {
-            return internalExecutorPoolSize;
+            return internalExecutorPoolSize_;
         }
 
         const ClientProperty &ClientProperties::getShuffleMemberList() const {
-            return shuffleMemberList;
+            return shuffleMemberList_;
         }
 
         const ClientProperty &ClientProperties::getMaxConcurrentInvocations() const {
-            return maxConcurrentInvocations;
+            return maxConcurrentInvocations_;
         }
 
         const ClientProperty &ClientProperties::getBackpressureBackoffTimeoutMillis() const {
-            return backpressureBackoffTimeoutMillis;
+            return backpressureBackoffTimeoutMillis_;
         }
 
         const ClientProperty &ClientProperties::getStatisticsEnabled() const {
-            return statisticsEnabled;
+            return statisticsEnabled_;
         }
 
         const ClientProperty &ClientProperties::getStatisticsPeriodSeconds() const {
-            return statisticsPeriodSeconds;
+            return statisticsPeriodSeconds_;
         }
 
         const ClientProperty &ClientProperties::getIOThreadCount() const {
-            return ioThreadCount;
+            return ioThreadCount_;
         }
 
         std::string ClientProperties::getString(const ClientProperty &property) const {
-            std::unordered_map<std::string, std::string>::const_iterator valueIt = propertiesMap.find(property.getName());
-            if (valueIt != propertiesMap.end()) {
+            std::unordered_map<std::string, std::string>::const_iterator valueIt = propertiesMap_.find(property.getName());
+            if (valueIt != propertiesMap_.end()) {
                 return valueIt->second;
             }
 
@@ -734,7 +734,7 @@ namespace hazelcast {
         }
 
         const ClientProperty &ClientProperties::getResponseExecutorThreadCount() const {
-            return responseExecutorThreadCount;
+            return responseExecutorThreadCount_;
         }
 
         const ClientProperty &ClientProperties::backup_timeout_millis() const {
@@ -749,8 +749,8 @@ namespace hazelcast {
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, const std::string &details, int32_t errorNo,
                                    std::exception_ptr cause, bool isRuntime, bool retryable)
-                    : src(source), msg(message), details(details), errorCode(errorNo), cause_(cause),
-                    runtimeException(isRuntime), retryable(retryable), report((boost::format(
+                    : src_(source), msg_(message), details_(details), errorCode_(errorNo), cause_(cause),
+                    runtimeException_(isRuntime), retryable_(retryable), report_((boost::format(
                             "%1% {%2%. Error code:%3%, Details:%4%.} at %5%.") % exceptionName % message % errorNo %
                                                     details % source).str()) {
             }
@@ -758,15 +758,15 @@ namespace hazelcast {
             IException::~IException() noexcept = default;
 
             char const *IException::what() const noexcept {
-                return report.c_str();
+                return report_.c_str();
             }
 
             const std::string &IException::getSource() const {
-                return src;
+                return src_;
             }
 
             const std::string &IException::getMessage() const {
-                return msg;
+                return msg_;
             }
 
             std::ostream &operator<<(std::ostream &os, const IException &exception) {
@@ -775,19 +775,19 @@ namespace hazelcast {
             }
 
             const std::string &IException::getDetails() const {
-                return details;
+                return details_;
             }
 
             int32_t IException::getErrorCode() const {
-                return errorCode;
+                return errorCode_;
             }
 
             bool IException::isRuntimeException() const {
-                return runtimeException;
+                return runtimeException_;
             }
 
             bool IException::isRetryable() const {
-                return retryable;
+                return retryable_;
             }
 
             IException::IException() = default;
@@ -829,6 +829,6 @@ namespace hazelcast {
 namespace std {
     std::size_t hash<hazelcast::client::Address>::operator()(const hazelcast::client::Address &address) const noexcept {
         return std::hash<std::string>()(address.getHost()) + std::hash<int>()(address.getPort()) +
-               std::hash<unsigned long>()(address.type);
+               std::hash<unsigned long>()(address.type_);
     }
 }

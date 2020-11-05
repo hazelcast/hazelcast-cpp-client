@@ -43,20 +43,20 @@ namespace hazelcast {
                 public:
                     static constexpr const int MAX_UTF_CHAR_SIZE = 4;
 
-                    explicit DataInput(const Container &buf) : buffer(buf), pos(0) {}
+                    explicit DataInput(const Container &buf) : buffer_(buf), pos_(0) {}
 
-                    DataInput(const Container &buf, int offset) : buffer(buf), pos(offset) {}
+                    DataInput(const Container &buf, int offset) : buffer_(buf), pos_(offset) {}
 
                     inline void readFully(std::vector<byte> &bytes) {
                         size_t length = bytes.size();
                         checkAvailable(length);
-                        memcpy(&(bytes[0]), &(buffer[pos]), length);
-                        pos += length;
+                        memcpy(&(bytes[0]), &(buffer_[pos_]), length);
+                        pos_ += length;
                     }
 
                     inline int skipBytes(int i) {
                         checkAvailable(i);
-                        pos += i;
+                        pos_ += i;
                         return i;
                     }
 
@@ -64,7 +64,7 @@ namespace hazelcast {
                     typename std::enable_if<std::is_same<byte, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
                         checkAvailable(1);
-                        return buffer[pos++];
+                        return buffer_[pos_++];
                     }
 
                     template<typename T>
@@ -72,8 +72,8 @@ namespace hazelcast {
                     inline read() {
                         checkAvailable(util::Bits::CHAR_SIZE_IN_BYTES);
                         // skip the first byte
-                        byte b = buffer[pos + 1];
-                        pos += util::Bits::CHAR_SIZE_IN_BYTES;
+                        byte b = buffer_[pos_ + 1];
+                        pos_ += util::Bits::CHAR_SIZE_IN_BYTES;
                         return b;
                     }
 
@@ -81,8 +81,8 @@ namespace hazelcast {
                     typename std::enable_if<std::is_same<char16_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
                         checkAvailable(util::Bits::CHAR_SIZE_IN_BYTES);
-                        pos += util::Bits::CHAR_SIZE_IN_BYTES;
-                        return static_cast<char16_t>(buffer[pos] << 8 | buffer[pos+1]);
+                        pos_ += util::Bits::CHAR_SIZE_IN_BYTES;
+                        return static_cast<char16_t>(buffer_[pos_] << 8 | buffer_[pos_+1]);
                     }
 
                     template<typename T>
@@ -96,8 +96,8 @@ namespace hazelcast {
                     inline read() {
                         checkAvailable(util::Bits::SHORT_SIZE_IN_BYTES);
                         int16_t result;
-                        util::Bits::bigEndianToNative2(&buffer[pos], &result);
-                        pos += util::Bits::SHORT_SIZE_IN_BYTES;
+                        util::Bits::bigEndianToNative2(&buffer_[pos_], &result);
+                        pos_ += util::Bits::SHORT_SIZE_IN_BYTES;
                         return result;
                     }
 
@@ -106,8 +106,8 @@ namespace hazelcast {
                     inline read() {
                         checkAvailable(util::Bits::INT_SIZE_IN_BYTES);
                         int32_t result;
-                        util::Bits::bigEndianToNative4(&buffer[pos], &result);
-                        pos += util::Bits::INT_SIZE_IN_BYTES;
+                        util::Bits::bigEndianToNative4(&buffer_[pos_], &result);
+                        pos_ += util::Bits::INT_SIZE_IN_BYTES;
                         return result;
                     }
 
@@ -116,8 +116,8 @@ namespace hazelcast {
                     inline read() {
                         checkAvailable(util::Bits::LONG_SIZE_IN_BYTES);
                         int64_t result;
-                        util::Bits::bigEndianToNative8(&buffer[pos], &result);
-                        pos += util::Bits::LONG_SIZE_IN_BYTES;
+                        util::Bits::bigEndianToNative8(&buffer_[pos_], &result);
+                        pos_ += util::Bits::LONG_SIZE_IN_BYTES;
                         return result;
                     }
 
@@ -176,8 +176,8 @@ namespace hazelcast {
                     inline read() {
                         checkAvailable(util::Bits::UUID_SIZE_IN_BYTES);
                         boost::uuids::uuid u;
-                        std::memcpy(&u.data, &buffer[pos], util::Bits::UUID_SIZE_IN_BYTES);
-                        pos += util::Bits::UUID_SIZE_IN_BYTES;
+                        std::memcpy(&u.data, &buffer_[pos_], util::Bits::UUID_SIZE_IN_BYTES);
+                        pos_ += util::Bits::UUID_SIZE_IN_BYTES;
                         return u;
                     }
 
@@ -218,22 +218,22 @@ namespace hazelcast {
                     }
 
                     int position() {
-                        return pos;
+                        return pos_;
                     }
 
                     void position(int position) {
-                        if (position > pos) {
-                            checkAvailable((size_t) (position - pos));
+                        if (position > pos_) {
+                            checkAvailable((size_t) (position - pos_));
                         }
-                        pos = position;
+                        pos_ = position;
                     }
 
                 private:
-                    const Container &buffer;
-                    int pos;
+                    const Container &buffer_;
+                    int pos_;
 
                     void inline checkAvailable(size_t requestedLength) {
-                        size_t available = buffer.size() - pos;
+                        size_t available = buffer_.size() - pos_;
                         if (requestedLength > available) {
                             BOOST_THROW_EXCEPTION(exception::IOException("DataInput::checkAvailable", (boost::format(
                                     "Not enough bytes in internal buffer. Available:%1% bytes but needed %2% bytes") %

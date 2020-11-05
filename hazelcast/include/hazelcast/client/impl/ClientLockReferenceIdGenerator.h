@@ -38,7 +38,7 @@ namespace hazelcast {
                  */
                 int64_t getNextReferenceId();
             private:
-                std::atomic<int64_t> referenceIdCounter;
+                std::atomic<int64_t> referenceIdCounter_;
             };
         }
     }

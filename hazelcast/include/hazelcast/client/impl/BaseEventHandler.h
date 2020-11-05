@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 ~BaseEventHandler() override;
 
-                std::string registrationId;
+                std::string registration_id;
 
                 /**
                  *  This method is called before registration request is sent to node.

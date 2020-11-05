@@ -47,10 +47,10 @@ namespace hazelcast {
                 const remote::Member &getMember() const;
 
             private:
-                HazelcastServerFactory & factory;
-                std::atomic_bool isStarted;
-                std::atomic_bool isShutdown;
-                remote::Member member;
+                HazelcastServerFactory & factory_;
+                std::atomic_bool isStarted_;
+                std::atomic_bool isShutdown_;
+                remote::Member member_;
                 std::shared_ptr<logger> logger_;
             };
         }

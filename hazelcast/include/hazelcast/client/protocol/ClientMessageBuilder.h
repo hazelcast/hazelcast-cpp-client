@@ -38,34 +38,34 @@ namespace hazelcast {
                 bool onData(util::ByteBuffer &buffer) {
                     bool isCompleted = false;
 
-                    if (!message) {
-                        message.reset(new ClientMessage());
-                        is_final_frame = false;
-                        remaining_frame_bytes = 0;
+                    if (!message_) {
+                        message_.reset(new ClientMessage());
+                        is_final_frame_ = false;
+                        remaining_frame_bytes_ = 0;
                     }
 
-                    if (message) {
-                        message->fillMessageFrom(buffer, is_final_frame, remaining_frame_bytes);
-                        isCompleted = is_final_frame && remaining_frame_bytes == 0;
+                    if (message_) {
+                        message_->fillMessageFrom(buffer, is_final_frame_, remaining_frame_bytes_);
+                        isCompleted = is_final_frame_ && remaining_frame_bytes_ == 0;
                         if (isCompleted) {
                             //MESSAGE IS COMPLETE HERE
-                            message->wrap_for_read();
+                            message_->wrap_for_read();
                             isCompleted = true;
 
-                            if (message->is_flag_set(ClientMessage::UNFRAGMENTED_MESSAGE)) {
+                            if (message_->is_flag_set(ClientMessage::UNFRAGMENTED_MESSAGE)) {
                                 //MESSAGE IS COMPLETE HERE
-                                message_handler_.handleClientMessage(std::move(message));
+                                message_handler_.handleClientMessage(std::move(message_));
                             } else {
-                                message->rd_ptr(ClientMessage::FRAGMENTATION_ID_OFFSET);
-                                auto fragmentation_id = message->get<int64_t>();
-                                auto flags = message->getHeaderFlags();
-                                message->drop_fragmentation_frame();
+                                message_->rd_ptr(ClientMessage::FRAGMENTATION_ID_OFFSET);
+                                auto fragmentation_id = message_->get<int64_t>();
+                                auto flags = message_->getHeaderFlags();
+                                message_->drop_fragmentation_frame();
                                 if (ClientMessage::is_flag_set(flags, ClientMessage::BEGIN_FRAGMENT_FLAG)) {
                                     // put the message into the partial messages list
-                                    addToPartialMessages(fragmentation_id, message);
+                                    addToPartialMessages(fragmentation_id, message_);
                                 } else {
                                     // This is the intermediate frame. Append at the previous message buffer
-                                    appendExistingPartialMessage(fragmentation_id, message,
+                                    appendExistingPartialMessage(fragmentation_id, message_,
                                                                  ClientMessage::is_flag_set(flags,
                                                                                             ClientMessage::END_FRAGMENT_FLAG));
                                 }
@@ -78,7 +78,7 @@ namespace hazelcast {
 
             private:
                 void addToPartialMessages(int64_t fragmentation_id, std::unique_ptr<ClientMessage> &message) {
-                    partialMessages[fragmentation_id] = std::move(message);
+                    partialMessages_[fragmentation_id] = std::move(message);
                 }
 
                 /**
@@ -88,14 +88,14 @@ namespace hazelcast {
                                                   bool is_end_fragment) {
                     bool result = false;
 
-                    auto found = partialMessages.find(fragmentation_id);
-                    if (partialMessages.end() != found) {
+                    auto found = partialMessages_.find(fragmentation_id);
+                    if (partialMessages_.end() != found) {
                         found->second->append(std::move(msg));
                         if (is_end_fragment) {
                             // remove from message from map
                             std::shared_ptr<ClientMessage> foundMessage(found->second);
 
-                            partialMessages.erase(found);
+                            partialMessages_.erase(found);
 
                             foundMessage->wrap_for_read();
                             message_handler_.handleClientMessage(foundMessage);
@@ -112,13 +112,13 @@ namespace hazelcast {
 
                 typedef std::unordered_map<int64_t, std::shared_ptr<ClientMessage> > MessageMap;
 
-                MessageMap partialMessages;
+                MessageMap partialMessages_;
 
-                std::unique_ptr<ClientMessage> message;
+                std::unique_ptr<ClientMessage> message_;
                 MessageHandler &message_handler_;
 
-                bool is_final_frame;
-                size_t remaining_frame_bytes;
+                bool is_final_frame_;
+                size_t remaining_frame_bytes_;
             };
         }
     }

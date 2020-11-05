@@ -39,37 +39,37 @@ namespace hazelcast {
             constexpr const char *QueryConstants::KEY_ATTRIBUTE_NAME;
             constexpr const char *QueryConstants::THIS_ATTRIBUTE_NAME;
 
-            BasePredicate::BasePredicate(HazelcastClient &client) : outStream(spi::ClientContext(
+            BasePredicate::BasePredicate(HazelcastClient &client) : out_stream(spi::ClientContext(
                     client).getSerializationService().newOutputStream()) {}
 
             NamedPredicate::NamedPredicate(HazelcastClient &client, const std::string &attributeName) : BasePredicate(
                     client) {
-                outStream.write(attributeName);
+                out_stream.write(attributeName);
             }
 
             InstanceOfPredicate::InstanceOfPredicate(HazelcastClient &client, const std::string &javaClassName)
                     : BasePredicate(client) {
-                outStream.write(javaClassName);
+                out_stream.write(javaClassName);
             }
 
             SqlPredicate::SqlPredicate(HazelcastClient &client, const std::string &sql)
                     : BasePredicate(client) {
-                outStream.write(sql);
+                out_stream.write(sql);
             }
 
             LikePredicate::LikePredicate(HazelcastClient &client, const std::string &attribute,
                                          const std::string &expression) : NamedPredicate(client, attribute) {
-                outStream.write(expression);
+                out_stream.write(expression);
             }
 
             ILikePredicate::ILikePredicate(HazelcastClient &client, const std::string &attribute,
                                            const std::string &expression) : NamedPredicate(client, attribute) {
-                outStream.write(expression);
+                out_stream.write(expression);
             }
 
             RegexPredicate::RegexPredicate(HazelcastClient &client, const std::string &attribute,
                                            const std::string &expression) : NamedPredicate(client, attribute) {
-                outStream.write(expression);
+                out_stream.write(expression);
             }
 
             TruePredicate::TruePredicate(HazelcastClient &client) : BasePredicate(client) {}

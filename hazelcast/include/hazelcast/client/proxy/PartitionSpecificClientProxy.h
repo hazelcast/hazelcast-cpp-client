@@ -31,7 +31,7 @@ namespace hazelcast {
 
                 void onInitialize() override;
 
-                int partitionId;
+                int partitionId_;
             };
         }
     }

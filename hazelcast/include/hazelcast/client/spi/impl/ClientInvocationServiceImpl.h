@@ -89,8 +89,8 @@ namespace hazelcast {
 
                     private:
                         logger &logger_;
-                        ClientContext &client;
-                        std::unique_ptr<hazelcast::util::hz_thread_pool> pool;
+                        ClientContext &client_;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> pool_;
 
                         void processInternal(const std::shared_ptr<ClientInvocation> &invocation,
                                              const std::shared_ptr<protocol::ClientMessage> &response);
@@ -109,12 +109,12 @@ namespace hazelcast {
                         void handle_backup(int64_t sourceInvocationCorrelationId) override;
                     };
 
-                    ClientContext &client;
+                    ClientContext &client_;
                     logger &logger_;
-                    std::atomic<bool> isShutdown{ false };
-                    std::chrono::milliseconds invocationTimeout;
-                    std::chrono::milliseconds invocationRetryPause;
-                    ResponseProcessor responseThread;
+                    std::atomic<bool> isShutdown_{ false };
+                    std::chrono::milliseconds invocationTimeout_;
+                    std::chrono::milliseconds invocationRetryPause_;
+                    ResponseProcessor responseThread_;
                     bool smart_routing_;
                     bool backup_acks_enabled_;
                     bool fail_on_indeterminate_operation_state_;

@@ -31,46 +31,46 @@ namespace hazelcast {
         public:
             Sync() = default;
 
-            Sync(const T &v) : v(v) {
+            Sync(const T &v) : v_(v) {
             }
 
             virtual ~Sync() = default;
 
             T operator--(int) {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                return v--;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                return v_--;
             }
 
             T operator-=(const T &delta) {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                v -= delta;
-                return v;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                v_ -= delta;
+                return v_;
             }
 
             T operator++(int) {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                return v++;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                return v_++;
             }
 
             T operator++() {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                return ++v;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                return ++v_;
             }
 
             T operator+=(const T &delta) {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                v += delta;
-                return v;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                v_ += delta;
+                return v_;
             }
 
             void operator=(const T &i) {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                v = i;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                v_ = i;
             }
 
             void set(const T &i) {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                v = i;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                v_ = i;
             }
 
             operator T() const {
@@ -78,42 +78,42 @@ namespace hazelcast {
             }
 
             T get() const {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                return v;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                return v_;
             }
 
             T operator--() {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                return --v;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                return --v_;
             }
 
             bool operator<=(const T &i) const {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                return v <= i;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                return v_ <= i;
             }
 
             bool operator==(const T &i) const {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                return i == v;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                return i == v_;
             }
 
             bool operator!=(const T &i) const {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                return i != v;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                return i != v_;
             }
 
             bool compareAndSet(const T &compareValue, const T &setValue) {
-                std::lock_guard<std::mutex> lockGuard(mutex);
-                if(compareValue == v){
-                    v = setValue;
+                std::lock_guard<std::mutex> lockGuard(mutex_);
+                if(compareValue == v_){
+                    v_ = setValue;
                     return true;
                 }
                 return false;
             }
 
         protected:
-            mutable std::mutex mutex;
-            T v;
+            mutable std::mutex mutex_;
+            T v_;
         };
     }
 }

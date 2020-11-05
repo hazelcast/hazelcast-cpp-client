@@ -59,18 +59,18 @@ namespace hazelcast {
                 int64_t getMaxIdle() const;
 
             private:
-                serialization::pimpl::Data key;
-                serialization::pimpl::Data value;
-                int64_t cost;
-                int64_t creationTime;
-                int64_t expirationTime;
-                int64_t hits;
-                int64_t lastAccessTime;
-                int64_t lastStoredTime;
-                int64_t lastUpdateTime;
-                int64_t version;
-                int64_t ttl;
-                int64_t maxIdle;
+                serialization::pimpl::Data key_;
+                serialization::pimpl::Data value_;
+                int64_t cost_;
+                int64_t creationTime_;
+                int64_t expirationTime_;
+                int64_t hits_;
+                int64_t lastAccessTime_;
+                int64_t lastStoredTime_;
+                int64_t lastUpdateTime_;
+                int64_t version_;
+                int64_t ttl_;
+                int64_t maxIdle_;
             };
         }
     }

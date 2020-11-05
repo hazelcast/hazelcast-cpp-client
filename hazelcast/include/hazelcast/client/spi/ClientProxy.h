@@ -138,12 +138,12 @@ namespace hazelcast {
                  */
                 virtual void postDestroy();
 
-                const std::string name;
-
                 serialization::pimpl::SerializationService &getSerializationService();
-            private:
-                const std::string serviceName;
-                spi::ClientContext &context;
+
+                const std::string name_;
+
+                const std::string serviceName_;
+                spi::ClientContext &context_;
             };
         }
     }

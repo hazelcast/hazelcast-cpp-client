@@ -115,17 +115,17 @@ namespace hazelcast {
 
                         bool registersLocalOnly() const;
 
-                        ClientContext &clientContext;
-                        serialization::pimpl::SerializationService &serializationService;
+                        ClientContext &clientContext_;
+                        serialization::pimpl::SerializationService &serializationService_;
                         logger &logger_;
-                        connection::ClientConnectionManagerImpl &clientConnectionManager;
-                        std::unique_ptr<hazelcast::util::hz_thread_pool> eventExecutor;
-                        std::vector<boost::asio::strand<boost::asio::thread_pool::executor_type>> eventStrands;
-                        std::unique_ptr<hazelcast::util::hz_thread_pool> registrationExecutor;
-                        std::chrono::milliseconds invocationTimeout;
-                        std::chrono::milliseconds invocationRetryPause;
-                        util::SynchronizedMap<boost::uuids::uuid, listener_registration, boost::hash<boost::uuids::uuid>> registrations;
-                        int numberOfEventThreads;
+                        connection::ClientConnectionManagerImpl &clientConnectionManager_;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> eventExecutor_;
+                        std::vector<boost::asio::strand<boost::asio::thread_pool::executor_type>> eventStrands_;
+                        std::unique_ptr<hazelcast::util::hz_thread_pool> registrationExecutor_;
+                        std::chrono::milliseconds invocationTimeout_;
+                        std::chrono::milliseconds invocationRetryPause_;
+                        util::SynchronizedMap<boost::uuids::uuid, listener_registration, boost::hash<boost::uuids::uuid>> registrations_;
+                        int numberOfEventThreads_;
                         bool smart_;
                     };
                 }
