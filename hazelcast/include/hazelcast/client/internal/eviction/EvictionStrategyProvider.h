@@ -45,11 +45,8 @@ namespace hazelcast {
                      * @return the requested {@link EvictionStrategy} implementation
                      */
                     static std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > getEvictionStrategy(
-                            const std::shared_ptr<EvictionConfiguration<MAPKEY, MAPVALUE> > &evictionConfig) {
-                        if (evictionConfig.get() == NULL) {
-                            return std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> >();
-                        }
-                        EvictionStrategyType::Type evictionStrategyType = evictionConfig->getEvictionStrategyType();
+                            const client::config::EvictionConfig &evictionConfig) {
+                        EvictionStrategyType::Type evictionStrategyType = evictionConfig.getEvictionStrategyType();
 
                         return EvictionStrategyProvider<MAPKEY, MAPVALUE, A, E, S>::EVICTION_STRATEGY_MAP[evictionStrategyType];
 

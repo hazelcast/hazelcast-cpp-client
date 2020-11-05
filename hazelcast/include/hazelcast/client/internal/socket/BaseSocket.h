@@ -35,7 +35,7 @@ namespace hazelcast {
                     template<typename = std::enable_if<std::is_same<T, boost::asio::ip::tcp::socket>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
-                            boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis)
+                            boost::asio::io_context &io, std::chrono::milliseconds &connectTimeoutInMillis)
                             : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
                               connectTimeout(connectTimeoutInMillis), resolver(ioResolver), socket_(socketStrand) {
                     }
@@ -44,7 +44,7 @@ namespace hazelcast {
                     template<typename CONTEXT, typename = std::enable_if<std::is_same<T, boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>::value>>
                     BaseSocket(boost::asio::ip::tcp::resolver &ioResolver,
                             const Address &address, client::config::SocketOptions &socketOptions,
-                            boost::asio::io_context &io, std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                            boost::asio::io_context &io, std::chrono::milliseconds &connectTimeoutInMillis,
                             CONTEXT &context)
                             : socketOptions(socketOptions), remoteEndpoint(address), io(io), socketStrand(io),
                               connectTimeout(connectTimeoutInMillis), resolver(ioResolver),
@@ -251,7 +251,7 @@ namespace hazelcast {
                     Address remoteEndpoint;
                     boost::asio::io_context &io;
                     boost::asio::io_context::strand socketStrand;
-                    std::chrono::steady_clock::duration connectTimeout;
+                    std::chrono::milliseconds connectTimeout;
                     boost::asio::ip::tcp::resolver &resolver;
                     T socket_;
                     int32_t call_id_counter_;

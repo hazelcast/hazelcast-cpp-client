@@ -32,7 +32,7 @@ namespace hazelcast {
                 public:
                     TcpSocket(boost::asio::io_context &io, const Address &address,
                               client::config::SocketOptions &socketOptions,
-                              std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                              std::chrono::milliseconds &connectTimeoutInMillis,
                               boost::asio::ip::tcp::resolver &resolver);
                 };
             }

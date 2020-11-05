@@ -139,12 +139,12 @@ namespace hazelcast {
                 return *this;
             }
 
-            std::chrono::steady_clock::duration ClientFlakeIdGeneratorConfig::getPrefetchValidityDuration() const {
+            std::chrono::milliseconds ClientFlakeIdGeneratorConfig::getPrefetchValidityDuration() const {
                 return prefetchValidityDuration;
             }
 
             ClientFlakeIdGeneratorConfig &
-            ClientFlakeIdGeneratorConfig::setPrefetchValidityDuration(std::chrono::steady_clock::duration duration) {
+            ClientFlakeIdGeneratorConfig::setPrefetchValidityDuration(std::chrono::milliseconds duration) {
                 util::Preconditions::checkNotNegative(duration.count(),
                                                       "prefetchValidityMs must be non negative");
                 prefetchValidityDuration = duration;
@@ -166,13 +166,8 @@ namespace hazelcast {
                 return *this;
             }
 
-            int64_t ClientNetworkConfig::getConnectionTimeout() const {
+            std::chrono::milliseconds ClientNetworkConfig::getConnectionTimeout() const {
                 return connectionTimeout;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionTimeout(int64_t connectionTimeoutInMillis) {
-                this->connectionTimeout = connectionTimeoutInMillis;
-                return *this;
             }
 
             ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
@@ -207,18 +202,8 @@ namespace hazelcast {
                 return *this;
             }
 
-            int32_t ClientNetworkConfig::getConnectionAttemptPeriod() const {
+            std::chrono::milliseconds ClientNetworkConfig::getConnectionAttemptPeriod() const {
                 return connectionAttemptPeriod;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptPeriod(int32_t connectionAttemptPeriod) {
-                if (connectionAttemptPeriod < 0) {
-                    BOOST_THROW_EXCEPTION(
-                            exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptPeriod",
-                                                                "connectionAttemptPeriod cannot be negative"));
-                }
-                this->connectionAttemptPeriod = connectionAttemptPeriod;
-                return *this;
             }
 
             std::vector<Address> ClientNetworkConfig::getAddresses() const {
@@ -242,6 +227,19 @@ namespace hazelcast {
 
             SocketOptions &ClientNetworkConfig::getSocketOptions() {
                 return socketOptions;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::setConnectionTimeout(const std::chrono::milliseconds &timeout) {
+                connectionTimeout = timeout;
+                return *this;
+            }
+
+            ClientNetworkConfig &
+            ClientNetworkConfig::setConnectionAttemptPeriod(const std::chrono::milliseconds &interval) {
+                util::Preconditions::checkNotNegative(interval.count(), (boost::format(
+                        "Provided connectionAttemptPeriod(%1% msecs) cannot be negative") % interval.count()).str());
+                connectionAttemptPeriod = interval;
+                return *this;
             }
 
             ClientConnectionStrategyConfig::ClientConnectionStrategyConfig() : asyncStart(false), reconnectMode(ON) {
@@ -510,6 +508,184 @@ namespace hazelcast {
             index_config::index_config(index_config::index_type type) : type(type) {}
 
             void index_config::add_attributes() {}
+
+            EvictionConfig::EvictionConfig() : size(DEFAULT_MAX_ENTRY_COUNT), maxSizePolicy(DEFAULT_MAX_SIZE_POLICY),
+                               evictionPolicy(DEFAULT_EVICTION_POLICY) {}
+
+            int32_t EvictionConfig::getSize() const {
+                return size;
+            }
+
+            EvictionConfig &EvictionConfig::setSize(int32_t size) {
+                this->size = util::Preconditions::checkPositive(size, "Size must be positive number!");
+                return *this;
+            }
+
+            EvictionConfig::MaxSizePolicy EvictionConfig::getMaximumSizePolicy() const {
+                return maxSizePolicy;
+            }
+
+            EvictionConfig &EvictionConfig::setMaximumSizePolicy(const EvictionConfig::MaxSizePolicy &maxSizePolicy) {
+                this->maxSizePolicy = maxSizePolicy;
+                return *this;
+            }
+
+            EvictionPolicy EvictionConfig::getEvictionPolicy() const {
+                return evictionPolicy;
+            }
+
+            EvictionConfig &EvictionConfig::setEvictionPolicy(EvictionPolicy policy) {
+                this->evictionPolicy = policy;
+                return *this;
+            }
+
+            internal::eviction::EvictionStrategyType::Type EvictionConfig::getEvictionStrategyType() const {
+                // TODO: add support for other/custom eviction strategies
+                return internal::eviction::EvictionStrategyType::DEFAULT_EVICTION_STRATEGY;
+            }
+
+            internal::eviction::EvictionPolicyType EvictionConfig::getEvictionPolicyType() const {
+                if (evictionPolicy == LFU) {
+                    return internal::eviction::LFU;
+                } else if (evictionPolicy == LRU) {
+                    return internal::eviction::LRU;
+                } else if (evictionPolicy == RANDOM) {
+                    return internal::eviction::RANDOM;
+                } else if (evictionPolicy == NONE) {
+                    return internal::eviction::NONE;
+                } else {
+                    assert(0);
+                }
+                return internal::eviction::NONE;
+            }
+
+            std::ostream &operator<<(std::ostream &out, const EvictionConfig &config) {
+                out << "EvictionConfig{"
+                    << "size=" << config.getSize()
+                    << ", maxSizePolicy=" << config.getMaximumSizePolicy()
+                    << ", evictionPolicy=" << config.getEvictionPolicy()
+                    << '}';
+
+                return out;
+            }
+
+            NearCacheConfig::NearCacheConfig() : name("default"), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
+                                                 maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
+                                                 inMemoryFormat(DEFAULT_MEMORY_FORMAT),
+                                                 localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
+                                                 cacheLocalEntries(false) {
+            }
+
+            NearCacheConfig::NearCacheConfig(const std::string &cacheName) : NearCacheConfig() {
+                name = cacheName;
+            }
+
+            NearCacheConfig::NearCacheConfig(const std::string &cacheName, InMemoryFormat memoryFormat)
+                    : NearCacheConfig(name) {
+                this->inMemoryFormat = memoryFormat;
+            }
+
+            NearCacheConfig::NearCacheConfig(int32_t timeToLiveSeconds, int32_t maxIdleSeconds, bool invalidateOnChange,
+                                             InMemoryFormat inMemoryFormat, const EvictionConfig &evictConfig)
+                    : NearCacheConfig(name, inMemoryFormat) {
+                this->timeToLiveSeconds = timeToLiveSeconds;
+                this->maxIdleSeconds = maxIdleSeconds;
+                this->invalidateOnChange = invalidateOnChange;
+                this->evictionConfig = evictConfig;
+            }
+
+            const std::string &NearCacheConfig::getName() const {
+                return name;
+            }
+
+            NearCacheConfig &NearCacheConfig::setName(const std::string &name) {
+                this->name = name;
+                return *this;
+            }
+
+            int32_t NearCacheConfig::getTimeToLiveSeconds() const {
+                return timeToLiveSeconds;
+            }
+
+            NearCacheConfig &NearCacheConfig::setTimeToLiveSeconds(int32_t timeToLiveSeconds) {
+                this->timeToLiveSeconds = util::Preconditions::checkNotNegative(timeToLiveSeconds,
+                                                                                "TTL seconds cannot be negative!");
+                return *this;
+            }
+
+            int32_t NearCacheConfig::getMaxIdleSeconds() const {
+                return maxIdleSeconds;
+            }
+
+            NearCacheConfig &NearCacheConfig::setMaxIdleSeconds(int32_t maxIdleSeconds) {
+                this->maxIdleSeconds = util::Preconditions::checkNotNegative(maxIdleSeconds,
+                                                                             "Max-Idle seconds cannot be negative!");
+                return *this;
+            }
+
+            bool NearCacheConfig::isInvalidateOnChange() const {
+                return invalidateOnChange;
+            }
+
+            NearCacheConfig &NearCacheConfig::setInvalidateOnChange(bool invalidateOnChange) {
+                this->invalidateOnChange = invalidateOnChange;
+                return *this;
+            }
+
+            const InMemoryFormat &NearCacheConfig::getInMemoryFormat() const {
+                return inMemoryFormat;
+            }
+
+            NearCacheConfig &NearCacheConfig::setInMemoryFormat(const InMemoryFormat &inMemoryFormat) {
+                this->inMemoryFormat = inMemoryFormat;
+                return *this;
+            }
+
+            bool NearCacheConfig::isCacheLocalEntries() const {
+                return cacheLocalEntries;
+            }
+
+            NearCacheConfig &NearCacheConfig::setCacheLocalEntries(bool cacheLocalEntries) {
+                this->cacheLocalEntries = cacheLocalEntries;
+                return *this;
+            }
+
+            const NearCacheConfig::LocalUpdatePolicy &NearCacheConfig::getLocalUpdatePolicy() const {
+                return localUpdatePolicy;
+            }
+
+            NearCacheConfig &NearCacheConfig::setLocalUpdatePolicy(const LocalUpdatePolicy &localUpdatePolicy) {
+                this->localUpdatePolicy = localUpdatePolicy;
+                return *this;
+            }
+
+            EvictionConfig &NearCacheConfig::getEvictionConfig() {
+                return evictionConfig;
+            }
+
+            NearCacheConfig &NearCacheConfig::setEvictionConfig(const EvictionConfig &evictionConfig) {
+                this->evictionConfig = evictionConfig;
+                return *this;
+            }
+
+            int32_t NearCacheConfig::calculateMaxSize(int32_t maxSize) {
+                return (maxSize == 0) ? INT32_MAX : util::Preconditions::checkNotNegative(maxSize,
+                                                                                          "Max-size cannot be negative!");
+            }
+
+            std::ostream &operator<<(std::ostream &out, const NearCacheConfig &config) {
+                out << "NearCacheConfig{"
+                    << "timeToLiveSeconds=" << config.timeToLiveSeconds
+                    << ", maxIdleSeconds=" << config.maxIdleSeconds
+                    << ", invalidateOnChange=" << config.invalidateOnChange
+                    << ", inMemoryFormat=" << config.inMemoryFormat
+                    << ", cacheLocalEntries=" << config.cacheLocalEntries
+                    << ", localUpdatePolicy=" << config.localUpdatePolicy
+                    << config.evictionConfig;
+                out << '}';
+
+                return out;
+            }
         }
 
         ClientConfig::ClientConfig() : cluster_name_("dev"), loadBalancer(NULL), redoOperation(false),
@@ -603,6 +779,28 @@ namespace hazelcast {
             return networkConfig;
         }
 
+        ClientConfig &ClientConfig::addNearCacheConfig(const config::NearCacheConfig &nearCacheConfig) {
+            nearCacheConfigMap.emplace(nearCacheConfig.getName(), nearCacheConfig);
+            return *this;
+        }
+
+        const config::NearCacheConfig *ClientConfig::getNearCacheConfig(const std::string &name) const {
+            auto nearCacheConfig = internal::config::ConfigUtils::lookupByPattern(
+                    configPatternMatcher, nearCacheConfigMap, name);
+            if (nearCacheConfig) {
+                return nearCacheConfig;
+            }
+
+            auto config_it = nearCacheConfigMap.find("default");
+            if (config_it != nearCacheConfigMap.end()) {
+                return &nearCacheConfigMap.find("default")->second;
+            }
+
+            // not needed for c++ client since it is always native memory
+            //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
+            return nullptr;
+        }
+
         ClientConfig &ClientConfig::setNetworkConfig(const config::ClientNetworkConfig &networkConfig) {
             this->networkConfig = networkConfig;
             return *this;
@@ -634,40 +832,40 @@ namespace hazelcast {
             return *this;
         }
 
-        std::shared_ptr<config::ClientFlakeIdGeneratorConfig>
+        const config::ClientFlakeIdGeneratorConfig *
         ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+            auto config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
                     configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
-            if (config.get() != NULL) {
+            if (config) {
                 return config;
             }
             return getFlakeIdGeneratorConfig("default");
         }
 
 
-        std::shared_ptr<config::ClientFlakeIdGeneratorConfig>
+        const config::ClientFlakeIdGeneratorConfig *
         ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
             std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+            auto config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
                     configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
-            if (config.get() != NULL) {
+            if (config) {
                 return config;
             }
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> defConfig = flakeIdGeneratorConfigMap.get("default");
-            if (defConfig.get() == NULL) {
-                defConfig.reset(new config::ClientFlakeIdGeneratorConfig("default"));
-                flakeIdGeneratorConfigMap.put(defConfig->getName(), defConfig);
+            auto defConfig = flakeIdGeneratorConfigMap.find("default");
+            if (defConfig == flakeIdGeneratorConfigMap.end()) {
+                flakeIdGeneratorConfigMap.emplace("default", config::ClientFlakeIdGeneratorConfig("default"));
             }
-            config.reset(new config::ClientFlakeIdGeneratorConfig(*defConfig));
-            config->setName(name);
-            flakeIdGeneratorConfigMap.put(config->getName(), config);
-            return config;
+            defConfig = flakeIdGeneratorConfigMap.find("default");
+            config::ClientFlakeIdGeneratorConfig new_config = defConfig->second;
+            new_config.setName(name);
+            flakeIdGeneratorConfigMap.emplace(name, std::move(new_config));
+            return &flakeIdGeneratorConfigMap.find(name)->second;
         }
 
         ClientConfig &
-        ClientConfig::addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
-            flakeIdGeneratorConfigMap.put(config->getName(), config);
+        ClientConfig::addFlakeIdGeneratorConfig(const config::ClientFlakeIdGeneratorConfig &config) {
+            flakeIdGeneratorConfigMap.emplace(config.getName(), config);
             return *this;
         }
 

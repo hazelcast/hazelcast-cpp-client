@@ -181,7 +181,7 @@ namespace hazelcast {
 
                 std::atomic_bool alive;
                 logger &logger_;
-                std::chrono::steady_clock::duration connectionTimeoutMillis;
+                std::chrono::milliseconds connectionTimeoutMillis;
                 spi::ClientContext &client;
                 std::unique_ptr<boost::asio::io_context> ioContext;
                 SocketInterceptor socketInterceptor;
@@ -193,7 +193,7 @@ namespace hazelcast {
                 // TODO: change with CopyOnWriteArraySet<ConnectionListener> as in Java
                 util::ConcurrentSet<std::shared_ptr<ConnectionListener> > connectionListeners;
                 std::unique_ptr<hazelcast::util::hz_thread_pool> executor_;
-                int32_t connectionAttemptPeriod;
+                std::chrono::milliseconds connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
                 int32_t ioThreadCount;
                 bool shuffleMemberList;
@@ -211,7 +211,7 @@ namespace hazelcast {
                 boost::optional<boost::asio::steady_timer> connect_to_members_timer_;
                 std::atomic_bool connect_to_cluster_task_submitted_;
                 boost::uuids::uuid client_uuid_;
-                boost::chrono::steady_clock::duration authentication_timeout_;
+                boost::chrono::milliseconds authentication_timeout_;
 #ifdef __linux__
                 // default support for 16 byte atomics is missing for linux
                 util::Sync<boost::uuids::uuid> cluster_id_;

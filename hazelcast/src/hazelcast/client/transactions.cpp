@@ -77,7 +77,7 @@ namespace hazelcast {
                 return state;
             }
 
-            std::chrono::steady_clock::duration TransactionProxy::getTimeout() const {
+            std::chrono::milliseconds TransactionProxy::getTimeout() const {
                 return options.getTimeout();
             }
 
@@ -552,7 +552,7 @@ namespace hazelcast {
                 return context.getTxnId();
             }
 
-            std::chrono::steady_clock::duration TransactionalObject::getTimeout() const {
+            std::chrono::milliseconds TransactionalObject::getTimeout() const {
                 return context.getTimeout();
             }
         }
@@ -594,11 +594,11 @@ namespace hazelcast {
             return *this;
         }
 
-        std::chrono::steady_clock::duration TransactionOptions::getTimeout() const {
+        std::chrono::milliseconds TransactionOptions::getTimeout() const {
             return timeout;
         }
 
-        TransactionOptions &TransactionOptions::setTimeout(std::chrono::steady_clock::duration duration) {
+        TransactionOptions &TransactionOptions::setTimeout(std::chrono::milliseconds duration) {
             if (duration.count() <= 0) {
                 BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setTimeout",
                                                                        "Timeout must be positive!"));

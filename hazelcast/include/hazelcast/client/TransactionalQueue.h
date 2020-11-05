@@ -34,16 +34,16 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> offer(const E &e) {
-                return offer(e, std::chrono::steady_clock::duration::zero());
+                return offer(e, std::chrono::milliseconds::zero());
             }
 
             /**
-            * Transactional implementation of IQueue::offer(const E &e, std::chrono::steady_clock::duration timeout)
+            * Transactional implementation of IQueue::offer(const E &e, std::chrono::milliseconds timeout)
             *
-            * @see IQueue::offer(const E &e, std::chrono::steady_clock::duration timeout)
+            * @see IQueue::offer(const E &e, std::chrono::milliseconds timeout)
             */
             template<typename E>
-            boost::future<bool> offer(const E &e, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> offer(const E &e, std::chrono::milliseconds timeout) {
                 return proxy::TransactionalQueueImpl::offer(toData(e), timeout);
             }
 
@@ -54,16 +54,16 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<boost::optional<E>> poll() {
-                return poll<E>(std::chrono::steady_clock::duration::zero());
+                return poll<E>(std::chrono::milliseconds::zero());
             }
 
             /**
-            * Transactional implementation of IQueue::poll(std::chrono::steady_clock::duration timeout)
+            * Transactional implementation of IQueue::poll(std::chrono::milliseconds timeout)
             *
-            * @see IQueue::poll(std::chrono::steady_clock::duration timeout)
+            * @see IQueue::poll(std::chrono::milliseconds timeout)
             */
             template<typename E>
-            boost::future<boost::optional<E>> poll(std::chrono::steady_clock::duration timeout) {
+            boost::future<boost::optional<E>> poll(std::chrono::milliseconds timeout) {
                 return toObject<E>(proxy::TransactionalQueueImpl::pollData(timeout));
             }
 

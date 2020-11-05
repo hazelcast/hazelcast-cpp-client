@@ -116,21 +116,21 @@ namespace hazelcast {
 
                 boost::future<protocol::ClientMessage> deleteEntry(const serialization::pimpl::Data &key);
 
-                boost::future<bool> tryRemove(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout);
+                boost::future<bool> tryRemove(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout);
 
                 boost::future<bool> tryPut(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                            std::chrono::steady_clock::duration timeout);
+                            std::chrono::milliseconds timeout);
 
                 boost::future<boost::optional<serialization::pimpl::Data>>
                 putData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                        std::chrono::steady_clock::duration ttl);
+                        std::chrono::milliseconds ttl);
 
                 boost::future<protocol::ClientMessage> putTransient(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                                  std::chrono::steady_clock::duration ttl);
+                                  std::chrono::milliseconds ttl);
 
                 boost::future<boost::optional<serialization::pimpl::Data>>
                 putIfAbsentData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                                std::chrono::steady_clock::duration ttl);
+                                std::chrono::milliseconds ttl);
 
                 boost::future<bool> replace(const serialization::pimpl::Data &key, const serialization::pimpl::Data &oldValue,
                              const serialization::pimpl::Data &newValue);
@@ -140,20 +140,20 @@ namespace hazelcast {
 
                 boost::future<protocol::ClientMessage>
                 set(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                    std::chrono::steady_clock::duration ttl);
+                    std::chrono::milliseconds ttl);
 
                 boost::future<protocol::ClientMessage> lock(const serialization::pimpl::Data &key);
 
                 boost::future<protocol::ClientMessage>
-                lock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration leaseTime);
+                lock(const serialization::pimpl::Data &key, std::chrono::milliseconds leaseTime);
 
                 boost::future<bool> isLocked(const serialization::pimpl::Data &key);
 
-                boost::future<bool> tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout);
+                boost::future<bool> tryLock(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout);
 
                 boost::future<bool>
-                tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout,
-                        std::chrono::steady_clock::duration leaseTime);
+                tryLock(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout,
+                        std::chrono::milliseconds leaseTime);
 
                 boost::future<protocol::ClientMessage> unlock(const serialization::pimpl::Data &key);
 

@@ -571,11 +571,11 @@ namespace hazelcast {
                     responseThread.shutdown();
                 }
 
-                std::chrono::steady_clock::duration ClientInvocationServiceImpl::getInvocationTimeout() const {
+                std::chrono::milliseconds ClientInvocationServiceImpl::getInvocationTimeout() const {
                     return invocationTimeout;
                 }
 
-                std::chrono::steady_clock::duration ClientInvocationServiceImpl::getInvocationRetryPause() const {
+                std::chrono::milliseconds ClientInvocationServiceImpl::getInvocationRetryPause() const {
                     return invocationRetryPause;
                 }
 
@@ -695,7 +695,7 @@ namespace hazelcast {
                 const boost::shared_ptr<ClientClusterServiceImpl::member_list_snapshot> ClientClusterServiceImpl::EMPTY_SNAPSHOT(
                         new ClientClusterServiceImpl::member_list_snapshot{-1});
 
-                constexpr boost::chrono::steady_clock::duration ClientClusterServiceImpl::INITIAL_MEMBERS_TIMEOUT;
+                constexpr boost::chrono::milliseconds ClientClusterServiceImpl::INITIAL_MEMBERS_TIMEOUT;
 
                 ClientClusterServiceImpl::ClientClusterServiceImpl(hazelcast::client::spi::ClientContext &client)
                         : client(client), member_list_snapshot_(EMPTY_SNAPSHOT), labels_(client.getClientConfig().getLabels()),
@@ -1562,7 +1562,7 @@ namespace hazelcast {
 
                 std::exception_ptr
                 ClientTransactionManagerServiceImpl::newOperationTimeoutException(std::exception_ptr cause,
-                                                                                  std::chrono::steady_clock::duration invocationTimeout,
+                                                                                  std::chrono::milliseconds invocationTimeout,
                                                                                   std::chrono::steady_clock::time_point startTime) {
                     std::ostringstream sb;
                     auto now = std::chrono::steady_clock::now();
