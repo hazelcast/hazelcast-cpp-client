@@ -40,14 +40,14 @@ namespace hazelcast {
              *
              * @return the UUID of this endpoint
              */
-            boost::uuids::uuid getUuid() const;
+            boost::uuids::uuid get_uuid() const;
 
             /**
              * Returns the socket address for this endpoint.
              *
              * @return the socket address for this endpoint
              */
-            const boost::optional<Address> &getSocketAddress() const;
+            const boost::optional<Address> &get_socket_address() const;
 
         private:
             boost::uuids::uuid uuid_;

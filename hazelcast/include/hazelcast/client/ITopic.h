@@ -49,7 +49,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<void> publish(const E &message) {
-                return proxy::ITopicImpl::publish(toData<E>(message));
+                return proxy::ITopicImpl::publish(to_data<E>(message));
             }
 
             /**
@@ -67,11 +67,11 @@ namespace hazelcast {
             *
             * \return registration id.
             */
-            boost::future<boost::uuids::uuid> addMessageListener(topic::Listener &&listener) {
-                return proxy::ITopicImpl::addMessageListener(
-                        std::shared_ptr<impl::BaseEventHandler>(new topic::impl::TopicEventHandlerImpl(getName(),
-                                                                                                      getContext().getClientClusterService(),
-                                                                                                      getContext().getSerializationService(),
+            boost::future<boost::uuids::uuid> add_message_listener(topic::Listener &&listener) {
+                return proxy::ITopicImpl::add_message_listener(
+                        std::shared_ptr<impl::BaseEventHandler>(new topic::impl::TopicEventHandlerImpl(get_name(),
+                                                                                                      get_context().get_client_cluster_service(),
+                                                                                                      get_context().get_serialization_service(),
                                                                                                       std::move(listener))));
             }
 

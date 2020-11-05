@@ -42,49 +42,49 @@ namespace hazelcast {
 
                     std::string sign(const std::unordered_map<std::string, std::string> &attributes);
 
-                    std::string createFormattedCredential() const;
+                    std::string create_formatted_credential() const;
 
-                    std::string getCanonicalizedQueryString(const std::unordered_map<std::string, std::string> &attributes) const;
+                    std::string get_canonicalized_query_string(const std::unordered_map<std::string, std::string> &attributes) const;
                 private:
                     /* Task 1 */
-                    std::string getCanonicalizedRequest(const std::unordered_map<std::string, std::string> &attributes) const;
+                    std::string get_canonicalized_request(const std::unordered_map<std::string, std::string> &attributes) const;
 
-                    std::string getCanonicalHeaders() const;
+                    std::string get_canonical_headers() const;
 
-                    std::string getCanonicalizedQueryString(const std::vector<std::string> &list) const;
+                    std::string get_canonicalized_query_string(const std::vector<std::string> &list) const;
 
-                    std::vector<std::string> getListOfEntries(const std::unordered_map<std::string, std::string> &entries) const;
+                    std::vector<std::string> get_list_of_entries(const std::unordered_map<std::string, std::string> &entries) const;
 
-                    static std::string formatAttribute(const std::string &key, const std::string &value);
+                    static std::string format_attribute(const std::string &key, const std::string &value);
 
                     /* Task 2 */
-                    std::string createStringToSign(const std::string &canonicalRequest) const;
+                    std::string create_string_to_sign(const std::string &canonicalRequest) const;
 
-                    std::string getCredentialScope() const;
+                    std::string get_credential_scope() const;
 
                     /* Task 3 */
-                    std::vector<unsigned char> deriveSigningKey() const;
+                    std::vector<unsigned char> derive_signing_key() const;
 
-                    std::string createSignature(const std::string &stringToSign, const std::vector<unsigned char> &signingKey) const;
+                    std::string create_signature(const std::string &stringToSign, const std::vector<unsigned char> &signingKey) const;
 
-                    std::string hmacSHA256Hex(const std::vector<unsigned char> &key, const std::string &msg) const;
+                    std::string hmac_sh_a256_hex(const std::vector<unsigned char> &key, const std::string &msg) const;
 
-                    std::string convertToHexString(const unsigned char *buffer, unsigned int len) const;
+                    std::string convert_to_hex_string(const unsigned char *buffer, unsigned int len) const;
 
-                    unsigned int hmacSHA256Bytes(const void *key, int keyLen, const std::string &msg,
+                    unsigned int hmac_sh_a256_bytes(const void *key, int keyLen, const std::string &msg,
                                                  unsigned char *hash) const;
 
-                    unsigned int hmacSHA256Bytes(const std::string &key, const std::string &msg,
+                    unsigned int hmac_sh_a256_bytes(const std::string &key, const std::string &msg,
                                                  unsigned char *hash) const;
 
-                    unsigned int hmacSHA256Bytes(const std::vector<unsigned char> &key, const std::string &msg,
+                    unsigned int hmac_sh_a256_bytes(const std::vector<unsigned char> &key, const std::string &msg,
                                                  unsigned char *hash) const;
 
-                    unsigned int hmacSHA256Bytes(const void *keyBuffer, int keyLen, const unsigned char *data,
+                    unsigned int hmac_sh_a256_bytes(const void *keyBuffer, int keyLen, const unsigned char *data,
                                                  size_t dataLen,
                                                  unsigned char *hash) const;
 
-                    std::string sha256Hashhex(const std::string &in) const;
+                    std::string sha256_hashhex(const std::string &in) const;
 
                     static std::string NEW_LINE;
                     static size_t DATE_LENGTH;

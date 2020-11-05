@@ -39,7 +39,7 @@ namespace hazelcast {
 
                     void handle_topic(Data const & item, int64_t publishTime, boost::uuids::uuid uuid) override {
                         listener_.received_(Message(instanceName_, TypedData(std::move(item), serializationService_), publishTime,
-                                        clusterService_.getMember(uuid)));
+                                        clusterService_.get_member(uuid)));
                     }
                 private:
                     std::string instanceName_;

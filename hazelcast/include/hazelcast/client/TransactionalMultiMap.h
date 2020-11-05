@@ -36,7 +36,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<bool> put(const K &key, const V &value) {
-                return proxy::TransactionalMultiMapImpl::putData(toData(key), toData(value));
+                return proxy::TransactionalMultiMapImpl::put_data(to_data(key), to_data(value));
             }
 
             /**
@@ -46,7 +46,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<std::vector<V>> get(const K &key) {
-                return toObjectVector<V>(proxy::TransactionalMultiMapImpl::getData(toData(key)));
+                return to_object_vector<V>(proxy::TransactionalMultiMapImpl::get_data(to_data(key)));
             }
 
             /**
@@ -56,7 +56,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<bool> remove(const K &key, const V &value) {
-                return proxy::TransactionalMultiMapImpl::remove(toData(key), toData(value));
+                return proxy::TransactionalMultiMapImpl::remove(to_data(key), to_data(value));
             }
 
             /**
@@ -66,17 +66,17 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<std::vector<V>> remove(const K &key) {
-                return toObjectVector<V>(proxy::TransactionalMultiMapImpl::removeData(toData(key)));
+                return to_object_vector<V>(proxy::TransactionalMultiMapImpl::remove_data(to_data(key)));
             }
 
             /**
-            * Transactional implementation of Multimap#valueCount(key).
+            * Transactional implementation of Multimap#value_count(key).
             *
-            * @see Multimap#valueCount(key)
+            * @see Multimap#value_count(key)
             */
             template<typename K>
-            boost::future<int> valueCount(const K &key) {
-                return proxy::TransactionalMultiMapImpl::valueCount(toData(key));
+            boost::future<int> value_count(const K &key) {
+                return proxy::TransactionalMultiMapImpl::value_count(to_data(key));
             }
 
         private :

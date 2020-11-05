@@ -37,7 +37,7 @@ namespace hazelcast {
 
                     LocalMapStatsImpl(const std::shared_ptr<monitor::NearCacheStats> &stats);
 
-                    std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const override;
+                    std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const ;
                 private:
                     std::shared_ptr<monitor::NearCacheStats> nearCacheStats_;
                 };

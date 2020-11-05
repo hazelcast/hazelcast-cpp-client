@@ -46,12 +46,12 @@ namespace hazelcast {
             virtual void connect(const std::shared_ptr<connection::Connection> connection) = 0;
 
             virtual void
-            asyncWrite(const std::shared_ptr<connection::Connection> connection,
+            async_write(const std::shared_ptr<connection::Connection> connection,
                        const std::shared_ptr<spi::impl::ClientInvocation> invocation) = 0;
 
             virtual void close() = 0;
 
-            virtual Address getAddress() const = 0;
+            virtual Address get_address() const = 0;
 
             /**
              *
@@ -59,9 +59,9 @@ namespace hazelcast {
              *
              * @returns An address that represents the local endpoint of the socket.
              */
-            virtual boost::optional<Address> localSocketAddress() const = 0;
+            virtual boost::optional<Address> local_socket_address() const = 0;
 
-            virtual const Address &getRemoteEndpoint() const = 0;
+            virtual const Address &get_remote_endpoint() const = 0;
 
             virtual boost::asio::executor get_executor() noexcept = 0;
         };

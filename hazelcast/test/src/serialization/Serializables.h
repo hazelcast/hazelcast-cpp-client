@@ -58,9 +58,9 @@ namespace hazelcast {
 
                 bool operator !=(const Employee &employee) const;
 
-                int32_t getAge() const;
+                int32_t get_age() const;
 
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
                 bool operator<(const Employee &rhs) const;
 
@@ -236,205 +236,205 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<test::Employee> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::Employee &object, PortableWriter &writer);
+                static void write_portable(const test::Employee &object, PortableWriter &writer);
 
-                static test::Employee readPortable(PortableReader &reader);
+                static test::Employee read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::EmployeeEntryComparator> : public identified_data_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writeData(const test::EmployeeEntryComparator &object, ObjectDataOutput &writer);
+                static void write_data(const test::EmployeeEntryComparator &object, ObjectDataOutput &writer);
 
-                static test::EmployeeEntryComparator readData(ObjectDataInput &reader);
+                static test::EmployeeEntryComparator read_data(ObjectDataInput &reader);
             };
 
             template<>
             struct hz_serializer<test::EmployeeEntryKeyComparator> : public identified_data_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writeData(const test::EmployeeEntryKeyComparator &object, ObjectDataOutput &writer);
+                static void write_data(const test::EmployeeEntryKeyComparator &object, ObjectDataOutput &writer);
 
-                static test::EmployeeEntryKeyComparator readData(ObjectDataInput &reader);
+                static test::EmployeeEntryKeyComparator read_data(ObjectDataInput &reader);
             };
 
             template<>
             struct hz_serializer<test::TestMainPortable> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::TestMainPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestMainPortable &object, PortableWriter &writer);
 
-                static test::TestMainPortable readPortable(PortableReader &reader);
+                static test::TestMainPortable read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::TestRawDataPortable> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::TestRawDataPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestRawDataPortable &object, PortableWriter &writer);
 
-                static test::TestRawDataPortable readPortable(PortableReader &reader);
+                static test::TestRawDataPortable read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::TestDataSerializable> : public identified_data_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writeData(const test::TestDataSerializable &object, ObjectDataOutput &out);
+                static void write_data(const test::TestDataSerializable &object, ObjectDataOutput &out);
 
-                static test::TestDataSerializable readData(ObjectDataInput &in);
+                static test::TestDataSerializable read_data(ObjectDataInput &in);
             };
 
             template<>
             struct hz_serializer<test::TestInnerPortable> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::TestInnerPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestInnerPortable &object, PortableWriter &writer);
 
-                static test::TestInnerPortable readPortable(PortableReader &reader);
+                static test::TestInnerPortable read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::TestNamedPortable> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::TestNamedPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestNamedPortable &object, PortableWriter &writer);
 
-                static test::TestNamedPortable readPortable(PortableReader &reader);
+                static test::TestNamedPortable read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::TestNamedPortableV2> : public versioned_portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static int32_t getClassVersion();
+                static int32_t get_class_version();
 
-                static void writePortable(const test::TestNamedPortableV2 &object, PortableWriter &writer);
+                static void write_portable(const test::TestNamedPortableV2 &object, PortableWriter &writer);
 
-                static test::TestNamedPortableV2 readPortable(PortableReader &reader);
+                static test::TestNamedPortableV2 read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::TestNamedPortableV3> : public versioned_portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static int32_t getClassVersion();
+                static int32_t get_class_version();
 
-                static void writePortable(const test::TestNamedPortableV3 &object, PortableWriter &writer);
+                static void write_portable(const test::TestNamedPortableV3 &object, PortableWriter &writer);
 
-                static test::TestNamedPortableV3 readPortable(PortableReader &reader);
+                static test::TestNamedPortableV3 read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::TestInvalidWritePortable> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::TestInvalidWritePortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestInvalidWritePortable &object, PortableWriter &writer);
 
-                static test::TestInvalidWritePortable readPortable(PortableReader &reader);
+                static test::TestInvalidWritePortable read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::TestInvalidReadPortable> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::TestInvalidReadPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestInvalidReadPortable &object, PortableWriter &writer);
 
-                static test::TestInvalidReadPortable readPortable(PortableReader &reader);
+                static test::TestInvalidReadPortable read_portable(PortableReader &reader);
             };
 
             template<typename P>
             struct hz_serializer<test::ObjectCarryingPortable<P>> : public portable_serializer {
-                static int32_t getFactoryId() {
+                static int32_t get_factory_id() {
                     return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
                 }
 
-                static int32_t getClassId() {
+                static int32_t get_class_id() {
                     return static_cast<int32_t>(test::TestSerializationConstants::OBJECT_CARRYING_PORTABLE);
                 }
 
-                static void writePortable(const test::ObjectCarryingPortable<P> &object, PortableWriter &writer) {
-                    auto &output = writer.getRawDataOutput();
-                    output.writeObject<P>(object.carried_object);
+                static void write_portable(const test::ObjectCarryingPortable<P> &object, PortableWriter &writer) {
+                    auto &output = writer.get_raw_data_output();
+                    output.write_object<P>(object.carried_object);
                 }
 
-                static test::ObjectCarryingPortable<P> readPortable(PortableReader &reader) {
-                    ObjectDataInput& input = reader.getRawDataInput();
-                    return test::ObjectCarryingPortable<P>{input.readObject<P>().value()};
+                static test::ObjectCarryingPortable<P> read_portable(PortableReader &reader) {
+                    ObjectDataInput& input = reader.get_raw_data_input();
+                    return test::ObjectCarryingPortable<P>{input.read_object<P>().value()};
                 }
             };
 
             template<>
             struct hz_serializer<test::ChildTemplatedPortable1> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::ChildTemplatedPortable1 &object, PortableWriter &writer);
+                static void write_portable(const test::ChildTemplatedPortable1 &object, PortableWriter &writer);
 
-                static test::ChildTemplatedPortable1 readPortable(PortableReader &reader);
+                static test::ChildTemplatedPortable1 read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<test::ChildTemplatedPortable2> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const test::ChildTemplatedPortable2 &object, PortableWriter &writer);
+                static void write_portable(const test::ChildTemplatedPortable2 &object, PortableWriter &writer);
 
-                static test::ChildTemplatedPortable2 readPortable(PortableReader &reader);
+                static test::ChildTemplatedPortable2 read_portable(PortableReader &reader);
             };
 
             template<typename P>
             struct hz_serializer<test::ParentTemplatedPortable<P>> : public portable_serializer {
-                static int32_t getFactoryId() {
+                static int32_t get_factory_id() {
                     return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
                 }
 
-                static int32_t getClassId() {
+                static int32_t get_class_id() {
                     return static_cast<int32_t>(test::TestSerializationConstants::PARENT_TEMPLATED_CONSTANTS);
                 }
 
-                static void writePortable(const test::ParentTemplatedPortable<P> &object, PortableWriter &out) {
-                    out.writePortable("c", object.child.get_ptr());
+                static void write_portable(const test::ParentTemplatedPortable<P> &object, PortableWriter &out) {
+                    out.write_portable("c", object.child.get_ptr());
                 }
 
-                static test::ParentTemplatedPortable<P> readPortable(PortableReader &in) {
-                    return test::ParentTemplatedPortable<P>{in.readPortable<P>()};
+                static test::ParentTemplatedPortable<P> read_portable(PortableReader &in) {
+                    return test::ParentTemplatedPortable<P>{in.read_portable<P>()};
                 }
             };
 
             template<>
             struct hz_serializer<test::TestCustomPerson> : public custom_serializer {
-                static constexpr int32_t getTypeId() {
+                static constexpr int32_t get_type_id() {
                     return 666;
                 }
 
@@ -445,7 +445,7 @@ namespace hazelcast {
 
             template<>
             struct hz_serializer<test::TestCustomXSerializable> : public custom_serializer {
-                static constexpr int32_t getTypeId() {
+                static constexpr int32_t get_type_id() {
                     return 666;
                 }
 

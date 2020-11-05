@@ -48,7 +48,7 @@ namespace hazelcast {
                  *
                  * @return {@code true} if this task was cancelled before it completed
                  */
-                virtual bool isCancelled() = 0;
+                virtual bool is_cancelled() = 0;
             };
         }
     }

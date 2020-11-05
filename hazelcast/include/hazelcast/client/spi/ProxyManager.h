@@ -43,7 +43,7 @@ namespace hazelcast {
                 explicit ProxyManager(ClientContext &context);
 
                 template<typename T>
-                std::shared_ptr<T> getOrCreateProxy(const std::string &service, const std::string &id) {
+                std::shared_ptr<T> get_or_create_proxy(const std::string &service, const std::string &id) {
                     DefaultObjectNamespace ns(service, id);
 
                     std::shared_future<std::shared_ptr<ClientProxy>> proxyFuture;
@@ -93,7 +93,7 @@ namespace hazelcast {
                  *
                  * @param proxy the proxy to destroy.
                  */
-                boost::future<void> destroyProxy(ClientProxy &proxy);
+                boost::future<void> destroy_proxy(ClientProxy &proxy);
 
                 void init();
 

@@ -507,7 +507,7 @@ The following example first creates a programmatic configuration object. Then, i
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config); // Connects to the cluster
-    std::cout << "Started the Hazelcast C++ client instance " << hz.getName() << std::endl; // Prints client instance name
+    std::cout << "Started the Hazelcast C++ client instance " << hz.get_name() << std::endl; // Prints client instance name
     return 0;
 }
 ```
@@ -842,7 +842,7 @@ public:
         writer.writeLong("lastOrder", lastOrder);
     }
 
-    virtual void readPortable(serialization::PortableReader &reader) {
+    virtual void read_portable(serialization::PortableReader &reader) {
         id = reader.readInt("id");
         name = *reader.readUTF("name");
         lastOrder = reader.readLong("lastOrder");
@@ -902,7 +902,7 @@ public:
     virtual ~Musician() {
     }
 
-    const std::string &getName() const {
+    const std::string &get_name() const {
         return name;
     }
 
@@ -926,7 +926,7 @@ public:
 
     virtual void write(serialization::ObjectDataOutput &out, const void *object) {
         const Musician *csObject = static_cast<const Musician *>(object);
-        const std::string &value = csObject->getName();
+        const std::string &value = csObject->get_name();
         int length = (int) value.length();
         std::vector<hazelcast::byte> bytes;
         for (int i = 0; i < length; ++i) {
@@ -977,7 +977,7 @@ In order to use JSON serialization, you should use the `HazelcastJsonValue` obje
             "map");
 ```
 
-We constructed a map in the cluster which has `string` as the key and `HazelcastJsonValue` as the value. `HazelcastJsonValue` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `HazelcastJsonValue` object using the `toString()` method. 
+We constructed a map in the cluster which has `string` as the key and `HazelcastJsonValue` as the value. `HazelcastJsonValue` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `HazelcastJsonValue` object using the `to_string()` method. 
 
 You can construct a `HazelcastJsonValue` using one of the constructors. All constructors accept the JSON formatted string as the parameter. No JSON parsing is performed but it is your responsibility to provide correctly formatted JSON strings. The client will not validate the string, and it will send it to the cluster as it is. If you submit incorrectly formatted JSON strings and, later, if you query those objects, it is highly possible that you will get formatting errors since the server will fail to deserialize or find the query fields.
 
@@ -996,7 +996,7 @@ You can query JSON objects in the cluster using the `Predicate`s of your choice.
             query::GreaterLessPredicate<int>("age", 6, false, true));
 
     std::cout << "Retrieved " << result.size() << " values whose age is less than 6." << std::endl;
-    std::cout << "Entry is:" << result[0].toString() << std::endl;
+    std::cout << "Entry is:" << result[0].to_string() << std::endl;
 ```
 
 ## 4.5. Global Serialization
@@ -1762,10 +1762,10 @@ public:
         const std::string *object = message->getMessageObject();
         if (NULL != object) {
             std::cout << "[GenericListener::onMessage] Received message: " << *message->getMessageObject() <<
-            " for topic:" << message->getName();
+            " for topic:" << message->get_name();
         } else {
             std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
-            message->getName();
+            message->get_name();
         }
     }
 
@@ -1797,7 +1797,7 @@ int main() {
     boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
     
     MyListener listener;
-    const std::string &listenerId = topic->addMessageListener(listener);
+    const std::string &listenerId = topic->add_message_listener(listener);
 
     std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
 
@@ -2234,7 +2234,7 @@ You can add event listeners to the distributed data structures.
 
 #### 7.5.2.1. Listening for Map Events
 
-You can listen to map-wide or entry-based events by registering an instance of the `EntryListener` class. You should provide the `EntryListener` instance with function objects for each type of event you want to listen to and then use `IMap::addEntryListener` to register it.
+You can listen to map-wide or entry-based events by registering an instance of the `EntryListener` class. You should provide the `EntryListener` instance with function objects for each type of event you want to listen to and then use `IMap::add_entry_listener` to register it.
 
 An entry-based event is fired after operations that affect a specific entry. For example, `IMap::put()`, `IMap::remove()` or `IMap::evict()`. The corresponding function that you provided to the listener will be called with an `EntryEvent` when an entry-based event occurs.
 
@@ -2246,7 +2246,7 @@ int main() {
 
     auto map = hz.getMap("EntryListenerExampleMap");
 
-    auto registrationId = map.addEntryListener(
+    auto registrationId = map.add_entry_listener(
         EntryListener().
             on_added([](hazelcast::client::EntryEvent &&event) {
                 std::cout << "Entry added:" << event.getKey().get<int>().value() 
@@ -2277,7 +2277,7 @@ int main() {
 
     auto map = hz.getMap("EntryListenerExampleMap");
 
-    auto registrationId = map.addEntryListener(
+    auto registrationId = map.add_entry_listener(
         EntryListener().
             on_map_cleared([](hazelcast::client::MapEvent &&event) {
                 std::cout << "Map cleared:" << event.getNumberOfEntriesAffected() << std::endl; // Map Cleared: 3
@@ -2561,7 +2561,7 @@ public:
         return *attribute == "true";
     }
 
-    virtual void toString(std::ostream &os) const {
+    virtual void to_string(std::ostream &os) const {
         os << "MyMemberSelector";
     }
 };
@@ -2782,7 +2782,7 @@ public:
         writer.writeDouble(salary);
     }
 
-    virtual void readPortable(serialization::PortableReader &reader) {
+    virtual void read_portable(serialization::PortableReader &reader) {
         id = reader.readInt();
         name = *reader.readUTF();
         active = reader.readBoolean();

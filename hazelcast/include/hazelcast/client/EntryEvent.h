@@ -34,7 +34,7 @@ namespace hazelcast {
          * @param <K> key of the map entry
          * @param <V> value of the map entry
          * @see EntryListener
-         * @see IMap#addEntryListener(Listener, boolean)
+         * @see IMap#add_entry_listener(Listener, boolean)
          */
         class HAZELCAST_API EntryEvent {
         public:
@@ -61,14 +61,14 @@ namespace hazelcast {
              *
              * @return the key
              */
-            const TypedData &getKey() const;
+            const TypedData &get_key() const;
 
             /**
              * Returns the old value of the entry event
              *
              * @return The older value for the entry
              */
-            const TypedData &getOldValue() const;
+            const TypedData &get_old_value() const;
 
             /**
              *
@@ -76,7 +76,7 @@ namespace hazelcast {
              *
              * @return The value of for the entry
              */
-            const TypedData &getValue() const;
+            const TypedData &get_value() const;
 
             /**
             *
@@ -84,28 +84,28 @@ namespace hazelcast {
             *
             * @return merging value
             */
-            const TypedData &getMergingValue() const;
+            const TypedData &get_merging_value() const;
 
             /**
              * Returns the member fired this event.
              *
              * @return the member fired this event.
              */
-            const Member &getMember() const;
+            const Member &get_member() const;
 
             /**
              * Return the event type
              *
              * @return event type
              */
-            type getEventType() const;
+            type get_event_type() const;
 
             /**
              * Returns the name of the map for this event.
              *
              * @return name of the map.
              */
-            const std::string &getName() const;
+            const std::string &get_name() const;
 
             friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const EntryEvent &event);
 

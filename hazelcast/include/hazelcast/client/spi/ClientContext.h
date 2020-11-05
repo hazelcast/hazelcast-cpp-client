@@ -102,45 +102,45 @@ namespace hazelcast {
 
                 explicit ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
 
-                serialization::pimpl::SerializationService &getSerializationService();
+                serialization::pimpl::SerializationService &get_serialization_service();
 
-                impl::ClientClusterServiceImpl & getClientClusterService();
+                impl::ClientClusterServiceImpl & get_client_cluster_service();
 
-                impl::ClientInvocationServiceImpl &getInvocationService();
+                impl::ClientInvocationServiceImpl &get_invocation_service();
 
-                ClientConfig &getClientConfig();
+                ClientConfig &get_client_config();
 
-                impl::ClientPartitionServiceImpl & getPartitionService();
+                impl::ClientPartitionServiceImpl & get_partition_service();
 
-                LifecycleService &getLifecycleService();
+                LifecycleService &get_lifecycle_service();
 
-                spi::impl::listener::listener_service_impl &getClientListenerService();
+                spi::impl::listener::listener_service_impl &get_client_listener_service();
 
-                connection::ClientConnectionManagerImpl &getConnectionManager();
+                connection::ClientConnectionManagerImpl &get_connection_manager();
 
-                internal::nearcache::NearCacheManager &getNearCacheManager();
+                internal::nearcache::NearCacheManager &get_near_cache_manager();
 
-                ClientProperties &getClientProperties();
+                ClientProperties &get_client_properties();
 
-                Cluster &getCluster();
+                Cluster &get_cluster();
 
-                std::shared_ptr<impl::sequence::CallIdSequence> &getCallIdSequence() const;
+                std::shared_ptr<impl::sequence::CallIdSequence> &get_call_id_sequence() const;
 
-                const protocol::ClientExceptionFactory &getClientExceptionFactory() const;
+                const protocol::ClientExceptionFactory &get_client_exception_factory() const;
 
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
-                impl::ClientExecutionServiceImpl &getClientExecutionService() const;
+                impl::ClientExecutionServiceImpl &get_client_execution_service() const;
 
-                const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
+                const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &get_lock_reference_id_generator();
 
-                std::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
+                std::shared_ptr<client::impl::HazelcastClientInstanceImpl> get_hazelcast_client_implementation();
 
-                spi::ProxyManager &getProxyManager();
+                spi::ProxyManager &get_proxy_manager();
 
-                logger &getLogger();
+                logger &get_logger();
 
-                client::impl::statistics::Statistics &getClientstatistics();
+                client::impl::statistics::Statistics &get_clientstatistics();
 
                 spi::impl::listener::cluster_view_listener &get_cluster_view_listener();
 

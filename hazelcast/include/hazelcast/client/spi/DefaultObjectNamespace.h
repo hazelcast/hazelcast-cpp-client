@@ -38,14 +38,14 @@ namespace hazelcast {
                  *
                  * @return the service name
                  */
-                const std::string &getServiceName() const;
+                const std::string &get_service_name() const;
 
                 /**
                  * Gets the object name within the service.
                  *
                  * @return the object name within the service
                  */
-                const std::string &getObjectName() const;
+                const std::string &get_object_name() const;
 
                 bool operator==(const DefaultObjectNamespace &rhs) const;
 

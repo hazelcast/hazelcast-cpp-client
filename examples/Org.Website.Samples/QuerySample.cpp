@@ -34,21 +34,21 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<User> : portable_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 3;
                 }
 
-                static void writePortable(const User &object, hazelcast::client::serialization::PortableWriter &out) {
+                static void write_portable(const User &object, hazelcast::client::serialization::PortableWriter &out) {
                     out.write("username", object.username);
                     out.write("age", object.age);
                     out.write("active", object.active);
                 }
 
-                static User readPortable(hazelcast::client::serialization::PortableReader &in) {
+                static User read_portable(hazelcast::client::serialization::PortableReader &in) {
                     return User{in.read<std::string>("username"), in.read<int32_t>("age"), in.read<bool>("active")};
                 }
             };
@@ -57,7 +57,7 @@ namespace hazelcast {
 }
 
 
-void generateUsers(std::shared_ptr<IMap> users) {
+void generate_users(std::shared_ptr<IMap> users) {
     users->put<std::string, User>("Rod", User{"Rod", 19, true}).get();
     users->put<std::string, User>("Jane", User{"Jane", 20, true}).get();
     users->put<std::string, User>("Freddy", User{"Freddy", 23, true}).get();
@@ -66,9 +66,9 @@ void generateUsers(std::shared_ptr<IMap> users) {
 int main() {
     HazelcastClient hz;
     // Get a Distributed Map called "users"
-    auto users = hz.getMap("users");
+    auto users = hz.get_map("users");
     // Add some users to the Distributed Map
-    generateUsers(users);
+    generate_users(users);
     // Create a Predicate from a String (a SQL like Where clause)
     // Creating the same Predicate as above but with AndPredicate builder
     query::AndPredicate criteriaQuery(hz, query::EqualPredicate(hz, "active", true),

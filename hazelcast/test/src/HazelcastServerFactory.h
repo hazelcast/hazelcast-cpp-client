@@ -43,15 +43,15 @@ namespace hazelcast {
 
                 HazelcastServerFactory(const std::string &serverAddress, const std::string &serverXmlConfigFilePath);
 
-                const std::string& getServerAddress();
+                const std::string& get_server_address();
 
-                remote::Member startServer();
+                remote::Member start_server();
 
-                bool shutdownServer(const remote::Member &member);
+                bool shutdown_server(const remote::Member &member);
 
-                bool terminateServer(const remote::Member &member);
+                bool terminate_server(const remote::Member &member);
 
-                const std::string &getClusterId() const;
+                const std::string &get_cluster_id() const;
 
                 ~HazelcastServerFactory();
 
@@ -60,7 +60,7 @@ namespace hazelcast {
                 std::string serverAddress_;
                 std::string clusterId_;
 
-                std::string readFromXmlFile(const std::string &xmlFilePath);
+                std::string read_from_xml_file(const std::string &xmlFilePath);
             };
         }
     }

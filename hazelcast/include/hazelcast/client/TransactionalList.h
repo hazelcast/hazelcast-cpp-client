@@ -32,7 +32,7 @@ namespace hazelcast {
              */
             template<typename E>
             boost::future<bool> add(const E &e) {
-                return proxy::TransactionalListImpl::add(toData(e));
+                return proxy::TransactionalListImpl::add(to_data(e));
             }
 
             /**
@@ -42,7 +42,7 @@ namespace hazelcast {
              */
             template<typename E>
             boost::future<bool> remove(const E &e) {
-                return proxy::TransactionalListImpl::remove(toData(e));
+                return proxy::TransactionalListImpl::remove(to_data(e));
             }
 
         private:

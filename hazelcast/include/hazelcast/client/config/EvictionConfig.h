@@ -84,21 +84,21 @@ namespace hazelcast {
 
                 EvictionConfig();
 
-                int32_t getSize() const;
+                int32_t get_size() const;
 
-                EvictionConfig &setSize(int32_t size);
+                EvictionConfig &set_size(int32_t size);
 
-                MaxSizePolicy getMaximumSizePolicy() const;
+                MaxSizePolicy get_maximum_size_policy() const;
 
-                EvictionConfig &setMaximumSizePolicy(const MaxSizePolicy &maxSizePolicy);
+                EvictionConfig &set_maximum_size_policy(const MaxSizePolicy &maxSizePolicy);
 
-                EvictionPolicy getEvictionPolicy() const;
+                EvictionPolicy get_eviction_policy() const;
 
-                EvictionConfig &setEvictionPolicy(EvictionPolicy policy);
+                EvictionConfig &set_eviction_policy(EvictionPolicy policy);
 
-                internal::eviction::EvictionStrategyType::Type getEvictionStrategyType() const;
+                internal::eviction::EvictionStrategyType::Type get_eviction_strategy_type() const;
 
-                internal::eviction::EvictionPolicyType getEvictionPolicyType() const;
+                internal::eviction::EvictionPolicyType get_eviction_policy_type() const;
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const EvictionConfig &config);
 

@@ -45,7 +45,7 @@ namespace hazelcast {
                         FailFastCallIdSequence(int32_t maxConcurrentInvocations);
 
                     protected:
-                        void handleNoSpaceLeft() override;
+                        void handle_no_space_left() override;
                     };
                 }
             }

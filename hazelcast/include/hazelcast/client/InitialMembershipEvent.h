@@ -49,14 +49,14 @@ namespace hazelcast {
              *
              * @return a set of members.
              */
-            const std::unordered_set<Member> &getMembers() const;
+            const std::unordered_set<Member> &get_members() const;
 
             /**
              * Returns the cluster of the event.
              *
              * @return the cluster of the event.
              */
-            Cluster &getCluster();
+            Cluster &get_cluster();
 
         private:
             Cluster &cluster_;

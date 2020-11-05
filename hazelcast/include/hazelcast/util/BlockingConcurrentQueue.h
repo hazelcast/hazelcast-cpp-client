@@ -82,7 +82,7 @@ namespace hazelcast {
                 isInterrupted_ = true;
             }
 
-            bool isEmpty() {
+            bool is_empty() {
                 std::lock_guard<std::mutex> lock(m_);
                 return internalQueue_.empty();
             }
@@ -95,7 +95,7 @@ namespace hazelcast {
         private:
             std::mutex m_;
             /**
-             * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
+             * Did not choose std::list which shall give better remove_all performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
             std::list<T> internalQueue_;

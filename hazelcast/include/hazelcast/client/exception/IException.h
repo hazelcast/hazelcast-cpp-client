@@ -62,17 +62,17 @@ namespace hazelcast {
                  */
                 char const *what() const noexcept override;
 
-                const std::string &getSource() const;
+                const std::string &get_source() const;
 
-                const std::string &getMessage() const;
+                const std::string &get_message() const;
 
-                const std::string &getDetails() const;
+                const std::string &get_details() const;
 
-                int32_t getErrorCode() const;
+                int32_t get_error_code() const;
 
-                bool isRuntimeException() const;
+                bool is_runtime_exception() const;
 
-                bool isRetryable() const;
+                bool is_retryable() const;
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
 

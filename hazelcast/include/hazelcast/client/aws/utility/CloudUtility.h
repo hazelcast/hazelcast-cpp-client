@@ -48,10 +48,10 @@ namespace hazelcast {
                      * @param logger the logger to be used for logging any warnings during unmarshal.
                      * @return map from private to public IP or empty map in case of exceptions
                      */
-                    static std::unordered_map<std::string, std::string> unmarshalTheResponse(std::istream &stream,
+                    static std::unordered_map<std::string, std::string> unmarshal_the_response(std::istream &stream,
                             logger &lg);
 
-                    static void unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
+                    static void unmarshal_json_response(std::istream &stream, config::ClientAwsConfig &awsConfig,
                                                       std::unordered_map<std::string, std::string> &attributes);
                 };
             }

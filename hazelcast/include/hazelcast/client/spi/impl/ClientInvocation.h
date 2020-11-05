@@ -106,34 +106,34 @@ namespace hazelcast {
 
                     boost::future<protocol::ClientMessage> invoke();
 
-                    boost::future<protocol::ClientMessage> invokeUrgent();
+                    boost::future<protocol::ClientMessage> invoke_urgent();
 
                     void run();
 
-                    virtual const std::string getName() const;
+                    virtual const std::string get_name() const;
 
                     void notify(const std::shared_ptr<protocol::ClientMessage> &clientMessage);
 
-                    void notifyException(std::exception_ptr exception);
+                    void notify_exception(std::exception_ptr exception);
 
                     void notify_backup();
 
-                    std::shared_ptr<connection::Connection> getSendConnection() const;
+                    std::shared_ptr<connection::Connection> get_send_connection() const;
 
-                    std::shared_ptr<connection::Connection> getSendConnectionOrWait() const;
+                    std::shared_ptr<connection::Connection> get_send_connection_or_wait() const;
 
                     void
-                    setSendConnection(const std::shared_ptr<connection::Connection> &sendConnection);
+                    set_send_connection(const std::shared_ptr<connection::Connection> &sendConnection);
 
-                    std::shared_ptr<protocol::ClientMessage> getClientMessage() const;
+                    std::shared_ptr<protocol::ClientMessage> get_client_message() const;
 
-                    const std::shared_ptr<EventHandler < protocol::ClientMessage> > &getEventHandler() const;
+                    const std::shared_ptr<EventHandler < protocol::ClientMessage> > &get_event_handler() const;
 
-                    void setEventHandler(const std::shared_ptr<EventHandler < protocol::ClientMessage>> &eventHandler);
+                    void set_event_handler(const std::shared_ptr<EventHandler < protocol::ClientMessage>> &eventHandler);
 
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
-                    boost::promise<protocol::ClientMessage> &getPromise();
+                    boost::promise<protocol::ClientMessage> &get_promise();
 
                     void detect_and_handle_backup_timeout(const std::chrono::milliseconds &backupTimeout);
                 private:
@@ -186,9 +186,9 @@ namespace hazelcast {
                                      boost::uuids::uuid uuid = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
                                                                 0x0, 0x0, 0x0, 0x0, 0x0});
 
-                    void invokeOnSelection();
+                    void invoke_on_selection();
 
-                    bool isBindToSingleConnection() const;
+                    bool is_bind_to_single_connection() const;
 
                     void retry();
 
@@ -200,9 +200,9 @@ namespace hazelcast {
 
                     void operator=(const ClientInvocation &rhs) = delete;
 
-                    std::shared_ptr<protocol::ClientMessage> copyMessage();
+                    std::shared_ptr<protocol::ClientMessage> copy_message();
 
-                    void setException(const exception::IException &e, boost::exception_ptr exceptionPtr);
+                    void set_exception(const exception::IException &e, boost::exception_ptr exceptionPtr);
 
                     void log_exception(exception::IException &e);
 

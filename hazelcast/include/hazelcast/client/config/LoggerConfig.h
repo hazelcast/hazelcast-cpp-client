@@ -69,7 +69,7 @@ namespace hazelcast {
                  * \return *this
                  */
                 LoggerConfig &handler(logger::handler_type handler) {
-                    util::Preconditions::checkTrue(handler, "log handler may not be empty");
+                    util::Preconditions::check_true(handler, "log handler may not be empty");
                     handler_ = std::move(handler);
                     return *this;
                 }

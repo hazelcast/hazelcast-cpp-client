@@ -17,9 +17,9 @@
 
 int main() {
     hazelcast::client::ClientConfig config;
-    config.getNetworkConfig().addAddress(hazelcast::client::Address("127.0.0.1", 5702)).addAddress(
-            hazelcast::client::Address("127.0.0.1", 9090)).addAddress(hazelcast::client::Address("127.0.0.1", 9091))
-            .addAddress(hazelcast::client::Address("127.0.0.1", 5701));
+    config.get_network_config().add_address(hazelcast::client::Address("127.0.0.1", 5702)).add_address(
+            hazelcast::client::Address("127.0.0.1", 9090)).add_address(hazelcast::client::Address("127.0.0.1", 9091))
+            .add_address(hazelcast::client::Address("127.0.0.1", 5701));
 
     /**
      * Client shuffles the given member list to prevent all clients to connect to the same node when
@@ -28,7 +28,7 @@ int main() {
      *
      * We force the client to not shuffle and try connect in the provided order the addresses are added.
      */
-    config.setProperty("hazelcast.client.shuffle.member.list", "false");
+    config.set_property("hazelcast.client.shuffle.member.list", "false");
 
     // Make sure that there is only one member in the cluster and it is started at 127.0.0.1:5701. This will mean that
     // the client will try all the ip addresses added before this member address until it connects successfully to the

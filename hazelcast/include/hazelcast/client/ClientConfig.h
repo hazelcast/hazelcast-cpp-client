@@ -122,18 +122,18 @@ namespace hazelcast {
              *
              * \return the configured cluster name
              */
-            const std::string &getClusterName() const;
+            const std::string &get_cluster_name() const;
 
-            ClientConfig &setClusterName(const std::string &clusterName);
+            ClientConfig &set_cluster_name(const std::string &clusterName);
 
             /**
             *  There are two types of credentials you can provide, \username_password_credentials and \token_credentials
             *
             *  \return itself ClientConfig
             */
-            ClientConfig &setCredentials(const std::shared_ptr<security::credentials> &credential);
+            ClientConfig &set_credentials(const std::shared_ptr<security::credentials> &credential);
 
-            const std::shared_ptr<security::credentials> &getCredentials() const;
+            const std::shared_ptr<security::credentials> &get_credentials() const;
 
             /**
             * If true, client will redo the operations that were executing on the server and client lost the connection.
@@ -146,26 +146,26 @@ namespace hazelcast {
             * \param redoOperation
             * return itself ClientConfig
             */
-            ClientConfig &setRedoOperation(bool redoOperation);
+            ClientConfig &set_redo_operation(bool redoOperation);
 
             /**
             *
             * see setRedoOperation
             * returns redoOperation
             */
-            bool isRedoOperation() const;
+            bool is_redo_operation() const;
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
             *
             * \return itself ClientConfig
             */
-            ClientConfig &setSocketInterceptor(SocketInterceptor &&interceptor);
+            ClientConfig &set_socket_interceptor(SocketInterceptor &&interceptor);
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
             */
-            const SocketInterceptor &getSocketInterceptor() const;
+            const SocketInterceptor &get_socket_interceptor() const;
 
             /**
             * Adds a listener to configuration to be registered when HazelcastClient starts.
@@ -177,13 +177,13 @@ namespace hazelcast {
             * \param listener LifecycleListener
             * \return itself ClientConfig
             */
-            ClientConfig &addListener(LifecycleListener &&listener);
+            ClientConfig &add_listener(LifecycleListener &&listener);
 
             /**
             *
             * \return registered lifecycleListeners
             */
-            const std::vector<LifecycleListener> &getLifecycleListeners() const;
+            const std::vector<LifecycleListener> &get_lifecycle_listeners() const;
 
             /**
             * Adds a listener to configuration to be registered when HazelcastClient starts.
@@ -195,21 +195,21 @@ namespace hazelcast {
             * \param listener MembershipListener
             * \return itself ClientConfig
             */
-            ClientConfig &addListener(MembershipListener &&listener);
+            ClientConfig &add_listener(MembershipListener &&listener);
 
             /**
             * Returns registered membershipListeners
             *
             * \return registered membershipListeners
             */
-            const std::vector<MembershipListener> &getMembershipListeners() const;
+            const std::vector<MembershipListener> &get_membership_listeners() const;
 
             /**
             * Used to distribute the operations to multiple Endpoints.
             *
             * \return loadBalancer
             */
-            LoadBalancer *const getLoadBalancer();
+            LoadBalancer *const get_load_balancer();
 
             /**
             * Used to distribute the operations to multiple Endpoints.
@@ -219,13 +219,13 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            ClientConfig &setLoadBalancer(LoadBalancer *loadBalancer);
+            ClientConfig &set_load_balancer(LoadBalancer *loadBalancer);
 
             /**
             *
             *  \return serializationConfig
             */
-            SerializationConfig &getSerializationConfig();
+            SerializationConfig &get_serialization_config();
 
             /**
             * SerializationConfig is used to
@@ -234,14 +234,14 @@ namespace hazelcast {
             * \param serializationConfig
             * \return itself ClientConfig
             */
-            ClientConfig &setSerializationConfig(SerializationConfig const &serializationConfig);
+            ClientConfig &set_serialization_config(SerializationConfig const &serializationConfig);
 
             /**
             * Gets a reference to properties map
             *
             * \return properties map
             */
-            const std::unordered_map<std::string, std::string> &getProperties() const;
+            const std::unordered_map<std::string, std::string> &get_properties() const;
 
             /**
             * Sets the value of a named property
@@ -252,7 +252,7 @@ namespace hazelcast {
             * \param value value of the property
             * \return itself ClientConfig
             */
-            ClientConfig &setProperty(const std::string &name, const std::string &value);
+            ClientConfig &set_property(const std::string &name, const std::string &value);
 
             /**
              * Adds a ClientReliableTopicConfig.
@@ -260,7 +260,7 @@ namespace hazelcast {
              * \param reliableTopicConfig the ReliableTopicConfig to add
              * \return configured {\link ClientConfig} for chaining
              */
-            ClientConfig &addReliableTopicConfig(const config::ReliableTopicConfig &reliableTopicConfig);
+            ClientConfig &add_reliable_topic_config(const config::ReliableTopicConfig &reliableTopicConfig);
 
             /**
              * Gets the ClientReliableTopicConfig for a given reliable topic name.
@@ -268,7 +268,7 @@ namespace hazelcast {
              * \param name the name of the reliable topic
              * \return the found config. If none is found, a default configured one is returned.
              */
-            const config::ReliableTopicConfig &getReliableTopicConfig(const std::string &name);
+            const config::ReliableTopicConfig &get_reliable_topic_config(const std::string &name);
 
             /**
              * Helper method to add a new NearCacheConfig
@@ -279,7 +279,7 @@ namespace hazelcast {
              * 
              * Memory ownership of the config is passed to the client config
              */
-            ClientConfig &addNearCacheConfig(const config::NearCacheConfig &nearCacheConfig);
+            ClientConfig &add_near_cache_config(const config::NearCacheConfig &nearCacheConfig);
 
             /**
              * Gets the NearCacheConfig configured for the map / cache with name
@@ -288,7 +288,7 @@ namespace hazelcast {
              * \return Configured NearCacheConfig
              * @see NearCacheConfig
              */
-            const config::NearCacheConfig *getNearCacheConfig(const std::string &name) const;
+            const config::NearCacheConfig *get_near_cache_config(const std::string &name) const;
 
             /**
              * Gets {\link com.hazelcast.client.config.ClientNetworkConfig}
@@ -296,7 +296,7 @@ namespace hazelcast {
              * \return {\link com.hazelcast.client.config.ClientNetworkConfig}
              * @see com.hazelcast.client.config.ClientNetworkConfig
              */
-            config::ClientNetworkConfig &getNetworkConfig();
+            config::ClientNetworkConfig &get_network_config();
 
             /**
              * Sets {\link com.hazelcast.client.config.ClientNetworkConfig}
@@ -305,18 +305,18 @@ namespace hazelcast {
              * \return configured ClientConfig for chaining
              * @see com.hazelcast.client.config.ClientNetworkConfig
              */
-            ClientConfig &setNetworkConfig(const config::ClientNetworkConfig &networkConfig);
+            ClientConfig &set_network_config(const config::ClientNetworkConfig &networkConfig);
 
-            const std::shared_ptr<std::string> &getInstanceName() const;
+            const std::shared_ptr<std::string> &get_instance_name() const;
 
-            void setInstanceName(const std::shared_ptr<std::string> &instanceName);
+            void set_instance_name(const std::shared_ptr<std::string> &instanceName);
 
             /**
              * Pool size for internal ExecutorService which handles responses etc.
              *
              * \return int Executor pool size.
              */
-            int32_t getExecutorPoolSize() const;
+            int32_t get_executor_pool_size() const;
 
             /**
              * Sets Client side Executor pool size.
@@ -324,12 +324,12 @@ namespace hazelcast {
              * \param executorPoolSize pool size
              * \return configured ClientConfig for chaining
              */
-            void setExecutorPoolSize(int32_t executorPoolSize);
+            void set_executor_pool_size(int32_t executorPoolSize);
 
-            config::ClientConnectionStrategyConfig &getConnectionStrategyConfig();
+            config::ClientConnectionStrategyConfig &get_connection_strategy_config();
 
             ClientConfig &
-            setConnectionStrategyConfig(const config::ClientConnectionStrategyConfig &connectionStrategyConfig);
+            set_connection_strategy_config(const config::ClientConnectionStrategyConfig &connectionStrategyConfig);
 
             /**
              * Returns a {\link ClientFlakeIdGeneratorConfig} configuration for the given flake ID generator name.
@@ -346,7 +346,7 @@ namespace hazelcast {
              * @see #setConfigPatternMatcher(ConfigPatternMatcher)
              * @see #getConfigPatternMatcher()
              */
-            const config::ClientFlakeIdGeneratorConfig *findFlakeIdGeneratorConfig(const std::string &name);
+            const config::ClientFlakeIdGeneratorConfig *find_flake_id_generator_config(const std::string &name);
 
             /**
              * Returns the {\link ClientFlakeIdGeneratorConfig} for the given name, creating
@@ -373,7 +373,7 @@ namespace hazelcast {
              * @throws ConfigurationException if ambiguous configurations are found
              * @see StringPartitioningStrategy#getBaseName(std::string)
              */
-            const config::ClientFlakeIdGeneratorConfig *getFlakeIdGeneratorConfig(const std::string &name);
+            const config::ClientFlakeIdGeneratorConfig *get_flake_id_generator_config(const std::string &name);
 
             /**
              * Adds a flake ID generator configuration. The configuration is saved under the config
@@ -383,19 +383,19 @@ namespace hazelcast {
              * \param config the flake ID configuration
              * \return this config instance
              */
-            ClientConfig &addFlakeIdGeneratorConfig(const config::ClientFlakeIdGeneratorConfig &config);
+            ClientConfig &add_flake_id_generator_config(const config::ClientFlakeIdGeneratorConfig &config);
 
             /**
              *
              * \return The logger configuration.
              */
-            config::LoggerConfig &getLoggerConfig();
+            config::LoggerConfig &get_logger_config();
 
-            const std::unordered_set<std::string> &getLabels() const;
+            const std::unordered_set<std::string> &get_labels() const;
 
-            ClientConfig &setLabels(const std::unordered_set<std::string> &labels);
+            ClientConfig &set_labels(const std::unordered_set<std::string> &labels);
 
-            ClientConfig &addLabel(const std::string &label);
+            ClientConfig &add_label(const std::string &label);
 
             /**
              * This feature reduces number of hops and increase performance for smart clients.

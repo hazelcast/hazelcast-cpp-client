@@ -47,11 +47,11 @@ namespace hazelcast {
 
                     Data(std::vector<byte> buffer);
 
-                    size_t dataSize() const;
+                    size_t data_size() const;
 
-                    size_t totalSize() const;
+                    size_t total_size() const;
 
-                    int getPartitionHash() const;
+                    int get_partition_hash() const;
 
                     /**
                      * Returns the calculated hash of the data bytes.
@@ -59,11 +59,11 @@ namespace hazelcast {
                      */
                     int hash() const;
 
-                    bool hasPartitionHash() const;
+                    bool has_partition_hash() const;
 
-                    const std::vector<byte> &toByteArray() const;
+                    const std::vector<byte> &to_byte_array() const;
 
-                    int32_t getType() const;
+                    int32_t get_type() const;
 
                     bool operator<(const Data &rhs) const;
 
@@ -73,7 +73,7 @@ namespace hazelcast {
                     std::vector<byte> data_;
                     int cachedHashValue_;
 
-                    inline int calculateHash() const;
+                    inline int calculate_hash() const;
                 };
 
             }

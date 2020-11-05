@@ -19,21 +19,21 @@ int main() {
     hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::TransactionOptions txOptions;
-    txOptions.setTimeout(std::chrono::seconds(10));
+    txOptions.set_timeout(std::chrono::seconds(10));
 
-    hazelcast::client::TransactionContext txCxt = hz.newTransactionContext(txOptions);
+    hazelcast::client::TransactionContext txCxt = hz.new_transaction_context(txOptions);
 
     try {
-        txCxt.beginTransaction().get();
+        txCxt.begin_transaction().get();
 
-        auto map = txCxt.getMap("transaction map");
+        auto map = txCxt.get_map("transaction map");
 
         map->put<std::string, std::string>("1", "1").get();
         std::this_thread::sleep_for(std::chrono::milliseconds(20));
         map->put<std::string, std::string>("2", "2").get();
-        txCxt.commitTransaction().get();
+        txCxt.commit_transaction().get();
     } catch (hazelcast::client::exception::IException &e) {
-        txCxt.rollbackTransaction().get();
+        txCxt.rollback_transaction().get();
         std::cerr << "Transaction failed !!! " << e.what() << std::endl;
         exit(-1);
     }

@@ -28,22 +28,22 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<PortableSerializableSample> : portable_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 1;
                 }
 
-                static void writePortable(const PortableSerializableSample &object,
+                static void write_portable(const PortableSerializableSample &object,
                                           hazelcast::client::serialization::PortableWriter &out) {
                     out.write("name", object.name);
                     out.write("id", object.id);
                     out.write("lastOrder", object.last_order);
                 }
 
-                static PortableSerializableSample readPortable(hazelcast::client::serialization::PortableReader &in) {
+                static PortableSerializableSample read_portable(hazelcast::client::serialization::PortableReader &in) {
                     return PortableSerializableSample{in.read<std::string>("name"), in.read<int32_t>("id"),
                                                       in.read<int64_t>("lastOrder")};
                 }

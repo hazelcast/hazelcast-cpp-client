@@ -28,17 +28,17 @@ using namespace hazelcast::client;
 int main() {
     ClientConfig config;
 
-    config.setProperty("hazelcast.client.statistics.enabled", "true");
+    config.set_property("hazelcast.client.statistics.enabled", "true");
 
     /**
      * Collect and send statistics every 5 seconds
      */
-    config.setProperty("hazelcast.client.statistics.period.seconds", "5");
+    config.set_property("hazelcast.client.statistics.period.seconds", "5");
 
-    config.addNearCacheConfig(config::NearCacheConfig("MyMap"));
+    config.add_near_cache_config(config::NearCacheConfig("MyMap"));
     hazelcast::client::HazelcastClient hz(config);
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
     
     map->put(2, 500).get();
 

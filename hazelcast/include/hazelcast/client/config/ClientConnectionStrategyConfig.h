@@ -56,7 +56,7 @@ namespace hazelcast {
                  * @return if client connects to cluster asynchronously
                  */
 
-                bool isAsyncStart() const;
+                bool is_async_start() const;
 
                 /**
                  * Set true for non blocking {@link HazelcastClient(const ClientConfig &)}. The client creation won't wait to
@@ -68,12 +68,12 @@ namespace hazelcast {
                  * @param asyncStart true for async client creation
                  * @return the updated ClientConnectionStrategyConfig
                  */
-                ClientConnectionStrategyConfig &setAsyncStart(bool asyncStart);
+                ClientConnectionStrategyConfig &set_async_start(bool asyncStart);
 
                 /**
                  * @return reconnect mode
                  */
-                ReconnectMode getReconnectMode() const;
+                ReconnectMode get_reconnect_mode() const;
 
                 /**
                  * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and
@@ -82,7 +82,7 @@ namespace hazelcast {
                  * @param reconnectMode
                  * @return the updated ClientConnectionStrategyConfig
                  */
-                ClientConnectionStrategyConfig &setReconnectMode(ReconnectMode reconnectMode);
+                ClientConnectionStrategyConfig &set_reconnect_mode(ReconnectMode reconnectMode);
 
             private:
                 bool asyncStart_;

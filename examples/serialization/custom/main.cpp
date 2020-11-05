@@ -34,7 +34,7 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Person> : custom_serializer {
-                static constexpr int32_t getTypeId() noexcept {
+                static constexpr int32_t get_type_id() noexcept {
                     return 3;
                 }
 
@@ -55,7 +55,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getMap("map");
+    auto map = hz.get_map("map");
     map->put("foo", Person{"bar", true, 40}).get();
     std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
     std::cout << "Finished" << std::endl;

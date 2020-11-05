@@ -49,7 +49,7 @@ namespace hazelcast {
                  *  Note that this method will also be called while first registered node is dead
                  *  and re-registering to a second node.
                  */
-                void beforeListenerRegister() override {
+                void before_listener_register() override {
                 }
 
                 /**
@@ -58,12 +58,12 @@ namespace hazelcast {
                  *  Note that this method will also be called while first registered node is dead
                  *  and re-registering to a second node.
                  */
-                void onListenerRegister() override {
+                void on_listener_register() override {
                 }
 
-                void setLogger(logger *lg);
+                void set_logger(logger *lg);
 
-                logger *getLogger() const;
+                logger *get_logger() const;
 
             protected:
                 logger *logger_;

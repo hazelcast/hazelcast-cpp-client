@@ -46,13 +46,13 @@ namespace hazelcast {
                     public:
                         virtual ~KeyStateMarker() = default;
 
-                        virtual bool tryMark(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_mark(const serialization::pimpl::Data &key) = 0;
 
-                        virtual bool tryUnmark(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_unmark(const serialization::pimpl::Data &key) = 0;
 
-                        virtual bool tryRemove(const serialization::pimpl::Data &key) = 0;
+                        virtual bool try_remove(const serialization::pimpl::Data &key) = 0;
 
-                        virtual void forceUnmark(const serialization::pimpl::Data &key) = 0;
+                        virtual void force_unmark(const serialization::pimpl::Data &key) = 0;
 
                         virtual void init() = 0;
 
@@ -67,13 +67,13 @@ namespace hazelcast {
 
                     class HAZELCAST_API TrueMarkerImpl : public KeyStateMarker {
                     public:
-                        bool tryMark(const serialization::pimpl::Data &key) override;
+                        bool try_mark(const serialization::pimpl::Data &key) override;
 
-                        bool tryUnmark(const serialization::pimpl::Data &key) override;
+                        bool try_unmark(const serialization::pimpl::Data &key) override;
 
-                        bool tryRemove(const serialization::pimpl::Data &key) override;
+                        bool try_remove(const serialization::pimpl::Data &key) override;
 
-                        void forceUnmark(const serialization::pimpl::Data &key) override;
+                        void force_unmark(const serialization::pimpl::Data &key) override;
 
                         void init() override;
                     };

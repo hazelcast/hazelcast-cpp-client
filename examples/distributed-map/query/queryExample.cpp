@@ -38,21 +38,21 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Person> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 3;
                 }
 
-                static void writeData(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Person read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
@@ -62,16 +62,16 @@ namespace hazelcast {
 
 class PredicateMember {
 public:
-    std::vector<Person> getWithName(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &personMap) {
+    std::vector<Person> get_with_name(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &personMap) {
         return personMap.values<Person>(query::SqlPredicate(hz, std::string("name==") + name)).get();
     }
 
     std::vector<Person>
-    getNotWithName(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &personMap) {
+    get_not_with_name(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &personMap) {
         return personMap.values<Person>(query::SqlPredicate(hz, std::string("name!=") + name)).get();
     }
 
-    std::vector<Person> getWithNameAndAge(HazelcastClient &hz, const std::string &name, int32_t age,
+    std::vector<Person> get_with_name_and_age(HazelcastClient &hz, const std::string &name, int32_t age,
                                           hazelcast::client::IMap &personMap) {
         return personMap.values<Person>(
                 query::SqlPredicate(hz, (boost::format("name == %1% AND age == %2%") % name % age).str())).get();
@@ -80,45 +80,45 @@ public:
     void run() {
         hazelcast::client::HazelcastClient hz;
 
-        auto personMap = hz.getMap("personMap");
+        auto personMap = hz.get_map("personMap");
 
-        personMap->putAll<std::string, Person>({{"1", Person{"Peter", true, 36}},
+        personMap->put_all<std::string, Person>({{"1", Person{"Peter", true, 36}},
                                                 {"2", Person{"John", true, 50}},
                                                 {"3", Person{"Marry", false, 20}},
                                                 {"4", Person{"Mike", true, 35}},
                                                 {"5", Person{"Rob", true, 60}},
                                                 {"6", Person{"Jane", false, 43}}}).get();
 
-        auto s = hz.getSet("foo");
+        auto s = hz.get_set("foo");
         s->add(Person{"Peter", true, 37});
-        auto personsInSet = s->toArray<Person>().get();
+        auto personsInSet = s->to_array<Person>().get();
 
         std::cout << "Get with name Peter" << std::endl;
-        for (auto &p : getWithName(hz, "Peter", *personMap)) {
+        for (auto &p : get_with_name(hz, "Peter", *personMap)) {
             std::cout << p << std::endl;
         }
 
         std::cout << "Get not with name Peter" << std::endl;
-        for (auto &p : getNotWithName(hz, "Peter", *personMap)) {
+        for (auto &p : get_not_with_name(hz, "Peter", *personMap)) {
             std::cout << p << std::endl;
         }
 
         std::cout << "Find name Peter and age 36" << std::endl;
-        for (auto &p : getWithNameAndAge(hz, "Peter", 36, *personMap)) {
+        for (auto &p : get_with_name_and_age(hz, "Peter", 36, *personMap)) {
             std::cout << p << std::endl;
         }
 
         std::cout << "Find name Peter and age 37" << std::endl;
-        for (auto &p : getWithNameAndAge(hz, "Peter", 37, *personMap)) {
+        for (auto &p : get_with_name_and_age(hz, "Peter", 37, *personMap)) {
             std::cout << p << std::endl;
         }
     }
 };
 
-void queryMapUsingPagingPredicate() {
+void query_map_using_paging_predicate() {
     hazelcast::client::HazelcastClient client;
 
-    auto intMap = client.getMap("testIntMapValuesWithPagingPredicate");
+    auto intMap = client.get_map("testIntMapValuesWithPagingPredicate");
 
     int predSize = 5;
     const int totalEntries = 25;
@@ -127,36 +127,36 @@ void queryMapUsingPagingPredicate() {
         intMap->put(i, i).get();
     }
 
-    auto predicate = intMap->newPagingPredicate<int, int>((size_t) predSize);
+    auto predicate = intMap->new_paging_predicate<int, int>((size_t) predSize);
 
     auto values = intMap->values<int>(predicate).get();
     std::sort(values.begin(), values.end());
 
-    predicate.nextPage();
+    predicate.next_page();
     values = intMap->values<int>(predicate).get();
 
-    predicate.setPage(4);
+    predicate.set_page(4);
 
     values = intMap->values<int>(predicate).get();
 
-    predicate.previousPage();
+    predicate.previous_page();
     values = intMap->values<int>(predicate).get();
 
     // PagingPredicate with inner predicate (value < 10)
-    auto predicate2 = intMap->newPagingPredicate<int, int>(5,
+    auto predicate2 = intMap->new_paging_predicate<int, int>(5,
             query::GreaterLessPredicate(client, query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true));
     values = intMap->values<int>(predicate2).get();
 
-    predicate2.nextPage();
+    predicate2.next_page();
     // match values 5,6, 7, 8
     values = intMap->values<int>(predicate2).get();
 
-    predicate2.nextPage();
+    predicate2.next_page();
     values = intMap->values<int>(predicate2).get();
 
     // test paging predicate with comparator
-    auto employees = client.getMap("testComplexObjectWithPagingPredicate");
-    employees->putAll<int32_t, Employee>({
+    auto employees = client.get_map("testComplexObjectWithPagingPredicate");
+    employees->put_all<int32_t, Employee>({
                                                  {3, Employee("ahmet", 35)},
                                                  {4, Employee("mehmet", 21)},
                                                  {5, Employee("deniz", 25)},
@@ -167,17 +167,17 @@ void queryMapUsingPagingPredicate() {
 
     predSize = 2;
     std::unique_ptr<query::EntryComparator<int, Employee> > comparator(new EmployeeEntryComparator());
-    auto predicate3 = employees->newPagingPredicate<int, Employee>(EmployeeEntryComparator(), (size_t) predSize);
+    auto predicate3 = employees->new_paging_predicate<int, Employee>(EmployeeEntryComparator(), (size_t) predSize);
     auto result = employees->values(predicate3).get();
 
-    predicate3.nextPage();
+    predicate3.next_page();
     result = employees->values(predicate3).get();
 }
 
-void queryMapUsingDifferentPredicates() {
+void query_map_using_different_predicates() {
     hazelcast::client::HazelcastClient client;
 
-    auto intMap = client.getMap("testValuesWithPredicateIntMap");
+    auto intMap = client.get_map("testValuesWithPredicateIntMap");
 
     const int numItems = 20;
     for (int i = 0; i < numItems; ++i) {
@@ -273,7 +273,7 @@ void queryMapUsingDifferentPredicates() {
                                                                        query::QueryConstants::THIS_ATTRIBUTE_NAME,
                                                                        inVals))).get();
 
-    auto imap = client.getMap("StringMap");
+    auto imap = client.get_map("StringMap");
 
     // LikePredicate
     // value LIKE "value1" : {"value1"}
@@ -304,9 +304,9 @@ int main() {
     PredicateMember m;
     m.run();
 
-    queryMapUsingDifferentPredicates();
+    query_map_using_different_predicates();
 
-    queryMapUsingPagingPredicate();
+    query_map_using_paging_predicate();
 
     std::cout << "Finished" << std::endl;
 

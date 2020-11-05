@@ -47,26 +47,26 @@ namespace hazelcast {
                                     : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::Data, record::NearCacheDataRecord>(name, config, ss) {
                             }
                         protected:
-                        int64_t getKeyStorageMemoryCost(KS *key) const override {
+                        int64_t get_key_storage_memory_cost(KS *key) const override {
                                 return
                                     // reference to this key data inside map ("store" field)
                                         REFERENCE_SIZE
                                         // cost of this key data
-                                        + (key != NULL ? key->totalSize() : 0);
+                                        + (key != NULL ? key->total_size() : 0);
                             }
 
-                            int64_t getRecordStorageMemoryCost(record::NearCacheDataRecord *record) const override {
+                            int64_t get_record_storage_memory_cost(record::NearCacheDataRecord *record) const override {
                                 if (record == NULL) {
                                     return 0L;
                                 }
-                                std::shared_ptr<serialization::pimpl::Data> value = record->getValue();
+                                std::shared_ptr<serialization::pimpl::Data> value = record->get_value();
                                 return
                                     // reference to this record inside map ("store" field)
                                         REFERENCE_SIZE
                                         // reference to "value" field
                                         + REFERENCE_SIZE
                                         // heap cost of this value data
-                                        + (value.get() != NULL ? (int64_t) value->totalSize() : 0)
+                                        + (value.get() != NULL ? (int64_t) value->total_size() : 0)
                                         // 3 primitive int64_t typed fields: "creationTime", "expirationTime" and "accessTime"
                                         + (3 * (sizeof(std::atomic<int64_t>)))
                                         // reference to "accessHit" field
@@ -75,37 +75,37 @@ namespace hazelcast {
                                         + (sizeof(std::atomic<int32_t>));
                             }
 
-                            std::unique_ptr<record::NearCacheDataRecord> valueToRecord(
+                            std::unique_ptr<record::NearCacheDataRecord> value_to_record(
                                     const std::shared_ptr<serialization::pimpl::Data> &value) override {
-                                return valueToRecordInternal(value);
+                                return value_to_record_internal(value);
                             }
 
                             //@Override
 /*
                             std::unique_ptr<record::NearCacheDataRecord> valueToRecord(
                                     const std::shared_ptr<V> &value) {
-                                const std::shared_ptr<serialization::pimpl::Data> data = ANCRS::toData(value);
+                                const std::shared_ptr<serialization::pimpl::Data> data = ANCRS::to_data(value);
                                 return valueToRecordInternal(data);
                             }
 */
 
-                            std::shared_ptr<V> recordToValue(const record::NearCacheDataRecord *record) override {
-                                const std::shared_ptr<serialization::pimpl::Data> value = record->getValue();
+                            std::shared_ptr<V> record_to_value(const record::NearCacheDataRecord *record) override {
+                                const std::shared_ptr<serialization::pimpl::Data> value = record->get_value();
                                 if (value.get() == NULL) {
-                                    ANCRS::nearCacheStats_->incrementMisses();
+                                    ANCRS::nearCacheStats_->increment_misses();
                                     return std::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
-                                return ANCRS::dataToValue(value, (V *)NULL);
+                                return ANCRS::data_to_value(value, (V *)NULL);
                             }
 
-                            void putToRecord(std::shared_ptr<record::NearCacheDataRecord> &record,
+                            void put_to_record(std::shared_ptr<record::NearCacheDataRecord> &record,
                                              const std::shared_ptr<V> &value) override {
-                                record->setValue(ANCRS::toData(value));
+                                record->set_value(ANCRS::to_data(value));
                             }
                         private:
-                            std::unique_ptr<record::NearCacheDataRecord> valueToRecordInternal(
+                            std::unique_ptr<record::NearCacheDataRecord> value_to_record_internal(
                                     const std::shared_ptr<serialization::pimpl::Data> &data) {
-                                int64_t creationTime = util::currentTimeMillis();
+                                int64_t creationTime = util::current_time_millis();
                                 if (ANCRS::timeToLiveMillis_ > 0) {
                                     return std::unique_ptr<record::NearCacheDataRecord>(
                                             new record::NearCacheDataRecord(data, creationTime,

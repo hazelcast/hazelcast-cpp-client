@@ -36,7 +36,7 @@ namespace hazelcast {
                     DefaultAddressProvider(config::ClientNetworkConfig &networkConfig,
                                            bool noOtherAddressProviderExist);
 
-                    std::vector<Address> loadAddresses() override;
+                    std::vector<Address> load_addresses() override;
 
                 private:
                     config::ClientNetworkConfig &networkConfig_;

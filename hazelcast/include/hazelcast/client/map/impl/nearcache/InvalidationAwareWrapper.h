@@ -39,7 +39,7 @@ namespace hazelcast {
                     template<typename K, typename V>
                     class InvalidationAwareWrapper : public internal::nearcache::NearCache<K, V> {
                     public:
-                        static std::shared_ptr<internal::nearcache::NearCache<K, V> > asInvalidationAware(
+                        static std::shared_ptr<internal::nearcache::NearCache<K, V> > as_invalidation_aware(
                                 std::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache,
                                 int markerCount) {
                             return std::shared_ptr<internal::nearcache::NearCache<K, V> >(
@@ -59,8 +59,8 @@ namespace hazelcast {
                             nearCache_->initialize();
                         }
 
-                        const std::string &getName() const override {
-                            return nearCache_->getName();
+                        const std::string &get_name() const override {
+                            return nearCache_->get_name();
                         }
 
                         std::shared_ptr<V> get(const std::shared_ptr<K> &key) override {
@@ -80,12 +80,12 @@ namespace hazelcast {
 */
 
                         bool invalidate(const std::shared_ptr<K> &key) override {
-                            keyStateMarker_->tryRemove(*key);
+                            keyStateMarker_->try_remove(*key);
                             return nearCache_->invalidate(key);
                         }
 
-                        bool isInvalidatedOnChange() const override {
-                            return nearCache_->isInvalidatedOnChange();
+                        bool is_invalidated_on_change() const override {
+                            return nearCache_->is_invalidated_on_change();
                         }
 
                         void clear() override {
@@ -98,19 +98,19 @@ namespace hazelcast {
                             nearCache_->destroy();
                         }
 
-                        const config::InMemoryFormat getInMemoryFormat() const override {
-                            return nearCache_->getInMemoryFormat();
+                        const config::InMemoryFormat get_in_memory_format() const override {
+                            return nearCache_->get_in_memory_format();
                         }
 
-                        std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const override {
-                            return nearCache_->getNearCacheStats();
+                        std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const override {
+                            return nearCache_->get_near_cache_stats();
                         }
 
                         int size() const override {
                             return nearCache_->size();
                         }
 
-                        KeyStateMarker *getKeyStateMarker() {
+                        KeyStateMarker *get_key_state_marker() {
                             return keyStateMarker_.get();
                         }
                     private:

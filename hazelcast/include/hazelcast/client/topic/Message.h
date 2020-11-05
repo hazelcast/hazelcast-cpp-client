@@ -40,23 +40,23 @@ namespace hazelcast {
                         boost::optional<Member> &&member)
                         : messageObject_(message), publishTime_(publishTime), publishingMember_(member), name_(std::move(topicName)) {}
 
-                const TypedData &getMessageObject() const {
+                const TypedData &get_message_object() const {
                     return messageObject_;
                 }
 
-                std::chrono::system_clock::time_point getPublishTime() const {
+                std::chrono::system_clock::time_point get_publish_time() const {
                     return publishTime_;
                 }
 
-                const Member *getPublishingMember() const {
+                const Member *get_publishing_member() const {
                     return publishingMember_.get_ptr();
                 }
 
-                const std::string &getSource() const {
+                const std::string &get_source() const {
                     return name_;
                 }
 
-                const std::string &getName() const {
+                const std::string &get_name() const {
                     return name_;
                 }
 

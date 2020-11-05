@@ -38,7 +38,7 @@ namespace hazelcast {
                  *
                  * @return the ID of the partition
                  */
-                virtual int getPartitionId() const = 0;
+                virtual int get_partition_id() const = 0;
 
                 /**
                  * Returns the current member that owns this partition.
@@ -49,7 +49,7 @@ namespace hazelcast {
                  *
                  * @return the owner member of the partition
                  */
-                virtual boost::optional<Member> getOwner() const = 0;
+                virtual boost::optional<Member> get_owner() const = 0;
 
                 virtual ~Partition() = default;
             };

@@ -25,14 +25,14 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API AddressUtil {
         public:
-            static AddressHolder getAddressHolder(const std::string &address);
+            static AddressHolder get_address_holder(const std::string &address);
 
-            static AddressHolder getAddressHolder(const std::string &address, int defaultPort);
+            static AddressHolder get_address_holder(const std::string &address, int defaultPort);
 
-            static boost::asio::ip::address getByName(const std::string &host);
+            static boost::asio::ip::address get_by_name(const std::string &host);
 
         private:
-            static boost::asio::ip::address getByName(const std::string &host, const std::string &service);
+            static boost::asio::ip::address get_by_name(const std::string &host, const std::string &service);
         };
 
     }

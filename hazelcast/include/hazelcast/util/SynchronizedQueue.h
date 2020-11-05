@@ -68,7 +68,7 @@ namespace hazelcast {
         private:
             std::mutex m;
             /**
-             * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
+             * Did not choose std::list which shall give better remove_all performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
             std::deque<std::shared_ptr<T> > internalQueue;

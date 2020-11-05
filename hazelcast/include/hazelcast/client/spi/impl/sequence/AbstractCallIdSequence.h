@@ -48,22 +48,22 @@ namespace hazelcast {
 
                         AbstractCallIdSequence(int32_t maxConcurrentInvocations);
 
-                        int32_t getMaxConcurrentInvocations() const override;
+                        int32_t get_max_concurrent_invocations() const override;
 
                         int64_t next() override;
 
-                        int64_t forceNext() override;
+                        int64_t force_next() override;
 
                         void complete() override;
 
-                        int64_t getLastCallId() override;
+                        int64_t get_last_call_id() override;
 
-                        int64_t getTail();
+                        int64_t get_tail();
 
                     protected:
-                        virtual void handleNoSpaceLeft() = 0;
+                        virtual void handle_no_space_left() = 0;
 
-                        bool hasSpace();
+                        bool has_space();
 
                     private:
                         static constexpr size_t INDEX_HEAD = 7;

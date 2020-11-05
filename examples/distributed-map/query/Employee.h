@@ -35,9 +35,9 @@ namespace hazelcast {
 
                 bool operator !=(const Employee &employee) const;
 
-                int32_t getAge() const;
+                int32_t get_age() const;
 
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
                 bool operator<(const Employee &rhs) const;
 
@@ -87,35 +87,35 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<examples::Employee> : public portable_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writePortable(const examples::Employee &object, PortableWriter &writer);
+                static void write_portable(const examples::Employee &object, PortableWriter &writer);
 
-                static examples::Employee readPortable(PortableReader &reader);
+                static examples::Employee read_portable(PortableReader &reader);
             };
 
             template<>
             struct hz_serializer<examples::EmployeeEntryComparator> : public identified_data_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writeData(const examples::EmployeeEntryComparator &object, ObjectDataOutput &writer);
+                static void write_data(const examples::EmployeeEntryComparator &object, ObjectDataOutput &writer);
 
-                static examples::EmployeeEntryComparator readData(ObjectDataInput &reader);
+                static examples::EmployeeEntryComparator read_data(ObjectDataInput &reader);
             };
 
             template<>
             struct hz_serializer<examples::EmployeeEntryKeyComparator> : public identified_data_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writeData(const examples::EmployeeEntryKeyComparator &object, ObjectDataOutput &writer);
+                static void write_data(const examples::EmployeeEntryKeyComparator &object, ObjectDataOutput &writer);
 
-                static examples::EmployeeEntryKeyComparator readData(ObjectDataInput &reader);
+                static examples::EmployeeEntryKeyComparator read_data(ObjectDataInput &reader);
             };
         }
     }

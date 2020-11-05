@@ -40,11 +40,11 @@ namespace hazelcast {
 
                         ReliableTopicMessage(serialization::pimpl::Data &&payloadData, std::unique_ptr<Address> address);
 
-                        std::chrono::system_clock::time_point getPublishTime() const;
+                        std::chrono::system_clock::time_point get_publish_time() const;
 
-                        const boost::optional<Address> &getPublisherAddress() const;
+                        const boost::optional<Address> &get_publisher_address() const;
 
-                        serialization::pimpl::Data &getPayload();
+                        serialization::pimpl::Data &get_payload();
                     private:
                         std::chrono::system_clock::time_point publishTime_;
                         boost::optional<Address> publisherAddress_;
@@ -59,13 +59,13 @@ namespace hazelcast {
                 static constexpr int32_t F_ID = -18;
                 static constexpr int32_t RELIABLE_TOPIC_MESSAGE = 2;
 
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writeData(const topic::impl::reliable::ReliableTopicMessage &object, ObjectDataOutput &out);
+                static void write_data(const topic::impl::reliable::ReliableTopicMessage &object, ObjectDataOutput &out);
 
-                static topic::impl::reliable::ReliableTopicMessage readData(ObjectDataInput &in);
+                static topic::impl::reliable::ReliableTopicMessage read_data(ObjectDataInput &in);
             };
         }
     }

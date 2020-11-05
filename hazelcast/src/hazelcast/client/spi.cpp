@@ -73,11 +73,11 @@
 
 namespace hazelcast {
     namespace client {
-        const std::unordered_set<Member> &InitialMembershipEvent::getMembers() const {
+        const std::unordered_set<Member> &InitialMembershipEvent::get_members() const {
             return members_;
         }
 
-        Cluster &InitialMembershipEvent::getCluster() {
+        Cluster &InitialMembershipEvent::get_cluster() {
             return cluster_;
         }
 
@@ -89,7 +89,7 @@ namespace hazelcast {
                 : state_(state) {
         }
 
-        LifecycleEvent::LifecycleState LifecycleEvent::getState() const {
+        LifecycleEvent::LifecycleState LifecycleEvent::get_state() const {
             return state_;
         }
 
@@ -105,9 +105,9 @@ namespace hazelcast {
                 for (auto &p : proxies_) {
                     try {
                         auto proxy = p.second.get();
-                        p.second.get()->onShutdown();
+                        p.second.get()->on_shutdown();
                     } catch (std::exception &se) {
-                        auto &lg = client_.getLogger();
+                        auto &lg = client_.get_logger();
                         HZ_LOG(lg, finest,
                             boost::str(boost::format("Proxy was not created, "
                                                      "hence onShutdown can be called. Exception: %1%")
@@ -119,14 +119,14 @@ namespace hazelcast {
             }
 
             void ProxyManager::initialize(const std::shared_ptr<ClientProxy> &clientProxy) {
-                auto clientMessage = protocol::codec::client_createproxy_encode(clientProxy->getName(),
-                        clientProxy->getServiceName());
-                spi::impl::ClientInvocation::create(client_, clientMessage, clientProxy->getServiceName())->invoke().get();
-                clientProxy->onInitialize();
+                auto clientMessage = protocol::codec::client_createproxy_encode(clientProxy->get_name(),
+                        clientProxy->get_service_name());
+                spi::impl::ClientInvocation::create(client_, clientMessage, clientProxy->get_service_name())->invoke().get();
+                clientProxy->on_initialize();
             }
 
-            boost::future<void> ProxyManager::destroyProxy(ClientProxy &proxy) {
-                DefaultObjectNamespace objectNamespace(proxy.getServiceName(), proxy.getName());
+            boost::future<void> ProxyManager::destroy_proxy(ClientProxy &proxy) {
+                DefaultObjectNamespace objectNamespace(proxy.get_service_name(), proxy.get_name());
                 std::shared_ptr<ClientProxy> registeredProxy;
                 {
                     std::lock_guard<std::mutex> guard(lock_);
@@ -140,10 +140,10 @@ namespace hazelcast {
                 try {
                     if (registeredProxy) {
                         try {
-                            proxy.destroyLocally();
-                            return proxy.destroyRemotely();
+                            proxy.destroy_locally();
+                            return proxy.destroy_remotely();
                         } catch (exception::IException &) {
-                            proxy.destroyRemotely();
+                            proxy.destroy_remotely();
                             throw;
                         }
                     }
@@ -152,7 +152,7 @@ namespace hazelcast {
                         // may have allocated local resources in the context of this stale proxy
                         // instance after it was destroyed, so we have to cleanup it locally one
                         // more time to make sure there are no leaking local resources.
-                        proxy.destroyLocally();
+                        proxy.destroy_locally();
                     }
                 } catch (...) {
                     if (&proxy != registeredProxy.get()) {
@@ -160,7 +160,7 @@ namespace hazelcast {
                         // may have allocated local resources in the context of this stale proxy
                         // instance after it was destroyed, so we have to cleanup it locally one
                         // more time to make sure there are no leaking local resources.
-                        proxy.destroyLocally();
+                        proxy.destroy_locally();
                     }
                     throw;
                 }
@@ -175,85 +175,85 @@ namespace hazelcast {
                     : hazelcastClient_(hazelcastClient) {
             }
 
-            serialization::pimpl::SerializationService &ClientContext::getSerializationService() {
+            serialization::pimpl::SerializationService &ClientContext::get_serialization_service() {
                 return hazelcastClient_.serializationService_;
             }
 
-            impl::ClientClusterServiceImpl & ClientContext::getClientClusterService() {
+            impl::ClientClusterServiceImpl & ClientContext::get_client_cluster_service() {
                 return hazelcastClient_.clusterService_;
             }
 
-            impl::ClientInvocationServiceImpl &ClientContext::getInvocationService() {
+            impl::ClientInvocationServiceImpl &ClientContext::get_invocation_service() {
                 return *hazelcastClient_.invocationService_;
             }
 
-            ClientConfig &ClientContext::getClientConfig() {
+            ClientConfig &ClientContext::get_client_config() {
                 return hazelcastClient_.clientConfig_;
             }
 
-            impl::ClientPartitionServiceImpl & ClientContext::getPartitionService() {
+            impl::ClientPartitionServiceImpl & ClientContext::get_partition_service() {
                 return *hazelcastClient_.partitionService_;
             }
 
-            LifecycleService &ClientContext::getLifecycleService() {
+            LifecycleService &ClientContext::get_lifecycle_service() {
                 return hazelcastClient_.lifecycleService_;
             }
 
-            spi::impl::listener::listener_service_impl &ClientContext::getClientListenerService() {
+            spi::impl::listener::listener_service_impl &ClientContext::get_client_listener_service() {
                 return *hazelcastClient_.listenerService_;
             }
 
-            connection::ClientConnectionManagerImpl &ClientContext::getConnectionManager() {
+            connection::ClientConnectionManagerImpl &ClientContext::get_connection_manager() {
                 return *hazelcastClient_.connectionManager_;
             }
 
-            internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() {
+            internal::nearcache::NearCacheManager &ClientContext::get_near_cache_manager() {
                 return *hazelcastClient_.nearCacheManager_;
             }
 
-            ClientProperties &ClientContext::getClientProperties() {
+            ClientProperties &ClientContext::get_client_properties() {
                 return hazelcastClient_.clientProperties_;
             }
 
-            Cluster &ClientContext::getCluster() {
+            Cluster &ClientContext::get_cluster() {
                 return hazelcastClient_.cluster_;
             }
 
-            std::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
+            std::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::get_call_id_sequence() const {
                 return hazelcastClient_.callIdSequence_;
             }
 
-            const protocol::ClientExceptionFactory &ClientContext::getClientExceptionFactory() const {
-                return hazelcastClient_.getExceptionFactory();
+            const protocol::ClientExceptionFactory &ClientContext::get_client_exception_factory() const {
+                return hazelcastClient_.get_exception_factory();
             }
 
-            const std::string &ClientContext::getName() const {
-                return hazelcastClient_.getName();
+            const std::string &ClientContext::get_name() const {
+                return hazelcastClient_.get_name();
             }
 
-            impl::ClientExecutionServiceImpl &ClientContext::getClientExecutionService() const {
+            impl::ClientExecutionServiceImpl &ClientContext::get_client_execution_service() const {
                 return *hazelcastClient_.executionService_;
             }
 
             const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
-            ClientContext::getLockReferenceIdGenerator() {
-                return hazelcastClient_.getLockReferenceIdGenerator();
+            ClientContext::get_lock_reference_id_generator() {
+                return hazelcastClient_.get_lock_reference_id_generator();
             }
 
             std::shared_ptr<client::impl::HazelcastClientInstanceImpl>
-            ClientContext::getHazelcastClientImplementation() {
+            ClientContext::get_hazelcast_client_implementation() {
                 return hazelcastClient_.shared_from_this();
             }
 
-            spi::ProxyManager &ClientContext::getProxyManager() {
-                return hazelcastClient_.getProxyManager();
+            spi::ProxyManager &ClientContext::get_proxy_manager() {
+                return hazelcastClient_.get_proxy_manager();
             }
 
-            logger &ClientContext::getLogger() {
+            logger &ClientContext::get_logger() {
                 return *hazelcastClient_.logger_;
             }
 
-            client::impl::statistics::Statistics &ClientContext::getClientstatistics() {
+            client::impl::statistics::Statistics &ClientContext::get_clientstatistics() {
                 return *hazelcastClient_.statistics_;
             }
 
@@ -275,7 +275,7 @@ namespace hazelcast {
                     clientContext_(clientContext), listeners_(), loadBalancer_(loadBalancer),
                     cluster_(cluster), shutdownCompletedLatch_(1) {
                 for (const auto &listener: listeners) {
-                    addListener(LifecycleListener(listener));
+                    add_listener(LifecycleListener(listener));
                 }
             }
 
@@ -285,34 +285,34 @@ namespace hazelcast {
                     return false;
                 }
 
-                fireLifecycleEvent(LifecycleEvent::STARTED);
+                fire_lifecycle_event(LifecycleEvent::STARTED);
 
-                clientContext_.getClientExecutionService().start();
+                clientContext_.get_client_execution_service().start();
 
-                clientContext_.getClientListenerService().start();
+                clientContext_.get_client_listener_service().start();
 
-                clientContext_.getInvocationService().start();
+                clientContext_.get_invocation_service().start();
 
-                clientContext_.getClientClusterService().start();
+                clientContext_.get_client_cluster_service().start();
 
                 clientContext_.get_cluster_view_listener().start();
 
-                if (!clientContext_.getConnectionManager().start()) {
+                if (!clientContext_.get_connection_manager().start()) {
                     return false;
                 }
 
-                auto &connectionStrategyConfig = clientContext_.getClientConfig().getConnectionStrategyConfig();
-                if (!connectionStrategyConfig.isAsyncStart()) {
+                auto &connectionStrategyConfig = clientContext_.get_client_config().get_connection_strategy_config();
+                if (!connectionStrategyConfig.is_async_start()) {
                     // The client needs to open connections to all members before any services requiring internal listeners start
                     wait_for_initial_membership_event();
-                    clientContext_.getConnectionManager().connect_to_all_cluster_members();
+                    clientContext_.get_connection_manager().connect_to_all_cluster_members();
                 }
 
-                clientContext_.getInvocationService().add_backup_listener();
+                clientContext_.get_invocation_service().add_backup_listener();
 
                 loadBalancer_->init(cluster_);
 
-                clientContext_.getClientstatistics().start();
+                clientContext_.get_clientstatistics().start();
 
                 return true;
             }
@@ -324,21 +324,21 @@ namespace hazelcast {
                     return;
                 }
                 try {
-                    fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
+                    fire_lifecycle_event(LifecycleEvent::SHUTTING_DOWN);
                     clientContext_.get_proxy_session_manager().shutdown();
-                    clientContext_.getClientstatistics().shutdown();
-                    clientContext_.getProxyManager().destroy();
-                    clientContext_.getConnectionManager().shutdown();
-                    clientContext_.getClientClusterService().shutdown();
-                    clientContext_.getInvocationService().shutdown();
-                    clientContext_.getClientListenerService().shutdown();
-                    clientContext_.getNearCacheManager().destroyAllNearCaches();
-                    fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
-                    clientContext_.getClientExecutionService().shutdown();
-                    clientContext_.getSerializationService().dispose();
+                    clientContext_.get_clientstatistics().shutdown();
+                    clientContext_.get_proxy_manager().destroy();
+                    clientContext_.get_connection_manager().shutdown();
+                    clientContext_.get_client_cluster_service().shutdown();
+                    clientContext_.get_invocation_service().shutdown();
+                    clientContext_.get_client_listener_service().shutdown();
+                    clientContext_.get_near_cache_manager().destroy_all_near_caches();
+                    fire_lifecycle_event(LifecycleEvent::SHUTDOWN);
+                    clientContext_.get_client_execution_service().shutdown();
+                    clientContext_.get_serialization_service().dispose();
                     shutdownCompletedLatch_.count_down();
                 } catch (std::exception &e) {
-                    HZ_LOG(clientContext_.getLogger(), info,
+                    HZ_LOG(clientContext_.get_logger(), info,
                         boost::str(boost::format("An exception occured during LifecycleService shutdown. %1%")
                                                  % e.what())
                     );
@@ -346,29 +346,29 @@ namespace hazelcast {
                 }
             }
 
-            boost::uuids::uuid LifecycleService::addListener(LifecycleListener &&lifecycleListener) {
+            boost::uuids::uuid LifecycleService::add_listener(LifecycleListener &&lifecycleListener) {
                 std::lock_guard<std::mutex> lg(listenerLock_);
                 const auto id = uuid_generator_();
                 listeners_.emplace(id, std::move(lifecycleListener));
                 return id;
             }
 
-            bool LifecycleService::removeListener(const boost::uuids::uuid &registrationId) {
+            bool LifecycleService::remove_listener(const boost::uuids::uuid &registrationId) {
                 std::lock_guard<std::mutex> guard(listenerLock_);
                 return listeners_.erase(registrationId) == 1;
             }
 
-            void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
+            void LifecycleService::fire_lifecycle_event(const LifecycleEvent &lifecycleEvent) {
                 std::lock_guard<std::mutex> guard(listenerLock_);
-                logger &lg = clientContext_.getLogger();
+                logger &lg = clientContext_.get_logger();
 
                 std::function<void(LifecycleListener &)> fire_one;
 
-                switch (lifecycleEvent.getState()) {
+                switch (lifecycleEvent.get_state()) {
                     case LifecycleEvent::STARTING : {
                         // convert the date string from "2016-04-20" to 20160420
                         std::string date(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_DATE));
-                        util::gitDateToHazelcastLogDate(date);
+                        util::git_date_to_hazelcast_log_date(date);
                         std::string commitId(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_ID));
                         commitId.erase(std::remove(commitId.begin(), commitId.end(), '"'), commitId.end());
                         char msg[100];
@@ -428,7 +428,7 @@ namespace hazelcast {
                 }
             }
 
-            bool LifecycleService::isRunning() {
+            bool LifecycleService::is_running() {
                 return active_;
             }
 
@@ -439,7 +439,7 @@ namespace hazelcast {
             }
 
             void LifecycleService::wait_for_initial_membership_event() const {
-                clientContext_.getClientClusterService().wait_initial_member_list_fetched();
+                clientContext_.get_client_cluster_service().wait_initial_member_list_fetched();
             }
 
             DefaultObjectNamespace::DefaultObjectNamespace(const std::string &service, const std::string &object)
@@ -447,11 +447,11 @@ namespace hazelcast {
 
             }
 
-            const std::string &DefaultObjectNamespace::getServiceName() const {
+            const std::string &DefaultObjectNamespace::get_service_name() const {
                 return serviceName_;
             }
 
-            const std::string &DefaultObjectNamespace::getObjectName() const {
+            const std::string &DefaultObjectNamespace::get_object_name() const {
                 return objectName_;
             }
 
@@ -464,94 +464,94 @@ namespace hazelcast {
 
             ClientProxy::~ClientProxy() = default;
 
-            const std::string &ClientProxy::getName() const {
+            const std::string &ClientProxy::get_name() const {
                 return name_;
             }
 
-            const std::string &ClientProxy::getServiceName() const {
+            const std::string &ClientProxy::get_service_name() const {
                 return serviceName_;
             }
 
-            ClientContext &ClientProxy::getContext() {
+            ClientContext &ClientProxy::get_context() {
                 return context_;
             }
 
-            void ClientProxy::onDestroy() {
+            void ClientProxy::on_destroy() {
             }
 
             boost::future<void> ClientProxy::destroy() {
-                return getContext().getProxyManager().destroyProxy(*this);
+                return get_context().get_proxy_manager().destroy_proxy(*this);
             }
 
-            void ClientProxy::destroyLocally() {
-                if (preDestroy()) {
+            void ClientProxy::destroy_locally() {
+                if (pre_destroy()) {
                     try {
-                        onDestroy();
-                        postDestroy();
+                        on_destroy();
+                        post_destroy();
                     } catch (exception::IException &) {
-                        postDestroy();
+                        post_destroy();
                         throw;
                     }
                 }
             }
 
-            bool ClientProxy::preDestroy() {
+            bool ClientProxy::pre_destroy() {
                 return true;
             }
 
-            void ClientProxy::postDestroy() {
+            void ClientProxy::post_destroy() {
             }
 
-            void ClientProxy::onInitialize() {
+            void ClientProxy::on_initialize() {
             }
 
-            void ClientProxy::onShutdown() {
+            void ClientProxy::on_shutdown() {
             }
 
-            serialization::pimpl::SerializationService &ClientProxy::getSerializationService() {
-                return context_.getSerializationService();
+            serialization::pimpl::SerializationService &ClientProxy::get_serialization_service() {
+                return context_.get_serialization_service();
             }
 
-            boost::future<void> ClientProxy::destroyRemotely() {
+            boost::future<void> ClientProxy::destroy_remotely() {
                 auto clientMessage = protocol::codec::client_destroyproxy_encode(
-                        getName(), getServiceName());
-                return spi::impl::ClientInvocation::create(getContext(), std::make_shared<protocol::ClientMessage>(std::move(clientMessage)), getName())->invoke().then(
+                        get_name(), get_service_name());
+                return spi::impl::ClientInvocation::create(get_context(), std::make_shared<protocol::ClientMessage>(std::move(clientMessage)), get_name())->invoke().then(
                         boost::launch::deferred, [](boost::future<protocol::ClientMessage> f) { f.get(); });
             }
 
             boost::future<boost::uuids::uuid>
-            ClientProxy::registerListener(std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
+            ClientProxy::register_listener(std::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec,
                                           std::shared_ptr<client::impl::BaseEventHandler> handler) {
-                handler->setLogger(&getContext().getLogger());
-                return getContext().getClientListenerService().registerListener(listenerMessageCodec,
+                handler->set_logger(&get_context().get_logger());
+                return get_context().get_client_listener_service().register_listener(listenerMessageCodec,
                                                                                 handler);
             }
 
-            boost::future<bool> ClientProxy::deregisterListener(boost::uuids::uuid registrationId) {
-                return getContext().getClientListenerService().deregisterListener(registrationId);
+            boost::future<bool> ClientProxy::deregister_listener(boost::uuids::uuid registrationId) {
+                return get_context().get_client_listener_service().deregister_listener(registrationId);
             }
 
             namespace impl {
                 boost::uuids::uuid
-                ListenerMessageCodec::decodeAddResponse(protocol::ClientMessage &msg) const {
+                ListenerMessageCodec::decode_add_response(protocol::ClientMessage &msg) const {
                     return msg.get_first_uuid();
                 }
 
-                bool ListenerMessageCodec::decodeRemoveResponse(protocol::ClientMessage &msg) const {
+                bool ListenerMessageCodec::decode_remove_response(protocol::ClientMessage &msg) const {
                     return msg.get_first_fixed_sized_field<bool>();
                 }
 
                 ClientInvocationServiceImpl::ClientInvocationServiceImpl(ClientContext &client)
-                        : client_(client), logger_(client.getLogger()),
-                          invocationTimeout_(std::chrono::seconds(client.getClientProperties().getInteger(
-                                  client.getClientProperties().getInvocationTimeoutSeconds()))),
-                          invocationRetryPause_(std::chrono::milliseconds(client.getClientProperties().getLong(
-                                  client.getClientProperties().getInvocationRetryPauseMillis()))),
+                        : client_(client), logger_(client.get_logger()),
+                          invocationTimeout_(std::chrono::seconds(client.get_client_properties().get_integer(
+                                  client.get_client_properties().get_invocation_timeout_seconds()))),
+                          invocationRetryPause_(std::chrono::milliseconds(client.get_client_properties().get_long(
+                                  client.get_client_properties().get_invocation_retry_pause_millis()))),
                           responseThread_(logger_, *this, client),
-                          smart_routing_(client.getClientConfig().getNetworkConfig().isSmartRouting()),
-                          backup_acks_enabled_(smart_routing_ && client.getClientConfig().backup_acks_enabled()),
-                          fail_on_indeterminate_operation_state_(client.getClientProperties().getBoolean(client.getClientProperties().fail_on_indeterminate_state())),
-                          backup_timeout_(std::chrono::milliseconds(client.getClientProperties().getInteger(client.getClientProperties().backup_timeout_millis()))) {}
+                          smart_routing_(client.get_client_config().get_network_config().is_smart_routing()),
+                          backup_acks_enabled_(smart_routing_ && client.get_client_config().backup_acks_enabled()),
+                          fail_on_indeterminate_operation_state_(client.get_client_properties().get_boolean(client.get_client_properties().fail_on_indeterminate_state())),
+                          backup_timeout_(std::chrono::milliseconds(client.get_client_properties().get_integer(client.get_client_properties().backup_timeout_millis()))) {}
 
                 void ClientInvocationServiceImpl::start() {
                     responseThread_.start();
@@ -559,8 +559,8 @@ namespace hazelcast {
 
                 void ClientInvocationServiceImpl::add_backup_listener() {
                     if (this->backup_acks_enabled_) {
-                        auto &listener_service = this->client_.getClientListenerService();
-                        listener_service.registerListener(std::make_shared<BackupListenerMessageCodec>(),
+                        auto &listener_service = this->client_.get_client_listener_service();
+                        listener_service.register_listener(std::make_shared<BackupListenerMessageCodec>(),
                                                           std::make_shared<noop_backup_event_handler>()).get();
                     }
                 }
@@ -571,20 +571,20 @@ namespace hazelcast {
                     responseThread_.shutdown();
                 }
 
-                std::chrono::milliseconds ClientInvocationServiceImpl::getInvocationTimeout() const {
+                std::chrono::milliseconds ClientInvocationServiceImpl::get_invocation_timeout() const {
                     return invocationTimeout_;
                 }
 
-                std::chrono::milliseconds ClientInvocationServiceImpl::getInvocationRetryPause() const {
+                std::chrono::milliseconds ClientInvocationServiceImpl::get_invocation_retry_pause() const {
                     return invocationRetryPause_;
                 }
 
-                bool ClientInvocationServiceImpl::isRedoOperation() {
-                    return client_.getClientConfig().isRedoOperation();
+                bool ClientInvocationServiceImpl::is_redo_operation() {
+                    return client_.get_client_config().is_redo_operation();
                 }
 
                 void
-                ClientInvocationServiceImpl::handleClientMessage(const std::shared_ptr<ClientInvocation> &invocation,
+                ClientInvocationServiceImpl::handle_client_message(const std::shared_ptr<ClientInvocation> &invocation,
                                                                  const std::shared_ptr<ClientMessage> &response) {
                     responseThread_.process(invocation, response);
                 }
@@ -598,26 +598,26 @@ namespace hazelcast {
                     }
 
                     if (backup_acks_enabled_) {
-                        invocation->getClientMessage()->add_flag(protocol::ClientMessage::BACKUP_AWARE_FLAG);
+                        invocation->get_client_message()->add_flag(protocol::ClientMessage::BACKUP_AWARE_FLAG);
                     }
 
-                    writeToConnection(*connection, invocation);
-                    invocation->setSendConnection(connection);
+                    write_to_connection(*connection, invocation);
+                    invocation->set_send_connection(connection);
                     return true;
                 }
 
-                void ClientInvocationServiceImpl::writeToConnection(connection::Connection &connection,
+                void ClientInvocationServiceImpl::write_to_connection(connection::Connection &connection,
                                                                         const std::shared_ptr<ClientInvocation> &clientInvocation) {
-                    auto clientMessage = clientInvocation->getClientMessage();
+                    auto clientMessage = clientInvocation->get_client_message();
                     connection.write(clientInvocation);
                 }
 
                 void ClientInvocationServiceImpl::check_invocation_allowed() {
-                    client_.getConnectionManager().check_invocation_allowed();
+                    client_.get_connection_manager().check_invocation_allowed();
                 }
 
                 bool ClientInvocationServiceImpl::invoke(std::shared_ptr<ClientInvocation> invocation) {
-                    auto connection = client_.getConnectionManager().get_random_connection();
+                    auto connection = client_.get_connection_manager().get_random_connection();
                     if (!connection) {
                         HZ_LOG(logger_, finest, "No connection found to invoke");
                         return false;
@@ -631,13 +631,13 @@ namespace hazelcast {
                         : logger_(lg), client_(clientContext) {
                 }
 
-                void ClientInvocationServiceImpl::ResponseProcessor::processInternal(
+                void ClientInvocationServiceImpl::ResponseProcessor::process_internal(
                         const std::shared_ptr<ClientInvocation> &invocation,
                         const std::shared_ptr<protocol::ClientMessage> &response) {
                     try {
-                        if (protocol::codec::ErrorCodec::EXCEPTION_MESSAGE_TYPE == response->getMessageType()) {
+                        if (protocol::codec::ErrorCodec::EXCEPTION_MESSAGE_TYPE == response->get_message_type()) {
                             auto error_holder = protocol::codec::ErrorCodec::decode(*response);
-                            invocation->notifyException(client_.getClientExceptionFactory().create_exception(error_holder));
+                            invocation->notify_exception(client_.get_client_exception_factory().create_exception(error_holder));
                         } else {
                             invocation->notify(response);
                         }
@@ -650,12 +650,12 @@ namespace hazelcast {
                 }
 
                 void ClientInvocationServiceImpl::ResponseProcessor::shutdown() {
-                    ClientExecutionServiceImpl::shutdownThreadPool(pool_.get());
+                    ClientExecutionServiceImpl::shutdown_thread_pool(pool_.get());
                 }
 
                 void ClientInvocationServiceImpl::ResponseProcessor::start() {
-                    ClientProperties &clientProperties = client_.getClientProperties();
-                    auto threadCount = clientProperties.getInteger(clientProperties.getResponseExecutorThreadCount());
+                    ClientProperties &clientProperties = client_.get_client_properties();
+                    auto threadCount = clientProperties.get_integer(clientProperties.get_response_executor_thread_count());
                     if (threadCount > 0) {
                         pool_.reset(new hazelcast::util::hz_thread_pool(threadCount));
                     }
@@ -669,11 +669,11 @@ namespace hazelcast {
                         const std::shared_ptr<ClientInvocation> &invocation,
                         const std::shared_ptr<ClientMessage> &response) {
                     if (!pool_) {
-                        processInternal(invocation, response);
+                        process_internal(invocation, response);
                         return;
                     }
 
-                    boost::asio::post(pool_->get_executor(), [=] { processInternal(invocation, response); });
+                    boost::asio::post(pool_->get_executor(), [=] { process_internal(invocation, response); });
                 }
 
                 DefaultAddressProvider::DefaultAddressProvider(config::ClientNetworkConfig &networkConfig,
@@ -681,8 +681,8 @@ namespace hazelcast {
                         networkConfig), noOtherAddressProviderExist_(noOtherAddressProviderExist) {
                 }
 
-                std::vector<Address> DefaultAddressProvider::loadAddresses() {
-                    std::vector<Address> addresses = networkConfig_.getAddresses();
+                std::vector<Address> DefaultAddressProvider::load_addresses() {
+                    std::vector<Address> addresses = networkConfig_.get_addresses();
                     if (addresses.empty() && noOtherAddressProviderExist_) {
                         addresses.emplace_back("127.0.0.1", 5701);
                     }
@@ -698,11 +698,11 @@ namespace hazelcast {
                 constexpr boost::chrono::milliseconds ClientClusterServiceImpl::INITIAL_MEMBERS_TIMEOUT;
 
                 ClientClusterServiceImpl::ClientClusterServiceImpl(hazelcast::client::spi::ClientContext &client)
-                        : client_(client), member_list_snapshot_(EMPTY_SNAPSHOT), labels_(client.getClientConfig().getLabels()),
+                        : client_(client), member_list_snapshot_(EMPTY_SNAPSHOT), labels_(client.get_client_config().get_labels()),
                         initial_list_fetched_latch_(1) {
                 }
 
-                boost::uuids::uuid ClientClusterServiceImpl::addMembershipListenerWithoutInit(
+                boost::uuids::uuid ClientClusterServiceImpl::add_membership_listener_without_init(
                         MembershipListener &&listener) {
                     std::lock_guard<std::mutex> g(listeners_lock_);
                     auto id = client_.random_uuid();
@@ -710,7 +710,7 @@ namespace hazelcast {
                     return id;
                 }
 
-                boost::optional<Member> ClientClusterServiceImpl::getMember(boost::uuids::uuid uuid) const {
+                boost::optional<Member> ClientClusterServiceImpl::get_member(boost::uuids::uuid uuid) const {
                     assert(!uuid.is_nil());
                     auto members_view_ptr = member_list_snapshot_.load();
                     const auto it = members_view_ptr->members.find(uuid);
@@ -720,7 +720,7 @@ namespace hazelcast {
                     return {it->second};
                 }
 
-                std::vector<Member> ClientClusterServiceImpl::getMemberList() const {
+                std::vector<Member> ClientClusterServiceImpl::get_member_list() const {
                     auto members_view_ptr = member_list_snapshot_.load();
                     std::vector<Member> result;
                     result.reserve(members_view_ptr->members.size());
@@ -731,12 +731,12 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::start() {
-                    for (auto &listener : client_.getClientConfig().getMembershipListeners()) {
-                        addMembershipListener(MembershipListener(listener));
+                    for (auto &listener : client_.get_client_config().get_membership_listeners()) {
+                        add_membership_listener(MembershipListener(listener));
                     }
                 }
 
-                void ClientClusterServiceImpl::fireInitialMembershipEvent(const InitialMembershipEvent &event) {
+                void ClientClusterServiceImpl::fire_initial_membership_event(const InitialMembershipEvent &event) {
                     std::lock_guard<std::mutex> g(listeners_lock_);
 
                     for (auto &item : listeners_) {
@@ -752,16 +752,16 @@ namespace hazelcast {
                 }
 
                 boost::uuids::uuid
-                ClientClusterServiceImpl::addMembershipListener(MembershipListener &&listener) {
+                ClientClusterServiceImpl::add_membership_listener(MembershipListener &&listener) {
                     std::lock_guard<std::mutex> cluster_view_g(cluster_view_lock_);
 
-                    auto id = addMembershipListenerWithoutInit(std::move(listener));
+                    auto id = add_membership_listener_without_init(std::move(listener));
 
                     std::lock_guard<std::mutex> listeners_g(listeners_lock_);
                     auto added_listener = listeners_[id];
 
                     if (added_listener.init_) {
-                        auto &cluster = client_.getCluster();
+                        auto &cluster = client_.get_cluster();
                         auto members_ptr = member_list_snapshot_.load();
                         if (!members_ptr->members.empty()) {
                             std::unordered_set<Member> members;
@@ -775,15 +775,15 @@ namespace hazelcast {
                     return id;
                 }
 
-                bool ClientClusterServiceImpl::removeMembershipListener(boost::uuids::uuid registrationId) {
+                bool ClientClusterServiceImpl::remove_membership_listener(boost::uuids::uuid registrationId) {
                     std::lock_guard<std::mutex> g(listeners_lock_);
                     return listeners_.erase(registrationId) == 1;
                 }
 
                 std::vector<Member>
-                ClientClusterServiceImpl::getMembers(const cluster::memberselector::MemberSelector &selector) const {
+                ClientClusterServiceImpl::get_members(const cluster::memberselector::MemberSelector &selector) const {
                     std::vector<Member> result;
-                    for (auto &&member : getMemberList()) {
+                    for (auto &&member : get_member_list()) {
                         if (selector.select(member)) {
                             result.emplace_back(std::move(member));
                         }
@@ -792,17 +792,17 @@ namespace hazelcast {
                     return result;
                 }
 
-                Client ClientClusterServiceImpl::getLocalClient() const {
-                    connection::ClientConnectionManagerImpl &cm = client_.getConnectionManager();
+                Client ClientClusterServiceImpl::get_local_client() const {
+                    connection::ClientConnectionManagerImpl &cm = client_.get_connection_manager();
                     auto connection = cm.get_random_connection();
-                    auto inetSocketAddress = connection ? connection->getLocalSocketAddress() : boost::none;
-                    auto uuid = cm.getClientUuid();
-                    return Client(uuid, std::move(inetSocketAddress), client_.getName(), labels_);
+                    auto inetSocketAddress = connection ? connection->get_local_socket_address() : boost::none;
+                    auto uuid = cm.get_client_uuid();
+                    return Client(uuid, std::move(inetSocketAddress), client_.get_name(), labels_);
                 }
 
                 void ClientClusterServiceImpl::clear_member_list_version() {
                     std::lock_guard<std::mutex> g(cluster_view_lock_);
-                    auto &lg = client_.getLogger();
+                    auto &lg = client_.get_logger();
                     HZ_LOG(lg, finest, "Resetting the member list version ");
                     auto cluster_view_snapshot = member_list_snapshot_.load();
                     //This check is necessary so that `clear_member_list_version` when handling auth response will not
@@ -815,7 +815,7 @@ namespace hazelcast {
 
                 void
                 ClientClusterServiceImpl::handle_event(int32_t version, const std::vector<Member> &memberInfos) {
-                    auto &lg = client_.getLogger();
+                    auto &lg = client_.get_logger();
                     HZ_LOG(lg, finest, 
                         boost::str(boost::format("Handling new snapshot with membership version: %1%, "
                                                  "membersString %2%")
@@ -854,7 +854,7 @@ namespace hazelcast {
                     member_list_snapshot result;
                     result.version = version;
                     for (auto &m : members) {
-                        result.members.insert({m.getUuid(), m});
+                        result.members.insert({m.get_uuid(), m});
                     }
 
                     return result;
@@ -876,7 +876,7 @@ namespace hazelcast {
                 ClientClusterServiceImpl::apply_initial_state(int32_t version, const std::vector<Member> &memberInfos) {
                     auto snapshot = boost::make_shared<member_list_snapshot>(create_snapshot(version, memberInfos));
                     member_list_snapshot_.store(snapshot);
-                    HZ_LOG(client_.getLogger(), info, members_string(*snapshot));
+                    HZ_LOG(client_.get_logger(), info, members_string(*snapshot));
                     std::unordered_set<Member> members;
                     for(auto const &e : snapshot->members) {
                         members.insert(e.second);
@@ -885,7 +885,7 @@ namespace hazelcast {
                     for (auto &item : listeners_) {
                         MembershipListener &listener = item.second;
                         if (listener.init_) {
-                            listener.init_(InitialMembershipEvent(client_.getCluster(), members));
+                            listener.init_(InitialMembershipEvent(client_.get_cluster(), members));
                         }
                     }
                 }
@@ -905,8 +905,8 @@ namespace hazelcast {
 
                     // removal events should be added before added events
                     for (auto const &e : previous_members) {
-                        events.emplace_back(client_.getCluster(), e.second, MembershipEvent::MembershipEventType::MEMBER_LEFT, current_members);
-                        auto connection = client_.getConnectionManager().getConnection(e.second.getUuid());
+                        events.emplace_back(client_.get_cluster(), e.second, MembershipEvent::MembershipEventType::MEMBER_LEFT, current_members);
+                        auto connection = client_.get_connection_manager().get_connection(e.second.get_uuid());
                         if (connection) {
                             connection->close("", std::make_exception_ptr(exception::TargetDisconnectedException(
                                     "ClientClusterServiceImpl::detect_membership_events", (boost::format(
@@ -915,13 +915,13 @@ namespace hazelcast {
                         }
                     }
                     for (auto const &member : new_members) {
-                        events.emplace_back(client_.getCluster(), member, MembershipEvent::MembershipEventType::MEMBER_JOINED, current_members);
+                        events.emplace_back(client_.get_cluster(), member, MembershipEvent::MembershipEventType::MEMBER_JOINED, current_members);
                     }
 
                     if (!events.empty()) {
                         auto snapshot = member_list_snapshot_.load();
                         if (!snapshot->members.empty()) {
-                            HZ_LOG(client_.getLogger(), info, members_string(*snapshot));
+                            HZ_LOG(client_.get_logger(), info, members_string(*snapshot));
                         }
                     }
                     return events;
@@ -933,7 +933,7 @@ namespace hazelcast {
                     for (auto const &event : events) {
                         for (auto &item : listeners_) {
                             MembershipListener &listener = item.second;
-                            if (event.getEventType() == MembershipEvent::MembershipEventType::MEMBER_JOINED) {
+                            if (event.get_event_type() == MembershipEvent::MembershipEventType::MEMBER_JOINED) {
                                 listener.joined_(event);
                             } else {
                                 listener.left_(event);
@@ -952,14 +952,14 @@ namespace hazelcast {
                 }
 
                 bool
-                ClientInvocationServiceImpl::invokeOnConnection(const std::shared_ptr<ClientInvocation> &invocation,
+                ClientInvocationServiceImpl::invoke_on_connection(const std::shared_ptr<ClientInvocation> &invocation,
                                                                 const std::shared_ptr<connection::Connection> &connection) {
                     return send(invocation, connection);
                 }
 
-                bool ClientInvocationServiceImpl::invokeOnPartitionOwner(
+                bool ClientInvocationServiceImpl::invoke_on_partition_owner(
                         const std::shared_ptr<ClientInvocation> &invocation, int partitionId) {
-                    auto partition_owner = client_.getPartitionService().getPartitionOwner(partitionId);
+                    auto partition_owner = client_.get_partition_service().get_partition_owner(partitionId);
                     if (partition_owner.is_nil()) {
                         HZ_LOG(logger_, finest, 
                             boost::str(boost::format("Partition owner is not assigned yet for partition %1%")
@@ -967,13 +967,13 @@ namespace hazelcast {
                         );
                         return false;
                     }
-                    return invokeOnTarget(invocation, partition_owner);
+                    return invoke_on_target(invocation, partition_owner);
                 }
 
-                bool ClientInvocationServiceImpl::invokeOnTarget(const std::shared_ptr<ClientInvocation> &invocation,
+                bool ClientInvocationServiceImpl::invoke_on_target(const std::shared_ptr<ClientInvocation> &invocation,
                                                                  boost::uuids::uuid uuid) {
                     assert (!uuid.is_nil());
-                    auto connection = client_.getConnectionManager().getConnection(uuid);
+                    auto connection = client_.get_connection_manager().get_connection(uuid);
                     if (!connection) {
                         HZ_LOG(logger_, finest, 
                             boost::str(boost::format("Client is not connected to target : %1%")
@@ -988,7 +988,7 @@ namespace hazelcast {
                     return smart_routing_;
                 }
 
-                const std::chrono::milliseconds &ClientInvocationServiceImpl::getBackupTimeout() const {
+                const std::chrono::milliseconds &ClientInvocationServiceImpl::get_backup_timeout() const {
                     return backup_timeout_;
                 }
 
@@ -1003,7 +1003,7 @@ namespace hazelcast {
                         : lifecycleService_(service), clientProperties_(properties), userExecutorPoolSize_(poolSize) {}
 
                 void ClientExecutionServiceImpl::start() {
-                    int internalPoolSize = clientProperties_.getInteger(clientProperties_.getInternalExecutorPoolSize());
+                    int internalPoolSize = clientProperties_.get_integer(clientProperties_.get_internal_executor_pool_size());
                     if (internalPoolSize <= 0) {
                         internalPoolSize = util::IOUtil::to_value<int>(
                                 ClientProperties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT);
@@ -1021,15 +1021,15 @@ namespace hazelcast {
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
-                    shutdownThreadPool(userExecutor_.get());
-                    shutdownThreadPool(internalExecutor_.get());
+                    shutdown_thread_pool(userExecutor_.get());
+                    shutdown_thread_pool(internalExecutor_.get());
                 }
 
-                boost::asio::thread_pool::executor_type ClientExecutionServiceImpl::getUserExecutor() const {
+                boost::asio::thread_pool::executor_type ClientExecutionServiceImpl::get_user_executor() const {
                     return userExecutor_->get_executor();
                 }
 
-                void ClientExecutionServiceImpl::shutdownThreadPool(hazelcast::util::hz_thread_pool *pool) {
+                void ClientExecutionServiceImpl::shutdown_thread_pool(hazelcast::util::hz_thread_pool *pool) {
                     if (!pool) {
                         return;
                     }
@@ -1045,22 +1045,22 @@ namespace hazelcast {
                                                    int partition,
                                                    const std::shared_ptr<connection::Connection> &conn,
                                                    boost::uuids::uuid uuid) :
-                        logger_(clientContext.getLogger()),
-                        lifecycleService_(clientContext.getLifecycleService()),
-                        clientClusterService_(clientContext.getClientClusterService()),
-                        invocationService_(clientContext.getInvocationService()),
-                        executionService_(clientContext.getClientExecutionService().shared_from_this()),
-                        callIdSequence_(clientContext.getCallIdSequence()),
+                        logger_(clientContext.get_logger()),
+                        lifecycleService_(clientContext.get_lifecycle_service()),
+                        clientClusterService_(clientContext.get_client_cluster_service()),
+                        invocationService_(clientContext.get_invocation_service()),
+                        executionService_(clientContext.get_client_execution_service().shared_from_this()),
+                        callIdSequence_(clientContext.get_call_id_sequence()),
                         uuid_(uuid),
                         partitionId_(partition),
                         startTime_(std::chrono::steady_clock::now()),
-                        retryPause_(invocationService_.getInvocationRetryPause()),
+                        retryPause_(invocationService_.get_invocation_retry_pause()),
                         objectName_(name),
                         connection_(conn),
                         invokeCount_(0), urgent_(false), smart_routing_(invocationService_.is_smart_routing()) {
-                    message->setPartitionId(partitionId_);
+                    message->set_partition_id(partitionId_);
                     clientMessage_ = boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(message);
-                    setSendConnection(nullptr);
+                    set_send_connection(nullptr);
                 }
 
                 ClientInvocation::~ClientInvocation() = default;
@@ -1069,7 +1069,7 @@ namespace hazelcast {
                     assert (clientMessage_.load());
                     // for back pressure
                     callIdSequence_->next();
-                    invokeOnSelection();
+                    invoke_on_selection();
                     return invocationPromise_.get_future().then(boost::launch::sync,
                                                                [=](boost::future<protocol::ClientMessage> f) {
                                                                    callIdSequence_->complete();
@@ -1077,12 +1077,12 @@ namespace hazelcast {
                                                                });
                 }
 
-                boost::future<protocol::ClientMessage> ClientInvocation::invokeUrgent() {
+                boost::future<protocol::ClientMessage> ClientInvocation::invoke_urgent() {
                     assert(clientMessage_.load());
                     urgent_ = true;
                     // for back pressure
-                    callIdSequence_->forceNext();
-                    invokeOnSelection();
+                    callIdSequence_->force_next();
+                    invoke_on_selection();
                     return invocationPromise_.get_future().then(boost::launch::sync,
                                                                [=](boost::future<protocol::ClientMessage> f) {
                                                                    callIdSequence_->complete();
@@ -1090,17 +1090,17 @@ namespace hazelcast {
                                                                });
                 }
 
-                void ClientInvocation::invokeOnSelection() {
+                void ClientInvocation::invoke_on_selection() {
                     try {
                         invokeCount_++;
                         if (!urgent_) {
                             invocationService_.check_invocation_allowed();
                         }
 
-                        if (isBindToSingleConnection()) {
-                            auto invoked = invocationService_.invokeOnConnection(shared_from_this(), connection_);
+                        if (is_bind_to_single_connection()) {
+                            auto invoked = invocationService_.invoke_on_connection(shared_from_this(), connection_);
                             if (!invoked) {
-                                notifyException(std::make_exception_ptr(exception::IOException("", (boost::format(
+                                notify_exception(std::make_exception_ptr(exception::IOException("", (boost::format(
                                         "Could not invoke on connection %1%") % *connection_).str())));
                             }
                             return;
@@ -1109,9 +1109,9 @@ namespace hazelcast {
                         bool invoked = false;
                         if (smart_routing_) {
                             if (partitionId_ != -1) {
-                                invoked = invocationService_.invokeOnPartitionOwner(shared_from_this(), partitionId_);
+                                invoked = invocationService_.invoke_on_partition_owner(shared_from_this(), partitionId_);
                             } else if (!uuid_.is_nil()) {
-                                invoked = invocationService_.invokeOnTarget(shared_from_this(), uuid_);
+                                invoked = invocationService_.invoke_on_target(shared_from_this(), uuid_);
                             } else {
                                 invoked = invocationService_.invoke(shared_from_this());
                             }
@@ -1122,16 +1122,16 @@ namespace hazelcast {
                             invoked = invocationService_.invoke(shared_from_this());
                         }
                         if (!invoked) {
-                            notifyException(std::make_exception_ptr(exception::IOException("No connection found to invoke")));
+                            notify_exception(std::make_exception_ptr(exception::IOException("No connection found to invoke")));
                         }
                     } catch (exception::IException &) {
-                        notifyException(std::current_exception());
+                        notify_exception(std::current_exception());
                     } catch (std::exception &) {
                         assert(false);
                     }
                 }
 
-                bool ClientInvocation::isBindToSingleConnection() const {
+                bool ClientInvocation::is_bind_to_single_connection() const {
                     return connection_ != nullptr;
                 }
 
@@ -1142,24 +1142,24 @@ namespace hazelcast {
                 void ClientInvocation::retry() {
                     // retry modifies the client message and should not reuse the client message.
                     // It could be the case that it is in write queue of the connection.
-                    clientMessage_ = boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(copyMessage());
+                    clientMessage_ = boost::make_shared<std::shared_ptr<protocol::ClientMessage>>(copy_message());
 
                     try {
-                        invokeOnSelection();
+                        invoke_on_selection();
                     } catch (exception::IException &e) {
-                        setException(e, boost::current_exception());
+                        set_exception(e, boost::current_exception());
                     } catch (std::exception &) {
                         assert(false);
                     }
                 }
 
-                void ClientInvocation::setException(const exception::IException &e, boost::exception_ptr exceptionPtr) {
+                void ClientInvocation::set_exception(const exception::IException &e, boost::exception_ptr exceptionPtr) {
                     try {
                         auto send_conn = *sendConnection_.load();
                         if (send_conn) {
-                            auto call_id = clientMessage_.load()->get()->getCorrelationId();
-                            boost::asio::post(send_conn->getSocket().get_executor(), [=] () {
-                                send_conn->deregisterInvocation(call_id);
+                            auto call_id = clientMessage_.load()->get()->get_correlation_id();
+                            boost::asio::post(send_conn->get_socket().get_executor(), [=] () {
+                                send_conn->deregister_invocation(call_id);
                             });
                         }
                         invocationPromise_.set_exception(std::move(exceptionPtr));
@@ -1174,31 +1174,31 @@ namespace hazelcast {
                     }
                 }
 
-                void ClientInvocation::notifyException(std::exception_ptr exception) {
+                void ClientInvocation::notify_exception(std::exception_ptr exception) {
                     erase_invocation();
                     try {
                         std::rethrow_exception(exception);
                     } catch (exception::IException &iex) {
                         log_exception(iex);
 
-                        if (!lifecycleService_.isRunning()) {
+                        if (!lifecycleService_.is_running()) {
                             try {
                                 std::throw_with_nested(boost::enable_current_exception(
-                                        exception::HazelcastClientNotActiveException(iex.getSource(),
+                                        exception::HazelcastClientNotActiveException(iex.get_source(),
                                                                                      "Client is shutting down")));
                             } catch (exception::IException &e) {
-                                setException(e, boost::current_exception());
+                                set_exception(e, boost::current_exception());
                             }
                             return;
                         }
 
                         if (!should_retry(iex)) {
-                            setException(iex, boost::current_exception());
+                            set_exception(iex, boost::current_exception());
                             return;
                         }
 
                         auto timePassed = std::chrono::steady_clock::now() - startTime_;
-                        if (timePassed > invocationService_.getInvocationTimeout()) {
+                        if (timePassed > invocationService_.get_invocation_timeout()) {
                             HZ_LOG(logger_, finest,
                                 boost::str(boost::format("Exception will not be retried because "
                                                          "invocation timed out. %1%") % iex.what())
@@ -1209,17 +1209,17 @@ namespace hazelcast {
                             auto timeoutException = (exception::ExceptionBuilder<exception::OperationTimeoutException>(
                                     "ClientInvocation::newOperationTimeoutException") << *this
                                             << " timed out because exception occurred after client invocation timeout "
-                                            << std::chrono::duration_cast<std::chrono::milliseconds>(invocationService_.getInvocationTimeout()).count()
+                                            << std::chrono::duration_cast<std::chrono::milliseconds>(invocationService_.get_invocation_timeout()).count()
                                             << "msecs. Last exception:" << iex
-                                            << " Current time :" << util::StringUtil::timeToString(now) << ". "
-                                            << "Start time: " << util::StringUtil::timeToString(startTime_)
+                                            << " Current time :" << util::StringUtil::time_to_string(now) << ". "
+                                            << "Start time: " << util::StringUtil::time_to_string(startTime_)
                                             << ". Total elapsed time: " <<
                                             std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime_).count()
                                             << " ms. ").build();
                             try {
                                 BOOST_THROW_EXCEPTION(timeoutException);
                             } catch (...) {
-                                setException(timeoutException, boost::current_exception());
+                                set_exception(timeoutException, boost::current_exception());
                             }
 
                             return;
@@ -1228,7 +1228,7 @@ namespace hazelcast {
                         try {
                             execute();
                         } catch (exception::IException &e) {
-                            setException(e, boost::current_exception());
+                            set_exception(e, boost::current_exception());
                         }
                     } catch (...) {
                         assert(false);
@@ -1237,19 +1237,19 @@ namespace hazelcast {
 
                 void ClientInvocation::erase_invocation() const {
                     if (!this->eventHandler_) {
-                        auto sent_connection = getSendConnection();
+                        auto sent_connection = get_send_connection();
                         if (sent_connection) {
                             auto this_invocation = shared_from_this();
-                            boost::asio::post(sent_connection->getSocket().get_executor(), [=] () {
-                                sent_connection->invocations.erase(this_invocation->getClientMessage()->getCorrelationId());
+                            boost::asio::post(sent_connection->get_socket().get_executor(), [=] () {
+                                sent_connection->invocations.erase(this_invocation->get_client_message()->get_correlation_id());
                             });
                         }
                     }
                 }
 
                 bool ClientInvocation::should_retry(exception::IException &exception) {
-                    auto errorCode = exception.getErrorCode();
-                    if (isBindToSingleConnection() && (errorCode == protocol::IO || errorCode == protocol::TARGET_DISCONNECTED)) {
+                    auto errorCode = exception.get_error_code();
+                    if (is_bind_to_single_connection() && (errorCode == protocol::IO || errorCode == protocol::TARGET_DISCONNECTED)) {
                         return false;
                     }
 
@@ -1260,18 +1260,18 @@ namespace hazelcast {
                         return false;
                     }
 
-                    if (errorCode == protocol::IO || errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE || exception.isRetryable()) {
+                    if (errorCode == protocol::IO || errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE || exception.is_retryable()) {
                         return true;
                     }
                     if (errorCode == protocol::TARGET_DISCONNECTED) {
-                        return clientMessage_.load()->get()->isRetryable() || invocationService_.isRedoOperation();
+                        return clientMessage_.load()->get()->is_retryable() || invocationService_.is_redo_operation();
                     }
                     return false;
                 }
 
                 std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation) {
                     std::ostringstream target;
-                    if (invocation.isBindToSingleConnection()) {
+                    if (invocation.is_bind_to_single_connection()) {
                         target << "connection " << *invocation.connection_;
                     } else if (invocation.partitionId_ != -1) {
                         target << "partition " << invocation.partitionId_;
@@ -1283,7 +1283,7 @@ namespace hazelcast {
                     os << "ClientInvocation{" << "requestMessage = " << *invocation.clientMessage_.load()->get()
                        << ", objectName = "
                        << invocation.objectName_ << ", target = " << target.str() << ", sendConnection = ";
-                    auto sendConnection = invocation.getSendConnection();
+                    auto sendConnection = invocation.get_send_connection();
                     if (sendConnection) {
                         os << *sendConnection;
                     } else {
@@ -1345,22 +1345,22 @@ namespace hazelcast {
                                   objectName, uuid);
                 }
 
-                std::shared_ptr<connection::Connection> ClientInvocation::getSendConnection() const {
+                std::shared_ptr<connection::Connection> ClientInvocation::get_send_connection() const {
                     return *sendConnection_.load();
                 }
 
-                std::shared_ptr<connection::Connection> ClientInvocation::getSendConnectionOrWait() const {
-                    while (!(*sendConnection_.load()) && lifecycleService_.isRunning()) {
+                std::shared_ptr<connection::Connection> ClientInvocation::get_send_connection_or_wait() const {
+                    while (!(*sendConnection_.load()) && lifecycleService_.is_running()) {
                         std::this_thread::yield();
                     }
-                    if (!lifecycleService_.isRunning()) {
+                    if (!lifecycleService_.is_running()) {
                         BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("Client is being shut down!"));
                     }
                     return *sendConnection_.load();
                 }
 
                 void
-                ClientInvocation::setSendConnection(const std::shared_ptr<connection::Connection> &conn) {
+                ClientInvocation::set_send_connection(const std::shared_ptr<connection::Connection> &conn) {
                     sendConnection_.store(boost::make_shared<std::shared_ptr<connection::Connection>>(conn));
                 }
 
@@ -1409,16 +1409,16 @@ namespace hazelcast {
                     this->erase_invocation();
                 }
 
-                std::shared_ptr<protocol::ClientMessage> ClientInvocation::getClientMessage() const {
+                std::shared_ptr<protocol::ClientMessage> ClientInvocation::get_client_message() const {
                     return *clientMessage_.load();
                 }
 
                 const std::shared_ptr<EventHandler<protocol::ClientMessage> > &
-                ClientInvocation::getEventHandler() const {
+                ClientInvocation::get_event_handler() const {
                     return eventHandler_;
                 }
 
-                void ClientInvocation::setEventHandler(
+                void ClientInvocation::set_event_handler(
                         const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
                     ClientInvocation::eventHandler_ = handler;
                 }
@@ -1432,8 +1432,8 @@ namespace hazelcast {
                     // first we force a new invocation slot because we are going to return our old invocation slot immediately after
                     // It is important that we first 'force' taking a new slot; otherwise it could be that a sneaky invocation gets
                     // through that takes our slot!
-                    int64_t callId = callIdSequence_->forceNext();
-                    clientMessage_.load()->get()->setCorrelationId(callId);
+                    int64_t callId = callIdSequence_->force_next();
+                    clientMessage_.load()->get()->set_correlation_id(callId);
 
                     //we release the old slot
                     callIdSequence_->complete();
@@ -1449,15 +1449,15 @@ namespace hazelcast {
                     }
                 }
 
-                const std::string ClientInvocation::getName() const {
+                const std::string ClientInvocation::get_name() const {
                     return "ClientInvocation";
                 }
 
-                std::shared_ptr<protocol::ClientMessage> ClientInvocation::copyMessage() {
+                std::shared_ptr<protocol::ClientMessage> ClientInvocation::copy_message() {
                     return std::make_shared<protocol::ClientMessage>(**clientMessage_.load());
                 }
 
-                boost::promise<protocol::ClientMessage> &ClientInvocation::getPromise() {
+                boost::promise<protocol::ClientMessage> &ClientInvocation::get_promise() {
                     return invocationPromise_;
                 }
 
@@ -1511,7 +1511,7 @@ namespace hazelcast {
                         auto exception = boost::enable_current_exception((exception::ExceptionBuilder<exception::IndeterminateOperationStateException>(
                                 "ClientInvocation::detect_and_handle_backup_timeout") << *this
                                                                                       << " failed because backup acks missed.").build());
-                        notifyException(std::make_exception_ptr(exception));
+                        notify_exception(std::make_exception_ptr(exception));
                         return;
                     }
 
@@ -1523,7 +1523,7 @@ namespace hazelcast {
                     complete(pending_response_);
                 }
 
-                ClientContext &impl::ClientTransactionManagerServiceImpl::getClient() const {
+                ClientContext &impl::ClientTransactionManagerServiceImpl::get_client() const {
                     return client_;
                 }
 
@@ -1531,15 +1531,15 @@ namespace hazelcast {
                         : client_(client) {}
 
                 std::shared_ptr<connection::Connection> ClientTransactionManagerServiceImpl::connect() {
-                    auto &invocationService = client_.getInvocationService();
+                    auto &invocationService = client_.get_invocation_service();
                     auto startTime = std::chrono::steady_clock::now();
-                    auto invocationTimeout = invocationService.getInvocationTimeout();
-                    ClientConfig &clientConfig = client_.getClientConfig();
-                    bool smartRouting = clientConfig.getNetworkConfig().isSmartRouting();
+                    auto invocationTimeout = invocationService.get_invocation_timeout();
+                    ClientConfig &clientConfig = client_.get_client_config();
+                    bool smartRouting = clientConfig.get_network_config().is_smart_routing();
 
-                    while (client_.getLifecycleService().isRunning()) {
+                    while (client_.get_lifecycle_service().is_running()) {
                         try {
-                            auto connection = client_.getConnectionManager().get_random_connection();
+                            auto connection = client_.get_connection_manager().get_random_connection();
                             if (!connection) {
                                 throw_exception(smartRouting);
                             }
@@ -1549,11 +1549,11 @@ namespace hazelcast {
                         } catch (exception::IException &) {
                             if (std::chrono::steady_clock::now() - startTime > invocationTimeout) {
                                 std::rethrow_exception(
-                                        newOperationTimeoutException(std::current_exception(), invocationTimeout,
+                                        new_operation_timeout_exception(std::current_exception(), invocationTimeout,
                                                                      startTime));
                             }
                         }
-                        std::this_thread::sleep_for(invocationService.getInvocationRetryPause());
+                        std::this_thread::sleep_for(invocationService.get_invocation_retry_pause());
                     }
                     BOOST_THROW_EXCEPTION(
                             exception::HazelcastClientNotActiveException("ClientTransactionManagerServiceImpl::connect",
@@ -1561,7 +1561,7 @@ namespace hazelcast {
                 }
 
                 std::exception_ptr
-                ClientTransactionManagerServiceImpl::newOperationTimeoutException(std::exception_ptr cause,
+                ClientTransactionManagerServiceImpl::new_operation_timeout_exception(std::exception_ptr cause,
                                                                                   std::chrono::milliseconds invocationTimeout,
                                                                                   std::chrono::steady_clock::time_point startTime) {
                     std::ostringstream sb;
@@ -1569,8 +1569,8 @@ namespace hazelcast {
                     sb
                             << "Creating transaction context timed out because exception occurred after client invocation timeout "
                             << std::chrono::duration_cast<std::chrono::milliseconds>(invocationTimeout).count() << " ms. " << "Current time: "
-                            << util::StringUtil::timeToString(std::chrono::steady_clock::now()) << ". " << "Start time: "
-                            << util::StringUtil::timeToString(startTime) << ". Total elapsed time: "
+                            << util::StringUtil::time_to_string(std::chrono::steady_clock::now()) << ". " << "Start time: "
+                            << util::StringUtil::time_to_string(startTime) << ". Total elapsed time: "
                             << std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count() << " ms. ";
                     try {
                         std::rethrow_exception(cause);
@@ -1586,15 +1586,15 @@ namespace hazelcast {
                 }
 
                 void ClientTransactionManagerServiceImpl::throw_exception(bool smart_routing) {
-                    auto &client_config = client_.getClientConfig();
-                    auto &connection_strategy_Config = client_config.getConnectionStrategyConfig();
-                    auto reconnect_mode = connection_strategy_Config.getReconnectMode();
+                    auto &client_config = client_.get_client_config();
+                    auto &connection_strategy_Config = client_config.get_connection_strategy_config();
+                    auto reconnect_mode = connection_strategy_Config.get_reconnect_mode();
                     if (reconnect_mode == config::ClientConnectionStrategyConfig::ReconnectMode::ASYNC) {
                         BOOST_THROW_EXCEPTION(exception::HazelcastClientOfflineException(
                                 "ClientTransactionManagerServiceImpl::throw_exception", ""));
                     }
                     if (smart_routing) {
-                        auto members = client_.getCluster().getMembers();
+                        auto members = client_.get_cluster().get_members();
                         std::ostringstream msg;
                         if (members.empty()) {
                             msg << "No address was return by the LoadBalancer since there are no members in the cluster";
@@ -1619,14 +1619,14 @@ namespace hazelcast {
                         util::IOUtil::to_string<int>(awsMemberPort)), logger_(lg), awsClient_(awsConfig, lg) {
                 }
 
-                std::vector<Address> AwsAddressProvider::loadAddresses() {
-                    updateLookupTable();
-                    std::unordered_map<std::string, std::string> lookupTable = getLookupTable();
+                std::vector<Address> AwsAddressProvider::load_addresses() {
+                    update_lookup_table();
+                    std::unordered_map<std::string, std::string> lookupTable = get_lookup_table();
                     std::vector<Address> addresses;
 
                     typedef std::unordered_map<std::string, std::string> LookupTable;
                     for (const LookupTable::value_type &privateAddress : lookupTable) {
-                        std::vector<Address> possibleAddresses = util::AddressHelper::getSocketAddresses(
+                        std::vector<Address> possibleAddresses = util::AddressHelper::get_socket_addresses(
                                 privateAddress.first + ":" + awsMemberPort_, logger_);
                         addresses.insert(addresses.begin(), possibleAddresses.begin(),
                                          possibleAddresses.end());
@@ -1634,17 +1634,17 @@ namespace hazelcast {
                     return addresses;
                 }
 
-                void AwsAddressProvider::updateLookupTable() {
+                void AwsAddressProvider::update_lookup_table() {
                     try {
-                        privateToPublic_ = awsClient_.getAddresses();
+                        privateToPublic_ = awsClient_.get_addresses();
                     } catch (exception::IException &e) {
                         HZ_LOG(logger_, warning,
-                            boost::str(boost::format("Aws addresses failed to load: %1%") % e.getMessage())
+                            boost::str(boost::format("Aws addresses failed to load: %1%") % e.get_message())
                         );
                     }
                 }
 
-                std::unordered_map<std::string, std::string> AwsAddressProvider::getLookupTable() {
+                std::unordered_map<std::string, std::string> AwsAddressProvider::get_lookup_table() {
                     return privateToPublic_;
                 }
 
@@ -1659,7 +1659,7 @@ namespace hazelcast {
 
 
                 ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client)
-                        : client_(client), logger_(client.getLogger()), partitionCount_(0),
+                        : client_(client), logger_(client.get_logger()), partitionCount_(0),
                         partition_table_(boost::shared_ptr<partition_table>(new partition_table{nullptr, -1})) {
                 }
 
@@ -1685,7 +1685,7 @@ namespace hazelcast {
                     }
                 }
 
-                boost::uuids::uuid ClientPartitionServiceImpl::getPartitionOwner(int32_t partitionId) {
+                boost::uuids::uuid ClientPartitionServiceImpl::get_partition_owner(int32_t partitionId) {
                     auto table_ptr = partition_table_.load();
                     auto it = table_ptr->partitions.find(partitionId);
                     if (it != table_ptr->partitions.end()) {
@@ -1694,20 +1694,20 @@ namespace hazelcast {
                     return boost::uuids::nil_uuid();
                 }
 
-                int32_t ClientPartitionServiceImpl::getPartitionId(const serialization::pimpl::Data &key) {
-                    int32_t pc = getPartitionCount();
+                int32_t ClientPartitionServiceImpl::get_partition_id(const serialization::pimpl::Data &key) {
+                    int32_t pc = get_partition_count();
                     if (pc <= 0) {
                         return 0;
                     }
-                    int hash = key.getPartitionHash();
-                    return util::HashUtil::hashToIndex(hash, pc);
+                    int hash = key.get_partition_hash();
+                    return util::HashUtil::hash_to_index(hash, pc);
                 }
 
-                int32_t ClientPartitionServiceImpl::getPartitionCount() {
+                int32_t ClientPartitionServiceImpl::get_partition_count() {
                     return partitionCount_.load();
                 }
 
-                std::shared_ptr<client::impl::Partition> ClientPartitionServiceImpl::getPartition(int partitionId) {
+                std::shared_ptr<client::impl::Partition> ClientPartitionServiceImpl::get_partition(int partitionId) {
                     return std::shared_ptr<client::impl::Partition>(new PartitionImpl(partitionId, client_, *this));
                 }
 
@@ -1724,7 +1724,7 @@ namespace hazelcast {
                                                               int32_t version,
                                                               const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions,
                                                               const partition_table &current) {
-                    auto &lg = client_.getLogger();
+                    auto &lg = client_.get_logger();
                     if (partitions.empty()) {
                         if (logger_.enabled(logger::level::finest)) {
                             log_failure(connection, version, current, "response is empty");
@@ -1793,14 +1793,14 @@ namespace hazelcast {
                     return new_partitions;
                 }
 
-                int ClientPartitionServiceImpl::PartitionImpl::getPartitionId() const {
+                int ClientPartitionServiceImpl::PartitionImpl::get_partition_id() const {
                     return partitionId_;
                 }
 
-                boost::optional<Member> ClientPartitionServiceImpl::PartitionImpl::getOwner() const {
-                    auto owner = partitionService_.getPartitionOwner(partitionId_);
+                boost::optional<Member> ClientPartitionServiceImpl::PartitionImpl::get_owner() const {
+                    auto owner = partitionService_.get_partition_owner(partitionId_);
                     if (!owner.is_nil()) {
-                        return client_.getClientClusterService().getMember(owner);
+                        return client_.get_client_cluster_service().get_member(owner);
                     }
                     return boost::none;
                 }
@@ -1815,15 +1815,15 @@ namespace hazelcast {
 
                     CallIdSequenceWithoutBackpressure::~CallIdSequenceWithoutBackpressure() = default;
 
-                    int32_t CallIdSequenceWithoutBackpressure::getMaxConcurrentInvocations() const {
+                    int32_t CallIdSequenceWithoutBackpressure::get_max_concurrent_invocations() const {
                         return INT32_MAX;
                     }
 
                     int64_t CallIdSequenceWithoutBackpressure::next() {
-                        return forceNext();
+                        return force_next();
                     }
 
-                    int64_t CallIdSequenceWithoutBackpressure::forceNext() {
+                    int64_t CallIdSequenceWithoutBackpressure::force_next() {
                         return ++head_;
                     }
 
@@ -1831,7 +1831,7 @@ namespace hazelcast {
                         // no-op
                     }
 
-                    int64_t CallIdSequenceWithoutBackpressure::getLastCallId() {
+                    int64_t CallIdSequenceWithoutBackpressure::get_last_call_id() {
                         return head_;
                     }
 
@@ -1840,7 +1840,7 @@ namespace hazelcast {
                         std::ostringstream out;
                         out << "maxConcurrentInvocations should be a positive number. maxConcurrentInvocations="
                             << maxConcurrentInvocations;
-                        this->maxConcurrentInvocations_ = util::Preconditions::checkPositive(maxConcurrentInvocations,
+                        this->maxConcurrentInvocations_ = util::Preconditions::check_positive(maxConcurrentInvocations,
                                                                                             out.str());
 
                         for (size_t i = 0; i < longs_.size(); ++i) {
@@ -1850,18 +1850,18 @@ namespace hazelcast {
 
                     AbstractCallIdSequence::~AbstractCallIdSequence() = default;
 
-                    int32_t AbstractCallIdSequence::getMaxConcurrentInvocations() const {
+                    int32_t AbstractCallIdSequence::get_max_concurrent_invocations() const {
                         return maxConcurrentInvocations_;
                     }
 
                     int64_t AbstractCallIdSequence::next() {
-                        if (!hasSpace()) {
-                            handleNoSpaceLeft();
+                        if (!has_space()) {
+                            handle_no_space_left();
                         }
-                        return forceNext();
+                        return force_next();
                     }
 
-                    int64_t AbstractCallIdSequence::forceNext() {
+                    int64_t AbstractCallIdSequence::force_next() {
                         return ++longs_[INDEX_HEAD];
                     }
 
@@ -1870,15 +1870,15 @@ namespace hazelcast {
                         assert(longs_[INDEX_TAIL] <= longs_[INDEX_HEAD]);
                     }
 
-                    int64_t AbstractCallIdSequence::getLastCallId() {
+                    int64_t AbstractCallIdSequence::get_last_call_id() {
                         return longs_[INDEX_HEAD];
                     }
 
-                    bool AbstractCallIdSequence::hasSpace() {
+                    bool AbstractCallIdSequence::has_space() {
                         return longs_[INDEX_HEAD] - longs_[INDEX_TAIL] < maxConcurrentInvocations_;
                     }
 
-                    int64_t AbstractCallIdSequence::getTail() {
+                    int64_t AbstractCallIdSequence::get_tail() {
                         return longs_[INDEX_TAIL];
                     }
 
@@ -1894,13 +1894,13 @@ namespace hazelcast {
                             : AbstractCallIdSequence(maxConcurrentInvocations) {
                         std::ostringstream out;
                         out << "backoffTimeoutMs should be a positive number. backoffTimeoutMs=" << backoffTimeoutMs;
-                        util::Preconditions::checkPositive(backoffTimeoutMs, out.str());
+                        util::Preconditions::check_positive(backoffTimeoutMs, out.str());
 
                         backoffTimeoutNanos_ = std::chrono::duration_cast<std::chrono::nanoseconds>(
                                 std::chrono::milliseconds(backoffTimeoutMs)).count();
                     }
 
-                    void CallIdSequenceWithBackpressure::handleNoSpaceLeft() {
+                    void CallIdSequenceWithBackpressure::handle_no_space_left() {
                         auto start = std::chrono::steady_clock::now();
                         for (int64_t idleCount = 0;; idleCount++) {
                             int64_t elapsedNanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1909,14 +1909,14 @@ namespace hazelcast {
                                 throw (exception::ExceptionBuilder<exception::HazelcastOverloadException>(
                                         "CallIdSequenceWithBackpressure::handleNoSpaceLeft")
                                         << "Timed out trying to acquire another call ID."
-                                        << " maxConcurrentInvocations = " << getMaxConcurrentInvocations()
+                                        << " maxConcurrentInvocations = " << get_max_concurrent_invocations()
                                         << ", backoffTimeout = "
                                         << std::chrono::microseconds(backoffTimeoutNanos_ / 1000).count()
                                         << " msecs, elapsed:"
                                         << std::chrono::microseconds(elapsedNanos / 1000).count() << " msecs").build();
                             }
                             IDLER->idle(idleCount);
-                            if (hasSpace()) {
+                            if (has_space()) {
                                 return;
                             }
 
@@ -1926,15 +1926,15 @@ namespace hazelcast {
                     FailFastCallIdSequence::FailFastCallIdSequence(int32_t maxConcurrentInvocations)
                             : AbstractCallIdSequence(maxConcurrentInvocations) {}
 
-                    void FailFastCallIdSequence::handleNoSpaceLeft() {
+                    void FailFastCallIdSequence::handle_no_space_left() {
                         throw (exception::ExceptionBuilder<exception::HazelcastOverloadException>(
                                 "FailFastCallIdSequence::handleNoSpaceLeft")
                                 << "Maximum invocation count is reached. maxConcurrentInvocations = "
-                                << getMaxConcurrentInvocations()).build();
+                                << get_max_concurrent_invocations()).build();
 
                     }
 
-                    std::unique_ptr<CallIdSequence> CallIdFactory::newCallIdSequence(bool isBackPressureEnabled,
+                    std::unique_ptr<CallIdSequence> CallIdFactory::new_call_id_sequence(bool isBackPressureEnabled,
                                                                                      int32_t maxAllowedConcurrentInvocations,
                                                                                      int64_t backoffTimeoutMs) {
                         if (!isBackPressureEnabled) {
@@ -1954,80 +1954,80 @@ namespace hazelcast {
                     listener_service_impl::listener_service_impl(ClientContext &clientContext,
                                                                  int32_t eventThreadCount)
                             : clientContext_(clientContext),
-                              serializationService_(clientContext.getSerializationService()),
-                              logger_(clientContext.getLogger()),
-                              clientConnectionManager_(clientContext.getConnectionManager()),
+                              serializationService_(clientContext.get_serialization_service()),
+                              logger_(clientContext.get_logger()),
+                              clientConnectionManager_(clientContext.get_connection_manager()),
                               numberOfEventThreads_(eventThreadCount),
-                              smart_(clientContext.getClientConfig().getNetworkConfig().isSmartRouting()) {
-                        auto &invocationService = clientContext.getInvocationService();
-                        invocationTimeout_ = invocationService.getInvocationTimeout();
-                        invocationRetryPause_ = invocationService.getInvocationRetryPause();
+                              smart_(clientContext.get_client_config().get_network_config().is_smart_routing()) {
+                        auto &invocationService = clientContext.get_invocation_service();
+                        invocationTimeout_ = invocationService.get_invocation_timeout();
+                        invocationRetryPause_ = invocationService.get_invocation_retry_pause();
                     }
 
-                    bool listener_service_impl::registersLocalOnly() const {
+                    bool listener_service_impl::registers_local_only() const {
                         return smart_;
                     }
 
                     boost::future<boost::uuids::uuid>
-                    listener_service_impl::registerListener(
+                    listener_service_impl::register_listener(
                             std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
                             std::shared_ptr<client::impl::BaseEventHandler> handler) {
                         auto task = boost::packaged_task<boost::uuids::uuid()>(
                                 [=]() {
-                                    return registerListenerInternal(listenerMessageCodec, handler);
+                                    return register_listener_internal(listenerMessageCodec, handler);
                                 });
                         auto f = task.get_future();
                         boost::asio::post(registrationExecutor_->get_executor(), std::move(task));
                         return f;
                     }
 
-                    boost::future<bool> listener_service_impl::deregisterListener(boost::uuids::uuid registrationId) {
-                        util::Preconditions::checkNotNill(registrationId, "Nil userRegistrationId is not allowed!");
+                    boost::future<bool> listener_service_impl::deregister_listener(boost::uuids::uuid registrationId) {
+                        util::Preconditions::check_not_nill(registrationId, "Nil userRegistrationId is not allowed!");
 
                         boost::packaged_task<bool()> task([=]() {
-                            return deregisterListenerInternal(registrationId);
+                            return deregister_listener_internal(registrationId);
                         });
                         auto f = task.get_future();
                         boost::asio::post(registrationExecutor_->get_executor(), std::move(task));
                         return f;
                     }
 
-                    void listener_service_impl::connectionAdded(
+                    void listener_service_impl::connection_added(
                             const std::shared_ptr<connection::Connection> connection) {
-                        boost::asio::post(registrationExecutor_->get_executor(), [=]() { connectionAddedInternal(connection); });
+                        boost::asio::post(registrationExecutor_->get_executor(), [=]() { connection_added_internal(connection); });
                     }
 
-                    void listener_service_impl::connectionRemoved(
+                    void listener_service_impl::connection_removed(
                             const std::shared_ptr<connection::Connection> connection) {
-                        boost::asio::post(registrationExecutor_->get_executor(), [=]() { connectionRemovedInternal(connection); });
+                        boost::asio::post(registrationExecutor_->get_executor(), [=]() { connection_removed_internal(connection); });
                     }
 
                     void
-                    listener_service_impl::removeEventHandler(int64_t call_id,
+                    listener_service_impl::remove_event_handler(int64_t call_id,
                                                               const std::shared_ptr<connection::Connection> &connection) {
-                        boost::asio::post(connection->getSocket().get_executor(),
+                        boost::asio::post(connection->get_socket().get_executor(),
                                           std::packaged_task<void()>([=]() {
-                                              connection->deregisterInvocation(call_id);
+                                              connection->deregister_invocation(call_id);
                                           }));
                     }
 
-                    void listener_service_impl::handleClientMessage(
+                    void listener_service_impl::handle_client_message(
                             const std::shared_ptr<ClientInvocation> invocation,
                             const std::shared_ptr<protocol::ClientMessage> response) {
                         try {
-                            auto partitionId = response->getPartitionId();
+                            auto partitionId = response->get_partition_id();
                             if (partitionId == -1) {
                                 // execute on random thread on the thread pool
-                                boost::asio::post(eventExecutor_->get_executor(), [=]() { processEventMessage(invocation, response); });
+                                boost::asio::post(eventExecutor_->get_executor(), [=]() { process_event_message(invocation, response); });
                                 return;
                             }
 
                             // process on certain thread which is same for the partition id
                             boost::asio::post(eventStrands_[partitionId % eventStrands_.size()],
-                                              [=]() { processEventMessage(invocation, response); });
+                                              [=]() { process_event_message(invocation, response); });
 
                         } catch (const std::exception &e) {
-                            if (clientContext_.getLifecycleService().isRunning()) {
+                            if (clientContext_.get_lifecycle_service().is_running()) {
                                 HZ_LOG(logger_, warning,
                                     boost::str(boost::format("Delivery of event message to event handler failed. %1%, %2%, %3%")
                                                              % e.what() % *response % *invocation)
@@ -2038,8 +2038,8 @@ namespace hazelcast {
 
                     void listener_service_impl::shutdown() {
                         eventStrands_.clear();
-                        ClientExecutionServiceImpl::shutdownThreadPool(eventExecutor_.get());
-                        ClientExecutionServiceImpl::shutdownThreadPool(registrationExecutor_.get());
+                        ClientExecutionServiceImpl::shutdown_thread_pool(eventExecutor_.get());
+                        ClientExecutionServiceImpl::shutdown_thread_pool(registrationExecutor_.get());
                     }
 
                     void listener_service_impl::start() {
@@ -2050,22 +2050,22 @@ namespace hazelcast {
                             eventStrands_.emplace_back(eventExecutor_->get_executor());
                         }
 
-                        clientConnectionManager_.addConnectionListener(shared_from_this());
+                        clientConnectionManager_.add_connection_listener(shared_from_this());
                     }
 
-                    boost::uuids::uuid listener_service_impl::registerListenerInternal(
+                    boost::uuids::uuid listener_service_impl::register_listener_internal(
                             std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
                             std::shared_ptr<client::impl::BaseEventHandler> handler) {
                         auto user_registration_id = clientContext_.random_uuid();
 
                         std::shared_ptr<listener_registration> registration(new listener_registration{listenerMessageCodec, handler});
                         registrations_.put(user_registration_id, registration);
-                        for (auto const &connection : clientConnectionManager_.getActiveConnections()) {
+                        for (auto const &connection : clientConnectionManager_.get_active_connections()) {
                             try {
                                 invoke(registration, connection);
                             } catch (exception::IException &e) {
-                                if (connection->isAlive()) {
-                                    deregisterListenerInternal(user_registration_id);
+                                if (connection->is_alive()) {
+                                    deregister_listener_internal(user_registration_id);
                                     BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::HazelcastException>(
                                             "ClientListenerService::RegisterListenerTask::call")
                                             << "Listener can not be added " << e).build());
@@ -2076,35 +2076,35 @@ namespace hazelcast {
                     }
 
                     bool
-                    listener_service_impl::deregisterListenerInternal(boost::uuids::uuid userRegistrationId) {
+                    listener_service_impl::deregister_listener_internal(boost::uuids::uuid userRegistrationId) {
                         auto listenerRegistration = registrations_.get(userRegistrationId);
                         if (!listenerRegistration) {
                             return false;
                         }
                         bool successful = true;
 
-                        auto listener_registrations = listenerRegistration->registrations.entrySet();
+                        auto listener_registrations = listenerRegistration->registrations.entry_set();
                         for (auto it = listener_registrations.begin();it != listener_registrations.end();) {
                             const auto &registration = it->second;
                             const auto& subscriber = it->first;
                             try {
                                 const auto &listenerMessageCodec = listenerRegistration->codec;
                                 auto serverRegistrationId = registration->server_registration_id;
-                                auto request = listenerMessageCodec->encodeRemoveRequest(serverRegistrationId);
+                                auto request = listenerMessageCodec->encode_remove_request(serverRegistrationId);
                                 auto invocation = ClientInvocation::create(clientContext_,request, "",
                                                                            subscriber);
                                 invocation->invoke().get();
 
-                                removeEventHandler(registration->call_id, subscriber);
+                                remove_event_handler(registration->call_id, subscriber);
 
                                 it = listener_registrations.erase(it);
                             } catch (exception::IException &e) {
                                 ++it;
-                                if (subscriber->isAlive()) {
+                                if (subscriber->is_alive()) {
                                     successful = false;
                                     std::ostringstream endpoint;
-                                    if (subscriber->getRemoteAddress()) {
-                                        endpoint << *subscriber->getRemoteAddress();
+                                    if (subscriber->get_remote_address()) {
+                                        endpoint << *subscriber->get_remote_address();
                                     } else {
                                         endpoint << "null";
                                     }
@@ -2113,7 +2113,7 @@ namespace hazelcast {
                                                                  "Deregistration of listener with ID %1% "
                                                                  "has failed to address %2% %3%")
                                                                  % userRegistrationId 
-                                                                 % subscriber->getRemoteAddress() % e)
+                                                                 % subscriber->get_remote_address() % e)
                                     );
                                 }
                             }
@@ -2124,14 +2124,14 @@ namespace hazelcast {
                         return successful;
                     }
 
-                    void listener_service_impl::connectionAddedInternal(
+                    void listener_service_impl::connection_added_internal(
                             const std::shared_ptr<connection::Connection> &connection) {
                         for (const auto &listener_registration : registrations_.values()) {
-                            invokeFromInternalThread(listener_registration, connection);
+                            invoke_from_internal_thread(listener_registration, connection);
                         }
                     }
 
-                    void listener_service_impl::connectionRemovedInternal(
+                    void listener_service_impl::connection_removed_internal(
                             const std::shared_ptr<connection::Connection> &connection) {
                         for (auto &registry : registrations_.values()) {
                             registry->registrations.remove(connection);
@@ -2139,7 +2139,7 @@ namespace hazelcast {
                     }
 
                     void
-                    listener_service_impl::invokeFromInternalThread(
+                    listener_service_impl::invoke_from_internal_thread(
                             const std::shared_ptr<listener_registration> &listener_registration,
                             const std::shared_ptr<connection::Connection> &connection) {
                         try {
@@ -2156,35 +2156,35 @@ namespace hazelcast {
                     void
                     listener_service_impl::invoke(const std::shared_ptr<listener_registration> &listener_registration,
                                                   const std::shared_ptr<connection::Connection> &connection) {
-                        if (listener_registration->registrations.containsKey(connection)) {
+                        if (listener_registration->registrations.contains_key(connection)) {
                             return;
                         }
 
                         const auto &codec = listener_registration->codec;
-                        auto request = codec->encodeAddRequest(registersLocalOnly());
+                        auto request = codec->encode_add_request(registers_local_only());
                         const auto &handler = listener_registration->handler;
-                        handler->beforeListenerRegister();
+                        handler->before_listener_register();
 
                         auto invocation = ClientInvocation::create(clientContext_,
                                                                    std::make_shared<protocol::ClientMessage>(std::move(request)), "",
                                                                    connection);
-                        invocation->setEventHandler(handler);
-                        auto clientMessage = invocation->invokeUrgent().get();
+                        invocation->set_event_handler(handler);
+                        auto clientMessage = invocation->invoke_urgent().get();
 
-                        auto serverRegistrationId = codec->decodeAddResponse(clientMessage);
-                        handler->onListenerRegister();
-                        int64_t correlationId = invocation->getClientMessage()->getCorrelationId();
+                        auto serverRegistrationId = codec->decode_add_response(clientMessage);
+                        handler->on_listener_register();
+                        int64_t correlationId = invocation->get_client_message()->get_correlation_id();
 
                         (*listener_registration).registrations.put(connection, std::shared_ptr<connection_registration>(
                                 new connection_registration{serverRegistrationId, correlationId}));
                     }
 
-                    void listener_service_impl::processEventMessage(
+                    void listener_service_impl::process_event_message(
                             const std::shared_ptr<ClientInvocation> invocation,
                             const std::shared_ptr<protocol::ClientMessage> response) {
-                        auto eventHandler = invocation->getEventHandler();
+                        auto eventHandler = invocation->get_event_handler();
                         if (!eventHandler) {
-                            if (clientContext_.getLifecycleService().isRunning()) {
+                            if (clientContext_.get_lifecycle_service().is_running()) {
                                 HZ_LOG(logger_, warning,
                                     boost::str(boost::format("No eventHandler for invocation. "
                                                              "Ignoring this invocation response. %1%")
@@ -2198,7 +2198,7 @@ namespace hazelcast {
                         try {
                             eventHandler->handle(*response);
                         } catch (std::exception &e) {
-                            if (clientContext_.getLifecycleService().isRunning()) {
+                            if (clientContext_.get_lifecycle_service().is_running()) {
                                 HZ_LOG(logger_, warning,
                                     boost::str(boost::format("Delivery of event message to event handler failed. %1%, %2%, %3%")
                                                              % e.what() % *response % *invocation)
@@ -2210,14 +2210,14 @@ namespace hazelcast {
                     listener_service_impl::~listener_service_impl() = default;
 
                     void cluster_view_listener::start() {
-                        client_context_.getConnectionManager().addConnectionListener(shared_from_this());
+                        client_context_.get_connection_manager().add_connection_listener(shared_from_this());
                     }
 
-                    void cluster_view_listener::connectionAdded(const std::shared_ptr<connection::Connection> connection) {
+                    void cluster_view_listener::connection_added(const std::shared_ptr<connection::Connection> connection) {
                         try_register(connection);
                     }
 
-                    void cluster_view_listener::connectionRemoved(const std::shared_ptr<connection::Connection> connection) {
+                    void cluster_view_listener::connection_removed(const std::shared_ptr<connection::Connection> connection) {
                         try_reregister_to_random_connection(connection);
                     }
 
@@ -2236,12 +2236,12 @@ namespace hazelcast {
                                  protocol::codec::client_addclusterviewlistener_encode()), "", connection);
 
                         auto handler = std::shared_ptr<event_handler>(new event_handler(connection, *this));
-                        invocation->setEventHandler(handler);
-                        handler->beforeListenerRegister();
+                        invocation->set_event_handler(handler);
+                        handler->before_listener_register();
 
-                        invocation->invokeUrgent().then([=] (boost::future<protocol::ClientMessage> f) {
+                        invocation->invoke_urgent().then([=] (boost::future<protocol::ClientMessage> f) {
                             if (f.has_value()) {
-                                handler->onListenerRegister();
+                                handler->on_listener_register();
                                 return;
                             }
                             //completes with exception, listener needs to be reregistered
@@ -2257,7 +2257,7 @@ namespace hazelcast {
                             //somebody else already trying to reregister
                             return;
                         }
-                        auto new_connection = client_context_.getConnectionManager().get_random_connection();
+                        auto new_connection = client_context_.get_connection_manager().get_random_connection();
                         if (new_connection) {
                             try_register(new_connection);
                         }
@@ -2268,26 +2268,26 @@ namespace hazelcast {
                     void
                     cluster_view_listener::event_handler::handle_membersview(int32_t version,
                                                                              const std::vector<Member> &memberInfos) {
-                        view_listener.client_context_.getClientClusterService().handle_event(version, memberInfos);
+                        view_listener.client_context_.get_client_cluster_service().handle_event(version, memberInfos);
                     }
 
                     void
                     cluster_view_listener::event_handler::handle_partitionsview(int32_t version,
                                                                                 const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions) {
-                        view_listener.client_context_.getPartitionService().handle_event(connection, version, partitions);
+                        view_listener.client_context_.get_partition_service().handle_event(connection, version, partitions);
                     }
 
-                    void cluster_view_listener::event_handler::beforeListenerRegister() {
-                        view_listener.client_context_.getClientClusterService().clear_member_list_version();
-                        auto &lg = view_listener.client_context_.getLogger();
+                    void cluster_view_listener::event_handler::before_listener_register() {
+                        view_listener.client_context_.get_client_cluster_service().clear_member_list_version();
+                        auto &lg = view_listener.client_context_.get_logger();
                         HZ_LOG(lg, finest,
                             boost::str(boost::format("Register attempt of ClusterViewListenerHandler to %1%")
                                                     % *connection)
                         );
                     }
 
-                    void cluster_view_listener::event_handler::onListenerRegister() {
-                        auto &lg = view_listener.client_context_.getLogger();
+                    void cluster_view_listener::event_handler::on_listener_register() {
+                        auto &lg = view_listener.client_context_.get_logger();
                         HZ_LOG(lg, finest,
                             boost::str(boost::format("Registered ClusterViewListenerHandler to %1%") 
                                                      % *connection)
@@ -2301,11 +2301,11 @@ namespace hazelcast {
                 }
 
                 protocol::ClientMessage
-                ClientInvocationServiceImpl::BackupListenerMessageCodec::encodeAddRequest(bool localOnly) const {
+                ClientInvocationServiceImpl::BackupListenerMessageCodec::encode_add_request(bool localOnly) const {
                     return protocol::codec::client_localbackuplistener_encode();
                 }
 
-                protocol::ClientMessage ClientInvocationServiceImpl::BackupListenerMessageCodec::encodeRemoveRequest(
+                protocol::ClientMessage ClientInvocationServiceImpl::BackupListenerMessageCodec::encode_remove_request(
                         boost::uuids::uuid realRegistrationId) const {
                     assert(0);
                     return protocol::ClientMessage(0);
@@ -2324,7 +2324,7 @@ namespace std {
     bool less<hazelcast::client::spi::DefaultObjectNamespace>::operator()(
             const hazelcast::client::spi::DefaultObjectNamespace &lhs,
             const hazelcast::client::spi::DefaultObjectNamespace &rhs) const {
-        int result = lhs.getServiceName().compare(rhs.getServiceName());
+        int result = lhs.get_service_name().compare(rhs.get_service_name());
         if (result < 0) {
             return true;
         }
@@ -2333,13 +2333,13 @@ namespace std {
             return false;
         }
 
-        return lhs.getObjectName().compare(rhs.getObjectName()) < 0;
+        return lhs.get_object_name().compare(rhs.get_object_name()) < 0;
     }
 
     std::size_t
     hash<hazelcast::client::spi::DefaultObjectNamespace>::operator()(
             const hazelcast::client::spi::DefaultObjectNamespace &k) const noexcept {
-        return std::hash<std::string>()(k.getServiceName() + k.getObjectName());
+        return std::hash<std::string>()(k.get_service_name() + k.get_object_name());
     }
 }
 

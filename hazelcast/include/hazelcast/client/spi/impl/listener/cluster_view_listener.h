@@ -34,18 +34,18 @@ namespace hazelcast {
 
                         void start();
 
-                        virtual void connectionAdded(const std::shared_ptr<connection::Connection> connection);
+                        virtual void connection_added(const std::shared_ptr<connection::Connection> connection);
 
-                        virtual void connectionRemoved(const std::shared_ptr<connection::Connection> connection);
+                        virtual void connection_removed(const std::shared_ptr<connection::Connection> connection);
 
                     private:
                         struct event_handler : public protocol::codec::client_addclusterviewlistener_handler {
                             event_handler(const std::shared_ptr <connection::Connection> &connection,
                                           cluster_view_listener &viewListener);
 
-                            virtual void beforeListenerRegister();
+                            virtual void before_listener_register();
 
-                            virtual void onListenerRegister();
+                            virtual void on_listener_register();
 
                             virtual void
                             handle_membersview(int32_t version, const std::vector<Member> &memberInfos);

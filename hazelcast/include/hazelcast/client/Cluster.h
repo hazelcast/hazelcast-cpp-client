@@ -56,7 +56,7 @@ namespace hazelcast {
              * \param listener MembershipListener
              * \return registration id 
              */
-            boost::uuids::uuid addMembershipListener(MembershipListener &&listener);
+            boost::uuids::uuid add_membership_listener(MembershipListener &&listener);
 
             /**
              * Removes the specified MembershipListener.
@@ -67,7 +67,7 @@ namespace hazelcast {
              * \return true if the registration is removed, false otherwise
              * 
              */
-            bool removeMembershipListener(boost::uuids::uuid registrationId);
+            bool remove_membership_listener(boost::uuids::uuid registrationId);
 
             /**
              * Set of current members of the cluster.
@@ -77,7 +77,7 @@ namespace hazelcast {
              *
              * @return current members of the cluster
              */
-            std::vector<Member> getMembers();
+            std::vector<Member> get_members();
 
         private:
             spi::impl::ClientClusterServiceImpl &clusterService_;

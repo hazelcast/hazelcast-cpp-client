@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getReplicatedMap("somemap");
+    auto map = hz.get_replicated_map("somemap");
 
     std::ostringstream out;
     out << time(NULL);

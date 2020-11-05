@@ -120,7 +120,7 @@ namespace hazelcast {
                  *
                  * @return name of this Hazelcast instance
                  */
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
                 /**
                 *
@@ -129,22 +129,22 @@ namespace hazelcast {
                 * @returns distributed object
                 */
                 template<typename T>
-                std::shared_ptr<T> getDistributedObject(const std::string& name) {
-                    return proxyManager_.getOrCreateProxy<T>(T::SERVICE_NAME, name);
+                std::shared_ptr<T> get_distributed_object(const std::string& name) {
+                    return proxyManager_.get_or_create_proxy<T>(T::SERVICE_NAME, name);
                 }
 
                 /**
                 *
                 * @return configuration of this Hazelcast client.
                 */
-                ClientConfig& getClientConfig();
+                ClientConfig& get_client_config();
 
                 /**
                 * Creates a new TransactionContext associated with the current thread using default options.
                 *
                 * @return new TransactionContext
                 */
-                TransactionContext newTransactionContext();
+                TransactionContext new_transaction_context();
 
                 /**
                 * Creates a new TransactionContext associated with the current thread with given options.
@@ -152,7 +152,7 @@ namespace hazelcast {
                 * @param options options for this transaction
                 * @return new TransactionContext
                 */
-                TransactionContext newTransactionContext(const TransactionOptions& options);
+                TransactionContext new_transaction_context(const TransactionOptions& options);
 
                 /**
                 * Returns the Cluster that connected Hazelcast instance is a part of.
@@ -161,9 +161,9 @@ namespace hazelcast {
                 *
                 * @return cluster
                 */
-                Cluster& getCluster();
+                Cluster& get_cluster();
 
-                Client getLocalEndpoint() const;
+                Client get_local_endpoint() const;
 
                 /**
                 * Add listener to listen lifecycle events.
@@ -175,35 +175,35 @@ namespace hazelcast {
                 *
                 * @param lifecycleListener Listener object
                 */
-                boost::uuids::uuid addLifecycleListener(LifecycleListener &&lifecycleListener);
+                boost::uuids::uuid add_lifecycle_listener(LifecycleListener &&lifecycleListener);
 
                 /**
                 * Remove lifecycle listener
                 * @param lifecycleListener
                 * @return true if removed successfully
                 */
-                bool removeLifecycleListener(const boost::uuids::uuid &registrationId);
+                bool remove_lifecycle_listener(const boost::uuids::uuid &registrationId);
 
                 /**
                 * Shuts down this HazelcastClient.
                 */
                 void shutdown();
 
-                spi::LifecycleService &getLifecycleService();
+                spi::LifecycleService &get_lifecycle_service();
 
-                internal::nearcache::NearCacheManager &getNearCacheManager();
+                internal::nearcache::NearCacheManager &get_near_cache_manager();
 
-                serialization::pimpl::SerializationService &getSerializationService();
+                serialization::pimpl::SerializationService &get_serialization_service();
 
-                const protocol::ClientExceptionFactory &getExceptionFactory() const;
+                const protocol::ClientExceptionFactory &get_exception_factory() const;
 
                 void on_cluster_restart();
 
-                const std::shared_ptr<ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator() const;
+                const std::shared_ptr<ClientLockReferenceIdGenerator> &get_lock_reference_id_generator() const;
 
-                spi::ProxyManager &getProxyManager();
+                spi::ProxyManager &get_proxy_manager();
 
-                const std::shared_ptr<logger> &getLogger() const;
+                const std::shared_ptr<logger> &get_logger() const;
 
                 boost::uuids::uuid random_uuid();
 
@@ -243,22 +243,22 @@ namespace hazelcast {
 
                 void operator=(const HazelcastClientInstanceImpl& rhs) = delete;
 
-                std::shared_ptr<spi::impl::listener::listener_service_impl> initListenerService();
+                std::shared_ptr<spi::impl::listener::listener_service_impl> init_listener_service();
 
-                std::shared_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
+                std::shared_ptr<spi::impl::ClientExecutionServiceImpl> init_execution_service();
 
-                std::shared_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
+                std::shared_ptr<connection::ClientConnectionManagerImpl> init_connection_manager_service(
                         const std::vector<std::shared_ptr<connection::AddressProvider> > &addressProviders);
 
-                std::vector<std::shared_ptr<connection::AddressProvider> > createAddressProviders();
+                std::vector<std::shared_ptr<connection::AddressProvider> > create_address_providers();
 
-                void startLogger();
+                void start_logger();
 
-                void initalizeNearCacheManager();
+                void initalize_near_cache_manager();
             };
 
             template<>
-            std::shared_ptr<IMap> HAZELCAST_API HazelcastClientInstanceImpl::getDistributedObject(const std::string& name);
+            std::shared_ptr<IMap> HAZELCAST_API HazelcastClientInstanceImpl::get_distributed_object(const std::string& name);
         }
     }
 }

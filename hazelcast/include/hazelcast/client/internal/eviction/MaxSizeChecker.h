@@ -39,7 +39,7 @@ namespace hazelcast {
                      *
                      * @return <code>true</code> if maximum size has been reached, <code>false</code> otherwise
                      */
-                    virtual bool isReachedToMaxSize() const = 0;
+                    virtual bool is_reached_to_max_size() const = 0;
                 };
             }
         }

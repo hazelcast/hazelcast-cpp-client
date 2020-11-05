@@ -48,7 +48,7 @@ namespace hazelcast {
 
                 void handle();
 
-                std::chrono::steady_clock::time_point getLastReadTime() const;
+                std::chrono::steady_clock::time_point get_last_read_time() const;
 
                 char *buffer;
                 util::ByteBuffer byte_buffer;

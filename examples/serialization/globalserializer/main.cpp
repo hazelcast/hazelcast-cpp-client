@@ -45,11 +45,11 @@ public:
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::SerializationConfig serializationConfig;
-    serializationConfig.setGlobalSerializer(std::make_shared<MyGlobalSerializer>());
-    config.setSerializationConfig(serializationConfig);
+    serializationConfig.set_global_serializer(std::make_shared<MyGlobalSerializer>());
+    config.set_serialization_config(serializationConfig);
     hazelcast::client::HazelcastClient hz(config);
 
-    auto map = hz.getMap("map");
+    auto map = hz.get_map("map");
     map->put("foo", Person{"first last name", false, 19}).get();
     std::cout << "Got value \"" << *(map->get<std::string, Person>("foo").get()) << "\" from the map->" << std::endl;
     std::cout << "Finished" << std::endl;

@@ -71,7 +71,7 @@ namespace hazelcast {
              *
              * @return <tt>true</tt> if this set contains no elements
              */
-            bool isEmpty() {
+            bool is_empty() {
                 std::lock_guard<std::mutex> lg(m_);
                 return internalSet_.empty();
             }
@@ -89,7 +89,7 @@ namespace hazelcast {
              *
              * @return an array containing all the elements in this set
              */
-            std::vector<T> toArray() {
+            std::vector<T> to_array() {
                 std::lock_guard<std::mutex> lg(m_);
                 std::vector<T> result;
                 for (const typename std::unordered_set<T>::value_type &value  : internalSet_) {

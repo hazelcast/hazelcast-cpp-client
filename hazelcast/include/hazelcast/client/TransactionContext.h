@@ -69,28 +69,28 @@ namespace hazelcast {
             /**
              *  @return txn id.
              */
-            boost::uuids::uuid  getTxnId() const;
+            boost::uuids::uuid  get_txn_id() const;
 
             /**
              * Begins a transaction.
              *
              * @throws IllegalStateException if a transaction already is active.
              */
-            boost::future<void> beginTransaction();
+            boost::future<void> begin_transaction();
 
             /**
              * Commits a transaction.
              *
              * @throws TransactionException if no transaction is active or the transaction could not be committed.
              */
-            boost::future<void> commitTransaction();
+            boost::future<void> commit_transaction();
 
             /**
              * Begins a transaction.
              *
              * @throws IllegalStateException if a transaction already is active.
              */
-            boost::future<void> rollbackTransaction();
+            boost::future<void> rollback_transaction();
 
             /**
              * Returns the transactional distributed map instance with the specified name.
@@ -99,8 +99,8 @@ namespace hazelcast {
              * @param name name of the distributed map
              * @return transactional distributed map instance with the specified name
             */
-            std::shared_ptr<TransactionalMap> getMap(const std::string &name) {
-                return getTransactionalObject<TransactionalMap>(IMap::SERVICE_NAME, name);
+            std::shared_ptr<TransactionalMap> get_map(const std::string &name) {
+                return get_transactional_object<TransactionalMap>(IMap::SERVICE_NAME, name);
             }
 
             /**
@@ -110,8 +110,8 @@ namespace hazelcast {
              * @param name name of the queue
              * @return transactional queue instance with the specified name
              */
-            std::shared_ptr<TransactionalQueue> getQueue(const std::string &name) {
-                return getTransactionalObject<TransactionalQueue>(IQueue::SERVICE_NAME, name);
+            std::shared_ptr<TransactionalQueue> get_queue(const std::string &name) {
+                return get_transactional_object<TransactionalQueue>(IQueue::SERVICE_NAME, name);
             }
 
             /**
@@ -121,8 +121,8 @@ namespace hazelcast {
              * @param name name of the multimap
              * @return transactional multimap instance with the specified name
              */
-            std::shared_ptr<TransactionalMultiMap> getMultiMap(const std::string &name) {
-                return getTransactionalObject<TransactionalMultiMap>(MultiMap::SERVICE_NAME, name);
+            std::shared_ptr<TransactionalMultiMap> get_multi_map(const std::string &name) {
+                return get_transactional_object<TransactionalMultiMap>(MultiMap::SERVICE_NAME, name);
             }
 
             /**
@@ -132,8 +132,8 @@ namespace hazelcast {
              * @param name name of the list
              * @return transactional list instance with the specified name
              */
-            std::shared_ptr<TransactionalList> getList(const std::string &name) {
-                return getTransactionalObject<TransactionalList>(IList::SERVICE_NAME, name);
+            std::shared_ptr<TransactionalList> get_list(const std::string &name) {
+                return get_transactional_object<TransactionalList>(IList::SERVICE_NAME, name);
             }
 
             /**
@@ -143,8 +143,8 @@ namespace hazelcast {
              * @param name name of the set
              * @return transactional set instance with the specified name
              */
-            std::shared_ptr<TransactionalSet> getSet(const std::string &name) {
-                return getTransactionalObject<TransactionalSet>(ISet::SERVICE_NAME, name);
+            std::shared_ptr<TransactionalSet> get_set(const std::string &name) {
+                return get_transactional_object<TransactionalSet>(ISet::SERVICE_NAME, name);
             }
 
             /**
@@ -155,8 +155,8 @@ namespace hazelcast {
              * @return transactionalObject.
              */
             template<typename T>
-            std::shared_ptr<T> getTransactionalObject(const std::string &serviceName, const std::string &name) {
-                if (transaction_.getState() != txn::TxnState::ACTIVE) {
+            std::shared_ptr<T> get_transactional_object(const std::string &serviceName, const std::string &name) {
+                if (transaction_.get_state() != txn::TxnState::ACTIVE) {
                     std::string message = "No transaction is found while accessing ";
                     message += "transactional object -> [" + name + "]!";
                     BOOST_THROW_EXCEPTION(

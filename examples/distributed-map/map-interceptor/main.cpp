@@ -23,17 +23,17 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<MapInterceptor> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 7;
                 }
 
-                static void writeData(const MapInterceptor &object, hazelcast::client::serialization::ObjectDataOutput &out) {}
+                static void write_data(const MapInterceptor &object, hazelcast::client::serialization::ObjectDataOutput &out) {}
 
-                static MapInterceptor readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static MapInterceptor read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return MapInterceptor{};
                 }
             };
@@ -44,9 +44,9 @@ namespace hazelcast {
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getMap("themap");
+    auto map = hz.get_map("themap");
 
-    map->addInterceptor(MapInterceptor{}).get();
+    map->add_interceptor(MapInterceptor{}).get();
 
     map->put<std::string, std::string>("1", "1").get();
 

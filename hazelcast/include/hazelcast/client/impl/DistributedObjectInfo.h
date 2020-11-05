@@ -32,9 +32,9 @@ namespace hazelcast {
 
                 DistributedObjectInfo(const std::string &serviceName, const std::string &name);
 
-                const std::string &getServiceName() const;
+                const std::string &get_service_name() const;
 
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
             private:
                 std::string serviceName;

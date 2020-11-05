@@ -51,23 +51,23 @@ namespace hazelcast {
             }
 
             bool Employee::operator==(const Employee &rhs) const {
-                return age_ == rhs.getAge() && name_ == rhs.getName();
+                return age_ == rhs.get_age() && name_ == rhs.get_name();
             }
 
             bool Employee::operator!=(const Employee &employee) const {
                 return !(*this == employee);
             }
 
-            int32_t Employee::getAge() const {
+            int32_t Employee::get_age() const {
                 return age_;
             }
 
-            const std::string &Employee::getName() const {
+            const std::string &Employee::get_name() const {
                 return name_;
             }
 
             bool Employee::operator<(const Employee &rhs) const {
-                return age_ < rhs.getAge();
+                return age_ < rhs.get_age();
             }
 
             int32_t EmployeeEntryComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
@@ -99,8 +99,8 @@ namespace hazelcast {
                     return 1;
                 }
 
-                int32_t la = lv->getAge();
-                int32_t ra = rv->getAge();
+                int32_t la = lv->get_age();
+                int32_t ra = rv->get_age();
 
                 if (la == ra) {
                     return 0;
@@ -139,21 +139,21 @@ namespace hazelcast {
             }
 
             std::ostream &operator<<(std::ostream &out, const Employee &employee) {
-                out << "Employee:[" << employee.getName() << ", " << employee.getAge() << "]";
+                out << "Employee:[" << employee.get_name() << ", " << employee.get_age() << "]";
                 return out;
             }
         }
 
         namespace serialization {
-            int32_t hz_serializer<examples::Employee>::getFactoryId() {
+            int32_t hz_serializer<examples::Employee>::get_factory_id() {
                 return 666;
             }
 
-            int32_t hz_serializer<examples::Employee>::getClassId() {
+            int32_t hz_serializer<examples::Employee>::get_class_id() {
                 return 2;
             }
 
-            void hz_serializer<examples::Employee>::writePortable(const examples::Employee &object, PortableWriter &writer) {
+            void hz_serializer<examples::Employee>::write_portable(const examples::Employee &object, PortableWriter &writer) {
                 writer.write("n", object.name_);
                 writer.write<int32_t>("a", object.age_);
 
@@ -176,19 +176,19 @@ namespace hazelcast {
                 writer.write("ff", object.ff_);
                 writer.write("dd", object.dd_);
 
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                out.writeObject<byte>(&object.by_);
-                out.writeObject<char>(object.c_);
-                out.writeObject<bool>(&object.boolean_);
-                out.writeObject<int16_t>(&object.s_);
-                out.writeObject<int32_t>(&object.i_);
-                out.writeObject<float>(&object.f_);
-                out.writeObject<double>(&object.d_);
-                out.writeObject<std::string>(&object.str_);
-                out.writeObject<std::string>(&object.utfStr_);
+                serialization::ObjectDataOutput &out = writer.get_raw_data_output();
+                out.write_object<byte>(&object.by_);
+                out.write_object<char>(object.c_);
+                out.write_object<bool>(&object.boolean_);
+                out.write_object<int16_t>(&object.s_);
+                out.write_object<int32_t>(&object.i_);
+                out.write_object<float>(&object.f_);
+                out.write_object<double>(&object.d_);
+                out.write_object<std::string>(&object.str_);
+                out.write_object<std::string>(&object.utfStr_);
             }
 
-            examples::Employee hz_serializer<examples::Employee>::readPortable(PortableReader &reader) {
+            examples::Employee hz_serializer<examples::Employee>::read_portable(PortableReader &reader) {
                 examples::Employee employee;
                 employee.name_ = reader.read<std::string>("n");
                 employee.age_ = reader.read<int32_t>("a");
@@ -209,32 +209,32 @@ namespace hazelcast {
                 employee.ii_ = *reader.read<std::vector<int32_t>>("ii");
                 employee.ff_ = *reader.read<std::vector<float>>("ff");
                 employee.dd_ = *reader.read<std::vector<double>>("dd");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                employee.by_ = *in.readObject<byte>();
-                employee.c_ = *in.readObject<char>();
-                employee.boolean_ = *in.readObject<bool>();
-                employee.s_ = *in.readObject<int16_t>();
-                employee.i_ = *in.readObject<int32_t>();
-                employee.f_ = *in.readObject<float>();
-                employee.d_ = *in.readObject<double>();
-                employee.str_ = *in.readObject<std::string>();
-                employee.utfStr_ = *in.readObject<std::string>();
+                serialization::ObjectDataInput &in = reader.get_raw_data_input();
+                employee.by_ = *in.read_object<byte>();
+                employee.c_ = *in.read_object<char>();
+                employee.boolean_ = *in.read_object<bool>();
+                employee.s_ = *in.read_object<int16_t>();
+                employee.i_ = *in.read_object<int32_t>();
+                employee.f_ = *in.read_object<float>();
+                employee.d_ = *in.read_object<double>();
+                employee.str_ = *in.read_object<std::string>();
+                employee.utfStr_ = *in.read_object<std::string>();
                 return employee;
             }
 
-            int32_t hz_serializer<examples::EmployeeEntryComparator>::getFactoryId() {
+            int32_t hz_serializer<examples::EmployeeEntryComparator>::get_factory_id() {
                 return static_cast<int32_t>(1);
             }
 
-            int32_t hz_serializer<examples::EmployeeEntryComparator>::getClassId() {
+            int32_t hz_serializer<examples::EmployeeEntryComparator>::get_class_id() {
                 return 4;
             }
 
-            void hz_serializer<examples::EmployeeEntryComparator>::writeData(const examples::EmployeeEntryComparator &object,
+            void hz_serializer<examples::EmployeeEntryComparator>::write_data(const examples::EmployeeEntryComparator &object,
                                                                          ObjectDataOutput &writer) {}
 
             examples::EmployeeEntryComparator
-            hz_serializer<examples::EmployeeEntryComparator>::readData(ObjectDataInput &reader) {
+            hz_serializer<examples::EmployeeEntryComparator>::read_data(ObjectDataInput &reader) {
                 return examples::EmployeeEntryComparator();
             }
 

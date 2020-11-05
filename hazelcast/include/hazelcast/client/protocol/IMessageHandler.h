@@ -37,7 +37,7 @@ namespace hazelcast {
             public:
                 virtual ~IMessageHandler() = default;
 
-                virtual void handleClientMessage(const std::shared_ptr<spi::impl::ClientInvocation> &invocation,
+                virtual void handle_client_message(const std::shared_ptr<spi::impl::ClientInvocation> &invocation,
                                                  const std::shared_ptr<ClientMessage> &response) = 0;
             };
         }

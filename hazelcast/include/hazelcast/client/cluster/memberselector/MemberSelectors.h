@@ -54,10 +54,10 @@ namespace hazelcast {
 
                     virtual ~MemberSelector() = default;
 
-                    virtual void toString(std::ostream &os) const = 0;
+                    virtual void to_string(std::ostream &os) const = 0;
 
                     friend std::ostream &operator<<(std::ostream &os, const MemberSelector &aSelector) {
-                        aSelector.toString(os);
+                        aSelector.to_string(os);
                         return os;
                     }
                 };
@@ -71,7 +71,7 @@ namespace hazelcast {
                         bool select(const Member &member) const override;
 
                     public:
-                        void toString(std::ostream &os) const override;
+                        void to_string(std::ostream &os) const override;
                     };
 
                     static const std::unique_ptr<MemberSelector> DATA_MEMBER_SELECTOR;

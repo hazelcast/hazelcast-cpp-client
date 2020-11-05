@@ -42,23 +42,23 @@ namespace hazelcast {
             public:
                 ClientTestSupportBase();
 
-                static std::string getCAFilePath();
+                static std::string get_ca_file_path();
 
-                static std::string randomMapName();
+                static std::string random_map_name();
 
-                static std::string randomString();
+                static std::string random_string();
 
-                static void sleepSeconds(int32_t seconds);
+                static void sleep_seconds(int32_t seconds);
 
-                static boost::uuids::uuid generateKeyOwnedBy(spi::ClientContext &context, const Member &member);
+                static boost::uuids::uuid generate_key_owned_by(spi::ClientContext &context, const Member &member);
 
-                static hazelcast::client::ClientConfig getConfig(bool ssl_enabled = false, bool smart = true);
+                static hazelcast::client::ClientConfig get_config(bool ssl_enabled = false, bool smart = true);
             protected:
                 static const std::string get_ssl_cluster_name();
 
-                static HazelcastClient getNewClient();
+                static HazelcastClient get_new_client();
 
-                static const std::string getSslFilePath();
+                static const std::string get_ssl_file_path();
 
             };
         }
@@ -92,7 +92,7 @@ namespace hazelcast {
 
             virtual void run();
 
-            virtual const std::string getName() const;
+            virtual const std::string get_name() const;
 
         private:
             ThreadArgs threadArgs_;

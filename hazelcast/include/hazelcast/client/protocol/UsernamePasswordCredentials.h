@@ -38,9 +38,9 @@ namespace hazelcast {
             public:
                 UsernamePasswordCredentials(const std::string &principal, const std::string &password);
 
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
-                const std::string &getPassword() const;
+                const std::string &get_password() const;
 
             private:
                 std::string name_;

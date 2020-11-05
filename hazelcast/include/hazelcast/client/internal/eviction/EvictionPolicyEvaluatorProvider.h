@@ -48,13 +48,13 @@ namespace hazelcast {
                      * @return the requested {@link EvictionPolicyEvaluator} implementation
                      */
                     template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
-                    static std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> > getEvictionPolicyEvaluator(
+                    static std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> > get_eviction_policy_evaluator(
                             const client::config::EvictionConfig &evictionConfig) {
 
                         std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
 
-                        EvictionPolicyType evictionPolicyType = evictionConfig.getEvictionPolicyType();
-                        evictionPolicyComparator = createEvictionPolicyComparator<MAPKEY, MAPVALUE>(evictionPolicyType);
+                        EvictionPolicyType evictionPolicyType = evictionConfig.get_eviction_policy_type();
+                        evictionPolicyComparator = create_eviction_policy_comparator<MAPKEY, MAPVALUE>(evictionPolicyType);
 
                         return std::unique_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> >(
                                 new impl::evaluator::DefaultEvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E>(
@@ -63,7 +63,7 @@ namespace hazelcast {
 
                 private:
                     template<typename A, typename E>
-                    static std::shared_ptr<EvictionPolicyComparator<A, E> > createEvictionPolicyComparator(
+                    static std::shared_ptr<EvictionPolicyComparator<A, E> > create_eviction_policy_comparator(
                             EvictionPolicyType evictionPolicyType) {
                         switch (evictionPolicyType) {
                             case LRU:

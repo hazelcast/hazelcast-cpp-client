@@ -46,13 +46,13 @@ namespace hazelcast {
              *
              * @param response the result of the successful execution
              */
-            virtual void onResponse(const boost::optional<V> &response) = 0;
+            virtual void on_response(const boost::optional<V> &response) = 0;
 
             /**
              * Called when an execution is completed with an error.
              * @param e the exception that is thrown
              */
-            virtual void onFailure(std::exception_ptr e) = 0;
+            virtual void on_failure(std::exception_ptr e) = 0;
         };
     }
 }

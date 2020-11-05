@@ -58,7 +58,7 @@ namespace hazelcast {
             TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
                                                std::shared_ptr<connection::Connection> connection)
                     : options_(txnOptions), clientContext_(clientContext), connection_(connection),
-                      threadId_(util::getCurrentThreadId()), state_(TxnState::NO_TXN) {}
+                      threadId_(util::get_current_thread_id()), state_(TxnState::NO_TXN) {}
 
             TransactionProxy::TransactionProxy(const TransactionProxy &rhs) : options_(rhs.options_),
                                                                               clientContext_(rhs.clientContext_),
@@ -69,16 +69,16 @@ namespace hazelcast {
                 TRANSACTION_EXISTS_.store(rhs.TRANSACTION_EXISTS_.load());
             }
 
-            boost::uuids::uuid TransactionProxy::getTxnId() const {
+            boost::uuids::uuid TransactionProxy::get_txn_id() const {
                 return txnId_;
             }
 
-            TxnState TransactionProxy::getState() const {
+            TxnState TransactionProxy::get_state() const {
                 return state_;
             }
 
-            std::chrono::milliseconds TransactionProxy::getTimeout() const {
-                return options_.getTimeout();
+            std::chrono::milliseconds TransactionProxy::get_timeout() const {
+                return options_.get_timeout();
             }
 
             boost::future<void> TransactionProxy::begin() {
@@ -87,7 +87,7 @@ namespace hazelcast {
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::begin()",
                                                                                "Transaction is already active"));
                     }
-                    checkThread();
+                    check_thread();
                     if (TRANSACTION_EXISTS_) {
                         BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::begin()",
                                                                                "Nested transactions are not allowed!"));
@@ -95,8 +95,8 @@ namespace hazelcast {
                     TRANSACTION_EXISTS_.store(true);
                     startTime_ = std::chrono::steady_clock::now();
                     auto request = protocol::codec::transaction_create_encode(
-                            std::chrono::duration_cast<std::chrono::milliseconds>(getTimeout()).count(), options_.getDurability(),
-                            static_cast<int32_t>(options_.getTransactionType()), threadId_);
+                            std::chrono::duration_cast<std::chrono::milliseconds>(get_timeout()).count(), options_.get_durability(),
+                            static_cast<int32_t>(options_.get_transaction_type()), threadId_);
                     return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             auto msg = f.get();
@@ -122,8 +122,8 @@ namespace hazelcast {
                                                                                "Transaction is not active"));
                     }
                     state_ = TxnState::COMMITTING;
-                    checkThread();
-                    checkTimeout();
+                    check_thread();
+                    check_timeout();
 
                     auto request = protocol::codec::transaction_commit_encode(txnId_, threadId_);
                     return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
@@ -132,14 +132,14 @@ namespace hazelcast {
                             state_ = TxnState::COMMITTED;
                         } catch (exception::IException &) {
                             TRANSACTION_EXISTS_.store(false);
-                            ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
+                            ClientTransactionUtil::transaction_exception_factory()->rethrow(std::current_exception(),
                                                                                             "TransactionProxy::commit() failed");
                         }
                     });
                 } catch (...) {
                     state_ = TxnState::COMMIT_FAILED;
                     TRANSACTION_EXISTS_.store(false);
-                    ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
+                    ClientTransactionUtil::transaction_exception_factory()->rethrow(std::current_exception(),
                                                                                     "TransactionProxy::commit() failed");
                     return boost::make_ready_future();
                 }
@@ -152,7 +152,7 @@ namespace hazelcast {
                                                                                "Transaction is not active"));
                     }
                     state_ = TxnState::ROLLING_BACK;
-                    checkThread();
+                    check_thread();
                     try {
                         auto request = protocol::codec::transaction_rollback_encode(txnId_, threadId_);
                         return invoke(request).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
@@ -161,7 +161,7 @@ namespace hazelcast {
                                 TRANSACTION_EXISTS_.store(false);
                                 f.get();
                             } catch (exception::IException &e) {
-                                HZ_LOG(clientContext_.getLogger(), warning,
+                                HZ_LOG(clientContext_.get_logger(), warning,
                                     boost::str(boost::format("Exception while rolling back the transaction. "
                                                              "Exception: %1%")
                                                              % e)
@@ -169,7 +169,7 @@ namespace hazelcast {
                             }
                         });
                     } catch (exception::IException &exception) {
-                        HZ_LOG(clientContext_.getLogger(), warning,
+                        HZ_LOG(clientContext_.get_logger(), warning,
                             boost::str(boost::format("Exception while rolling back the transaction. "
                                                      "Exception: %1%")
                                                      % exception)
@@ -179,29 +179,29 @@ namespace hazelcast {
                     TRANSACTION_EXISTS_.store(false);
                 } catch (exception::IException &) {
                     TRANSACTION_EXISTS_.store(false);
-                    ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
+                    ClientTransactionUtil::transaction_exception_factory()->rethrow(std::current_exception(),
                                                                                     "TransactionProxy::rollback() failed");
                 }
                 return boost::make_ready_future();
             }
 
-            serialization::pimpl::SerializationService &TransactionProxy::getSerializationService() {
-                return clientContext_.getSerializationService();
+            serialization::pimpl::SerializationService &TransactionProxy::get_serialization_service() {
+                return clientContext_.get_serialization_service();
             }
 
-            std::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
+            std::shared_ptr<connection::Connection> TransactionProxy::get_connection() {
                 return connection_;
             }
 
-            void TransactionProxy::checkThread() {
-                if (threadId_ != util::getCurrentThreadId()) {
+            void TransactionProxy::check_thread() {
+                if (threadId_ != util::get_current_thread_id()) {
                     BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionProxy::checkThread()",
                                                                            "Transaction cannot span multiple threads!"));
                 }
             }
 
-            void TransactionProxy::checkTimeout() {
-                if (startTime_ + options_.getTimeout() < std::chrono::steady_clock::now()) {
+            void TransactionProxy::check_timeout() {
+                if (startTime_ + options_.get_timeout() < std::chrono::steady_clock::now()) {
                     BOOST_THROW_EXCEPTION(exception::TransactionException("TransactionProxy::checkTimeout()",
                                                                           "Transaction is timed-out!"));
                 }
@@ -230,10 +230,10 @@ namespace hazelcast {
             }
 
             boost::future<protocol::ClientMessage> TransactionProxy::invoke(protocol::ClientMessage &request) {
-                return ClientTransactionUtil::invoke(request, boost::uuids::to_string(getTxnId()), clientContext_, connection_);
+                return ClientTransactionUtil::invoke(request, boost::uuids::to_string(get_txn_id()), clientContext_, connection_);
             }
 
-            spi::ClientContext &TransactionProxy::getClientContext() const {
+            spi::ClientContext &TransactionProxy::get_client_context() const {
                 return clientContext_;
             }
 
@@ -250,14 +250,14 @@ namespace hazelcast {
                             client, request, objectName, connection);
                     return clientInvocation->invoke();
                 } catch (exception::IException &) {
-                    TRANSACTION_EXCEPTION_FACTORY()->rethrow(std::current_exception(),
+                    transaction_exception_factory()->rethrow(std::current_exception(),
                                                              "ClientTransactionUtil::invoke failed");
                     return boost::make_ready_future(protocol::ClientMessage(0));
                 }
             }
 
             const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
-            ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY() {
+            ClientTransactionUtil::transaction_exception_factory() {
                 return exceptionFactory;
             }
 
@@ -278,142 +278,142 @@ namespace hazelcast {
             TransactionalMapImpl::TransactionalMapImpl(const std::string &name, txn::TransactionProxy &transactionProxy)
                     : TransactionalObject(IMap::SERVICE_NAME, name, transactionProxy) {}
 
-            boost::future<bool> TransactionalMapImpl::containsKeyData(const serialization::pimpl::Data &key) {
+            boost::future<bool> TransactionalMapImpl::contains_key_data(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::transactionalmap_containskey_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invokeAndGetFuture<bool>(request);
+                return invoke_and_get_future<bool>(request);
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>>
-            TransactionalMapImpl::getData(const serialization::pimpl::Data &key) {
+            TransactionalMapImpl::get_data(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::transactionalmap_get_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
                         request);
             }
 
             boost::future<int> TransactionalMapImpl::size() {
                 auto request = protocol::codec::transactionalmap_size_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId());
+                                get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invokeAndGetFuture<int>(request);
+                return invoke_and_get_future<int>(request);
             }
 
-            boost::future<bool> TransactionalMapImpl::isEmpty() {
+            boost::future<bool> TransactionalMapImpl::is_empty() {
                 auto request = protocol::codec::transactionalmap_isempty_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId());
+                                get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invokeAndGetFuture<bool>(
+                return invoke_and_get_future<bool>(
                         request);
             }
 
-            boost::future<boost::optional<serialization::pimpl::Data>> TransactionalMapImpl::putData(
+            boost::future<boost::optional<serialization::pimpl::Data>> TransactionalMapImpl::put_data(
                     const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
 
                 auto request = protocol::codec::transactionalmap_put_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value,
-                                std::chrono::duration_cast<std::chrono::milliseconds>(getTimeout()).count());
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, value,
+                                std::chrono::duration_cast<std::chrono::milliseconds>(get_timeout()).count());
 
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
                         request);
             }
 
             boost::future<void>
-            TransactionalMapImpl::setData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
+            TransactionalMapImpl::set_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
                 auto request = protocol::codec::transactionalmap_set_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
-                return toVoidFuture(invoke(request));
+                return to_void_future(invoke(request));
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>>
-            TransactionalMapImpl::putIfAbsentData(const serialization::pimpl::Data &key,
+            TransactionalMapImpl::put_if_absent_data(const serialization::pimpl::Data &key,
                                                   const serialization::pimpl::Data &value) {
                 auto request = protocol::codec::transactionalmap_putifabsent_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
                         request);
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>>
-            TransactionalMapImpl::replaceData(const serialization::pimpl::Data &key,
+            TransactionalMapImpl::replace_data(const serialization::pimpl::Data &key,
                                               const serialization::pimpl::Data &value) {
                 auto request = protocol::codec::transactionalmap_replace_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
                         request);
             }
 
-            boost::future<bool> TransactionalMapImpl::replaceData(const serialization::pimpl::Data &key,
+            boost::future<bool> TransactionalMapImpl::replace_data(const serialization::pimpl::Data &key,
                                                const serialization::pimpl::Data &oldValue,
                                                const serialization::pimpl::Data &newValue) {
                 auto request = protocol::codec::transactionalmap_replaceifsame_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, oldValue, newValue);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, oldValue, newValue);
 
-                return invokeAndGetFuture<bool>(
+                return invoke_and_get_future<bool>(
                         request);
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>>
-            TransactionalMapImpl::removeData(const serialization::pimpl::Data &key) {
+            TransactionalMapImpl::remove_data(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::transactionalmap_remove_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(
+                return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
                         request);
             }
 
-            boost::future<void> TransactionalMapImpl::deleteEntryData(const serialization::pimpl::Data &key) {
+            boost::future<void> TransactionalMapImpl::delete_entry_data(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::transactionalmap_delete_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return toVoidFuture(invoke(request));
+                return to_void_future(invoke(request));
             }
 
-            boost::future<bool> TransactionalMapImpl::removeData(const serialization::pimpl::Data &key,
+            boost::future<bool> TransactionalMapImpl::remove_data(const serialization::pimpl::Data &key,
                                               const serialization::pimpl::Data &value) {
                 auto request = protocol::codec::transactionalmap_removeifsame_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
-                return invokeAndGetFuture<bool>(
+                return invoke_and_get_future<bool>(
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMapImpl::keySetData() {
+            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMapImpl::key_set_data() {
                 auto request = protocol::codec::transactionalmap_keyset_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId());
+                                get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
                         request);
             }
 
             boost::future<std::vector<serialization::pimpl::Data>>
-            TransactionalMapImpl::keySetData(const serialization::pimpl::Data &predicate) {
+            TransactionalMapImpl::key_set_data(const serialization::pimpl::Data &predicate) {
                 auto request = protocol::codec::transactionalmap_keysetwithpredicate_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), predicate);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), predicate);
 
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMapImpl::valuesData() {
+            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMapImpl::values_data() {
                 auto request = protocol::codec::transactionalmap_values_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId());
+                                get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
                         request);
             }
 
             boost::future<std::vector<serialization::pimpl::Data>>
-            TransactionalMapImpl::valuesData(const serialization::pimpl::Data &predicate) {
+            TransactionalMapImpl::values_data(const serialization::pimpl::Data &predicate) {
                 auto request = protocol::codec::transactionalmap_valueswithpredicate_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), predicate);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), predicate);
 
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
                         request);
             }
 
@@ -421,55 +421,55 @@ namespace hazelcast {
                                                                  txn::TransactionProxy &transactionProxy)
                     : TransactionalObject(MultiMap::SERVICE_NAME, name, transactionProxy) {}
 
-            boost::future<bool> TransactionalMultiMapImpl::putData(const serialization::pimpl::Data &key,
+            boost::future<bool> TransactionalMultiMapImpl::put_data(const serialization::pimpl::Data &key,
                                                 const serialization::pimpl::Data &value) {
                 auto request = protocol::codec::transactionalmultimap_put_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
-                return invokeAndGetFuture<bool>(
+                return invoke_and_get_future<bool>(
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMultiMapImpl::getData(
+            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMultiMapImpl::get_data(
                     const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::transactionalmultimap_get_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
                         request);
             }
 
             boost::future<bool> TransactionalMultiMapImpl::remove(const serialization::pimpl::Data &key,
                                                    const serialization::pimpl::Data &value) {
                 auto request = protocol::codec::transactionalmultimap_removeentry_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key, value);
 
-                return invokeAndGetFuture<bool>(
+                return invoke_and_get_future<bool>(
                         request);
             }
 
-            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMultiMapImpl::removeData(
+            boost::future<std::vector<serialization::pimpl::Data>> TransactionalMultiMapImpl::remove_data(
                     const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::transactionalmultimap_remove_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invokeAndGetFuture<std::vector<serialization::pimpl::Data>>(
+                return invoke_and_get_future<std::vector<serialization::pimpl::Data>>(
                         request);
             }
 
-            boost::future<int> TransactionalMultiMapImpl::valueCount(const serialization::pimpl::Data &key) {
+            boost::future<int> TransactionalMultiMapImpl::value_count(const serialization::pimpl::Data &key) {
                 auto request = protocol::codec::transactionalmultimap_valuecount_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), key);
 
-                return invokeAndGetFuture<int>(
+                return invoke_and_get_future<int>(
                         request);
             }
 
             boost::future<int> TransactionalMultiMapImpl::size() {
                 auto request = protocol::codec::transactionalmultimap_size_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId());
+                                get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invokeAndGetFuture<int>(
+                return invoke_and_get_future<int>(
                         request);
             }
 
@@ -478,82 +478,82 @@ namespace hazelcast {
 
             boost::future<bool> TransactionalListImpl::add(const serialization::pimpl::Data &e) {
                 auto request = protocol::codec::transactionallist_add_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), e);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), e);
 
-                return invokeAndGetFuture<bool>(
+                return invoke_and_get_future<bool>(
                         request);
             }
 
             boost::future<bool> TransactionalListImpl::remove(const serialization::pimpl::Data &e) {
                 auto request = protocol::codec::transactionallist_remove_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), e);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), e);
 
-                return invokeAndGetFuture<bool>(
+                return invoke_and_get_future<bool>(
                         request);
             }
 
             boost::future<int> TransactionalListImpl::size() {
                 auto request = protocol::codec::transactionallist_size_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId());
+                                get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invokeAndGetFuture<int>(
+                return invoke_and_get_future<int>(
                         request);
             }
 
             TransactionalSetImpl::TransactionalSetImpl(const std::string &name, txn::TransactionProxy &transactionProxy)
                     : TransactionalObject(ISet::SERVICE_NAME, name, transactionProxy) {}
 
-            boost::future<bool> TransactionalSetImpl::addData(const serialization::pimpl::Data &e) {
+            boost::future<bool> TransactionalSetImpl::add_data(const serialization::pimpl::Data &e) {
                 auto request = protocol::codec::transactionalset_add_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), e);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), e);
 
-                return invokeAndGetFuture<bool>(request);
+                return invoke_and_get_future<bool>(request);
             }
 
-            boost::future<bool> TransactionalSetImpl::removeData(const serialization::pimpl::Data &e) {
+            boost::future<bool> TransactionalSetImpl::remove_data(const serialization::pimpl::Data &e) {
                 auto request = protocol::codec::transactionalset_remove_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId(), e);
+                                get_name(), get_transaction_id(), util::get_current_thread_id(), e);
 
-                return invokeAndGetFuture<bool>(
+                return invoke_and_get_future<bool>(
                         request);
             }
 
             boost::future<int> TransactionalSetImpl::size() {
                 auto request = protocol::codec::transactionalset_size_encode(
-                                getName(), getTransactionId(), util::getCurrentThreadId());
+                                get_name(), get_transaction_id(), util::get_current_thread_id());
 
-                return invokeAndGetFuture<int>(request);
+                return invoke_and_get_future<int>(request);
             }
             
             TransactionalObject::TransactionalObject(const std::string &serviceName, const std::string &objectName,
                                                      txn::TransactionProxy &context)
-                    : proxy::SerializingProxy(context.getClientContext(), objectName), serviceName_(serviceName),
+                    : proxy::SerializingProxy(context.get_client_context(), objectName), serviceName_(serviceName),
                       name_(objectName), context_(context) {}
 
             TransactionalObject::~TransactionalObject() = default;
 
-            const std::string &TransactionalObject::getServiceName() {
+            const std::string &TransactionalObject::get_service_name() {
                 return serviceName_;
             }
 
-            const std::string &TransactionalObject::getName() {
+            const std::string &TransactionalObject::get_name() {
                 return name_;
             }
 
             boost::future<void> TransactionalObject::destroy() {
-                onDestroy();
+                on_destroy();
                 auto request = protocol::codec::client_destroyproxy_encode(name_, serviceName_);
-                return toVoidFuture(invokeOnConnection(request, context_.getConnection()));
+                return to_void_future(invoke_on_connection(request, context_.get_connection()));
             }
 
-            void TransactionalObject::onDestroy() {}
+            void TransactionalObject::on_destroy() {}
 
-            boost::uuids::uuid TransactionalObject::getTransactionId() const {
-                return context_.getTxnId();
+            boost::uuids::uuid TransactionalObject::get_transaction_id() const {
+                return context_.get_txn_id();
             }
 
-            std::chrono::milliseconds TransactionalObject::getTimeout() const {
-                return context_.getTimeout();
+            std::chrono::milliseconds TransactionalObject::get_timeout() const {
+                return context_.get_timeout();
             }
         }
 
@@ -562,43 +562,43 @@ namespace hazelcast {
                                                                                        txnConnection_(
                                                                                                transactionManager.connect()),
                                                                                        transaction_(options_,
-                                                                                                   transactionManager.getClient(),
+                                                                                                   transactionManager.get_client(),
                                                                                                    txnConnection_) {
         }
 
-        boost::uuids::uuid  TransactionContext::getTxnId() const {
-            return transaction_.getTxnId();
+        boost::uuids::uuid  TransactionContext::get_txn_id() const {
+            return transaction_.get_txn_id();
         }
 
-        boost::future<void> TransactionContext::beginTransaction() {
+        boost::future<void> TransactionContext::begin_transaction() {
             return transaction_.begin();
         }
 
-        boost::future<void> TransactionContext::commitTransaction() {
+        boost::future<void> TransactionContext::commit_transaction() {
             return transaction_.commit();
         }
 
-        boost::future<void> TransactionContext::rollbackTransaction() {
+        boost::future<void> TransactionContext::rollback_transaction() {
             return transaction_.rollback();
         }
 
         TransactionOptions::TransactionOptions() : timeout_(std::chrono::minutes(2)), durability_(1),
                                                    transactionType_(TransactionType::TWO_PHASE) {}
 
-        TransactionOptions::TransactionType TransactionOptions::getTransactionType() const {
+        TransactionOptions::TransactionType TransactionOptions::get_transaction_type() const {
             return transactionType_;
         }
 
-        TransactionOptions &TransactionOptions::setTransactionType(TransactionType type) {
+        TransactionOptions &TransactionOptions::set_transaction_type(TransactionType type) {
             transactionType_ = type;
             return *this;
         }
 
-        std::chrono::milliseconds TransactionOptions::getTimeout() const {
+        std::chrono::milliseconds TransactionOptions::get_timeout() const {
             return timeout_;
         }
 
-        TransactionOptions &TransactionOptions::setTimeout(std::chrono::milliseconds duration) {
+        TransactionOptions &TransactionOptions::set_timeout(std::chrono::milliseconds duration) {
             if (duration.count() <= 0) {
                 BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setTimeout",
                                                                        "Timeout must be positive!"));
@@ -607,11 +607,11 @@ namespace hazelcast {
             return *this;
         }
 
-        int TransactionOptions::getDurability() const {
+        int TransactionOptions::get_durability() const {
             return durability_;
         }
 
-        TransactionOptions &TransactionOptions::setDurability(int numMachines) {
+        TransactionOptions &TransactionOptions::set_durability(int numMachines) {
             if (numMachines < 0) {
                 BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setDurability",
                                                                        "Durability cannot be negative!"));

@@ -55,14 +55,14 @@ namespace hazelcast {
                 template<typename ...Args>
                 MultiPredicate(HazelcastClient &client, const Args &...values) : BasePredicate(client) {
                     out_stream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
-                    out_stream.writeObjects(values...);
+                    out_stream.write_objects(values...);
                 }
 
                 template<typename ...Args>
                 MultiPredicate(const std::string attributeName, HazelcastClient &client, const Args &...values) : BasePredicate(client) {
                     out_stream.write(attributeName);
                     out_stream.write<int32_t>(static_cast<int32_t>(sizeof...(values)));
-                    out_stream.writeObjects(values...);
+                    out_stream.write_objects(values...);
                 }
             };
 
@@ -111,7 +111,7 @@ namespace hazelcast {
                 template<typename T>
                 EqualPredicate(HazelcastClient &client, const std::string &attributeName, const T &value)
                         : NamedPredicate(client, attributeName) {
-                    out_stream.writeObject(value);
+                    out_stream.write_object(value);
                 }
             };
 
@@ -124,7 +124,7 @@ namespace hazelcast {
                 template<typename T>
                 NotEqualPredicate(HazelcastClient &client, const std::string &attributeName, const T &value)
                         : NamedPredicate(client, attributeName) {
-                    out_stream.writeObject(value);
+                    out_stream.write_object(value);
                 }
             };
 
@@ -140,7 +140,7 @@ namespace hazelcast {
                 GreaterLessPredicate(HazelcastClient &client, const std::string &attributeName, const T &value,
                                      bool isEqual, bool isLess)
                         : NamedPredicate(client, attributeName) {
-                    out_stream.writeObject(value);
+                    out_stream.write_object(value);
                     out_stream.write(isEqual);
                     out_stream.write(isLess);
                 }
@@ -157,8 +157,8 @@ namespace hazelcast {
                 BetweenPredicate(HazelcastClient &client, const std::string &attributeName, const FROM_TYPE &from,
                                  const TO_TYPE &to)
                         : NamedPredicate(client, attributeName) {
-                    out_stream.writeObject(to);
-                    out_stream.writeObject(from);
+                    out_stream.write_object(to);
+                    out_stream.write_object(from);
                 }
             };
 
@@ -175,7 +175,7 @@ namespace hazelcast {
             class HAZELCAST_API InstanceOfPredicate : public BasePredicate {
             public:
                 /**
-                 * @param javaClassName The name of the java class as identified by Class.getName() in java.
+                 * @param javaClassName The name of the java class as identified by Class.get_name() in java.
                  */
                 InstanceOfPredicate(HazelcastClient &client, const std::string &javaClassName);
             };
@@ -248,7 +248,7 @@ namespace hazelcast {
             public:
                 template<typename T>
                 NotPredicate(HazelcastClient &client, const T &predicate) : BasePredicate(client) {
-                    out_stream.writeObject(predicate);
+                    out_stream.write_object(predicate);
                 }
             };
         }
@@ -259,7 +259,7 @@ namespace hazelcast {
                 /**
                  * @return factory id
                  */
-                static constexpr int32_t getFactoryId() noexcept {
+                static constexpr int32_t get_factory_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::F_ID);
                 }
 
@@ -267,14 +267,14 @@ namespace hazelcast {
                  * Defines how this class will be written.
                  * @param writer ObjectDataOutput
                  */
-                static void writeData(const T &object, ObjectDataOutput &out) {
-                    out.appendBytes(object.out_stream.toByteArray());
+                static void write_data(const T &object, ObjectDataOutput &out) {
+                    out.append_bytes(object.out_stream.to_byte_array());
                 }
 
                 /**
                  * Should not be called at the client side!
                  */
-                static T readData(ObjectDataInput &in) {
+                static T read_data(ObjectDataInput &in) {
                     // Not need to read at the client side
                     BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("readData",
                                                                                      "Client should not need to use readData method!!!"));
@@ -286,7 +286,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::BETWEEN_PREDICATE);
                 }
             };
@@ -296,7 +296,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::EQUAL_PREDICATE);
                 }
             };
@@ -306,7 +306,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::NOTEQUAL_PREDICATE);
                 }
             };
@@ -317,7 +317,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::GREATERLESS_PREDICATE);
                 }
             };
@@ -327,7 +327,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::FALSE_PREDICATE);
                 }
             };
@@ -337,7 +337,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::TRUE_PREDICATE);
                 }
             };
@@ -347,7 +347,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::LIKE_PREDICATE);
                 }
             };
@@ -358,7 +358,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::INSTANCEOF_PREDICATE);
                 }
             };
@@ -369,7 +369,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::SQL_PREDICATE);
                 }
             };
@@ -379,7 +379,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::ILIKE_PREDICATE);
                 }
             };
@@ -389,7 +389,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::REGEX_PREDICATE);
                 }
             };
@@ -399,7 +399,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::IN_PREDICATE);
                 }
             };
@@ -409,7 +409,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::AND_PREDICATE);
                 }
             };
@@ -419,7 +419,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::OR_PREDICATE);
                 }
             };
@@ -429,7 +429,7 @@ namespace hazelcast {
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::NOT_PREDICATE);
                 }
             };

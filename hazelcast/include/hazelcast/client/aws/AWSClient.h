@@ -37,7 +37,7 @@ namespace hazelcast {
             public:
                 AWSClient(config::ClientAwsConfig &awsConfig, logger &lg);
 
-                std::unordered_map<std::string, std::string> getAddresses();
+                std::unordered_map<std::string, std::string> get_addresses();
 
             private:
                 config::ClientAwsConfig &awsConfig_;

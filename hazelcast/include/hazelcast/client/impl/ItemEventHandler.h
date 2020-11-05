@@ -40,7 +40,7 @@ namespace hazelcast {
                     if (includeValue_) {
                         val = TypedData(std::move(*item), serializationService_);
                     }
-                    auto member = clusterService_.getMember(uuid);
+                    auto member = clusterService_.get_member(uuid);
                     ItemEventType type(static_cast<ItemEventType>(eventType));
                     ItemEvent itemEvent(instanceName_, type, std::move(val), std::move(member).value());
                     if (type == ItemEventType::ADDED) {

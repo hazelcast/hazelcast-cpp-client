@@ -58,14 +58,14 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                      */
-                    virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const = 0;
+                    virtual std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const = 0;
 
                     /**
                      * Gets the name of this {@link NearCache} instance.
                      *
                      * @return the name of this {@link NearCache} instance
                      */
-                    virtual const std::string &getName() const = 0;
+                    virtual const std::string &get_name() const = 0;
                 };
 
                 /**
@@ -149,7 +149,7 @@ namespace hazelcast {
                     /**
                      * @return
                      */
-                    virtual bool isInvalidatedOnChange() const {
+                    virtual bool is_invalidated_on_change() const {
                         assert(0);
                         return false;
                     }
@@ -159,7 +159,7 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.config.InMemoryFormat} of the storage for internal records
                      */
-                    virtual const client::config::InMemoryFormat getInMemoryFormat() const {
+                    virtual const client::config::InMemoryFormat get_in_memory_format() const {
                         assert(0);
                         return client::config::BINARY;
                     }

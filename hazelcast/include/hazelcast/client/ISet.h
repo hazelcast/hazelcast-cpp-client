@@ -40,15 +40,15 @@ namespace hazelcast {
             *  @param includeValue boolean value representing value should be included in incoming ItemEvent or not.
             *  @returns registrationId that can be used to remove item listener
             */
-            boost::future<boost::uuids::uuid> addItemListener(ItemListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool includeValue) {
                 std::unique_ptr<impl::ItemEventHandler<protocol::codec::set_addlistener_handler>> itemEventHandler(
                         new impl::ItemEventHandler<protocol::codec::set_addlistener_handler>(
-                                getName(), getContext().getClientClusterService(),
-                                getContext().getSerializationService(),
+                                get_name(), get_context().get_client_cluster_service(),
+                                get_context().get_serialization_service(),
                                 std::move(listener),
                                 includeValue));
 
-                return proxy::ISetImpl::addItemListener(std::move(itemEventHandler), includeValue);
+                return proxy::ISetImpl::add_item_listener(std::move(itemEventHandler), includeValue);
             }
 
             /**
@@ -58,7 +58,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> contains(const E &element) {
-                return proxy::ISetImpl::contains(toData(element));
+                return proxy::ISetImpl::contains(to_data(element));
             }
 
             /**
@@ -66,8 +66,8 @@ namespace hazelcast {
             * @returns all elements as std::vector
             */
             template<typename E>
-            boost::future<std::vector<E>> toArray() {
-                return toObjectVector<E>(proxy::ISetImpl::toArrayData());
+            boost::future<std::vector<E>> to_array() {
+                return to_object_vector<E>(proxy::ISetImpl::to_array_data());
             }
 
             /**
@@ -77,7 +77,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> add(const E &element) {
-                return proxy::ISetImpl::add(toData(element));
+                return proxy::ISetImpl::add(to_data(element));
             }
 
             /**
@@ -87,7 +87,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> remove(const E &element) {
-                return proxy::ISetImpl::remove(toData(element));
+                return proxy::ISetImpl::remove(to_data(element));
             }
 
             /**
@@ -96,8 +96,8 @@ namespace hazelcast {
             * @return true if this set contains all elements given in vector.
             */
             template<typename E>
-            boost::future<bool> containsAll(const std::vector<E> &elements) {
-                return proxy::ISetImpl::containsAll(toDataCollection(elements));
+            boost::future<bool> contains_all(const std::vector<E> &elements) {
+                return proxy::ISetImpl::contains_all(to_data_collection(elements));
             }
 
             /**
@@ -106,9 +106,9 @@ namespace hazelcast {
             * @return true if all elements given in vector can be added to set.
             */
             template<typename E>
-            boost::future<bool> addAll(const std::vector<E> &elements) {
-                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
-                return proxy::ISetImpl::addAll(toDataCollection(elements));
+            boost::future<bool> add_all(const std::vector<E> &elements) {
+                std::vector<serialization::pimpl::Data> dataCollection = to_data_collection(elements);
+                return proxy::ISetImpl::add_all(to_data_collection(elements));
             }
 
             /**
@@ -117,8 +117,8 @@ namespace hazelcast {
             * @return true if all elements are removed successfully.
             */
             template<typename E>
-            boost::future<bool> removeAll(const std::vector<E> &elements) {
-                return proxy::ISetImpl::removeAll(toDataCollection(elements));
+            boost::future<bool> remove_all(const std::vector<E> &elements) {
+                return proxy::ISetImpl::remove_all(to_data_collection(elements));
             }
 
             /**
@@ -128,8 +128,8 @@ namespace hazelcast {
             * @return true if operation is successful.
             */
             template<typename E>
-            boost::future<bool> retainAll(const std::vector<E> &elements) {
-                return proxy::ISetImpl::retainAll(toDataCollection(elements));
+            boost::future<bool> retain_all(const std::vector<E> &elements) {
+                return proxy::ISetImpl::retain_all(to_data_collection(elements));
             }
 
         private:

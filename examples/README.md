@@ -28,7 +28,7 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
   * **near-cache**: Illustrates how you can configure near-cache feature for IMap with different eviction policies.
   * **partitionaware**: Illustrates how you can use partition aware keys for IMap for putting the data into certain partitions.
   * **query**: Illustrates how you can use different Predicate types for querying data from IMap.
-  * **removeAll**: Illustrates how you can use IMap::removeAll with query predicate to remove certain entries based on the query matching.
+  * **remove_all**: Illustrates how you can use IMap::remove_all with query predicate to remove certain entries based on the query matching.
 
 **distributed primitives** — Examples for basic distributed primitive structures.
   * **crdt-pncounter**: Illustrates simple conflict free pozitive negtative counter usage.
@@ -63,7 +63,7 @@ This folder contains an extensive collection of Hazelcast C++ Client code sample
   * **portable**: Illustrates the configuration and usage of Portable objects.
   * **portable**: Illustrates the configuration and usage of Portable objects.
 
-**spi**: - Example for sing the HazelcastClient::getDistributedObject API.
+**spi**: - Example for sing the HazelcastClient::get_distributed_object API.
 
 **tls** — Example for showing how to configure SSL/TLS encryption for cluster communication.
 

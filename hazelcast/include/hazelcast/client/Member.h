@@ -65,23 +65,23 @@ namespace hazelcast {
              * Lite member is does not hold data.
              * @return true if member is lite.
              */
-            bool isLiteMember() const;
+            bool is_lite_member() const;
 
             /**
              * Returns the socket address of this member.
              *
              * @return socket address of this member
              */
-            const Address &getAddress() const;
+            const Address &get_address() const;
 
             /**
              * Returns UUID of this member.
              *
              * @return UUID of this member.
              */
-            boost::uuids::uuid getUuid() const;
+            boost::uuids::uuid get_uuid() const;
 
-            const std::unordered_map<std::string, std::string> &getAttributes() const;
+            const std::unordered_map<std::string, std::string> &get_attributes() const;
 
             /**
              * Returns the value of the specified key for this member or
@@ -91,7 +91,7 @@ namespace hazelcast {
              * @param key The key to lookup.
              * @return The value for this members key.
              */
-            const std::string *getAttribute(const std::string &key) const;
+            const std::string *get_attribute(const std::string &key) const;
 
             /**
              * check if an attribute is defined for given key.
@@ -99,7 +99,7 @@ namespace hazelcast {
              * @tparam key for the attribute
              * @return true if attribute is defined.
              */
-            bool lookupAttribute(const std::string &key) const;
+            bool lookup_attribute(const std::string &key) const;
 
             bool operator<(const Member &rhs) const;
 

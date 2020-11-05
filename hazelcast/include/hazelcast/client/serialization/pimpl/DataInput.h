@@ -47,15 +47,15 @@ namespace hazelcast {
 
                     DataInput(const Container &buf, int offset) : buffer_(buf), pos_(offset) {}
 
-                    inline void readFully(std::vector<byte> &bytes) {
+                    inline void read_fully(std::vector<byte> &bytes) {
                         size_t length = bytes.size();
-                        checkAvailable(length);
+                        check_available(length);
                         memcpy(&(bytes[0]), &(buffer_[pos_]), length);
                         pos_ += length;
                     }
 
-                    inline int skipBytes(int i) {
-                        checkAvailable(i);
+                    inline int skip_bytes(int i) {
+                        check_available(i);
                         pos_ += i;
                         return i;
                     }
@@ -63,14 +63,14 @@ namespace hazelcast {
                     template<typename T>
                     typename std::enable_if<std::is_same<byte, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        checkAvailable(1);
+                        check_available(1);
                         return buffer_[pos_++];
                     }
 
                     template<typename T>
                     typename std::enable_if<std::is_same<char, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        checkAvailable(util::Bits::CHAR_SIZE_IN_BYTES);
+                        check_available(util::Bits::CHAR_SIZE_IN_BYTES);
                         // skip the first byte
                         byte b = buffer_[pos_ + 1];
                         pos_ += util::Bits::CHAR_SIZE_IN_BYTES;
@@ -80,7 +80,7 @@ namespace hazelcast {
                     template<typename T>
                     typename std::enable_if<std::is_same<char16_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        checkAvailable(util::Bits::CHAR_SIZE_IN_BYTES);
+                        check_available(util::Bits::CHAR_SIZE_IN_BYTES);
                         pos_ += util::Bits::CHAR_SIZE_IN_BYTES;
                         return static_cast<char16_t>(buffer_[pos_] << 8 | buffer_[pos_+1]);
                     }
@@ -94,9 +94,9 @@ namespace hazelcast {
                     template<typename T>
                     typename std::enable_if<std::is_same<int16_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        checkAvailable(util::Bits::SHORT_SIZE_IN_BYTES);
+                        check_available(util::Bits::SHORT_SIZE_IN_BYTES);
                         int16_t result;
-                        util::Bits::bigEndianToNative2(&buffer_[pos_], &result);
+                        util::Bits::big_endian_to_native2(&buffer_[pos_], &result);
                         pos_ += util::Bits::SHORT_SIZE_IN_BYTES;
                         return result;
                     }
@@ -104,9 +104,9 @@ namespace hazelcast {
                     template<typename T>
                     typename std::enable_if<std::is_same<int32_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        checkAvailable(util::Bits::INT_SIZE_IN_BYTES);
+                        check_available(util::Bits::INT_SIZE_IN_BYTES);
                         int32_t result;
-                        util::Bits::bigEndianToNative4(&buffer_[pos_], &result);
+                        util::Bits::big_endian_to_native4(&buffer_[pos_], &result);
                         pos_ += util::Bits::INT_SIZE_IN_BYTES;
                         return result;
                     }
@@ -114,9 +114,9 @@ namespace hazelcast {
                     template<typename T>
                     typename std::enable_if<std::is_same<int64_t, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        checkAvailable(util::Bits::LONG_SIZE_IN_BYTES);
+                        check_available(util::Bits::LONG_SIZE_IN_BYTES);
                         int64_t result;
-                        util::Bits::bigEndianToNative8(&buffer_[pos_], &result);
+                        util::Bits::big_endian_to_native8(&buffer_[pos_], &result);
                         pos_ += util::Bits::LONG_SIZE_IN_BYTES;
                         return result;
                     }
@@ -151,7 +151,7 @@ namespace hazelcast {
                             BOOST_THROW_EXCEPTION(exception::IOException("DataInput::read()", "Null string!!!"));
                         }
 
-                        return readUTF(charCount);
+                        return read_utf(charCount);
                     }
 
                     template<typename T>
@@ -168,13 +168,13 @@ namespace hazelcast {
                             return boost::none;
                         }
 
-                        return boost::make_optional(readUTF(charCount));
+                        return boost::make_optional(read_utf(charCount));
                     }
 
                     template<typename T>
                     typename std::enable_if<std::is_same<boost::uuids::uuid, typename std::remove_cv<T>::type>::value, T>::type
                     inline read() {
-                        checkAvailable(util::Bits::UUID_SIZE_IN_BYTES);
+                        check_available(util::Bits::UUID_SIZE_IN_BYTES);
                         boost::uuids::uuid u;
                         std::memcpy(&u.data, &buffer_[pos_], util::Bits::UUID_SIZE_IN_BYTES);
                         pos_ += util::Bits::UUID_SIZE_IN_BYTES;
@@ -223,7 +223,7 @@ namespace hazelcast {
 
                     void position(int position) {
                         if (position > pos_) {
-                            checkAvailable((size_t) (position - pos_));
+                            check_available((size_t) (position - pos_));
                         }
                         pos_ = position;
                     }
@@ -232,7 +232,7 @@ namespace hazelcast {
                     const Container &buffer_;
                     int pos_;
 
-                    void inline checkAvailable(size_t requestedLength) {
+                    void inline check_available(size_t requestedLength) {
                         size_t available = buffer_.size() - pos_;
                         if (requestedLength > available) {
                             BOOST_THROW_EXCEPTION(exception::IOException("DataInput::checkAvailable", (boost::format(
@@ -242,13 +242,13 @@ namespace hazelcast {
                         }
                     }
 
-                    inline std::string readUTF(int charCount) {
+                    inline std::string read_utf(int charCount) {
                         std::string result;
                         result.reserve((size_t) MAX_UTF_CHAR_SIZE * charCount);
                         byte b;
                         for (int i = 0; i < charCount; ++i) {
                             b = read<byte>();
-                            util::UTFUtil::readUTF8Char(*this, b, result);
+                            util::UTFUtil::read_ut_f8_char(*this, b, result);
                         }
                         return result;
                     }

@@ -56,27 +56,27 @@ namespace hazelcast {
 
                         void initialize() override {
                             if (nearCacheRecordStore_.get() == NULL) {
-                                nearCacheRecordStore_ = createNearCacheRecordStore(name_, nearCacheConfig_);
+                                nearCacheRecordStore_ = create_near_cache_record_store(name_, nearCacheConfig_);
                             }
                             nearCacheRecordStore_->initialize();
 
-                            scheduleExpirationTask();
+                            schedule_expiration_task();
                         }
 
-                        const std::string &getName() const override {
+                        const std::string &get_name() const override {
                             return name_;
                         }
 
                         std::shared_ptr<V> get(const std::shared_ptr<KS> &key) override {
-                            util::Preconditions::checkNotNull(key, "key cannot be null on get!");
+                            util::Preconditions::check_not_null(key, "key cannot be null on get!");
 
                             return nearCacheRecordStore_->get(key);
                         }
 
                         void put(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value) override {
-                            util::Preconditions::checkNotNull<KS>(key, "key cannot be null on put!");
+                            util::Preconditions::check_not_null<KS>(key, "key cannot be null on put!");
 
-                            nearCacheRecordStore_->doEvictionIfRequired();
+                            nearCacheRecordStore_->do_eviction_if_required();
 
                             nearCacheRecordStore_->put(key, value);
                         }
@@ -94,13 +94,13 @@ namespace hazelcast {
 */
 
                         bool invalidate(const std::shared_ptr<KS> &key) override {
-                            util::Preconditions::checkNotNull<KS>(key, "key cannot be null on invalidate!");
+                            util::Preconditions::check_not_null<KS>(key, "key cannot be null on invalidate!");
 
                             return nearCacheRecordStore_->invalidate(key);
                         }
 
-                        bool isInvalidatedOnChange() const override {
-                            return nearCacheConfig_.isInvalidateOnChange();
+                        bool is_invalidated_on_change() const override {
+                            return nearCacheConfig_.is_invalidate_on_change();
                         }
 
                         void clear() override {
@@ -116,8 +116,8 @@ namespace hazelcast {
                             nearCacheRecordStore_->destroy();
                         }
 
-                        const client::config::InMemoryFormat getInMemoryFormat() const override {
-                            return nearCacheConfig_.getInMemoryFormat();
+                        const client::config::InMemoryFormat get_in_memory_format() const override {
+                            return nearCacheConfig_.get_in_memory_format();
                         }
 
                         /**
@@ -125,8 +125,8 @@ namespace hazelcast {
                          *
                          * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                          */
-                        std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const override {
-                            return nearCacheRecordStore_->getNearCacheStats();
+                        std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const override {
+                            return nearCacheRecordStore_->get_near_cache_stats();
                         }
 
                         int size() const override {
@@ -135,9 +135,9 @@ namespace hazelcast {
 
                     private:
                         std::unique_ptr<NearCacheRecordStore<KS, V> >
-                        createNearCacheRecordStore(const std::string &name,
+                        create_near_cache_record_store(const std::string &name,
                                                    const client::config::NearCacheConfig &nearCacheConfig) {
-                            client::config::InMemoryFormat inMemoryFormat = nearCacheConfig.getInMemoryFormat();
+                            client::config::InMemoryFormat inMemoryFormat = nearCacheConfig.get_in_memory_format();
                             switch (inMemoryFormat) {
                                 case client::config::BINARY:
                                     return std::unique_ptr<NearCacheRecordStore<KS, V> >(
@@ -154,17 +154,17 @@ namespace hazelcast {
                             }
                         }
 
-                        void scheduleExpirationTask() {
-                            if (nearCacheConfig_.getMaxIdleSeconds() > 0L ||
-                                nearCacheConfig_.getTimeToLiveSeconds() > 0L) {
-                                expirationTimer_ = executionService_->scheduleWithRepetition(
+                        void schedule_expiration_task() {
+                            if (nearCacheConfig_.get_max_idle_seconds() > 0L ||
+                                nearCacheConfig_.get_time_to_live_seconds() > 0L) {
+                                expirationTimer_ = executionService_->schedule_with_repetition(
                                     [=]() {
                                         std::atomic_bool expirationInProgress(false);
                                         while (!expiration_cancelled_) {
                                             bool expected = false;
                                             if (expirationInProgress.compare_exchange_strong(expected, true)) {
                                                 try {
-                                                    nearCacheRecordStore_->doExpiration();
+                                                    nearCacheRecordStore_->do_expiration();
                                                 } catch (exception::IException &e) {
                                                     expirationInProgress.store(false);
                                                     // TODO: What to do here

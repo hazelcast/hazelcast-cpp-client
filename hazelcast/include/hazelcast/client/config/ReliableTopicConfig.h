@@ -39,14 +39,14 @@ namespace hazelcast {
                  *
                  * @return the name of the reliable topic.
                  */
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
                 /**
                  * Gets the maximum number of items to read in a batch. Returned value will always be equal or larger than 1.
                  *
                  * @return the read batch size.
                  */
-                int getReadBatchSize() const;
+                int get_read_batch_size() const;
 
                 /**
                  * Sets the read batch size.
@@ -66,7 +66,7 @@ namespace hazelcast {
                  * @return the updated reliable topic config.
                  * @throws IllegalArgumentException if readBatchSize is smaller than 1.
                  */
-                ReliableTopicConfig &setReadBatchSize(int batchSize);
+                ReliableTopicConfig &set_read_batch_size(int batchSize);
             private:
                 int readBatchSize_;
                 std::string name_;

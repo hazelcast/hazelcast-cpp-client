@@ -21,12 +21,12 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get a Topic called "my-distributed-topic"
-    auto topic = hz.getTopic("my-distributed-topic");
+    auto topic = hz.get_topic("my-distributed-topic");
     // Add a Listener to the Topic
-    topic->addMessageListener(
+    topic->add_message_listener(
         topic::Listener().
             on_received([](topic::Message &&message) {
-                std::cout << "Got message " << message.getMessageObject().get<std::string>().value_or("null") << std::endl;
+                std::cout << "Got message " << message.get_message_object().get<std::string>().value_or("null") << std::endl;
             })
     ).get();
     // Publish a message to the Topic

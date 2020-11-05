@@ -34,29 +34,29 @@ namespace hazelcast {
                               int64_t lastAccessTime, int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version,
                               int64_t ttl, int64_t maxIdle);
 
-                const serialization::pimpl::Data &getKey() const;
+                const serialization::pimpl::Data &get_key() const;
 
-                const serialization::pimpl::Data &getValue() const;
+                const serialization::pimpl::Data &get_value() const;
 
-                int64_t getCost() const;
+                int64_t get_cost() const;
 
-                int64_t getCreationTime() const;
+                int64_t get_creation_time() const;
 
-                int64_t getExpirationTime() const;
+                int64_t get_expiration_time() const;
 
-                int64_t getHits() const;
+                int64_t get_hits() const;
 
-                int64_t getLastAccessTime() const;
+                int64_t get_last_access_time() const;
 
-                int64_t getLastStoredTime() const;
+                int64_t get_last_stored_time() const;
 
-                int64_t getLastUpdateTime() const;
+                int64_t get_last_update_time() const;
 
-                int64_t getVersion() const;
+                int64_t get_version() const;
 
-                int64_t getTtl() const;
+                int64_t get_ttl() const;
 
-                int64_t getMaxIdle() const;
+                int64_t get_max_idle() const;
 
             private:
                 serialization::pimpl::Data key_;

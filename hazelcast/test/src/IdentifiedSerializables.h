@@ -36,7 +36,7 @@ namespace hazelcast {
 
         namespace serialization {
             struct identified_base : public identified_data_serializer {
-                static int32_t getFactoryId() {
+                static int32_t get_factory_id() {
                     return 66;
                 }
             };
@@ -44,15 +44,15 @@ namespace hazelcast {
             template<>
             struct hz_serializer<test::multiplication> : public identified_base {
 
-                static int32_t getClassId() {
+                static int32_t get_class_id() {
                     return static_cast<int32_t>(test::identified_class_ids::MULTIPLICATION);
                 }
 
-                static void writeData(const test::multiplication &object, ObjectDataOutput &out) {
+                static void write_data(const test::multiplication &object, ObjectDataOutput &out) {
                     out.write(object.multiplier);
                 }
 
-                static struct test::multiplication readData(ObjectDataInput &in) {
+                static struct test::multiplication read_data(ObjectDataInput &in) {
                     return {in.read<int64_t>()};
                 }
             };
@@ -60,15 +60,15 @@ namespace hazelcast {
             template<>
             struct hz_serializer<test::append_string> : public identified_base {
 
-                static int32_t getClassId() {
+                static int32_t get_class_id() {
                     return static_cast<int32_t>(test::identified_class_ids::APPEND_STRING);
                 }
 
-                static void writeData(const test::append_string &object, ObjectDataOutput &out) {
+                static void write_data(const test::append_string &object, ObjectDataOutput &out) {
                     out.write(object.suffix);
                 }
 
-                static struct test::append_string readData(ObjectDataInput &in) {
+                static struct test::append_string read_data(ObjectDataInput &in) {
                     return {in.read<std::string>()};
                 }
             };

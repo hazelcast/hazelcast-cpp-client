@@ -37,7 +37,7 @@ namespace hazelcast {
                     matches(const std::vector<std::string> &configPatterns, const std::string &itemName) const override;
 
                 private:
-                    int getMatchingPoint(const std::string &pattern, const std::string &itemName) const;
+                    int get_matching_point(const std::string &pattern, const std::string &itemName) const;
                 };
             }
         }

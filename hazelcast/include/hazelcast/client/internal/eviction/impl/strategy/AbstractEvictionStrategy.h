@@ -57,13 +57,13 @@ namespace hazelcast {
                             int evict(S *evictableStore, EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *evictionPolicyEvaluator,
                                       EvictionChecker *evictionChecker, EvictionListener<A, E> *evictionListener) override {
                                 if (evictionChecker != NULL) {
-                                    if (evictionChecker->isEvictionRequired()) {
-                                        return evictInternal(evictableStore, evictionPolicyEvaluator, evictionListener);
+                                    if (evictionChecker->is_eviction_required()) {
+                                        return evict_internal(evictableStore, evictionPolicyEvaluator, evictionListener);
                                     } else {
                                         return 0;
                                     }
                                 } else {
-                                    return evictInternal(evictableStore, evictionPolicyEvaluator, evictionListener);
+                                    return evict_internal(evictableStore, evictionPolicyEvaluator, evictionListener);
                                 }
                             }
 
@@ -78,7 +78,7 @@ namespace hazelcast {
                              * @return evicted entry count
                              */
                         protected:
-                            virtual int evictInternal(S *evictableStore,
+                            virtual int evict_internal(S *evictableStore,
                                                       EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *evictionPolicyEvaluator,
                                                       EvictionListener<A, E> *evictionListener) {
                                 assert(0);

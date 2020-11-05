@@ -51,7 +51,7 @@ namespace hazelcast {
                      *
                      * @return the underlying {@link EvictionPolicyComparator}
                      */
-                    virtual const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > getEvictionPolicyComparator() const {
+                    virtual const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > get_eviction_policy_comparator() const {
                         assert(0);
                         return std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> >();
                     }

@@ -44,7 +44,7 @@ namespace hazelcast {
                     boost::optional<std::string> message;
                     std::vector<codec::StackTraceElement> stack_trace;
 
-                    std::string toString() const;
+                    std::string to_string() const;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const StackTraceElement &trace);

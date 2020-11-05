@@ -49,7 +49,7 @@ namespace hazelcast {
                                     : evictionPolicyComparator_(comparator) {
                             }
 
-                            const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > getEvictionPolicyComparator() const override {
+                            const std::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > get_eviction_policy_comparator() const override {
                                 return evictionPolicyComparator_;
                             }
 
@@ -64,17 +64,17 @@ namespace hazelcast {
                             std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evaluate(
                                     util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidates) const override {
                                 std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > selectedEvictionCandidate;
-                                int64_t now = util::currentTimeMillis();
+                                int64_t now = util::current_time_millis();
                                 util::Iterator<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > *iterator = evictionCandidates.iterator();
-                                while (iterator->hasNext()) {
+                                while (iterator->has_next()) {
                                     std::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > currentEvictionCandidate = iterator->next();
                                     if (selectedEvictionCandidate.get() == NULL) {
                                         selectedEvictionCandidate = currentEvictionCandidate;
                                     } else {
-                                        std::shared_ptr<E> evictable = currentEvictionCandidate->getEvictable();
+                                        std::shared_ptr<E> evictable = currentEvictionCandidate->get_evictable();
 
-                                        if (isExpired(now, evictable.get())) {
-                                            return returnEvictionCandidate(currentEvictionCandidate);
+                                        if (is_expired(now, evictable.get())) {
+                                            return return_eviction_candidate(currentEvictionCandidate);
                                         }
 
                                         int comparisonResult = evictionPolicyComparator_->compare(
@@ -84,11 +84,11 @@ namespace hazelcast {
                                         }
                                     }
                                 }
-                                return returnEvictionCandidate(selectedEvictionCandidate);
+                                return return_eviction_candidate(selectedEvictionCandidate);
                             }
 
                         private:
-                            std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > returnEvictionCandidate(
+                            std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > return_eviction_candidate(
                                     const std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidate) const {
                                 if (evictionCandidate.get() == NULL) {
                                     return std::unique_ptr<std::vector<std::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > >();
@@ -101,14 +101,14 @@ namespace hazelcast {
                             }
 
                             template <typename V>
-                            bool isExpired(int64_t now, const Evictable<V> *evictable) const {
+                            bool is_expired(int64_t now, const Evictable<V> *evictable) const {
                                 bool expired = false;
                                 if (evictable != NULL) {
                                     // If evictable is also an expirable
                                     const Expirable *expirable = dynamic_cast<const Expirable *>(evictable);
                                     if (expirable != NULL) {
                                         // If there is an expired candidate, let's evict that one immediately
-                                        expired = expirable->isExpiredAt(now);
+                                        expired = expirable->is_expired_at(now);
                                     }
                                 }
                                 return expired;

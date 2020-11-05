@@ -54,7 +54,7 @@ namespace hazelcast {
                     void refresh() override;
 
                 private:
-                    bool findFromCache(const Address &address, Address &translatedAddress);
+                    bool find_from_cache(const Address &address, Address &translatedAddress);
 
                     std::unique_ptr<AWSClient> awsClient_;
                     util::Sync<std::shared_ptr<std::unordered_map<std::string, std::string> > > privateToPublic_;

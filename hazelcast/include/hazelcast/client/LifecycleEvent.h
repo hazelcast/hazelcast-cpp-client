@@ -56,7 +56,7 @@ namespace hazelcast {
             /**
              * @return State;
              */
-            LifecycleState getState() const;
+            LifecycleState get_state() const;
 
         private:
             LifecycleState state_;

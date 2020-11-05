@@ -45,12 +45,12 @@ namespace hazelcast {
                      *
                      * @return <code>true</code> if eviction is required, otherwise <code>false</code>
                      */
-                    virtual bool isEvictionRequired() const = 0;
+                    virtual bool is_eviction_required() const = 0;
                 };
 
                 class HAZELCAST_API EvictAlways : public EvictionChecker {
                 public:
-                    bool isEvictionRequired() const override;
+                    bool is_eviction_required() const override;
                 };
             }
         }

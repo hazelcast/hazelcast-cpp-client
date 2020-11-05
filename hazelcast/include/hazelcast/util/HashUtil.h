@@ -31,7 +31,7 @@ namespace hazelcast {
              * @return the mod of the hash
              * @throws IllegalArgumentException if mod smaller than 1.
              */
-            static int hashToIndex(int hash, int length);
+            static int hash_to_index(int hash, int length);
         };
     }
 }

@@ -44,7 +44,7 @@ namespace hazelcast {
 
                 ~HazelcastServer();
 
-                const remote::Member &getMember() const;
+                const remote::Member &get_member() const;
 
             private:
                 HazelcastServerFactory & factory_;

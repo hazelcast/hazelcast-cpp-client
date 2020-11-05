@@ -37,7 +37,7 @@ namespace hazelcast {
                  */
                 static const int64_t STAT_NOT_AVAILABLE;
 
-                virtual int64_t getCreationTime() = 0;
+                virtual int64_t get_creation_time() = 0;
             };
 
             class HAZELCAST_API NearCacheStats : public LocalInstanceStats {
@@ -47,107 +47,107 @@ namespace hazelcast {
                  *
                  * @return creation time of this Near Cache on this member.
                  */
-                int64_t getCreationTime() override = 0;
+                int64_t get_creation_time() = 0;
 
                 /**
                  * Returns the number of Near Cache entries owned by this member.
                  *
                  * @return number of Near Cache entries owned by this member.
                  */
-                virtual int64_t getOwnedEntryCount() = 0;
+                virtual int64_t get_owned_entry_count() = 0;
 
                 /**
                  * Returns memory cost (number of bytes) of Near Cache entries owned by this member.
                  *
                  * @return memory cost (number of bytes) of Near Cache entries owned by this member.
                  */
-                virtual int64_t getOwnedEntryMemoryCost() = 0;
+                virtual int64_t get_owned_entry_memory_cost() = 0;
 
                 /**
                  * Returns the number of hits (reads) of Near Cache entries owned by this member.
                  *
                  * @return number of hits (reads) of Near Cache entries owned by this member.
                  */
-                virtual int64_t getHits() = 0;
+                virtual int64_t get_hits() = 0;
 
                 /**
                  * Returns the number of misses of Near Cache entries owned by this member.
                  *
                  * @return number of misses of Near Cache entries owned by this member.
                  */
-                virtual int64_t getMisses() = 0;
+                virtual int64_t get_misses() = 0;
 
                 /**
                  * Returns the hit/miss ratio of Near Cache entries owned by this member.
                  *
                  * @return hit/miss ratio of Near Cache entries owned by this member.
                  */
-                virtual double getRatio() = 0;
+                virtual double get_ratio() = 0;
 
                 /**
                  * Returns the number of evictions of Near Cache entries owned by this member.
                  *
                  * @return number of evictions of Near Cache entries owned by this member.
                  */
-                virtual int64_t getEvictions() = 0;
+                virtual int64_t get_evictions() = 0;
 
                 /**
                  * Returns the number of TTL and max-idle expirations of Near Cache entries owned by this member.
                  *
                  * @return number of TTL and max-idle expirations of Near Cache entries owned by this member.
                  */
-                virtual int64_t getExpirations() = 0;
+                virtual int64_t get_expirations() = 0;
 
                 /**
                  * Returns the number of invalidations of Near Cache entries owned by this member.
                  *
                  * @return number of invalidations of Near Cache entries owned by this member
                  */
-                virtual int64_t getInvalidations() = 0;
+                virtual int64_t get_invalidations() = 0;
 
                 /**
                  * Returns the number of Near Cache key persistences (when the pre-load feature is enabled).
                  *
                  * @return the number of Near Cache key persistences
                  */
-                virtual int64_t getPersistenceCount() = 0;
+                virtual int64_t get_persistence_count() = 0;
 
                 /**
                  * Returns the timestamp of the last Near Cache key persistence (when the pre-load feature is enabled).
                  *
                  * @return the timestamp of the last Near Cache key persistence
                  */
-                virtual int64_t getLastPersistenceTime() = 0;
+                virtual int64_t get_last_persistence_time() = 0;
 
                 /**
                  * Returns the duration in milliseconds of the last Near Cache key persistence (when the pre-load feature is enabled).
                  *
                  * @return the duration of the last Near Cache key persistence (in milliseconds)
                  */
-                virtual int64_t getLastPersistenceDuration() = 0;
+                virtual int64_t get_last_persistence_duration() = 0;
 
                 /**
                  * Returns the written bytes of the last Near Cache key persistence (when the pre-load feature is enabled).
                  *
                  * @return the written bytes of the last Near Cache key persistence
                  */
-                virtual int64_t getLastPersistenceWrittenBytes() = 0;
+                virtual int64_t get_last_persistence_written_bytes() = 0;
 
                 /**
                  * Returns the number of persisted keys of the last Near Cache key persistence (when the pre-load feature is enabled).
                  *
                  * @return the number of persisted keys of the last Near Cache key persistence
                  */
-                virtual int64_t getLastPersistenceKeyCount() = 0;
+                virtual int64_t get_last_persistence_key_count() = 0;
 
                 /**
                  * Returns the failure reason of the last Near Cache persistence (when the pre-load feature is enabled).
                  *
                  * @return the failure reason of the last Near Cache persistence
                  */
-                virtual std::string getLastPersistenceFailure() = 0;
+                virtual std::string get_last_persistence_failure() = 0;
 
-                virtual std::string toString() = 0;
+                virtual std::string to_string() = 0;
             };
         }
     }

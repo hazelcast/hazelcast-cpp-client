@@ -65,24 +65,24 @@ namespace hazelcast {
             /**
              * @return port number.
              */
-            int getPort() const;
+            int get_port() const;
 
             /**
              *
              * @return true if the address is ip V4 address, false otherwise.
              */
-            bool isIpV4() const;
+            bool is_ip_v4() const;
 
             /**
              * @return host address as string
              */
-            const std::string& getHost() const;
+            const std::string& get_host() const;
 
-            unsigned long getScopeId() const;
+            unsigned long get_scope_id() const;
 
             bool operator<(const Address &rhs) const;
 
-            std::string toString() const;
+            std::string to_string() const;
         private:
             std::string host_;
             int port_;
@@ -98,10 +98,10 @@ namespace hazelcast {
             struct hz_serializer<Address> : public identified_data_serializer {
                 static constexpr int32_t F_ID = 0;
                 static constexpr int32_t ADDRESS = 1;
-                static int32_t getFactoryId();
-                static int32_t getClassId();
-                static void writeData(const Address &object, ObjectDataOutput &out);
-                static Address readData(ObjectDataInput &in);
+                static int32_t get_factory_id();
+                static int32_t get_class_id();
+                static void write_data(const Address &object, ObjectDataOutput &out);
+                static Address read_data(ObjectDataInput &in);
             };
         }
 

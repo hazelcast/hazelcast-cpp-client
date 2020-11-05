@@ -46,7 +46,7 @@ namespace hazelcast {
                 }
 
                 proxy = std::make_shared<fenced_lock>(proxy_name, context_, group_id, object_name);
-                auto existing = lock_proxies_.putIfAbsent(proxy_name, proxy);
+                auto existing = lock_proxies_.put_if_absent(proxy_name, proxy);
                 if (!existing) {
                     return proxy;
                 } else if (existing->get_group_id() == group_id) {
@@ -79,7 +79,7 @@ namespace hazelcast {
                 return name;
             }
 
-            Preconditions::checkTrue(name.find('@', index + 1) == std::string::npos,
+            Preconditions::check_true(name.find('@', index + 1) == std::string::npos,
                                      "Custom group name must be specified at most once");
 
             auto group_name = name.substr(index + 1);
@@ -96,14 +96,14 @@ namespace hazelcast {
                 return name;
             }
 
-            Preconditions::checkTrue(index < (name.size() - 1),
+            Preconditions::check_true(index < (name.size() - 1),
                                      "Object name cannot be empty string");
-            Preconditions::checkTrue(name.find('@', index + 1) == std::string::npos,
+            Preconditions::check_true(name.find('@', index + 1) == std::string::npos,
                                      "Custom CP group name must be specified at most once");
 
             auto object_name = name.substr(0, index);
             boost::trim(object_name);
-            Preconditions::checkTrue(object_name.size() > 0,
+            Preconditions::check_true(object_name.size() > 0,
                                      "Object name cannot be empty string");
             return object_name;
         }
@@ -145,8 +145,8 @@ namespace hazelcast {
                                                                                           group_id_(groupId),
                                                                                           object_name_(objectName) {}
 
-        void cp_proxy::onDestroy() {
-            auto request = cpgroup_destroycpobject_encode(group_id_, getServiceName(), object_name_);
+        void cp_proxy::on_destroy() {
+            auto request = cpgroup_destroycpobject_encode(group_id_, get_service_name(), object_name_);
             invoke(request).get();
         }
 
@@ -160,12 +160,12 @@ namespace hazelcast {
 
         boost::future<int64_t> atomic_long::add_and_get(int64_t delta) {
             auto request = atomiclong_addandget_encode(group_id_, object_name_, delta);
-            return invokeAndGetFuture<int64_t>(request);
+            return invoke_and_get_future<int64_t>(request);
         }
 
         boost::future<bool> atomic_long::compare_and_set(int64_t expect, int64_t update) {
             auto request = atomiclong_compareandset_encode(group_id_, object_name_, expect, update);
-            return invokeAndGetFuture<bool>(request);
+            return invoke_and_get_future<bool>(request);
         }
 
         boost::future<int64_t> atomic_long::get_and_decrement() {
@@ -178,17 +178,17 @@ namespace hazelcast {
 
         boost::future<int64_t> atomic_long::get() {
             auto request = atomiclong_get_encode(group_id_, object_name_);
-            return invokeAndGetFuture<int64_t>(request);
+            return invoke_and_get_future<int64_t>(request);
         }
 
         boost::future<int64_t> atomic_long::get_and_add(int64_t delta) {
             auto request = atomiclong_getandadd_encode(group_id_, object_name_, delta);
-            return invokeAndGetFuture<int64_t>(request);
+            return invoke_and_get_future<int64_t>(request);
         }
 
         boost::future<int64_t> atomic_long::get_and_set(int64_t newValue) {
             auto request = atomiclong_getandset_encode(group_id_, object_name_, newValue);
-            return invokeAndGetFuture<int64_t>(request);
+            return invoke_and_get_future<int64_t>(request);
         }
 
         boost::future<int64_t> atomic_long::increment_and_get() {
@@ -200,19 +200,19 @@ namespace hazelcast {
         }
 
         boost::future<void> atomic_long::set(int64_t newValue) {
-            return toVoidFuture(get_and_set(newValue));
+            return to_void_future(get_and_set(newValue));
         }
 
         boost::future<int64_t> atomic_long::alter_data(Data &function_data,
                                                        alter_result_type result_type) {
             auto request = atomiclong_alter_encode(group_id_, object_name_, function_data,
                                                    static_cast<int32_t>(result_type));
-            return invokeAndGetFuture<int64_t>(request);
+            return invoke_and_get_future<int64_t>(request);
         }
 
         boost::future<boost::optional<Data>> atomic_long::apply_data(Data &function_data) {
             auto request = atomiclong_apply_encode(group_id_, object_name_, function_data);
-            return invokeAndGetFuture<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<Data>>(request);
         }
 
         atomic_reference::atomic_reference(const std::string &name, spi::ClientContext &context,
@@ -221,31 +221,31 @@ namespace hazelcast {
 
         boost::future<boost::optional<Data>> atomic_reference::get_data() {
             auto request = atomicref_get_encode(group_id_, object_name_);
-            return invokeAndGetFuture<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<Data>>(request);
         }
 
         boost::future<boost::optional<Data>> atomic_reference::set_data(const Data &new_value_data) {
             auto request = atomicref_set_encode(group_id_, object_name_, &new_value_data, false);
-            return invokeAndGetFuture<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<Data>>(request);
         }
 
         boost::future<boost::optional<Data>> atomic_reference::get_and_set_data(const Data &new_value_data) {
             auto request = atomicref_set_encode(group_id_, object_name_, &new_value_data, true);
-            return invokeAndGetFuture<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<Data>>(request);
         }
 
         boost::future<bool> atomic_reference::compare_and_set_data(const Data &expect_data, const Data &update_data) {
             auto request = atomicref_compareandset_encode(group_id_, object_name_, &expect_data, &update_data);
-            return invokeAndGetFuture<bool>(request);
+            return invoke_and_get_future<bool>(request);
         }
 
         boost::future<bool> atomic_reference::contains_data(const Data &value_data) {
             auto request = atomicref_contains_encode(group_id_, object_name_, &value_data);
-            return invokeAndGetFuture<bool>(request);
+            return invoke_and_get_future<bool>(request);
         }
 
         boost::future<void> atomic_reference::alter_data(const Data &function_data) {
-            return toVoidFuture(invoke_apply(function_data, return_value_type::NO_VALUE, true));
+            return to_void_future(invoke_apply(function_data, return_value_type::NO_VALUE, true));
         }
 
         boost::future<boost::optional<Data>> atomic_reference::alter_and_get_data(const Data &function_data) {
@@ -265,33 +265,33 @@ namespace hazelcast {
         }
 
         boost::future<void> atomic_reference::clear() {
-            return toVoidFuture(set(static_cast<byte *>(nullptr)));
+            return to_void_future(set(static_cast<byte *>(nullptr)));
         }
 
         boost::future<boost::optional<Data>>
         atomic_reference::invoke_apply(const Data function_data, return_value_type return_type, bool alter) {
             auto request = atomicref_apply_encode(group_id_, object_name_, function_data,
                                                   static_cast<int32_t>(return_type), alter);
-            return invokeAndGetFuture<boost::optional<Data>>(request);
+            return invoke_and_get_future<boost::optional<Data>>(request);
         }
 
         latch::latch(const std::string &name, spi::ClientContext &context, const raft_group_id &groupId,
                      const std::string &objectName) : cp_proxy(SERVICE_NAME, name, &context, groupId, objectName) {}
 
         boost::future<bool> latch::try_set_count(int32_t count) {
-            util::Preconditions::checkPositive(count, "count must be positive!");
+            util::Preconditions::check_positive(count, "count must be positive!");
 
             auto request = countdownlatch_trysetcount_encode(group_id_, object_name_, count);
-            return invokeAndGetFuture<bool>(request);
+            return invoke_and_get_future<bool>(request);
         }
 
         boost::future<int32_t> latch::get_count() {
             auto request = countdownlatch_getcount_encode(group_id_, object_name_);
-            return invokeAndGetFuture<int32_t>(request);
+            return invoke_and_get_future<int32_t>(request);
         }
 
         boost::future<void> latch::count_down() {
-            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             return get_round().then(boost::launch::deferred,[=] (boost::future<int32_t> f) {
                 auto round = f.get();
                 for (;;) {
@@ -314,7 +314,7 @@ namespace hazelcast {
 
         boost::future<int32_t> latch::get_round() {
             auto request = countdownlatch_getround_encode(group_id_, object_name_);
-            return invokeAndGetFuture<int32_t>(request);
+            return invoke_and_get_future<int32_t>(request);
         }
 
         void latch::count_down(int round, boost::uuids::uuid invocation_uid) {
@@ -323,14 +323,14 @@ namespace hazelcast {
         }
 
         boost::future<void> latch::wait() {
-            return toVoidFuture(wait_for(std::chrono::hours::max()));
+            return to_void_future(wait_for(std::chrono::hours::max()));
         }
 
         boost::future<std::cv_status> latch::wait_for(std::chrono::milliseconds timeout) {
             auto timeout_millis = std::max<int64_t>(0, timeout.count());
-            auto invoation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invoation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = countdownlatch_await_encode(group_id_, object_name_, invoation_uid, timeout_millis);
-            return invokeAndGetFuture<bool>(request).then(boost::launch::deferred, [] (boost::future<bool> f) {
+            return invoke_and_get_future<bool>(request).then(boost::launch::deferred, [] (boost::future<bool> f) {
                 return f.get() ? std::cv_status::no_timeout : std::cv_status::timeout;
             });
         }
@@ -352,12 +352,12 @@ namespace hazelcast {
                                                                                       context.get_proxy_session_manager()) {}
 
         boost::future<void> fenced_lock::lock() {
-            return toVoidFuture(lock_and_get_fence());
+            return to_void_future(lock_and_get_fence());
         }
 
         boost::future<int64_t> fenced_lock::lock_and_get_fence() {
-            auto thread_id = util::getCurrentThreadId();
-            auto invocation_uid = getContext().random_uuid();
+            auto thread_id = util::get_current_thread_id();
+            auto invocation_uid = get_context().random_uuid();
 
             auto do_lock_once = [=] () {
                 auto session_id = session_manager_.acquire_session(group_id_);
@@ -421,18 +421,18 @@ namespace hazelcast {
         void fenced_lock::throw_lock_ownership_lost(int64_t session_id) const {
             BOOST_THROW_EXCEPTION(client::exception::LockOwnershipLostException("fenced_lock", (boost::format(
                     "Current thread is not owner of the Lock[%1%] because its Session[%2%] is closed by server!") %
-                                                                         getName() % session_id).str()));
+                                                                         get_name() % session_id).str()));
         }
 
         void fenced_lock::throw_illegal_monitor_state() const {
             BOOST_THROW_EXCEPTION(client::exception::IllegalMonitorStateException("fenced_lock", (boost::format(
-                    "Current thread is not owner of the Lock[%1%]") %getName()).str()));
+                    "Current thread is not owner of the Lock[%1%]") %get_name()).str()));
         }
 
         boost::future<int64_t>
         fenced_lock::do_lock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid) {
             auto request = client::protocol::codec::fencedlock_lock_encode(group_id_, object_name_, session_id, thread_id, invocation_uid);
-            return invokeAndGetFuture<int64_t>(request);
+            return invoke_and_get_future<int64_t>(request);
         }
 
         boost::future<int64_t>
@@ -442,13 +442,13 @@ namespace hazelcast {
                                                                               thread_id, invocation_uid,
                                                                               std::chrono::duration_cast<std::chrono::milliseconds>(
                                                                                       timeout).count());
-            return invokeAndGetFuture<int64_t>(request);
+            return invoke_and_get_future<int64_t>(request);
         }
 
         boost::future<bool>
         fenced_lock::do_unlock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid) {
             auto request = client::protocol::codec::fencedlock_unlock_encode(group_id_, object_name_, session_id, thread_id, invocation_uid);
-            return invokeAndGetFuture<bool>(request);
+            return invoke_and_get_future<bool>(request);
         }
 
         boost::future<fenced_lock::lock_ownership_state> fenced_lock::do_get_lock_ownership_state(){
@@ -486,8 +486,8 @@ namespace hazelcast {
 
         boost::future<int64_t>
         fenced_lock::try_lock_and_get_fence(std::chrono::milliseconds timeout) {
-            auto thread_id = util::getCurrentThreadId();
-            auto invocation_uid = getContext().random_uuid();
+            auto thread_id = util::get_current_thread_id();
+            auto invocation_uid = get_context().random_uuid();
 
             auto do_try_lock_once = [=] () {
                 using namespace std::chrono;
@@ -534,7 +534,7 @@ namespace hazelcast {
         }
 
         boost::future<void> fenced_lock::unlock() {
-            auto thread_id = util::getCurrentThreadId();
+            auto thread_id = util::get_current_thread_id();
             int64_t session_id = session_manager_.get_session(group_id_);
 
             // the order of the following checks is important.
@@ -544,7 +544,7 @@ namespace hazelcast {
                 throw_illegal_monitor_state();
             }
 
-            return do_unlock(session_id, thread_id, getContext().random_uuid()).then(boost::launch::deferred, [=] (boost::future<bool> f) {
+            return do_unlock(session_id, thread_id, get_context().random_uuid()).then(boost::launch::deferred, [=] (boost::future<bool> f) {
                 try {
                     auto still_locked_by_current_thread = f.get();
                     if (still_locked_by_current_thread) {
@@ -567,7 +567,7 @@ namespace hazelcast {
         }
 
         boost::future<int64_t> fenced_lock::get_fence() {
-            auto thread_id = util::getCurrentThreadId();
+            auto thread_id = util::get_current_thread_id();
             int64_t session_id = session_manager_.get_session(group_id_);
 
             // the order of the following checks is important.
@@ -591,7 +591,7 @@ namespace hazelcast {
         }
 
         boost::future<bool> fenced_lock::is_locked() {
-            auto thread_id = util::getCurrentThreadId();
+            auto thread_id = util::get_current_thread_id();
             int64_t session_id = session_manager_.get_session(group_id_);
 
             verify_locked_session_id_if_present(thread_id, session_id, false);
@@ -609,7 +609,7 @@ namespace hazelcast {
         }
 
         boost::future<bool> fenced_lock::is_locked_by_current_thread() {
-            auto thread_id = util::getCurrentThreadId();
+            auto thread_id = util::get_current_thread_id();
             int64_t session_id = session_manager_.get_session(group_id_);
 
             verify_locked_session_id_if_present(thread_id, session_id, false);
@@ -628,7 +628,7 @@ namespace hazelcast {
         }
 
         boost::future<int32_t> fenced_lock::get_lock_count() {
-            auto thread_id = util::getCurrentThreadId();
+            auto thread_id = util::get_current_thread_id();
             int64_t session_id = session_manager_.get_session(group_id_);
 
             verify_locked_session_id_if_present(thread_id, session_id, false);
@@ -650,11 +650,11 @@ namespace hazelcast {
         }
 
         bool operator==(const fenced_lock &lhs, const fenced_lock &rhs) {
-            return lhs.getServiceName() == rhs.getServiceName() && lhs.getName() == rhs.getName();
+            return lhs.get_service_name() == rhs.get_service_name() && lhs.get_name() == rhs.get_name();
         }
 
-        void fenced_lock::postDestroy() {
-            ClientProxy::postDestroy();
+        void fenced_lock::post_destroy() {
+            ClientProxy::post_destroy();
             locked_session_ids_.clear();
         }
 
@@ -684,7 +684,7 @@ namespace hazelcast {
                                                                                                      objectName, sessionManager) {}
 
         boost::future<bool> counting_semaphore::init(int32_t permits) {
-            util::Preconditions::checkNotNegative(permits, "Permits must be non-negative!");
+            util::Preconditions::check_not_negative(permits, "Permits must be non-negative!");
 
             auto request = client::protocol::codec::semaphore_init_encode(group_id_, object_name_, permits);
             return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(
@@ -705,9 +705,9 @@ namespace hazelcast {
         }
 
         boost::future<void> counting_semaphore::do_release(int32_t permits, int64_t thread_id, int64_t session_id) {
-            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = codec::semaphore_release_encode(group_id_, object_name_, session_id, thread_id, invocation_uid, permits);
-            return toVoidFuture(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+            return to_void_future(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
         boost::future<int32_t> counting_semaphore::available_permits() {
@@ -716,7 +716,7 @@ namespace hazelcast {
         }
 
         boost::future<void> counting_semaphore::reduce_permits(int32_t reduction) {
-            util::Preconditions::checkNotNegative(reduction, "Reduction must be non-negative!");
+            util::Preconditions::check_not_negative(reduction, "Reduction must be non-negative!");
             if (reduction == 0) {
                 return boost::make_ready_future();
             }
@@ -724,7 +724,7 @@ namespace hazelcast {
         }
 
         boost::future<void> counting_semaphore::increase_permits(int32_t increase) {
-            util::Preconditions::checkNotNegative(increase, "Increase must be non-negative!");
+            util::Preconditions::check_not_negative(increase, "Increase must be non-negative!");
             if (increase == 0) {
                 return boost::make_ready_future();
             }
@@ -737,15 +737,15 @@ namespace hazelcast {
                                                      : counting_semaphore(proxyName, context, groupId, objectName, sessionManager) {}
 
         boost::future<void> sessionless_semaphore::acquire(int32_t permits) {
-            util::Preconditions::checkPositive(permits, "permits must be positive number.");
+            util::Preconditions::check_positive(permits, "permits must be positive number.");
 
-            return toVoidFuture(do_try_acquire(permits, std::chrono::milliseconds(-1)));
+            return to_void_future(do_try_acquire(permits, std::chrono::milliseconds(-1)));
         }
 
         boost::future<bool>
         sessionless_semaphore::do_try_acquire(int32_t permits, std::chrono::milliseconds timeout_ms) {
             auto cluster_wide_threadId = get_thread_id();
-            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = client::protocol::codec::semaphore_acquire_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid, permits, timeout_ms.count());
             return spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke().then(boost::launch::deferred, [=](boost::future<protocol::ClientMessage> f) {
                 try {
@@ -760,13 +760,13 @@ namespace hazelcast {
         }
 
         boost::future<bool> sessionless_semaphore::try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) {
-            util::Preconditions::checkPositive(permits, "Permits must be positive!");
+            util::Preconditions::check_positive(permits, "Permits must be positive!");
 
             return do_try_acquire(permits, timeout > std::chrono::milliseconds::zero() ? timeout : std::chrono::milliseconds::zero());
         }
 
         boost::future<void> sessionless_semaphore::release(int32_t permits) {
-            util::Preconditions::checkPositive(permits, "Permits must be positive!");
+            util::Preconditions::check_positive(permits, "Permits must be positive!");
             auto thread_id = get_thread_id();
             return do_release(permits, thread_id, internal::session::proxy_session_manager::NO_SESSION_ID);
         }
@@ -777,16 +777,16 @@ namespace hazelcast {
 
         boost::future<int32_t> sessionless_semaphore::drain_permits() {
             auto cluster_wide_threadId = get_thread_id();
-            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = client::protocol::codec::semaphore_drain_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid);
             return decode<int32_t>(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
         boost::future<void> sessionless_semaphore::do_change_permits(int32_t delta) {
             auto cluster_wide_threadId = get_thread_id();
-            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
             auto request = client::protocol::codec::semaphore_change_encode(group_id_, object_name_, internal::session::proxy_session_manager::NO_SESSION_ID, cluster_wide_threadId, invocation_uid, delta);
-            return toVoidFuture(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
+            return to_void_future(spi::impl::ClientInvocation::create(context_, request, object_name_)->invoke());
         }
 
         session_semaphore::session_semaphore(const std::string &proxyName, spi::ClientContext *context,
@@ -795,15 +795,15 @@ namespace hazelcast {
                                                      : counting_semaphore(proxyName, context, groupId, objectName, sessionManager) {}
 
         boost::future<void> session_semaphore::acquire(int32_t permits) {
-            return toVoidFuture(try_acquire_for_millis(permits, std::chrono::milliseconds(-1)));
+            return to_void_future(try_acquire_for_millis(permits, std::chrono::milliseconds(-1)));
         }
 
         boost::future<bool>
         session_semaphore::try_acquire_for_millis(int32_t permits, std::chrono::milliseconds timeout) {
-            util::Preconditions::checkNotNegative(permits, "permits must not be negative number.");
+            util::Preconditions::check_not_negative(permits, "permits must not be negative number.");
 
             auto thread_id = get_thread_id();
-            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
 
             auto do_try_acquire_once = ([=] () {
                 auto start = std::chrono::steady_clock::now();
@@ -852,7 +852,7 @@ namespace hazelcast {
         }
 
         boost::future<void> session_semaphore::release(int32_t permits) {
-            util::Preconditions::checkPositive(permits, "Permits must be positive!");
+            util::Preconditions::check_positive(permits, "Permits must be positive!");
             auto session_id = session_manager_.get_session(group_id_);
             if (session_id == internal::session::proxy_session_manager::NO_SESSION_ID) {
                 throw_illegal_state_exception(nullptr);
@@ -886,12 +886,12 @@ namespace hazelcast {
         }
 
         int64_t session_semaphore::get_thread_id() {
-            return util::getCurrentThreadId();
+            return util::get_current_thread_id();
         }
 
         boost::future<int32_t> session_semaphore::drain_permits() {
             auto thread_id = get_thread_id();
-            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
 
             auto do_drain_once = ([=] () {
                 auto session_id = session_manager_.acquire_session(group_id_, DRAIN_SESSION_ACQ_COUNT);
@@ -924,7 +924,7 @@ namespace hazelcast {
         boost::future<void> session_semaphore::do_change_permits(int32_t delta) {
             auto session_id = session_manager_.acquire_session(group_id_, DRAIN_SESSION_ACQ_COUNT);
             auto thread_id = get_thread_id();
-            auto invocation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
+            auto invocation_uid = get_context().get_hazelcast_client_implementation()->random_uuid();
 
             auto request = client::protocol::codec::semaphore_change_encode(group_id_, object_name_,
                                                                            session_id,

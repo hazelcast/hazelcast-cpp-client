@@ -21,11 +21,11 @@ int main() {
     hazelcast::client::ClientConfig clientConfig;
 
     // set the username and password to match the server side config.
-    clientConfig.setCredentials(std::make_shared<security::username_password_credentials>("test-user", "test-pass"));
+    clientConfig.set_credentials(std::make_shared<security::username_password_credentials>("test-user", "test-pass"));
     
     hazelcast::client::HazelcastClient hz(clientConfig);
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
     
     map->put(1, 100).get();
 

@@ -38,11 +38,11 @@ namespace hazelcast {
         public:
             AddressHolder(const std::string &address, const std::string &scopeId, int port);
 
-            const std::string &getAddress() const;
+            const std::string &get_address() const;
 
-            const std::string &getScopeId() const;
+            const std::string &get_scope_id() const;
 
-            int getPort() const;
+            int get_port() const;
 
             friend std::ostream &operator<<(std::ostream &os, const AddressHolder &holder);
 
@@ -58,13 +58,13 @@ namespace hazelcast {
          */
         class HAZELCAST_API AddressHelper {
         public:
-            static std::vector<client::Address> getSocketAddresses(const std::string &address, logger &lg);
+            static std::vector<client::Address> get_socket_addresses(const std::string &address, logger &lg);
         private:
             static const int MAX_PORT_TRIES;
             static const int INITIAL_FIRST_PORT;
 
             static std::vector<client::Address>
-            getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount, logger &lg);
+            get_possible_socket_addresses(int port, const std::string &scopedAddress, int portTryCount, logger &lg);
         };
     }
 }

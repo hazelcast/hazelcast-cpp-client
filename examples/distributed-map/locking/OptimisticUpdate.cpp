@@ -26,20 +26,20 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Value> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 6;
                 }
 
-                static void writeData(const Value &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Value &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.amount);
                     out.write(object.version);
                 }
 
-                static Value readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Value read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return Value{in.read<int32_t>(), in.read<int32_t>()};
                 }
             };
@@ -50,7 +50,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getMap("map");
+    auto map = hz.get_map("map");
 
     std::string key("1");
     Value v;

@@ -42,21 +42,21 @@ namespace hazelcast {
              *
              * @return the member fired this event.
              */
-            const Member &getMember() const;
+            const Member &get_member() const;
 
             /**
              * Return the event type
              *
              * @return event type ItemEventType
              */
-            ItemEventType getEventType() const;
+            ItemEventType get_event_type() const;
 
             /**
              * Returns the name of the collection for this event.
              *
              * @return name of the collection.
              */
-            const std::string &getName() const;
+            const std::string &get_name() const;
 
         private:
             std::string name_;
@@ -66,9 +66,9 @@ namespace hazelcast {
 
         /**
          *
-         * @see Queue#addItemListener
-         * @see List#addItemListener
-         * @see Set#addItemListener
+         * @see Queue#add_item_listener
+         * @see List#add_item_listener
+         * @see Set#add_item_listener
          */
         class HAZELCAST_API ItemEvent : public ItemEventBase {
         public:
@@ -78,7 +78,7 @@ namespace hazelcast {
             /**
              * @returns the item.
              */
-            const TypedData &getItem() const {
+            const TypedData &get_item() const {
                 return item_;
             }
 

@@ -46,7 +46,7 @@ namespace hazelcast {
                         : executionService_(es), serializationService_(ss), logger_(lg) {
                 }
 
-                bool NearCacheManager::clearNearCache(const std::string &name) {
+                bool NearCacheManager::clear_near_cache(const std::string &name) {
                     std::shared_ptr<BaseNearCache> nearCache = nearCacheMap_.get(name);
                     if (nearCache.get() != NULL) {
                         nearCache->clear();
@@ -54,7 +54,7 @@ namespace hazelcast {
                     return nearCache.get() != NULL;
                 }
 
-                void NearCacheManager::clearAllNearCaches() {
+                void NearCacheManager::clear_all_near_caches() {
                     std::vector<std::shared_ptr<BaseNearCache> > caches = nearCacheMap_.values();
                     for (std::vector<std::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
                          it != caches.end(); ++it) {
@@ -62,7 +62,7 @@ namespace hazelcast {
                     }
                 }
 
-                bool NearCacheManager::destroyNearCache(const std::string &name) {
+                bool NearCacheManager::destroy_near_cache(const std::string &name) {
                     std::shared_ptr<BaseNearCache> nearCache = nearCacheMap_.remove(name);
                     if (nearCache.get() != NULL) {
                         nearCache->destroy();
@@ -70,7 +70,7 @@ namespace hazelcast {
                     return nearCache.get() != NULL;
                 }
 
-                void NearCacheManager::destroyAllNearCaches() {
+                void NearCacheManager::destroy_all_near_caches() {
                     std::vector<std::shared_ptr<BaseNearCache> > caches = nearCacheMap_.values();
                     for (std::vector<std::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
                          it != caches.end(); ++it) {
@@ -78,7 +78,7 @@ namespace hazelcast {
                     }
                 }
 
-                std::vector<std::shared_ptr<BaseNearCache> > NearCacheManager::listAllNearCaches() {
+                std::vector<std::shared_ptr<BaseNearCache> > NearCacheManager::list_all_near_caches() {
                     return nearCacheMap_.values();
                 }
 
@@ -104,20 +104,20 @@ namespace hazelcast {
                         delete[] marks_;
                     }
 
-                    bool KeyStateMarkerImpl::tryMark(const serialization::pimpl::Data &key) {
-                        return casState(key, UNMARKED, MARKED);
+                    bool KeyStateMarkerImpl::try_mark(const serialization::pimpl::Data &key) {
+                        return cas_state(key, UNMARKED, MARKED);
                     }
 
-                    bool KeyStateMarkerImpl::tryUnmark(const serialization::pimpl::Data &key) {
-                        return casState(key, MARKED, UNMARKED);
+                    bool KeyStateMarkerImpl::try_unmark(const serialization::pimpl::Data &key) {
+                        return cas_state(key, MARKED, UNMARKED);
                     }
 
-                    bool KeyStateMarkerImpl::tryRemove(const serialization::pimpl::Data &key) {
-                        return casState(key, MARKED, REMOVED);
+                    bool KeyStateMarkerImpl::try_remove(const serialization::pimpl::Data &key) {
+                        return cas_state(key, MARKED, REMOVED);
                     }
 
-                    void KeyStateMarkerImpl::forceUnmark(const serialization::pimpl::Data &key) {
-                        int slot = getSlot(key);
+                    void KeyStateMarkerImpl::force_unmark(const serialization::pimpl::Data &key) {
+                        int slot = get_slot(key);
                         marks_[slot] = UNMARKED;
                     }
 
@@ -128,21 +128,21 @@ namespace hazelcast {
                     }
 
                     bool
-                    KeyStateMarkerImpl::casState(const serialization::pimpl::Data &key, STATE expect, STATE update) {
-                        int slot = getSlot(key);
+                    KeyStateMarkerImpl::cas_state(const serialization::pimpl::Data &key, STATE expect, STATE update) {
+                        int slot = get_slot(key);
                         int expected = expect;
                         return marks_[slot].compare_exchange_strong(expected, update);
                     }
 
-                    int KeyStateMarkerImpl::getSlot(const serialization::pimpl::Data &key) {
-                        return util::HashUtil::hashToIndex(key.getPartitionHash(), markCount_);
+                    int KeyStateMarkerImpl::get_slot(const serialization::pimpl::Data &key) {
+                        return util::HashUtil::hash_to_index(key.get_partition_hash(), markCount_);
                     }
 
                 }
             }
 
             namespace eviction {
-                bool EvictAlways::isEvictionRequired() const {
+                bool EvictAlways::is_eviction_required() const {
                     // Evict always at any case
                     return true;
                 }
@@ -155,19 +155,19 @@ namespace hazelcast {
         namespace map {
             namespace impl {
                 namespace nearcache {
-                    bool TrueMarkerImpl::tryMark(const serialization::pimpl::Data &key) {
+                    bool TrueMarkerImpl::try_mark(const serialization::pimpl::Data &key) {
                         return true;
                     }
 
-                    bool TrueMarkerImpl::tryUnmark(const serialization::pimpl::Data &key) {
+                    bool TrueMarkerImpl::try_unmark(const serialization::pimpl::Data &key) {
                         return true;
                     }
 
-                    bool TrueMarkerImpl::tryRemove(const serialization::pimpl::Data &key) {
+                    bool TrueMarkerImpl::try_remove(const serialization::pimpl::Data &key) {
                         return true;
                     }
 
-                    void TrueMarkerImpl::forceUnmark(const serialization::pimpl::Data &key) {
+                    void TrueMarkerImpl::force_unmark(const serialization::pimpl::Data &key) {
                     }
 
                     void TrueMarkerImpl::init() {

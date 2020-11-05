@@ -87,7 +87,7 @@ namespace hazelcast {
              *                                  every call is sync and you will not benefit from pipelining at all.
              */
             static std::shared_ptr<Pipelining> create(int depth) {
-                util::Preconditions::checkPositive(depth, "depth must be positive");
+                util::Preconditions::check_positive(depth, "depth must be positive");
 
                 return std::shared_ptr<Pipelining>(new Pipelining(depth));
             }
@@ -128,7 +128,7 @@ namespace hazelcast {
             }
 
         private:
-            Pipelining(int depth) : permits_(util::Preconditions::checkPositive(depth, "depth must be positive")) {
+            Pipelining(int depth) : permits_(util::Preconditions::check_positive(depth, "depth must be positive")) {
             }
 
             void down() {

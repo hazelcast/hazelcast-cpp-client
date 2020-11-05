@@ -78,7 +78,7 @@ namespace hazelcast {
              */
             template<typename E>
             boost::future<int64_t> add(const E &item) {
-                return addData(toData(item));
+                return add_data(to_data(item));
             }
 
             /**
@@ -115,8 +115,8 @@ namespace hazelcast {
              * @throws InterruptedException               if the call is interrupted while blocking.
              */
             template<typename E>
-            boost::future<boost::optional<E>> readOne(int64_t sequence) {
-                return toObject<E>(readOneData(sequence));
+            boost::future<boost::optional<E>> read_one(int64_t sequence) {
+                return to_object<E>(read_one_data(sequence));
             }
 
             /**
@@ -153,13 +153,13 @@ namespace hazelcast {
              */
             template<typename E>
             boost::future<int64_t> add(const E &item, ringbuffer::OverflowPolicy overflowPolicy) {
-                return addData(toData(item), overflowPolicy);
+                return addData(to_data(item), overflowPolicy);
             }
 
             /**
              * Adds all the items of a collection to the tail of the Ringbuffer.
              * <p>
-             * An addAll is likely to outperform multiple calls to {@link #add(const E&)}
+             * An add_all is likely to outperform multiple calls to {@link #add(const E&)}
              * due to better io utilization and a reduced number of executed operations.
              * If the batch is empty, the call is ignored.
              * <p>
@@ -169,7 +169,7 @@ namespace hazelcast {
              * call will not block.
              * <p>
              * The items are inserted in the order of the Iterator of the collection.
-             * If an addAll is executed concurrently with an add or addAll, no
+             * If an add_all is executed concurrently with an add or add_all, no
              * guarantee is given that items are contiguous.
              * <p>
              * The result of the future contains the sequenceId of the last written
@@ -183,8 +183,8 @@ namespace hazelcast {
              */
             template<typename E>
             boost::future<int64_t>
-            addAll(const std::vector<E> &items, ringbuffer::OverflowPolicy overflowPolicy) { 
-                return addAllData(toDataCollection(items), overflowPolicy);
+            add_all(const std::vector<E> &items, ringbuffer::OverflowPolicy overflowPolicy) { 
+                return add_all_data(to_data_collection(items), overflowPolicy);
             }
 
             /**
@@ -228,9 +228,9 @@ namespace hazelcast {
              */
             template<typename IFUNCTION>
             boost::future<ringbuffer::ReadResultSet>
-            readMany(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter = nullptr) {
-                auto filterData = toData<IFUNCTION>(filter);
-                return readManyData(startSequence, minCount, maxCount, &filterData).then([=] (boost::future<protocol::ClientMessage> f) {
+            read_many(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter = nullptr) {
+                auto filterData = to_data<IFUNCTION>(filter);
+                return read_many_data(startSequence, minCount, maxCount, &filterData).then([=] (boost::future<protocol::ClientMessage> f) {
                     return get_result_set(std::move(f));
                 });
             }
@@ -245,14 +245,14 @@ namespace hazelcast {
                         ClientMessage::INT64_SIZE);
 
                 auto datas = msg.get<std::vector<Data>>();
-                auto item_seqs = msg.getNullable<std::vector<int64_t>>();
-                return ringbuffer::ReadResultSet(read_count, std::move(datas), getSerializationService(), item_seqs,
+                auto item_seqs = msg.get_nullable<std::vector<int64_t>>();
+                return ringbuffer::ReadResultSet(read_count, std::move(datas), get_serialization_service(), item_seqs,
                                                  next_seq);
             }
 
             boost::future<ringbuffer::ReadResultSet>
-            readMany(int64_t startSequence, int32_t minCount, int32_t maxCount) {
-                return readManyData(startSequence, minCount, maxCount, nullptr).then([=] (boost::future<protocol::ClientMessage> f) {
+            read_many(int64_t startSequence, int32_t minCount, int32_t maxCount) {
+                return read_many_data(startSequence, minCount, maxCount, nullptr).then([=] (boost::future<protocol::ClientMessage> f) {
                     return get_result_set(std::move(f));
                 });
             }

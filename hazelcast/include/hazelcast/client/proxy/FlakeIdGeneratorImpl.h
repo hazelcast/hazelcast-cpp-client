@@ -46,7 +46,7 @@ namespace hazelcast {
                  * @throws NodeIdOutOfRangeException if node ID for all members in the cluster is out of valid range.
                  *      See "Node ID overflow" in {@link FlakeIdGenerator class documentation} for more details.
                  */
-                boost::future<int64_t> newId();
+                boost::future<int64_t> new_id();
 
             protected:
                 FlakeIdGeneratorImpl(const std::string &serviceName, const std::string &objectName, spi::ClientContext *context);
@@ -72,17 +72,17 @@ namespace hazelcast {
                     /**
                      * Returns the first ID in the set.
                      */
-                    const int64_t getBase() const;
+                    const int64_t get_base() const;
 
                     /**
                      * Returns increment from {@link #base()} for the next ID in the set.
                      */
-                    const int64_t getIncrement() const;
+                    const int64_t get_increment() const;
 
                     /**
                      * Returns number of IDs in the set.
                      */
-                    const int32_t getBatchSize() const;
+                    const int32_t get_batch_size() const;
 
                     class IdIterator : public std::iterator<std::input_iterator_tag, int64_t> {
                     public:
@@ -131,9 +131,9 @@ namespace hazelcast {
                     std::atomic<int32_t> numReturned_;
                 };
 
-                boost::future<FlakeIdGeneratorImpl::IdBatch> newIdBatch(int32_t size);
+                boost::future<FlakeIdGeneratorImpl::IdBatch> new_id_batch(int32_t size);
 
-                int64_t newIdInternal();
+                int64_t new_id_internal();
 
                 int32_t batchSize_;
                 std::chrono::milliseconds validity_;

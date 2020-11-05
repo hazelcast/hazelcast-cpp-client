@@ -39,9 +39,9 @@ namespace hazelcast {
 
                 void operator=(const AbstractLoadBalancer &rhs);
 
-                void setMembersRef();
+                void set_members_ref();
 
-                std::vector<Member> getMembers();
+                std::vector<Member> get_members();
 
                 void init(Cluster &cluster) override;
 

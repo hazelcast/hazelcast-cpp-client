@@ -22,7 +22,7 @@
 #include <hazelcast/client/LifecycleListener.h>
 #include <hazelcast/client/LifecycleEvent.h>
 
-hazelcast::client::LifecycleListener makeConnectionListener(std::promise<void> &connected, std::promise<void> &disconnected) {
+hazelcast::client::LifecycleListener make_connection_listener(std::promise<void> &connected, std::promise<void> &disconnected) {
     return hazelcast::client::LifecycleListener()
         .on_connected([&connected](){
             connected.set_value();
@@ -42,16 +42,16 @@ int main() {
      *
      * This example forces client to reconnect to the cluster in an async manner.
      */
-    config.getConnectionStrategyConfig().setReconnectMode(hazelcast::client::config::ClientConnectionStrategyConfig::ASYNC);
+    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::ClientConnectionStrategyConfig::ASYNC);
 
     hazelcast::client::HazelcastClient hz(config);
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
 
     map->put(1, 100);
 
     std::promise<void> connected, disconnected;
-    hz.addLifecycleListener(makeConnectionListener(connected, disconnected));
+    hz.add_lifecycle_listener(make_connection_listener(connected, disconnected));
 
     // Please shut down the cluster at this point.
     disconnected.get_future().wait();

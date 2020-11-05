@@ -43,14 +43,14 @@ namespace hazelcast {
                      *
                      * @return the type of eviction strategy
                      */
-                    virtual EvictionStrategyType::Type getEvictionStrategyType() const = 0;
+                    virtual EvictionStrategyType::Type get_eviction_strategy_type() const = 0;
 
                     /**
                      * Gets the type of eviction policy.
                      *
                      * @return the type of eviction policy
                      */
-                    virtual EvictionPolicyType getEvictionPolicyType() const = 0;
+                    virtual EvictionPolicyType get_eviction_policy_type() const = 0;
 
                     /**
                      * Gets the class name of the configured {@link EvictionPolicyComparator} implementation.
@@ -66,7 +66,7 @@ namespace hazelcast {
                      *
                      * @return instance of the configured {@link EvictionPolicyComparator} implementation.
                      */
-                    virtual const std::shared_ptr<EvictionPolicyComparator<K, V> > getComparator() const {
+                    virtual const std::shared_ptr<EvictionPolicyComparator<K, V> > get_comparator() const {
                         assert(0);
                         return std::shared_ptr<EvictionPolicyComparator<K, V> >();
                     }

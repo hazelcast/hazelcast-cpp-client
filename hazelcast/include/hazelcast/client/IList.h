@@ -41,15 +41,15 @@ namespace hazelcast {
             *  @param includeValue bool value representing value should be included in ItemEvent or not.
             *  @returns registrationId that can be used to remove item listener
             */
-            boost::future<boost::uuids::uuid> addItemListener(ItemListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool includeValue) {
                 std::unique_ptr<impl::ItemEventHandler<protocol::codec::list_addlistener_handler>> itemEventHandler(
                         new impl::ItemEventHandler<protocol::codec::list_addlistener_handler>(
-                                getName(), getContext().getClientClusterService(),
-                                getContext().getSerializationService(),
+                                get_name(), get_context().get_client_cluster_service(),
+                                get_context().get_serialization_service(),
                                 std::move(listener),
                                 includeValue));
 
-                return proxy::IListImpl::addItemListener(std::move(itemEventHandler), includeValue);
+                return proxy::IListImpl::add_item_listener(std::move(itemEventHandler), includeValue);
             }
 
             /**
@@ -59,7 +59,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> contains(const E &element) {
-                return proxy::IListImpl::contains(toData(element));
+                return proxy::IListImpl::contains(to_data(element));
             }
 
             /**
@@ -67,8 +67,8 @@ namespace hazelcast {
             * @returns all elements as std::vector
             */
             template<typename E>
-            boost::future<std::vector<E>> toArray() {
-                return toObjectVector<E>(proxy::IListImpl::toArrayData());
+            boost::future<std::vector<E>> to_array() {
+                return to_object_vector<E>(proxy::IListImpl::to_array_data());
             }
 
             /**
@@ -78,7 +78,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> add(const E &element) {
-                return proxy::IListImpl::add(toData(element));
+                return proxy::IListImpl::add(to_data(element));
             }
 
             /**
@@ -88,7 +88,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> remove(const E &element) {
-                return proxy::IListImpl::remove(toData(element));
+                return proxy::IListImpl::remove(to_data(element));
             }
 
             /**
@@ -97,8 +97,8 @@ namespace hazelcast {
             * @return true if this list contains all elements given in vector.
             */
             template<typename E>
-            boost::future<bool> containsAll(const std::vector<E> &elements) {
-                return proxy::IListImpl::containsAllData(toDataCollection(elements));
+            boost::future<bool> contains_all(const std::vector<E> &elements) {
+                return proxy::IListImpl::contains_all_data(to_data_collection(elements));
             }
 
             /**
@@ -107,8 +107,8 @@ namespace hazelcast {
             * @return true if all elements given in vector can be added to list.
             */
             template<typename E>
-            boost::future<bool> addAll(const std::vector<E> &elements) {
-                return proxy::IListImpl::addAllData(toDataCollection(elements));
+            boost::future<bool> add_all(const std::vector<E> &elements) {
+                return proxy::IListImpl::add_all_data(to_data_collection(elements));
             }
 
             /**
@@ -122,8 +122,8 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             template<typename E>
-            boost::future<bool> addAll(int32_t index, const std::vector<E> &elements) {
-                return proxy::IListImpl::addAllData(index, toDataCollection(elements));
+            boost::future<bool> add_all(int32_t index, const std::vector<E> &elements) {
+                return proxy::IListImpl::add_all_data(index, to_data_collection(elements));
             }
 
             /**
@@ -132,8 +132,8 @@ namespace hazelcast {
             * @return true if all elements are removed successfully.
             */
             template<typename E>
-            boost::future<bool> removeAll(const std::vector<E> &elements) {
-                return proxy::IListImpl::removeAllData(toDataCollection(elements));
+            boost::future<bool> remove_all(const std::vector<E> &elements) {
+                return proxy::IListImpl::remove_all_data(to_data_collection(elements));
             }
 
             /**
@@ -143,8 +143,8 @@ namespace hazelcast {
             * @return true if operation is successful.
             */
             template<typename E>
-            boost::future<bool> retainAll(const std::vector<E> &elements) {
-                return proxy::IListImpl::retainAllData(toDataCollection(elements));
+            boost::future<bool> retain_all(const std::vector<E> &elements) {
+                return proxy::IListImpl::retain_all_data(to_data_collection(elements));
             }
 
             /**
@@ -161,7 +161,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<boost::optional<E>> get(int32_t index) {
-                return toObject<E>(proxy::IListImpl::getData(index));
+                return to_object<E>(proxy::IListImpl::get_data(index));
             }
 
             /**
@@ -175,7 +175,7 @@ namespace hazelcast {
             */
             template<typename E, typename R = E>
             boost::future<boost::optional<R>> set(int32_t index, const E &element) {
-                return toObject<R>(proxy::IListImpl::setData(index, toData(element)));
+                return to_object<R>(proxy::IListImpl::set_data(index, to_data(element)));
             }
 
             /**
@@ -188,7 +188,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<void> add(int32_t index, const E &element) {
-                return proxy::IListImpl::add(index, toData(element));
+                return proxy::IListImpl::add(index, to_data(element));
             }
 
             /**
@@ -200,7 +200,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<boost::optional<E>> remove(int32_t index) {
-                return toObject<E>(proxy::IListImpl::removeData(index));
+                return to_object<E>(proxy::IListImpl::remove_data(index));
             }
 
             /**
@@ -210,8 +210,8 @@ namespace hazelcast {
             * Returns -1 if element is not in the list.
             */
             template<typename E>
-            boost::future<int> indexOf(const E &element) {
-                return proxy::IListImpl::indexOf(toData(element));
+            boost::future<int> index_of(const E &element) {
+                return proxy::IListImpl::index_of(to_data(element));
             }
 
             /**
@@ -220,8 +220,8 @@ namespace hazelcast {
             * Returns -1 if element is not in the list.
             */
             template<typename E>
-            boost::future<int32_t> lastIndexOf(const E &element) {
-                return proxy::IListImpl::lastIndexOf(toData(element));
+            boost::future<int32_t> last_index_of(const E &element) {
+                return proxy::IListImpl::last_index_of(to_data(element));
             }
 
             /**
@@ -230,8 +230,8 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             template<typename E>
-            boost::future<std::vector<E>> subList(int32_t fromIndex, int32_t toIndex) {
-                return toObjectVector<E>(proxy::IListImpl::subListData(fromIndex, toIndex));
+            boost::future<std::vector<E>> sub_list(int32_t fromIndex, int32_t toIndex) {
+                return to_object_vector<E>(proxy::IListImpl::sub_list_data(fromIndex, toIndex));
             }
 
         private:

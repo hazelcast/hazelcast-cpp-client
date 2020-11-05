@@ -56,11 +56,11 @@ namespace hazelcast {
                  *
                  * @return the number of items read (including the filtered ones).
                  */
-                int32_t readCount() const {
+                int32_t read_count() const {
                     return itemsReadCount_;
                 }
 
-                const std::vector<TypedData> &getItems() const {
+                const std::vector<TypedData> &get_items() const {
                     return items_;
                 }
 
@@ -72,7 +72,7 @@ namespace hazelcast {
                  * @throws IllegalArgumentException if index out of bounds.
                  * @since 3.9
                  */
-                int64_t getSequence(int32_t index) const {
+                int64_t get_sequence(int32_t index) const {
                     if (index >= (int32_t) itemSeqs_->size() || index < 0) {
                         BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::IllegalArgumentException>(
                                 "ReadResultSet::getSequence") << "Index " << index
@@ -104,7 +104,7 @@ namespace hazelcast {
                  * @return the sequence of the item following the last item in the result set
                  * @since 3.10
                  */
-                int64_t getNextSequenceToReadFrom() const {
+                int64_t get_next_sequence_to_read_from() const {
                     return nextSeq_;
                 }
 

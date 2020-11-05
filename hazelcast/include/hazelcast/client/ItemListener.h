@@ -44,9 +44,9 @@ namespace hazelcast {
         * \warning
         * 2 - Do not make a call to hazelcast. It can cause a deadlock.
         *
-        * \see IList::addItemListener
-        * \see IQueue::addItemListener
-        * \see ISet::addItemListener
+        * \see IList::add_item_listener
+        * \see IQueue::add_item_listener
+        * \see ISet::add_item_listener
         */
         class HAZELCAST_API ItemListener final {
         public:

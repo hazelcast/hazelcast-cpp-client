@@ -36,7 +36,7 @@ namespace hazelcast {
                 /**
                  * @return A per client unique reference ID
                  */
-                int64_t getNextReferenceId();
+                int64_t get_next_reference_id();
             private:
                 std::atomic<int64_t> referenceIdCounter_;
             };

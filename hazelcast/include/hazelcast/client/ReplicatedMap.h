@@ -63,7 +63,7 @@ namespace hazelcast {
              */
             template<typename K, typename V, typename R = V>
             boost::future<boost::optional<R>> put(const K &key, const V &value, std::chrono::milliseconds ttl) {
-                return toObject<R>(putData(toData(key), toData(value), ttl));
+                return to_object<R>(put_data(to_data(key), to_data(value), ttl));
             }
 
             /**
@@ -77,8 +77,8 @@ namespace hazelcast {
             * @param entries mappings to be stored in this map
             */
             template<typename K, typename V>
-            boost::future<void> putAll(const std::unordered_map<K, V> &entries) {
-                return putAllData(toDataEntries(entries));
+            boost::future<void> put_all(const std::unordered_map<K, V> &entries) {
+                return put_all_data(to_data_entries(entries));
             }
 
             /**
@@ -87,11 +87,11 @@ namespace hazelcast {
              *
              * @param listener entry listener
              */
-            boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener) {
-                return proxy::ReplicatedMapImpl::addEntryListener(
+            boost::future<boost::uuids::uuid> add_entry_listener(EntryListener &&listener) {
+                return proxy::ReplicatedMapImpl::add_entry_listener(
                         std::shared_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistener_handler>(getName(), getContext().getClientClusterService(),
-                                        getContext().getSerializationService(), std::move(listener), getContext().getLogger())));
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistener_handler>(get_name(), get_context().get_client_cluster_service(),
+                                        get_context().get_serialization_service(), std::move(listener), get_context().get_logger())));
             }
 
             /**
@@ -108,12 +108,12 @@ namespace hazelcast {
              */
             template<typename K>
             typename std::enable_if<!std::is_base_of<query::Predicate, K>::value, boost::future<boost::uuids::uuid>>::type
-            addEntryListener(EntryListener &&listener, const K &key) {
-                return proxy::ReplicatedMapImpl::addEntryListenerToKey(
+            add_entry_listener(EntryListener &&listener, const K &key) {
+                return proxy::ReplicatedMapImpl::add_entry_listener_to_key(
                         std::shared_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenertokey_handler>(getName(), getContext().getClientClusterService(),
-                                                      getContext().getSerializationService(), std::move(listener),
-                                                      getContext().getLogger())), toData(key));
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenertokey_handler>(get_name(), get_context().get_client_cluster_service(),
+                                                      get_context().get_serialization_service(), std::move(listener),
+                                                      get_context().get_logger())), to_data(key));
             }
 
             /**
@@ -125,12 +125,12 @@ namespace hazelcast {
              */
             template<typename P>
             typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<boost::uuids::uuid>>::type
-            addEntryListener(EntryListener &&listener, const P &predicate) {
-                return proxy::ReplicatedMapImpl::addEntryListener(
+            add_entry_listener(EntryListener &&listener, const P &predicate) {
+                return proxy::ReplicatedMapImpl::add_entry_listener(
                         std::shared_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenerwithpredicate_handler>(getName(), getContext().getClientClusterService(),
-                                                      getContext().getSerializationService(), std::move(listener),
-                                                      getContext().getLogger())), toData(predicate));
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenerwithpredicate_handler>(get_name(), get_context().get_client_cluster_service(),
+                                                      get_context().get_serialization_service(), std::move(listener),
+                                                      get_context().get_logger())), to_data(predicate));
             }
 
             /**
@@ -143,12 +143,12 @@ namespace hazelcast {
              */
             template<typename K, typename P>
             typename std::enable_if<std::is_base_of<query::Predicate, P>::value, boost::future<boost::uuids::uuid>>::type
-            addEntryListener(EntryListener &&listener, const P &predicate, const K &key) {
-                return proxy::ReplicatedMapImpl::addEntryListener(
+            add_entry_listener(EntryListener &&listener, const P &predicate, const K &key) {
+                return proxy::ReplicatedMapImpl::add_entry_listener(
                         std::shared_ptr<impl::BaseEventHandler>(
-                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenertokeywithpredicate_handler>(getName(), getContext().getClientClusterService(),
-                                                      getContext().getSerializationService(), std::move(listener),
-                                                      getContext().getLogger())), toData(key), toData(predicate));
+                                new EntryEventHandler<protocol::codec::replicatedmap_addentrylistenertokeywithpredicate_handler>(get_name(), get_context().get_client_cluster_service(),
+                                                      get_context().get_serialization_service(), std::move(listener),
+                                                      get_context().get_logger())), to_data(key), to_data(predicate));
             }
 
             /**
@@ -166,7 +166,7 @@ namespace hazelcast {
              */
             template<typename V>
             boost::future<std::vector<V>> values() {
-                return toObjectVector<V>(valuesData());
+                return to_object_vector<V>(values_data());
             }
 
             /**
@@ -182,8 +182,8 @@ namespace hazelcast {
              * @return view of the mappings contained in this map.
              */
             template<typename K, typename V>
-            boost::future<std::vector<std::pair<K, V>>> entrySet() {
-                return toEntryObjectVector<K,V>(entrySetData());
+            boost::future<std::vector<std::pair<K, V>>> entry_set() {
+                return to_entry_object_vector<K,V>(entry_set_data());
             }
 
             /**
@@ -199,8 +199,8 @@ namespace hazelcast {
              * @return The keys contained in this map.
              */
             template<typename K>
-            boost::future<std::vector<K>> keySet() {
-                return toObjectVector<K>(keySetData());
+            boost::future<std::vector<K>> key_set() {
+                return to_object_vector<K>(key_set_data());
             }
             
             /**
@@ -209,8 +209,8 @@ namespace hazelcast {
              * @return true if the entry with the key exist in the replicated map.
              */
             template<typename K>
-            boost::future<bool> containsKey(const K &key) {
-                return containsKeyData(toData(key));
+            boost::future<bool> contains_key(const K &key) {
+                return contains_key_data(to_data(key));
             }
 
             /**
@@ -219,8 +219,8 @@ namespace hazelcast {
              * @return true if the value exist in the replicated map.
              */
             template<typename V>
-            boost::future<bool> containsValue(const V &value) {
-                return containsValueData(toData(value));
+            boost::future<bool> contains_value(const V &value) {
+                return contains_value_data(to_data(value));
             }
 
             /**
@@ -230,7 +230,7 @@ namespace hazelcast {
              */
             template<typename K, typename V>
             boost::future<boost::optional<V>> get(const K &key) {
-                return toObject<V>(getData(toData(key)));
+                return to_object<V>(get_data(to_data(key)));
             }
 
             /**
@@ -251,7 +251,7 @@ namespace hazelcast {
              */
             template<typename K, typename V>
             boost::future<boost::optional<V>> remove(const K &key) {
-                return toObject<V>(removeData(toData(key)));
+                return to_object<V>(remove_data(to_data(key)));
             }
         private:
             ReplicatedMap(const std::string &objectName, spi::ClientContext *context) : proxy::ReplicatedMapImpl(
@@ -272,25 +272,25 @@ namespace hazelcast {
                                   int32_t eventType, boost::uuids::uuid uuid,
                                   int32_t numberOfAffectedEntries) override {
                     if (eventType == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
-                        fireMapWideEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                        fire_map_wide_event(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                         return;
                     }
 
-                    fireEntryEvent(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                    fire_entry_event(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
                 }
 
             private:
-                void fireMapWideEvent(const boost::optional<Data> &key, const boost::optional<Data> &value,
+                void fire_map_wide_event(const boost::optional<Data> &key, const boost::optional<Data> &value,
                                       const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
                                       int32_t eventType, boost::uuids::uuid uuid,
                                       int32_t numberOfAffectedEntries) {
-                    auto member = clusterService_.getMember(uuid);
+                    auto member = clusterService_.get_member(uuid);
                     auto mapEventType = static_cast<EntryEvent::type>(eventType);
                     MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName_, numberOfAffectedEntries);
                     listener_.map_cleared_(std::move(mapEvent));
                 }
 
-                void fireEntryEvent(const boost::optional<Data> &key, const boost::optional<Data> &value,
+                void fire_entry_event(const boost::optional<Data> &key, const boost::optional<Data> &value,
                                     const boost::optional<Data> &oldValue, const boost::optional<Data> &mergingValue,
                                     int32_t eventType, boost::uuids::uuid uuid,
                                     int32_t numberOfAffectedEntries) {
@@ -307,7 +307,7 @@ namespace hazelcast {
                     if (key) {
                         eventKey = TypedData(std::move(*key), serializationService_);
                     }
-                    auto member = clusterService_.getMember(uuid);
+                    auto member = clusterService_.get_member(uuid);
                     if (!member.has_value()) {
                         member = Member(uuid);
                     }

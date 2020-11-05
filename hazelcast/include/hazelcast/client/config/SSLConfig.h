@@ -65,31 +65,31 @@ namespace hazelcast {
                  *
                  * @return true if enabled, false otherwise
                  */
-                bool isEnabled() const;
+                bool is_enabled() const;
 
                 /**
                  * Enables and disables this configuration.
                  *
                  * @param isEnabled true to enable, false to disable
                  */
-                SSLConfig &setEnabled(bool isEnabled);
+                SSLConfig &set_enabled(bool isEnabled);
 
                 /**
                  * Sets the ssl protocol to be used for this SSL socket.
                  *
                  * @param protocol One of the supported protocols
                  */
-                SSLConfig &setProtocol(SSLProtocol protocol);
+                SSLConfig &set_protocol(SSLProtocol protocol);
 
                 /**
                  * @return The configured SSL protocol
                  */
-                SSLProtocol getProtocol() const;
+                SSLProtocol get_protocol() const;
 
                 /**
                  * @return The list of all configured certificate verify files for the client.
                  */
-                const std::vector<std::string> &getVerifyFiles() const;
+                const std::vector<std::string> &get_verify_files() const;
 
                 /**
                  * This API calls the OpenSSL SSL_CTX_load_verify_locations method underneath while starting the client
@@ -99,12 +99,12 @@ namespace hazelcast {
                  *
                  * @param filename the name of a file containing certification authority certificates in PEM format.
                  */
-                SSLConfig &addVerifyFile(const std::string &filename);
+                SSLConfig &add_verify_file(const std::string &filename);
 
                 /**
                  * @return Returns the use configured cipher list string.
                  */
-                const std::string &getCipherList() const;
+                const std::string &get_cipher_list() const;
 
                 /**
                  * @param ciphers The list of ciphers to be used. During client start, if this API was set then the
@@ -116,7 +116,7 @@ namespace hazelcast {
                  * If non of the provided ciphers could be selected the client initialization will fail.
                  *
                  */
-                SSLConfig &setCipherList(const std::string &ciphers);
+                SSLConfig &set_cipher_list(const std::string &ciphers);
             private:
                 bool enabled_;
                 SSLProtocol sslProtocol_;

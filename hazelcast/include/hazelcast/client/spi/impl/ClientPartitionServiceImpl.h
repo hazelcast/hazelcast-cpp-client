@@ -51,13 +51,13 @@ namespace hazelcast {
                     void handle_event(const std::shared_ptr<connection::Connection>& connection, int32_t version,
                                       const std::vector<std::pair<boost::uuids::uuid, std::vector<int>>> &partitions);
 
-                    boost::uuids::uuid getPartitionOwner(int partitionId);
+                    boost::uuids::uuid get_partition_owner(int partitionId);
 
-                    int32_t getPartitionId(const serialization::pimpl::Data &key);
+                    int32_t get_partition_id(const serialization::pimpl::Data &key);
 
-                    int32_t getPartitionCount();
+                    int32_t get_partition_count();
 
-                    std::shared_ptr<client::impl::Partition> getPartition(int32_t partitionId);
+                    std::shared_ptr<client::impl::Partition> get_partition(int32_t partitionId);
 
                     bool check_and_set_partition_count(int32_t new_partition_count);
 
@@ -74,9 +74,9 @@ namespace hazelcast {
                         PartitionImpl(int partitionId, ClientContext &client,
                                       ClientPartitionServiceImpl &partitionService);
 
-                        int getPartitionId() const override;
+                        int get_partition_id() const override;
 
-                        boost::optional<Member> getOwner() const override;
+                        boost::optional<Member> get_owner() const override;
 
                     private:
                         int partitionId_;

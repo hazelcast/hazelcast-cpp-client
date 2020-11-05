@@ -40,7 +40,7 @@ namespace hazelcast {
             constexpr const char *QueryConstants::THIS_ATTRIBUTE_NAME;
 
             BasePredicate::BasePredicate(HazelcastClient &client) : out_stream(spi::ClientContext(
-                    client).getSerializationService().newOutputStream()) {}
+                    client).get_serialization_service().new_output_stream()) {}
 
             NamedPredicate::NamedPredicate(HazelcastClient &client, const std::string &attributeName) : BasePredicate(
                     client) {

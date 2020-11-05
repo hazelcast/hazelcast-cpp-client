@@ -51,16 +51,16 @@ namespace hazelcast {
                 : clusterService_(clusterService) {
         }
 
-        std::vector<Member> Cluster::getMembers() {
-            return clusterService_.getMemberList();
+        std::vector<Member> Cluster::get_members() {
+            return clusterService_.get_member_list();
         }
 
-        boost::uuids::uuid Cluster::addMembershipListener(MembershipListener &&listener) {
-            return clusterService_.addMembershipListener(std::move(listener));
+        boost::uuids::uuid Cluster::add_membership_listener(MembershipListener &&listener) {
+            return clusterService_.add_membership_listener(std::move(listener));
         }
 
-        bool Cluster::removeMembershipListener(boost::uuids::uuid registrationId) {
-            return clusterService_.removeMembershipListener(registrationId);
+        bool Cluster::remove_membership_listener(boost::uuids::uuid registrationId) {
+            return clusterService_.remove_membership_listener(registrationId);
         }
 
         Member::Member() : liteMember_(false) {
@@ -80,34 +80,34 @@ namespace hazelcast {
             return uuid_ == rhs.uuid_;
         }
 
-        const Address &Member::getAddress() const {
+        const Address &Member::get_address() const {
             return address_;
         }
 
-        boost::uuids::uuid Member::getUuid() const {
+        boost::uuids::uuid Member::get_uuid() const {
             return uuid_;
         }
 
-        bool Member::isLiteMember() const {
+        bool Member::is_lite_member() const {
             return liteMember_;
         }
 
-        const std::unordered_map<std::string, std::string> &Member::getAttributes() const {
+        const std::unordered_map<std::string, std::string> &Member::get_attributes() const {
             return attributes_;
         }
 
         std::ostream &operator<<(std::ostream &out, const Member &member) {
-            const Address &address = member.getAddress();
+            const Address &address = member.get_address();
             out << "Member[";
-            out << address.getHost();
+            out << address.get_host();
             out << "]";
             out << ":";
-            out << address.getPort();
-            out << " - " << boost::uuids::to_string(member.getUuid());
+            out << address.get_port();
+            out << " - " << boost::uuids::to_string(member.get_uuid());
             return out;
         }
 
-        const std::string *Member::getAttribute(const std::string &key) const {
+        const std::string *Member::get_attribute(const std::string &key) const {
             std::unordered_map<std::string, std::string>::const_iterator it = attributes_.find(key);
             if (attributes_.end() != it) {
                 return &(it->second);
@@ -116,7 +116,7 @@ namespace hazelcast {
             }
         }
 
-        bool Member::lookupAttribute(const std::string &key) const {
+        bool Member::lookup_attribute(const std::string &key) const {
             return attributes_.find(key) != attributes_.end();
         }
 
@@ -127,11 +127,11 @@ namespace hazelcast {
         Endpoint::Endpoint(boost::uuids::uuid uuid, boost::optional<Address> socketAddress)
                 : uuid_(uuid), socketAddress_(std::move(socketAddress)) {}
 
-        boost::uuids::uuid Endpoint::getUuid() const {
+        boost::uuids::uuid Endpoint::get_uuid() const {
             return uuid_;
         }
 
-        const boost::optional<Address> &Endpoint::getSocketAddress() const {
+        const boost::optional<Address> &Endpoint::get_socket_address() const {
             return socketAddress_;
         }
 
@@ -142,19 +142,19 @@ namespace hazelcast {
 
         MembershipEvent::~MembershipEvent() = default;
 
-        std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> MembershipEvent::getMembers() const {
+        std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> MembershipEvent::get_members() const {
             return members_;
         }
 
-        const Cluster &MembershipEvent::getCluster() const {
+        const Cluster &MembershipEvent::get_cluster() const {
             return cluster_;
         }
 
-        MembershipEvent::MembershipEventType MembershipEvent::getEventType() const {
+        MembershipEvent::MembershipEventType MembershipEvent::get_event_type() const {
             return eventType_;
         }
 
-        const Member &MembershipEvent::getMember() const {
+        const Member &MembershipEvent::get_member() const {
             return member_;
         }
 
@@ -162,7 +162,7 @@ namespace hazelcast {
                        std::unordered_set<std::string> labels) : Endpoint(uuid, std::move(socketAddress)), name_(std::move(name)),
                                                                  labels_(std::move(labels)) {}
 
-        const std::string &Client::getName() const {
+        const std::string &Client::get_name() const {
             return name_;
         }
 
@@ -174,7 +174,7 @@ namespace hazelcast {
             }
 
             boost::optional<Member> RoundRobinLB::next() {
-                auto members = getMembers();
+                auto members = get_members();
                 if (members.empty()) {
                     return boost::none;
                 }
@@ -201,28 +201,28 @@ namespace hazelcast {
 
             void AbstractLoadBalancer::init(Cluster &cluster) {
                 this->cluster_ = &cluster;
-                setMembersRef();
+                set_members_ref();
 
-                cluster.addMembershipListener(
+                cluster.add_membership_listener(
                     MembershipListener()
                         .on_init([this](const InitialMembershipEvent &){
-                            setMembersRef();
+                            set_members_ref();
                         })
                         .on_joined([this](const MembershipEvent &){
-                            setMembersRef();
+                            set_members_ref();
                         })
                         .on_left([this](const MembershipEvent &){
-                            setMembersRef();
+                            set_members_ref();
                         })
                 );
             }
 
-            void AbstractLoadBalancer::setMembersRef() {
+            void AbstractLoadBalancer::set_members_ref() {
                 std::lock_guard<std::mutex> lg(membersLock_);
-                membersRef_ = cluster_->getMembers();
+                membersRef_ = cluster_->get_members();
             }
 
-            std::vector<Member> AbstractLoadBalancer::getMembers() {
+            std::vector<Member> AbstractLoadBalancer::get_members() {
                 std::lock_guard<std::mutex> lg(membersLock_);
                 return membersRef_;
             }
@@ -236,10 +236,10 @@ namespace hazelcast {
         namespace cluster {
             namespace memberselector {
                 bool MemberSelectors::DataMemberSelector::select(const Member &member) const {
-                    return !member.isLiteMember();
+                    return !member.is_lite_member();
                 }
 
-                void MemberSelectors::DataMemberSelector::toString(std::ostream &os) const {
+                void MemberSelectors::DataMemberSelector::to_string(std::ostream &os) const {
                     os << "Default DataMemberSelector";
                 }
 
@@ -257,16 +257,16 @@ namespace hazelcast {
                     }
                 }
 
-                VectorClock::TimestampVector VectorClock::entrySet() {
+                VectorClock::TimestampVector VectorClock::entry_set() {
                     return replicaTimestampEntries_;
                 }
 
-                bool VectorClock::isAfter(VectorClock &other) {
+                bool VectorClock::is_after(VectorClock &other) {
                     bool anyTimestampGreater = false;
                     for (const VectorClock::TimestampMap::value_type &otherEntry : other.replicaTimestamps_) {
                         const auto &replicaId = otherEntry.first;
                         int64_t otherReplicaTimestamp = otherEntry.second;
-                        std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
+                        std::pair<bool, int64_t> localReplicaTimestamp = get_timestamp_for_replica(replicaId);
 
                         if (!localReplicaTimestamp.first ||
                             localReplicaTimestamp.second < otherReplicaTimestamp) {
@@ -279,7 +279,7 @@ namespace hazelcast {
                     return anyTimestampGreater || other.replicaTimestamps_.size() < replicaTimestamps_.size();
                 }
 
-                std::pair<bool, int64_t> VectorClock::getTimestampForReplica(boost::uuids::uuid replicaId) {
+                std::pair<bool, int64_t> VectorClock::get_timestamp_for_replica(boost::uuids::uuid replicaId) {
                     if (replicaTimestamps_.count(replicaId) == 0) {
                         return std::make_pair(false, -1);
                     }
@@ -291,15 +291,15 @@ namespace hazelcast {
         namespace internal {
             namespace partition {
                 namespace strategy {
-                    std::string StringPartitioningStrategy::getBaseName(const std::string &name) {
-                        size_t indexOf = name.find('@');
-                        if (indexOf == std::string::npos) {
+                    std::string StringPartitioningStrategy::get_base_name(const std::string &name) {
+                        size_t index_of = name.find('@');
+                        if (index_of == std::string::npos) {
                             return name;
                         }
-                        return name.substr(0, indexOf);
+                        return name.substr(0, index_of);
                     }
 
-                    std::string StringPartitioningStrategy::getPartitionKey(const std::string &key) {
+                    std::string StringPartitioningStrategy::get_partition_key(const std::string &key) {
                         size_t firstIndexOf = key.find('@');
                         if (firstIndexOf == std::string::npos) {
                             return key;
@@ -315,7 +315,7 @@ namespace hazelcast {
 
 namespace std {
     std::size_t hash<hazelcast::client::Member>::operator()(const hazelcast::client::Member &k) const noexcept {
-        return boost::hash<boost::uuids::uuid>()(k.getUuid());
+        return boost::hash<boost::uuids::uuid>()(k.get_uuid());
     }
 }
 

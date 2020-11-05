@@ -73,14 +73,14 @@ namespace hazelcast {
              *
              * @return the members at the moment after this event.
              */
-            virtual std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> getMembers() const;
+            virtual std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> get_members() const;
 
             /**
              * Returns the cluster of the event.
              *
              * @return
              */
-            virtual const Cluster &getCluster() const;
+            virtual const Cluster &get_cluster() const;
 
             /**
              * Returns the membership event type; MembershipEvent#MEMBER_JOINED ,
@@ -88,14 +88,14 @@ namespace hazelcast {
              *
              * @return the membership event type
              */
-            virtual MembershipEventType getEventType() const;
+            virtual MembershipEventType get_event_type() const;
 
             /**
              * Returns the removed or added member.
              *
              * @return member which is removed/added
              */
-            virtual const Member &getMember() const;
+            virtual const Member &get_member() const;
 
         private:
             Cluster &cluster_;

@@ -28,13 +28,13 @@ namespace hazelcast {
             friend class TransactionContext;
         public:
             /**
-            * Transactional implementation of IMap#containsKey(Object).
+            * Transactional implementation of IMap#contains_key(Object).
             *
-            * @see IMap#containsKey(key)
+            * @see IMap#contains_key(key)
             */
             template<typename K>
-            boost::future<bool> containsKey(const K &key) {
-                return containsKeyData(toData(key));
+            boost::future<bool> contains_key(const K &key) {
+                return contains_key_data(to_data(key));
             }
 
             /**
@@ -44,7 +44,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<boost::optional<V>> get(const K &key) {
-                return toObject<V>(getData(toData(key)));
+                return to_object<V>(get_data(to_data(key)));
             }
 
             /**
@@ -56,7 +56,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename R=V>
             boost::future<boost::optional<R>> put(const K &key, const V &value) {
-                return toObject<R>(putData(toData(key), toData(value)));
+                return to_object<R>(put_data(to_data(key), to_data(value)));
             }
 
             /**
@@ -68,7 +68,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<void> set(const K &key, const V &value) {
-                return setData(toData(key), toData(value));
+                return set_data(to_data(key), to_data(value));
             }
 
             /**
@@ -79,8 +79,8 @@ namespace hazelcast {
             * @see IMap#putIfAbsent(key, value)
             */
             template<typename K, typename V, typename R=V>
-            boost::future<boost::optional<R>> putIfAbsent(const K &key, const V &value) {
-                return toObject<R>(putIfAbsentData(toData(key), toData(value)));
+            boost::future<boost::optional<R>> put_if_absent(const K &key, const V &value) {
+                return to_object<R>(put_if_absent_data(to_data(key), to_data(value)));
             }
 
             /**
@@ -92,7 +92,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename R=V>
             boost::future<boost::optional<R>> replace(const K &key, const V &value) {
-                return toObject<R>(replaceData(toData(key), toData(value)));
+                return to_object<R>(replace_data(to_data(key), to_data(value)));
             }
 
             /**
@@ -104,7 +104,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename N>
             boost::future<bool> replace(const K &key, const V &oldValue, const N &newValue) {
-                return replaceData(toData(key), toData(oldValue), toData(newValue));
+                return replace_data(to_data(key), to_data(oldValue), to_data(newValue));
             }
 
             /**
@@ -116,7 +116,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<boost::optional<V>> remove(const K &key) {
-                return toObject<V>(removeData(toData(key)));
+                return to_object<V>(remove_data(to_data(key)));
             }
 
             /**
@@ -127,8 +127,8 @@ namespace hazelcast {
             * @see IMap#delete(key)
             */
             template<typename K>
-            boost::future<void> deleteEntry(const K &key) {
-                return deleteEntryData(toData(key));
+            boost::future<void> delete_entry(const K &key) {
+                return delete_entry_data(to_data(key));
             }
 
             /**
@@ -140,7 +140,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<bool> remove(const K &key, const V &value) {
-                return removeData(toData(key), toData(value));
+                return remove_data(to_data(key), to_data(value));
             }
 
             /**
@@ -150,8 +150,8 @@ namespace hazelcast {
             * @see IMap#keySet()
             */
             template<typename K>
-            boost::future<std::vector<K>> keySet() {
-                return toObjectVector<K>(keySetData());
+            boost::future<std::vector<K>> key_set() {
+                return to_object_vector<K>(key_set_data());
             }
 
             /**
@@ -161,8 +161,8 @@ namespace hazelcast {
             * @see IMap#keySet(predicate)
             */
             template<typename K, typename P>
-            boost::future<std::vector<K>> keySet(const P &predicate) {
-                return toObjectVector<K>(keySetData(toData(predicate)));
+            boost::future<std::vector<K>> key_set(const P &predicate) {
+                return to_object_vector<K>(key_set_data(to_data(predicate)));
             }
 
             /**
@@ -173,7 +173,7 @@ namespace hazelcast {
             */
             template<typename V>
             boost::future<std::vector<V>> values() {
-                return toObjectVector<V>(valuesData());
+                return to_object_vector<V>(values_data());
             }
 
             /**
@@ -183,7 +183,7 @@ namespace hazelcast {
             */
             template<typename V, typename P>
             boost::future<std::vector<V>> values(const P &predicate) {
-                return toObjectVector<V>(valuesData(toData(predicate)));
+                return to_object_vector<V>(values_data(to_data(predicate)));
             }
 
         private:

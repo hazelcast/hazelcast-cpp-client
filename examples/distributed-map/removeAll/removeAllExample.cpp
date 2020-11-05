@@ -35,21 +35,21 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Person> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 3;
                 }
 
-                static void writeData(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Person read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
@@ -60,8 +60,8 @@ namespace hazelcast {
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto personMap = hz.getMap("personMap");
-    personMap->putAll<std::string, Person>({{"1", Person{"Peter", true, 36}},
+    auto personMap = hz.get_map("personMap");
+    personMap->put_all<std::string, Person>({{"1", Person{"Peter", true, 36}},
                        {"2", Person{"John", true, 50}},
                        {"3", Person{"Marry", false, 20}},
                        {"4", Person{"Mike", true, 35}},
@@ -69,7 +69,7 @@ int main() {
                        {"6", Person{"Jane", false, 43}}}).get();
 
     // Remove entries that whose name start with 'M'
-    personMap->removeAll(query::LikePredicate(hz, "name", "M%")).get();
+    personMap->remove_all(query::LikePredicate(hz, "name", "M%")).get();
 
     if (personMap->get<std::string, Person>("3").get()) {
         std::cerr << "Entry 3 is not deleted. This is unexpected!!!" << std::endl;

@@ -45,9 +45,9 @@ namespace hazelcast {
                 ClientTestSupport();
 
             protected:
-                logger &getLogger();
+                logger &get_logger();
 
-                const std::string &getTestName() const;
+                const std::string &get_test_name() const;
 
             private:
                 std::shared_ptr<logger> logger_;

@@ -31,12 +31,12 @@ namespace hazelcast {
                     virtual std::shared_ptr<T> get_cp_structure(const std::string &name) = 0;
 
                     virtual ClientConfig get_client_config() {
-                        return getConfig().setClusterName("cp-test");
+                        return get_config().set_cluster_name("cp-test");
                     }
 
                     virtual void SetUp() {
                         client_.reset(new HazelcastClient(get_client_config()));
-                        auto test_name = getTestName();
+                        auto test_name = get_test_name();
                         cp_structure_ = get_cp_structure(test_name + "@cp_test_group");
                     }
 
@@ -179,7 +179,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_atomic_long_test, test_create_after_destroy) {
-                    auto name = cp_structure_->getName();
+                    auto name = cp_structure_->get_name();
                     cp_structure_->destroy().get();
 
                     cp_structure_ = client_->get_cp_subsystem().get_atomic_long(name);
@@ -282,7 +282,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_atomic_ref_test, test_create_after_destroy) {
-                    auto name = cp_structure_->getName();
+                    auto name = cp_structure_->get_name();
                     cp_structure_->destroy().get();
 
                     cp_structure_ = client_->get_cp_subsystem().get_atomic_reference(name);
@@ -696,8 +696,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown) {
-                    HazelcastClient c(getConfig().setClusterName(client_->getClientConfig().getClusterName()));
-                    auto proxy_name = getTestName();
+                    HazelcastClient c(get_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
+                    auto proxy_name = get_test_name();
                     auto l = c.get_cp_subsystem().get_lock(proxy_name);
                     l->lock().get();
 
@@ -705,10 +705,10 @@ namespace hazelcast {
 
                     std::ostringstream script;
                     script << "result = instance_0.getCPSubsystem().getLock(\"" << proxy_name
-                           << "\").isLocked() ? \"1\" : \"0\";";
+                           << "\").is_locked() ? \"1\" : \"0\";";
                     Response response;
 
-                    ASSERT_TRUE_EVENTUALLY((remoteController->executeOnController(response, factory->getClusterId(),
+                    ASSERT_TRUE_EVENTUALLY((remoteController->executeOnController(response, factory->get_cluster_id(),
                                                                                   script.str().c_str(),
                                                                                   Lang::JAVASCRIPT), response.success &&
                                                                                                      response.result ==
@@ -722,7 +722,7 @@ namespace hazelcast {
                     }
 
                     ClientConfig get_client_config() override {
-                        return cp_test::get_client_config().setClusterName("sessionless-semaphore");
+                        return cp_test::get_client_config().set_cluster_name("sessionless-semaphore");
                     }
                 };
 
@@ -1027,8 +1027,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_acquire_on_multiple_proxies) {
-                    HazelcastClient client2(ClientConfig().setClusterName(client_->getClientConfig().getClusterName()));
-                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->getName());
+                    HazelcastClient client2(ClientConfig().set_cluster_name(client_->get_client_config().get_cluster_name()));
+                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name());
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());
                     ASSERT_FALSE(semaphore2->try_acquire().get());
@@ -1381,8 +1381,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_session_semaphore_test, test_acquire_on_multiple_proxies) {
-                    HazelcastClient client2(ClientConfig().setClusterName(client_->getClientConfig().getClusterName()));
-                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->getName());
+                    HazelcastClient client2(ClientConfig().set_cluster_name(client_->get_client_config().get_cluster_name()));
+                    auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name());
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());
                     ASSERT_FALSE(semaphore2->try_acquire().get());

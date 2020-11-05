@@ -30,7 +30,7 @@ using namespace hazelcast::util;
 
 class PipeliningDemo {
 public:
-    PipeliningDemo() : client_(clientConfig_), map_(client_.getMap("map")), gen_(rd_()) {}
+    PipeliningDemo() : client_(clientConfig_), map_(client_.get_map("map")), gen_(rd_()) {}
 
     void init() {
         for (int l = 0; l < keyDomain; l++) {
@@ -40,7 +40,7 @@ public:
 
     void pipelined(int depth) {
         cout << "Starting pipelined with depth:" << depth << endl;
-        int64_t startMs = currentTimeMillis();
+        int64_t startMs = current_time_millis();
         for (int i = 0; i < iterations; i++) {
             std::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(depth);
             for (long k = 0; k < getsPerIteration; k++) {
@@ -55,20 +55,20 @@ public:
                 throw hazelcast::client::exception::IllegalStateException("pipelined", "Incorrect number of results");
             }
         }
-        int64_t endMs = currentTimeMillis();
+        int64_t endMs = current_time_millis();
         cout << "Pipelined with depth:" << depth << ", duration:" << (endMs - startMs) << " ms" << endl;
     }
 
-    void nonPipelined() {
+    void non_pipelined() {
         cout << "Starting non pipelined" << endl;
-        int64_t startMs = currentTimeMillis();
+        int64_t startMs = current_time_millis();
         for (int i = 0; i < iterations; i++) {
             for (long k = 0; k < getsPerIteration; k++) {
                 int key = dist_(gen_) % keyDomain;
                 map_->get<int, std::string>(key).get();
             }
         }
-        int64_t endMs = currentTimeMillis();
+        int64_t endMs = current_time_millis();
         cout << "Non pipelined duration:" << (endMs - startMs) << " ms" << endl;
     }
 
@@ -90,7 +90,7 @@ int main() {
     main.pipelined(5);
     main.pipelined(10);
     main.pipelined(100);
-    main.nonPipelined();
+    main.non_pipelined();
 
     cout << "Finished" << endl;
 

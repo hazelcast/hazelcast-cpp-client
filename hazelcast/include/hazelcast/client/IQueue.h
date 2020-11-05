@@ -45,15 +45,15 @@ namespace hazelcast {
             *                     to the item listener, <tt>false</tt> otherwise.
             * @return returns registration id.
             */
-            boost::future<boost::uuids::uuid> addItemListener(ItemListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_item_listener(ItemListener &&listener, bool includeValue) {
                 std::unique_ptr<impl::ItemEventHandler<protocol::codec::queue_addlistener_handler>> itemEventHandler(
                         new impl::ItemEventHandler<protocol::codec::queue_addlistener_handler>(
-                                getName(), getContext().getClientClusterService(),
-                                getContext().getSerializationService(),
+                                get_name(), get_context().get_client_cluster_service(),
+                                get_context().get_serialization_service(),
                                 std::move(listener),
                                 includeValue));
 
-                return proxy::IQueueImpl::addItemListener(std::move(itemEventHandler), includeValue);
+                return proxy::IQueueImpl::add_item_listener(std::move(itemEventHandler), includeValue);
             }
 
             /**
@@ -74,7 +74,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<void> put(const E &element) {
-                return proxy::IQueueImpl::put(toData(element));
+                return proxy::IQueueImpl::put(to_data(element));
             }
 
             /**
@@ -88,7 +88,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> offer(const E &element, std::chrono::milliseconds timeout) {
-                return proxy::IQueueImpl::offer(toData(element), timeout);
+                return proxy::IQueueImpl::offer(to_data(element), timeout);
             }
 
             /**
@@ -107,7 +107,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<boost::optional<E>> poll(std::chrono::milliseconds timeout) {
-                return toObject<E>(proxy::IQueueImpl::pollData(timeout));
+                return to_object<E>(proxy::IQueueImpl::poll_data(timeout));
             }
 
             /**
@@ -117,7 +117,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> remove(const E &element) {
-                return proxy::IQueueImpl::remove(toData(element));
+                return proxy::IQueueImpl::remove(to_data(element));
             }
 
             /**
@@ -127,7 +127,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> contains(const E &element) {
-                return proxy::IQueueImpl::contains(toData(element));
+                return proxy::IQueueImpl::contains(to_data(element));
             }
 
             /**
@@ -137,9 +137,9 @@ namespace hazelcast {
             * @return number of elements drained.
             */
             template<typename E>
-            boost::future<size_t> drainTo(std::vector<E> &elements) {
-                return proxy::IQueueImpl::drainToData().then(boost::launch::deferred, [&](boost::future<std::vector<serialization::pimpl::Data>> f)  {
-                    return drainItems(std::move(f), elements);
+            boost::future<size_t> drain_to(std::vector<E> &elements) {
+                return proxy::IQueueImpl::drain_to_data().then(boost::launch::deferred, [&](boost::future<std::vector<serialization::pimpl::Data>> f)  {
+                    return drain_items(std::move(f), elements);
                 });
             }
 
@@ -151,9 +151,9 @@ namespace hazelcast {
             * @return number of elements drained.
             */
             template<typename E>
-            boost::future<size_t> drainTo(std::vector<E> &elements, size_t maxElements) {
-                return proxy::IQueueImpl::drainToData(maxElements).then(boost::launch::deferred, [&](boost::future<std::vector<serialization::pimpl::Data>> f)  {
-                    return drainItems(std::move(f), elements);
+            boost::future<size_t> drain_to(std::vector<E> &elements, size_t maxElements) {
+                return proxy::IQueueImpl::drain_to_data(maxElements).then(boost::launch::deferred, [&](boost::future<std::vector<serialization::pimpl::Data>> f)  {
+                    return drain_items(std::move(f), elements);
                 });
             }
 
@@ -174,7 +174,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<boost::optional<E>> peek() {
-                return toObject<E>(proxy::IQueueImpl::peekData());
+                return to_object<E>(proxy::IQueueImpl::peek_data());
             }
 
             /**
@@ -182,8 +182,8 @@ namespace hazelcast {
             * @returns all elements as std::vector
             */
             template<typename E>
-            boost::future<std::vector<E>> toArray() {
-                return toObjectVector<E>(proxy::IQueueImpl::toArrayData());
+            boost::future<std::vector<E>> to_array() {
+                return to_object_vector<E>(proxy::IQueueImpl::to_array_data());
             }
 
             /**
@@ -192,8 +192,8 @@ namespace hazelcast {
             * @return true if this queue contains all elements given in vector.
             */
             template<typename E>
-            boost::future<bool> containsAll(const std::vector<E> &elements) {
-                return proxy::IQueueImpl::containsAllData(toDataCollection(elements));
+            boost::future<bool> contains_all(const std::vector<E> &elements) {
+                return proxy::IQueueImpl::contains_all_data(to_data_collection(elements));
             }
 
             /**
@@ -202,8 +202,8 @@ namespace hazelcast {
             * @return true if all elements given in vector can be added to queue.
             */
             template<typename E>
-            boost::future<bool> addAll(const std::vector<E> &elements) {
-                return proxy::IQueueImpl::addAllData(toDataCollection(elements));
+            boost::future<bool> add_all(const std::vector<E> &elements) {
+                return proxy::IQueueImpl::add_all_data(to_data_collection(elements));
             }
 
             /**
@@ -212,8 +212,8 @@ namespace hazelcast {
             * @return true if all elements are removed successfully.
             */
             template<typename E>
-            boost::future<bool> removeAll(const std::vector<E> &elements) {
-                return proxy::IQueueImpl::removeAllData(toDataCollection(elements));
+            boost::future<bool> remove_all(const std::vector<E> &elements) {
+                return proxy::IQueueImpl::remove_all_data(to_data_collection(elements));
             }
 
             /**
@@ -223,8 +223,8 @@ namespace hazelcast {
             * @return true if operation is successful.
             */
             template<typename E>
-            boost::future<bool> retainAll(const std::vector<E> &elements) {
-                return proxy::IQueueImpl::retainAllData(toDataCollection(elements));
+            boost::future<bool> retain_all(const std::vector<E> &elements) {
+                return proxy::IQueueImpl::retain_all_data(to_data_collection(elements));
             }
 
         private:
@@ -232,13 +232,13 @@ namespace hazelcast {
                                                                                                      context) {}
 
             template<typename E>
-            size_t drainItems(boost::future<std::vector<serialization::pimpl::Data>> f, std::vector<E> &elements) {
+            size_t drain_items(boost::future<std::vector<serialization::pimpl::Data>> f, std::vector<E> &elements) {
                 auto datas = f.get();
                 auto size = datas.size();
                 elements.reserve(size);
-                auto &ss = getContext().getSerializationService();
+                auto &ss = get_context().get_serialization_service();
                 for (auto &data : datas) {
-                    elements.push_back(ss.template toObject<E>(data).value());
+                    elements.push_back(ss.template to_object<E>(data).value());
                 }
                 return size;
             }

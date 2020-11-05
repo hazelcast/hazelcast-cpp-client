@@ -43,12 +43,12 @@ namespace hazelcast {
                                     name, config, ss) {
                             }
                         protected:
-                            int64_t getKeyStorageMemoryCost(KS *key) const override {
+                            int64_t get_key_storage_memory_cost(KS *key) const override {
                                 // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
                                 return 0L;
                             }
 
-                            int64_t getRecordStorageMemoryCost(record::NearCacheObjectRecord<V> *record) const override {
+                            int64_t get_record_storage_memory_cost(record::NearCacheObjectRecord<V> *record) const override {
                                 // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
                                 return 0L;
                             }
@@ -64,28 +64,28 @@ namespace hazelcast {
                             }
 */
 
-                            std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
+                            std::unique_ptr<record::NearCacheObjectRecord<V> > value_to_record(
                                     const std::shared_ptr<V> &value) override {
-                                return valueToRecordInternal(value);
+                                return value_to_record_internal(value);
                             }
 
-                            std::shared_ptr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) override {
-                                const std::shared_ptr<V> value = record->getValue();
+                            std::shared_ptr<V> record_to_value(const record::NearCacheObjectRecord<V> *record) override {
+                                const std::shared_ptr<V> value = record->get_value();
                                 if (value.get() == NULL) {
                                     return std::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
                                 return value;
                             }
 
-                            void putToRecord(std::shared_ptr<record::NearCacheObjectRecord<V> > &record,
+                            void put_to_record(std::shared_ptr<record::NearCacheObjectRecord<V> > &record,
                                              const std::shared_ptr<V> &value) override {
-                                record->setValue(value);
+                                record->set_value(value);
                             }
 
                         private:
-                            std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecordInternal(
+                            std::unique_ptr<record::NearCacheObjectRecord<V> > value_to_record_internal(
                                     const std::shared_ptr<V> &value) {
-                                int64_t creationTime = util::currentTimeMillis();
+                                int64_t creationTime = util::current_time_millis();
                                 if (ANCRS::timeToLiveMillis_ > 0) {
                                     return std::unique_ptr<record::NearCacheObjectRecord<V> >(
                                             new record::NearCacheObjectRecord<V>(value, creationTime,

@@ -62,17 +62,17 @@ namespace hazelcast {
                         void shutdown();
 
                         boost::future<boost::uuids::uuid>
-                        registerListener(std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
+                        register_listener(std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
                                          std::shared_ptr<client::impl::BaseEventHandler> handler);
 
-                        boost::future<bool> deregisterListener(boost::uuids::uuid registrationId);
+                        boost::future<bool> deregister_listener(boost::uuids::uuid registrationId);
 
-                        void handleClientMessage(const std::shared_ptr<ClientInvocation> invocation,
+                        void handle_client_message(const std::shared_ptr<ClientInvocation> invocation,
                                                  const std::shared_ptr<protocol::ClientMessage> response);
 
-                        void connectionAdded(const std::shared_ptr<connection::Connection> connection) override;
+                        void connection_added(const std::shared_ptr<connection::Connection> connection) override;
 
-                        void connectionRemoved(const std::shared_ptr<connection::Connection> connection) override;
+                        void connection_removed(const std::shared_ptr<connection::Connection> connection) override;
 
                     private:
                         /**
@@ -88,32 +88,32 @@ namespace hazelcast {
                             util::SynchronizedMap<std::shared_ptr<connection::Connection>, connection_registration> registrations;
                         };
 
-                        void processEventMessage(const std::shared_ptr<ClientInvocation> invocation,
+                        void process_event_message(const std::shared_ptr<ClientInvocation> invocation,
                                                  const std::shared_ptr<protocol::ClientMessage> response);
 
                         void
-                        removeEventHandler(int64_t call_id, const std::shared_ptr<connection::Connection> &connection);
+                        remove_event_handler(int64_t call_id, const std::shared_ptr<connection::Connection> &connection);
 
                         boost::uuids::uuid
-                        registerListenerInternal(std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
+                        register_listener_internal(std::shared_ptr<ListenerMessageCodec> listenerMessageCodec,
                                                  std::shared_ptr<client::impl::BaseEventHandler> handler);
 
-                        bool deregisterListenerInternal(boost::uuids::uuid userRegistrationId);
+                        bool deregister_listener_internal(boost::uuids::uuid userRegistrationId);
 
                         void
-                        connectionAddedInternal(const std::shared_ptr<connection::Connection> &connection);
+                        connection_added_internal(const std::shared_ptr<connection::Connection> &connection);
 
                         void
-                        connectionRemovedInternal(const std::shared_ptr<connection::Connection> &connection);
+                        connection_removed_internal(const std::shared_ptr<connection::Connection> &connection);
 
 
                         void invoke(const std::shared_ptr<listener_registration> &listener_registration,
                                     const std::shared_ptr<connection::Connection> &connection);
 
-                        void invokeFromInternalThread(const std::shared_ptr<listener_registration> &listener_registration,
+                        void invoke_from_internal_thread(const std::shared_ptr<listener_registration> &listener_registration,
                                                       const std::shared_ptr<connection::Connection> &connection);
 
-                        bool registersLocalOnly() const;
+                        bool registers_local_only() const;
 
                         ClientContext &clientContext_;
                         serialization::pimpl::SerializationService &serializationService_;

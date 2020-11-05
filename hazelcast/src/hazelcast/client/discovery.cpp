@@ -73,47 +73,47 @@ namespace hazelcast {
                 EC2RequestSigner::~EC2RequestSigner() = default;
 
                 std::string EC2RequestSigner::sign(const std::unordered_map<std::string, std::string> &attributes) {
-                    std::string canonicalRequest = getCanonicalizedRequest(attributes);
-                    std::string stringToSign = createStringToSign(canonicalRequest);
-                    std::vector<unsigned char> signingKey = deriveSigningKey();
+                    std::string canonicalRequest = get_canonicalized_request(attributes);
+                    std::string stringToSign = create_string_to_sign(canonicalRequest);
+                    std::vector<unsigned char> signingKey = derive_signing_key();
 
-                    return createSignature(stringToSign, signingKey);
+                    return create_signature(stringToSign, signingKey);
                 }
 
-                std::string EC2RequestSigner::createFormattedCredential() const {
+                std::string EC2RequestSigner::create_formatted_credential() const {
                     std::stringstream out;
-                    out << awsConfig_.getAccessKey() << '/' << timestamp_.substr(0, DATE_LENGTH) << '/'
-                        << awsConfig_.getRegion() << '/' << "ec2/aws4_request";
+                    out << awsConfig_.get_access_key() << '/' << timestamp_.substr(0, DATE_LENGTH) << '/'
+                        << awsConfig_.get_region() << '/' << "ec2/aws4_request";
                     return out.str();
                 }
 
-                std::string EC2RequestSigner::getCanonicalizedQueryString(
+                std::string EC2RequestSigner::get_canonicalized_query_string(
                         const std::unordered_map<std::string, std::string> &attributes) const {
-                    std::vector<std::string> components = getListOfEntries(attributes);
+                    std::vector<std::string> components = get_list_of_entries(attributes);
                     std::sort(components.begin(), components.end());
-                    return getCanonicalizedQueryString(components);
+                    return get_canonicalized_query_string(components);
                 }
 
                 /* Task 1 */
-                std::string EC2RequestSigner::getCanonicalizedRequest(
+                std::string EC2RequestSigner::get_canonicalized_request(
                         const std::unordered_map<std::string, std::string> &attributes) const {
                     std::ostringstream out;
                     out << impl::Constants::GET << NEW_LINE
                         << '/' << NEW_LINE
-                        << getCanonicalizedQueryString(attributes) << NEW_LINE
-                        << getCanonicalHeaders() << NEW_LINE
+                        << get_canonicalized_query_string(attributes) << NEW_LINE
+                        << get_canonical_headers() << NEW_LINE
                         << "host" << NEW_LINE
-                        << sha256Hashhex("");
+                        << sha256_hashhex("");
                     return out.str();
                 }
 
-                std::string EC2RequestSigner::getCanonicalHeaders() const {
+                std::string EC2RequestSigner::get_canonical_headers() const {
                     std::ostringstream out;
                     out << "host:" << endpoint_ << NEW_LINE;
                     return out.str();
                 }
 
-                std::string EC2RequestSigner::getCanonicalizedQueryString(const std::vector<std::string> &list) const {
+                std::string EC2RequestSigner::get_canonicalized_query_string(const std::vector<std::string> &list) const {
                     std::ostringstream result;
                     std::vector<std::string>::const_iterator it = list.begin();
                     result << (*it);
@@ -124,78 +124,78 @@ namespace hazelcast {
                     return result.str();
                 }
 
-                std::vector<std::string> EC2RequestSigner::getListOfEntries(
+                std::vector<std::string> EC2RequestSigner::get_list_of_entries(
                         const std::unordered_map<std::string, std::string> &entries) const {
                     std::vector<std::string> components;
                     for (const auto &entry: entries) {
-                        components.push_back(formatAttribute(entry.first, entry.second));
+                        components.push_back(format_attribute(entry.first, entry.second));
                     }
                     return components;
                 }
 
-                std::string EC2RequestSigner::formatAttribute(const std::string &key, const std::string &value) {
+                std::string EC2RequestSigner::format_attribute(const std::string &key, const std::string &value) {
                     std::ostringstream out;
-                    out << utility::AwsURLEncoder::urlEncode(key) << '=' 
-                        << utility::AwsURLEncoder::urlEncode(value);
+                    out << utility::AwsURLEncoder::url_encode(key) << '=' 
+                        << utility::AwsURLEncoder::url_encode(value);
                     return out.str();
                 }
 
                 /* Task 2 */
-                std::string EC2RequestSigner::createStringToSign(const std::string &canonicalRequest) const {
+                std::string EC2RequestSigner::create_string_to_sign(const std::string &canonicalRequest) const {
                     std::ostringstream out;
                     out << impl::Constants::SIGNATURE_METHOD_V4 << NEW_LINE
                         << timestamp_ << NEW_LINE
-                        << getCredentialScope() << NEW_LINE
-                        << sha256Hashhex(canonicalRequest);
+                        << get_credential_scope() << NEW_LINE
+                        << sha256_hashhex(canonicalRequest);
                     return out.str();
                 }
 
-                std::string EC2RequestSigner::getCredentialScope() const {
+                std::string EC2RequestSigner::get_credential_scope() const {
                     // datestamp/region/service/API_TERMINATOR
                     // dateStamp
                     std::ostringstream out;
-                    out << timestamp_.substr(0, DATE_LENGTH) << "/" << awsConfig_.getRegion() << "/ec2/aws4_request";
+                    out << timestamp_.substr(0, DATE_LENGTH) << "/" << awsConfig_.get_region() << "/ec2/aws4_request";
                     return out.str();
                 }
 
                 /* Task 3 */
-                std::vector<unsigned char> EC2RequestSigner::deriveSigningKey() const {
-                    const std::string &signKey = awsConfig_.getSecretKey();
+                std::vector<unsigned char> EC2RequestSigner::derive_signing_key() const {
+                    const std::string &signKey = awsConfig_.get_secret_key();
                     std::string dateStamp = timestamp_.substr(0, DATE_LENGTH);
                     // this is derived from
                     // http://docs.aws.amazon.com/general/latest/gr/signature-v4-examples.html#signature-v4-examples-python
 
                     unsigned char kDate[32];
                     std::string key = std::string("AWS4") + signKey;
-                    int kDateLen = hmacSHA256Bytes(key, dateStamp, kDate);
+                    int kDateLen = hmac_sh_a256_bytes(key, dateStamp, kDate);
 
                     unsigned char kRegion[32];
-                    int kRegionLen = hmacSHA256Bytes(kDate, kDateLen, awsConfig_.getRegion(), kRegion);
+                    int kRegionLen = hmac_sh_a256_bytes(kDate, kDateLen, awsConfig_.get_region(), kRegion);
 
                     unsigned char kService[32];
-                    int kServiceLen = hmacSHA256Bytes(kRegion, kRegionLen, "ec2", kService);
+                    int kServiceLen = hmac_sh_a256_bytes(kRegion, kRegionLen, "ec2", kService);
 
                     std::vector<unsigned char> mSigning(32);
-                    hmacSHA256Bytes(kService, kServiceLen, "aws4_request", &mSigning[0]);
+                    hmac_sh_a256_bytes(kService, kServiceLen, "aws4_request", &mSigning[0]);
 
                     return mSigning;
                 }
 
-                std::string EC2RequestSigner::createSignature(const std::string &stringToSign,
+                std::string EC2RequestSigner::create_signature(const std::string &stringToSign,
                                                               const std::vector<unsigned char> &signingKey) const {
-                    return hmacSHA256Hex(signingKey, stringToSign);
+                    return hmac_sh_a256_hex(signingKey, stringToSign);
                 }
 
-                std::string EC2RequestSigner::hmacSHA256Hex(const std::vector<unsigned char> &key,
+                std::string EC2RequestSigner::hmac_sh_a256_hex(const std::vector<unsigned char> &key,
                                                             const std::string &msg) const {
                     unsigned char hash[32];
 
-                    unsigned int len = hmacSHA256Bytes(key, msg, hash);
+                    unsigned int len = hmac_sh_a256_bytes(key, msg, hash);
 
-                    return convertToHexString(hash, len);
+                    return convert_to_hex_string(hash, len);
                 }
 
-                std::string EC2RequestSigner::convertToHexString(const unsigned char *buffer, unsigned int len) const {
+                std::string EC2RequestSigner::convert_to_hex_string(const unsigned char *buffer, unsigned int len) const {
                     std::stringstream ss;
                     ss << std::hex << std::setfill('0');
                     for (unsigned int i = 0; i < len; i++) {
@@ -205,26 +205,26 @@ namespace hazelcast {
                     return (ss.str());
                 }
 
-                unsigned int EC2RequestSigner::hmacSHA256Bytes(const void *key, int keyLen, const std::string &msg,
+                unsigned int EC2RequestSigner::hmac_sh_a256_bytes(const void *key, int keyLen, const std::string &msg,
                                                                unsigned char *hash) const {
-                    return hmacSHA256Bytes(key, keyLen, (unsigned char *) &msg[0], msg.length(),
+                    return hmac_sh_a256_bytes(key, keyLen, (unsigned char *) &msg[0], msg.length(),
                                            hash);
                 }
 
-                unsigned int EC2RequestSigner::hmacSHA256Bytes(const std::string &key, const std::string &msg,
+                unsigned int EC2RequestSigner::hmac_sh_a256_bytes(const std::string &key, const std::string &msg,
                                                                unsigned char *hash) const {
-                    return hmacSHA256Bytes(&key[0], (int) key.length(), (unsigned char *) &msg[0], msg.length(),
+                    return hmac_sh_a256_bytes(&key[0], (int) key.length(), (unsigned char *) &msg[0], msg.length(),
                                            hash);
                 }
 
-                unsigned int EC2RequestSigner::hmacSHA256Bytes(const std::vector<unsigned char> &key,
+                unsigned int EC2RequestSigner::hmac_sh_a256_bytes(const std::vector<unsigned char> &key,
                                                                const std::string &msg,
                                                                unsigned char *hash) const {
-                    return hmacSHA256Bytes(&key[0], (int) key.size(), (unsigned char *) &msg[0], msg.length(),
+                    return hmac_sh_a256_bytes(&key[0], (int) key.size(), (unsigned char *) &msg[0], msg.length(),
                                            hash);
                 }
 
-                unsigned int EC2RequestSigner::hmacSHA256Bytes(const void *keyBuffer, int keyLen,
+                unsigned int EC2RequestSigner::hmac_sh_a256_bytes(const void *keyBuffer, int keyLen,
                                                                const unsigned char *data,
                                                                size_t dataLen,
                                                                unsigned char *hash) const {
@@ -256,7 +256,7 @@ namespace hazelcast {
 #endif
                 }
 
-                std::string EC2RequestSigner::sha256Hashhex(const std::string &in) const {
+                std::string EC2RequestSigner::sha256_hashhex(const std::string &in) const {
 #ifdef HZ_BUILD_WITH_SSL
 #ifdef OPENSSL_FIPS
                     unsigned int hashLen = 0;
@@ -275,7 +275,7 @@ namespace hazelcast {
                     SHA256_Update(&sha256, in.c_str(), in.size());
                     SHA256_Final(hash, &sha256);
 
-                    return convertToHexString(hash, SHA256_DIGEST_LENGTH);
+                    return convert_to_hex_string(hash, SHA256_DIGEST_LENGTH);
 #endif // OPENSSL_FIPS
 #else
                     util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");
@@ -301,7 +301,7 @@ namespace hazelcast {
                  * @param value Filter value
                  *
                  */
-                void Filter::addFilter(const std::string &name, const std::string &value) {
+                void Filter::add_filter(const std::string &name, const std::string &value) {
                     std::stringstream out;
                     unsigned long index = filters_.size() + 1;
                     out << "Filter." << index << ".Name";
@@ -312,13 +312,13 @@ namespace hazelcast {
                     filters_[out.str()] = value;
                 }
 
-                const std::unordered_map<std::string, std::string> &Filter::getFilters() {
+                const std::unordered_map<std::string, std::string> &Filter::get_filters() {
                     return filters_;
                 }
 
                 AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &awsConfig, logger &lg)
                         : logger_(lg) {
-                    if (awsConfig.isEnabled() && !awsConfig.isInsideAws()) {
+                    if (awsConfig.is_enabled() && !awsConfig.is_inside_aws()) {
                         awsClient_ = std::unique_ptr<AWSClient>(new AWSClient(awsConfig, lg));
                     }
                 }
@@ -331,13 +331,13 @@ namespace hazelcast {
 
                     Address translatedAddress = address;
 
-                    if (findFromCache(address, translatedAddress)) {
+                    if (find_from_cache(address, translatedAddress)) {
                         return translatedAddress;
                     }
 
                     refresh();
 
-                    if (findFromCache(address, translatedAddress)) {
+                    if (find_from_cache(address, translatedAddress)) {
                         return translatedAddress;
                     }
 
@@ -349,25 +349,25 @@ namespace hazelcast {
                 void AwsAddressTranslator::refresh() {
                     try {
                         privateToPublic_ = std::shared_ptr<std::unordered_map<std::string, std::string> >(
-                                new std::unordered_map<std::string, std::string>(awsClient_->getAddresses()));
+                                new std::unordered_map<std::string, std::string>(awsClient_->get_addresses()));
                     } catch (exception::IException &e) {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("AWS addresses failed to load: %1%") % e.what()));
                     }
                 }
 
-                bool AwsAddressTranslator::findFromCache(const Address &address, Address &translatedAddress) {
+                bool AwsAddressTranslator::find_from_cache(const Address &address, Address &translatedAddress) {
                     std::shared_ptr<std::unordered_map<std::string, std::string> > mapping = privateToPublic_;
                     if (mapping.get() == NULL) {
                         return false;
                     }
 
                     std::unordered_map<std::string, std::string>::const_iterator publicAddressIt = mapping->find(
-                            address.getHost());
+                            address.get_host());
                     if (publicAddressIt != mapping->end()) {
                         const std::string &publicIp = (*publicAddressIt).second;
                         if (!publicIp.empty()) {
-                            translatedAddress = Address((*publicAddressIt).second, address.getPort());
+                            translatedAddress = Address((*publicAddressIt).second, address.get_port());
                             return true;
                         }
                     }
@@ -383,19 +383,19 @@ namespace hazelcast {
                 DescribeInstances::DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint,
                                                      logger &lg) : awsConfig_(awsConfig), endpoint_(endpoint),
                                                                               logger_(lg) {
-                    checkKeysFromIamRoles();
+                    check_keys_from_iam_roles();
 
-                    std::string timeStamp = getFormattedTimestamp();
+                    std::string timeStamp = get_formatted_timestamp();
                     rs_ = std::unique_ptr<security::EC2RequestSigner>(
                             new security::EC2RequestSigner(awsConfig, timeStamp, endpoint));
                     attributes_["Action"] = "DescribeInstances";
                     attributes_["Version"] = impl::Constants::DOC_VERSION;
                     attributes_["X-Amz-Algorithm"] = impl::Constants::SIGNATURE_METHOD_V4;
-                    attributes_["X-Amz-Credential"] = rs_->createFormattedCredential();
+                    attributes_["X-Amz-Credential"] = rs_->create_formatted_credential();
                     attributes_["X-Amz-Date"] = timeStamp;
                     attributes_["X-Amz-SignedHeaders"] = "host";
                     attributes_["X-Amz-Expires"] = "30";
-                    addFilters();
+                    add_filters();
                 }
 
                 DescribeInstances::~DescribeInstances() = default;
@@ -404,11 +404,11 @@ namespace hazelcast {
                     std::string signature = rs_->sign(attributes_);
                     attributes_["X-Amz-Signature"] = signature;
 
-                    std::istream &stream = callService();
-                    return utility::CloudUtility::unmarshalTheResponse(stream, logger_);
+                    std::istream &stream = call_service();
+                    return utility::CloudUtility::unmarshal_the_response(stream, logger_);
                 }
 
-                std::string DescribeInstances::getFormattedTimestamp() {
+                std::string DescribeInstances::get_formatted_timestamp() {
                     using namespace boost::posix_time;
                     ptime now = second_clock::universal_time();
 
@@ -419,36 +419,36 @@ namespace hazelcast {
                     return out.str();
                 }
 
-                std::istream &DescribeInstances::callService() {
-                    std::string query = rs_->getCanonicalizedQueryString(attributes_);
+                std::istream &DescribeInstances::call_service() {
+                    std::string query = rs_->get_canonicalized_query_string(attributes_);
                     httpsClient_ = std::unique_ptr<util::SyncHttpsClient>(
                             new util::SyncHttpsClient(endpoint_.c_str(), QUERY_PREFIX + query));
-                    return httpsClient_->openConnection();
+                    return httpsClient_->open_connection();
                 }
 
-                void DescribeInstances::checkKeysFromIamRoles() {
-                    if (awsConfig_.getAccessKey().empty() || !awsConfig_.getIamRole().empty()) {
-                        tryGetDefaultIamRole();
-                        if (!awsConfig_.getIamRole().empty()) {
-                            getKeysFromIamRole();
+                void DescribeInstances::check_keys_from_iam_roles() {
+                    if (awsConfig_.get_access_key().empty() || !awsConfig_.get_iam_role().empty()) {
+                        try_get_default_iam_role();
+                        if (!awsConfig_.get_iam_role().empty()) {
+                            get_keys_from_iam_role();
                         } else {
-                            getKeysFromIamTaskRole();
+                            get_keys_from_iam_task_role();
                         }
                     }
                 }
 
-                void DescribeInstances::tryGetDefaultIamRole() {
+                void DescribeInstances::try_get_default_iam_role() {
                     // if none of the below are true
-                    if (!(awsConfig_.getIamRole().empty() || awsConfig_.getIamRole() == "DEFAULT")) {
+                    if (!(awsConfig_.get_iam_role().empty() || awsConfig_.get_iam_role() == "DEFAULT")) {
                         // stop here. No point looking up the default role.
                         return;
                     }
                     try {
                         util::SyncHttpClient httpClient(IAM_ROLE_ENDPOINT, IAM_ROLE_QUERY);
                         std::string roleName;
-                        std::istream &responseStream = httpClient.openConnection();
+                        std::istream &responseStream = httpClient.open_connection();
                         responseStream >> roleName;
-                        awsConfig_.setIamRole(roleName);
+                        awsConfig_.set_iam_role(roleName);
                     } catch (exception::IOException &e) {
                         BOOST_THROW_EXCEPTION(exception::InvalidConfigurationException("tryGetDefaultIamRole",
                                                                                        std::string(
@@ -457,7 +457,7 @@ namespace hazelcast {
                     }
                 }
 
-                void DescribeInstances::getKeysFromIamTaskRole() {
+                void DescribeInstances::get_keys_from_iam_task_role() {
                     // before giving up, attempt to discover whether we're running in an ECS Container,
                     // in which case, AWS_CONTAINER_CREDENTIALS_RELATIVE_URI will exist as an env var.
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -476,8 +476,8 @@ namespace hazelcast {
                     util::SyncHttpClient httpClient(IAM_TASK_ROLE_ENDPOINT, uri);
 
                     try {
-                        std::istream &istream = httpClient.openConnection();
-                        parseAndStoreRoleCreds(istream);
+                        std::istream &istream = httpClient.open_connection();
+                        parse_and_store_role_creds(istream);
                     } catch (exception::IException &e) {
                         std::stringstream out;
                         out << "Unable to retrieve credentials from IAM Task Role. URI: " << uri << ". \n " << e.what();
@@ -486,14 +486,14 @@ namespace hazelcast {
                     }
                 }
 
-                void DescribeInstances::getKeysFromIamRole() {
-                    std::string query = "/latest/meta-data/iam/security-credentials/" + awsConfig_.getIamRole();
+                void DescribeInstances::get_keys_from_iam_role() {
+                    std::string query = "/latest/meta-data/iam/security-credentials/" + awsConfig_.get_iam_role();
 
                     util::SyncHttpClient httpClient(IAM_ROLE_ENDPOINT, query);
 
                     try {
-                        std::istream &istream = httpClient.openConnection();
-                        parseAndStoreRoleCreds(istream);
+                        std::istream &istream = httpClient.open_connection();
+                        parse_and_store_role_creds(istream);
                     } catch (exception::IException &e) {
                         std::stringstream out;
                         out << "Unable to retrieve credentials from IAM Task Role. URI: " << query << ". \n "
@@ -503,44 +503,44 @@ namespace hazelcast {
                     }
                 }
 
-                void DescribeInstances::parseAndStoreRoleCreds(std::istream &in) {
-                    utility::CloudUtility::unmarshalJsonResponse(in, awsConfig_, attributes_);
+                void DescribeInstances::parse_and_store_role_creds(std::istream &in) {
+                    utility::CloudUtility::unmarshal_json_response(in, awsConfig_, attributes_);
                 }
 
                 /**
                  * Add available filters to narrow down the scope of the query
                  */
-                void DescribeInstances::addFilters() {
+                void DescribeInstances::add_filters() {
                     Filter filter;
-                    if (!awsConfig_.getTagKey().empty()) {
-                        if (!awsConfig_.getTagValue().empty()) {
-                            filter.addFilter(std::string("tag:") + awsConfig_.getTagKey(), awsConfig_.getTagValue());
+                    if (!awsConfig_.get_tag_key().empty()) {
+                        if (!awsConfig_.get_tag_value().empty()) {
+                            filter.add_filter(std::string("tag:") + awsConfig_.get_tag_key(), awsConfig_.get_tag_value());
                         } else {
-                            filter.addFilter("tag-key", awsConfig_.getTagKey());
+                            filter.add_filter("tag-key", awsConfig_.get_tag_key());
                         }
-                    } else if (!awsConfig_.getTagValue().empty()) {
-                        filter.addFilter("tag-value", awsConfig_.getTagValue());
+                    } else if (!awsConfig_.get_tag_value().empty()) {
+                        filter.add_filter("tag-value", awsConfig_.get_tag_value());
                     }
 
-                    if (!awsConfig_.getSecurityGroupName().empty()) {
-                        filter.addFilter("instance.group-name", awsConfig_.getSecurityGroupName());
+                    if (!awsConfig_.get_security_group_name().empty()) {
+                        filter.add_filter("instance.group-name", awsConfig_.get_security_group_name());
                     }
 
-                    filter.addFilter("instance-state-name", "running");
-                    const std::unordered_map<std::string, std::string> &filters = filter.getFilters();
+                    filter.add_filter("instance-state-name", "running");
+                    const std::unordered_map<std::string, std::string> &filters = filter.get_filters();
                     attributes_.insert(filters.begin(), filters.end());
                 }
 
             }
 
             namespace utility {
-                std::string AwsURLEncoder::urlEncode(const std::string &value) {
-                    std::string result = escapeEncode(value);
+                std::string AwsURLEncoder::url_encode(const std::string &value) {
+                    std::string result = escape_encode(value);
                     boost::replace_all(result, "+", "%20");
                     return result;
                 }
 
-                std::string AwsURLEncoder::escapeEncode(const std::string &value) {
+                std::string AwsURLEncoder::escape_encode(const std::string &value) {
                     std::ostringstream escaped;
                     escaped.fill('0');
                     escaped << std::hex;
@@ -563,7 +563,7 @@ namespace hazelcast {
                     return escaped.str();
                 }
 
-                std::unordered_map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream,
+                std::unordered_map<std::string, std::string> CloudUtility::unmarshal_the_response(std::istream &stream,
                                                                                       logger &lg) {
                     std::unordered_map<std::string, std::string> privatePublicPairs;
 
@@ -599,12 +599,12 @@ namespace hazelcast {
                     return privatePublicPairs;
                 }
 
-                void CloudUtility::unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
+                void CloudUtility::unmarshal_json_response(std::istream &stream, config::ClientAwsConfig &awsConfig,
                                                          std::unordered_map<std::string, std::string> &attributes) {
                     pt::ptree json;
                     pt::read_json(stream, json);
-                    awsConfig.setAccessKey(json.get_optional<std::string>("AccessKeyId").get_value_or(""));
-                    awsConfig.setSecretKey(json.get_optional<std::string>("SecretAccessKey").get_value_or(""));
+                    awsConfig.set_access_key(json.get_optional<std::string>("AccessKeyId").get_value_or(""));
+                    awsConfig.set_secret_key(json.get_optional<std::string>("SecretAccessKey").get_value_or(""));
                     attributes["X-Amz-Security-Token"] = json.get_optional<std::string>("Token").get_value_or("");
                 }
 
@@ -612,17 +612,17 @@ namespace hazelcast {
 
             AWSClient::AWSClient(config::ClientAwsConfig &awsConfig, logger &lg) : awsConfig_(awsConfig),
                                                                                               logger_(lg) {
-                this->endpoint_ = awsConfig.getHostHeader();
-                if (!awsConfig.getRegion().empty() && awsConfig.getRegion().length() > 0) {
-                    if (awsConfig.getHostHeader().find("ec2.") != 0) {
+                this->endpoint_ = awsConfig.get_host_header();
+                if (!awsConfig.get_region().empty() && awsConfig.get_region().length() > 0) {
+                    if (awsConfig.get_host_header().find("ec2.") != 0) {
                         BOOST_THROW_EXCEPTION(exception::InvalidConfigurationException("AWSClient::AWSClient",
                                                                                        "HostHeader should start with \"ec2.\" prefix"));
                     }
-                    boost::replace_all(this->endpoint_, "ec2.", std::string("ec2.") + awsConfig.getRegion() + ".");
+                    boost::replace_all(this->endpoint_, "ec2.", std::string("ec2.") + awsConfig.get_region() + ".");
                 }
             }
 
-            std::unordered_map<std::string, std::string> AWSClient::getAddresses() {
+            std::unordered_map<std::string, std::string> AWSClient::get_addresses() {
                 return impl::DescribeInstances(awsConfig_, endpoint_, logger_).execute();
             }
 

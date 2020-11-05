@@ -62,18 +62,18 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    boost::optional<Member> getMember(boost::uuids::uuid uuid) const;
+                    boost::optional<Member> get_member(boost::uuids::uuid uuid) const;
 
-                    std::vector<Member> getMemberList() const;
+                    std::vector<Member> get_member_list() const;
 
-                    std::vector<Member> getMembers(
+                    std::vector<Member> get_members(
                             const cluster::memberselector::MemberSelector &selector) const;
 
-                    Client getLocalClient() const;
+                    Client get_local_client() const;
 
-                    boost::uuids::uuid addMembershipListener(MembershipListener &&listener);
+                    boost::uuids::uuid add_membership_listener(MembershipListener &&listener);
 
-                    bool removeMembershipListener(boost::uuids::uuid registrationId);
+                    bool remove_membership_listener(boost::uuids::uuid registrationId);
 
                     void clear_member_list_version();
 
@@ -99,9 +99,9 @@ namespace hazelcast {
 
                     static const boost::shared_ptr<member_list_snapshot> EMPTY_SNAPSHOT;
 
-                    boost::uuids::uuid addMembershipListenerWithoutInit(MembershipListener &&listener);
+                    boost::uuids::uuid add_membership_listener_without_init(MembershipListener &&listener);
 
-                    void fireInitialMembershipEvent(const InitialMembershipEvent &event);
+                    void fire_initial_membership_event(const InitialMembershipEvent &event);
 
                     static member_list_snapshot create_snapshot(int32_t version, const std::vector<Member> &vector);
 

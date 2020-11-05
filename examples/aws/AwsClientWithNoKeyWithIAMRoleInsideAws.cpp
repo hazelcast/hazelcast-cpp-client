@@ -26,12 +26,12 @@ int main() {
 
     // Your instance should be inside AWS and the instance profile should have an instance profile associated for
     // a valid IAM role. See http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html
-    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey("aws-test-tag").
-        setTagValue("aws-tag-value-1").setIamRole("MyInstanceRole").setInsideAws(true);
+    clientConfig.get_network_config().get_aws_config().set_enabled(true).set_tag_key("aws-test-tag").
+        set_tag_value("aws-tag-value-1").set_iam_role("MyInstanceRole").set_inside_aws(true);
     
     hazelcast::client::HazelcastClient hz(clientConfig);
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
     
     map->put(1, 100).get();
     map->put(2, 200).get();

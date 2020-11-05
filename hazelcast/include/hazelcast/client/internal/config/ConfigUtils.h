@@ -31,7 +31,7 @@ namespace hazelcast {
                 public:
                     template<typename T>
                     static const T *
-                    lookupByPattern(const client::config::ConfigPatternMatcher &configPatternMatcher,
+                    lookup_by_pattern(const client::config::ConfigPatternMatcher &configPatternMatcher,
                                     const std::unordered_map<std::string, T> &configPatterns, const std::string &itemName) {
                         auto candidate = configPatterns.find(itemName);
                         if (candidate != configPatterns.end()) {

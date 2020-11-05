@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto set = hz.getSet("set");
+    auto set = hz.get_set("set");
 
     set->add("Tokyo").get();
     set->add("Paris").get();

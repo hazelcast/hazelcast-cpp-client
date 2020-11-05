@@ -45,7 +45,7 @@ namespace hazelcast {
                      *
                      * @return reference to the internal byte buffer.
                      */
-                    inline const std::vector<byte> &toByteArray() const {
+                    inline const std::vector<byte> &to_byte_array() const {
                         return outputStream_;
                     }
 
@@ -53,11 +53,11 @@ namespace hazelcast {
                      *
                      * @param bytes The bytes to be appended to the current buffer
                      */
-                    inline void appendBytes(const std::vector<byte> &bytes) {
+                    inline void append_bytes(const std::vector<byte> &bytes) {
                         outputStream_.insert(outputStream_.end(), bytes.begin(), bytes.end());
                     }
 
-                    inline void writeZeroBytes(size_t numberOfBytes) {
+                    inline void write_zero_bytes(size_t numberOfBytes) {
                         outputStream_.insert(outputStream_.end(), numberOfBytes, 0);
                     }
 
@@ -132,7 +132,7 @@ namespace hazelcast {
                     bool isNoWrite_;
                     std::vector<byte> outputStream_;
 
-                    void inline checkAvailable(int index, int requestedLength) {
+                    void inline check_available(int index, int requestedLength) {
                         if (index < 0) {
                             BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
                                                                                       (boost::format("Negative pos! -> %1%") % index).str()));
@@ -151,10 +151,10 @@ namespace hazelcast {
                      * @param index The index to write the integer
                      * @param value The integer value to be written
                      */
-                    inline void writeAt(int index, int32_t value) {
+                    inline void write_at(int index, int32_t value) {
                         if (isNoWrite_) { return; }
-                        checkAvailable(index, util::Bits::INT_SIZE_IN_BYTES);
-                        util::Bits::nativeToBigEndian4(&value, &outputStream_[index]);
+                        check_available(index, util::Bits::INT_SIZE_IN_BYTES);
+                        util::Bits::native_to_big_endian4(&value, &outputStream_[index]);
                     }
                 };
 

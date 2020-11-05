@@ -66,12 +66,12 @@ namespace hazelcast {
                             return;
                         });
                         try {
-                            auto addresses = resolver_.resolve(remoteEndpoint_.getHost(), std::to_string(remoteEndpoint_.getPort()));
+                            auto addresses = resolver_.resolve(remoteEndpoint_.get_host(), std::to_string(remoteEndpoint_.get_port()));
                             boost::asio::async_connect(socket_.lowest_layer(), addresses,
                                                                      boost::asio::use_future).get();
                             post_connect();
                             connectTimer.cancel();
-                            setSocketOptions(socketOptions_);
+                            set_socket_options(socketOptions_);
                             static constexpr const char *PROTOCOL_TYPE_BYTES = "CP2";
                             write(socket_, boost::asio::buffer(PROTOCOL_TYPE_BYTES, 3));
                         } catch (...) {
@@ -84,10 +84,10 @@ namespace hazelcast {
                         do_read(std::move(connection));
                     }
 
-                    void asyncWrite(const std::shared_ptr<connection::Connection> connection,
+                    void async_write(const std::shared_ptr<connection::Connection> connection,
                                     const std::shared_ptr<spi::impl::ClientInvocation> invocation) override {
                         check_connection(connection, invocation);
-                        auto message = invocation->getClientMessage();
+                        auto message = invocation->get_client_message();
                         boost::asio::post(socket_.get_executor(), [=]() {
                             if (!check_connection(connection, invocation)) {
                                 return;
@@ -105,9 +105,9 @@ namespace hazelcast {
                                     int64_t id;
                                     correlation_id composed_id;
                                 } c_id_union;
-                                c_id_union.composed_id = {connection->getConnectionId(), call_id};
+                                c_id_union.composed_id = {connection->get_connection_id(), call_id};
                                 message_call_id = c_id_union.id;
-                                message->setCorrelationId(c_id_union.id);
+                                message->set_correlation_id(c_id_union.id);
                                 success = connection->invocations.insert({message_call_id, invocation}).second;
                             } while (!success);
 
@@ -121,7 +121,7 @@ namespace hazelcast {
                                     auto message = (boost::format{
                                             "Error %1% during invocation write for %2% on connection %3%"} %
                                                     ec % *invocation % *connection).str();
-                                    invocationIt->second->notifyException(
+                                    invocationIt->second->notify_exception(
                                             boost::enable_current_exception(
                                                     std::make_exception_ptr(
                                                             exception::IOException(
@@ -133,7 +133,7 @@ namespace hazelcast {
                                 }
                             };
 
-                            auto &datas = message->getBuffer();
+                            auto &datas = message->get_buffer();
                             if (datas.size() == 1) {
                                 boost::asio::async_write(socket_, boost::asio::buffer(datas[0]), handler);
                             } else {
@@ -152,9 +152,9 @@ namespace hazelcast {
                         socket_.lowest_layer().close(ignored);
                     }
 
-                    Address getAddress() const override {
+                    Address get_address() const override {
                         return Address(socket_.lowest_layer().remote_endpoint().address().to_string(),
-                                       remoteEndpoint_.getPort());
+                                       remoteEndpoint_.get_port());
                     }
 
                     /**
@@ -163,7 +163,7 @@ namespace hazelcast {
                      *
                      * @returns An address that represents the local endpoint of the socket.
                      */
-                    boost::optional<Address> localSocketAddress() const override {
+                    boost::optional<Address> local_socket_address() const override {
                         boost::system::error_code ec;
                         boost::asio::ip::basic_endpoint<boost::asio::ip::tcp> localEndpoint = socket_.lowest_layer().local_endpoint(
                                 ec);
@@ -173,7 +173,7 @@ namespace hazelcast {
                         return boost::optional<Address>(Address(localEndpoint.address().to_string(), localEndpoint.port()));
                     }
 
-                    const Address &getRemoteEndpoint() const override {
+                    const Address &get_remote_endpoint() const override {
                         return remoteEndpoint_;
                     }
 
@@ -182,21 +182,21 @@ namespace hazelcast {
                     }
 
                 protected:
-                    void setSocketOptions(const client::config::SocketOptions &options) {
+                    void set_socket_options(const client::config::SocketOptions &options) {
                         auto &lowestLayer = socket_.lowest_layer();
 
-                        lowestLayer.set_option(boost::asio::ip::tcp::no_delay(options.isTcpNoDelay()));
+                        lowestLayer.set_option(boost::asio::ip::tcp::no_delay(options.is_tcp_no_delay()));
 
-                        lowestLayer.set_option(boost::asio::socket_base::keep_alive(options.isKeepAlive()));
+                        lowestLayer.set_option(boost::asio::socket_base::keep_alive(options.is_keep_alive()));
 
-                        lowestLayer.set_option(boost::asio::socket_base::reuse_address(options.isReuseAddress()));
+                        lowestLayer.set_option(boost::asio::socket_base::reuse_address(options.is_reuse_address()));
 
-                        int lingerSeconds = options.getLingerSeconds();
+                        int lingerSeconds = options.get_linger_seconds();
                         if (lingerSeconds > 0) {
                             lowestLayer.set_option(boost::asio::socket_base::linger(true, lingerSeconds));
                         }
 
-                        int bufferSize = options.getBufferSizeInBytes();
+                        int bufferSize = options.get_buffer_size_in_bytes();
                         if (bufferSize > 0) {
                             lowestLayer.set_option(boost::asio::socket_base::receive_buffer_size(bufferSize));
                             lowestLayer.set_option(boost::asio::socket_base::send_buffer_size(bufferSize));
@@ -215,13 +215,13 @@ namespace hazelcast {
                                                  [=](const boost::system::error_code &ec, std::size_t bytesRead) {
                                                      if (ec) {
                                                          // prevent any exceptions
-                                                         util::IOUtil::closeResource(connection.get(),
+                                                         util::IOUtil::close_resource(connection.get(),
                                                                  (boost::format("Socket read error. %1% for %2%")
                                                                  %ec %(*connection)).str().c_str());
                                                          return;
                                                      }
 
-                                                     connection->read_handler.byte_buffer.safeIncrementPosition(
+                                                     connection->read_handler.byte_buffer.safe_increment_position(
                                                              bytesRead);
 
                                                      connection->read_handler.handle();
@@ -235,8 +235,8 @@ namespace hazelcast {
 
                     bool check_connection(const std::shared_ptr<connection::Connection> &connection,
                                           const std::shared_ptr<spi::impl::ClientInvocation> &invocation) {
-                        if (!connection->isAlive()) {
-                            invocation->notifyException(
+                        if (!connection->is_alive()) {
+                            invocation->notify_exception(
                                     std::make_exception_ptr(boost::enable_current_exception(exception::IOException(
                                             "Connection::write", (boost::format{
                                                     "Socket closed. Invocation write for %1% on connection %2% failed"} %

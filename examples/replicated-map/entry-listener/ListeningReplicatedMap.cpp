@@ -19,9 +19,9 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getReplicatedMap("map");
+    auto map = hz.get_replicated_map("map");
 
-    auto listenerId = map->addEntryListener(
+    auto listenerId = map->add_entry_listener(
         hazelcast::client::EntryListener()
             .on_added([](hazelcast::client::EntryEvent &&event) {
                 std::cout << "[added] " << event << std::endl;

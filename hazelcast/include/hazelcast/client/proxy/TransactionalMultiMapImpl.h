@@ -38,17 +38,17 @@ namespace hazelcast {
                 TransactionalMultiMapImpl(const std::string &name, txn::TransactionProxy &transactionProxy);
 
                 boost::future<bool>
-                putData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
+                put_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
-                boost::future<std::vector<serialization::pimpl::Data>> getData(const serialization::pimpl::Data &key);
+                boost::future<std::vector<serialization::pimpl::Data>> get_data(const serialization::pimpl::Data &key);
 
                 boost::future<bool>
                 remove(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
                 boost::future<std::vector<serialization::pimpl::Data>>
-                removeData(const serialization::pimpl::Data &key);
+                remove_data(const serialization::pimpl::Data &key);
 
-                boost::future<int> valueCount(const serialization::pimpl::Data &key);
+                boost::future<int> value_count(const serialization::pimpl::Data &key);
             };
         }
     }

@@ -53,23 +53,23 @@ namespace hazelcast {
             }
 
             bool Employee::operator==(const Employee &rhs) const {
-                return age_ == rhs.getAge() && name_ == rhs.getName();
+                return age_ == rhs.get_age() && name_ == rhs.get_name();
             }
 
             bool Employee::operator!=(const Employee &employee) const {
                 return !(*this == employee);
             }
 
-            int32_t Employee::getAge() const {
+            int32_t Employee::get_age() const {
                 return age_;
             }
 
-            const std::string &Employee::getName() const {
+            const std::string &Employee::get_name() const {
                 return name_;
             }
 
             bool Employee::operator<(const Employee &rhs) const {
-                return age_ < rhs.getAge();
+                return age_ < rhs.get_age();
             }
 
             int32_t EmployeeEntryComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
@@ -101,8 +101,8 @@ namespace hazelcast {
                     return 1;
                 }
 
-                int32_t la = lv->getAge();
-                int32_t ra = rv->getAge();
+                int32_t la = lv->get_age();
+                int32_t ra = rv->get_age();
 
                 if (la == ra) {
                     return 0;
@@ -141,7 +141,7 @@ namespace hazelcast {
             }
 
             std::ostream &operator<<(std::ostream &out, const Employee &employee) {
-                out << "Employee:[" << employee.getName() << ", " << employee.getAge() << "]";
+                out << "Employee:[" << employee.get_name() << ", " << employee.get_age() << "]";
                 return out;
             }
 
@@ -220,15 +220,15 @@ namespace hazelcast {
         }
 
         namespace serialization {
-            int32_t hz_serializer<test::Employee>::getFactoryId() {
+            int32_t hz_serializer<test::Employee>::get_factory_id() {
                 return 666;
             }
 
-            int32_t hz_serializer<test::Employee>::getClassId() {
+            int32_t hz_serializer<test::Employee>::get_class_id() {
                 return 2;
             }
 
-            void hz_serializer<test::Employee>::writePortable(const test::Employee &object, PortableWriter &writer) {
+            void hz_serializer<test::Employee>::write_portable(const test::Employee &object, PortableWriter &writer) {
                 writer.write("n", object.name_);
                 writer.write<int32_t>("a", object.age_);
 
@@ -251,19 +251,19 @@ namespace hazelcast {
                 writer.write("ff", object.ff_);
                 writer.write("dd", object.dd_);
 
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
-                out.writeObject<byte>(&object.by_);
-                out.writeObject<char>(object.c_);
-                out.writeObject<bool>(&object.boolean_);
-                out.writeObject<int16_t>(&object.s_);
-                out.writeObject<int32_t>(&object.i_);
-                out.writeObject<float>(&object.f_);
-                out.writeObject<double>(&object.d_);
-                out.writeObject<std::string>(&object.str_);
-                out.writeObject<std::string>(&object.utfStr_);
+                serialization::ObjectDataOutput &out = writer.get_raw_data_output();
+                out.write_object<byte>(&object.by_);
+                out.write_object<char>(object.c_);
+                out.write_object<bool>(&object.boolean_);
+                out.write_object<int16_t>(&object.s_);
+                out.write_object<int32_t>(&object.i_);
+                out.write_object<float>(&object.f_);
+                out.write_object<double>(&object.d_);
+                out.write_object<std::string>(&object.str_);
+                out.write_object<std::string>(&object.utfStr_);
             }
 
-            test::Employee hz_serializer<test::Employee>::readPortable(PortableReader &reader) {
+            test::Employee hz_serializer<test::Employee>::read_portable(PortableReader &reader) {
                 test::Employee employee;
                 employee.name_ = reader.read<std::string>("n");
                 employee.age_ = reader.read<int32_t>("a");
@@ -284,59 +284,59 @@ namespace hazelcast {
                 employee.ii_ = *reader.read<std::vector<int32_t>>("ii");
                 employee.ff_ = *reader.read<std::vector<float>>("ff");
                 employee.dd_ = *reader.read<std::vector<double>>("dd");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
-                employee.by_ = *in.readObject<byte>();
-                employee.c_ = *in.readObject<char>();
-                employee.boolean_ = *in.readObject<bool>();
-                employee.s_ = *in.readObject<int16_t>();
-                employee.i_ = *in.readObject<int32_t>();
-                employee.f_ = *in.readObject<float>();
-                employee.d_ = *in.readObject<double>();
-                employee.str_ = *in.readObject<std::string>();
-                employee.utfStr_ = *in.readObject<std::string>();
+                serialization::ObjectDataInput &in = reader.get_raw_data_input();
+                employee.by_ = *in.read_object<byte>();
+                employee.c_ = *in.read_object<char>();
+                employee.boolean_ = *in.read_object<bool>();
+                employee.s_ = *in.read_object<int16_t>();
+                employee.i_ = *in.read_object<int32_t>();
+                employee.f_ = *in.read_object<float>();
+                employee.d_ = *in.read_object<double>();
+                employee.str_ = *in.read_object<std::string>();
+                employee.utfStr_ = *in.read_object<std::string>();
                 return employee;
             }
 
-            int32_t hz_serializer<test::EmployeeEntryComparator>::getFactoryId() {
+            int32_t hz_serializer<test::EmployeeEntryComparator>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::EMPLOYEE_FACTORY);
             }
 
-            int32_t hz_serializer<test::EmployeeEntryComparator>::getClassId() {
+            int32_t hz_serializer<test::EmployeeEntryComparator>::get_class_id() {
                 return 4;
             }
 
-            void hz_serializer<test::EmployeeEntryComparator>::writeData(const test::EmployeeEntryComparator &object,
+            void hz_serializer<test::EmployeeEntryComparator>::write_data(const test::EmployeeEntryComparator &object,
                                                                          ObjectDataOutput &writer) {}
 
             test::EmployeeEntryComparator
-            hz_serializer<test::EmployeeEntryComparator>::readData(ObjectDataInput &reader) {
+            hz_serializer<test::EmployeeEntryComparator>::read_data(ObjectDataInput &reader) {
                 return test::EmployeeEntryComparator();
             }
 
-            int32_t hz_serializer<test::EmployeeEntryKeyComparator>::getFactoryId() {
+            int32_t hz_serializer<test::EmployeeEntryKeyComparator>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::EMPLOYEE_FACTORY);
             }
 
-            int32_t hz_serializer<test::EmployeeEntryKeyComparator>::getClassId() {
+            int32_t hz_serializer<test::EmployeeEntryKeyComparator>::get_class_id() {
                 return 5;
             }
 
-            void hz_serializer<test::EmployeeEntryKeyComparator>::writeData(const test::EmployeeEntryKeyComparator &,
+            void hz_serializer<test::EmployeeEntryKeyComparator>::write_data(const test::EmployeeEntryKeyComparator &,
                                                                             ObjectDataOutput &) {}
 
-            test::EmployeeEntryKeyComparator hz_serializer<test::EmployeeEntryKeyComparator>::readData(ObjectDataInput &) {
+            test::EmployeeEntryKeyComparator hz_serializer<test::EmployeeEntryKeyComparator>::read_data(ObjectDataInput &) {
                 return test::EmployeeEntryKeyComparator();
             }
 
-            int32_t hz_serializer<test::TestMainPortable>::getFactoryId() {
+            int32_t hz_serializer<test::TestMainPortable>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestMainPortable>::getClassId() {
+            int32_t hz_serializer<test::TestMainPortable>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_MAIN_PORTABLE);
             }
 
-            void hz_serializer<test::TestMainPortable>::writePortable(const test::TestMainPortable &object,
+            void hz_serializer<test::TestMainPortable>::write_portable(const test::TestMainPortable &object,
                                                                       serialization::PortableWriter &writer) {
                 writer.write<byte>("b", object.b);
                 writer.write("bool", object.boolean);
@@ -347,11 +347,11 @@ namespace hazelcast {
                 writer.write<float>("f", object.f);
                 writer.write<double>("d", object.d);
                 writer.write("str", object.str);
-                writer.writePortable("p", &object.p);
+                writer.write_portable("p", &object.p);
             }
 
             test::TestMainPortable
-            hz_serializer<test::TestMainPortable>::readPortable(serialization::PortableReader &reader) {
+            hz_serializer<test::TestMainPortable>::read_portable(serialization::PortableReader &reader) {
                 test::TestMainPortable object;
                 object.b = reader.read<byte>("b");
                 object.boolean = reader.read<bool>("bool");
@@ -362,94 +362,94 @@ namespace hazelcast {
                 object.f = reader.read<float>("f");
                 object.d = reader.read<double>("d");
                 object.str = reader.read<std::string>("str");
-                auto innerPortable = reader.readPortable<test::TestInnerPortable>("p");
+                auto innerPortable = reader.read_portable<test::TestInnerPortable>("p");
                 if (innerPortable.has_value())
                     object.p = std::move(innerPortable).value();
 
                 return object;
             }
 
-            int32_t hz_serializer<test::TestRawDataPortable>::getFactoryId() {
+            int32_t hz_serializer<test::TestRawDataPortable>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestRawDataPortable>::getClassId() {
+            int32_t hz_serializer<test::TestRawDataPortable>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_RAW_DATA_PORTABLE);
             }
 
-            void hz_serializer<test::TestRawDataPortable>::writePortable(const test::TestRawDataPortable &object,
+            void hz_serializer<test::TestRawDataPortable>::write_portable(const test::TestRawDataPortable &object,
                                                                          serialization::PortableWriter &writer) {
                 writer.write("l", object.l);
                 writer.write("c", object.c);
-                writer.writePortable("p", &object.p);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                writer.write_portable("p", &object.p);
+                serialization::ObjectDataOutput &out = writer.get_raw_data_output();
                 out.write<int32_t>(object.k);
                 out.write(object.s);
-                hz_serializer<test::TestDataSerializable>::writeData(object.ds, out);
+                hz_serializer<test::TestDataSerializable>::write_data(object.ds, out);
             }
 
             test::TestRawDataPortable
-            hz_serializer<test::TestRawDataPortable>::readPortable(serialization::PortableReader &reader) {
+            hz_serializer<test::TestRawDataPortable>::read_portable(serialization::PortableReader &reader) {
                 test::TestRawDataPortable object;
                 object.l = reader.read<int64_t>("l");
                 object.c = std::move(reader.read<std::vector<char>>("c")).value();
-                auto namedPortable = reader.readPortable<test::TestNamedPortable>("p");
+                auto namedPortable = reader.read_portable<test::TestNamedPortable>("p");
                 if (namedPortable.has_value())
                     object.p = namedPortable.value();
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
+                serialization::ObjectDataInput &in = reader.get_raw_data_input();
                 object.k = in.read<int32_t>();
                 object.s = in.read<std::string>();
-                object.ds = hz_serializer<test::TestDataSerializable>::readData(in);
+                object.ds = hz_serializer<test::TestDataSerializable>::read_data(in);
                 return object;
             }
 
-            int32_t hz_serializer<test::TestDataSerializable>::getFactoryId() {
+            int32_t hz_serializer<test::TestDataSerializable>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_DATA_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestDataSerializable>::getClassId() {
+            int32_t hz_serializer<test::TestDataSerializable>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_DATA_SERIALIZABLE);
             }
 
             void
-            hz_serializer<test::TestDataSerializable>::writeData(const test::TestDataSerializable &object,
+            hz_serializer<test::TestDataSerializable>::write_data(const test::TestDataSerializable &object,
                                                                  serialization::ObjectDataOutput &out) {
                 out.write<int32_t>(object.i);
                 out.write(object.c);
             }
 
             test::TestDataSerializable
-            hz_serializer<test::TestDataSerializable>::readData(serialization::ObjectDataInput &in) {
+            hz_serializer<test::TestDataSerializable>::read_data(serialization::ObjectDataInput &in) {
                 return test::TestDataSerializable{in.read<int32_t>(), in.read<char>()};
             }
 
-            int32_t hz_serializer<test::TestNamedPortable>::getFactoryId() {
+            int32_t hz_serializer<test::TestNamedPortable>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestNamedPortable>::getClassId() {
+            int32_t hz_serializer<test::TestNamedPortable>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE);
             }
 
-            void hz_serializer<test::TestNamedPortable>::writePortable(const test::TestNamedPortable &object,
+            void hz_serializer<test::TestNamedPortable>::write_portable(const test::TestNamedPortable &object,
                                                                        PortableWriter &writer) {
                 writer.write("name", object.name);
                 writer.write<int32_t>("myint", object.k);
             }
 
-            test::TestNamedPortable hz_serializer<test::TestNamedPortable>::readPortable(PortableReader &reader) {
+            test::TestNamedPortable hz_serializer<test::TestNamedPortable>::read_portable(PortableReader &reader) {
                 return test::TestNamedPortable{reader.read<std::string>("name"), reader.read<int32_t>("myint")};
             }
 
-            int32_t hz_serializer<test::TestInnerPortable>::getFactoryId() {
+            int32_t hz_serializer<test::TestInnerPortable>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestInnerPortable>::getClassId() {
+            int32_t hz_serializer<test::TestInnerPortable>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_INNER_PORTABLE);
             }
 
-            void hz_serializer<test::TestInnerPortable>::writePortable(const test::TestInnerPortable &object,
+            void hz_serializer<test::TestInnerPortable>::write_portable(const test::TestInnerPortable &object,
                                                                        PortableWriter &writer) {
                 writer.write("b", object.bb);
                 writer.write("ba", object.ba);
@@ -460,10 +460,10 @@ namespace hazelcast {
                 writer.write("f", object.ff);
                 writer.write("d", object.dd);
                 writer.write("stringVector", object.string_vector);
-                writer.writePortableArray("nn", &object.nn);
+                writer.write_portable_array("nn", &object.nn);
             }
 
-            test::TestInnerPortable hz_serializer<test::TestInnerPortable>::readPortable(PortableReader &reader) {
+            test::TestInnerPortable hz_serializer<test::TestInnerPortable>::read_portable(PortableReader &reader) {
                 test::TestInnerPortable object;
                 object.bb = *reader.read<std::vector<byte>>("b");
                 object.ba = *reader.read<std::vector<bool>>("ba");
@@ -474,89 +474,89 @@ namespace hazelcast {
                 object.ff = *reader.read<std::vector<float>>("f");
                 object.dd = *reader.read<std::vector<double>>("d");
                 object.string_vector = *reader.read<std::vector<std::string>>("stringVector");
-                object.nn = *reader.readPortableArray<test::TestNamedPortable>("nn");
+                object.nn = *reader.read_portable_array<test::TestNamedPortable>("nn");
                 return object;
             }
 
-            int32_t hz_serializer<test::TestNamedPortableV2>::getFactoryId() {
+            int32_t hz_serializer<test::TestNamedPortableV2>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestNamedPortableV2>::getClassId() {
+            int32_t hz_serializer<test::TestNamedPortableV2>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE);
             }
 
-            int32_t hz_serializer<test::TestNamedPortableV2>::getClassVersion() {
+            int32_t hz_serializer<test::TestNamedPortableV2>::get_class_version() {
                 return 2;
             }
 
-            void hz_serializer<test::TestNamedPortableV2>::writePortable(const test::TestNamedPortableV2 &object,
+            void hz_serializer<test::TestNamedPortableV2>::write_portable(const test::TestNamedPortableV2 &object,
                                                                          PortableWriter &writer) {
                 writer.write("name", object.name);
                 writer.write<int32_t>("myint", object.k);
                 writer.write<int32_t>("v", object.v);
             }
 
-            test::TestNamedPortableV2 hz_serializer<test::TestNamedPortableV2>::readPortable(PortableReader &reader) {
+            test::TestNamedPortableV2 hz_serializer<test::TestNamedPortableV2>::read_portable(PortableReader &reader) {
                 return test::TestNamedPortableV2{reader.read<std::string>("name"), reader.read<int32_t>("myint"),
                                                  reader.read<int32_t>("v")};
             }
 
-            int32_t hz_serializer<test::TestNamedPortableV3>::getFactoryId() {
+            int32_t hz_serializer<test::TestNamedPortableV3>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestNamedPortableV3>::getClassId() {
+            int32_t hz_serializer<test::TestNamedPortableV3>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE);
             }
 
-            int32_t hz_serializer<test::TestNamedPortableV3>::getClassVersion() {
+            int32_t hz_serializer<test::TestNamedPortableV3>::get_class_version() {
                 return 3;
             }
 
-            void hz_serializer<test::TestNamedPortableV3>::writePortable(const test::TestNamedPortableV3 &object,
+            void hz_serializer<test::TestNamedPortableV3>::write_portable(const test::TestNamedPortableV3 &object,
                                                                          PortableWriter &writer) {
                 writer.write("name", object.name);
                 writer.write<int16_t>("myint", object.k);
             }
 
-            test::TestNamedPortableV3 hz_serializer<test::TestNamedPortableV3>::readPortable(PortableReader &reader) {
+            test::TestNamedPortableV3 hz_serializer<test::TestNamedPortableV3>::read_portable(PortableReader &reader) {
                 return test::TestNamedPortableV3{reader.read<std::string>("name"), reader.read<int16_t>("myint")};
             }
 
-            int32_t hz_serializer<test::TestInvalidWritePortable>::getFactoryId() {
+            int32_t hz_serializer<test::TestInvalidWritePortable>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestInvalidWritePortable>::getClassId() {
+            int32_t hz_serializer<test::TestInvalidWritePortable>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_INVALID_WRITE_PORTABLE);
             }
 
             void
-            hz_serializer<test::TestInvalidWritePortable>::writePortable(const test::TestInvalidWritePortable &object,
+            hz_serializer<test::TestInvalidWritePortable>::write_portable(const test::TestInvalidWritePortable &object,
                                                                          PortableWriter &writer) {
                 writer.write<int64_t>("l", object.l);
-                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                serialization::ObjectDataOutput &out = writer.get_raw_data_output();
                 out.write<int32_t>(object.i);
                 writer.write("s", object.s);
             }
 
             test::TestInvalidWritePortable
-            hz_serializer<test::TestInvalidWritePortable>::readPortable(PortableReader &reader) {
+            hz_serializer<test::TestInvalidWritePortable>::read_portable(PortableReader &reader) {
                 return test::TestInvalidWritePortable{reader.read<int64_t>("l"), reader.read<int32_t>("i"),
                                                       reader.read<std::string>("s")};
             }
 
-            int32_t hz_serializer<test::TestInvalidReadPortable>::getFactoryId() {
+            int32_t hz_serializer<test::TestInvalidReadPortable>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::TestInvalidReadPortable>::getClassId() {
+            int32_t hz_serializer<test::TestInvalidReadPortable>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_INVALID_READ_PORTABLE);
             }
 
             void
-            hz_serializer<test::TestInvalidReadPortable>::writePortable(const test::TestInvalidReadPortable &object,
+            hz_serializer<test::TestInvalidReadPortable>::write_portable(const test::TestInvalidReadPortable &object,
                                                                          PortableWriter &writer) {
                 writer.write<int64_t>("l", object.l);
                 writer.write<int32_t>("i", object.i);
@@ -564,10 +564,10 @@ namespace hazelcast {
             }
 
             test::TestInvalidReadPortable
-            hz_serializer<test::TestInvalidReadPortable>::readPortable(PortableReader &reader) {
+            hz_serializer<test::TestInvalidReadPortable>::read_portable(PortableReader &reader) {
                 test::TestInvalidReadPortable obj;
                 obj.l = reader.read<int64_t>("l");
-                serialization::ObjectDataInput &in = reader.getRawDataInput();
+                serialization::ObjectDataInput &in = reader.get_raw_data_input();
                 obj.i = in.read<int32_t>();
                 obj.s = reader.read<std::string>("s");
                 return obj;
@@ -617,42 +617,42 @@ namespace hazelcast {
                 return object;
             }
 
-            int32_t hz_serializer<test::ChildTemplatedPortable1>::getFactoryId() {
+            int32_t hz_serializer<test::ChildTemplatedPortable1>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::ChildTemplatedPortable1>::getClassId() {
+            int32_t hz_serializer<test::ChildTemplatedPortable1>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::CHILD_TEMPLATED_PORTABLE_1);
             }
 
             void
-            hz_serializer<test::ChildTemplatedPortable1>::writePortable(const test::ChildTemplatedPortable1 &object,
+            hz_serializer<test::ChildTemplatedPortable1>::write_portable(const test::ChildTemplatedPortable1 &object,
                                                                          PortableWriter &out) {
                 out.write("s1", object.s1);
                 out.write("s1", object.s2);
             }
 
             test::ChildTemplatedPortable1
-            hz_serializer<test::ChildTemplatedPortable1>::readPortable(PortableReader &reader) {
+            hz_serializer<test::ChildTemplatedPortable1>::read_portable(PortableReader &reader) {
                 return test::ChildTemplatedPortable1{reader.read<std::string>("s1"), reader.read<std::string>("s2")};
             }
 
-            int32_t hz_serializer<test::ChildTemplatedPortable2>::getFactoryId() {
+            int32_t hz_serializer<test::ChildTemplatedPortable2>::get_factory_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
             }
 
-            int32_t hz_serializer<test::ChildTemplatedPortable2>::getClassId() {
+            int32_t hz_serializer<test::ChildTemplatedPortable2>::get_class_id() {
                 return static_cast<int32_t>(test::TestSerializationConstants::CHILD_TEMPLATED_PORTABLE_2);
             }
 
             void
-            hz_serializer<test::ChildTemplatedPortable2>::writePortable(const test::ChildTemplatedPortable2 &object,
+            hz_serializer<test::ChildTemplatedPortable2>::write_portable(const test::ChildTemplatedPortable2 &object,
                                                                          PortableWriter &out) {
                 out.write("s1", object.s1);
             }
 
             test::ChildTemplatedPortable2
-            hz_serializer<test::ChildTemplatedPortable2>::readPortable(PortableReader &reader) {
+            hz_serializer<test::ChildTemplatedPortable2>::read_portable(PortableReader &reader) {
                 return test::ChildTemplatedPortable2{reader.read<std::string>("s1")};
             }
 

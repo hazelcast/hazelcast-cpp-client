@@ -53,15 +53,15 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Car> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 4;
                 }
 
-                static void writeData(const Car &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Car &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(static_cast<int32_t>(object.attributes.size()));
                     for (auto &entry : object.attributes) {
                         out.write(entry.first);
@@ -69,7 +69,7 @@ namespace hazelcast {
                     }
                 }
 
-                static Car readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Car read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     Car object;
                     int32_t size = in.read<int32_t>();
                     if (size > 0) {
@@ -87,7 +87,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getMap("cars");
+    auto map = hz.get_map("cars");
 
     map->put(1, Car("Audi Q7", 250, 22000)).get();
     map->put(2, Car("BMW X5", 312, 34000)).get();

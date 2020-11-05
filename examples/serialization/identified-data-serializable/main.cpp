@@ -33,21 +33,21 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Person> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 3;
                 }
 
-                static void writeData(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Person read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
@@ -58,7 +58,7 @@ namespace hazelcast {
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getMap("map");
+    auto map = hz.get_map("map");
     map->put("foo", Person{"bar", true, 40}).get();
     std::cout << *(map->get<std::string, Person>("foo").get()) << std::endl;
 

@@ -57,10 +57,10 @@ namespace hazelcast {
 
                 Statistics::Statistics(spi::ClientContext &clientContext) : clientContext_(clientContext),
                                                                             clientProperties_(
-                                                                                    clientContext.getClientProperties()),
-                                                                            logger_(clientContext.getLogger()),
+                                                                                    clientContext.get_client_properties()),
+                                                                            logger_(clientContext.get_logger()),
                                                                             periodicStats_(*this) {
-                    this->enabled_ = clientProperties_.getBoolean(clientProperties_.getStatisticsEnabled());
+                    this->enabled_ = clientProperties_.get_boolean(clientProperties_.get_statistics_enabled());
                 }
 
                 void Statistics::start() {
@@ -68,23 +68,23 @@ namespace hazelcast {
                         return;
                     }
 
-                    int64_t periodSeconds = clientProperties_.getLong(clientProperties_.getStatisticsPeriodSeconds());
+                    int64_t periodSeconds = clientProperties_.get_long(clientProperties_.get_statistics_period_seconds());
                     if (periodSeconds <= 0) {
 
                         int64_t defaultValue = util::IOUtil::to_value<int64_t>(
-                                clientProperties_.getStatisticsPeriodSeconds().getDefaultValue());
+                                clientProperties_.get_statistics_period_seconds().get_default_value());
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format(
                                 "Provided client statistics %1% cannot be less than or equal to 0. "
                                 "You provided %2% seconds as the configuration. "
                                 "Client will use the default value of %3% instead.")
-                                % clientProperties_.getStatisticsPeriodSeconds().getName()
+                                % clientProperties_.get_statistics_period_seconds().get_name()
                                 % periodSeconds % defaultValue)
                         );
                         periodSeconds = defaultValue;
                     }
 
-                    schedulePeriodicStatisticsSendTask(periodSeconds);
+                    schedule_periodic_statistics_send_task(periodSeconds);
 
                     HZ_LOG(logger_, info,
                         boost::str(boost::format("Client statistics is enabled with period %1% seconds.")
@@ -99,15 +99,15 @@ namespace hazelcast {
                     }
                 }
 
-                void Statistics::schedulePeriodicStatisticsSendTask(int64_t periodSeconds) {
-                    sendTaskTimer_ = clientContext_.getClientExecutionService().scheduleWithRepetition([=]() {
-                        if (!clientContext_.getLifecycleService().isRunning()) {
+                void Statistics::schedule_periodic_statistics_send_task(int64_t periodSeconds) {
+                    sendTaskTimer_ = clientContext_.get_client_execution_service().schedule_with_repetition([=]() {
+                        if (!clientContext_.get_lifecycle_service().is_running()) {
                             return;
                         }
 
                         auto collection_timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
                                 std::chrono::system_clock::now().time_since_epoch()).count();
-                        std::shared_ptr<connection::Connection> connection = getConnection();
+                        std::shared_ptr<connection::Connection> connection = get_connection();
                         if (!connection) {
                             HZ_LOG(logger_, finest, "Cannot send client statistics to the server. No connection found.");
                             return;
@@ -115,19 +115,19 @@ namespace hazelcast {
 
                         std::ostringstream stats;
 
-                        periodicStats_.fillMetrics(stats, connection);
+                        periodicStats_.fill_metrics(stats, connection);
 
-                        periodicStats_.addNearCacheStats(stats);
+                        periodicStats_.add_near_cache_stats(stats);
 
-                        sendStats(collection_timestamp, stats.str(), connection);
+                        send_stats(collection_timestamp, stats.str(), connection);
                     }, std::chrono::seconds(0), std::chrono::seconds(periodSeconds));
                 }
 
-                std::shared_ptr<connection::Connection> Statistics::getConnection() {
-                    return clientContext_.getConnectionManager().get_random_connection();
+                std::shared_ptr<connection::Connection> Statistics::get_connection() {
+                    return clientContext_.get_connection_manager().get_random_connection();
                 }
 
-                void Statistics::sendStats(int64_t timestamp, const std::string &newStats,
+                void Statistics::send_stats(int64_t timestamp, const std::string &newStats,
                                            const std::shared_ptr<connection::Connection> &connection) {
                     // TODO: implement metrics blob
                     auto request = protocol::codec::client_statistics_encode(timestamp, newStats, std::vector<byte>());
@@ -141,63 +141,63 @@ namespace hazelcast {
                     }
                 }
 
-                void Statistics::PeriodicStatistics::fillMetrics(std::ostringstream &stats,
+                void Statistics::PeriodicStatistics::fill_metrics(std::ostringstream &stats,
                                                                  const std::shared_ptr<connection::Connection> &connection) {
-                    stats << "lastStatisticsCollectionTime" << KEY_VALUE_SEPARATOR << util::currentTimeMillis();
-                    addStat(stats, "enterprise", false);
-                    addStat(stats, "clientType", protocol::ClientTypes::CPP);
-                    addStat(stats, "clientVersion", HAZELCAST_VERSION);
-                    addStat(stats, "clusterConnectionTimestamp", std::chrono::duration_cast<std::chrono::milliseconds>(
-                            connection->getStartTime().time_since_epoch()).count());
+                    stats << "lastStatisticsCollectionTime" << KEY_VALUE_SEPARATOR << util::current_time_millis();
+                    add_stat(stats, "enterprise", false);
+                    add_stat(stats, "clientType", protocol::ClientTypes::CPP);
+                    add_stat(stats, "clientVersion", HAZELCAST_VERSION);
+                    add_stat(stats, "clusterConnectionTimestamp", std::chrono::duration_cast<std::chrono::milliseconds>(
+                            connection->get_start_time().time_since_epoch()).count());
 
-                    auto localSocketAddress = connection->getLocalSocketAddress();
+                    auto localSocketAddress = connection->get_local_socket_address();
                     stats << STAT_SEPARATOR << "clientAddress" << KEY_VALUE_SEPARATOR;
                     if (localSocketAddress) {
-                        stats << localSocketAddress->getHost() << ":" << localSocketAddress->getPort();
+                        stats << localSocketAddress->get_host() << ":" << localSocketAddress->get_port();
                     }
 
-                    addStat(stats, "clientName", statistics_.clientContext_.getName());
+                    add_stat(stats, "clientName", statistics_.clientContext_.get_name());
 
-                    auto credential = statistics_.clientContext_.getClientConfig().getCredentials();
+                    auto credential = statistics_.clientContext_.get_client_config().get_credentials();
                     if (credential) {
-                        addStat(stats, "credentials.principal", credential->name());
+                        add_stat(stats, "credentials.principal", credential->name());
                     }
                 }
 
-                void Statistics::PeriodicStatistics::addNearCacheStats(std::ostringstream &stats) {
-                    for (const std::shared_ptr<internal::nearcache::BaseNearCache> &nearCache : statistics_.clientContext_.getNearCacheManager().listAllNearCaches()) {
-                        std::string nearCacheName = nearCache->getName();
+                void Statistics::PeriodicStatistics::add_near_cache_stats(std::ostringstream &stats) {
+                    for (const std::shared_ptr<internal::nearcache::BaseNearCache> &nearCache : statistics_.clientContext_.get_near_cache_manager().list_all_near_caches()) {
+                        std::string nearCacheName = nearCache->get_name();
                         std::ostringstream nearCacheNameWithPrefix;
-                        getNameWithPrefix(nearCacheName, nearCacheNameWithPrefix);
+                        get_name_with_prefix(nearCacheName, nearCacheNameWithPrefix);
 
                         nearCacheNameWithPrefix << '.';
 
-                        auto nearCacheStats = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(nearCache->getNearCacheStats());
+                        auto nearCacheStats = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(nearCache->get_near_cache_stats());
 
                         std::string prefix = nearCacheNameWithPrefix.str();
 
-                        addStat(stats, prefix, "creationTime", nearCacheStats->getCreationTime());
-                        addStat(stats, prefix, "evictions", nearCacheStats->getEvictions());
-                        addStat(stats, prefix, "hits", nearCacheStats->getHits());
-                        addStat(stats, prefix, "lastPersistenceDuration",
-                                nearCacheStats->getLastPersistenceDuration());
-                        addStat(stats, prefix, "lastPersistenceKeyCount",
-                                nearCacheStats->getLastPersistenceKeyCount());
-                        addStat(stats, prefix, "lastPersistenceTime",
-                                nearCacheStats->getLastPersistenceTime());
-                        addStat(stats, prefix, "lastPersistenceWrittenBytes",
-                                nearCacheStats->getLastPersistenceWrittenBytes());
-                        addStat(stats, prefix, "misses", nearCacheStats->getMisses());
-                        addStat(stats, prefix, "ownedEntryCount", nearCacheStats->getOwnedEntryCount());
-                        addStat(stats, prefix, "expirations", nearCacheStats->getExpirations());
-                        addStat(stats, prefix, "invalidations", nearCacheStats->getInvalidations());
-                        addStat(stats, prefix, "invalidationRequests",
-                                nearCacheStats->getInvalidationRequests());
-                        addStat(stats, prefix, "ownedEntryMemoryCost",
-                                nearCacheStats->getOwnedEntryMemoryCost());
-                        std::string persistenceFailure = nearCacheStats->getLastPersistenceFailure();
+                        add_stat(stats, prefix, "creationTime", nearCacheStats->get_creation_time());
+                        add_stat(stats, prefix, "evictions", nearCacheStats->get_evictions());
+                        add_stat(stats, prefix, "hits", nearCacheStats->get_hits());
+                        add_stat(stats, prefix, "lastPersistenceDuration",
+                                nearCacheStats->get_last_persistence_duration());
+                        add_stat(stats, prefix, "lastPersistenceKeyCount",
+                                nearCacheStats->get_last_persistence_key_count());
+                        add_stat(stats, prefix, "lastPersistenceTime",
+                                nearCacheStats->get_last_persistence_time());
+                        add_stat(stats, prefix, "lastPersistenceWrittenBytes",
+                                nearCacheStats->get_last_persistence_written_bytes());
+                        add_stat(stats, prefix, "misses", nearCacheStats->get_misses());
+                        add_stat(stats, prefix, "ownedEntryCount", nearCacheStats->get_owned_entry_count());
+                        add_stat(stats, prefix, "expirations", nearCacheStats->get_expirations());
+                        add_stat(stats, prefix, "invalidations", nearCacheStats->get_invalidations());
+                        add_stat(stats, prefix, "invalidationRequests",
+                                nearCacheStats->get_invalidation_requests());
+                        add_stat(stats, prefix, "ownedEntryMemoryCost",
+                                nearCacheStats->get_owned_entry_memory_cost());
+                        std::string persistenceFailure = nearCacheStats->get_last_persistence_failure();
                         if (!persistenceFailure.empty()) {
-                            addStat(stats, prefix, "lastPersistenceFailure", persistenceFailure);
+                            add_stat(stats, prefix, "lastPersistenceFailure", persistenceFailure);
                         }
                     }
 
@@ -205,7 +205,7 @@ namespace hazelcast {
 
                 Statistics::PeriodicStatistics::PeriodicStatistics(Statistics &statistics) : statistics_(statistics) {}
 
-                std::string Statistics::escapeSpecialCharacters(const std::string &name) {
+                std::string Statistics::escape_special_characters(const std::string &name) {
                     std::regex reComma(",");
                     std::string escapedName = std::regex_replace(name, reComma, std::string("\\,"));
                     std::regex reEqual("=");
@@ -217,12 +217,12 @@ namespace hazelcast {
                 }
 
                 void
-                Statistics::PeriodicStatistics::getNameWithPrefix(const std::string &name, std::ostringstream &out) {
-                    out << NEAR_CACHE_CATEGORY_PREFIX << Statistics::escapeSpecialCharacters(name);
+                Statistics::PeriodicStatistics::get_name_with_prefix(const std::string &name, std::ostringstream &out) {
+                    out << NEAR_CACHE_CATEGORY_PREFIX << Statistics::escape_special_characters(name);
                 }
 
                 template<>
-                void Statistics::PeriodicStatistics::addStat(std::ostringstream &stats, const std::string &name,
+                void Statistics::PeriodicStatistics::add_stat(std::ostringstream &stats, const std::string &name,
                                                              const bool &value) {
                     stats << STAT_SEPARATOR << name << KEY_VALUE_SEPARATOR << (value ? "true" : "false");
                 }
@@ -238,11 +238,11 @@ namespace hazelcast {
 
                 LocalMapStatsImpl::LocalMapStatsImpl(const std::shared_ptr<monitor::NearCacheStats> &s) : nearCacheStats_(s) {}
 
-                std::shared_ptr<monitor::NearCacheStats> LocalMapStatsImpl::getNearCacheStats() const {
+                std::shared_ptr<monitor::NearCacheStats> LocalMapStatsImpl::get_near_cache_stats() const {
                     return nearCacheStats_;
                 }
 
-                NearCacheStatsImpl::NearCacheStatsImpl() : creationTime_(util::currentTimeMillis()),
+                NearCacheStatsImpl::NearCacheStatsImpl() : creationTime_(util::current_time_millis()),
                                                            ownedEntryCount_(0),
                                                            ownedEntryMemoryCost_(0),
                                                            hits_(0),
@@ -259,69 +259,69 @@ namespace hazelcast {
                                                            lastPersistenceFailure_("") {
                 }
 
-                int64_t NearCacheStatsImpl::getCreationTime() {
+                int64_t NearCacheStatsImpl::get_creation_time() {
                     return creationTime_;
                 }
 
-                int64_t NearCacheStatsImpl::getOwnedEntryCount() {
+                int64_t NearCacheStatsImpl::get_owned_entry_count() {
                     return ownedEntryCount_;
                 }
 
-                void NearCacheStatsImpl::setOwnedEntryCount(int64_t ownedEntryCount) {
+                void NearCacheStatsImpl::set_owned_entry_count(int64_t ownedEntryCount) {
                     this->ownedEntryCount_ = ownedEntryCount;
                 }
 
-                void NearCacheStatsImpl::incrementOwnedEntryCount() {
+                void NearCacheStatsImpl::increment_owned_entry_count() {
                     ++ownedEntryCount_;
                 }
 
-                void NearCacheStatsImpl::decrementOwnedEntryCount() {
+                void NearCacheStatsImpl::decrement_owned_entry_count() {
                     --ownedEntryCount_;
                 }
 
-                int64_t NearCacheStatsImpl::getOwnedEntryMemoryCost() {
+                int64_t NearCacheStatsImpl::get_owned_entry_memory_cost() {
                     return ownedEntryMemoryCost_;
                 }
 
-                void NearCacheStatsImpl::setOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost) {
+                void NearCacheStatsImpl::set_owned_entry_memory_cost(int64_t ownedEntryMemoryCost) {
                     this->ownedEntryMemoryCost_ = ownedEntryMemoryCost;
                 }
 
-                void NearCacheStatsImpl::incrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost) {
+                void NearCacheStatsImpl::increment_owned_entry_memory_cost(int64_t ownedEntryMemoryCost) {
                     this->ownedEntryMemoryCost_ += ownedEntryMemoryCost;
                 }
 
-                void NearCacheStatsImpl::decrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost) {
+                void NearCacheStatsImpl::decrement_owned_entry_memory_cost(int64_t ownedEntryMemoryCost) {
                     this->ownedEntryMemoryCost_ -= ownedEntryMemoryCost;
                 }
 
-                int64_t NearCacheStatsImpl::getHits() {
+                int64_t NearCacheStatsImpl::get_hits() {
                     return hits_;
                 }
 
                 // just for testing
-                void NearCacheStatsImpl::setHits(int64_t hits) {
+                void NearCacheStatsImpl::set_hits(int64_t hits) {
                     this->hits_ = hits;
                 }
 
-                void NearCacheStatsImpl::incrementHits() {
+                void NearCacheStatsImpl::increment_hits() {
                     ++hits_;
                 }
 
-                int64_t NearCacheStatsImpl::getMisses() {
+                int64_t NearCacheStatsImpl::get_misses() {
                     return misses_;
                 }
 
                 // just for testing
-                void NearCacheStatsImpl::setMisses(int64_t misses) {
+                void NearCacheStatsImpl::set_misses(int64_t misses) {
                     this->misses_ = misses;
                 }
 
-                void NearCacheStatsImpl::incrementMisses() {
+                void NearCacheStatsImpl::increment_misses() {
                     ++misses_;
                 }
 
-                double NearCacheStatsImpl::getRatio() {
+                double NearCacheStatsImpl::get_ratio() {
                     if (misses_ == (int64_t) 0) {
                         if (hits_ == (int64_t) 0) {
                             return std::numeric_limits<double>::signaling_NaN();
@@ -333,76 +333,76 @@ namespace hazelcast {
                     }
                 }
 
-                int64_t NearCacheStatsImpl::getEvictions() {
+                int64_t NearCacheStatsImpl::get_evictions() {
                     return evictions_;
                 }
 
-                void NearCacheStatsImpl::incrementEvictions() {
+                void NearCacheStatsImpl::increment_evictions() {
                     ++evictions_;
                 }
 
-                int64_t NearCacheStatsImpl::getExpirations() {
+                int64_t NearCacheStatsImpl::get_expirations() {
                     return expirations_;
                 }
 
-                void NearCacheStatsImpl::incrementExpirations() {
+                void NearCacheStatsImpl::increment_expirations() {
                     ++expirations_;
                 }
 
-                int64_t NearCacheStatsImpl::getInvalidations() {
+                int64_t NearCacheStatsImpl::get_invalidations() {
                     return invalidations_.load();
                 }
 
-                void NearCacheStatsImpl::incrementInvalidations() {
+                void NearCacheStatsImpl::increment_invalidations() {
                     ++invalidations_;
                 }
 
-                int64_t NearCacheStatsImpl::getInvalidationRequests() {
+                int64_t NearCacheStatsImpl::get_invalidation_requests() {
                     return invalidationRequests_.load();
                 }
 
-                void NearCacheStatsImpl::incrementInvalidationRequests() {
+                void NearCacheStatsImpl::increment_invalidation_requests() {
                     ++invalidationRequests_;
                 }
 
-                void NearCacheStatsImpl::resetInvalidationEvents() {
+                void NearCacheStatsImpl::reset_invalidation_events() {
                     invalidationRequests_ = 0;
                 }
 
-                int64_t NearCacheStatsImpl::getPersistenceCount() {
+                int64_t NearCacheStatsImpl::get_persistence_count() {
                     return persistenceCount_;
                 }
 
-                void NearCacheStatsImpl::addPersistence(int64_t duration, int32_t writtenBytes, int32_t keyCount) {
+                void NearCacheStatsImpl::add_persistence(int64_t duration, int32_t writtenBytes, int32_t keyCount) {
                     ++persistenceCount_;
-                    lastPersistenceTime_ = util::currentTimeMillis();
+                    lastPersistenceTime_ = util::current_time_millis();
                     lastPersistenceDuration_ = duration;
                     lastPersistenceWrittenBytes_ = writtenBytes;
                     lastPersistenceKeyCount_ = keyCount;
                     lastPersistenceFailure_ = "";
                 }
 
-                int64_t NearCacheStatsImpl::getLastPersistenceTime() {
+                int64_t NearCacheStatsImpl::get_last_persistence_time() {
                     return lastPersistenceTime_;
                 }
 
-                int64_t NearCacheStatsImpl::getLastPersistenceDuration() {
+                int64_t NearCacheStatsImpl::get_last_persistence_duration() {
                     return lastPersistenceDuration_;
                 }
 
-                int64_t NearCacheStatsImpl::getLastPersistenceWrittenBytes() {
+                int64_t NearCacheStatsImpl::get_last_persistence_written_bytes() {
                     return lastPersistenceWrittenBytes_;
                 }
 
-                int64_t NearCacheStatsImpl::getLastPersistenceKeyCount() {
+                int64_t NearCacheStatsImpl::get_last_persistence_key_count() {
                     return lastPersistenceKeyCount_;
                 }
 
-                std::string NearCacheStatsImpl::getLastPersistenceFailure() {
+                std::string NearCacheStatsImpl::get_last_persistence_failure() {
                     return lastPersistenceFailure_;
                 }
 
-                std::string NearCacheStatsImpl::toString() {
+                std::string NearCacheStatsImpl::to_string() {
                     std::ostringstream out;
                     std::string failureString = lastPersistenceFailure_;
                     out << "NearCacheStatsImpl{"
@@ -411,7 +411,7 @@ namespace hazelcast {
                         << ", creationTime=" << creationTime_
                         << ", hits=" << hits_
                         << ", misses=" << misses_
-                        << ", ratio=" << std::setprecision(1) << getRatio()
+                        << ", ratio=" << std::setprecision(1) << get_ratio()
                         << ", evictions=" << evictions_
                         << ", expirations=" << expirations_
                         << ", invalidations=" << invalidations_.load()

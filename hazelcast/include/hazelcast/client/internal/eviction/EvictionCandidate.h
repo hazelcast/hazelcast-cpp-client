@@ -43,7 +43,7 @@ namespace hazelcast {
                      *
                      * @return the accessor (key or id) of {@link Evictable} entry or record or whatever
                      */
-                    virtual std::shared_ptr<A> getAccessor() const {
+                    virtual std::shared_ptr<A> get_accessor() const {
                         assert(0);
                         return std::shared_ptr<A>();
                     }
@@ -53,7 +53,7 @@ namespace hazelcast {
                      *
                      * @return the value of {@link Evictable} entry or record or whatever
                      */
-                    virtual std::shared_ptr<E> getEvictable() const {
+                    virtual std::shared_ptr<E> get_evictable() const {
                         assert(0);
                         return std::shared_ptr<E>();
                     }

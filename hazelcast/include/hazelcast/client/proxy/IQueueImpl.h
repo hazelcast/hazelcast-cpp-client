@@ -39,7 +39,7 @@ namespace hazelcast {
                 *
                 * @return true if registration is removed, false otherwise
                 */
-                boost::future<bool> removeItemListener(
+                boost::future<bool> remove_item_listener(
                         boost::uuids::uuid registrationId);
 
                 /**
@@ -52,13 +52,13 @@ namespace hazelcast {
                 *
                 * @return true if queue is empty
                 */
-                boost::future<bool> isEmpty();
+                boost::future<bool> is_empty();
 
                 /**
                 *
                 * @return remaining capacity
                 */
-                boost::future<int> remainingCapacity();
+                boost::future<int> remaining_capacity();
 
                 /**
                 * Removes all elements from queue.
@@ -68,45 +68,45 @@ namespace hazelcast {
                 IQueueImpl(const std::string& instanceName, spi::ClientContext *context);
 
                 boost::future<boost::uuids::uuid>
-                addItemListener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::queue_addlistener_handler>> &&itemEventHandler, bool includeValue) {
-                    return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
+                add_item_listener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::queue_addlistener_handler>> &&itemEventHandler, bool includeValue) {
+                    return register_listener(create_item_listener_codec(includeValue), std::move(itemEventHandler));
                 }
                 
                 boost::future<bool> offer(const serialization::pimpl::Data& element, std::chrono::milliseconds timeout);
 
                 boost::future<void> put(const serialization::pimpl::Data& element);
 
-                boost::future<boost::optional<serialization::pimpl::Data>>pollData(std::chrono::milliseconds timeout);
+                boost::future<boost::optional<serialization::pimpl::Data>>poll_data(std::chrono::milliseconds timeout);
 
                 boost::future<bool> remove(const serialization::pimpl::Data& element);
 
                 boost::future<bool> contains(const serialization::pimpl::Data& element);
 
-                boost::future<std::vector<serialization::pimpl::Data>> drainToData(size_t maxElements);
+                boost::future<std::vector<serialization::pimpl::Data>> drain_to_data(size_t maxElements);
 
-                boost::future<std::vector<serialization::pimpl::Data>> drainToData();
+                boost::future<std::vector<serialization::pimpl::Data>> drain_to_data();
 
-                boost::future<boost::optional<serialization::pimpl::Data>>peekData();
+                boost::future<boost::optional<serialization::pimpl::Data>>peek_data();
 
-                boost::future<std::vector<serialization::pimpl::Data>> toArrayData();
+                boost::future<std::vector<serialization::pimpl::Data>> to_array_data();
 
-                boost::future<bool> containsAllData(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> contains_all_data(const std::vector<serialization::pimpl::Data>& elements);
 
-                boost::future<bool> addAllData(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> add_all_data(const std::vector<serialization::pimpl::Data>& elements);
 
-                boost::future<bool> removeAllData(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> remove_all_data(const std::vector<serialization::pimpl::Data>& elements);
 
-                boost::future<bool> retainAllData(const std::vector<serialization::pimpl::Data>& elements);
+                boost::future<bool> retain_all_data(const std::vector<serialization::pimpl::Data>& elements);
 
             private:
                 class QueueListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     QueueListenerMessageCodec(std::string name, bool includeValue);
 
-                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
+                    protocol::ClientMessage encode_add_request(bool localOnly) const override;
 
                     protocol::ClientMessage
-                    encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
+                    encode_remove_request(boost::uuids::uuid realRegistrationId) const override;
 
                 private:
                     std::string name_;
@@ -115,7 +115,7 @@ namespace hazelcast {
 
                 int partitionId_;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
+                std::shared_ptr<spi::impl::ListenerMessageCodec> create_item_listener_codec(bool includeValue);
             };
         }
     }

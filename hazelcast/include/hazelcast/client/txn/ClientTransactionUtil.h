@@ -52,7 +52,7 @@ namespace hazelcast {
                        spi::ClientContext &client, const std::shared_ptr<connection::Connection> &connection);
 
                 static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
-                TRANSACTION_EXCEPTION_FACTORY();
+                transaction_exception_factory();
 
             private:
                 class TransactionExceptionFactory : public util::ExceptionUtil::RuntimeExceptionFactory {

@@ -44,9 +44,9 @@ namespace hazelcast {
                      * @param value Filter value
                      *
                      */
-                    void addFilter(const std::string &name, const std::string &value);
+                    void add_filter(const std::string &name, const std::string &value);
 
-                    const std::unordered_map<std::string, std::string> &getFilters();
+                    const std::unordered_map<std::string, std::string> &get_filters();
 
                 private:
                     std::unordered_map<std::string, std::string> filters_;

@@ -68,20 +68,20 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<MessagePrinter> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 555;
                 }
 
                 static void
-                writeData(const MessagePrinter &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                write_data(const MessagePrinter &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.message);
                 }
 
-                static MessagePrinter readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static MessagePrinter read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return MessagePrinter{in.read<std::string>()};
                 }
             };
@@ -91,12 +91,12 @@ namespace hazelcast {
 
 class PrinterCallback : public ExecutionCallback<std::string> {
 public:
-    void onResponse(const boost::optional<std::string> &response) override {
+    void on_response(const boost::optional<std::string> &response) override {
         std::cout << "The execution of the task is completed successfully and server returned:" << *response
                   << std::endl;
     }
 
-    void onFailure(std::exception_ptr e) override {
+    void on_failure(std::exception_ptr e) override {
         try {
             std::rethrow_exception(e);
         } catch (hazelcast::client::exception::IException &e) {
@@ -108,7 +108,7 @@ public:
 class MyMemberSelector : public hazelcast::client::cluster::memberselector::MemberSelector {
 public:
     bool select(const Member &member) const override {
-        const std::string *attribute = member.getAttribute("my.special.executor");
+        const std::string *attribute = member.get_attribute("my.special.executor");
         if (attribute == NULL) {
             return false;
         }
@@ -116,7 +116,7 @@ public:
         return *attribute == "true";
     }
 
-    void toString(std::ostream &os) const override {
+    void to_string(std::ostream &os) const override {
         os << "MyMemberSelector";
     }
 };
@@ -125,20 +125,20 @@ int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
     // Get the Distributed Executor Service
-    std::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
+    std::shared_ptr<IExecutorService> ex = hz.get_executor_service("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
     auto promise = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
     // Wait for the result of the submitted task and print the result
     auto result = promise.get_future().get();
     std::cout << "Server result: " << *result << std::endl;
     // Get the first Hazelcast Cluster Member
-    Member firstMember = hz.getCluster().getMembers()[0];
+    Member firstMember = hz.get_cluster().get_members()[0];
     // Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
-    ex->executeOnMember<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, firstMember);
+    ex->execute_on_member<MessagePrinter>(MessagePrinter{"message to very first member of the cluster"}, firstMember);
     // Submit the MessagePrinter Runnable to all Hazelcast Cluster Members
-    ex->executeOnAllMembers<MessagePrinter>(MessagePrinter{"message to all members in the cluster"});
+    ex->execute_on_all_members<MessagePrinter>(MessagePrinter{"message to all members in the cluster"});
     // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
-    ex->executeOnKeyOwner<MessagePrinter, std::string>(
+    ex->execute_on_key_owner<MessagePrinter, std::string>(
             MessagePrinter{"message to the member that owns the key"}, "key");
     // Use a callback execution when the task is completed
     ex->submit<MessagePrinter, std::string>(MessagePrinter{"Message for the callback"},

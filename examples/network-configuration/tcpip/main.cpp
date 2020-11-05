@@ -21,10 +21,10 @@ int main() {
     const int port = 5701;
     hazelcast::client::ClientConfig config;
     hazelcast::client::Address addr(serverIp, port);
-    config.getNetworkConfig().addAddress(addr);
+    config.get_network_config().add_address(addr);
     hazelcast::client::HazelcastClient hz(config);
 
-    auto map = hz.getMap("test map");
+    auto map = hz.get_map("test map");
 
     std::cout << "Finished" << std::endl;
 

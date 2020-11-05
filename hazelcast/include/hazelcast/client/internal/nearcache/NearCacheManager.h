@@ -52,7 +52,7 @@ namespace hazelcast {
                      * associated with given {@code name}
                      */
                     template<typename K, typename V, typename KS>
-                    std::shared_ptr<NearCache<KS, V> > getNearCache(const std::string &name) {
+                    std::shared_ptr<NearCache<KS, V> > get_near_cache(const std::string &name) {
                         return std::static_pointer_cast<NearCache<KS, V> >(nearCacheMap_.get(name));
                     };
 
@@ -69,7 +69,7 @@ namespace hazelcast {
                      * @return the created or existing {@link NearCache} instance associated with given {@code name}
                      */
                     template<typename K, typename V, typename KS>
-                    std::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
+                    std::shared_ptr<NearCache<KS, V> > get_or_create_near_cache(
                             const std::string &name, const client::config::NearCacheConfig &nearCacheConfig) {
                         std::shared_ptr<BaseNearCache> nearCache = nearCacheMap_.get(name);
                         if (NULL == nearCache.get()) {
@@ -77,7 +77,7 @@ namespace hazelcast {
                                 std::lock_guard<std::mutex> guard(mutex_);
                                 nearCache = nearCacheMap_.get(name);
                                 if (NULL == nearCache.get()) {
-                                    nearCache = createNearCache<K, V, KS>(name, nearCacheConfig);
+                                    nearCache = create_near_cache<K, V, KS>(name, nearCacheConfig);
                                     nearCache->initialize();
 
                                     nearCacheMap_.put(name, nearCache);
@@ -94,12 +94,12 @@ namespace hazelcast {
                      * @param name name of the {@link NearCache} to be cleared
                      * @return {@code true} if {@link NearCache} was found and cleared, {@code false} otherwise
                      */
-                    bool clearNearCache(const std::string &name);
+                    bool clear_near_cache(const std::string &name);
 
                     /**
                      * Clears all defined {@link NearCache} instances.
                      */
-                    void clearAllNearCaches();
+                    void clear_all_near_caches();
 
                     /**
                      * Destroys {@link NearCache} instance associated with given {@code name} and also removes it.
@@ -107,22 +107,22 @@ namespace hazelcast {
                      * @param name name of the {@link NearCache} to be destroyed
                      * @return {@code true} if {@link NearCache} was found and destroyed, {@code false} otherwise
                      */
-                    bool destroyNearCache(const std::string &name);
+                    bool destroy_near_cache(const std::string &name);
 
                     /**
                      * Destroys all defined {@link NearCache} instances.
                      */
-                    void destroyAllNearCaches();
+                    void destroy_all_near_caches();
 
                     /**
                      * Lists all existing {@link NearCache} instances.
                      *
                      * @return all existing {@link NearCache} instances
                      */
-                    std::vector<std::shared_ptr<BaseNearCache> > listAllNearCaches();
+                    std::vector<std::shared_ptr<BaseNearCache> > list_all_near_caches();
                 protected:
                     template<typename K, typename V, typename KS>
-                    std::unique_ptr<NearCache<KS, V> > createNearCache(
+                    std::unique_ptr<NearCache<KS, V> > create_near_cache(
                             const std::string &name, const client::config::NearCacheConfig &nearCacheConfig) {
                         return std::unique_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(

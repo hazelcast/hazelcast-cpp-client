@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getDistributedObject<hazelcast::client::IQueue>("queue distributed object");
+    auto map = hz.get_distributed_object<hazelcast::client::IQueue>("queue distributed object");
 
     std::cout << "Finished" << std::endl;
 

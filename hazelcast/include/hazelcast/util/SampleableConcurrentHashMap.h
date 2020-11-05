@@ -49,11 +49,11 @@ namespace hazelcast {
                         entryKey), value_(entryValue) {
                 }
 
-                const std::shared_ptr<KS> &getEntryKey() const {
+                const std::shared_ptr<KS> &get_entry_key() const {
                     return key_;
                 }
 
-                const std::shared_ptr<VS> &getEntryValue() const {
+                const std::shared_ptr<VS> &get_entry_value() const {
                     return value_;
                 }
 
@@ -61,12 +61,12 @@ namespace hazelcast {
                     return eq<KS>(key_, rhs.key_) && eq<VS>(value_, rhs.value_);
                 }
 
-                int32_t hashCode() {
+                int32_t hash_code() {
                     return (key_ == NULL ? 0 : key_->hashCode())
                            ^ (value_ == NULL ? 0 : value_->hashCode());
                 }
 
-                std::string toString() {
+                std::string to_string() {
                     std::ostringstream out;
                     if (NULL == key_.get()) {
                         out << "null";
@@ -179,7 +179,7 @@ namespace hazelcast {
              */
             typedef typename SampleableConcurrentHashMap<K, V, KS, VS>::SamplingEntry E;
 
-            std::unique_ptr<util::Iterable<E> > getRandomSamples(int sampleCount) const {
+            std::unique_ptr<util::Iterable<E> > get_random_samples(int sampleCount) const {
                 if (sampleCount < 0) {
                     BOOST_THROW_EXCEPTION(
                             client::exception::IllegalArgumentException("Sample count cannot be a negative value."));
@@ -192,20 +192,20 @@ namespace hazelcast {
             }
 
         protected:
-            virtual bool isValidForFetching(const std::shared_ptr<VS> &value, int64_t now) const {
+            virtual bool is_valid_for_fetching(const std::shared_ptr<VS> &value, int64_t now) const {
                 const std::shared_ptr<client::internal::eviction::Expirable> &expirable = std::dynamic_pointer_cast<client::internal::eviction::Expirable>(
                         value);
                 if (NULL != expirable.get()) {
-                    return !(expirable->isExpiredAt(now));
+                    return !(expirable->is_expired_at(now));
                 }
                 return true;
             }
 
-            virtual bool isValidForSampling(const std::shared_ptr<VS> &value) const {
+            virtual bool is_valid_for_sampling(const std::shared_ptr<VS> &value) const {
                 return value.get() != NULL;
             }
 
-            virtual std::shared_ptr<E> createSamplingEntry(std::shared_ptr<KS> &key,
+            virtual std::shared_ptr<E> create_sampling_entry(std::shared_ptr<KS> &key,
                                                              std::shared_ptr<VS> &value) const {
                 return std::shared_ptr<E>(new SamplingEntry(key, value));
             }
@@ -242,10 +242,10 @@ namespace hazelcast {
                     }
                     // If current entry is not initialized yet, initialize it
                     if (currentEntry_.get() == NULL) {
-                        currentEntry_ = internalMap_.getEntry((size_t) currentIndex_);
+                        currentEntry_ = internalMap_.get_entry((size_t) currentIndex_);
                     }
                     do {
-                        currentEntry_ = internalMap_.getEntry((size_t) currentIndex_);
+                        currentEntry_ = internalMap_.get_entry((size_t) currentIndex_);
                         // Advance to next entry
                         ++currentIndex_;
                         if ((size_t) currentIndex_ >= internalMap_.size()) {
@@ -254,9 +254,9 @@ namespace hazelcast {
                         while (currentEntry_.get() != NULL) {
                             std::shared_ptr<VS> value = currentEntry_->second;
                             std::shared_ptr<KS> key = currentEntry_->first;
-                            currentEntry_ = internalMap_.getEntry((size_t) currentIndex_);
-                            if (internalMap_.isValidForSampling(value)) {
-                                currentSample_ = internalMap_.createSamplingEntry(key, value);
+                            currentEntry_ = internalMap_.get_entry((size_t) currentIndex_);
+                            if (internalMap_.is_valid_for_sampling(value)) {
+                                currentSample_ = internalMap_.create_sampling_entry(key, value);
                                 returnedEntryCount_++;
                                 return;
                             }
@@ -267,7 +267,7 @@ namespace hazelcast {
                     currentSample_.reset();
                 }
 
-                bool hasNext() override {
+                bool has_next() override {
                     iterate();
                     return currentSample_.get() != NULL;
                 }

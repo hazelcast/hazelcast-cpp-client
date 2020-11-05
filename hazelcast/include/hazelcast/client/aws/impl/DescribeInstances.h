@@ -58,20 +58,20 @@ namespace hazelcast {
                      */
                     std::unordered_map<std::string, std::string> execute();
                 private:
-                    static std::string getFormattedTimestamp();
+                    static std::string get_formatted_timestamp();
 
-                    std::istream &callService();
+                    std::istream &call_service();
 
-                    void checkKeysFromIamRoles();
-                    void tryGetDefaultIamRole();
-                    void getKeysFromIamTaskRole();
-                    void getKeysFromIamRole();
-                    void parseAndStoreRoleCreds(std::istream &in);
+                    void check_keys_from_iam_roles();
+                    void try_get_default_iam_role();
+                    void get_keys_from_iam_task_role();
+                    void get_keys_from_iam_role();
+                    void parse_and_store_role_creds(std::istream &in);
 
                     /**
                      * Add available filters to narrow down the scope of the query
                      */
-                    void addFilters();
+                    void add_filters();
 
                     std::unique_ptr<security::EC2RequestSigner> rs_;
                     config::ClientAwsConfig &awsConfig_;

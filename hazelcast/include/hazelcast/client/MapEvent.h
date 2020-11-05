@@ -46,28 +46,28 @@ namespace hazelcast {
             *
             * @return the member fired this event.
             */
-            const Member &getMember() const;
+            const Member &get_member() const;
 
             /**
             * Return the event type
             *
             * @return event type
             */
-            EntryEvent::type getEventType() const;
+            EntryEvent::type get_event_type() const;
 
             /**
             * Returns the name of the map for this event.
             *
             * @return name of the map.
             */
-            const std::string& getName() const;
+            const std::string& get_name() const;
 
             /**
             * Returns the number of entries affected by this event.
             *
             * @return number of entries affected.
             */
-            int getNumberOfEntriesAffected() const;
+            int get_number_of_entries_affected() const;
 
             friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const MapEvent &event);
 

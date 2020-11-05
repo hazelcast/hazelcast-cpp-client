@@ -20,7 +20,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto queue = hz.getQueue("queue");
+    auto queue = hz.get_queue("queue");
 
     std::atomic<int> numAdded(0);
     std::atomic<int> numRemoved(0);
@@ -28,15 +28,15 @@ int main() {
     hazelcast::client::ItemListener listener;
     listener.
         on_added([&numAdded](hazelcast::client::ItemEvent &&event) {
-            std::cout << "Item added:" << event.getItem().get<std::string>().value() << std::endl;
+            std::cout << "Item added:" << event.get_item().get<std::string>().value() << std::endl;
             ++numAdded;
         }).
         on_removed([&numRemoved](hazelcast::client::ItemEvent &&event) {
-            std::cout << "Item removed:" << event.getItem().get<std::string>().value() << std::endl;
+            std::cout << "Item removed:" << event.get_item().get<std::string>().value() << std::endl;
             ++numRemoved;
         });
 
-    auto registrationId = queue->addItemListener(std::move(listener), true).get();
+    auto registrationId = queue->add_item_listener(std::move(listener), true).get();
 
     std::cout << "Registered the listener with registration id:" << registrationId <<
     "Waiting for the listener events!" << std::endl;
@@ -46,7 +46,7 @@ int main() {
     std::cout << "Received " << numAdded << " items addition and " << numRemoved << " items removal events." << std::endl;
 
     // unregister the listener
-    if (queue->removeItemListener(registrationId).get()) {
+    if (queue->remove_item_listener(registrationId).get()) {
         std::cout << "Removed the item listener with registration id " << registrationId << std::endl;
     } else {
         std::cout << "Failed to remove the item listener with registration id " << boost::uuids::to_string(registrationId) << std::endl;

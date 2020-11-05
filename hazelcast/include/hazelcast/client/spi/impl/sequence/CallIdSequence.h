@@ -59,7 +59,7 @@ namespace hazelcast {
                          *
                          * @return the maximum concurrent invocation.
                          */
-                        virtual int32_t getMaxConcurrentInvocations() const = 0;
+                        virtual int32_t get_max_concurrent_invocations() const = 0;
 
                         /**
                          * Generates the next unique call ID. When the implementation
@@ -77,7 +77,7 @@ namespace hazelcast {
                          *
                          * @return the generated call ID
                          */
-                        virtual int64_t forceNext() = 0;
+                        virtual int64_t force_next() = 0;
 
                         /** Not idempotent: must be called exactly once per invocation. */
                         virtual void complete() = 0;
@@ -85,7 +85,7 @@ namespace hazelcast {
                         /** Returns the last issued call ID.
                          * <strong>ONLY FOR TESTING. Must not be used for production code.</strong>
                          */
-                        virtual int64_t getLastCallId() = 0;
+                        virtual int64_t get_last_call_id() = 0;
                     };
                 }
             }

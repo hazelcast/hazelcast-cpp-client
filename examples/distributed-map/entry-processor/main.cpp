@@ -20,14 +20,14 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto employees = hz.getMap("employees");
+    auto employees = hz.get_map("employees");
 
     employees->put("John", Employee{1000}).get();
     employees->put("Mark", Employee{1000}).get();
     employees->put("Spencer", Employee{1000}).get();
 
     EmployeeRaiseEntryProcessor processor;
-    auto result = employees->executeOnEntries<std::string, int, EmployeeRaiseEntryProcessor>(
+    auto result = employees->execute_on_entries<std::string, int, EmployeeRaiseEntryProcessor>(
             EmployeeRaiseEntryProcessor{}).get();
 
     std::cout << "The result after employees.executeOnEntries call is:" << std::endl;
@@ -35,7 +35,7 @@ int main() {
         std::cout << entry.first << " salary: " << *entry.second << std::endl;
     }
 
-    result = employees->executeOnKeys<std::string, int, EmployeeRaiseEntryProcessor>({"John", "Spencer"},
+    result = employees->execute_on_keys<std::string, int, EmployeeRaiseEntryProcessor>({"John", "Spencer"},
                                                                                      EmployeeRaiseEntryProcessor{}).get();
 
     std::cout << "The result after employees.executeOnKeys call is:" << std::endl;
@@ -44,7 +44,7 @@ int main() {
     }
 
     // use submitToKey api
-    auto future = employees->submitToKey<std::string, int, EmployeeRaiseEntryProcessor>("Mark", EmployeeRaiseEntryProcessor{});
+    auto future = employees->submit_to_key<std::string, int, EmployeeRaiseEntryProcessor>("Mark", EmployeeRaiseEntryProcessor{});
     // wait for 1 second
     if (future.wait_for(boost::chrono::seconds(1)) == boost::future_status::ready) {
         std::cout << "Got the result of submitToKey in 1 second for Mark" << " new salary: " << *future.get() << std::endl;
@@ -56,11 +56,11 @@ int main() {
     std::vector<boost::future<boost::optional<int>>> allFutures;
 
     // test putting into a vector of futures
-    future = employees->submitToKey<std::string, int, EmployeeRaiseEntryProcessor>(
+    future = employees->submit_to_key<std::string, int, EmployeeRaiseEntryProcessor>(
             "Mark", processor);
     allFutures.push_back(std::move(future));
 
-    allFutures.push_back(employees->submitToKey<std::string, int, EmployeeRaiseEntryProcessor>(
+    allFutures.push_back(employees->submit_to_key<std::string, int, EmployeeRaiseEntryProcessor>(
             "John", EmployeeRaiseEntryProcessor{}));
 
     boost::wait_for_all(allFutures.begin(), allFutures.end());

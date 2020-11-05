@@ -43,7 +43,7 @@ class SoakTestTask : public Runnable {
 public:
     SoakTestTask(const IMap<string, string> &map, ILogger &logger) : map(map), logger(logger) {}
 
-    virtual const string getName() const {
+    virtual const string get_name() const {
         return "SoakTestTask";
     }
 

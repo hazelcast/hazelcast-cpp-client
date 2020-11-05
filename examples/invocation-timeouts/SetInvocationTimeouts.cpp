@@ -23,7 +23,7 @@ int main() {
      *
      * Wait only a maximum of 500 msecs between each consecutive retries. The default value is 1000msecs.
      */
-    config.setProperty("hazelcast.client.invocation.retry.pause.millis", "500");
+    config.set_property("hazelcast.client.invocation.retry.pause.millis", "500");
 
     /**
      * When an invocation gets an exception because :
@@ -37,11 +37,11 @@ int main() {
      *
      * The following sets the timeout to 30 seconds. The default value is 120 seconds.
      */
-    config.setProperty("hazelcast.client.invocation.timeout.seconds", "30");
+    config.set_property("hazelcast.client.invocation.timeout.seconds", "30");
 
     hazelcast::client::HazelcastClient hz(config);
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
     
     map->put(1, 100).get();
 

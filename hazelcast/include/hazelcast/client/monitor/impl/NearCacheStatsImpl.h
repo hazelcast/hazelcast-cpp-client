@@ -37,72 +37,72 @@ namespace hazelcast {
                 public:
                     NearCacheStatsImpl();
 
-                    int64_t getCreationTime() override;
+                    int64_t get_creation_time() override;
 
-                    int64_t getOwnedEntryCount() override;
+                    int64_t get_owned_entry_count() override;
 
-                    void setOwnedEntryCount(int64_t ownedEntryCount);
+                    void set_owned_entry_count(int64_t ownedEntryCount);
 
-                    void incrementOwnedEntryCount();
-                    void decrementOwnedEntryCount();
+                    void increment_owned_entry_count();
+                    void decrement_owned_entry_count();
 
-                    int64_t getOwnedEntryMemoryCost() override;
+                    int64_t get_owned_entry_memory_cost() override;
 
-                    void setOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost);
+                    void set_owned_entry_memory_cost(int64_t ownedEntryMemoryCost);
 
-                    void incrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost);
+                    void increment_owned_entry_memory_cost(int64_t ownedEntryMemoryCost);
 
-                    void decrementOwnedEntryMemoryCost(int64_t ownedEntryMemoryCost);
+                    void decrement_owned_entry_memory_cost(int64_t ownedEntryMemoryCost);
 
-                    int64_t getHits() override;
-
-                    // just for testing
-                    void setHits(int64_t hits);
-
-                    void incrementHits();
-
-                    int64_t getMisses() override;
+                    int64_t get_hits() override;
 
                     // just for testing
-                    void setMisses(int64_t misses);
+                    void set_hits(int64_t hits);
 
-                    void incrementMisses();
+                    void increment_hits();
 
-                    double getRatio() override;
+                    int64_t get_misses() override;
 
-                    int64_t getEvictions() override;
+                    // just for testing
+                    void set_misses(int64_t misses);
 
-                    void incrementEvictions();
+                    void increment_misses();
 
-                    int64_t getExpirations() override;
+                    double get_ratio() override;
 
-                    void incrementExpirations();
+                    int64_t get_evictions() override;
 
-                    int64_t getInvalidations() override;
+                    void increment_evictions();
 
-                    void incrementInvalidations();
+                    int64_t get_expirations() override;
 
-                    int64_t getInvalidationRequests();
+                    void increment_expirations();
 
-                    void incrementInvalidationRequests();
+                    int64_t get_invalidations() override;
 
-                    void resetInvalidationEvents();
+                    void increment_invalidations();
 
-                    int64_t getPersistenceCount() override;
+                    int64_t get_invalidation_requests();
 
-                    void addPersistence(int64_t duration, int32_t writtenBytes, int32_t keyCount);
+                    void increment_invalidation_requests();
 
-                    int64_t getLastPersistenceTime() override;
+                    void reset_invalidation_events();
 
-                    int64_t getLastPersistenceDuration() override;
+                    int64_t get_persistence_count() override;
 
-                    int64_t getLastPersistenceWrittenBytes() override;
+                    void add_persistence(int64_t duration, int32_t writtenBytes, int32_t keyCount);
 
-                    int64_t getLastPersistenceKeyCount() override;
+                    int64_t get_last_persistence_time() override;
 
-                    std::string getLastPersistenceFailure() override;
+                    int64_t get_last_persistence_duration() override;
 
-                    std::string toString() override;
+                    int64_t get_last_persistence_written_bytes() override;
+
+                    int64_t get_last_persistence_key_count() override;
+
+                    std::string get_last_persistence_failure() override;
+
+                    std::string to_string() override;
 
                 private:
                     std::atomic<int64_t> creationTime_;

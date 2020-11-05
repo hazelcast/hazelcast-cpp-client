@@ -70,7 +70,7 @@ namespace hazelcast {
 
                             virtual void run();
 
-                            virtual std::string getName() const;
+                            virtual std::string get_name() const;
 
                         private:
                             std::shared_ptr<Ringbuffer> rb_;

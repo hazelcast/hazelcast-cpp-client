@@ -60,7 +60,7 @@ namespace hazelcast {
                 /**
                  * Returns the configuration name. This can be actual object name or pattern.
                  */
-                const std::string &getName() const;
+                const std::string &get_name() const;
 
                 /**
                  * Sets the name or name pattern for this config. Must not be modified after this
@@ -68,12 +68,12 @@ namespace hazelcast {
                  *
                  * @return this instance for fluent API
                  */
-                ClientFlakeIdGeneratorConfig &setName(const std::string &n);
+                ClientFlakeIdGeneratorConfig &set_name(const std::string &n);
 
                 /**
                  * @see #setPrefetchCount(int)
                  */
-                int32_t getPrefetchCount() const;
+                int32_t get_prefetch_count() const;
 
                 /**
                  * Sets how many IDs are pre-fetched on the background when one call to
@@ -82,12 +82,12 @@ namespace hazelcast {
                  * @param count the desired prefetch count, in the range 1..MAXIMUM_PREFETCH_COUNT.
                  * @return this instance for fluent API
                  */
-                ClientFlakeIdGeneratorConfig &setPrefetchCount(int32_t count);
+                ClientFlakeIdGeneratorConfig &set_prefetch_count(int32_t count);
 
                 /**
                  * @see #setPrefetchValidityDuration(std::chrono::milliseconds)
                  */
-                std::chrono::milliseconds getPrefetchValidityDuration() const;
+                std::chrono::milliseconds get_prefetch_validity_duration() const;
 
                 /**
                  * Sets for how long the pre-fetched IDs can be used. If this time elapses, a new batch of IDs will be
@@ -105,7 +105,7 @@ namespace hazelcast {
                  *
                  * @throws client::exception::IllegalArgumentException if duration is negative.
                  */
-                ClientFlakeIdGeneratorConfig &setPrefetchValidityDuration(std::chrono::milliseconds duration);
+                ClientFlakeIdGeneratorConfig &set_prefetch_validity_duration(std::chrono::milliseconds duration);
 
             private:
                 std::string name_;

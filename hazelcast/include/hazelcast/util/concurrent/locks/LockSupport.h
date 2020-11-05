@@ -54,7 +54,7 @@ namespace hazelcast {
                       *
                       * @param nanos the maximum number of nanoseconds to wait
                       */
-                    static void parkNanos(int64_t nanos);
+                    static void park_nanos(int64_t nanos);
                 };
             }
         }

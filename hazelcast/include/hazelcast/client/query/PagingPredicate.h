@@ -126,44 +126,44 @@ namespace hazelcast {
                 /**
                  * sets the page value to next page
                  */
-                void nextPage() {
+                void next_page() {
                     ++page_;
                 }
 
                 /**
                  * sets the page value to previous page
                  */
-                void previousPage() {
+                void previous_page() {
                     if (page_ != 0) {
                         --page_;
                     }
                 }
 
-                IterationType getIterationType() const {
+                IterationType get_iteration_type() const {
                     return iterationType_;
                 }
 
-                void setIterationType(IterationType type) {
+                void set_iteration_type(IterationType type) {
                     iterationType_ = type;
                 }
 
-                size_t getPage() const {
+                size_t get_page() const {
                     return page_;
                 }
 
-                void setPage(size_t pageNumber) {
+                void set_page(size_t pageNumber) {
                     page_ = pageNumber;
                 }
 
-                size_t getPageSize() const {
+                size_t get_page_size() const {
                     return pageSize_;
                 }
 
-                const query::EntryComparator<K, V> *getComparator() const {
+                const query::EntryComparator<K, V> *get_comparator() const {
                     return comparator_.get();
                 }
 
-                void setAnchorDataList(anchor_data_list anchorDataList) {
+                void set_anchor_data_list(anchor_data_list anchorDataList) {
                     anchor_data_list_ = std::move(anchorDataList);
                 }
 
@@ -186,10 +186,10 @@ namespace hazelcast {
                  * @param predicatePageSize size of the page
                  */
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
-                        size_t predicatePageSize) : outStream_(serializationService.newOutputStream()),
+                        size_t predicatePageSize) : outStream_(serializationService.new_output_stream()),
                         pageSize_(predicatePageSize), page_(0), iterationType_(IterationType::VALUE) {
-                    outStream_.writeObject<bool>(nullptr);
-                    outStream_.writeObject<bool>(nullptr);
+                    outStream_.write_object<bool>(nullptr);
+                    outStream_.write_object<bool>(nullptr);
                 }
 
                 /**
@@ -205,11 +205,11 @@ namespace hazelcast {
                 template<typename INNER_PREDICATE>
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
                         size_t predicatePageSize, const INNER_PREDICATE &predicate)
-                        : outStream_(serializationService.newOutputStream()), pageSize_(predicatePageSize), page_(0),
+                        : outStream_(serializationService.new_output_stream()), pageSize_(predicatePageSize), page_(0),
                         iterationType_(IterationType::VALUE) {
-                    outStream_.writeObject(predicate);
-                    outStream_.writeObject<bool>(nullptr);
-                    predicate_data_ = serializationService.toData<INNER_PREDICATE>(predicate);
+                    outStream_.write_object(predicate);
+                    outStream_.write_object<bool>(nullptr);
+                    predicate_data_ = serializationService.to_data<INNER_PREDICATE>(predicate);
                 }
 
                 /**
@@ -224,11 +224,11 @@ namespace hazelcast {
                 template<typename COMPARATOR>
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
                         COMPARATOR &&comp, size_t predicatePageSize)
-                        : outStream_(serializationService.newOutputStream()), pageSize_(predicatePageSize), page_(0),
+                        : outStream_(serializationService.new_output_stream()), pageSize_(predicatePageSize), page_(0),
                         iterationType_(IterationType::VALUE) {
-                    outStream_.writeObject<bool>(nullptr);
-                    outStream_.writeObject(comp);
-                    comparator_data_ = serializationService.toData<COMPARATOR>(comp);
+                    outStream_.write_object<bool>(nullptr);
+                    outStream_.write_object(comp);
+                    comparator_data_ = serializationService.to_data<COMPARATOR>(comp);
                     comparator_ = std::make_shared<COMPARATOR>(std::forward<COMPARATOR>(comp));
                 }
 
@@ -246,12 +246,12 @@ namespace hazelcast {
                 template<typename INNER_PREDICATE, typename COMPARATOR>
                 PagingPredicate(serialization::pimpl::SerializationService &serializationService,
                         const INNER_PREDICATE &predicate, COMPARATOR &&comp, size_t predicatePageSize)
-                        : outStream_(serializationService.newOutputStream()), pageSize_(predicatePageSize), page_(0),
+                        : outStream_(serializationService.new_output_stream()), pageSize_(predicatePageSize), page_(0),
                         iterationType_(IterationType::VALUE) {
-                    outStream_.writeObject(predicate);
-                    outStream_.writeObject(comp);
-                    predicate_data_ = serializationService.toData<INNER_PREDICATE>(predicate);
-                    comparator_data_ = serializationService.toData<COMPARATOR>(comp);
+                    outStream_.write_object(predicate);
+                    outStream_.write_object(comp);
+                    predicate_data_ = serializationService.to_data<INNER_PREDICATE>(predicate);
+                    comparator_data_ = serializationService.to_data<COMPARATOR>(comp);
                     comparator_ = std::make_shared<COMPARATOR>(std::forward<COMPARATOR>(comp));
                 }
             };
@@ -263,14 +263,14 @@ namespace hazelcast {
                 /**
                  * @return factory id
                  */
-                static constexpr int32_t getFactoryId() noexcept {
+                static constexpr int32_t get_factory_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::F_ID);
                 }
 
                 /**
                  * @return class id
                  */
-                static constexpr int32_t getClassId() noexcept {
+                static constexpr int32_t get_class_id() noexcept {
                     return static_cast<int32_t>(query::PredicateDataSerializerHook::PAGING_PREDICATE);
                 }
 
@@ -278,8 +278,8 @@ namespace hazelcast {
                  * Defines how this class will be written.
                  * @param writer ObjectDataOutput
                  */
-                static void writeData(const query::PagingPredicate<K, V> &obj, ObjectDataOutput &out) {
-                    out.writeBytes(obj.outStream.toByteArray());
+                static void write_data(const query::PagingPredicate<K, V> &obj, ObjectDataOutput &out) {
+                    out.write_bytes(obj.outStream.toByteArray());
                     out.write<int32_t>((int32_t) obj.page);
                     out.write<int32_t>((int32_t) obj.pageSize);
                     out.write<std::string>(obj.IterationNames[static_cast<int32_t>(obj.iterationType)]);
@@ -288,15 +288,15 @@ namespace hazelcast {
                     const auto &page_list = obj.anchor_data_list_.page_list;
                     for (size_t i = 0; i < obj.anchor_data_list_.data_list.size(); ++i) {
                         out.write<int32_t>(page_list[i]);
-                        out.writeObject<K>(data_list[i].first);
-                        out.writeObject<V>(data_list[i].second);
+                        out.write_object<K>(data_list[i].first);
+                        out.write_object<V>(data_list[i].second);
                     }
                 }
 
                 /**
                  * Should not be called at the client side!
                  */
-                static query::PagingPredicate<K, V> readData(ObjectDataInput &in) {
+                static query::PagingPredicate<K, V> read_data(ObjectDataInput &in) {
                     // Not need to read at the client side
                     BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("readData",
                                                                                      "Client should not need to use readData method!!!"));

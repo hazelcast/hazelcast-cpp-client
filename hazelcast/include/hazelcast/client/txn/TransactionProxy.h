@@ -79,11 +79,11 @@ namespace hazelcast {
 
                 TransactionProxy(const TransactionProxy &rhs);
 
-                boost::uuids::uuid getTxnId() const;
+                boost::uuids::uuid get_txn_id() const;
 
-                TxnState getState() const;
+                TxnState get_state() const;
 
-                std::chrono::milliseconds getTimeout() const;
+                std::chrono::milliseconds get_timeout() const;
 
                 boost::future<void> begin();
 
@@ -91,11 +91,11 @@ namespace hazelcast {
 
                 boost::future<void> rollback();
 
-                serialization::pimpl::SerializationService& getSerializationService();
+                serialization::pimpl::SerializationService& get_serialization_service();
 
-                std::shared_ptr<connection::Connection> getConnection();
+                std::shared_ptr<connection::Connection> get_connection();
 
-                spi::ClientContext &getClientContext() const;
+                spi::ClientContext &get_client_context() const;
 
             private:
                 TransactionOptions& options_;
@@ -110,9 +110,9 @@ namespace hazelcast {
                 TxnState state_;
                 std::chrono::steady_clock::time_point startTime_;
 
-                void checkThread();
+                void check_thread();
 
-                void checkTimeout();
+                void check_timeout();
 
                 boost::future<protocol::ClientMessage> invoke(protocol::ClientMessage &request);
             };

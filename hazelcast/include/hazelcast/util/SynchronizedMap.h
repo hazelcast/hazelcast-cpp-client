@@ -58,7 +58,7 @@ namespace hazelcast {
                 internalMap_.clear();
             }
 
-            bool containsKey(const K &key) const {
+            bool contains_key(const K &key) const {
                 std::lock_guard<std::mutex> guard(mapLock_);
                 return internalMap_.find(key) != internalMap_.end();
             }
@@ -68,7 +68,7 @@ namespace hazelcast {
              * @return the previous value associated with the specified key,
              *         or <tt>null</tt> if there was no mapping for the key
              */
-            std::shared_ptr<V> putIfAbsent(const K &key, std::shared_ptr<V> value) {
+            std::shared_ptr<V> put_if_absent(const K &key, std::shared_ptr<V> value) {
                 std::lock_guard<std::mutex> lg(mapLock_);
                 if (internalMap_.count(key) > 0) {
                     return internalMap_[key];
@@ -147,7 +147,7 @@ namespace hazelcast {
                 return false;
             }
 
-            std::vector<std::pair<K, std::shared_ptr<V> > > entrySet() {
+            std::vector<std::pair<K, std::shared_ptr<V> > > entry_set() {
                 std::lock_guard<std::mutex> lg(mapLock_);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
                 entries.reserve(internalMap_.size());
@@ -186,11 +186,11 @@ namespace hazelcast {
                 return keysArray;
             }
 
-            std::shared_ptr<V> getOrPutIfAbsent(const K &key) {
+            std::shared_ptr<V> get_or_put_if_absent(const K &key) {
                 std::shared_ptr<V> value = get(key);
                 if (!value) {
                     value.reset(new V());
-                    std::shared_ptr<V> current = putIfAbsent(key, value);
+                    std::shared_ptr<V> current = put_if_absent(key, value);
                     value = !current ? value : current;
                 }
                 return value;
@@ -201,7 +201,7 @@ namespace hazelcast {
                 return internalMap_.size();
             }
 
-            std::unique_ptr<std::pair<K, std::shared_ptr<V> > > getEntry(size_t index) const {
+            std::unique_ptr<std::pair<K, std::shared_ptr<V> > > get_entry(size_t index) const {
                 std::lock_guard<std::mutex> lg(mapLock_);
                 if (index < 0 || index >= internalMap_.size()) {
                     return std::unique_ptr<std::pair<K, std::shared_ptr<V> > >();

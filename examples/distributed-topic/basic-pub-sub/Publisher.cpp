@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto topic = hz.getTopic("testtopic");
+    auto topic = hz.get_topic("testtopic");
     topic->publish("first message").get();
     std::cout << "Published: Published the message." << std::endl;
 

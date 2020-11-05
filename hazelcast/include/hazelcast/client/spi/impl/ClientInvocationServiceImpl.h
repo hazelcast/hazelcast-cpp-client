@@ -42,31 +42,31 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    bool invokeOnPartitionOwner(const std::shared_ptr<ClientInvocation> &invocation,
+                    bool invoke_on_partition_owner(const std::shared_ptr<ClientInvocation> &invocation,
                                                 int partitionId);
 
                     bool invoke(std::shared_ptr<ClientInvocation> invocation);
 
-                    bool invokeOnTarget(const std::shared_ptr<ClientInvocation> &invocation,
+                    bool invoke_on_target(const std::shared_ptr<ClientInvocation> &invocation,
                                         boost::uuids::uuid uuid);
 
-                    bool invokeOnConnection(const std::shared_ptr<ClientInvocation> &invocation,
+                    bool invoke_on_connection(const std::shared_ptr<ClientInvocation> &invocation,
                                             const std::shared_ptr<connection::Connection> &connection);
 
                     void check_invocation_allowed();
 
                     bool is_smart_routing() const;
 
-                    std::chrono::milliseconds getInvocationTimeout() const;
+                    std::chrono::milliseconds get_invocation_timeout() const;
 
-                    std::chrono::milliseconds getInvocationRetryPause() const;
+                    std::chrono::milliseconds get_invocation_retry_pause() const;
 
-                    bool isRedoOperation();
+                    bool is_redo_operation();
 
-                    void handleClientMessage(const std::shared_ptr<ClientInvocation> &invocation,
+                    void handle_client_message(const std::shared_ptr<ClientInvocation> &invocation,
                                              const std::shared_ptr<ClientMessage> &response) override;
 
-                    const std::chrono::milliseconds &getBackupTimeout() const;
+                    const std::chrono::milliseconds &get_backup_timeout() const;
 
                     bool fail_on_indeterminate_state() const;
 
@@ -92,16 +92,16 @@ namespace hazelcast {
                         ClientContext &client_;
                         std::unique_ptr<hazelcast::util::hz_thread_pool> pool_;
 
-                        void processInternal(const std::shared_ptr<ClientInvocation> &invocation,
+                        void process_internal(const std::shared_ptr<ClientInvocation> &invocation,
                                              const std::shared_ptr<protocol::ClientMessage> &response);
                     };
 
                     class BackupListenerMessageCodec : public ListenerMessageCodec {
                     public:
-                        protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
+                        protocol::ClientMessage encode_add_request(bool localOnly) const override;
 
                         protocol::ClientMessage
-                        encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
+                        encode_remove_request(boost::uuids::uuid realRegistrationId) const override;
                     };
 
                     class noop_backup_event_handler : public protocol::codec::client_localbackuplistener_handler {
@@ -120,7 +120,7 @@ namespace hazelcast {
                     bool fail_on_indeterminate_operation_state_;
                     std::chrono::milliseconds backup_timeout_;
 
-                    static void writeToConnection(connection::Connection &connection,
+                    static void write_to_connection(connection::Connection &connection,
                                            const std::shared_ptr<ClientInvocation> &clientInvocation);
 
                     bool send(const std::shared_ptr<impl::ClientInvocation>& invocation,

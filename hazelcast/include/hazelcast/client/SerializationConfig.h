@@ -48,18 +48,18 @@ namespace hazelcast {
              *
              *  @return version of portable classes that will be created by this client
              */
-            int getPortableVersion() const;
+            int get_portable_version() const;
 
             /**
              *
              * @param v
              * @return itself SerializationConfig
              */
-            SerializationConfig& setPortableVersion(int v);
+            SerializationConfig& set_portable_version(int v);
 
-            std::shared_ptr<serialization::global_serializer> getGlobalSerializer() const;
+            std::shared_ptr<serialization::global_serializer> get_global_serializer() const;
 
-            void setGlobalSerializer(const std::shared_ptr<serialization::global_serializer> &globalSerializer);
+            void set_global_serializer(const std::shared_ptr<serialization::global_serializer> &globalSerializer);
         private:
             int version_;
             std::shared_ptr<serialization::global_serializer> globalSerializer_;

@@ -24,20 +24,20 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<WaitMultiplierProcessor> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 666;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 8;
                 }
 
-                static void writeData(const WaitMultiplierProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const WaitMultiplierProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(INT32_MAX);
                     out.write(5);
                 }
 
-                static WaitMultiplierProcessor readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static WaitMultiplierProcessor read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return WaitMultiplierProcessor{};
                 }
             };
@@ -59,7 +59,7 @@ int main() {
      *
      * The following sets the maximum allowable outstanding concurrent invocations to 10000.
      */
-    config.setProperty("hazelcast.client.max.concurrent.invocations", "5");
+    config.set_property("hazelcast.client.max.concurrent.invocations", "5");
 
     /**
      * Control the maximum timeout in millis to wait for an invocation space to be available.
@@ -75,26 +75,26 @@ int main() {
      *
      * The following lets a maximum of 2 seconds wait time before throwing the exception.
      */
-    config.setProperty("hazelcast.client.invocation.backoff.timeout.millis", "2000");
+    config.set_property("hazelcast.client.invocation.backoff.timeout.millis", "2000");
 
     hazelcast::client::HazelcastClient hz(config);
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
     
     map->put(1, 1).get();
 
     WaitMultiplierProcessor blockerTask;
 
     // submit 5 blocker tasks
-    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
-    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
-    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
-    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
-    map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
+    map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
 
     // Now the 6th call should receive HazelcastOverloadException
     try {
-        map->submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+        map->submit_to_key<int, WaitMultiplierProcessor>(1, blockerTask);
         std::cout << "This line should not execute!!!" << std::endl;
     } catch (hazelcast::client::exception::HazelcastOverloadException &) {
         std::cout << "Received the expected overload exception." << std::endl;

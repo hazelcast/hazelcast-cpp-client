@@ -50,7 +50,7 @@ namespace hazelcast {
                 bool idle(int64_t n) override;
 
             private:
-                int64_t parkTime(int64_t n) const;
+                int64_t park_time(int64_t n) const;
 
                 static const int ARG_COUNT = 5;
                 static const int ARG_MAX_SPINS = 1;

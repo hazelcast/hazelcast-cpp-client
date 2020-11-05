@@ -31,23 +31,23 @@ namespace hazelcast {
                 *
                 * @return true if registration is removed, false otherwise
                 */
-                boost::future<bool> removeMessageListener(boost::uuids::uuid registrationId);
+                boost::future<bool> remove_message_listener(boost::uuids::uuid registrationId);
 
             protected:
                 ITopicImpl(const std::string& instanceName, spi::ClientContext *context);
 
                 boost::future<void> publish(const serialization::pimpl::Data& data);
 
-                boost::future<boost::uuids::uuid> addMessageListener(std::shared_ptr<impl::BaseEventHandler> topicEventHandler);
+                boost::future<boost::uuids::uuid> add_message_listener(std::shared_ptr<impl::BaseEventHandler> topicEventHandler);
 
             private:
                 class TopicListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
                     TopicListenerMessageCodec(std::string name);
 
-                    protocol::ClientMessage encodeAddRequest(bool localOnly) const override;
+                    protocol::ClientMessage encode_add_request(bool localOnly) const override;
 
-                    protocol::ClientMessage encodeRemoveRequest(boost::uuids::uuid realRegistrationId) const override;
+                    protocol::ClientMessage encode_remove_request(boost::uuids::uuid realRegistrationId) const override;
 
                 private:
                     std::string name_;
@@ -55,7 +55,7 @@ namespace hazelcast {
 
                 int partitionId_;
 
-                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec();
+                std::shared_ptr<spi::impl::ListenerMessageCodec> create_item_listener_codec();
             };
         }
     }

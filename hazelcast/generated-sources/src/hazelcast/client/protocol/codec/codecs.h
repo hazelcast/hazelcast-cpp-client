@@ -1421,7 +1421,7 @@ namespace hazelcast {
                  * operations supported by this list.
                  * This method eliminates the need for explicit range operations (of the sort that commonly exist for arrays).
                  * Any operation that expects a list can be used as a range operation by passing a subList view instead of a whole list.
-                 * Similar idioms may be constructed for indexOf and lastIndexOf, and all of the algorithms in the Collections class
+                 * Similar idioms may be constructed for index_of and last_index_of, and all of the algorithms in the Collections class
                  * can be applied to a subList.
                  * The semantics of the list returned by this method become undefined if the backing list (i.e., this list) is
                  * structurally modified in any way other than via the returned list.(Structural modifications are those that change
@@ -1478,7 +1478,7 @@ namespace hazelcast {
 
                 /**
                  * Adds all of the elements in the specified collection to this set if they're not already present
-                 * (optional operation). If the specified collection is also a set, the addAll operation effectively modifies this
+                 * (optional operation). If the specified collection is also a set, the add_all operation effectively modifies this
                  * set so that its value is the union of the two sets. The behavior of this operation is undefined if the specified
                  * collection is modified while the operation is in progress.
                  */
@@ -1785,7 +1785,7 @@ namespace hazelcast {
                  * Returns the value to which the specified key is mapped, or null if this map contains no mapping for the key.
                  * If this map permits null values, then a return value of null does not
                  * necessarily indicate that the map contains no mapping for the key; it's also possible that the map
-                 * explicitly maps the key to null.  The #containsKey operation may be used to distinguish these two cases.
+                 * explicitly maps the key to null.  The #contains_key operation may be used to distinguish these two cases.
                  */
                 ClientMessage HAZELCAST_API replicatedmap_get_encode(const std::string  & name, const Data  & key);
 
@@ -2263,13 +2263,13 @@ namespace hazelcast {
                 ClientMessage HAZELCAST_API ringbuffer_readone_encode(const std::string  & name, int64_t sequence);
 
                 /**
-                 * Adds all the items of a collection to the tail of the Ringbuffer. A addAll is likely to outperform multiple calls
+                 * Adds all the items of a collection to the tail of the Ringbuffer. A add_all is likely to outperform multiple calls
                  * to add(Object) due to better io utilization and a reduced number of executed operations. If the batch is empty,
                  * the call is ignored. When the collection is not empty, the content is copied into a different data-structure.
                  * This means that: after this call completes, the collection can be re-used. the collection doesn't need to be serializable.
                  * If the collection is larger than the capacity of the ringbuffer, then the items that were written first will be
                  * overwritten. Therefor this call will not block. The items are inserted in the order of the Iterator of the collection.
-                 * If an addAll is executed concurrently with an add or addAll, no guarantee is given that items are contiguous.
+                 * If an add_all is executed concurrently with an add or add_all, no guarantee is given that items are contiguous.
                  * The result of the future contains the sequenceId of the last written item
                  */
                 ClientMessage HAZELCAST_API ringbuffer_addall_encode(const std::string  & name, const std::vector<Data>  & valueList, int32_t overflowPolicy);

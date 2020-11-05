@@ -34,20 +34,20 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Employee> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 100;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 1000;
                 }
 
-                static void writeData(const Employee &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Employee &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.id);
                     out.write(object.name);
                 }
 
-                static Employee readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Employee read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return Employee{in.read<int32_t>(), in.read<std::string>()};
                 }
             };

@@ -19,7 +19,7 @@
 struct PartitionAwareString : public hazelcast::client::PartitionAware<std::string> {
     PartitionAwareString(const std::string &actualKey) : actual_key(actualKey) {}
 
-    const std::string *getPartitionKey() const override {
+    const std::string *get_partition_key() const override {
         return &desiredPartitionString;
     }
 
@@ -32,20 +32,20 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<PartitionAwareString> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 10;
                 }
 
                 static void
-                writeData(const PartitionAwareString &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                write_data(const PartitionAwareString &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.actual_key);
                 }
 
-                static PartitionAwareString readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static PartitionAwareString read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return PartitionAwareString{in.read<std::string>()};
                 }
             };
@@ -61,7 +61,7 @@ int main() {
 
     PartitionAwareString partitionKey{"MyString"};
 
-    auto map = hz.getMap("paritionawaremap");
+    auto map = hz.get_map("paritionawaremap");
 
     // Puts the key, value tokyo at the partition for "desiredKeyString" rather than the partition for "MyString"
     map->put<PartitionAwareString, std::string>(partitionKey, "Tokyo").get();

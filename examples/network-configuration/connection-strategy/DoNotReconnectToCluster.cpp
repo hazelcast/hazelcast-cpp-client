@@ -32,17 +32,17 @@ int main() {
      *
      * This example forces client NOT to reconnect if it ever disconnects from the cluster.
      */
-    config.getConnectionStrategyConfig().setReconnectMode(hazelcast::client::config::ClientConnectionStrategyConfig::OFF);
+    config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::ClientConnectionStrategyConfig::OFF);
 
     hazelcast::client::HazelcastClient hz(config);
 
-    auto map = hz.getMap("MyMap");
+    auto map = hz.get_map("MyMap");
 
     map->put(1, 100);
 
     std::promise<void> disconnected, connected;
 
-    hz.addLifecycleListener(
+    hz.add_lifecycle_listener(
         hazelcast::client::LifecycleListener()
             .on_connected([&connected](){
                 connected.set_value();

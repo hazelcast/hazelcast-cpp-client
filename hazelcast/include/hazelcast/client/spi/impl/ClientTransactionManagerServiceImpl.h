@@ -41,7 +41,7 @@ namespace hazelcast {
                 public:
                     ClientTransactionManagerServiceImpl(ClientContext &client);
 
-                    ClientContext &getClient() const;
+                    ClientContext &get_client() const;
 
                     std::shared_ptr<connection::Connection> connect();
 
@@ -49,7 +49,7 @@ namespace hazelcast {
                     ClientContext &client_;
 
                     std::exception_ptr
-                    newOperationTimeoutException(std::exception_ptr cause, std::chrono::milliseconds invocationTimeout,
+                    new_operation_timeout_exception(std::exception_ptr cause, std::chrono::milliseconds invocationTimeout,
                                                  std::chrono::steady_clock::time_point startTime);
 
                     void throw_exception(bool smart_routing);

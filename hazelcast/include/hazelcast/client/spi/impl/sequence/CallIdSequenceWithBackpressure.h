@@ -47,7 +47,7 @@ namespace hazelcast {
                         CallIdSequenceWithBackpressure(int32_t maxConcurrentInvocations, int64_t backoffTimeoutMs);
 
                     protected:
-                        void handleNoSpaceLeft() override;
+                        void handle_no_space_left() override;
 
                     private:
                         int64_t backoffTimeoutNanos_;

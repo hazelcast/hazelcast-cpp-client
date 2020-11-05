@@ -37,18 +37,18 @@ namespace hazelcast {
 
                 virtual ~TransactionalObject();
 
-                const std::string &getServiceName();
+                const std::string &get_service_name();
 
-                const std::string &getName();
+                const std::string &get_name();
 
                 boost::future<void> destroy();
 
             protected:
-                virtual void onDestroy();
+                virtual void on_destroy();
 
-                boost::uuids::uuid getTransactionId() const;
+                boost::uuids::uuid get_transaction_id() const;
 
-                std::chrono::milliseconds getTimeout() const;
+                std::chrono::milliseconds get_timeout() const;
 
                 const std::string serviceName_;
                 const std::string name_;

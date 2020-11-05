@@ -115,7 +115,7 @@ namespace hazelcast {
             class ClientMultiMapTest : public ClientTestSupport {
             protected:
 
-                EntryListener makeAddRemoveListener(boost::latch &addedLatch, boost::latch &removedLatch) {
+                EntryListener make_add_remove_listener(boost::latch &addedLatch, boost::latch &removedLatch) {
                     return EntryListener().
                         on_added([&addedLatch](EntryEvent &&) {
                             addedLatch.count_down();
@@ -125,7 +125,7 @@ namespace hazelcast {
                         });
                 }
 
-                static void fillData() {
+                static void fill_data() {
                     ASSERT_TRUE(mm->put("key1", "value1").get());
                     ASSERT_TRUE(mm->put("key1", "value2").get());
                     ASSERT_TRUE(mm->put("key1", "value3").get());
@@ -140,8 +140,8 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(getConfig());
-                    mm = client->getMultiMap("MyMultiMap");
+                    client = new HazelcastClient(get_config());
+                    mm = client->get_multi_map("MyMultiMap");
                 }
 
                 static void TearDownTestCase() {
@@ -163,9 +163,9 @@ namespace hazelcast {
             std::shared_ptr<MultiMap> ClientMultiMapTest::mm;
 
             TEST_F(ClientMultiMapTest, testPutGetRemove) {
-                fillData();
-                ASSERT_EQ(3, mm->valueCount("key1").get());
-                ASSERT_EQ(2, mm->valueCount("key2").get());
+                fill_data();
+                ASSERT_EQ(3, mm->value_count("key1").get());
+                ASSERT_EQ(2, mm->value_count("key2").get());
                 ASSERT_EQ(5, mm->size().get());
 
                 auto coll = mm->get<std::string, std::string>("key1").get();
@@ -173,7 +173,7 @@ namespace hazelcast {
 
                 coll = mm->remove<std::string, std::string>("key2").get();
                 ASSERT_EQ(2, (int) coll.size());
-                ASSERT_EQ(0, mm->valueCount("key2").get());
+                ASSERT_EQ(0, mm->value_count("key2").get());
                 ASSERT_EQ(0, ((int) mm->get<std::string, std::string>("key2").get().size()));
 
                 ASSERT_FALSE(mm->remove("key1", "value4").get());
@@ -189,25 +189,25 @@ namespace hazelcast {
 
 
             TEST_F(ClientMultiMapTest, testKeySetEntrySetAndValues) {
-                fillData();
-                ASSERT_EQ(2, (int) mm->keySet<std::string>().get().size());
+                fill_data();
+                ASSERT_EQ(2, (int) mm->key_set<std::string>().get().size());
                 ASSERT_EQ(5, (int) mm->values<std::string>().get().size());
-                ASSERT_EQ(5, ((int) mm->entrySet<std::string, std::string>().get().size()));
+                ASSERT_EQ(5, ((int) mm->entry_set<std::string, std::string>().get().size()));
             }
 
 
             TEST_F(ClientMultiMapTest, testContains) {
-                fillData();
-                ASSERT_FALSE(mm->containsKey<std::string>("key3").get());
-                ASSERT_TRUE(mm->containsKey<std::string>("key1").get());
+                fill_data();
+                ASSERT_FALSE(mm->contains_key<std::string>("key3").get());
+                ASSERT_TRUE(mm->contains_key<std::string>("key1").get());
 
-                ASSERT_FALSE(mm->containsValue<std::string>("value6").get());
-                ASSERT_TRUE(mm->containsValue<std::string>("value4").get());
+                ASSERT_FALSE(mm->contains_value<std::string>("value6").get());
+                ASSERT_TRUE(mm->contains_value<std::string>("value4").get());
 
-                ASSERT_FALSE(mm->containsEntry("key1", "value4").get());
-                ASSERT_FALSE(mm->containsEntry("key2", "value3").get());
-                ASSERT_TRUE(mm->containsEntry("key1", "value1").get());
-                ASSERT_TRUE(mm->containsEntry("key2", "value5").get());
+                ASSERT_FALSE(mm->contains_entry("key1", "value4").get());
+                ASSERT_FALSE(mm->contains_entry("key2", "value3").get());
+                ASSERT_TRUE(mm->contains_entry("key1", "value1").get());
+                ASSERT_TRUE(mm->contains_entry("key2", "value5").get());
             }
 
             TEST_F(ClientMultiMapTest, testListener) {
@@ -215,13 +215,13 @@ namespace hazelcast {
                 boost::latch latch1Remove(4);
                 boost::latch latch2Add(3);
                 boost::latch latch2Remove(3);
-                auto listener1 = makeAddRemoveListener(latch1Add, latch1Remove);
-                auto listener2 = makeAddRemoveListener(latch2Add, latch2Remove);
+                auto listener1 = make_add_remove_listener(latch1Add, latch1Remove);
+                auto listener2 = make_add_remove_listener(latch2Add, latch2Remove);
 
-                auto id1 = mm->addEntryListener(std::move(listener1), true).get();
-                auto id2 = mm->addEntryListener(std::move(listener2), "key3", true).get();
+                auto id1 = mm->add_entry_listener(std::move(listener1), true).get();
+                auto id2 = mm->add_entry_listener(std::move(listener2), "key3", true).get();
 
-                fillData();
+                fill_data();
 
                 mm->remove("key1", "value2").get();
 
@@ -236,111 +236,111 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(latch2Add);
                 ASSERT_OPEN_EVENTUALLY(latch2Remove);
 
-                ASSERT_TRUE(mm->removeEntryListener(id1).get());
-                ASSERT_TRUE(mm->removeEntryListener(id2).get());
+                ASSERT_TRUE(mm->remove_entry_listener(id1).get());
+                ASSERT_TRUE(mm->remove_entry_listener(id2).get());
             }
 
             TEST_F(ClientMultiMapTest, testLock) {
                 mm->lock("key1").get();
                 boost::latch latch1(1);
                 std::thread([&]() {
-                    if (!mm->tryLock("key1").get()) {
+                    if (!mm->try_lock("key1").get()) {
                         latch1.count_down();
                     }
                 }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                mm->forceUnlock("key1").get();
+                mm->force_unlock("key1").get();
             }
 
             TEST_F(ClientMultiMapTest, testLockTtl) {
                 mm->lock("key1", std::chrono::seconds(2)).get();
                 boost::latch latch1(2);
                 std::thread([&]() {
-                    if (!mm->tryLock("key1").get()) {
+                    if (!mm->try_lock("key1").get()) {
                         latch1.count_down();
                     }
-                    if (mm->tryLock("key1", std::chrono::seconds(5)).get()) {
+                    if (mm->try_lock("key1", std::chrono::seconds(5)).get()) {
                         latch1.count_down();
                     }
                 }).detach();
 
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                mm->forceUnlock("key1").get();
+                mm->force_unlock("key1").get();
             }
 
             TEST_F(ClientMultiMapTest, testTryLock) {
-                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2)).get());
+                ASSERT_TRUE(mm->try_lock("key1", std::chrono::seconds(2)).get());
                 boost::latch latch1(1);
                 std::thread([&]() {
-                    if (!mm->tryLock("key1", std::chrono::milliseconds(500)).get()) {
+                    if (!mm->try_lock("key1", std::chrono::milliseconds(500)).get()) {
                         latch1.count_down();
                     }
                 }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_TRUE(mm->isLocked("key1").get());
+                ASSERT_TRUE(mm->is_locked("key1").get());
 
                 boost::latch latch2(1);
                 boost::barrier b(2);
                 std::thread([&]() {
                     b.count_down_and_wait();
-                    if (mm->tryLock("key1", std::chrono::seconds(20)).get()) {
+                    if (mm->try_lock("key1", std::chrono::seconds(20)).get()) {
                         latch2.count_down();
                     }
                 }).detach();
                 b.count_down_and_wait();
                 mm->unlock("key1").get();
                 ASSERT_OPEN_EVENTUALLY(latch2);
-                ASSERT_TRUE(mm->isLocked("key1").get());
-                mm->forceUnlock("key1").get();
+                ASSERT_TRUE(mm->is_locked("key1").get());
+                mm->force_unlock("key1").get();
             }
 
             TEST_F(ClientMultiMapTest, testForceUnlock) {
                 mm->lock("key1").get();
                 boost::latch latch1(1);
                 std::thread([&]() {
-                    mm->forceUnlock("key1").get();
+                    mm->force_unlock("key1").get();
                     latch1.count_down();
                 }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_FALSE(mm->isLocked("key1").get());
+                ASSERT_FALSE(mm->is_locked("key1").get());
             }
 
             TEST_F(ClientMultiMapTest, testTryLockTtl) {
-                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(2), std::chrono::seconds(1)).get());
+                ASSERT_TRUE(mm->try_lock("key1", std::chrono::seconds(2), std::chrono::seconds(1)).get());
                 boost::latch latch1(1);
                 std::thread([&]() {
-                    if (!mm->tryLock("key1", std::chrono::milliseconds(500)).get()) {
+                    if (!mm->try_lock("key1", std::chrono::milliseconds(500)).get()) {
                         latch1.count_down();
                     }
                 }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_TRUE(mm->isLocked("key1").get());
+                ASSERT_TRUE(mm->is_locked("key1").get());
 
                 boost::latch latch2(1);
                 boost::barrier b(2);
                 std::thread([&]() {
                     b.count_down_and_wait();
-                    if (mm->tryLock("key1", std::chrono::seconds(20)).get()) {
+                    if (mm->try_lock("key1", std::chrono::seconds(20)).get()) {
                         latch2.count_down();
                     }
                 }).detach();
                 b.count_down_and_wait();
                 mm->unlock("key1").get();
                 ASSERT_OPEN_EVENTUALLY(latch2);
-                ASSERT_TRUE(mm->isLocked("key1").get());
-                mm->forceUnlock("key1").get();
+                ASSERT_TRUE(mm->is_locked("key1").get());
+                mm->force_unlock("key1").get();
             }
 
             TEST_F(ClientMultiMapTest, testTryLockTtlTimeout) {
-                ASSERT_TRUE(mm->tryLock("key1", std::chrono::seconds(1), std::chrono::seconds(200)).get());
+                ASSERT_TRUE(mm->try_lock("key1", std::chrono::seconds(1), std::chrono::seconds(200)).get());
                 boost::latch latch1(1);
                 std::thread([&]() {
-                    if (!mm->tryLock("key1", std::chrono::seconds(2)).get()) {
+                    if (!mm->try_lock("key1", std::chrono::seconds(2)).get()) {
                         latch1.count_down();
                     }
                 }).detach();
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_TRUE(mm->isLocked("key1").get());
+                ASSERT_TRUE(mm->is_locked("key1").get());
             }
         }
     }
@@ -359,20 +359,20 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
 #ifdef HZ_BUILD_WITH_SSL
-                    sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
+                    sslFactory = new HazelcastServerFactory(g_srvFactory->get_server_address(), get_ssl_file_path());
                     instance = new HazelcastServer(*sslFactory);
 #else
                     instance = new HazelcastServer(*g_srvFactory);
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
-                    ClientConfig clientConfig = getConfig(true);
-                    clientConfig.getNetworkConfig().getSSLConfig().setCipherList("HIGH");
+                    ClientConfig clientConfig = get_config(true);
+                    clientConfig.get_network_config().get_ssl_config().set_cipher_list("HIGH");
 #else
                     ClientConfig clientConfig = getConfig();
 #endif // HZ_BUILD_WITH_SSL
                     client = new HazelcastClient(clientConfig);
-                    list = client->getList("MyList");
+                    list = client->get_list("MyList");
                 }
 
                 static void TearDownTestCase() {
@@ -399,9 +399,9 @@ namespace hazelcast {
                 std::vector<std::string> l;
                 l.push_back("item1");
                 l.push_back("item2");
-                ASSERT_TRUE(list->addAll(l).get());
+                ASSERT_TRUE(list->add_all(l).get());
 
-                ASSERT_TRUE(list->addAll(1, l).get());
+                ASSERT_TRUE(list->add_all(1, l).get());
                 ASSERT_EQ(4, list->size().get());
 
                 auto item = list->get<std::string>(0).get();
@@ -448,11 +448,11 @@ namespace hazelcast {
                 ASSERT_TRUE(list->add("item1").get());
                 ASSERT_TRUE(list->add("item4").get());
 
-                ASSERT_EQ(-1, list->indexOf("item5").get());
-                ASSERT_EQ(0, list->indexOf("item1").get());
+                ASSERT_EQ(-1, list->index_of("item5").get());
+                ASSERT_EQ(0, list->index_of("item1").get());
 
-                ASSERT_EQ(-1, list->lastIndexOf("item6").get());
-                ASSERT_EQ(2, list->lastIndexOf("item1").get());
+                ASSERT_EQ(-1, list->last_index_of("item6").get());
+                ASSERT_EQ(2, list->last_index_of("item1").get());
             }
 
             TEST_F(ClientListTest, testToArray) {
@@ -461,14 +461,14 @@ namespace hazelcast {
                 ASSERT_TRUE(list->add("item1").get());
                 ASSERT_TRUE(list->add("item4").get());
 
-                std::vector<std::string> ar = list->toArray<std::string>().get();
+                std::vector<std::string> ar = list->to_array<std::string>().get();
 
                 ASSERT_EQ("item1", ar[0]);
                 ASSERT_EQ("item2", ar[1]);
                 ASSERT_EQ("item1", ar[2]);
                 ASSERT_EQ("item4", ar[3]);
 
-                std::vector<std::string> arr2 = list->subList<std::string>(1, 3).get();
+                std::vector<std::string> arr2 = list->sub_list<std::string>(1, 3).get();
 
                 ASSERT_EQ(2, (int) arr2.size());
                 ASSERT_EQ("item2", arr2[0]);
@@ -488,9 +488,9 @@ namespace hazelcast {
                 l.push_back("item4");
                 l.push_back("item3");
 
-                ASSERT_FALSE(list->containsAll(l).get());
+                ASSERT_FALSE(list->contains_all(l).get());
                 ASSERT_TRUE(list->add("item3").get());
-                ASSERT_TRUE(list->containsAll(l).get());
+                ASSERT_TRUE(list->contains_all(l).get());
             }
 
             TEST_F(ClientListTest, testRemoveRetainAll) {
@@ -503,19 +503,19 @@ namespace hazelcast {
                 l.push_back("item4");
                 l.push_back("item3");
 
-                ASSERT_TRUE(list->removeAll(l).get());
+                ASSERT_TRUE(list->remove_all(l).get());
                 ASSERT_EQ(3, (int) list->size().get());
-                ASSERT_FALSE(list->removeAll(l).get());
+                ASSERT_FALSE(list->remove_all(l).get());
                 ASSERT_EQ(3, (int) list->size().get());
 
                 l.clear();
                 l.push_back("item1");
                 l.push_back("item2");
-                ASSERT_FALSE(list->retainAll(l).get());
+                ASSERT_FALSE(list->retain_all(l).get());
                 ASSERT_EQ(3, (int) list->size().get());
 
                 l.clear();
-                ASSERT_TRUE(list->retainAll(l).get());
+                ASSERT_TRUE(list->retain_all(l).get());
                 ASSERT_EQ(0, (int) list->size().get());
             }
 
@@ -525,29 +525,29 @@ namespace hazelcast {
                 ItemListener listener;
 
                 listener.on_added([&latch1](ItemEvent &&itemEvent) {
-                    auto type = itemEvent.getEventType();
+                    auto type = itemEvent.get_event_type();
                     ASSERT_EQ(ItemEventType::ADDED, type);
-                    ASSERT_EQ("MyList", itemEvent.getName());
-                    std::string host = itemEvent.getMember().getAddress().getHost();
+                    ASSERT_EQ("MyList", itemEvent.get_name());
+                    std::string host = itemEvent.get_member().get_address().get_host();
                     ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
-                    ASSERT_EQ(5701, itemEvent.getMember().getAddress().getPort());
-                    ASSERT_EQ("item-1", itemEvent.getItem().get<std::string>().value());
+                    ASSERT_EQ(5701, itemEvent.get_member().get_address().get_port());
+                    ASSERT_EQ("item-1", itemEvent.get_item().get<std::string>().value());
                     latch1.count_down();
                 });
 
-                auto registrationId = list->addItemListener(std::move(listener), true).get();
+                auto registrationId = list->add_item_listener(std::move(listener), true).get();
 
                 list->add("item-1").get();
 
                 ASSERT_OPEN_EVENTUALLY(latch1);
 
-                ASSERT_TRUE(list->removeItemListener(registrationId).get());
+                ASSERT_TRUE(list->remove_item_listener(registrationId).get());
             }
 
             TEST_F(ClientListTest, testIsEmpty) {
-                ASSERT_TRUE(list->isEmpty().get());
+                ASSERT_TRUE(list->is_empty().get());
                 ASSERT_TRUE(list->add("item1").get());
-                ASSERT_FALSE(list->isEmpty().get());
+                ASSERT_FALSE(list->is_empty().get());
             }
         }
     }
@@ -571,8 +571,8 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(getConfig().backup_acks_enabled(false));
-                    q = client->getQueue("MyQueue");
+                    client = new HazelcastClient(get_config().backup_acks_enabled(false));
+                    q = client->get_queue("MyQueue");
                 }
 
                 static void TearDownTestCase() {
@@ -606,20 +606,20 @@ namespace hazelcast {
                         latch1.count_down();
                     });
 
-                auto id = q->addItemListener(std::move(listener), true).get();
+                auto id = q->add_item_listener(std::move(listener), true).get();
                 
                 for (int i = 0; i < 5; i++) {
                     ASSERT_TRUE(q->offer(std::string("event_item") + std::to_string(i)).get());
                 }
 
                 ASSERT_OPEN_EVENTUALLY(latch1);
-                ASSERT_TRUE(q->removeItemListener(id).get());
+                ASSERT_TRUE(q->remove_item_listener(id).get());
 
                 // added for test coverage
                 ASSERT_NO_THROW(q->destroy().get());
             }
 
-            void testOfferPollThread2(hazelcast::util::ThreadArgs &args) {
+            void test_offer_poll_thread2(hazelcast::util::ThreadArgs &args) {
                 auto *q = (IQueue *) args.arg0;
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 q->offer("item1");
@@ -638,7 +638,7 @@ namespace hazelcast {
                 }
                 ASSERT_EQ(0, q->size().get());
 
-                hazelcast::util::StartedThread t2(testOfferPollThread2, q.get());
+                hazelcast::util::StartedThread t2(test_offer_poll_thread2, q.get());
 
                 boost::optional<std::string> item = q->poll<std::string>(std::chrono::seconds(30)).get();
                 ASSERT_TRUE(item.has_value());
@@ -670,10 +670,10 @@ namespace hazelcast {
                 ASSERT_TRUE(item.has_value());
                 ASSERT_EQ("peek 3", item.value());
 
-                ASSERT_TRUE(q->isEmpty().get());
+                ASSERT_TRUE(q->is_empty().get());
 
                 // start a thread to insert an item
-                hazelcast::util::StartedThread t2(testOfferPollThread2, q.get());
+                hazelcast::util::StartedThread t2(test_offer_poll_thread2, q.get());
 
                 item = q->take<std::string>().get();  //  should block till it gets an item
                 ASSERT_TRUE(item.has_value());
@@ -683,10 +683,10 @@ namespace hazelcast {
             }
 
             TEST_F(ClientQueueTest, testRemainingCapacity) {
-                int capacity = q->remainingCapacity().get();
+                int capacity = q->remaining_capacity().get();
                 ASSERT_TRUE(capacity > 10000);
                 q->offer("item");
-                ASSERT_EQ(capacity - 1, q->remainingCapacity().get());
+                ASSERT_EQ(capacity - 1, q->remaining_capacity().get());
             }
 
 
@@ -713,22 +713,22 @@ namespace hazelcast {
                 list.emplace_back("item4");
                 list.emplace_back("item2");
 
-                ASSERT_TRUE(q->containsAll(list).get());
+                ASSERT_TRUE(q->contains_all(list).get());
 
                 list.emplace_back("item");
-                ASSERT_FALSE(q->containsAll(list).get());
+                ASSERT_FALSE(q->contains_all(list).get());
             }
 
             TEST_F(ClientQueueTest, testDrain) {
                 offer(5);
                 std::vector<std::string> list;
-                size_t result = q->drainTo(list, 2).get();
+                size_t result = q->drain_to(list, 2).get();
                 ASSERT_EQ(2U, result);
                 ASSERT_EQ("item1", list[0]);
                 ASSERT_EQ("item2", list[1]);
 
                 std::vector<std::string> list2;
-                result = q->drainTo(list2).get();
+                result = q->drain_to(list2).get();
                 ASSERT_EQ(3U, result);
                 ASSERT_EQ("item3", list2[0]);
                 ASSERT_EQ("item4", list2[1]);
@@ -736,7 +736,7 @@ namespace hazelcast {
 
                 offer(3);
                 list2.clear();
-                result = q->drainTo(list2, 5).get();
+                result = q->drain_to(list2, 5).get();
                 ASSERT_EQ(3U, result);
                 ASSERT_EQ("item1", list2[0]);
                 ASSERT_EQ("item2", list2[1]);
@@ -745,7 +745,7 @@ namespace hazelcast {
 
             TEST_F(ClientQueueTest, testToArray) {
                 offer(5);
-                std::vector<std::string> array = q->toArray<std::string>().get();
+                std::vector<std::string> array = q->to_array<std::string>().get();
                 size_t size = array.size();
                 for (size_t i = 0; i < size; i++) {
                     ASSERT_EQ(std::string("item") + std::to_string(i + 1), array[i]);
@@ -759,7 +759,7 @@ namespace hazelcast {
                 coll.emplace_back("item3");
                 coll.emplace_back("item4");
 
-                ASSERT_TRUE(q->addAll(coll).get());
+                ASSERT_TRUE(q->add_all(coll).get());
                 int size = q->size().get();
                 ASSERT_EQ(size, (int) coll.size());
             }
@@ -767,23 +767,23 @@ namespace hazelcast {
             TEST_F(ClientQueueTest, testRemoveRetain) {
                 offer(5);
                 std::vector<std::string> list{"item8", "item9"};
-                ASSERT_FALSE(q->removeAll(list).get());
+                ASSERT_FALSE(q->remove_all(list).get());
                 ASSERT_EQ(5, q->size().get());
 
                 list.emplace_back("item3");
                 list.emplace_back("item4");
                 list.emplace_back("item1");
-                ASSERT_TRUE(q->removeAll(list).get());
+                ASSERT_TRUE(q->remove_all(list).get());
                 ASSERT_EQ(2, q->size().get());
 
                 list.clear();
                 list.emplace_back("item2");
                 list.emplace_back("item5");
-                ASSERT_FALSE(q->retainAll(list).get());
+                ASSERT_FALSE(q->retain_all(list).get());
                 ASSERT_EQ(2, q->size().get());
 
                 list.clear();
-                ASSERT_TRUE(q->retainAll(list).get());
+                ASSERT_TRUE(q->retain_all(list).get());
                 ASSERT_EQ(0, q->size().get());
             }
 
@@ -795,9 +795,9 @@ namespace hazelcast {
             }
 
             TEST_F(ClientQueueTest, testIsEmpty) {
-                ASSERT_TRUE(q->isEmpty().get());
+                ASSERT_TRUE(q->is_empty().get());
                 ASSERT_TRUE(q->offer("item1").get());
-                ASSERT_FALSE(q->isEmpty().get());
+                ASSERT_FALSE(q->is_empty().get());
             }
 
             TEST_F(ClientQueueTest, testPut) {
@@ -817,7 +817,7 @@ namespace hazelcast {
                         return true;
                     }
 
-                    void SelectAllMembers::toString(std::ostream &os) const {
+                    void SelectAllMembers::to_string(std::ostream &os) const {
                         os << "SelectAllMembers";
                     }
 
@@ -825,7 +825,7 @@ namespace hazelcast {
                         return false;
                     }
 
-                    void SelectNoMembers::toString(std::ostream &os) const {
+                    void SelectNoMembers::to_string(std::ostream &os) const {
                         os << "SelectNoMembers";
                     }
                 }
@@ -847,12 +847,12 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    factory = new HazelcastServerFactory(g_srvFactory->getServerAddress(),
+                    factory = new HazelcastServerFactory(g_srvFactory->get_server_address(),
                                                          "hazelcast/test/resources/hazelcast-test-executor.xml");
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
-                    client = new HazelcastClient(ClientConfig().setClusterName("executor-test"));
+                    client = new HazelcastClient(ClientConfig().set_cluster_name("executor-test"));
                 }
 
                 static void TearDownTestCase() {
@@ -870,15 +870,15 @@ namespace hazelcast {
                     FailingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(
                             latch1) {}
 
-                    void onResponse(const boost::optional<std::string> &response) override {
+                    void on_response(const boost::optional<std::string> &response) override {
                     }
 
-                    void onFailure(std::exception_ptr e) override {
+                    void on_failure(std::exception_ptr e) override {
                         exception_ = e;
                         latch1_->count_down();
                     }
 
-                    std::exception_ptr getException() {
+                    std::exception_ptr get_exception() {
                         return exception_;
                     }
 
@@ -891,11 +891,11 @@ namespace hazelcast {
                 public:
                     SuccessfullExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(latch1) {}
 
-                    void onResponse(const boost::optional<boost::uuids::uuid> &response) override {
+                    void on_response(const boost::optional<boost::uuids::uuid> &response) override {
                         latch1_->count_down();
                     }
 
-                    void onFailure(std::exception_ptr e) override {
+                    void on_failure(std::exception_ptr e) override {
                     }
 
                 private:
@@ -907,15 +907,15 @@ namespace hazelcast {
                 public:
                     explicit ResultSettingExecutionCallback(const std::shared_ptr<boost::latch> &latch1) : latch1_(latch1) {}
 
-                    void onResponse(const boost::optional<T> &response) override {
+                    void on_response(const boost::optional<T> &response) override {
                         result_.set(response);
                         latch1_->count_down();
                     }
 
-                    void onFailure(std::exception_ptr e) override {
+                    void on_failure(std::exception_ptr e) override {
                     }
 
-                    boost::optional<T> getResult() {
+                    boost::optional<T> get_result() {
                         return result_.get();
                     }
 
@@ -934,17 +934,17 @@ namespace hazelcast {
                                                                                                            completeLatch_(
                                                                                                                    completeLatch) {}
 
-                    void onResponse(const Member &member, const boost::optional<std::string> &response) override {
+                    void on_response(const Member &member, const boost::optional<std::string> &response) override {
                         if (response && *response == msg_ + APPENDAGE) {
                             responseLatch_->count_down();
                         }
                     }
 
                     void
-                    onFailure(const Member &member, std::exception_ptr exception) override {
+                    on_failure(const Member &member, std::exception_ptr exception) override {
                     }
 
-                    void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
+                    void on_complete(const std::unordered_map<Member, boost::optional<std::string> > &values,
                                             const std::unordered_map<Member, std::exception_ptr> &exceptions) override {
                         typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
                         std::string expectedValue(msg_ + APPENDAGE);
@@ -967,17 +967,17 @@ namespace hazelcast {
                                                std::shared_ptr<boost::latch> completeLatch)
                             : responseLatch_(std::move(responseLatch)), completeLatch_(std::move(completeLatch)) {}
 
-                    void onResponse(const Member &member, const boost::optional<std::string> &response) override {
+                    void on_response(const Member &member, const boost::optional<std::string> &response) override {
                         if (!response) {
                             responseLatch_->count_down();
                         }
                     }
 
                     void
-                    onFailure(const Member &member, std::exception_ptr exception) override {
+                    on_failure(const Member &member, std::exception_ptr exception) override {
                     }
 
-                    void onComplete(const std::unordered_map<Member, boost::optional<std::string> > &values,
+                    void on_complete(const std::unordered_map<Member, boost::optional<std::string> > &values,
                                             const std::unordered_map<Member, std::exception_ptr> &exceptions) override {
                         typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
                         for (const VALUE_MAP::value_type &entry  : values) {
@@ -1003,36 +1003,36 @@ namespace hazelcast {
             const size_t ClientExecutorServiceTest::numberOfMembers = 4;
 
             TEST_F(ClientExecutorServiceTest, testIsTerminated) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                ASSERT_FALSE(service->isTerminated().get());
+                ASSERT_FALSE(service->is_terminated().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testIsShutdown) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                ASSERT_FALSE(service->isShutdown().get());
+                ASSERT_FALSE(service->is_shutdown().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testShutdown) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 service->shutdown();
 
-                ASSERT_TRUE_EVENTUALLY(service->isShutdown().get());
+                ASSERT_TRUE_EVENTUALLY(service->is_shutdown().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testShutdownMultipleTimes) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 service->shutdown();
                 service->shutdown();
 
-                ASSERT_TRUE_EVENTUALLY(service->isShutdown().get());
+                ASSERT_TRUE_EVENTUALLY(service->is_shutdown().get());
             }
 
             TEST_F(ClientExecutorServiceTest, testCancellationAwareTask_whenTimeOut) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 executor::tasks::CancellationAwareTask task{INT64_MAX};
 
@@ -1042,7 +1042,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testFutureAfterCancellationAwareTaskTimeOut) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 executor::tasks::CancellationAwareTask task{INT64_MAX};
 
@@ -1055,7 +1055,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testGetFutureAfterCancel) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 executor::tasks::CancellationAwareTask task{INT64_MAX};
 
@@ -1070,7 +1070,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 executor::tasks::FailingCallable task;
 
@@ -1080,7 +1080,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException_withExecutionCallback) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
 
@@ -1093,7 +1093,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableReasonExceptionCause) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 auto failingFuture = service->submit<executor::tasks::FailingCallable, std::string>(
                         executor::tasks::FailingCallable()).get_future();
@@ -1102,9 +1102,9 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testExecute_withNoMemberSelected) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                std::string mapName = randomMapName();
+                std::string mapName = random_map_name();
 
                 executor::tasks::SelectNoMembers selector;
 
@@ -1115,13 +1115,13 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testCallableSerializedOnce) {
-                std::string name = getTestName();
+                std::string name = get_test_name();
 
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(name);
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(name);
 
                 executor::tasks::SerializedCounterCallable counterCallable{0};
 
-                auto future = service->submitToKeyOwner<executor::tasks::SerializedCounterCallable, int, std::string>(
+                auto future = service->submit_to_key_owner<executor::tasks::SerializedCounterCallable, int, std::string>(
                         counterCallable, name).get_future();
                 auto value = future.get();
                 ASSERT_TRUE(value);
@@ -1129,15 +1129,15 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testCallableSerializedOnce_submitToAddress) {
-                std::string name = getTestName();
+                std::string name = get_test_name();
 
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(name);
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(name);
 
                 executor::tasks::SerializedCounterCallable counterCallable{0};
 
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 ASSERT_FALSE(members.empty());
-                auto future = service->submitToMember<executor::tasks::SerializedCounterCallable, int>(
+                auto future = service->submit_to_member<executor::tasks::SerializedCounterCallable, int>(
                         counterCallable, members[0]).get_future();
                 auto value = future.get();
                 ASSERT_TRUE(value);
@@ -1145,9 +1145,9 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testUnserializableResponse_exceptionPropagatesToClient) {
-                std::string name = getTestName();
+                std::string name = get_test_name();
 
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(name);
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(name);
 
                 executor::tasks::TaskWithUnserializableResponse taskWithUnserializableResponse;
 
@@ -1158,9 +1158,9 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testUnserializableResponse_exceptionPropagatesToClientCallback) {
-                std::string name = getTestName();
+                std::string name = get_test_name();
 
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(name);
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(name);
 
                 executor::tasks::TaskWithUnserializableResponse taskWithUnserializableResponse;
 
@@ -1173,35 +1173,35 @@ namespace hazelcast {
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
 
-                auto exception = callback->getException();
+                auto exception = callback->get_exception();
                 ASSERT_THROW(std::rethrow_exception(exception), exception::HazelcastSerializationException);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMember) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 executor::tasks::GetMemberUuidTask task;
 
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 ASSERT_EQ(numberOfMembers, members.size());
 
-                auto future = service->submitToMember<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(
+                auto future = service->submit_to_member<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(
                         task, members[0]).get_future();
 
                 auto uuid = future.get();
                 ASSERT_TRUE(uuid);
-                ASSERT_EQ(members[0].getUuid(), uuid);
+                ASSERT_EQ(members[0].get_uuid(), uuid);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMembers) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 executor::tasks::GetMemberUuidTask task;
 
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 ASSERT_EQ(numberOfMembers, members.size());
 
-                auto futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(task,
+                auto futuresMap = service->submit_to_members<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(task,
                                                                                                             members);
 
                 for (const Member &member : members) {
@@ -1210,14 +1210,14 @@ namespace hazelcast {
                     ASSERT_NE(futuresMap.end(), it);
                     auto uuid = (*it).second.get_future().get();
                     ASSERT_TRUE(uuid);
-                    ASSERT_EQ(member.getUuid(), uuid);
+                    ASSERT_EQ(member.get_uuid(), uuid);
                 }
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallable_withMemberSelector) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
                 executor::tasks::SelectAllMembers selectAll;
 
@@ -1229,12 +1229,12 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallableToMembers_withMemberSelector) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 executor::tasks::GetMemberUuidTask task;
                 executor::tasks::SelectAllMembers selectAll;
 
-                auto futuresMap = service->submitToMembers<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(
+                auto futuresMap = service->submit_to_members<executor::tasks::GetMemberUuidTask, boost::uuids::uuid>(
                         task, selectAll);
 
                 for (auto &pair : futuresMap) {
@@ -1243,17 +1243,17 @@ namespace hazelcast {
 
                     auto uuid = future.get();
                     ASSERT_TRUE(uuid);
-                    ASSERT_EQ(member.getUuid(), uuid);
+                    ASSERT_EQ(member.get_uuid(), uuid);
                 }
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToAllMembers) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
 
-                auto futuresMap = service->submitToAllMembers<executor::tasks::AppendCallable, std::string>(callable);
+                auto futuresMap = service->submit_to_all_members<executor::tasks::AppendCallable, std::string>(callable);
 
                 for (auto &pair : futuresMap) {
                     auto future = pair.second.get_future();
@@ -1265,50 +1265,50 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMember_withExecutionCallback) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
                 executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, spi::ClientContext(*client).random_uuid());
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
                 std::shared_ptr<SuccessfullExecutionCallback> callback(new SuccessfullExecutionCallback(latch1));
 
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 ASSERT_EQ(numberOfMembers, members.size());
 
-                service->submitToMember<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, members[0],
+                service->submit_to_member<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, members[0],
                                                                                                     callback);
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
                 ASSERT_EQ(1, map->size().get());
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMember_withMultiExecutionCallback) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 std::shared_ptr<boost::latch> responseLatch(new boost::latch(numberOfMembers));
                 std::shared_ptr<boost::latch> completeLatch(new boost::latch(numberOfMembers));
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 ASSERT_EQ(numberOfMembers, members.size());
 
                 std::shared_ptr<MultiExecutionCallback<std::string> > callback(
                         new MultiExecutionCompletionCallback(msg, responseLatch, completeLatch));
 
-                service->submitToMembers<executor::tasks::AppendCallable, std::string>(callable, members, callback);
+                service->submit_to_members<executor::tasks::AppendCallable, std::string>(callable, members, callback);
 
                 ASSERT_OPEN_EVENTUALLY(*responseLatch);
                 ASSERT_OPEN_EVENTUALLY(*completeLatch);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallable_withExecutionCallback) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
                 executor::tasks::SelectAllMembers selector;
                 std::shared_ptr<boost::latch> responseLatch(new boost::latch(1));
@@ -1319,54 +1319,54 @@ namespace hazelcast {
                                                                                       callback));
 
                 ASSERT_OPEN_EVENTUALLY(*responseLatch);
-                auto message = callback->getResult();
+                auto message = callback->get_result();
                 ASSERT_TRUE(message.has_value());
                 ASSERT_EQ(msg + APPENDAGE, *message);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMembers_withExecutionCallback) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 std::shared_ptr<boost::latch> responseLatch(
                         new boost::latch(numberOfMembers));
                 std::shared_ptr<boost::latch> completeLatch(
                         new boost::latch(numberOfMembers));
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
                 executor::tasks::SelectAllMembers selector;
 
                 std::shared_ptr<MultiExecutionCallback<std::string> > callback(
                         new MultiExecutionCompletionCallback(msg, responseLatch, completeLatch));
 
-                service->submitToMembers<executor::tasks::AppendCallable, std::string>(callable, selector, callback);
+                service->submit_to_members<executor::tasks::AppendCallable, std::string>(callable, selector, callback);
 
                 ASSERT_OPEN_EVENTUALLY(*responseLatch);
                 ASSERT_OPEN_EVENTUALLY(*completeLatch);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToAllMembers_withMultiExecutionCallback) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 std::shared_ptr<boost::latch> responseLatch(
                         new boost::latch(numberOfMembers));
                 std::shared_ptr<boost::latch> completeLatch(
                         new boost::latch(numberOfMembers));
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
 
                 std::shared_ptr<MultiExecutionCallback<std::string> > callback(
                         new MultiExecutionCompletionCallback(msg, responseLatch, completeLatch));
 
-                service->submitToAllMembers<executor::tasks::AppendCallable, std::string>(callable, callback);
+                service->submit_to_all_members<executor::tasks::AppendCallable, std::string>(callable, callback);
 
                 ASSERT_OPEN_EVENTUALLY(*completeLatch);
                 ASSERT_OPEN_EVENTUALLY(*responseLatch);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableWithNullResultToAllMembers_withMultiExecutionCallback) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
                 std::shared_ptr<boost::latch> responseLatch(new boost::latch(numberOfMembers));
                 std::shared_ptr<boost::latch> completeLatch(new boost::latch(numberOfMembers));
@@ -1376,16 +1376,16 @@ namespace hazelcast {
                 std::shared_ptr<MultiExecutionCallback<std::string> > callback(
                         new MultiExecutionNullCallback(responseLatch, completeLatch));
 
-                service->submitToAllMembers<executor::tasks::NullCallable, std::string>(callable, callback);
+                service->submit_to_all_members<executor::tasks::NullCallable, std::string>(callable, callback);
 
                 ASSERT_OPEN_EVENTUALLY(*responseLatch);
                 ASSERT_OPEN_EVENTUALLY(*completeLatch);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallable) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
 
                 auto result = service->submit<executor::tasks::AppendCallable, std::string>(callable).get_future();
@@ -1396,9 +1396,9 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallable_withExecutionCallback) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
@@ -1408,18 +1408,18 @@ namespace hazelcast {
                                                                                       callback));
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
-                auto value = callback->getResult();
+                auto value = callback->get_result();
                 ASSERT_TRUE(value.has_value());
                 ASSERT_EQ(msg + APPENDAGE, *value);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToKeyOwner) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
 
-                auto f = service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(callable, "key").get_future();
+                auto f = service->submit_to_key_owner<executor::tasks::AppendCallable, std::string, std::string>(callable, "key").get_future();
 
                 auto result = f.get();
                 ASSERT_TRUE(result);
@@ -1427,34 +1427,34 @@ namespace hazelcast {
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToKeyOwner_withExecutionCallback) {
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(get_test_name());
 
-                std::string msg = randomString();
+                std::string msg = random_string();
                 executor::tasks::AppendCallable callable{msg};
 
                 std::shared_ptr<boost::latch> latch1(new boost::latch(1));
                 auto callback = std::make_shared<ResultSettingExecutionCallback<std::string>>(latch1);
 
-                service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(callable, "key",
+                service->submit_to_key_owner<executor::tasks::AppendCallable, std::string, std::string>(callable, "key",
                                                                                                      std::static_pointer_cast<ExecutionCallback<std::string>>(
                                                                                                              callback));
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
-                auto value = callback->getResult();
+                auto value = callback->get_result();
                 ASSERT_TRUE(value.has_value());
                 ASSERT_EQ(msg + APPENDAGE, *value);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallablePartitionAware) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
-                auto key = generateKeyOwnedBy(clientContext, member);
+                auto key = generate_key_owned_by(clientContext, member);
 
                 executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable{testName, key};
 
@@ -1463,20 +1463,20 @@ namespace hazelcast {
 
                 auto result = f.get();
                 ASSERT_TRUE(result);
-                ASSERT_EQ(member.getUuid(), *result);
-                ASSERT_TRUE(map->containsKey(member.getUuid()).get());
+                ASSERT_EQ(member.get_uuid(), *result);
+                ASSERT_TRUE(map->contains_key(member.get_uuid()).get());
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallablePartitionAware_WithExecutionCallback) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
-                auto key = generateKeyOwnedBy(clientContext, member);
+                auto key = generate_key_owned_by(clientContext, member);
 
                 executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, key);
 
@@ -1486,126 +1486,126 @@ namespace hazelcast {
                 service->submit<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, callback);
 
                 ASSERT_OPEN_EVENTUALLY(*latch1);
-                auto value = std::static_pointer_cast<ResultSettingExecutionCallback<boost::uuids::uuid>>(callback)->getResult();
+                auto value = std::static_pointer_cast<ResultSettingExecutionCallback<boost::uuids::uuid>>(callback)->get_result();
                 ASSERT_TRUE(value);
-                ASSERT_EQ(member.getUuid(), *value);
-                ASSERT_TRUE(map->containsKey(member.getUuid()).get());
+                ASSERT_EQ(member.get_uuid(), *value);
+                ASSERT_TRUE(map->contains_key(member.get_uuid()).get());
             }
 
             TEST_F(ClientExecutorServiceTest, testExecute) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
                 service->execute(
                         executor::tasks::MapPutPartitionAwareCallable<std::string>(testName, "key"));
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
                 assertSizeEventually(1, map);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecute_withMemberSelector) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
                 executor::tasks::SelectAllMembers selector;
 
                 service->execute(
                         executor::tasks::MapPutPartitionAwareCallable<std::string>(testName, "key"), selector);
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
                 assertSizeEventually(1, map);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnKeyOwner) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
                 map->put(1, 1).get();
 
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
-                auto targetUuid = member.getUuid();
-                auto key = generateKeyOwnedBy(clientContext, member);
+                auto targetUuid = member.get_uuid();
+                auto key = generate_key_owned_by(clientContext, member);
 
                 executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid> callable(testName, key);
 
-                service->executeOnKeyOwner<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, key);
+                service->execute_on_key_owner<executor::tasks::MapPutPartitionAwareCallable<boost::uuids::uuid>, boost::uuids::uuid>(callable, key);
 
-                ASSERT_TRUE_EVENTUALLY(map->containsKey(targetUuid).get());
+                ASSERT_TRUE_EVENTUALLY(map->contains_key(targetUuid).get());
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMember) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
-                std::vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->get_cluster().get_members();
                 Member &member = members[0];
-                auto targetUuid = member.getUuid();
+                auto targetUuid = member.get_uuid();
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->executeOnMember(callable, member);
+                service->execute_on_member(callable, member);
 
-                ASSERT_TRUE_EVENTUALLY(map->containsKey(targetUuid).get());
+                ASSERT_TRUE_EVENTUALLY(map->contains_key(targetUuid).get());
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMembers) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
-                std::vector<Member> allMembers = client->getCluster().getMembers();
+                std::vector<Member> allMembers = client->get_cluster().get_members();
                 std::vector<Member> members(allMembers.begin(), allMembers.begin() + 2);
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->executeOnMembers(callable, members);
+                service->execute_on_members(callable, members);
 
-                ASSERT_TRUE_EVENTUALLY(map->containsKey(members[0].getUuid()).get() && map->containsKey(members[1].getUuid()).get());
+                ASSERT_TRUE_EVENTUALLY(map->contains_key(members[0].get_uuid()).get() && map->contains_key(members[1].get_uuid()).get());
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMembers_withEmptyCollection) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
-               auto map = client->getMap(testName);
+               auto map = client->get_map(testName);
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->executeOnMembers(callable, std::vector<Member>());
+                service->execute_on_members(callable, std::vector<Member>());
 
                 assertSizeEventually(0, map);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnMembers_withSelector) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
                 executor::tasks::SelectAllMembers selector;
 
-                service->executeOnMembers(callable, selector);
+                service->execute_on_members(callable, selector);
 
                 assertSizeEventually((int) numberOfMembers, map);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnAllMembers) {
-                std::string testName = getTestName();
-                std::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                std::string testName = get_test_name();
+                std::shared_ptr<IExecutorService> service = client->get_executor_service(testName);
 
-                auto map = client->getMap(testName);
+                auto map = client->get_map(testName);
 
                 executor::tasks::MapPutPartitionAwareCallable<std::string> callable(testName, "key");
 
-                service->executeOnAllMembers(callable);
+                service->execute_on_all_members(callable);
 
                 assertSizeEventually((int) numberOfMembers, map);
             }
@@ -1624,76 +1624,76 @@ namespace hazelcast {
 
                 TEST_F (AwsConfigTest, testDefaultValues) {
                     client::config::ClientAwsConfig awsConfig;
-                    ASSERT_EQ("", awsConfig.getAccessKey());
-                    ASSERT_EQ("us-east-1", awsConfig.getRegion());
-                    ASSERT_EQ("ec2.amazonaws.com", awsConfig.getHostHeader());
-                    ASSERT_EQ("", awsConfig.getIamRole());
-                    ASSERT_EQ("", awsConfig.getSecretKey());
-                    ASSERT_EQ("", awsConfig.getSecurityGroupName());
-                    ASSERT_EQ("", awsConfig.getTagKey());
-                    ASSERT_EQ("", awsConfig.getTagValue());
-                    ASSERT_FALSE(awsConfig.isInsideAws());
-                    ASSERT_FALSE(awsConfig.isEnabled());
+                    ASSERT_EQ("", awsConfig.get_access_key());
+                    ASSERT_EQ("us-east-1", awsConfig.get_region());
+                    ASSERT_EQ("ec2.amazonaws.com", awsConfig.get_host_header());
+                    ASSERT_EQ("", awsConfig.get_iam_role());
+                    ASSERT_EQ("", awsConfig.get_secret_key());
+                    ASSERT_EQ("", awsConfig.get_security_group_name());
+                    ASSERT_EQ("", awsConfig.get_tag_key());
+                    ASSERT_EQ("", awsConfig.get_tag_value());
+                    ASSERT_FALSE(awsConfig.is_inside_aws());
+                    ASSERT_FALSE(awsConfig.is_enabled());
                 }
 
                 TEST_F (AwsConfigTest, testSetValues) {
                     client::config::ClientAwsConfig awsConfig;
 
-                    awsConfig.setAccessKey("mykey");
-                    awsConfig.setRegion("myregion");
-                    awsConfig.setHostHeader("myheader");
-                    awsConfig.setIamRole("myrole");
-                    awsConfig.setSecretKey("mysecret");
-                    awsConfig.setSecurityGroupName("mygroup");
-                    awsConfig.setTagKey("mytagkey");
-                    awsConfig.setTagValue("mytagvalue");
-                    awsConfig.setInsideAws(true);
-                    awsConfig.setEnabled(true);
+                    awsConfig.set_access_key("mykey");
+                    awsConfig.set_region("myregion");
+                    awsConfig.set_host_header("myheader");
+                    awsConfig.set_iam_role("myrole");
+                    awsConfig.set_secret_key("mysecret");
+                    awsConfig.set_security_group_name("mygroup");
+                    awsConfig.set_tag_key("mytagkey");
+                    awsConfig.set_tag_value("mytagvalue");
+                    awsConfig.set_inside_aws(true);
+                    awsConfig.set_enabled(true);
 
-                    ASSERT_EQ("mykey", awsConfig.getAccessKey());
-                    ASSERT_EQ("myregion", awsConfig.getRegion());
-                    ASSERT_EQ("myheader", awsConfig.getHostHeader());
-                    ASSERT_EQ("myrole", awsConfig.getIamRole());
-                    ASSERT_EQ("mysecret", awsConfig.getSecretKey());
-                    ASSERT_EQ("mygroup", awsConfig.getSecurityGroupName());
-                    ASSERT_EQ("mytagkey", awsConfig.getTagKey());
-                    ASSERT_EQ("mytagvalue", awsConfig.getTagValue());
-                    ASSERT_TRUE(awsConfig.isInsideAws());
-                    ASSERT_TRUE(awsConfig.isEnabled()) << awsConfig;
+                    ASSERT_EQ("mykey", awsConfig.get_access_key());
+                    ASSERT_EQ("myregion", awsConfig.get_region());
+                    ASSERT_EQ("myheader", awsConfig.get_host_header());
+                    ASSERT_EQ("myrole", awsConfig.get_iam_role());
+                    ASSERT_EQ("mysecret", awsConfig.get_secret_key());
+                    ASSERT_EQ("mygroup", awsConfig.get_security_group_name());
+                    ASSERT_EQ("mytagkey", awsConfig.get_tag_key());
+                    ASSERT_EQ("mytagvalue", awsConfig.get_tag_value());
+                    ASSERT_TRUE(awsConfig.is_inside_aws());
+                    ASSERT_TRUE(awsConfig.is_enabled()) << awsConfig;
                 }
 
                 TEST_F (AwsConfigTest, testSetEmptyValues) {
                     client::config::ClientAwsConfig awsConfig;
 
-                    ASSERT_THROW(awsConfig.setAccessKey(""), exception::IllegalArgumentException);
-                    ASSERT_THROW(awsConfig.setRegion(""), exception::IllegalArgumentException);
-                    ASSERT_THROW(awsConfig.setHostHeader(""), exception::IllegalArgumentException);
-                    ASSERT_THROW(awsConfig.setSecretKey(""), exception::IllegalArgumentException);
+                    ASSERT_THROW(awsConfig.set_access_key(""), exception::IllegalArgumentException);
+                    ASSERT_THROW(awsConfig.set_region(""), exception::IllegalArgumentException);
+                    ASSERT_THROW(awsConfig.set_host_header(""), exception::IllegalArgumentException);
+                    ASSERT_THROW(awsConfig.set_secret_key(""), exception::IllegalArgumentException);
                 }
 
                 TEST_F (AwsConfigTest, testClientConfigUsage) {
                     ClientConfig clientConfig;
-                    client::config::ClientAwsConfig &awsConfig = clientConfig.getNetworkConfig().getAwsConfig();
-                    awsConfig.setEnabled(true);
+                    client::config::ClientAwsConfig &awsConfig = clientConfig.get_network_config().get_aws_config();
+                    awsConfig.set_enabled(true);
 
-                    ASSERT_TRUE(clientConfig.getNetworkConfig().getAwsConfig().isEnabled());
+                    ASSERT_TRUE(clientConfig.get_network_config().get_aws_config().is_enabled());
 
                     client::config::ClientAwsConfig newConfig;
 
-                    clientConfig.getNetworkConfig().setAwsConfig(newConfig);
+                    clientConfig.get_network_config().set_aws_config(newConfig);
                     // default constructor sets enabled to false
-                    ASSERT_FALSE(clientConfig.getNetworkConfig().getAwsConfig().isEnabled());
+                    ASSERT_FALSE(clientConfig.get_network_config().get_aws_config().is_enabled());
                 }
 
                 TEST_F (AwsConfigTest, testInvalidAwsMemberPortConfig) {
-                    ClientConfig clientConfig = getConfig();
+                    ClientConfig clientConfig = get_config();
 
-                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "65536");
-                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
-                            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
-                            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
+                    clientConfig.set_property(ClientProperties::PROP_AWS_MEMBER_PORT, "65536");
+                    clientConfig.get_network_config().get_aws_config().set_enabled(true).
+                            set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(getenv("AWS_SECRET_ACCESS_KEY")).
+                            set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1").set_inside_aws(true);
 
-                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "-1");
+                    clientConfig.set_property(ClientProperties::PROP_AWS_MEMBER_PORT, "-1");
 
                     ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig),
                                  exception::InvalidConfigurationException);
@@ -1718,18 +1718,18 @@ namespace hazelcast {
                 TEST_F (AwsClientTest, testClientAwsMemberNonDefaultPortConfig) {
                     ClientConfig clientConfig;
 
-                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
-                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
-                            setAccessKey(std::getenv("AWS_ACCESS_KEY_ID")).setSecretKey(std::getenv("AWS_SECRET_ACCESS_KEY")).
-                            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
+                    clientConfig.set_property(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
+                    clientConfig.get_network_config().get_aws_config().set_enabled(true).
+                            set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY")).
+                            set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
 #else
-                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(false);
+                    clientConfig.get_network_config().get_aws_config().set_inside_aws(false);
 #endif
                     HazelcastClient hazelcastClient(clientConfig);
-                    auto map = hazelcastClient.getMap("myMap");
+                    auto map = hazelcastClient.get_map("myMap");
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
                     ASSERT_TRUE(val.has_value());
@@ -1738,20 +1738,20 @@ namespace hazelcast {
 
                 TEST_F (AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole) {
                     ClientConfig clientConfig;
-                    clientConfig.setProperty(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
-                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
-                            setSecurityGroupName("launch-wizard-147");
+                    clientConfig.set_property(ClientProperties::PROP_AWS_MEMBER_PORT, "60000");
+                    clientConfig.get_network_config().get_aws_config().set_enabled(true).
+                            set_security_group_name("launch-wizard-147");
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                                                                                                                                             // The access key and secret will be retrieved from default IAM role at windows machine
                     clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
 #else
-                    clientConfig.getNetworkConfig().getAwsConfig().setAccessKey(std::getenv("AWS_ACCESS_KEY_ID")).
-                            setSecretKey(std::getenv("AWS_SECRET_ACCESS_KEY"));
+                    clientConfig.get_network_config().get_aws_config().set_access_key(std::getenv("AWS_ACCESS_KEY_ID")).
+                            set_secret_key(std::getenv("AWS_SECRET_ACCESS_KEY"));
 #endif
 
                     HazelcastClient hazelcastClient(clientConfig);
-                    auto map = hazelcastClient.getMap("myMap");
+                    auto map = hazelcastClient.get_map("myMap");
                     map->put(5, 20).get();
                     auto val = map->get<int, int>(5).get();
                     ASSERT_TRUE(val.has_value());
@@ -1829,9 +1829,9 @@ namespace hazelcast {
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndValueSet) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
+                    awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -1839,19 +1839,19 @@ namespace hazelcast {
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue(
+                    awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag").set_tag_value(
                             "non-existent-value");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
+                    awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("aws-test-tag");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -1859,18 +1859,18 @@ namespace hazelcast {
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("non-existent-tag");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
+                    awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_tag_key("non-existent-tag");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setTagValue("aws-tag-value-1");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
+                    awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("aws-tag-value-1");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -1878,18 +1878,18 @@ namespace hazelcast {
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSetToNonExistentValue) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setTagValue("non-existent-value");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
+                    awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_tag_value("non-existent-value");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesSecurityGroup) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setSecurityGroupName("launch-wizard-147");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
+                    awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("launch-wizard-147");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -1897,9 +1897,9 @@ namespace hazelcast {
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesNonExistentSecurityGroup) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
-                            getenv("AWS_SECRET_ACCESS_KEY")).setSecurityGroupName("non-existent-group");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
+                    awsConfig.set_enabled(true).set_access_key(getenv("AWS_ACCESS_KEY_ID")).set_secret_key(
+                            getenv("AWS_SECRET_ACCESS_KEY")).set_security_group_name("non-existent-group");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.get_host_header(), get_logger());
                     std::unordered_map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
@@ -1928,8 +1928,8 @@ namespace hazelcast {
                     std::istream responseStream(&fb);
 
                     config::ClientAwsConfig awsConfig;
-                    std::unordered_map<std::string, std::string> results = hazelcast::client::aws::utility::CloudUtility::unmarshalTheResponse(
-                            responseStream, getLogger());
+                    std::unordered_map<std::string, std::string> results = hazelcast::client::aws::utility::CloudUtility::unmarshal_the_response(
+                            responseStream, get_logger());
                     ASSERT_EQ(4U, results.size());
                     ASSERT_NE(results.end(), results.find("10.0.16.13"));
                     ASSERT_EQ("", results["10.0.16.13"]);

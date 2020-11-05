@@ -41,16 +41,16 @@ namespace hazelcast {
         public:
             ClientProperty(const std::string &name, const std::string &defaultValue);
 
-            const std::string &getName() const;
+            const std::string &get_name() const;
 
-            const std::string &getDefaultValue() const;
+            const std::string &get_default_value() const;
 
             /**
              * Gets the system environment property value of the property.
              *
              * @return the value of the property. NULL if no such environment property exist.
              */
-            const char *getSystemProperty() const;
+            const char *get_system_property() const;
 
         private:
             std::string name_;
@@ -67,35 +67,35 @@ namespace hazelcast {
         public:
             ClientProperties(const std::unordered_map<std::string, std::string> &properties);
 
-            const ClientProperty& getHeartbeatTimeout() const;
+            const ClientProperty& get_heartbeat_timeout() const;
 
-            const ClientProperty& getHeartbeatInterval() const;
+            const ClientProperty& get_heartbeat_interval() const;
 
-            const ClientProperty& getAwsMemberPort() const;
+            const ClientProperty& get_aws_member_port() const;
 
-            const ClientProperty &getCleanResourcesPeriodMillis() const;
+            const ClientProperty &get_clean_resources_period_millis() const;
 
-            const ClientProperty &getInvocationRetryPauseMillis() const;
+            const ClientProperty &get_invocation_retry_pause_millis() const;
 
-            const ClientProperty &getInvocationTimeoutSeconds() const;
+            const ClientProperty &get_invocation_timeout_seconds() const;
 
-            const ClientProperty &getEventThreadCount() const;
+            const ClientProperty &get_event_thread_count() const;
 
-            const ClientProperty &getInternalExecutorPoolSize() const;
+            const ClientProperty &get_internal_executor_pool_size() const;
 
-            const ClientProperty &getShuffleMemberList() const;
+            const ClientProperty &get_shuffle_member_list() const;
 
-            const ClientProperty &getMaxConcurrentInvocations() const;
+            const ClientProperty &get_max_concurrent_invocations() const;
 
-            const ClientProperty &getBackpressureBackoffTimeoutMillis() const;
+            const ClientProperty &get_backpressure_backoff_timeout_millis() const;
 
-            const ClientProperty &getStatisticsEnabled() const;
+            const ClientProperty &get_statistics_enabled() const;
 
-            const ClientProperty &getStatisticsPeriodSeconds() const;
+            const ClientProperty &get_statistics_period_seconds() const;
 
-            const ClientProperty &getIOThreadCount() const;
+            const ClientProperty &get_io_thread_count() const;
 
-            const ClientProperty &getResponseExecutorThreadCount() const;
+            const ClientProperty &get_response_executor_thread_count() const;
 
             const ClientProperty &backup_timeout_millis() const;
 
@@ -271,7 +271,7 @@ namespace hazelcast {
              * @param property the {@link ClientProperty} to get the value from
              * @return the value as bool
              */
-            bool getBoolean(const ClientProperty &property) const;
+            bool get_boolean(const ClientProperty &property) const;
 
             /**
              * Returns the configured int32_t value of a {@link ClientProperty}.
@@ -279,7 +279,7 @@ namespace hazelcast {
              * @param property the {@link ClientProperty} to get the value from
              * @return the value as int32_t
              */
-            int32_t getInteger(const ClientProperty &property) const;
+            int32_t get_integer(const ClientProperty &property) const;
 
             /**
              * Returns the configured int64_t value of a {@link ClientProperty}.
@@ -287,7 +287,7 @@ namespace hazelcast {
              * @param property the {@link ClientProperty} to get the value from
              * @return the value as int64_t
              */
-            int64_t getLong(const ClientProperty &property) const;
+            int64_t get_long(const ClientProperty &property) const;
 
             /**
              * Returns the configured value of a {@link ClientProperty} as std::string.
@@ -295,7 +295,7 @@ namespace hazelcast {
              * @param property the {@link ClientProperty} to get the value from
              * @return the value
              */
-            std::string getString(const ClientProperty &property) const;
+            std::string get_string(const ClientProperty &property) const;
 
         private:
             ClientProperty heartbeatTimeout_;

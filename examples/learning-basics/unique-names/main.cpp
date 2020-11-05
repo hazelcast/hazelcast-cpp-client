@@ -18,10 +18,10 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto flakeIdGenerator = hz.getFlakeIdGenerator("idGenerator");
+    auto flakeIdGenerator = hz.get_flake_id_generator("idGenerator");
     std::ostringstream out("somemap");
-    out << flakeIdGenerator->newId().get();
-    auto map = hz.getMap(out.str());
+    out << flakeIdGenerator->new_id().get();
+    auto map = hz.get_map(out.str());
 
     std::cout << "Finished" << std::endl;
 

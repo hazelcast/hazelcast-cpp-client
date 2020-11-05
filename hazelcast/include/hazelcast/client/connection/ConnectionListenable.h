@@ -34,7 +34,7 @@ namespace hazelcast {
                  * @param listener the ConnectionListener to add.
                  * @throws NullPointerException if listener is null.
                  */
-                virtual void addConnectionListener(const std::shared_ptr<ConnectionListener> &listener) = 0;
+                virtual void add_connection_listener(const std::shared_ptr<ConnectionListener> &listener) = 0;
             };
         }
     }

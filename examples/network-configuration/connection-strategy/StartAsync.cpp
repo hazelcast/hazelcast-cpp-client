@@ -32,11 +32,11 @@ int main() {
      *
      * default value is false
      */
-    config.getConnectionStrategyConfig().setAsyncStart(true);
+    config.get_connection_strategy_config().set_async_start(true);
 
     // Add a lifecycle listener so that we can track when the client is connected
     std::promise<void> connected;
-    config.addListener(
+    config.add_listener(
         hazelcast::client::LifecycleListener().
             on_connected([&connected](){
                 connected.set_value();

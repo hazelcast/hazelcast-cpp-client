@@ -32,7 +32,7 @@
 namespace hazelcast {
     namespace util {
 
-        HAZELCAST_API int64_t getCurrentThreadId();
+        HAZELCAST_API int64_t get_current_thread_id();
 
         HAZELCAST_API void sleep(int seconds);
 
@@ -53,17 +53,17 @@ namespace hazelcast {
          * // converts the date string to 20160420. Removes '-' and '"' characters if exist
          * @param date The date to be modified
          */
-        HAZELCAST_API void gitDateToHazelcastLogDate(std::string &date);
+        HAZELCAST_API void git_date_to_hazelcast_log_date(std::string &date);
 
         /**
          * @return the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
          */
-        HAZELCAST_API int64_t currentTimeMillis();
+        HAZELCAST_API int64_t current_time_millis();
 
         /**
          * @return the difference, measured in nanoseconds, between the current time and midnight, January 1, 1970 UTC.
          */
-        HAZELCAST_API int64_t currentTimeNanos();
+        HAZELCAST_API int64_t current_time_nanos();
 
         /**
          * @return 0 if error string could be obtained, non-zero otherwise
@@ -71,7 +71,7 @@ namespace hazelcast {
         HAZELCAST_API int
         strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix = (const char *) NULL);
 
-        int32_t HAZELCAST_API getAvailableCoreCount();
+        int32_t HAZELCAST_API get_available_core_count();
 
         template <typename T>
         const T &(min)(const T &left, const T &right) {
@@ -87,7 +87,7 @@ namespace hazelcast {
              * @param t time
              * @return the the formatted time string. Format is "%Y-%m-%d %H:%M:%S.%f".
              */
-            static std::string timeToString(std::chrono::steady_clock::time_point t);
+            static std::string time_to_string(std::chrono::steady_clock::time_point t);
 
             /**
              * Tokenizes a version string and returns the tokens with the following grouping:
@@ -100,7 +100,7 @@ namespace hazelcast {
              * @param version
              * @return
              */
-            static std::vector<std::string> tokenizeVersionString(const std::string &version);
+            static std::vector<std::string> tokenize_version_string(const std::string &version);
         };
 
         class HAZELCAST_API Int64Util {
@@ -125,7 +125,7 @@ namespace hazelcast {
              *     of the specified {@code long} value, or 64 if the value
              *     is equal to zero.
              */
-            static int numberOfLeadingZeros(int64_t i);
+            static int number_of_leading_zeros(int64_t i);
         };
     }
 }

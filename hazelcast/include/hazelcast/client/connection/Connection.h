@@ -81,23 +81,23 @@ namespace hazelcast {
 
                 void write(const std::shared_ptr<spi::impl::ClientInvocation> &clientInvocation);
 
-                const boost::optional<Address> &getRemoteAddress() const;
+                const boost::optional<Address> &get_remote_address() const;
 
-                void setRemoteAddress(boost::optional<Address> endpoint);
+                void set_remote_address(boost::optional<Address> endpoint);
 
-                boost::uuids::uuid getRemoteUuid() const;
+                boost::uuids::uuid get_remote_uuid() const;
 
-                void setRemoteUuid(boost::uuids::uuid remoteUuid);
+                void set_remote_uuid(boost::uuids::uuid remoteUuid);
 
-                void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message);
+                void handle_client_message(const std::shared_ptr<protocol::ClientMessage> &message);
 
-                int getConnectionId() const;
+                int get_connection_id() const;
 
-                bool isAlive() const;
+                bool is_alive() const;
 
-                std::chrono::steady_clock::time_point lastReadTime() const;
+                std::chrono::steady_clock::time_point last_read_time() const;
 
-                const std::string &getCloseReason() const;
+                const std::string &get_close_reason() const;
 
                 bool operator==(const Connection &rhs) const;
 
@@ -105,26 +105,26 @@ namespace hazelcast {
 
                 bool operator<(const Connection &rhs) const;
 
-                const std::string &getConnectedServerVersionString() const;
+                const std::string &get_connected_server_version_string() const;
 
-                void setConnectedServerVersion(const std::string &connectedServer);
+                void set_connected_server_version(const std::string &connectedServer);
 
-                boost::optional<Address> getLocalSocketAddress() const;
+                boost::optional<Address> get_local_socket_address() const;
 
-                std::chrono::system_clock::time_point getStartTime() const;
+                std::chrono::system_clock::time_point get_start_time() const;
 
-                Socket &getSocket();
+                Socket &get_socket();
 
-                void deregisterInvocation(int64_t callId);
+                void deregister_invocation(int64_t callId);
 
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
                 ReadHandler read_handler;
                 std::unordered_map<int64_t, std::shared_ptr<spi::impl::ClientInvocation>> invocations;
             private:
-                void logClose();
+                void log_close();
 
-                void innerClose();
+                void inner_close();
 
                 std::chrono::system_clock::time_point startTime_;
                 std::atomic<std::chrono::milliseconds> closedTimeDuration_;

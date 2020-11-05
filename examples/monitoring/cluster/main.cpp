@@ -19,67 +19,67 @@
 #include <hazelcast/client/MembershipEvent.h>
 
 
-MembershipListener makeMembershipListener() {
+MembershipListener make_membership_listener() {
     return MembershipListener()
         .on_joined([](const hazelcast::client::MembershipEvent &membershipEvent) {
             std::cout << "New member joined: "
-                << membershipEvent.getMember().getAddress() << std::endl;
+                << membershipEvent.get_member().get_address() << std::endl;
         })
         .on_left([](const hazelcast::client::MembershipEvent &membershipEvent) {
             std::cout << "Member left: " 
-                << membershipEvent.getMember().getAddress() << std::endl;
+                << membershipEvent.get_member().get_address() << std::endl;
         });
 }
 
-MembershipListener makeInitialMembershipListener() {
+MembershipListener make_initial_membership_listener() {
     return MembershipListener()
         .on_init([](const hazelcast::client::InitialMembershipEvent &event){
-            auto members = event.getMembers();
+            auto members = event.get_members();
             std::cout << "The following are the initial members in the cluster:" << std::endl;
             for (const auto &member : members) {
-                std::cout << member.getAddress() << std::endl;
+                std::cout << member.get_address() << std::endl;
             }
         })
         .on_joined([](const hazelcast::client::MembershipEvent &membershipEvent) {
             std::cout << "New member joined: " <<
-            membershipEvent.getMember().getAddress() << std::endl;
+            membershipEvent.get_member().get_address() << std::endl;
         })
         .on_left([](const hazelcast::client::MembershipEvent &membershipEvent) {
             std::cout << "Member left: " <<
-            membershipEvent.getMember().getAddress() << std::endl;
+            membershipEvent.get_member().get_address() << std::endl;
         });
 }
 
 int main() {
-    auto memberListener = makeMembershipListener();
-    auto initialMemberListener = makeInitialMembershipListener();
+    auto memberListener = make_membership_listener();
+    auto initialMemberListener = make_initial_membership_listener();
 
     hazelcast::client::Cluster *clusterPtr = nullptr;
     boost::uuids::uuid listenerId, initialListenerId;
     try {
         hazelcast::client::HazelcastClient hz;
 
-        hazelcast::client::Cluster &cluster = hz.getCluster();
+        hazelcast::client::Cluster &cluster = hz.get_cluster();
         clusterPtr = &cluster;
-        auto members = cluster.getMembers();
+        auto members = cluster.get_members();
         std::cout << "The following are members in the cluster:" << std::endl;
         for (const auto &member: members) {
-            std::cout << member.getAddress() << std::endl;
+            std::cout << member.get_address() << std::endl;
         }
 
-        listenerId = cluster.addMembershipListener(std::move(memberListener));
-        initialListenerId = cluster.addMembershipListener(std::move(initialMemberListener));
+        listenerId = cluster.add_membership_listener(std::move(memberListener));
+        initialListenerId = cluster.add_membership_listener(std::move(initialMemberListener));
 
         // sleep some time for the events to be delivered before exiting
         std::this_thread::sleep_for(std::chrono::seconds(3));
 
-        cluster.removeMembershipListener(listenerId);
-        cluster.removeMembershipListener(initialListenerId);
+        cluster.remove_membership_listener(listenerId);
+        cluster.remove_membership_listener(initialListenerId);
     } catch (hazelcast::client::exception::IException &e) {
         std::cerr << "Test failed !!! " << e.what() << std::endl;
         if (nullptr != clusterPtr) {
-            clusterPtr->removeMembershipListener(listenerId);
-            clusterPtr->removeMembershipListener(initialListenerId);
+            clusterPtr->remove_membership_listener(listenerId);
+            clusterPtr->remove_membership_listener(initialListenerId);
         }
         exit(-1);
     }

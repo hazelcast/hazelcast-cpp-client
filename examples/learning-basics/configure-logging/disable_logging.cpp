@@ -22,7 +22,7 @@ int main() {
 
     // Setting the log level to hazelcast::logger::level::off
     // will disable the logs completely.
-    config.getLoggerConfig().level(hazelcast::logger::level::off);
+    config.get_logger_config().level(hazelcast::logger::level::off);
 
     hazelcast::client::HazelcastClient hz(config);
 

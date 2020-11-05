@@ -70,7 +70,7 @@ namespace hazelcast {
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
-                boost::future<int64_t> getAndAdd(int64_t delta);
+                boost::future<int64_t> get_and_add(int64_t delta);
 
                 /**
                  * Adds the given value to the current value.
@@ -85,7 +85,7 @@ namespace hazelcast {
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
-                boost::future<int64_t> addAndGet(int64_t delta);
+                boost::future<int64_t> add_and_get(int64_t delta);
 
                 /**
                  * Subtracts the given value from the current value.
@@ -100,7 +100,7 @@ namespace hazelcast {
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
-                boost::future<int64_t> getAndSubtract(int64_t delta);
+                boost::future<int64_t> get_and_subtract(int64_t delta);
 
                 /**
                  * Subtracts the given value from the current value.
@@ -115,7 +115,7 @@ namespace hazelcast {
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
-                boost::future<int64_t> subtractAndGet(int64_t delta);
+                boost::future<int64_t> subtract_and_get(int64_t delta);
 
                 /**
                  * Decrements by one the current value.
@@ -129,7 +129,7 @@ namespace hazelcast {
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
-                boost::future<int64_t> decrementAndGet();
+                boost::future<int64_t> decrement_and_get();
 
                 /**
                  * Increments by one the current value.
@@ -143,7 +143,7 @@ namespace hazelcast {
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
-                boost::future<int64_t> incrementAndGet();
+                boost::future<int64_t> increment_and_get();
 
                 /**
                  * Decrements by one the current value.
@@ -157,7 +157,7 @@ namespace hazelcast {
                  *                                        been lost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
-                boost::future<int64_t> getAndDecrement();
+                boost::future<int64_t> get_and_decrement();
 
                 /**
                  * Increments by one the current value.
@@ -171,7 +171,7 @@ namespace hazelcast {
                  *                                        beenlost (see class level javadoc)
                  * @see ClusterService#getClusterVersion()
                  */
-                boost::future<int64_t> getAndIncrement();
+                boost::future<int64_t> get_and_increment();
 
                 /**
                  * Resets the observed state by this PN counter. This method may be used
@@ -185,7 +185,7 @@ namespace hazelcast {
                  * sending invocations.
                  */
                 // public for testing purposes
-                boost::shared_ptr<Member> getCurrentTargetReplicaAddress();
+                boost::shared_ptr<Member> get_current_target_replica_address();
 
             protected:
                 PNCounterImpl(const std::string &serviceName, const std::string &objectName,
@@ -207,7 +207,7 @@ namespace hazelcast {
                  * @return a CRDT replica address or {@code null} if there are no viable
                  * addresses
                  */
-                boost::shared_ptr<Member> getCRDTOperationTarget(const std::unordered_set<Member> &excludedAddresses);
+                boost::shared_ptr<Member> get_crdt_operation_target(const std::unordered_set<Member> &excludedAddresses);
 
                 /**
                  * Chooses and returns a CRDT replica address. Replicas with addresses
@@ -220,7 +220,7 @@ namespace hazelcast {
                  *                          address
                  * @return a CRDT replica address or {@code null} if there are no viable addresses
                  */
-                boost::shared_ptr<Member> chooseTargetReplica(const std::unordered_set<Member> &excludedAddresses);
+                boost::shared_ptr<Member> choose_target_replica(const std::unordered_set<Member> &excludedAddresses);
 
                 /**
                  * Returns the addresses of the CRDT replicas from the current state of the
@@ -231,10 +231,10 @@ namespace hazelcast {
                  *                          address
                  * @return list of possible CRDT replica addresses
                  */
-                std::vector<Member> getReplicaAddresses(const std::unordered_set<Member> &excludedMembers);
+                std::vector<Member> get_replica_addresses(const std::unordered_set<Member> &excludedMembers);
 
                 boost::shared_ptr<Member>
-                tryChooseANewTarget(std::shared_ptr<std::unordered_set<Member>> excludedAddresses,
+                try_choose_a_new_target(std::shared_ptr<std::unordered_set<Member>> excludedAddresses,
                                     boost::shared_ptr<Member> lastTarget,
                                     const exception::HazelcastException &lastException);
 
@@ -245,7 +245,7 @@ namespace hazelcast {
                  *
                  * @return the maximum configured replica count
                  */
-                int32_t getMaxConfiguredReplicaCount();
+                int32_t get_max_configured_replica_count();
 
                 /**
                  * Returns the current value of the counter.
@@ -266,7 +266,7 @@ namespace hazelcast {
                  *                                        {@code lastException} is false
                  */
                 boost::future<int64_t>
-                invokeGetInternal(std::shared_ptr<std::unordered_set<Member> > excludedAddresses,
+                invoke_get_internal(std::shared_ptr<std::unordered_set<Member> > excludedAddresses,
                                   std::exception_ptr lastException,
                                   const boost::shared_ptr<Member> &target);
 
@@ -296,7 +296,7 @@ namespace hazelcast {
                  *                                        {@code lastException} is {@code null}
                  */
                 boost::future<int64_t>
-                invokeAddInternal(int64_t delta, bool getBeforeUpdate,
+                invoke_add_internal(int64_t delta, bool getBeforeUpdate,
                                   std::shared_ptr<std::unordered_set<Member> > excludedAddresses,
                                   std::exception_ptr lastException, const boost::shared_ptr<Member> &target);
 
@@ -308,7 +308,7 @@ namespace hazelcast {
                  *
                  * @param receivedLogicalTimestamps logical timestamps received from a replica state read
                  */
-                void updateObservedReplicaTimestamps(
+                void update_observed_replica_timestamps(
                         const cluster::impl::VectorClock::TimestampVector &receivedLogicalTimestamps);
 
                 /**
@@ -318,7 +318,7 @@ namespace hazelcast {
                  * @return a vector clock instance
                  */
                 static std::shared_ptr<cluster::impl::VectorClock>
-                toVectorClock(const cluster::impl::VectorClock::TimestampVector &replicaLogicalTimestamps);
+                to_vector_clock(const cluster::impl::VectorClock::TimestampVector &replicaLogicalTimestamps);
 
                 boost::atomic_shared_ptr<Member> currentTargetReplicaAddress_;
                 std::mutex targetSelectionMutex_;

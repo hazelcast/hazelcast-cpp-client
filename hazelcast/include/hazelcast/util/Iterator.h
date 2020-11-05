@@ -32,7 +32,7 @@ namespace hazelcast {
              *
              * @return <tt>true</tt> if the iterator has more elements.
              */
-            virtual bool hasNext() = 0;
+            virtual bool has_next() = 0;
 
             /**
              * Returns the next element in the iteration.

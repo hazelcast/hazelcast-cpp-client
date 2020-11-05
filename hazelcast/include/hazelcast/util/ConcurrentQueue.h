@@ -55,7 +55,7 @@ namespace hazelcast {
              * @param itemToBeRemoved The item to be removed from the queue
              * @return number of items removed from the queue
              */
-            int removeAll(const T *itemToBeRemoved) {
+            int remove_all(const T *itemToBeRemoved) {
                 std::lock_guard<std::mutex> lg(m_);
                 int numErased = 0;
                 bool isFound;
@@ -77,7 +77,7 @@ namespace hazelcast {
         private:
             std::mutex m_;
             /**
-             * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
+             * Did not choose std::list which shall give better remove_all performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
             std::deque<T *> internalQueue_;

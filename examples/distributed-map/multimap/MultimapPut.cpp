@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getMultiMap("map");
+    auto map = hz.get_multi_map("map");
 
     map->put("a", "1").get();
     map->put("a", "2").get();

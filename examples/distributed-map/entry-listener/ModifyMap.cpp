@@ -18,13 +18,13 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto map = hz.getMap("somemap");
+    auto map = hz.get_map("somemap");
 
     std::string key{"some string key"};
 
     map->put<std::string, std::string>(key, "1").get();
     map->put<std::string, std::string>(key, "2").get();
-    map->deleteEntry(key).get();
+    map->delete_entry(key).get();
 
     std::cout << "Finished" << std::endl;
 

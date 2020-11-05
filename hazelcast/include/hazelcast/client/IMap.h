@@ -75,8 +75,8 @@ namespace hazelcast {
             * @return true if contains, false otherwise
             */
             template<typename K>
-            boost::future<bool> containsKey(const K &key) {
-                return containsKeyInternal(toData(key));
+            boost::future<bool> contains_key(const K &key) {
+                return contains_key_internal(to_data(key));
             }
 
             /**
@@ -85,8 +85,8 @@ namespace hazelcast {
             * @return true if contains, false otherwise
             */
             template<typename V>
-            boost::future<bool> containsValue(const V &value) {
-                return proxy::IMapImpl::containsValue(toData(value));
+            boost::future<bool> contains_value(const V &value) {
+                return proxy::IMapImpl::contains_value(to_data(value));
             }
 
             /**
@@ -96,7 +96,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<boost::optional<V>> get(const K &key) {
-                return toObject<V>(getInternal(toData(key)));
+                return to_object<V>(get_internal(to_data(key)));
             }
 
             /**
@@ -122,7 +122,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename R=V>
             boost::future<boost::optional<R>> put(const K &key, const V &value, std::chrono::milliseconds ttl) {
-                return toObject<R>(putInternal(toData(key), toData(value), ttl));
+                return to_object<R>(put_internal(to_data(key), to_data(value), ttl));
             }
 
             /**
@@ -132,7 +132,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<boost::optional<V>> remove(const K &key) {
-                return toObject<V>(removeInternal(toData(key)));
+                return to_object<V>(remove_internal(to_data(key)));
             }
 
             /**
@@ -143,7 +143,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<bool> remove(const K &key, const V &value) {
-                return removeInternal(toData(key), toData(value));
+                return remove_internal(to_data(key), to_data(value));
             }
 
             /**
@@ -156,8 +156,8 @@ namespace hazelcast {
              * @param predicate matching entries with this predicate will be removed from this map
              */
             template <typename P>
-            boost::future<void> removeAll(const P &predicate) {
-                return toVoidFuture(removeAllInternal(toData<P>(predicate)));
+            boost::future<void> remove_all(const P &predicate) {
+                return to_void_future(remove_all_internal(to_data<P>(predicate)));
             }
 
             /**
@@ -166,8 +166,8 @@ namespace hazelcast {
             * @param key The key of the map entry to remove.
             */
             template <typename K>
-            boost::future<void> deleteEntry(const K &key) {
-                return toVoidFuture(deleteInternal(toData(key)));
+            boost::future<void> delete_entry(const K &key) {
+                return to_void_future(delete_internal(to_data(key)));
             }
 
             /**
@@ -180,8 +180,8 @@ namespace hazelcast {
             * @param timeout  maximum time to wait for acquiring the lock for the key
             */
             template<typename K>
-            boost::future<bool> tryRemove(const K &key, std::chrono::milliseconds timeout) {
-                return tryRemoveInternal(toData(key), timeout);
+            boost::future<bool> try_remove(const K &key, std::chrono::milliseconds timeout) {
+                return try_remove_internal(to_data(key), timeout);
             }
 
             /**
@@ -197,8 +197,8 @@ namespace hazelcast {
             *         otherwise.
             */
             template<typename K, typename V>
-            boost::future<bool> tryPut(const K &key, const V &value, std::chrono::milliseconds timeout) {
-                return tryPutInternal(toData(key), toData(value), timeout);
+            boost::future<bool> try_put(const K &key, const V &value, std::chrono::milliseconds timeout) {
+                return try_put_internal(to_data(key), to_data(value), timeout);
             }
 
             /**
@@ -211,8 +211,8 @@ namespace hazelcast {
             * @param ttl  maximum time for this entry to stay in the map in milliseconds, 0 means infinite.
             */
             template<typename K, typename V>
-            boost::future<void> putTransient(const K &key, const V &value, std::chrono::milliseconds ttl) {
-                return toVoidFuture(tryPutTransientInternal(toData(key), toData(value), ttl));
+            boost::future<void> put_transient(const K &key, const V &value, std::chrono::milliseconds ttl) {
+                return to_void_future(try_put_transient_internal(to_data(key), to_data(value), ttl));
             }
 
             /**
@@ -224,8 +224,8 @@ namespace hazelcast {
             * then returns boost::none.
             */
             template<typename K, typename V, typename R=V>
-            boost::future<boost::optional<V>> putIfAbsent(const K &key, const V &value) {
-                return putIfAbsent(key, value, UNSET);
+            boost::future<boost::optional<V>> put_if_absent(const K &key, const V &value) {
+                return put_if_absent(key, value, UNSET);
             }
 
             /**
@@ -240,8 +240,8 @@ namespace hazelcast {
             * then returns boost::none.
             */
             template<typename K, typename V, typename R=V>
-            boost::future<boost::optional<V>> putIfAbsent(const K &key, const V &value, std::chrono::milliseconds ttl) {
-                return toObject<R>(putIfAbsentInternal(toData(key), toData(value), ttl));
+            boost::future<boost::optional<V>> put_if_absent(const K &key, const V &value, std::chrono::milliseconds ttl) {
+                return to_object<R>(put_if_absent_internal(to_data(key), to_data(value), ttl));
             }
 
             /**
@@ -253,7 +253,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename N = V>
             boost::future<bool> replace(const K &key, const V &oldValue, const N &newValue) {
-                return replaceIfSameInternal(toData(key), toData(oldValue), toData(newValue));
+                return replace_if_same_internal(to_data(key), to_data(oldValue), to_data(newValue));
             }
 
             /**
@@ -265,7 +265,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename R=V>
             boost::future<boost::optional<R>> replace(const K &key, const V &value) {
-                return toObject<R>(replaceInternal(toData(key), toData(value)));
+                return to_object<R>(replace_internal(to_data(key), to_data(value)));
             }
 
             /**
@@ -277,7 +277,7 @@ namespace hazelcast {
             */
             template<typename K, typename V, typename R=V>
             boost::future<void> set(const K &key, const V &value) {
-                return toVoidFuture(set(key, value, UNSET));
+                return to_void_future(set(key, value, UNSET));
             }
 
             /**
@@ -291,7 +291,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<void> set(const K &key, const V &value, std::chrono::milliseconds ttl) {
-                return toVoidFuture(setInternal(toData(key), toData(value), ttl));
+                return to_void_future(set_internal(to_data(key), to_data(value), ttl));
             }
 
             /**
@@ -310,7 +310,7 @@ namespace hazelcast {
             */
             template<typename K>
             boost::future<void> lock(const K &key) {
-                return toVoidFuture(lock(key, UNSET));
+                return to_void_future(lock(key, UNSET));
             }
 
             /**
@@ -333,7 +333,7 @@ namespace hazelcast {
             */
             template<typename K>
             boost::future<void> lock(const K &key, std::chrono::milliseconds leaseTime) {
-                return toVoidFuture(proxy::IMapImpl::lock(toData(key), leaseTime));
+                return to_void_future(proxy::IMapImpl::lock(to_data(key), leaseTime));
             }
 
             /**
@@ -345,8 +345,8 @@ namespace hazelcast {
             * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
             */
             template<typename K>
-            boost::future<bool> isLocked(const K &key) {
-                return proxy::IMapImpl::isLocked(toData(key));
+            boost::future<bool> is_locked(const K &key) {
+                return proxy::IMapImpl::is_locked(to_data(key));
             }
 
             /**
@@ -359,8 +359,8 @@ namespace hazelcast {
             * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
             */
             template<typename K>
-            boost::future<bool> tryLock(const K &key) {
-                return tryLock(key, std::chrono::milliseconds(0));
+            boost::future<bool> try_lock(const K &key) {
+                return try_lock(key, std::chrono::milliseconds(0));
             }
 
             /**
@@ -380,8 +380,8 @@ namespace hazelcast {
             *         if the waiting time elapsed before the lock was acquired.
             */
             template<typename K>
-            boost::future<bool> tryLock(const K &key, std::chrono::milliseconds timeout) {
-                return proxy::IMapImpl::tryLock(toData(key), timeout);
+            boost::future<bool> try_lock(const K &key, std::chrono::milliseconds timeout) {
+                return proxy::IMapImpl::try_lock(to_data(key), timeout);
             }
 
 
@@ -404,8 +404,8 @@ namespace hazelcast {
             *         if the waiting time elapsed before the lock was acquired.
             */
             template <typename K>
-            boost::future<bool> tryLock(const K &key, std::chrono::milliseconds timeout, std::chrono::milliseconds leaseTime) {
-                return proxy::IMapImpl::tryLock(toData(key), timeout, leaseTime);
+            boost::future<bool> try_lock(const K &key, std::chrono::milliseconds timeout, std::chrono::milliseconds leaseTime) {
+                return proxy::IMapImpl::try_lock(to_data(key), timeout, leaseTime);
             }
 
             /**
@@ -423,7 +423,7 @@ namespace hazelcast {
             */
             template<typename K>
             boost::future<void> unlock(const K &key) {
-                return toVoidFuture(proxy::IMapImpl::unlock(toData(key)));
+                return to_void_future(proxy::IMapImpl::unlock(to_data(key)));
             }
 
             /**
@@ -435,8 +435,8 @@ namespace hazelcast {
             * @param key key to lock.
             */
             template<typename K>
-            boost::future<void> forceUnlock(const K &key) {
-                return toVoidFuture(proxy::IMapImpl::forceUnlock(toData(key)));
+            boost::future<void> force_unlock(const K &key) {
+                return to_void_future(proxy::IMapImpl::force_unlock(to_data(key)));
             }
 
             /**
@@ -451,8 +451,8 @@ namespace hazelcast {
             * @return id of registered interceptor
             */
             template<typename MapInterceptor>
-            boost::future<std::string> addInterceptor(const MapInterceptor &interceptor) {
-                return proxy::IMapImpl::addInterceptor(toData(interceptor));
+            boost::future<std::string> add_interceptor(const MapInterceptor &interceptor) {
+                return proxy::IMapImpl::add_interceptor(to_data(interceptor));
             }
 
             /**
@@ -469,15 +469,15 @@ namespace hazelcast {
             *
             * @return registrationId of added listener that can be used to remove the entry listener.
             */
-            boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener, bool includeValue) {
+            boost::future<boost::uuids::uuid> add_entry_listener(EntryListener &&listener, bool includeValue) {
                 const auto listener_flags = listener.flags_;
-                return proxy::IMapImpl::addEntryListener(
+                return proxy::IMapImpl::add_entry_listener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::map_addentrylistener_handler>(
-                                        getName(), getContext().getClientClusterService(),
-                                        getContext().getSerializationService(),
+                                        get_name(), get_context().get_client_cluster_service(),
+                                        get_context().get_serialization_service(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), includeValue, listener_flags);
+                                        includeValue, get_context().get_logger())), includeValue, listener_flags);
             }
 
             /**
@@ -497,15 +497,15 @@ namespace hazelcast {
             */
             template<typename P>
             boost::future<boost::uuids::uuid>
-            addEntryListener(EntryListener &&listener, const P &predicate, bool includeValue) {
+            add_entry_listener(EntryListener &&listener, const P &predicate, bool includeValue) {
                 const auto listener_flags = listener.flags_;
-                return proxy::IMapImpl::addEntryListener(
+                return proxy::IMapImpl::add_entry_listener(
                         std::unique_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::map_addentrylistenerwithpredicate_handler>(
-                                        getName(), getContext().getClientClusterService(),
-                                        getContext().getSerializationService(),
+                                        get_name(), get_context().get_client_cluster_service(),
+                                        get_context().get_serialization_service(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), toData<P>(predicate), includeValue, listener_flags);
+                                        includeValue, get_context().get_logger())), to_data<P>(predicate), includeValue, listener_flags);
             }
 
             /**
@@ -522,15 +522,15 @@ namespace hazelcast {
             *                     contain the value.
             */
             template<typename K>
-            boost::future<boost::uuids::uuid> addEntryListener(EntryListener &&listener, bool includeValue, const K &key) {
+            boost::future<boost::uuids::uuid> add_entry_listener(EntryListener &&listener, bool includeValue, const K &key) {
                 const auto listener_flags = listener.flags_;
-                return proxy::IMapImpl::addEntryListener(
+                return proxy::IMapImpl::add_entry_listener(
                         std::shared_ptr<impl::BaseEventHandler>(
                                 new impl::EntryEventHandler<protocol::codec::map_addentrylistenertokey_handler>(
-                                        getName(), getContext().getClientClusterService(),
-                                        getContext().getSerializationService(),
+                                        get_name(), get_context().get_client_cluster_service(),
+                                        get_context().get_serialization_service(),
                                         std::move(listener),
-                                        includeValue, getContext().getLogger())), includeValue, toData<K>(key), listener_flags);
+                                        includeValue, get_context().get_logger())), includeValue, to_data<K>(key), listener_flags);
             }
 
             /**
@@ -542,13 +542,13 @@ namespace hazelcast {
             * @see EntryView
             */
             template<typename K, typename V>
-            boost::future<boost::optional<EntryView<K, V>>> getEntryView(const K &key) {
-                return proxy::IMapImpl::getEntryViewData(toData(key)).then([=] (boost::future<boost::optional<map::DataEntryView>> f) {
+            boost::future<boost::optional<EntryView<K, V>>> get_entry_view(const K &key) {
+                return proxy::IMapImpl::get_entry_view_data(to_data(key)).then([=] (boost::future<boost::optional<map::DataEntryView>> f) {
                     auto dataView = f.get();
                     if (!dataView) {
                         return boost::optional<EntryView<K, V>>();
                     }
-                    auto v = toObject<V>(dataView->getValue());
+                    auto v = to_object<V>(dataView->get_value());
                     return boost::make_optional(EntryView<K, V>(key, std::move(v).value(), *std::move(dataView)));
                 });
             }
@@ -565,7 +565,7 @@ namespace hazelcast {
             */
             template<typename K>
             boost::future<bool> evict(const K &key) {
-                return evictInternal(toData(key));
+                return evict_internal(to_data(key));
             }
 
             /**
@@ -575,7 +575,7 @@ namespace hazelcast {
             * @return map of entries
             */
             template<typename K, typename V>
-            boost::future<std::unordered_map<K, V>> getAll(const std::unordered_set<K> &keys) {
+            boost::future<std::unordered_map<K, V>> get_all(const std::unordered_set<K> &keys) {
                 if (keys.empty()) {
                     return boost::make_ready_future(std::unordered_map<K, V>());
                 }
@@ -583,16 +583,16 @@ namespace hazelcast {
                 std::unordered_map<int, std::vector<serialization::pimpl::Data>> partitionToKeyData;
                 // group the request per server
                 for (auto &key : keys) {
-                    auto keyData = toData<K>(key);
+                    auto keyData = to_data<K>(key);
 
-                    auto partitionId = getPartitionId(keyData);
+                    auto partitionId = get_partition_id(keyData);
                     partitionToKeyData[partitionId].push_back(std::move(keyData));
                 }
 
                 std::vector<boost::future<EntryVector>> futures;
                 futures.reserve(partitionToKeyData.size());
                 for (auto &entry : partitionToKeyData) {
-                    futures.push_back(getAllInternal(entry.first, entry.second));
+                    futures.push_back(get_all_internal(entry.first, entry.second));
                 }
 
                 return boost::when_all(futures.begin(), futures.end()).then(boost::launch::deferred,
@@ -600,10 +600,10 @@ namespace hazelcast {
                                                                                 std::unordered_map<K, V> result;
                                                                                 for (auto &entryVectorFuture : resultsData.get()) {
                                                                                     for(auto &entry : entryVectorFuture.get()) {
-                                                                                        auto val = toObject<V>(entry.second);
+                                                                                        auto val = to_object<V>(entry.second);
                                                                                         // it is guaranteed that all values are non-null
                                                                                         assert(val.has_value());
-                                                                                        result[toObject<K>(entry.first).value()] = std::move(val.value());
+                                                                                        result[to_object<K>(entry.first).value()] = std::move(val.value());
                                                                                     }
                                                                                 }
                                                                                 return result;
@@ -618,8 +618,8 @@ namespace hazelcast {
             * @return a vector clone of the keys contained in this map
             */
             template<typename K>
-            boost::future<std::vector<K>> keySet() {
-                return toObjectVector<K>(proxy::IMapImpl::keySetData());
+            boost::future<std::vector<K>> key_set() {
+                return to_object_vector<K>(proxy::IMapImpl::key_set_data());
             }
 
             /**
@@ -634,8 +634,8 @@ namespace hazelcast {
               * @return result key set of the query
               */
             template<typename K, typename P, class = typename std::enable_if<!std::is_base_of<query::PagingPredicateMarker, P>::value>::type>
-            boost::future<std::vector<K>> keySet(const P &predicate) {
-                return toObjectVector<K>(proxy::IMapImpl::keySetData(toData(predicate)));
+            boost::future<std::vector<K>> key_set(const P &predicate) {
+                return to_object_vector<K>(proxy::IMapImpl::key_set_data(to_data(predicate)));
             }
 
             /**
@@ -650,19 +650,19 @@ namespace hazelcast {
             * @return result key set of the query
             */
             template<typename K, typename V>
-            boost::future<std::vector<K>> keySet(query::PagingPredicate<K, V> &predicate) {
-                predicate.setIterationType(query::IterationType::KEY);
-                return keySetForPagingPredicateData(
+            boost::future<std::vector<K>> key_set(query::PagingPredicate<K, V> &predicate) {
+                predicate.set_iteration_type(query::IterationType::KEY);
+                return key_set_for_paging_predicate_data(
                         protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
                         [=, &predicate](
                                 boost::future<std::pair<std::vector<serialization::pimpl::Data>, query::anchor_data_list>> f) {
                     auto result = f.get();
-                    predicate.setAnchorDataList(std::move(result.second));
+                    predicate.set_anchor_data_list(std::move(result.second));
                     const auto &entries = result.first;
                     std::vector<K> values;
                     values.reserve(entries.size());
                     for(const auto &e : entries) {
-                        values.emplace_back(*toObject<K>(e));
+                        values.emplace_back(*to_object<K>(e));
                     }
                     return values;
                 });
@@ -677,7 +677,7 @@ namespace hazelcast {
             */
             template<typename V>
             boost::future<std::vector<V>> values() {
-                return toObjectVector<V>(proxy::IMapImpl::valuesData());
+                return to_object_vector<V>(proxy::IMapImpl::values_data());
             }
 
             /**
@@ -690,7 +690,7 @@ namespace hazelcast {
             */
             template<typename V, typename P, class = typename std::enable_if<!std::is_base_of<query::PagingPredicateMarker, P>::value>::type>
             boost::future<std::vector<V>> values(const P &predicate) {
-                return toObjectVector<V>(proxy::IMapImpl::valuesData(toData(predicate)));
+                return to_object_vector<V>(proxy::IMapImpl::values_data(to_data(predicate)));
             }
 
             /**
@@ -704,17 +704,17 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<std::vector<V>> values(query::PagingPredicate<K, V> &predicate) {
-                predicate.setIterationType(query::IterationType::VALUE);
-                return valuesForPagingPredicateData(
+                predicate.set_iteration_type(query::IterationType::VALUE);
+                return values_for_paging_predicate_data(
                         protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
                         [=, &predicate](boost::future<std::pair<std::vector<serialization::pimpl::Data>, query::anchor_data_list>> f) {
                     auto result = f.get();
-                    predicate.setAnchorDataList(std::move(result.second));
+                    predicate.set_anchor_data_list(std::move(result.second));
                     const auto &entries = result.first;
                     std::vector<V> values;
                     values.reserve(entries.size());
                     for(const auto &e : entries) {
-                        values.emplace_back(*toObject<V>(e));
+                        values.emplace_back(*to_object<V>(e));
                     }
                     return values;
                 });
@@ -728,8 +728,8 @@ namespace hazelcast {
             * @return a vector clone of the keys mappings in this map
             */
             template<typename K, typename V>
-            boost::future<std::vector<std::pair<K, V>>> entrySet() {
-                return toEntryObjectVector<K,V>(proxy::IMapImpl::entrySetData());
+            boost::future<std::vector<std::pair<K, V>>> entry_set() {
+                return to_entry_object_vector<K,V>(proxy::IMapImpl::entry_set_data());
             }
 
             /**
@@ -743,8 +743,8 @@ namespace hazelcast {
             * @return result entry vector of the query
             */
             template<typename K, typename V, typename P, class = typename std::enable_if<!std::is_base_of<query::PagingPredicateMarker, P>::value>::type>
-            boost::future<std::vector<std::pair<K, V>>> entrySet(const P &predicate) {
-                return toEntryObjectVector<K,V>(proxy::IMapImpl::entrySetData(toData(predicate)));
+            boost::future<std::vector<std::pair<K, V>>> entry_set(const P &predicate) {
+                return to_entry_object_vector<K,V>(proxy::IMapImpl::entry_set_data(to_data(predicate)));
             }
 
             /**
@@ -758,18 +758,18 @@ namespace hazelcast {
             * @return result entry vector of the query
             */
             template<typename K, typename V>
-            boost::future<std::vector<std::pair<K, V>>> entrySet(query::PagingPredicate<K, V> &predicate) {
-                predicate.setIterationType(query::IterationType::ENTRY);
-                return entrySetForPagingPredicateData(
+            boost::future<std::vector<std::pair<K, V>>> entry_set(query::PagingPredicate<K, V> &predicate) {
+                predicate.set_iteration_type(query::IterationType::ENTRY);
+                return entry_set_for_paging_predicate_data(
                         protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
                         [=, &predicate](boost::future<std::pair<EntryVector, query::anchor_data_list>> f) {
                     auto result = f.get();
-                    predicate.setAnchorDataList(std::move(result.second));
+                    predicate.set_anchor_data_list(std::move(result.second));
                     const auto &entries_data = result.first;
                     std::vector<std::pair<K, V>> entries;
                     entries.reserve(entries_data.size());
                     for(const auto &e : entries_data) {
-                        entries.emplace_back(*toObject<K>(e.first), *toObject<V>(e.second));
+                        entries.emplace_back(*to_object<K>(e.first), *to_object<V>(e.second));
                     }
                     return entries;
                 });
@@ -814,8 +814,8 @@ namespace hazelcast {
              *
              * @param config Index configuration.
              */
-            boost::future<void> addIndex(const config::index_config &config) {
-                return toVoidFuture(proxy::IMapImpl::addIndexData(config));
+            boost::future<void> add_index(const config::index_config &config) {
+                return to_void_future(proxy::IMapImpl::add_index_data(config));
             }
 
             /**
@@ -827,12 +827,12 @@ namespace hazelcast {
              * \param attributes Attributes to be indexed.
              */
             template<typename ...T>
-            boost::future<void> addIndex(config::index_config::index_type type, T... attributes) {
-                return addIndex(config::index_config(type, std::forward<T>(attributes)...));
+            boost::future<void> add_index(config::index_config::index_type type, T... attributes) {
+                return add_index(config::index_config(type, std::forward<T>(attributes)...));
             }
 
             boost::future<void> clear() {
-                return toVoidFuture(proxy::IMapImpl::clearData());
+                return to_void_future(proxy::IMapImpl::clear_data());
             }
 
             /**
@@ -850,8 +850,8 @@ namespace hazelcast {
             * @return result of entry process.
             */
             template<typename K, typename ResultType, typename EntryProcessor>
-            boost::future<boost::optional<ResultType>> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
-                return toObject<ResultType>(executeOnKeyInternal(toData(key), toData(entryProcessor)));
+            boost::future<boost::optional<ResultType>> execute_on_key(const K &key, const EntryProcessor &entryProcessor) {
+                return to_object<ResultType>(execute_on_key_internal(to_data(key), to_data(entryProcessor)));
             }
 
 
@@ -866,8 +866,8 @@ namespace hazelcast {
              */
             template<typename K, typename ResultType, typename EntryProcessor>
             boost::future<boost::optional<ResultType>>
-            submitToKey(const K &key, const EntryProcessor &entryProcessor) {
-                return toObject<ResultType>(submitToKeyInternal(toData(key), toData(entryProcessor)));
+            submit_to_key(const K &key, const EntryProcessor &entryProcessor) {
+                return to_object<ResultType>(submit_to_key_internal(to_data(key), to_data(entryProcessor)));
             }
 
             /**
@@ -884,8 +884,8 @@ namespace hazelcast {
             */
             template<typename K, typename ResultType, typename EntryProcessor>
             boost::future<std::unordered_map<K, boost::optional<ResultType>>>
-            executeOnKeys(const std::unordered_set<K> &keys, const EntryProcessor &entryProcessor) {
-                return toObjectMap<K, ResultType>(executeOnKeysInternal<K, EntryProcessor>(keys, entryProcessor));
+            execute_on_keys(const std::unordered_set<K> &keys, const EntryProcessor &entryProcessor) {
+                return to_object_map<K, ResultType>(execute_on_keys_internal<K, EntryProcessor>(keys, entryProcessor));
             }
 
             /**
@@ -902,8 +902,8 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename K, typename ResultType, typename EntryProcessor>
-            boost::future<std::unordered_map<K, boost::optional<ResultType>>> executeOnEntries(const EntryProcessor &entryProcessor) {
-                return toObjectMap<K, ResultType>(proxy::IMapImpl::executeOnEntriesData(toData(entryProcessor)));
+            boost::future<std::unordered_map<K, boost::optional<ResultType>>> execute_on_entries(const EntryProcessor &entryProcessor) {
+                return to_object_map<K, ResultType>(proxy::IMapImpl::execute_on_entries_data(to_data(entryProcessor)));
             }
 
             /**
@@ -922,9 +922,9 @@ namespace hazelcast {
             */
             template<typename K, typename ResultType, typename EntryProcessor, typename P>
             boost::future<std::unordered_map<K, boost::optional<ResultType>>>
-            executeOnEntries(const EntryProcessor &entryProcessor, const P &predicate) {
-                return toObjectMap<K, ResultType>(proxy::IMapImpl::executeOnEntriesData(toData(entryProcessor),
-                                                                                 toData(predicate)));
+            execute_on_entries(const EntryProcessor &entryProcessor, const P &predicate) {
+                return to_object_map<K, ResultType>(proxy::IMapImpl::execute_on_entries_data(to_data(entryProcessor),
+                                                                                 to_data(predicate)));
             }
 
             /**
@@ -938,18 +938,18 @@ namespace hazelcast {
             * @param entries mappings to be stored in this map
             */
             template<typename K, typename V>
-            boost::future<void> putAll(const std::unordered_map<K, V> &entries) {
+            boost::future<void> put_all(const std::unordered_map<K, V> &entries) {
                 std::unordered_map<int, EntryVector> entryMap;
                 for (auto &entry : entries) {
-                    serialization::pimpl::Data keyData = toData(entry.first);
-                    int partitionId = getPartitionId(keyData);
-                    entryMap[partitionId].push_back(std::make_pair(keyData, toData(entry.second)));
+                    serialization::pimpl::Data keyData = to_data(entry.first);
+                    int partitionId = get_partition_id(keyData);
+                    entryMap[partitionId].push_back(std::make_pair(keyData, to_data(entry.second)));
                 }
 
                 std::vector<boost::future<protocol::ClientMessage>> resultFutures;
                 for (auto &&partitionEntry : entryMap) {
                     auto partitionId = partitionEntry.first;
-                    resultFutures.push_back(putAllInternal(partitionId, std::move(partitionEntry.second)));
+                    resultFutures.push_back(put_all_internal(partitionId, std::move(partitionEntry.second)));
                 }
                 return boost::when_all(resultFutures.begin(), resultFutures.end()).then(boost::launch::deferred,
                                                                                         [](boost::future<boost::csbl::vector<boost::future<protocol::ClientMessage>>> futures) {
@@ -971,28 +971,28 @@ namespace hazelcast {
              *
              * @return this map's local statistics.
              */
-            monitor::LocalMapStats &getLocalMapStats() {
+            monitor::LocalMapStats &get_local_map_stats() {
                 return localMapStats_;
             }
 
             template<typename K, typename V>
-            query::PagingPredicate<K, V> newPagingPredicate(size_t predicatePageSize) {
-                return query::PagingPredicate<K, V>(getSerializationService(), predicatePageSize);
+            query::PagingPredicate<K, V> new_paging_predicate(size_t predicatePageSize) {
+                return query::PagingPredicate<K, V>(get_serialization_service(), predicatePageSize);
             }
 
             template<typename K, typename V, typename INNER_PREDICATE>
-            query::PagingPredicate<K, V> newPagingPredicate(size_t predicatePageSize, const INNER_PREDICATE &predicate) {
-                return query::PagingPredicate<K, V>(getSerializationService(), predicatePageSize, predicate);
+            query::PagingPredicate<K, V> new_paging_predicate(size_t predicatePageSize, const INNER_PREDICATE &predicate) {
+                return query::PagingPredicate<K, V>(get_serialization_service(), predicatePageSize, predicate);
             }
 
             template<typename K, typename V, typename COMPARATOR>
-            query::PagingPredicate<K, V> newPagingPredicate(COMPARATOR &&comparator, size_t predicatePageSize) {
-                return query::PagingPredicate<K, V>(getSerializationService(), std::move(comparator), predicatePageSize);
+            query::PagingPredicate<K, V> new_paging_predicate(COMPARATOR &&comparator, size_t predicatePageSize) {
+                return query::PagingPredicate<K, V>(get_serialization_service(), std::move(comparator), predicatePageSize);
             }
 
             template<typename K, typename V, typename INNER_PREDICATE, typename COMPARATOR>
-            query::PagingPredicate<K, V> newPagingPredicate(const INNER_PREDICATE &predicate, COMPARATOR &&comparator, size_t predicatePageSize) {
-                return query::PagingPredicate<K, V>(getSerializationService(), predicate, std::move(comparator), predicatePageSize);
+            query::PagingPredicate<K, V> new_paging_predicate(const INNER_PREDICATE &predicate, COMPARATOR &&comparator, size_t predicatePageSize) {
+                return query::PagingPredicate<K, V>(get_serialization_service(), predicate, std::move(comparator), predicatePageSize);
             }
 
         protected:
@@ -1003,117 +1003,117 @@ namespace hazelcast {
 
             monitor::impl::LocalMapStatsImpl localMapStats_;
 
-            virtual boost::future<boost::optional<serialization::pimpl::Data>> getInternal(const serialization::pimpl::Data &keyData) {
-                return proxy::IMapImpl::getData(keyData);
+            virtual boost::future<boost::optional<serialization::pimpl::Data>> get_internal(const serialization::pimpl::Data &keyData) {
+                return proxy::IMapImpl::get_data(keyData);
             }
 
-            virtual boost::future<bool> containsKeyInternal(const serialization::pimpl::Data &keyData) {
-                return proxy::IMapImpl::containsKey(keyData);
+            virtual boost::future<bool> contains_key_internal(const serialization::pimpl::Data &keyData) {
+                return proxy::IMapImpl::contains_key(keyData);
             }
 
-            virtual boost::future<boost::optional<serialization::pimpl::Data>> removeInternal(
+            virtual boost::future<boost::optional<serialization::pimpl::Data>> remove_internal(
                     const serialization::pimpl::Data &keyData) {
-                return proxy::IMapImpl::removeData(keyData);
+                return proxy::IMapImpl::remove_data(keyData);
             }
 
-            virtual boost::future<bool> removeInternal(
+            virtual boost::future<bool> remove_internal(
                     const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData) {
                 return proxy::IMapImpl::remove(keyData, valueData);
             }
 
-            virtual boost::future<protocol::ClientMessage> removeAllInternal(const serialization::pimpl::Data &predicateData) {
-                return proxy::IMapImpl::removeAll(predicateData);
+            virtual boost::future<protocol::ClientMessage> remove_all_internal(const serialization::pimpl::Data &predicateData) {
+                return proxy::IMapImpl::remove_all(predicateData);
             }
 
-            virtual boost::future<protocol::ClientMessage> deleteInternal(const serialization::pimpl::Data &keyData) {
-                return proxy::IMapImpl::deleteEntry(keyData);
+            virtual boost::future<protocol::ClientMessage> delete_internal(const serialization::pimpl::Data &keyData) {
+                return proxy::IMapImpl::delete_entry(keyData);
             }
 
-            virtual boost::future<bool> tryRemoveInternal(const serialization::pimpl::Data &keyData, std::chrono::milliseconds timeout) {
-                return proxy::IMapImpl::tryRemove(keyData, timeout);
+            virtual boost::future<bool> try_remove_internal(const serialization::pimpl::Data &keyData, std::chrono::milliseconds timeout) {
+                return proxy::IMapImpl::try_remove(keyData, timeout);
             }
 
-            virtual boost::future<bool> tryPutInternal(const serialization::pimpl::Data &keyData,
+            virtual boost::future<bool> try_put_internal(const serialization::pimpl::Data &keyData,
                                                        const serialization::pimpl::Data &valueData, std::chrono::milliseconds timeout) {
-                return proxy::IMapImpl::tryPut(keyData, valueData, timeout);
+                return proxy::IMapImpl::try_put(keyData, valueData, timeout);
             }
 
-            virtual boost::future<boost::optional<serialization::pimpl::Data>> putInternal(const serialization::pimpl::Data &keyData,
+            virtual boost::future<boost::optional<serialization::pimpl::Data>> put_internal(const serialization::pimpl::Data &keyData,
                                                                                            const serialization::pimpl::Data &valueData,
                                                                                            std::chrono::milliseconds ttl) {
-                return proxy::IMapImpl::putData(keyData, valueData, ttl);
+                return proxy::IMapImpl::put_data(keyData, valueData, ttl);
             }
 
-            virtual boost::future<protocol::ClientMessage> tryPutTransientInternal(const serialization::pimpl::Data &keyData,
+            virtual boost::future<protocol::ClientMessage> try_put_transient_internal(const serialization::pimpl::Data &keyData,
                                                                                    const serialization::pimpl::Data &valueData, std::chrono::milliseconds ttl) {
-                return proxy::IMapImpl::putTransient(keyData, valueData, ttl);
+                return proxy::IMapImpl::put_transient(keyData, valueData, ttl);
             }
 
             virtual boost::future<boost::optional<serialization::pimpl::Data>>
-            putIfAbsentInternal(const serialization::pimpl::Data &keyData,
+            put_if_absent_internal(const serialization::pimpl::Data &keyData,
                                 const serialization::pimpl::Data &valueData,
                                 std::chrono::milliseconds ttl) {
-                return proxy::IMapImpl::putIfAbsentData(keyData, valueData, ttl);
+                return proxy::IMapImpl::put_if_absent_data(keyData, valueData, ttl);
             }
 
-            virtual boost::future<bool> replaceIfSameInternal(const serialization::pimpl::Data &keyData,
+            virtual boost::future<bool> replace_if_same_internal(const serialization::pimpl::Data &keyData,
                                                               const serialization::pimpl::Data &valueData,
                                                               const serialization::pimpl::Data &newValueData) {
                 return proxy::IMapImpl::replace(keyData, valueData, newValueData);
             }
 
             virtual boost::future<boost::optional<serialization::pimpl::Data>>
-            replaceInternal(const serialization::pimpl::Data &keyData,
+            replace_internal(const serialization::pimpl::Data &keyData,
                             const serialization::pimpl::Data &valueData) {
-                return proxy::IMapImpl::replaceData(keyData, valueData);
+                return proxy::IMapImpl::replace_data(keyData, valueData);
             }
 
             virtual boost::future<protocol::ClientMessage>
-            setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
+            set_internal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
                         std::chrono::milliseconds ttl) {
                 return proxy::IMapImpl::set(keyData, valueData, ttl);
             }
 
-            virtual boost::future<bool> evictInternal(const serialization::pimpl::Data &keyData) {
+            virtual boost::future<bool> evict_internal(const serialization::pimpl::Data &keyData) {
                 return proxy::IMapImpl::evict(keyData);
             }
 
             virtual boost::future<EntryVector>
-            getAllInternal(int partitionId, const std::vector<serialization::pimpl::Data> &partitionKeys) {
-                return proxy::IMapImpl::getAllData(partitionId, partitionKeys);
+            get_all_internal(int partitionId, const std::vector<serialization::pimpl::Data> &partitionKeys) {
+                return proxy::IMapImpl::get_all_data(partitionId, partitionKeys);
             }
 
             virtual boost::future<boost::optional<serialization::pimpl::Data>>
-            executeOnKeyInternal(const serialization::pimpl::Data &keyData,
+            execute_on_key_internal(const serialization::pimpl::Data &keyData,
                                  const serialization::pimpl::Data &processor) {
-                return proxy::IMapImpl::executeOnKeyData(keyData, processor);
+                return proxy::IMapImpl::execute_on_key_data(keyData, processor);
             }
 
             boost::future<boost::optional<serialization::pimpl::Data>>
-            submitToKeyInternal(const serialization::pimpl::Data &keyData,
+            submit_to_key_internal(const serialization::pimpl::Data &keyData,
                                 const serialization::pimpl::Data &processor) {
-                return submitToKeyData(keyData, processor);
+                return submit_to_key_data(keyData, processor);
             }
 
             template<typename K, typename EntryProcessor>
-            boost::future<EntryVector> executeOnKeysInternal(const std::unordered_set<K> &keys, const EntryProcessor &entryProcessor) {
+            boost::future<EntryVector> execute_on_keys_internal(const std::unordered_set<K> &keys, const EntryProcessor &entryProcessor) {
                 if (keys.empty()) {
                     return boost::make_ready_future(EntryVector());
                 }
                 std::vector<serialization::pimpl::Data> keysData;
-                std::for_each(keys.begin(), keys.end(), [&](const K &key) { keysData.push_back(toData<K>(key)); });
-                return proxy::IMapImpl::executeOnKeysData(keysData, toData<EntryProcessor>(entryProcessor));
+                std::for_each(keys.begin(), keys.end(), [&](const K &key) { keysData.push_back(to_data<K>(key)); });
+                return proxy::IMapImpl::execute_on_keys_data(keysData, to_data<EntryProcessor>(entryProcessor));
             }
 
             virtual boost::future<protocol::ClientMessage>
-            putAllInternal(int partitionId, const EntryVector &entries) {
-                return proxy::IMapImpl::putAllData(partitionId, entries);
+            put_all_internal(int partitionId, const EntryVector &entries) {
+                return proxy::IMapImpl::put_all_data(partitionId, entries);
             }
 
         private:
 
             template<typename K, typename V>
-            std::vector<std::pair<K, boost::optional<V>>> sortAndGet(query::PagingPredicate<K, V> &predicate, query::IterationType iterationType, std::vector<std::pair<K, V>> entries) {
+            std::vector<std::pair<K, boost::optional<V>>> sort_and_get(query::PagingPredicate<K, V> &predicate, query::IterationType iterationType, std::vector<std::pair<K, V>> entries) {
                 std::vector<std::pair<K, boost::optional<V>>> optionalEntries;
                 optionalEntries.reserve(entries.size());
                 for(auto &&pair : entries) {
@@ -1123,7 +1123,7 @@ namespace hazelcast {
             }
 
             template<typename K, typename V>
-            std::vector<std::pair<K, boost::optional<V>>> sortAndGet(query::PagingPredicate<K, V> &predicate, query::IterationType iterationType, std::vector<std::pair<K, boost::optional<V>>> entries) {
+            std::vector<std::pair<K, boost::optional<V>>> sort_and_get(query::PagingPredicate<K, V> &predicate, query::IterationType iterationType, std::vector<std::pair<K, boost::optional<V>>> entries) {
                 std::sort(entries.begin(), entries.end(), [&] (const std::pair<K, boost::optional<V>> &lhs, const std::pair<K, boost::optional<V>> &rhs) {
                     auto comparator = predicate.getComparator();
                     if (!comparator) {
@@ -1147,7 +1147,7 @@ namespace hazelcast {
                     return lhs.first < rhs.first;
                 });
 
-                std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, iterationType);
+                std::pair<size_t, size_t> range = update_anchor<K, V>(entries, predicate, iterationType);
 
                 std::vector<std::pair<K, boost::optional<V>>> result;
                 for (size_t i = range.first; i < range.second; ++i) {

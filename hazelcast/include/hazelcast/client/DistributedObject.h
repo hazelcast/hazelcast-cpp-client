@@ -54,14 +54,14 @@ namespace hazelcast {
             /**
             * Returns the service name for this object.
             */
-            virtual const std::string& getServiceName() const = 0;
+            virtual const std::string& get_service_name() const = 0;
 
             /**
             * Returns the unique name for this DistributedObject.
             *
             * @return the unique name for this object.
             */
-            virtual const std::string& getName() const = 0;
+            virtual const std::string& get_name() const = 0;
 
             /**
             * Destroys this object cluster-wide.

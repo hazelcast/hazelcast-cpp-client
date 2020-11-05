@@ -35,7 +35,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if the value is not positive.
              */
             template<typename T>
-            static const T &checkPositive(const T &value, const std::string &errorMessage) {
+            static const T &check_positive(const T &value, const std::string &errorMessage) {
                 if (value <= 0) {
                     throw client::exception::IllegalArgumentException("Preconditions::checkPositive", errorMessage);
                 }
@@ -50,21 +50,21 @@ namespace hazelcast {
              * @throws NullPointerException if argument is null
              */
             template<typename T>
-            static const std::shared_ptr<T> &checkNotNull(const std::shared_ptr<T> &argument,
+            static const std::shared_ptr<T> &check_not_null(const std::shared_ptr<T> &argument,
                                                           const std::string &errorMessage) {
-                checkNotNull<T>(argument.get(), errorMessage);
+                check_not_null<T>(argument.get(), errorMessage);
                 return argument;
             }
 
             template<typename T>
-            static const T *checkNotNull(const T *argument, const std::string &errorMessage) {
+            static const T *check_not_null(const T *argument, const std::string &errorMessage) {
                 if (!argument) {
                     throw client::exception::NullPointerException(errorMessage);
                 }
                 return argument;
             }
 
-            static void checkNotNill(boost::uuids::uuid id, const std::string &errorMessage) {
+            static void check_not_nill(boost::uuids::uuid id, const std::string &errorMessage) {
                 if (id.is_nil()) {
                     throw client::exception::NullPointerException(errorMessage);
                 }
@@ -78,7 +78,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if the supplied expression is {@code false}.
              */
             template<typename T>
-            static void checkTrue(const T &argument, const std::string &errorMessage) {
+            static void check_true(const T &argument, const std::string &errorMessage) {
                 if (!argument) {
                     throw client::exception::IllegalArgumentException(errorMessage);
                 }
@@ -92,7 +92,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if argument is empty
              */
             template<typename T>
-            static void checkNotEmpty(const T &argument, const std::string &errorMessage) {
+            static void check_not_empty(const T &argument, const std::string &errorMessage) {
                 if (argument.size() == 0) {
                     throw client::exception::IllegalArgumentException(errorMessage);
                 }
@@ -107,7 +107,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if the argument is null.
              */
             template<typename T>
-            static const std::shared_ptr<T> &isNotNull(const std::shared_ptr<T> &argument,
+            static const std::shared_ptr<T> &is_not_null(const std::shared_ptr<T> &argument,
                                                          const std::string &argName) {
                 if (argument == NULL) {
                     throw (client::exception::ExceptionBuilder<client::exception::IllegalArgumentException>("")
@@ -125,7 +125,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if the value is negative.
              */
             template<typename T>
-            static const T &checkNotNegative(const T &value, const std::string &errorMessage) {
+            static const T &check_not_negative(const T &value, const std::string &errorMessage) {
                 if (value < 0) {
                     throw client::exception::IllegalArgumentException("Preconditions::checkNotNegative", errorMessage);
                 }
@@ -141,7 +141,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if the value is greater than expectedMaximum.
              */
             template<typename T>
-            static void checkMax(const T &actualSize, const T &expectedMaximum, const std::string &variableName) {
+            static void check_max(const T &actualSize, const T &expectedMaximum, const std::string &variableName) {
                 if (actualSize > expectedMaximum) {
                     throw (client::exception::ExceptionBuilder<client::exception::IllegalArgumentException>(
                             "Preconditions::checkNotNegative") << variableName << " can't be larger than "
@@ -158,13 +158,13 @@ namespace hazelcast {
              * @return the string argument that was tested.
              * @throws client::exception::IllegalArgumentException if the string is empty
              */
-            static const std::string &checkHasText(const std::string &argument, const std::string &errorMessage);
+            static const std::string &check_has_text(const std::string &argument, const std::string &errorMessage);
 
             /**
              * @throws client::exception::InvalidConfigurationException if the user does not compile with
              * HZ_BUILD_WITH_SSL flag but is trying to use a feature (e.g. TLS, AWS Cloud Discovery) that needs this flag.
              */
-            static void checkSSL(const std::string &sourceMethod);
+            static void check_ssl(const std::string &sourceMethod);
 
             /**
              * Tests whether the supplied expression is {@code true}.
@@ -173,7 +173,7 @@ namespace hazelcast {
              * @param errorMessage the errorMessage
              * @throws client::Exception::IllegalArgumentException if the supplied expression is {@code false}.
              */
-            static void checkTrue(bool expression, const std::string &errorMessage);
+            static void check_true(bool expression, const std::string &errorMessage);
         };
     }
 }

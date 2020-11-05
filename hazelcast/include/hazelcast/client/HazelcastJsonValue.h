@@ -62,7 +62,7 @@ namespace hazelcast {
              * This method returns a Json representation of the object
              * @return Json string representation of the object
              */
-            const std::string &toString() const;
+            const std::string &to_string() const;
 
             bool operator==(const HazelcastJsonValue &rhs) const;
 

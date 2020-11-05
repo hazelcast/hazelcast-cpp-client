@@ -61,7 +61,7 @@ namespace hazelcast {
             raft_group_id group_id_;
             std::string object_name_;
 
-            void onDestroy() override;
+            void on_destroy() ;
         };
 
         namespace internal {
@@ -178,7 +178,7 @@ namespace hazelcast {
              */
             template<typename F>
             boost::future<void> alter(const F &function) {
-                return toVoidFuture(alter_and_get(function));
+                return to_void_future(alter_and_get(function));
             }
 
             /**
@@ -190,7 +190,7 @@ namespace hazelcast {
              */
             template<typename F>
             boost::future<int64_t> alter_and_get(const F &function) {
-                auto f = toData(function);
+                auto f = to_data(function);
                 return alter_data(f, alter_result_type::NEW_VALUE);
             }
 
@@ -204,7 +204,7 @@ namespace hazelcast {
              */
             template<typename F>
             boost::future<int64_t> get_and_alter(const F &function) {
-                auto f = toData(function);
+                auto f = to_data(function);
                 return alter_data(f, alter_result_type::OLD_VALUE);
             }
 
@@ -217,8 +217,8 @@ namespace hazelcast {
              */
             template<typename F, typename R>
             boost::future<boost::optional<R>> apply(const F &function) {
-                auto f = toData(function);
-                return toObject<R>(apply_data(f));
+                auto f = to_data(function);
+                return to_object<R>(apply_data(f));
             }
 
         private:
@@ -254,25 +254,25 @@ namespace hazelcast {
 
             template<typename T>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> get() {
-                return toObject<typename std::remove_pointer<T>::type>(get_data());
+                return to_object<typename std::remove_pointer<T>::type>(get_data());
             }
 
             template<typename T>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> set(T new_value) {
-                return toObject<typename std::remove_pointer<T>::type>(
-                        set_data(toData<typename std::remove_pointer<T>::type>(new_value)));
+                return to_object<typename std::remove_pointer<T>::type>(
+                        set_data(to_data<typename std::remove_pointer<T>::type>(new_value)));
             }
 
             template<typename T>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> get_and_set(T new_value) {
-                return toObject<typename std::remove_pointer<T>::type>(
-                        get_and_set_data(toData<typename std::remove_pointer<T>::type>(new_value)));
+                return to_object<typename std::remove_pointer<T>::type>(
+                        get_and_set_data(to_data<typename std::remove_pointer<T>::type>(new_value)));
             }
 
             template<typename T, typename V>
             boost::future<bool> compare_and_set(T expect, V update) {
-                return compare_and_set_data(toData<typename std::remove_pointer<T>::type>(expect),
-                                            toData<typename std::remove_pointer<V>::type>(update));
+                return compare_and_set_data(to_data<typename std::remove_pointer<T>::type>(expect),
+                                            to_data<typename std::remove_pointer<V>::type>(update));
             }
 
             boost::future<bool> is_null();
@@ -281,27 +281,27 @@ namespace hazelcast {
 
             template<typename T>
             boost::future<bool> contains(T value) {
-                return contains_data(toData<typename std::remove_pointer<T>::type>(value));
+                return contains_data(to_data<typename std::remove_pointer<T>::type>(value));
             }
 
             template<typename F>
             boost::future<void> alter(const F &function) {
-                return alter_data(toData(function));
+                return alter_data(to_data(function));
             }
 
             template<typename T, typename F>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> alter_and_get(const F &function) {
-                return toObject<typename std::remove_pointer<T>::type>(alter_and_get_data(toData(function)));
+                return to_object<typename std::remove_pointer<T>::type>(alter_and_get_data(to_data(function)));
             }
 
             template<typename T, typename F>
             boost::future<boost::optional<typename std::remove_pointer<T>::type>> get_and_alter(const F &function) {
-                return toObject<typename std::remove_pointer<T>::type>(get_and_alter_data(toData(function)));
+                return to_object<typename std::remove_pointer<T>::type>(get_and_alter_data(to_data(function)));
             }
 
             template<typename R, typename F>
             boost::future<boost::optional<R>> apply(const F &function) {
-                return toObject<R>(apply_data(toData(function)));
+                return to_object<R>(apply_data(to_data(function)));
             }
 
         private:
@@ -867,7 +867,7 @@ namespace hazelcast {
             friend bool operator==(const fenced_lock &lhs, const fenced_lock &rhs);
 
         protected:
-            void postDestroy() override;
+            void post_destroy() ;
 
         private:
             struct lock_ownership_state {

@@ -48,7 +48,7 @@ namespace hazelcast {
                 void rethrow(std::exception_ptr throwable, const std::string &message) override;
             };
 
-            static const std::shared_ptr<RuntimeExceptionFactory> &HAZELCAST_EXCEPTION_FACTORY();
+            static const std::shared_ptr<RuntimeExceptionFactory> &hazelcast_exception_factory();
 
             static const std::shared_ptr<RuntimeExceptionFactory> hazelcastExceptionFactory;
         };

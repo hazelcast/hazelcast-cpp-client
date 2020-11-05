@@ -28,37 +28,37 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<Employee> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 5;
                 }
 
-                static void writeData(const Employee &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Employee &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                     out.write(object.salary);
                 }
 
-                static Employee readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Employee read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return Employee{in.read<int32_t>()};
                 }
             };
 
             template<>
             struct hz_serializer<EmployeeRaiseEntryProcessor> : identified_data_serializer {
-                static int32_t getFactoryId() noexcept {
+                static int32_t get_factory_id() noexcept {
                     return 1;
                 }
 
-                static int32_t getClassId() noexcept {
+                static int32_t get_class_id() noexcept {
                     return 6;
                 }
 
-                static void writeData(const EmployeeRaiseEntryProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const EmployeeRaiseEntryProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
                 }
 
-                EmployeeRaiseEntryProcessor readData(hazelcast::client::serialization::ObjectDataInput &in) {
+                EmployeeRaiseEntryProcessor read_data(hazelcast::client::serialization::ObjectDataInput &in) {
                     return EmployeeRaiseEntryProcessor{};
                 }
             };

@@ -102,7 +102,7 @@ namespace hazelcast {
                 return i != v_;
             }
 
-            bool compareAndSet(const T &compareValue, const T &setValue) {
+            bool compare_and_set(const T &compareValue, const T &setValue) {
                 std::lock_guard<std::mutex> lockGuard(mutex_);
                 if(compareValue == v_){
                     v_ = setValue;

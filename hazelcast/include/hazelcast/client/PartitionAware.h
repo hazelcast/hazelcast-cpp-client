@@ -64,7 +64,7 @@ namespace hazelcast {
              * @return the key that specifies the partition.
              * If returned object is a NULL pointer, it will not be used for partition calculation.
              */
-            virtual const T *getPartitionKey() const = 0;
+            virtual const T *get_partition_key() const = 0;
         };
     }
 }

@@ -50,7 +50,7 @@ namespace hazelcast {
                     /**
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.
                      */
-                    std::vector<SSLSocket::CipherInfo> getCiphers();
+                    std::vector<SSLSocket::CipherInfo> get_ciphers();
 
                     void post_connect() override;
                 };

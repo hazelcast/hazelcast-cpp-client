@@ -35,7 +35,7 @@ namespace hazelcast {
                 /**
                 * @returns true if message is completed, false otherwise
                 */
-                bool onData(util::ByteBuffer &buffer) {
+                bool on_data(util::ByteBuffer &buffer) {
                     bool isCompleted = false;
 
                     if (!message_) {
@@ -45,7 +45,7 @@ namespace hazelcast {
                     }
 
                     if (message_) {
-                        message_->fillMessageFrom(buffer, is_final_frame_, remaining_frame_bytes_);
+                        message_->fill_message_from(buffer, is_final_frame_, remaining_frame_bytes_);
                         isCompleted = is_final_frame_ && remaining_frame_bytes_ == 0;
                         if (isCompleted) {
                             //MESSAGE IS COMPLETE HERE
@@ -54,18 +54,18 @@ namespace hazelcast {
 
                             if (message_->is_flag_set(ClientMessage::UNFRAGMENTED_MESSAGE)) {
                                 //MESSAGE IS COMPLETE HERE
-                                message_handler_.handleClientMessage(std::move(message_));
+                                message_handler_.handle_client_message(std::move(message_));
                             } else {
                                 message_->rd_ptr(ClientMessage::FRAGMENTATION_ID_OFFSET);
                                 auto fragmentation_id = message_->get<int64_t>();
-                                auto flags = message_->getHeaderFlags();
+                                auto flags = message_->get_header_flags();
                                 message_->drop_fragmentation_frame();
                                 if (ClientMessage::is_flag_set(flags, ClientMessage::BEGIN_FRAGMENT_FLAG)) {
                                     // put the message into the partial messages list
-                                    addToPartialMessages(fragmentation_id, message_);
+                                    add_to_partial_messages(fragmentation_id, message_);
                                 } else {
                                     // This is the intermediate frame. Append at the previous message buffer
-                                    appendExistingPartialMessage(fragmentation_id, message_,
+                                    append_existing_partial_message(fragmentation_id, message_,
                                                                  ClientMessage::is_flag_set(flags,
                                                                                             ClientMessage::END_FRAGMENT_FLAG));
                                 }
@@ -77,14 +77,14 @@ namespace hazelcast {
                 }
 
             private:
-                void addToPartialMessages(int64_t fragmentation_id, std::unique_ptr<ClientMessage> &message) {
+                void add_to_partial_messages(int64_t fragmentation_id, std::unique_ptr<ClientMessage> &message) {
                     partialMessages_[fragmentation_id] = std::move(message);
                 }
 
                 /**
                 * @returns true if message is completed, false otherwise
                 */
-                bool appendExistingPartialMessage(int64_t fragmentation_id, std::unique_ptr<ClientMessage> &msg,
+                bool append_existing_partial_message(int64_t fragmentation_id, std::unique_ptr<ClientMessage> &msg,
                                                   bool is_end_fragment) {
                     bool result = false;
 
@@ -98,7 +98,7 @@ namespace hazelcast {
                             partialMessages_.erase(found);
 
                             foundMessage->wrap_for_read();
-                            message_handler_.handleClientMessage(foundMessage);
+                            message_handler_.handle_client_message(foundMessage);
 
                             result = true;
                         }

@@ -36,7 +36,7 @@ namespace hazelcast {
 
             /**
              * Listen to messages from an ITopic
-             * \see ITopic::addMessageListener
+             * \see ITopic::add_message_listener
              */
             class HAZELCAST_API Listener final {
             public:

@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto list = hz.getList("list");
+    auto list = hz.get_list("list");
 
     list->add("Tokyo").then(boost::launch::deferred, [=] (boost::future<bool> f) {
        if (f.get()) {

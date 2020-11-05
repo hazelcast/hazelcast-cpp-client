@@ -35,7 +35,7 @@ namespace hazelcast {
          * extending DistributedObject
          * * Access to transactional distributed data structures like TransactionalMap, TransactionalQueue etc...
          * * Ability to add cluster listeners to a cluster and entry/item listeners to distributed data structures.
-         * @see MembershipListener, IMap#addEntryListener , IQueue#addItemListener etc .
+         * @see MembershipListener, IMap#add_entry_listener , IQueue#add_item_listener etc .
          * * C++ Client is smart by default, which means that it knows where the data is and asks directly to correct node.
          * Note that you can turn this feature off ( ClientConfig#setSmart), if you don't want your clients to connect every
          * node.
@@ -66,7 +66,7 @@ namespace hazelcast {
              *
              * @return name of this Hazelcast instance
              */
-            const std::string &getName() const;
+            const std::string &get_name() const;
 
             /**
             *
@@ -75,8 +75,8 @@ namespace hazelcast {
             * @returns distributed object
             */
             template<typename T>
-            std::shared_ptr<T> getDistributedObject(const std::string& name) {
-                return clientImpl_->getDistributedObject<T>(name);
+            std::shared_ptr<T> get_distributed_object(const std::string& name) {
+                return clientImpl_->get_distributed_object<T>(name);
             }
 
             /**
@@ -88,8 +88,8 @@ namespace hazelcast {
             * @param name name of the distributed map
             * @return distributed map instance with the specified name
             */
-            std::shared_ptr<IMap> getMap(const std::string &name) {
-                return clientImpl_->getDistributedObject<IMap>(name);
+            std::shared_ptr<IMap> get_map(const std::string &name) {
+                return clientImpl_->get_distributed_object<IMap>(name);
             }
 
             /**
@@ -98,12 +98,12 @@ namespace hazelcast {
             * @param name name of the distributed multimap
             * @return distributed multimap instance with the specified name
             */
-            std::shared_ptr<MultiMap> getMultiMap(const std::string& name) {
-                return clientImpl_->getDistributedObject<MultiMap>(name);
+            std::shared_ptr<MultiMap> get_multi_map(const std::string& name) {
+                return clientImpl_->get_distributed_object<MultiMap>(name);
             }
 
-            std::shared_ptr<ReplicatedMap> getReplicatedMap(const std::string &name) {
-                return clientImpl_->getDistributedObject<ReplicatedMap>(name);
+            std::shared_ptr<ReplicatedMap> get_replicated_map(const std::string &name) {
+                return clientImpl_->get_distributed_object<ReplicatedMap>(name);
             }
 
             /**
@@ -112,8 +112,8 @@ namespace hazelcast {
             * @param name name of the distributed queue
             * @return distributed queue instance with the specified name
             */
-            std::shared_ptr<IQueue> getQueue(const std::string& name) {
-                return clientImpl_->getDistributedObject<IQueue>(name);
+            std::shared_ptr<IQueue> get_queue(const std::string& name) {
+                return clientImpl_->get_distributed_object<IQueue>(name);
             }
 
             /**
@@ -123,8 +123,8 @@ namespace hazelcast {
             * @param name name of the distributed set
             * @return distributed set instance with the specified name
             */
-            std::shared_ptr<ISet> getSet(const std::string& name) {
-                return clientImpl_->getDistributedObject<ISet>(name);
+            std::shared_ptr<ISet> get_set(const std::string& name) {
+                return clientImpl_->get_distributed_object<ISet>(name);
             }
 
             /**
@@ -134,8 +134,8 @@ namespace hazelcast {
             * @param name name of the distributed list
             * @return distributed list instance with the specified name
             */
-            std::shared_ptr<IList> getList(const std::string& name) {
-                return clientImpl_->getDistributedObject<IList>(name);
+            std::shared_ptr<IList> get_list(const std::string& name) {
+                return clientImpl_->get_distributed_object<IList>(name);
             }
 
             /**
@@ -144,8 +144,8 @@ namespace hazelcast {
             * @param name name of the distributed topic
             * @return distributed topic instance with the specified name
             */
-            std::shared_ptr<ITopic> getTopic(const std::string& name) {
-                return clientImpl_->getDistributedObject<ITopic>(name);
+            std::shared_ptr<ITopic> get_topic(const std::string& name) {
+                return clientImpl_->get_distributed_object<ITopic>(name);
             };
 
             /**
@@ -154,8 +154,8 @@ namespace hazelcast {
             * @param name name of the distributed topic
             * @return distributed topic instance with the specified name
             */
-            std::shared_ptr<ReliableTopic> getReliableTopic(const std::string& name) {
-                return clientImpl_->getDistributedObject<ReliableTopic>(name);
+            std::shared_ptr<ReliableTopic> get_reliable_topic(const std::string& name) {
+                return clientImpl_->get_distributed_object<ReliableTopic>(name);
             }
 
             /**
@@ -174,8 +174,8 @@ namespace hazelcast {
              * @param name name of the {@link FlakeIdGenerator}
              * @return FlakeIdGenerator for the given name
              */
-            std::shared_ptr<FlakeIdGenerator> getFlakeIdGenerator(const std::string& name) {
-                return clientImpl_->getDistributedObject<FlakeIdGenerator>(name);
+            std::shared_ptr<FlakeIdGenerator> get_flake_id_generator(const std::string& name) {
+                return clientImpl_->get_distributed_object<FlakeIdGenerator>(name);
             }
 
             /**
@@ -190,8 +190,8 @@ namespace hazelcast {
              * @param name the name of the PN counter
              * @return a {@link PNCounter}
              */
-            std::shared_ptr<PNCounter> getPNCounter(const std::string& name) {
-                return clientImpl_->getDistributedObject<PNCounter>(name);
+            std::shared_ptr<PNCounter> get_pn_counter(const std::string& name) {
+                return clientImpl_->get_distributed_object<PNCounter>(name);
             }
 
             /**
@@ -200,8 +200,8 @@ namespace hazelcast {
              * @param name name of the distributed Ringbuffer
              * @return distributed RingBuffer instance with the specified name
              */
-            std::shared_ptr<Ringbuffer> getRingbuffer(const std::string& name) {
-                return clientImpl_->getDistributedObject<Ringbuffer>(name);
+            std::shared_ptr<Ringbuffer> get_ringbuffer(const std::string& name) {
+                return clientImpl_->get_distributed_object<Ringbuffer>(name);
             }
 
             /**
@@ -215,22 +215,22 @@ namespace hazelcast {
              * @param name name of the executor service
              * @return the distributed executor service for the given name
              */
-            std::shared_ptr<IExecutorService> getExecutorService(const std::string &name) {
-                return clientImpl_->getDistributedObject<IExecutorService>(name);
+            std::shared_ptr<IExecutorService> get_executor_service(const std::string &name) {
+                return clientImpl_->get_distributed_object<IExecutorService>(name);
             }
 
             /**
             *
             * @return configuration of this Hazelcast client.
             */
-            ClientConfig& getClientConfig();
+            ClientConfig& get_client_config();
 
             /**
             * Creates a new TransactionContext associated with the current thread using default options.
             *
             * @return new TransactionContext
             */
-            TransactionContext newTransactionContext();
+            TransactionContext new_transaction_context();
 
             /**
             * Creates a new TransactionContext associated with the current thread with given options.
@@ -238,7 +238,7 @@ namespace hazelcast {
             * @param options options for this transaction
             * @return new TransactionContext
             */
-            TransactionContext newTransactionContext(const TransactionOptions& options);
+            TransactionContext new_transaction_context(const TransactionOptions& options);
 
             /**
             * Returns the Cluster that connected Hazelcast instance is a part of.
@@ -247,7 +247,7 @@ namespace hazelcast {
             *
             * @return cluster
             */
-            Cluster& getCluster();
+            Cluster& get_cluster();
 
             /**
              * Returns the local endpoint which this HazelcastInstance belongs to.
@@ -256,7 +256,7 @@ namespace hazelcast {
              * @return the local enpoint which this client belongs to
              * @see Client
              */
-            Client getLocalEndpoint() const;
+            Client get_local_endpoint() const;
 
             /**
             * Add listener to listen lifecycle events.
@@ -268,14 +268,14 @@ namespace hazelcast {
             *
             * @param lifecycleListener Listener object
             */
-            boost::uuids::uuid addLifecycleListener(LifecycleListener &&lifecycleListener);
+            boost::uuids::uuid add_lifecycle_listener(LifecycleListener &&lifecycleListener);
 
             /**
             * Remove lifecycle listener
             * @param lifecycleListener
             * @return true if removed successfully
             */
-            bool removeLifecycleListener(const boost::uuids::uuid &registrationId);
+            bool remove_lifecycle_listener(const boost::uuids::uuid &registrationId);
 
             /**
             * Shuts down this HazelcastClient.
@@ -289,7 +289,7 @@ namespace hazelcast {
              *
              * @return the lifecycle service for this instance
              */
-            spi::LifecycleService &getLifecycleService();
+            spi::LifecycleService &get_lifecycle_service();
 
             /**
              *

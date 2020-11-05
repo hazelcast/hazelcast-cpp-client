@@ -30,10 +30,10 @@ namespace hazelcast {
             namespace utility {
                 class HAZELCAST_API AwsURLEncoder {
                 public:
-                    static std::string urlEncode(const std::string &value);
+                    static std::string url_encode(const std::string &value);
 
                 private:
-                    static std::string escapeEncode(const std::string &value);
+                    static std::string escape_encode(const std::string &value);
                 };
             }
         }

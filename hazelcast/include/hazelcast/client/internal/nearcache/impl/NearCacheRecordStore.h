@@ -116,7 +116,7 @@ namespace hazelcast {
                          *
                          * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this record store.
                          */
-                        virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const = 0;
+                        virtual std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const = 0;
 
                         /**
                          * Selects the best candidate object to store from the given {@code candidates}.
@@ -124,7 +124,7 @@ namespace hazelcast {
                          * @param candidates the candidates from which the best candidate object will be selected.
                          * @return the best candidate object to store, selected from the given {@code candidates}.
                          */
-                        virtual const std::shared_ptr<V> selectToSave(const std::shared_ptr<V> &value,
+                        virtual const std::shared_ptr<V> select_to_save(const std::shared_ptr<V> &value,
                                                                  const std::shared_ptr<serialization::pimpl::Data> &valueData) const {
                             assert(0);
                             return std::shared_ptr<V>();
@@ -143,7 +143,7 @@ namespace hazelcast {
                         /**
                          * Performs expiration and evicts expired records.
                          */
-                        virtual void doExpiration() {
+                        virtual void do_expiration() {
                             assert(0);
                         }
 
@@ -151,7 +151,7 @@ namespace hazelcast {
                          * Does eviction as specified configuration {@link com.hazelcast.config.EvictionConfig}
                          * in {@link com.hazelcast.config.NearCacheConfig}.
                          */
-                        virtual void doEvictionIfRequired() {
+                        virtual void do_eviction_if_required() {
                             assert(0);
                         }
 
@@ -159,14 +159,14 @@ namespace hazelcast {
                          * Does eviction as specified configuration {@link com.hazelcast.config.EvictionConfig}
                          * in {@link com.hazelcast.config.NearCacheConfig} regardless from the max-size policy.
                          */
-                        virtual void doEviction() {
+                        virtual void do_eviction() {
                             assert(0);
                         }
 
                         /**
                          * Persists the key set of the Near Cache.
                          */
-                        virtual void storeKeys() {
+                        virtual void store_keys() {
                             assert(0);
                         }
                     };

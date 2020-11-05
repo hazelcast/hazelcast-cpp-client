@@ -61,19 +61,19 @@ namespace hazelcast {
                     public:
                         PeriodicStatistics(Statistics &statistics);
 
-                        void fillMetrics(std::ostringstream &stats,
+                        void fill_metrics(std::ostringstream &stats,
                                          const std::shared_ptr<connection::Connection> &connection);
 
-                        void addNearCacheStats(std::ostringstream &stats);
+                        void add_near_cache_stats(std::ostringstream &stats);
 
                     private:
                         template<typename T>
-                        void addStat(std::ostringstream &stats, const std::string &name, const T &value) {
-                            addStat(stats, "", name, value);
+                        void add_stat(std::ostringstream &stats, const std::string &name, const T &value) {
+                            add_stat(stats, "", name, value);
                         }
 
                         template<typename T>
-                        void addStat(std::ostringstream &stats, const std::string &keyPrefix, const std::string &name,
+                        void add_stat(std::ostringstream &stats, const std::string &keyPrefix, const std::string &name,
                                      const T &value) {
                             stats << STAT_SEPARATOR;
                             stats << keyPrefix;
@@ -83,19 +83,19 @@ namespace hazelcast {
                         /**
                          * @param name the string for which the special characters ',', '=', '\' are escaped properly
                          */
-                        void getNameWithPrefix(const std::string &name, std::ostringstream &out);
+                        void get_name_with_prefix(const std::string &name, std::ostringstream &out);
 
                         Statistics &statistics_;
                     };
 
-                    void schedulePeriodicStatisticsSendTask(int64_t periodSeconds);
+                    void schedule_periodic_statistics_send_task(int64_t periodSeconds);
 
-                    std::shared_ptr<connection::Connection> getConnection();
+                    std::shared_ptr<connection::Connection> get_connection();
 
-                    void sendStats(int64_t timestamp, const std::string &newStats,
+                    void send_stats(int64_t timestamp, const std::string &newStats,
                                    const std::shared_ptr<connection::Connection> &connection);
 
-                    static std::string escapeSpecialCharacters(const std::string &name);
+                    static std::string escape_special_characters(const std::string &name);
 
                     spi::ClientContext &clientContext_;
                     ClientProperties &clientProperties_;
@@ -107,7 +107,7 @@ namespace hazelcast {
                 };
 
                 template<>
-                void Statistics::PeriodicStatistics::addStat(std::ostringstream &stats, const std::string &name,
+                void Statistics::PeriodicStatistics::add_stat(std::ostringstream &stats, const std::string &name,
                                                              const bool &value);
             }
         }

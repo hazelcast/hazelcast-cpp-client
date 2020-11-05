@@ -37,7 +37,7 @@ namespace hazelcast {
                  *
                  * @return statistics object for the Near Cache
                  */
-                virtual std::shared_ptr<monitor::NearCacheStats> getNearCacheStats() const = 0;
+                virtual std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const = 0;
             };
         }
     }

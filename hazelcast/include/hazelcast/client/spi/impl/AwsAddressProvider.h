@@ -42,7 +42,7 @@ namespace hazelcast {
 
                     ~AwsAddressProvider() override;
 
-                    std::vector<Address> loadAddresses() override;
+                    std::vector<Address> load_addresses() override;
 
                 private:
                     std::string awsMemberPort_;
@@ -50,9 +50,9 @@ namespace hazelcast {
                     aws::AWSClient awsClient_;
                     util::Sync<std::unordered_map<std::string, std::string> > privateToPublic_;
 
-                    void updateLookupTable();
+                    void update_lookup_table();
 
-                    std::unordered_map<std::string, std::string> getLookupTable();
+                    std::unordered_map<std::string, std::string> get_lookup_table();
                 };
             }
         }

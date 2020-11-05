@@ -36,13 +36,13 @@ namespace hazelcast {
         namespace serialization {
             template<>
             struct hz_serializer<test::ringbuffer::StartsWithStringFilter> : public identified_data_serializer {
-                static int32_t getFactoryId();
+                static int32_t get_factory_id();
 
-                static int32_t getClassId();
+                static int32_t get_class_id();
 
-                static void writeData(const test::ringbuffer::StartsWithStringFilter &object, ObjectDataOutput &out);
+                static void write_data(const test::ringbuffer::StartsWithStringFilter &object, ObjectDataOutput &out);
 
-                static test::ringbuffer::StartsWithStringFilter readData(ObjectDataInput &in);
+                static test::ringbuffer::StartsWithStringFilter read_data(ObjectDataInput &in);
             };
         }
     }

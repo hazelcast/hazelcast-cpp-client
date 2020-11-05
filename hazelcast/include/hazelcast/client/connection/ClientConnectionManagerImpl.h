@@ -102,23 +102,23 @@ namespace hazelcast {
                  * @return associated connection if available, creates new connection otherwise
                  * @throws IOException if connection is not established
                  */
-                std::shared_ptr<Connection> getOrConnect(const Address &address);
+                std::shared_ptr<Connection> get_or_connect(const Address &address);
 
-                std::vector<std::shared_ptr<Connection>> getActiveConnections();
+                std::vector<std::shared_ptr<Connection>> get_active_connections();
 
-                std::shared_ptr<Connection> getConnection(boost::uuids::uuid uuid);
+                std::shared_ptr<Connection> get_connection(boost::uuids::uuid uuid);
 
-                bool isAlive();
+                bool is_alive();
 
                 void on_connection_close(Connection &connection, std::exception_ptr ptr);
 
-                void addConnectionListener(const std::shared_ptr<ConnectionListener> &connectionListener) override;
+                void add_connection_listener(const std::shared_ptr<ConnectionListener> &connectionListener) ;
 
-                logger &getLogger();
+                logger &get_logger();
 
                 std::shared_ptr<Connection> get_random_connection();
 
-                boost::uuids::uuid getClientUuid() const;
+                boost::uuids::uuid get_client_uuid() const;
 
                 void check_invocation_allowed();
 
@@ -141,26 +141,26 @@ namespace hazelcast {
                     std::string server_version;
                 };
 
-                std::shared_ptr<Connection> getConnection(const Address &address);
+                std::shared_ptr<Connection> get_connection(const Address &address);
 
                 void authenticate_on_cluster(std::shared_ptr<Connection> &connection);
 
-                void fireConnectionAddedEvent(const std::shared_ptr<Connection> &connection);
+                void fire_connection_added_event(const std::shared_ptr<Connection> &connection);
 
-                void fireConnectionRemovedEvent(const std::shared_ptr<Connection> &connection);
+                void fire_connection_removed_event(const std::shared_ptr<Connection> &connection);
 
                 void submit_connect_to_cluster_task();
 
-                void connectToCluster();
+                void connect_to_cluster();
 
                 void connect_to_all_members();
 
                 static void
-                shutdownWithExternalThread(const std::weak_ptr<client::impl::HazelcastClientInstanceImpl>& clientImpl);
+                shutdown_with_external_thread(const std::weak_ptr<client::impl::HazelcastClientInstanceImpl>& clientImpl);
 
                 bool do_connect_to_cluster();
 
-                std::vector<Address> getPossibleMemberAddresses();
+                std::vector<Address> get_possible_member_addresses();
 
                 template<typename Container>
                 void shuffle(Container &memberAddresses) const {
@@ -175,9 +175,9 @@ namespace hazelcast {
                 std::shared_ptr<Connection> connect(const Address &address);
 
                 protocol::ClientMessage
-                encodeAuthenticationRequest(serialization::pimpl::SerializationService &ss);
+                encode_authentication_request(serialization::pimpl::SerializationService &ss);
 
-                void handleSuccessfulAuth(const std::shared_ptr<Connection> &connection, auth_response response);
+                void handle_successful_auth(const std::shared_ptr<Connection> &connection, auth_response response);
 
                 std::atomic_bool alive_;
                 logger &logger_;

@@ -44,7 +44,7 @@ namespace hazelcast {
         * \warning
         * 2 - Do not make a call to hazelcast. It can cause deadlock.
         *
-        * \see IMap::addEntryListener
+        * \see IMap::add_entry_listener
         */
         class EntryListener final {
         public:

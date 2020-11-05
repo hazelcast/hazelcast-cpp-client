@@ -44,7 +44,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<bool> offer(const E &e, std::chrono::milliseconds timeout) {
-                return proxy::TransactionalQueueImpl::offer(toData(e), timeout);
+                return proxy::TransactionalQueueImpl::offer(to_data(e), timeout);
             }
 
             /**
@@ -64,7 +64,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::future<boost::optional<E>> poll(std::chrono::milliseconds timeout) {
-                return toObject<E>(proxy::TransactionalQueueImpl::pollData(timeout));
+                return to_object<E>(proxy::TransactionalQueueImpl::poll_data(timeout));
             }
 
         private:

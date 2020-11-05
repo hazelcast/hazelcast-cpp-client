@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 void shutdown();
 
-                std::chrono::milliseconds getHeartbeatTimeout() const;
+                std::chrono::milliseconds get_heartbeat_timeout() const;
 
             private:
                 spi::ClientContext &client_;
@@ -51,10 +51,10 @@ namespace hazelcast {
                 std::chrono::milliseconds heartbeat_timeout_;
                 std::shared_ptr<boost::asio::steady_timer> timer_;
 
-                void checkConnection(const std::shared_ptr<Connection> &connection);
+                void check_connection(const std::shared_ptr<Connection> &connection);
 
                 static void
-                onHeartbeatStopped(const std::shared_ptr<Connection> &connection, const std::string &reason);
+                on_heartbeat_stopped(const std::shared_ptr<Connection> &connection, const std::string &reason);
             };
         }
     }

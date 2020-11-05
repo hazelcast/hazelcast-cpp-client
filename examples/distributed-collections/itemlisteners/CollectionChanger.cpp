@@ -19,7 +19,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto queue = hz.getQueue("queue");
+    auto queue = hz.get_queue("queue");
 
     queue->put("foo").then([=] (boost::future<void> f) {
        f.get();

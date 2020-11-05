@@ -58,15 +58,15 @@ namespace hazelcast {
 
                 bool start();
 
-                void fireLifecycleEvent(const LifecycleEvent &lifecycleEvent);
+                void fire_lifecycle_event(const LifecycleEvent &lifecycleEvent);
 
                 void shutdown();
 
-                boost::uuids::uuid addListener(LifecycleListener &&lifecycleListener);
+                boost::uuids::uuid add_listener(LifecycleListener &&lifecycleListener);
 
-                bool removeListener(const boost::uuids::uuid &registrationId);
+                bool remove_listener(const boost::uuids::uuid &registrationId);
 
-                bool isRunning();
+                bool is_running();
 
             private:
                 ClientContext &clientContext_;

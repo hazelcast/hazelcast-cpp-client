@@ -34,7 +34,7 @@ namespace hazelcast {
             Client(boost::uuids::uuid uuid, boost::optional<Address> socketAddress, std::string name,
                    std::unordered_set<std::string> labels);
 
-            const std::string &getName() const;
+            const std::string &get_name() const;
 
         private:
             std::string name_;

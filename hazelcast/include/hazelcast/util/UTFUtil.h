@@ -43,10 +43,10 @@ namespace hazelcast {
              * @param str The string whose UTF-8 byte format will be validated.
              * @return The number of UTF-8 encoded bytes. Returns -1 if the format is incorrect.
              */
-            static int32_t isValidUTF8(const std::string &str);
+            static int32_t is_valid_ut_f8(const std::string &str);
 
             template<typename Readable>
-            static void readUTF8Char(Readable &in, byte firstByte, std::string &utfBuffer) {
+            static void read_ut_f8_char(Readable &in, byte firstByte, std::string &utfBuffer) {
                 size_t n = 0;
                 // ascii
                 if (firstByte <= 0x7f) {

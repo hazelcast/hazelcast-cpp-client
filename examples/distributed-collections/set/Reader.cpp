@@ -18,9 +18,9 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    auto set = hz.getSet("set");
+    auto set = hz.get_set("set");
 
-    for (auto &item : set->toArray<std::string>().get()) {
+    for (auto &item : set->to_array<std::string>().get()) {
         std::cout << item << std::endl;
     }
 

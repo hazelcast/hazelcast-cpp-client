@@ -35,45 +35,45 @@ namespace hazelcast {
                 *
                 * @see IMap#isEmpty()
                 */
-                boost::future<bool> isEmpty();
+                boost::future<bool> is_empty();
 
             protected:
-                boost::future<bool> containsKeyData(const serialization::pimpl::Data &key);
+                boost::future<bool> contains_key_data(const serialization::pimpl::Data &key);
 
-                boost::future<boost::optional<serialization::pimpl::Data>>getData(const serialization::pimpl::Data &key);
+                boost::future<boost::optional<serialization::pimpl::Data>>get_data(const serialization::pimpl::Data &key);
 
                 boost::future<boost::optional<serialization::pimpl::Data>>
-                putData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
+                put_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
                 boost::future<void>
-                setData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
+                set_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
                 boost::future<boost::optional<serialization::pimpl::Data>>
-                putIfAbsentData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
+                put_if_absent_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
                 boost::future<boost::optional<serialization::pimpl::Data>>
-                replaceData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
+                replace_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
                 boost::future<bool>
-                replaceData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &oldValue,
+                replace_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &oldValue,
                             const serialization::pimpl::Data &newValue);
 
-                boost::future<boost::optional<serialization::pimpl::Data>>removeData(const serialization::pimpl::Data &key);
+                boost::future<boost::optional<serialization::pimpl::Data>>remove_data(const serialization::pimpl::Data &key);
 
-                boost::future<void> deleteEntryData(const serialization::pimpl::Data &key);
+                boost::future<void> delete_entry_data(const serialization::pimpl::Data &key);
 
                 boost::future<bool>
-                removeData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
+                remove_data(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
-                boost::future<std::vector<serialization::pimpl::Data>> keySetData();
-
-                boost::future<std::vector<serialization::pimpl::Data>>
-                keySetData(const serialization::pimpl::Data &predicate);
-
-                boost::future<std::vector<serialization::pimpl::Data>> valuesData();
+                boost::future<std::vector<serialization::pimpl::Data>> key_set_data();
 
                 boost::future<std::vector<serialization::pimpl::Data>>
-                valuesData(const serialization::pimpl::Data &predicate);
+                key_set_data(const serialization::pimpl::Data &predicate);
+
+                boost::future<std::vector<serialization::pimpl::Data>> values_data();
+
+                boost::future<std::vector<serialization::pimpl::Data>>
+                values_data(const serialization::pimpl::Data &predicate);
 
                 TransactionalMapImpl(const std::string &name, txn::TransactionProxy &transactionProxy);
             };

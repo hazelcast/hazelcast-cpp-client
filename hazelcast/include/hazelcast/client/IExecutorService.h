@@ -74,7 +74,7 @@ namespace hazelcast {
                     }
 
                     try {
-                        return invokeCancelRequest(mayInterruptIfRunning);
+                        return invoke_cancel_request(mayInterruptIfRunning);
                     } catch (exception::IException &) {
                         util::ExceptionUtil::rethrow(std::current_exception());
                     }
@@ -93,8 +93,8 @@ namespace hazelcast {
                 spi::ClientContext &context_;
                 std::shared_ptr<spi::impl::ClientInvocation> invocation_;
 
-                bool invokeCancelRequest(bool mayInterruptIfRunning) {
-                    invocation_->getSendConnectionOrWait();
+                bool invoke_cancel_request(bool mayInterruptIfRunning) {
+                    invocation_->get_send_connection_or_wait();
 
                     if (partitionId_ > -1) {
                         auto request = protocol::codec::executorservice_cancelonpartition_encode(uuid_, mayInterruptIfRunning);
@@ -135,9 +135,9 @@ namespace hazelcast {
             template<typename HazelcastSerializable>
             void execute(const HazelcastSerializable &command,
                          const cluster::memberselector::MemberSelector &memberSelector) {
-                std::vector<Member> members = selectMembers(memberSelector);
+                std::vector<Member> members = select_members(memberSelector);
                 int selectedMember = rand() % (int) members.size();
-                executeOnMember<HazelcastSerializable>(command, members[selectedMember]);
+                execute_on_member<HazelcastSerializable>(command, members[selectedMember]);
             }
 
             /**
@@ -147,8 +147,8 @@ namespace hazelcast {
              * @param key     the specified key
              */
             template<typename HazelcastSerializable, typename K>
-            void executeOnKeyOwner(const HazelcastSerializable &command, const K &key) {
-                submitToKeyOwner<HazelcastSerializable, K>(command, key);
+            void execute_on_key_owner(const HazelcastSerializable &command, const K &key) {
+                submit_to_key_owner<HazelcastSerializable, K>(command, key);
             }
 
             /**
@@ -158,8 +158,8 @@ namespace hazelcast {
              * @param member  the specified member
              */
             template<typename HazelcastSerializable>
-            void executeOnMember(const HazelcastSerializable &command, const Member &member) {
-                submitToMember<HazelcastSerializable, executor_marker>(command, member);
+            void execute_on_member(const HazelcastSerializable &command, const Member &member) {
+                submit_to_member<HazelcastSerializable, executor_marker>(command, member);
             }
 
             /**
@@ -169,9 +169,9 @@ namespace hazelcast {
              * @param members the specified members
              */
             template<typename HazelcastSerializable>
-            void executeOnMembers(const HazelcastSerializable &command, const std::vector<Member> &members) {
+            void execute_on_members(const HazelcastSerializable &command, const std::vector<Member> &members) {
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    submitToMember<HazelcastSerializable, executor_marker>(command, *it);
+                    submit_to_member<HazelcastSerializable, executor_marker>(command, *it);
                 }
             }
 
@@ -183,10 +183,10 @@ namespace hazelcast {
              * @throws RejectedExecutionException if no member is selected
              */
             template<typename HazelcastSerializable>
-            void executeOnMembers(const HazelcastSerializable &command,
+            void execute_on_members(const HazelcastSerializable &command,
                                   const cluster::memberselector::MemberSelector &memberSelector) {
-                std::vector<Member> members = selectMembers(memberSelector);
-                executeOnMembers<HazelcastSerializable>(command, members);
+                std::vector<Member> members = select_members(memberSelector);
+                execute_on_members<HazelcastSerializable>(command, members);
             }
 
             /**
@@ -195,10 +195,10 @@ namespace hazelcast {
              * @param command a task executed  on all of the known cluster members
              */
             template<typename HazelcastSerializable>
-            void executeOnAllMembers(const HazelcastSerializable &command) {
-                std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
+            void execute_on_all_members(const HazelcastSerializable &command) {
+                std::vector<Member> memberList = get_context().get_client_cluster_service().get_member_list();
                 for (std::vector<Member>::const_iterator it = memberList.begin(); it != memberList.end(); ++it) {
-                    submitToMember<HazelcastSerializable, executor_marker>(command, *it);
+                    submit_to_member<HazelcastSerializable, executor_marker>(command, *it);
                 }
             }
 
@@ -213,8 +213,8 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T, typename K>
             executor_promise<T>
-            submitToKeyOwner(const HazelcastSerializable &task, const K &key) {
-                return submitToKeyOwnerInternal<HazelcastSerializable, T, K>(task, key, false);
+            submit_to_key_owner(const HazelcastSerializable &task, const K &key) {
+                return submit_to_key_owner_internal<HazelcastSerializable, T, K>(task, key, false);
             }
 
             /**
@@ -228,8 +228,8 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             executor_promise<T>
-            submitToMember(const HazelcastSerializable &task, const Member &member) {
-                return submitToTargetInternal<HazelcastSerializable, T>(task, member, false);
+            submit_to_member(const HazelcastSerializable &task, const Member &member) {
+                return submit_to_target_internal<HazelcastSerializable, T>(task, member, false);
             }
 
             /**
@@ -243,10 +243,10 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             std::unordered_map<Member, executor_promise<T>>
-            submitToMembers(const HazelcastSerializable &task, const std::vector<Member> &members) {
+            submit_to_members(const HazelcastSerializable &task, const std::vector<Member> &members) {
                 std::unordered_map<Member, executor_promise<T>> futureMap;
                 for (auto &member : members) {
-                    auto f = submitToTargetInternal<HazelcastSerializable, T>(task, member, true);
+                    auto f = submit_to_target_internal<HazelcastSerializable, T>(task, member, true);
                     // no need to check if emplace is success since member is unique
                     futureMap.emplace(member, std::move(f));
                 }
@@ -265,10 +265,10 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             std::unordered_map<Member, executor_promise<T>>
-            submitToMembers(const HazelcastSerializable &task,
+            submit_to_members(const HazelcastSerializable &task,
                             const cluster::memberselector::MemberSelector &memberSelector) {
-                std::vector<Member> members = selectMembers(memberSelector);
-                return submitToMembers<HazelcastSerializable, T>(task, members);
+                std::vector<Member> members = select_members(memberSelector);
+                return submit_to_members<HazelcastSerializable, T>(task, members);
             }
 
             /**
@@ -281,10 +281,10 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             std::unordered_map<Member, executor_promise<T>>
-            submitToAllMembers(const HazelcastSerializable &task) {
+            submit_to_all_members(const HazelcastSerializable &task) {
                 std::unordered_map<Member, executor_promise<T>> futureMap;
-                for (const auto &m : getContext().getClientClusterService().getMemberList()) {
-                    auto f = submitToTargetInternal<HazelcastSerializable, T>(task, m, true);
+                for (const auto &m : get_context().get_client_cluster_service().get_member_list()) {
+                    auto f = submit_to_target_internal<HazelcastSerializable, T>(task, m, true);
                     // no need to check if emplace is success since member is unique
                     futureMap.emplace(m, std::move(f));
                 }
@@ -307,14 +307,14 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             executor_promise<T>
             submit(const HazelcastSerializable &task) {
-                Data taskData = toData<HazelcastSerializable>(task);
+                Data taskData = to_data<HazelcastSerializable>(task);
 
-                if (taskData.hasPartitionHash()) {
-                    int partitionId = getPartitionId(taskData);
+                if (taskData.has_partition_hash()) {
+                    int partitionId = get_partition_id(taskData);
 
-                    return submitToPartitionInternal<T>(taskData, false, partitionId);
+                    return submit_to_partition_internal<T>(taskData, false, partitionId);
                 } else {
-                    return submitToRandomInternal<T>(taskData, false);
+                    return submit_to_random_internal<T>(taskData, false);
                 }
             }
 
@@ -328,14 +328,14 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             void submit(const HazelcastSerializable &task, const std::shared_ptr<ExecutionCallback<T> > &callback) {
-                Data taskData = toData<HazelcastSerializable>(task);
+                Data taskData = to_data<HazelcastSerializable>(task);
 
-                if (taskData.hasPartitionHash()) {
-                    int partitionId = getPartitionId(taskData);
+                if (taskData.has_partition_hash()) {
+                    int partitionId = get_partition_id(taskData);
 
-                    submitToPartitionInternal<T>(taskData, partitionId, callback);
+                    submit_to_partition_internal<T>(taskData, partitionId, callback);
                 } else {
-                    submitToRandomInternal<T>(taskData, callback);
+                    submit_to_random_internal<T>(taskData, callback);
                 }
             }
 
@@ -352,9 +352,9 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             executor_promise<T>
             submit(const HazelcastSerializable &task, const cluster::memberselector::MemberSelector &memberSelector) {
-                std::vector<Member> members = selectMembers(memberSelector);
+                std::vector<Member> members = select_members(memberSelector);
                 int selectedMember = rand() % (int) members.size();
-                return submitToMember<HazelcastSerializable, T>(task, members[selectedMember]);
+                return submit_to_member<HazelcastSerializable, T>(task, members[selectedMember]);
             }
 
             /**
@@ -371,9 +371,9 @@ namespace hazelcast {
             void
             submit(const HazelcastSerializable &task, const cluster::memberselector::MemberSelector &memberSelector,
                    const std::shared_ptr<ExecutionCallback<T> > &callback) {
-                std::vector<Member> members = selectMembers(memberSelector);
+                std::vector<Member> members = select_members(memberSelector);
                 int selectedMember = rand() % (int) members.size();
-                return submitToMember(task, members[selectedMember], callback);
+                return submit_to_member(task, members[selectedMember], callback);
             }
 
             /**
@@ -386,9 +386,9 @@ namespace hazelcast {
              * @param <T>      the response type of callback
              */
             template<typename HazelcastSerializable, typename T, typename K>
-            void submitToKeyOwner(const HazelcastSerializable &task, const K &key,
+            void submit_to_key_owner(const HazelcastSerializable &task, const K &key,
                                   const std::shared_ptr<ExecutionCallback<T> > &callback) {
-                submitToKeyOwnerInternal<HazelcastSerializable, T, K>(task, key, callback);
+                submit_to_key_owner_internal<HazelcastSerializable, T, K>(task, key, callback);
             }
 
             /**
@@ -401,9 +401,9 @@ namespace hazelcast {
              * @param <T>      the response type of callback
              */
             template<typename HazelcastSerializable, typename T>
-            void submitToMember(const HazelcastSerializable &task, const Member &member,
+            void submit_to_member(const HazelcastSerializable &task, const Member &member,
                                 const std::shared_ptr<ExecutionCallback<T> > &callback) {
-                return submitToTargetInternal<HazelcastSerializable, T>(task, member, callback);
+                return submit_to_target_internal<HazelcastSerializable, T>(task, member, callback);
             }
 
             /**
@@ -416,7 +416,7 @@ namespace hazelcast {
              * @param callback callback
              */
             template<typename HazelcastSerializable, typename T>
-            void submitToMembers(const HazelcastSerializable &task, const std::vector<Member> &members,
+            void submit_to_members(const HazelcastSerializable &task, const std::vector<Member> &members,
                                  const std::shared_ptr<MultiExecutionCallback<T> > &callback) {
                 std::shared_ptr<MultiExecutionCallbackWrapper < T> >
                 multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) members.size(), callback));
@@ -424,7 +424,7 @@ namespace hazelcast {
                 for (auto &member : members) {
                     std::shared_ptr<ExecutionCallbackWrapper < T> >
                     executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, member));
-                    submitToMember<HazelcastSerializable, T>(task, member, executionCallback);
+                    submit_to_member<HazelcastSerializable, T>(task, member, executionCallback);
                 }
             }
 
@@ -439,11 +439,11 @@ namespace hazelcast {
              * @throws RejectedExecutionException if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
-            void submitToMembers(const HazelcastSerializable &task,
+            void submit_to_members(const HazelcastSerializable &task,
                                  const cluster::memberselector::MemberSelector &memberSelector,
                                  const std::shared_ptr<MultiExecutionCallback<T> > &callback) {
-                std::vector<Member> members = selectMembers(memberSelector);
-                submitToMembers<HazelcastSerializable, T>(task, members, callback);
+                std::vector<Member> members = select_members(memberSelector);
+                submit_to_members<HazelcastSerializable, T>(task, members, callback);
             }
 
             /**
@@ -455,10 +455,10 @@ namespace hazelcast {
              * @param callback callback
              */
             template<typename HazelcastSerializable, typename T>
-            void submitToAllMembers(const HazelcastSerializable &task,
+            void submit_to_all_members(const HazelcastSerializable &task,
                                     const std::shared_ptr<MultiExecutionCallback<T> > &callback) {
-                std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
-                submitToMembers<HazelcastSerializable, T>(task, memberList, callback);
+                std::vector<Member> memberList = get_context().get_client_cluster_service().get_member_list();
+                submit_to_members<HazelcastSerializable, T>(task, memberList, callback);
             }
 
             /**
@@ -477,7 +477,7 @@ namespace hazelcast {
              *
              * @return {@code true} if this executor has been shut down
              */
-            boost::future<bool> isShutdown();
+            boost::future<bool> is_shutdown();
 
             /**
              * Returns {@code true} if all tasks have completed following shut down.
@@ -486,7 +486,7 @@ namespace hazelcast {
              *
              * @return {@code true} if all tasks have completed following shut down
              */
-            boost::future<bool> isTerminated();
+            boost::future<bool> is_terminated();
 
         private:
             IExecutorService(const std::string &name, spi::ClientContext *context);
@@ -502,32 +502,32 @@ namespace hazelcast {
                 }
 
             public:
-                void onResponse(const Member &member, const boost::optional<T> &value) override {
-                    multiExecutionCallback_->onResponse(member, value);
+                void on_response(const Member &member, const boost::optional<T> &value) override {
+                    multiExecutionCallback_->on_response(member, value);
 
                     std::lock_guard<std::mutex> guard(lock_);
                     values_[member] = value;
                     int waitingResponse = --members_;
                     if (waitingResponse == 0) {
-                        onComplete(values_, exceptions_);
+                        on_complete(values_, exceptions_);
                     }
                 }
 
                 void
-                onFailure(const Member &member, std::exception_ptr exception) override {
-                    multiExecutionCallback_->onFailure(member, exception);
+                on_failure(const Member &member, std::exception_ptr exception) override {
+                    multiExecutionCallback_->on_failure(member, exception);
 
                     std::lock_guard<std::mutex> guard(lock_);
                     exceptions_[member] = exception;
                     int waitingResponse = --members_;
                     if (waitingResponse == 0) {
-                        onComplete(values_, exceptions_);
+                        on_complete(values_, exceptions_);
                     }
                 }
 
-                void onComplete(const std::unordered_map<Member, boost::optional<T> > &vals,
+                void on_complete(const std::unordered_map<Member, boost::optional<T> > &vals,
                                         const std::unordered_map<Member, std::exception_ptr> &excs) override {
-                    multiExecutionCallback_->onComplete(vals, excs);
+                    multiExecutionCallback_->on_complete(vals, excs);
                 }
 
             private:
@@ -548,12 +548,12 @@ namespace hazelcast {
                         Member member) : multiExecutionCallbackWrapper_(multiExecutionCallbackWrapper),
                                                 member_(std::move(member)) {}
 
-                void onResponse(const boost::optional<T> &response) override {
-                    multiExecutionCallbackWrapper_->onResponse(member_, response);
+                void on_response(const boost::optional<T> &response) override {
+                    multiExecutionCallbackWrapper_->on_response(member_, response);
                 }
 
-                void onFailure(std::exception_ptr e) override {
-                    multiExecutionCallbackWrapper_->onFailure(member_, e);
+                void on_failure(std::exception_ptr e) override {
+                    multiExecutionCallbackWrapper_->on_failure(member_, e);
                 }
 
             private:
@@ -561,152 +561,152 @@ namespace hazelcast {
                 const Member member_;
             };
 
-            std::vector<Member> selectMembers(const cluster::memberselector::MemberSelector &memberSelector);
+            std::vector<Member> select_members(const cluster::memberselector::MemberSelector &memberSelector);
 
             template<typename T>
             executor_promise<T>
-            submitToPartitionInternal(const serialization::pimpl::Data &taskData, bool preventSync, int partitionId) {
+            submit_to_partition_internal(const serialization::pimpl::Data &taskData, bool preventSync, int partitionId) {
                 auto uuid = context_.random_uuid();
 
-                auto f = invokeOnPartitionInternal(taskData, partitionId, uuid);
+                auto f = invoke_on_partition_internal(taskData, partitionId, uuid);
 
-                return checkSync<T>(f, uuid, partitionId, preventSync);
+                return check_sync<T>(f, uuid, partitionId, preventSync);
             }
 
             template<typename T>
-            void submitToPartitionInternal(const serialization::pimpl::Data &taskData, int partitionId,
+            void submit_to_partition_internal(const serialization::pimpl::Data &taskData, int partitionId,
                                            const std::shared_ptr<ExecutionCallback<T> > &callback) {
                 boost::uuids::uuid uuid = context_.random_uuid();
 
-                auto messageFuture = invokeOnPartitionInternal(taskData, partitionId, uuid);
+                auto messageFuture = invoke_on_partition_internal(taskData, partitionId, uuid);
 
-                serialization::pimpl::SerializationService *serializationService = &getSerializationService();
-                spi::impl::ClientExecutionServiceImpl *executionService = &getContext().getClientExecutionService();
+                serialization::pimpl::SerializationService *serializationService = &get_serialization_service();
+                spi::impl::ClientExecutionServiceImpl *executionService = &get_context().get_client_execution_service();
                 messageFuture.first.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     try {
-                        auto result = retrieveResultFromMessage<T>(serializationService, std::move(f));
-                        executionService->execute([=]() { callback->onResponse(result); });
+                        auto result = retrieve_result_from_message<T>(serializationService, std::move(f));
+                        executionService->execute([=]() { callback->on_response(result); });
                     } catch (exception::IException &) {
                         auto exception = std::current_exception();
-                        executionService->execute([=]() { callback->onFailure(exception); });
+                        executionService->execute([=]() { callback->on_failure(exception); });
                     }
                 });
             }
 
             std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
-            invokeOnPartitionInternal(const serialization::pimpl::Data &taskData, int partitionId,
+            invoke_on_partition_internal(const serialization::pimpl::Data &taskData, int partitionId,
                                       boost::uuids::uuid uuid) {
-                return invokeOnPartitionOwner(
+                return invoke_on_partition_owner(
                         protocol::codec::executorservice_submittopartition_encode(name_, uuid, taskData), partitionId);
             }
 
             template<typename HazelcastSerializable, typename T, typename K>
             executor_promise<T>
-            submitToKeyOwnerInternal(const HazelcastSerializable &task, const K &key, bool preventSync) {
+            submit_to_key_owner_internal(const HazelcastSerializable &task, const K &key, bool preventSync) {
 
-                Data dataKey = toData<K>(key);
+                Data dataKey = to_data<K>(key);
 
-                int partitionId = getPartitionId(dataKey);
+                int partitionId = get_partition_id(dataKey);
 
-                return submitToPartitionInternal<T>(toData<HazelcastSerializable>(task), preventSync, partitionId);
+                return submit_to_partition_internal<T>(to_data<HazelcastSerializable>(task), preventSync, partitionId);
             }
 
             template<typename HazelcastSerializable, typename T, typename K>
-            void submitToKeyOwnerInternal(const HazelcastSerializable &task, const K &key,
+            void submit_to_key_owner_internal(const HazelcastSerializable &task, const K &key,
                                           const std::shared_ptr<ExecutionCallback<T> > &callback) {
 
-                Data dataKey = toData<K>(key);
+                Data dataKey = to_data<K>(key);
 
-                int partitionId = getPartitionId(dataKey);
+                int partitionId = get_partition_id(dataKey);
 
-                submitToPartitionInternal<T>(toData<HazelcastSerializable>(task), partitionId, callback);
+                submit_to_partition_internal<T>(to_data<HazelcastSerializable>(task), partitionId, callback);
             }
 
             template<typename T>
             executor_promise<T>
-            submitToRandomInternal(const serialization::pimpl::Data &taskData, bool preventSync) {
+            submit_to_random_internal(const serialization::pimpl::Data &taskData, bool preventSync) {
 
-                int partitionId = randomPartitionId();
+                int partitionId = random_partition_id();
 
-                return submitToPartitionInternal<T>(taskData, preventSync, partitionId);
+                return submit_to_partition_internal<T>(taskData, preventSync, partitionId);
             }
 
             template<typename T>
-            void submitToRandomInternal(const serialization::pimpl::Data &taskData,
+            void submit_to_random_internal(const serialization::pimpl::Data &taskData,
                                         const std::shared_ptr<ExecutionCallback<T> > &callback) {
 
-                int partitionId = randomPartitionId();
+                int partitionId = random_partition_id();
 
-                submitToPartitionInternal<T>(taskData, partitionId, callback);
+                submit_to_partition_internal<T>(taskData, partitionId, callback);
             }
 
             template<typename HazelcastSerializable, typename T>
-            executor_promise<T> submitToTargetInternal(const HazelcastSerializable &task, const Member &member,
+            executor_promise<T> submit_to_target_internal(const HazelcastSerializable &task, const Member &member,
                                                        bool preventSync) {
                 boost::uuids::uuid uuid = context_.random_uuid();
 
-                auto f = invokeOnTargetInternal<HazelcastSerializable>(task, member, uuid);
+                auto f = invoke_on_target_internal<HazelcastSerializable>(task, member, uuid);
 
-                return checkSync<T>(f, uuid, -1, member, preventSync);
+                return check_sync<T>(f, uuid, -1, member, preventSync);
             }
 
             template<typename HazelcastSerializable, typename T>
-            void submitToTargetInternal(const HazelcastSerializable &task, const Member &member,
+            void submit_to_target_internal(const HazelcastSerializable &task, const Member &member,
                                         const std::shared_ptr<ExecutionCallback<T> > &callback) {
                 boost::uuids::uuid uuid = context_.random_uuid();
 
-                auto messageFuture = invokeOnTargetInternal<HazelcastSerializable>(task, member, uuid);
+                auto messageFuture = invoke_on_target_internal<HazelcastSerializable>(task, member, uuid);
 
-                serialization::pimpl::SerializationService *serializationService = &(getSerializationService());
-                spi::impl::ClientExecutionServiceImpl *executionService = &getContext().getClientExecutionService();
+                serialization::pimpl::SerializationService *serializationService = &(get_serialization_service());
+                spi::impl::ClientExecutionServiceImpl *executionService = &get_context().get_client_execution_service();
                 messageFuture.first.then(boost::launch::sync, [=](boost::future<protocol::ClientMessage> f) {
                     try {
-                        auto result = retrieveResultFromMessage<T>(serializationService, std::move(f));
-                        executionService->execute([=]() { callback->onResponse(result); });
+                        auto result = retrieve_result_from_message<T>(serializationService, std::move(f));
+                        executionService->execute([=]() { callback->on_response(result); });
                     } catch (exception::IException &) {
                         auto exception = std::current_exception();
-                        executionService->execute([=]() { callback->onFailure(exception); });
+                        executionService->execute([=]() { callback->on_failure(exception); });
                     }
                 });
             }
 
             template<typename HazelcastSerializable>
             std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
-            invokeOnTargetInternal(const HazelcastSerializable &task, const Member &member,
+            invoke_on_target_internal(const HazelcastSerializable &task, const Member &member,
                                    boost::uuids::uuid uuid) {
-                return invokeOnTarget(
-                        protocol::codec::executorservice_submittomember_encode(name_, uuid, toData(task), member.getUuid()),
-                        member.getUuid());
+                return invoke_on_target(
+                        protocol::codec::executorservice_submittomember_encode(name_, uuid, to_data(task), member.get_uuid()),
+                        member.get_uuid());
             }
 
             std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
-            invokeOnPartitionOwner(protocol::ClientMessage &&request, int partitionId);
+            invoke_on_partition_owner(protocol::ClientMessage &&request, int partitionId);
 
             std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>>
-            invokeOnTarget(protocol::ClientMessage &&request, boost::uuids::uuid target);
+            invoke_on_target(protocol::ClientMessage &&request, boost::uuids::uuid target);
 
             template<typename T>
             boost::optional<T>
-            retrieveResultFromMessage(serialization::pimpl::SerializationService *serializationService,
+            retrieve_result_from_message(serialization::pimpl::SerializationService *serializationService,
                     boost::future<protocol::ClientMessage> f) {
                 auto msg = f.get();
                 msg.skip_frame();
-                return serializationService->toObject<T>(msg.getNullable<serialization::pimpl::Data>().get_ptr());
+                return serializationService->to_object<T>(msg.get_nullable<serialization::pimpl::Data>().get_ptr());
             }
 
             template<typename T>
             executor_promise<T>
-            checkSync(
+            check_sync(
                     std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
                     boost::uuids::uuid uuid, int partitionId, bool preventSync) {
-                return checkSync<T>(futurePair, uuid, partitionId, Member(), preventSync);
+                return check_sync<T>(futurePair, uuid, partitionId, Member(), preventSync);
             }
 
             template<typename T>
             boost::future<boost::optional<T>>
-            retrieveResultSync(boost::future<protocol::ClientMessage> future) {
+            retrieve_result_sync(boost::future<protocol::ClientMessage> future) {
                 try {
-                    auto response = retrieveResultFromMessage<T>(&(getSerializationService()), std::move(future));
+                    auto response = retrieve_result_from_message<T>(&(get_serialization_service()), std::move(future));
                     return boost::make_ready_future(response);
                 } catch (exception::IException &) {
                     return boost::make_exceptional_future<boost::optional<T>>(boost::current_exception());
@@ -715,43 +715,43 @@ namespace hazelcast {
 
             template<typename T>
             typename std::enable_if<!std::is_same<executor_marker, T>::value, executor_promise<T>>::type
-            checkSync(
+            check_sync(
                     std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
                     boost::uuids::uuid uuid, int partitionId, const Member &member, bool preventSync) {
-                bool sync = isSyncComputation(preventSync);
+                bool sync = is_sync_computation(preventSync);
                 boost::future<boost::optional<T>> objectFuture;
                 if (sync) {
-                    objectFuture = retrieveResultSync<T>(std::move(futurePair.first));
+                    objectFuture = retrieve_result_sync<T>(std::move(futurePair.first));
                 } else {
-                    serialization::pimpl::SerializationService *serializationService = &getSerializationService();
+                    serialization::pimpl::SerializationService *serializationService = &get_serialization_service();
                     objectFuture = futurePair.first.then(boost::launch::sync,
                                                          [=](boost::future<protocol::ClientMessage> f) {
-                                                             return retrieveResultFromMessage<T>(
+                                                             return retrieve_result_from_message<T>(
                                                                      serializationService, std::move(f));
                                                          });
                 }
 
-                return executor_promise<T>(objectFuture, uuid, partitionId, member.getUuid(), getContext(), futurePair.second);
+                return executor_promise<T>(objectFuture, uuid, partitionId, member.get_uuid(), get_context(), futurePair.second);
             }
 
             template<typename T>
             typename std::enable_if<std::is_same<executor_marker, T>::value, executor_promise<T>>::type
-            checkSync(
+            check_sync(
                     std::pair<boost::future<protocol::ClientMessage>, std::shared_ptr<spi::impl::ClientInvocation>> &futurePair,
                     boost::uuids::uuid uuid, int partitionId, const Member &member, bool preventSync) {
-                bool sync = isSyncComputation(preventSync);
+                bool sync = is_sync_computation(preventSync);
                 if (sync) {
                     futurePair.first.get();
                 }
 
-                return executor_promise<T>(getContext());
+                return executor_promise<T>(get_context());
             }
 
-            bool isSyncComputation(bool preventSync);
+            bool is_sync_computation(bool preventSync);
 
-            Address getMemberAddress(const Member &member);
+            Address get_member_address(const Member &member);
 
-            int randomPartitionId();
+            int random_partition_id();
 
             static const int32_t MIN_TIME_RESOLUTION_OF_CONSECUTIVE_SUBMITS = 10;
             static const int32_t MAX_CONSECUTIVE_SUBMITS = 100;
