@@ -45,7 +45,7 @@ namespace hazelcast {
                     class DefaultNearCache : public NearCache<KS, V> {
                     public:
                         DefaultNearCache(const std::string &cacheName,
-                                         const client::config::NearCacheConfig<K, V> &config,
+                                         const client::config::NearCacheConfig &config,
                                          const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
                                          serialization::pimpl::SerializationService &ss, logger &lg)
                                 : name(cacheName), nearCacheConfig(config), executionService(es),
@@ -136,7 +136,7 @@ namespace hazelcast {
                     private:
                         std::unique_ptr<NearCacheRecordStore<KS, V> >
                         createNearCacheRecordStore(const std::string &name,
-                                                   const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                                   const client::config::NearCacheConfig &nearCacheConfig) {
                             client::config::InMemoryFormat inMemoryFormat = nearCacheConfig.getInMemoryFormat();
                             switch (inMemoryFormat) {
                                 case client::config::BINARY:
@@ -185,7 +185,7 @@ namespace hazelcast {
                         }
 
                         const std::string &name;
-                        const client::config::NearCacheConfig<K, V> &nearCacheConfig;
+                        const client::config::NearCacheConfig &nearCacheConfig;
                         std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
                         serialization::pimpl::SerializationService &serializationService;
                         logger &logger_;

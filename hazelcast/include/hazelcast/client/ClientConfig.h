@@ -268,41 +268,27 @@ namespace hazelcast {
              * \param name the name of the reliable topic
              * \return the found config. If none is found, a default configured one is returned.
              */
-            const config::ReliableTopicConfig *getReliableTopicConfig(const std::string &name);
+            const config::ReliableTopicConfig &getReliableTopicConfig(const std::string &name);
 
             /**
              * Helper method to add a new NearCacheConfig
              *
-             * \param nearCacheConfig {\link com.hazelcast.config.NearCacheConfig} to be added
-             * \return configured {\link com.hazelcast.client.config.ClientConfig} for chaining
-             * @see com.hazelcast.config.NearCacheConfig
+             * \param nearCacheConfig NearCacheConfig to be added
+             * \return configured ClientConfig for chaining
+             * @see NearCacheConfig
              * 
              * Memory ownership of the config is passed to the client config
              */
-            template <typename K, typename V>
-            ClientConfig &addNearCacheConfig(const std::shared_ptr<config::NearCacheConfig<K, V> > nearCacheConfig) {
-                nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
-                return *this;
-            }
+            ClientConfig &addNearCacheConfig(const config::NearCacheConfig &nearCacheConfig);
 
             /**
-             * Gets the {\link NearCacheConfig} configured for the map / cache with name
+             * Gets the NearCacheConfig configured for the map / cache with name
              *
              * \param name name of the map / cache
-             * \return Configured {\link NearCacheConfig}
-             * @see com.hazelcast.config.NearCacheConfig
+             * \return Configured NearCacheConfig
+             * @see NearCacheConfig
              */
-            template <typename K, typename V>
-            const std::shared_ptr<config::NearCacheConfig<K, V> > getNearCacheConfig(const std::string &name) {
-                std::shared_ptr<config::NearCacheConfigBase> nearCacheConfig = internal::config::ConfigUtils::lookupByPattern<config::NearCacheConfigBase>(
-                        configPatternMatcher, nearCacheConfigMap, name);
-                if (nearCacheConfig.get() == NULL) {
-                    nearCacheConfig = nearCacheConfigMap.get("default");
-                }
-                // not needed for c++ client since it is always native memory
-                //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
-                return std::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig);
-            }
+            const config::NearCacheConfig *getNearCacheConfig(const std::string &name) const;
 
             /**
              * Gets {\link com.hazelcast.client.config.ClientNetworkConfig}
@@ -316,7 +302,7 @@ namespace hazelcast {
              * Sets {\link com.hazelcast.client.config.ClientNetworkConfig}
              *
              * \param networkConfig {\link com.hazelcast.client.config.ClientNetworkConfig} to be set
-             * \return configured {\link com.hazelcast.client.config.ClientConfig} for chaining
+             * \return configured ClientConfig for chaining
              * @see com.hazelcast.client.config.ClientNetworkConfig
              */
             ClientConfig &setNetworkConfig(const config::ClientNetworkConfig &networkConfig);
@@ -336,7 +322,7 @@ namespace hazelcast {
              * Sets Client side Executor pool size.
              *
              * \param executorPoolSize pool size
-             * \return configured {\link com.hazelcast.client.config.ClientConfig} for chaining
+             * \return configured ClientConfig for chaining
              */
             void setExecutorPoolSize(int32_t executorPoolSize);
 
@@ -360,7 +346,7 @@ namespace hazelcast {
              * @see #setConfigPatternMatcher(ConfigPatternMatcher)
              * @see #getConfigPatternMatcher()
              */
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> findFlakeIdGeneratorConfig(const std::string &name);
+            const config::ClientFlakeIdGeneratorConfig *findFlakeIdGeneratorConfig(const std::string &name);
 
             /**
              * Returns the {\link ClientFlakeIdGeneratorConfig} for the given name, creating
@@ -387,7 +373,7 @@ namespace hazelcast {
              * @throws ConfigurationException if ambiguous configurations are found
              * @see StringPartitioningStrategy#getBaseName(std::string)
              */
-            std::shared_ptr<config::ClientFlakeIdGeneratorConfig> getFlakeIdGeneratorConfig(const std::string &name);
+            const config::ClientFlakeIdGeneratorConfig *getFlakeIdGeneratorConfig(const std::string &name);
 
             /**
              * Adds a flake ID generator configuration. The configuration is saved under the config
@@ -397,7 +383,7 @@ namespace hazelcast {
              * \param config the flake ID configuration
              * \return this config instance
              */
-            ClientConfig &addFlakeIdGeneratorConfig(const std::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config);
+            ClientConfig &addFlakeIdGeneratorConfig(const config::ClientFlakeIdGeneratorConfig &config);
 
             /**
              *
@@ -455,7 +441,7 @@ namespace hazelcast {
 
             std::unordered_map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
 
-            util::SynchronizedMap<std::string, config::NearCacheConfigBase> nearCacheConfigMap;
+            std::unordered_map<std::string, config::NearCacheConfig> nearCacheConfigMap;
 
             std::shared_ptr<std::string> instanceName;
 
@@ -466,7 +452,7 @@ namespace hazelcast {
 
             config::ClientConnectionStrategyConfig connectionStrategyConfig;
 
-            util::SynchronizedMap<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap;
+            std::unordered_map<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap;
 
             config::matcher::MatchingPointConfigPatternMatcher configPatternMatcher;
 

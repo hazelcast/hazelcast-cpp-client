@@ -48,7 +48,7 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    find_package(Thrift REQUIRED HINTS C:\\vcpkg\\packages)
+    find_package(Thrift REQUIRED)
     set(THRIFT_INCLUDE_DIR ${THRIFT_INCLUDE_DIR}/..)
     message(STATUS "Using THRIFT_INCLUDE_DIR: ${THRIFT_INCLUDE_DIR}")
     message(STATUS "Using THRIFT_LIBRARIES: ${THRIFT_LIBRARIES}")

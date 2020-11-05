@@ -127,8 +127,6 @@ ELSE ()
 ENDIF()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(BOOST_HINTS "C:\\\\Boost")
-
 	if (${CMAKE_BUILD_TYPE} MATCHES "Release")
 		set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
 		set(Boost_USE_MULTITHREADED      ON)
@@ -144,7 +142,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	message(STATUS "Using Boost_USE_DEBUG_LIBS: ${Boost_USE_DEBUG_LIBS}")
 	message(STATUS "Using Boost_USE_RELEASE_LIBS: ${Boost_USE_RELEASE_LIBS}")
 endif()
-find_package(Boost 1.72 REQUIRED COMPONENTS thread chrono HINTS ${BOOST_HINTS})
+find_package(Boost REQUIRED COMPONENTS thread chrono)
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(Boost::thread Boost::chrono)
 add_definitions("-DBOOST_THREAD_VERSION=5")

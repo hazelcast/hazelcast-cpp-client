@@ -69,7 +69,7 @@ namespace hazelcast {
              *
              * @return the timeout
              */
-            std::chrono::steady_clock::duration getTimeout() const;
+            std::chrono::milliseconds getTimeout() const;
 
             /**
             *
@@ -81,7 +81,7 @@ namespace hazelcast {
             * @throws IllegalArgumentException if timeout smaller or equal than 0, or timeUnit is null.
             * @see #getTimeout()
             */
-            TransactionOptions& setTimeout(std::chrono::steady_clock::duration duration);
+            TransactionOptions& setTimeout(std::chrono::milliseconds duration);
 
             /**
             *
@@ -103,7 +103,7 @@ namespace hazelcast {
             TransactionOptions& setDurability(int numMachines);
 
         private:
-            std::chrono::steady_clock::duration timeout;
+            std::chrono::milliseconds timeout;
             int durability;
             TransactionType transactionType;
         };
