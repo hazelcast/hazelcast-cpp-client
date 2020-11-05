@@ -86,7 +86,7 @@ namespace hazelcast {
                 int id = ++runnerCounter;
                 std::shared_ptr<MessageRunner < Listener>>
                 runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer, getName(),
-                                                   getSerializationService(), *config, logger_));
+                                                   getSerializationService(), config, logger_));
                 runnersMap.put(id, runner);
                 runner->next();
                 return std::to_string(id);
