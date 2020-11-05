@@ -87,7 +87,7 @@ namespace hazelcast {
             protected:
                 boost::future<boost::optional<serialization::pimpl::Data>>
                 putData(serialization::pimpl::Data &&keyData, serialization::pimpl::Data &&valueData,
-                    std::chrono::steady_clock::duration ttl) {
+                    std::chrono::milliseconds ttl) {
                     try {
                         auto request = protocol::codec::replicatedmap_put_encode(name, keyData, valueData,
                                                                                              std::chrono::duration_cast<std::chrono::milliseconds>(

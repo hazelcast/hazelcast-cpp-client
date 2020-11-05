@@ -50,7 +50,7 @@ namespace hazelcast {
                     bool start();
 
                     std::unique_ptr<Socket>
-                    create(const Address &address, std::chrono::steady_clock::duration &connectTimeoutInMillis);
+                    create(const Address &address, std::chrono::milliseconds &connectTimeoutInMillis);
 
                 private:
                     spi::ClientContext &clientContext;

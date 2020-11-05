@@ -326,8 +326,8 @@ namespace hazelcast {
             return toVoidFuture(wait_for(std::chrono::hours::max()));
         }
 
-        boost::future<std::cv_status> latch::wait_for(int64_t milliseconds) {
-            auto timeout_millis = std::max<int64_t>(0, milliseconds);
+        boost::future<std::cv_status> latch::wait_for(std::chrono::milliseconds timeout) {
+            auto timeout_millis = std::max<int64_t>(0, timeout.count());
             auto invoation_uid = getContext().getHazelcastClientImplementation()->random_uuid();
             auto request = countdownlatch_await_encode(group_id_, object_name_, invoation_uid, timeout_millis);
             return invokeAndGetFuture<bool>(request).then(boost::launch::deferred, [] (boost::future<bool> f) {
@@ -437,7 +437,7 @@ namespace hazelcast {
 
         boost::future<int64_t>
         fenced_lock::do_try_lock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid,
-                                 std::chrono::steady_clock::duration timeout) {
+                                 std::chrono::milliseconds timeout) {
             auto request = client::protocol::codec::fencedlock_trylock_encode(group_id_, object_name_, session_id,
                                                                               thread_id, invocation_uid,
                                                                               std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -474,7 +474,7 @@ namespace hazelcast {
             });
         }
 
-        boost::future<bool> fenced_lock::try_lock(std::chrono::steady_clock::duration timeout) {
+        boost::future<bool> fenced_lock::try_lock(std::chrono::milliseconds timeout) {
             return try_lock_and_get_fence(timeout).then(boost::launch::deferred, [] (boost::future<int64_t> f) {
                 return f.get() != INVALID_FENCE;
             });
@@ -485,7 +485,7 @@ namespace hazelcast {
         }
 
         boost::future<int64_t>
-        fenced_lock::try_lock_and_get_fence(std::chrono::steady_clock::duration timeout) {
+        fenced_lock::try_lock_and_get_fence(std::chrono::milliseconds timeout) {
             auto thread_id = util::getCurrentThreadId();
             auto invocation_uid = getContext().random_uuid();
 
@@ -695,6 +695,13 @@ namespace hazelcast {
 
         boost::future<bool> counting_semaphore::try_acquire(int32_t permits) {
             return try_acquire_for(std::chrono::milliseconds::zero(), permits);
+        }
+
+        boost::future<bool> counting_semaphore::try_acquire_for(std::chrono::milliseconds rel_time, int32_t permits) {
+            if (rel_time < std::chrono::milliseconds::zero()) {
+                rel_time = std::chrono::milliseconds ::zero();
+            }
+            return try_acquire_for_millis(permits, rel_time);
         }
 
         boost::future<void> counting_semaphore::do_release(int32_t permits, int64_t thread_id, int64_t session_id) {

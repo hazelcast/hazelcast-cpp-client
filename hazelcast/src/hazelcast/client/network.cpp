@@ -83,12 +83,12 @@ namespace hazelcast {
                       smart_routing_enabled_(client.getClientConfig().getNetworkConfig().isSmartRouting()),
                       connect_to_cluster_task_submitted_(false),
                       client_uuid_(client.random_uuid()),
-                      authentication_timeout_(heartbeat.getHeartbeatTimeout().count()),
+                      authentication_timeout_(boost::chrono::milliseconds(heartbeat.getHeartbeatTimeout().count())),
                       cluster_id_(boost::uuids::nil_uuid()),
                       load_balancer_(client.getClientConfig().getLoadBalancer()) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
-                int64_t connTimeout = networkConfig.getConnectionTimeout();
-                if (connTimeout > 0) {
+                auto connTimeout = networkConfig.getConnectionTimeout();
+                if (connTimeout.count() > 0) {
                     connectionTimeoutMillis = std::chrono::milliseconds(connTimeout);
                 }
 
@@ -250,8 +250,7 @@ namespace hazelcast {
                     if (f.wait_for(authentication_timeout_) != boost::future_status::ready) {
                         BOOST_THROW_EXCEPTION(exception::TimeoutException(
                                 "ClientConnectionManagerImpl::authenticate", (boost::format("Authentication response is "
-                                "not received for %1% msecs for %2%") %(boost::chrono::duration_cast<boost::chrono::milliseconds>(
-                                authentication_timeout_).count()) %*clientInvocation).str()));
+                                "not received for %1% msecs for %2%") %authentication_timeout_.count() %*clientInvocation).str()));
                     }
                     auto response = f.get();
                     auto *initial_frame = reinterpret_cast<ClientMessage::frame_header_t *>(response.rd_ptr(ClientMessage::RESPONSE_HEADER_LEN));
@@ -434,7 +433,7 @@ namespace hazelcast {
 
                 while (attempt < connectionAttemptLimit) {
                     attempt++;
-                    int64_t nextTry = util::currentTimeMillis() + connectionAttemptPeriod;
+                    auto nextTryTime = std::chrono::steady_clock::now() + connectionAttemptPeriod;
 
                     for (const Address &address : getPossibleMemberAddresses()) {
                         check_client_active();
@@ -450,7 +449,8 @@ namespace hazelcast {
                     check_client_active();
 
                     if (attempt < connectionAttemptLimit) {
-                        const int64_t remainingTime = nextTry - util::currentTimeMillis();
+                        auto remainingTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                nextTryTime - std::chrono::steady_clock::now()).count();
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("Unable to get alive cluster connection, try in "
                                                      "%1% ms later, attempt %2% of %3%.")
@@ -753,7 +753,8 @@ namespace hazelcast {
 
             ReadHandler::ReadHandler(Connection &connection, size_t bufferSize)
                     : buffer(new char[bufferSize]), byteBuffer(buffer, bufferSize), builder(connection),
-                      lastReadTimeDuration(std::chrono::steady_clock::now().time_since_epoch()) {
+                      lastReadTimeDuration(std::chrono::duration_cast<std::chrono::milliseconds>(
+                              std::chrono::steady_clock::now().time_since_epoch())) {
             }
 
             ReadHandler::~ReadHandler() {
@@ -761,7 +762,8 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                lastReadTimeDuration = std::chrono::steady_clock::now().time_since_epoch();
+                lastReadTimeDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::steady_clock::now().time_since_epoch());
 
                 if (byteBuffer.position() == 0)
                     return;
@@ -781,13 +783,14 @@ namespace hazelcast {
             }
 
             std::chrono::steady_clock::time_point ReadHandler::getLastReadTime() const {
-                return std::chrono::steady_clock::time_point(lastReadTimeDuration);
+                return std::chrono::steady_clock::time_point(
+                        std::chrono::duration_cast<std::chrono::steady_clock::duration>(lastReadTimeDuration.load()));
             }
 
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId, // NOLINT(cppcoreguidelines-pro-type-member-init)
                                    internal::socket::SocketFactory &socketFactory,
                                    ClientConnectionManagerImpl &clientConnectionManager,
-                                   std::chrono::steady_clock::duration &connectTimeoutInMillis)
+                                   std::chrono::milliseconds &connectTimeoutInMillis)
                     : readHandler(*this, 16 << 10),
                       startTime(std::chrono::system_clock::now()),
                       closedTimeDuration(),
@@ -837,7 +840,8 @@ namespace hazelcast {
                     return;
                 }
 
-                closedTimeDuration.store(std::chrono::steady_clock::now().time_since_epoch());
+                closedTimeDuration.store(std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::steady_clock::now().time_since_epoch()));
 
                 if (backup_timer_) {
                     boost::system::error_code ignored;
@@ -1006,7 +1010,8 @@ namespace hazelcast {
                     os << "null";
                 }
                 os << ", lastReadTime=" << util::StringUtil::timeToString(connection.lastReadTime())
-                   << ", closedTime=" << util::StringUtil::timeToString(std::chrono::steady_clock::time_point(connection.closedTimeDuration))
+                   << ", closedTime=" << util::StringUtil::timeToString(std::chrono::steady_clock::time_point(
+                        std::chrono::duration_cast<std::chrono::steady_clock::duration>(connection.closedTimeDuration.load())))
                    << ", connected server version=" << connection.connectedServerVersionString
                    << '}';
 
@@ -1103,7 +1108,7 @@ namespace hazelcast {
                 }
             }
 
-            std::chrono::steady_clock::duration HeartbeatManager::getHeartbeatTimeout() const {
+            std::chrono::milliseconds HeartbeatManager::getHeartbeatTimeout() const {
                 return heartbeat_timeout_;
             }
 
@@ -1171,7 +1176,7 @@ namespace hazelcast {
                 }
 
                 std::unique_ptr<Socket> SocketFactory::create(const Address &address,
-                                                              std::chrono::steady_clock::duration &connectTimeoutInMillis) {
+                                                              std::chrono::milliseconds &connectTimeoutInMillis) {
 #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
                         return std::unique_ptr<Socket>(new internal::socket::SSLSocket(io, *sslContext, address,
@@ -1189,7 +1194,7 @@ namespace hazelcast {
 
                 SSLSocket::SSLSocket(boost::asio::io_context &ioService, boost::asio::ssl::context &sslContext,
                                      const client::Address &address, client::config::SocketOptions &socketOptions,
-                                     std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                                     std::chrono::milliseconds &connectTimeoutInMillis,
                                      boost::asio::ip::tcp::resolver &resolver)
                         : BaseSocket<boost::asio::ssl::stream<boost::asio::ip::tcp::socket>>(resolver, address,
                                 socketOptions, ioService,connectTimeoutInMillis, sslContext) {
@@ -1229,7 +1234,7 @@ namespace hazelcast {
 
                 TcpSocket::TcpSocket(boost::asio::io_context &io, const Address &address,
                                      client::config::SocketOptions &socketOptions,
-                                     std::chrono::steady_clock::duration &connectTimeoutInMillis,
+                                     std::chrono::milliseconds &connectTimeoutInMillis,
                                      boost::asio::ip::tcp::resolver &resolver)
                         : BaseSocket<boost::asio::ip::tcp::socket>(resolver, address, socketOptions, io,
                                                                    connectTimeoutInMillis) {

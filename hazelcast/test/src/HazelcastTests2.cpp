@@ -520,12 +520,11 @@ namespace hazelcast {
                 class ConfiguredBehaviourTest : public ClientTestSupport {
                 public:
                     ConfiguredBehaviourTest() {
-                        clientConfig.getNetworkConfig().setConnectionTimeout(2000).setConnectionAttemptLimit(2).
-                                setConnectionAttemptPeriod(1000);
+                        clientConfig.getNetworkConfig().setConnectionTimeout(std::chrono::seconds(2)).setConnectionAttemptLimit(2).
+                                setConnectionAttemptPeriod(std::chrono::seconds(1));
                     }
 
                 protected:
-
                     ClientConfig clientConfig;
                 };
 
