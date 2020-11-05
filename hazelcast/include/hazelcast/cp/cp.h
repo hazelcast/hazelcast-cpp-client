@@ -956,7 +956,7 @@ namespace hazelcast {
          * one, when a caller makes its very first \acquire call, it starts
          * a new CP session with the underlying CP group. Then, liveliness of the
          * caller is tracked via this CP session. When the caller fails, permits
-         * acquired by this caller are automatically and safely released. However,
+         * acquired by this HazelcastInstance are automatically and safely released. However,
          * the session-aware version comes with a limitation, that is,
          * a HazelcastInstance cannot release permits before acquiring them
          * first. In other words, a Hazelcast client can release only
@@ -972,7 +972,7 @@ namespace hazelcast {
          * <li>
          * The second impl is sessionless. This impl
          * does not perform auto-cleanup of acquired permits on failures. Acquired
-         * permits are not bound to threads and permits can be released without
+         * permits are not bound to HazelcastInstance and permits can be released without
          * acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast
          * server or a client fails while holding some permits, they will not be
          * automatically released. You can use the sessionless CP \counting_semaphore
@@ -1036,14 +1036,14 @@ namespace hazelcast {
              * of them will unblock by acquiring the permit released by this call.
              * <p>
              * If the underlying \counting_semaphore is configured as non-JDK compatible
-             * via server side SemaphoreConfig then a thread can only release a permit which
-             * it has acquired before. In other words, a thread cannot release a permit
+             * via server side SemaphoreConfig then a HazelcastInstance can only release a permit which
+             * it has acquired before. In other words, a HazelcastInstance cannot release a permit
              * without acquiring it first.
              * <p>
              * Otherwise, which means the underlying impl is the JDK compatible
              * Semaphore is configured via server side SemaphoreConfig, there is no requirement
-             * that a thread that releases a permit must have acquired that permit by
-             * calling one of the \acquire methods. A thread can freely
+             * that a HazelcastInstance that releases a permit must have acquired that permit by
+             * calling one of the \acquire methods. A HazelcastInstance can freely
              * release a permit without acquiring it first. In this case, correct usage
              * of a semaphore is established by programming convention in the application.
              *
