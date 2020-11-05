@@ -85,9 +85,9 @@ namespace hazelcast {
                 ClientFlakeIdGeneratorConfig &setPrefetchCount(int32_t count);
 
                 /**
-                 * @see #setPrefetchValidityDuration(std::chrono::steady_clock::duration)
+                 * @see #setPrefetchValidityDuration(std::chrono::milliseconds)
                  */
-                std::chrono::steady_clock::duration getPrefetchValidityDuration() const;
+                std::chrono::milliseconds getPrefetchValidityDuration() const;
 
                 /**
                  * Sets for how long the pre-fetched IDs can be used. If this time elapses, a new batch of IDs will be
@@ -105,12 +105,12 @@ namespace hazelcast {
                  *
                  * @throws client::exception::IllegalArgumentException if duration is negative.
                  */
-                ClientFlakeIdGeneratorConfig &setPrefetchValidityDuration(std::chrono::steady_clock::duration duration);
+                ClientFlakeIdGeneratorConfig &setPrefetchValidityDuration(std::chrono::milliseconds duration);
 
             private:
                 std::string name;
                 int32_t prefetchCount;
-                std::chrono::steady_clock::duration prefetchValidityDuration;
+                std::chrono::milliseconds prefetchValidityDuration;
             };
         }
     }

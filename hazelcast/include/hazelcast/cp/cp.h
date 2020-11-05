@@ -420,11 +420,7 @@ namespace hazelcast {
              * if the waiting time elapsed before the count reached zero
              * @throws IllegalStateException if the Hazelcast instance is shutdown while waiting
              */
-            template<typename Rep, typename Period>
-            boost::future<std::cv_status> wait_for(const std::chrono::duration<Rep, Period> &rel_time) {
-                using namespace std::chrono;
-                return wait_for(duration_cast<milliseconds>(rel_time).count());
-            }
+            boost::future<std::cv_status> wait_for(std::chrono::milliseconds timeout);
 
             /**
              * see \wait_for for details of the operation.
@@ -438,7 +434,7 @@ namespace hazelcast {
             template<typename Clock, typename Duration>
             boost::future<std::cv_status> wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time) {
                 using namespace std::chrono;
-                return wait_for(duration_cast<milliseconds>(timeout_time - Clock::now()).count());
+                return wait_for(duration_cast<milliseconds>(timeout_time - Clock::now()));
             }
 
         private:
@@ -448,7 +444,6 @@ namespace hazelcast {
 
             void count_down(int round, boost::uuids::uuid invocation_uid);
 
-            boost::future<std::cv_status> wait_for(int64_t milliseconds);
         };
 
         /**
@@ -638,7 +633,7 @@ namespace hazelcast {
              * @throws LockOwnershipLostException if the underlying CP session is
              *         closed while locking reentrantly
              */
-            boost::future<bool> try_lock(std::chrono::steady_clock::duration timeout);
+            boost::future<bool> try_lock(std::chrono::milliseconds timeout);
 
             /**
              * Acquires the lock only if it is free or already held by the current
@@ -797,7 +792,7 @@ namespace hazelcast {
              * @throws LockOwnershipLostException if the underlying CP session is
              *         closed while locking reentrantly
              */
-            boost::future<int64_t> try_lock_and_get_fence(std::chrono::steady_clock::duration timeout);
+            boost::future<int64_t> try_lock_and_get_fence(std::chrono::milliseconds timeout);
 
             /**
              * Releases the lock if the lock is currently held by the current thread.
@@ -903,7 +898,7 @@ namespace hazelcast {
 
             boost::future<int64_t>
             do_try_lock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid,
-                        std::chrono::steady_clock::duration timeout);
+                        std::chrono::milliseconds timeout);
 
             boost::future<bool>
             do_unlock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid);
@@ -1095,22 +1090,16 @@ namespace hazelcast {
              * @throws InterruptedException  if the current server thread is interrupted
              * @throws IllegalStateException if hazelcast instance is shutdown while waiting
              */
-            template<class Rep, class Period>
-            boost::future<bool> try_acquire_for(const std::chrono::duration<Rep, Period>& rel_time, int32_t permits = 1) {
-                auto timeout = rel_time;
-                if (timeout < std::chrono::milliseconds::zero()) {
-                    timeout = std::chrono::duration<Rep, Period>::zero();
-                }
-                return try_acquire_for_millis(permits, std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
-            }
+            boost::future<bool> try_acquire_for(std::chrono::milliseconds rel_time, int32_t permits = 1);
 
             /**
              * Same as \try_acquire_for except that the wait time is calculated from the \abs_time point.
              */
             template<class Clock, class Duration>
             boost::future<bool> try_acquire_until(const std::chrono::time_point<Clock, Duration>& abs_time, int32_t permits = 1) {
+                using namespace std::chrono;
                 auto now = Clock::now();
-                return try_acquire_for(abs_time - now, permits);
+                return try_acquire_for(duration_cast<milliseconds>(abs_time - now), permits);
             }
 
             //---- std::counting_semaphore method impl ends ----------

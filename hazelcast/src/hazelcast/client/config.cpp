@@ -139,12 +139,12 @@ namespace hazelcast {
                 return *this;
             }
 
-            std::chrono::steady_clock::duration ClientFlakeIdGeneratorConfig::getPrefetchValidityDuration() const {
+            std::chrono::milliseconds ClientFlakeIdGeneratorConfig::getPrefetchValidityDuration() const {
                 return prefetchValidityDuration;
             }
 
             ClientFlakeIdGeneratorConfig &
-            ClientFlakeIdGeneratorConfig::setPrefetchValidityDuration(std::chrono::steady_clock::duration duration) {
+            ClientFlakeIdGeneratorConfig::setPrefetchValidityDuration(std::chrono::milliseconds duration) {
                 util::Preconditions::checkNotNegative(duration.count(),
                                                       "prefetchValidityMs must be non negative");
                 prefetchValidityDuration = duration;
@@ -166,13 +166,8 @@ namespace hazelcast {
                 return *this;
             }
 
-            int64_t ClientNetworkConfig::getConnectionTimeout() const {
+            std::chrono::milliseconds ClientNetworkConfig::getConnectionTimeout() const {
                 return connectionTimeout;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionTimeout(int64_t connectionTimeoutInMillis) {
-                this->connectionTimeout = connectionTimeoutInMillis;
-                return *this;
             }
 
             ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
@@ -207,18 +202,8 @@ namespace hazelcast {
                 return *this;
             }
 
-            int32_t ClientNetworkConfig::getConnectionAttemptPeriod() const {
+            std::chrono::milliseconds ClientNetworkConfig::getConnectionAttemptPeriod() const {
                 return connectionAttemptPeriod;
-            }
-
-            ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptPeriod(int32_t connectionAttemptPeriod) {
-                if (connectionAttemptPeriod < 0) {
-                    BOOST_THROW_EXCEPTION(
-                            exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptPeriod",
-                                                                "connectionAttemptPeriod cannot be negative"));
-                }
-                this->connectionAttemptPeriod = connectionAttemptPeriod;
-                return *this;
             }
 
             std::vector<Address> ClientNetworkConfig::getAddresses() const {
@@ -242,6 +227,19 @@ namespace hazelcast {
 
             SocketOptions &ClientNetworkConfig::getSocketOptions() {
                 return socketOptions;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::setConnectionTimeout(const std::chrono::milliseconds &timeout) {
+                connectionTimeout = timeout;
+                return *this;
+            }
+
+            ClientNetworkConfig &
+            ClientNetworkConfig::setConnectionAttemptPeriod(const std::chrono::milliseconds &interval) {
+                util::Preconditions::checkNotNegative(interval.count(), (boost::format(
+                        "Provided connectionAttemptPeriod(%1% msecs) cannot be negative") % interval.count()).str());
+                connectionAttemptPeriod = interval;
+                return *this;
             }
 
             ClientConnectionStrategyConfig::ClientConnectionStrategyConfig() : asyncStart(false), reconnectMode(ON) {

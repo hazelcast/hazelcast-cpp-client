@@ -72,11 +72,11 @@ namespace hazelcast {
                     return registerListener(createItemListenerCodec(includeValue), std::move(itemEventHandler));
                 }
                 
-                boost::future<bool> offer(const serialization::pimpl::Data& element, std::chrono::steady_clock::duration timeout);
+                boost::future<bool> offer(const serialization::pimpl::Data& element, std::chrono::milliseconds timeout);
 
                 boost::future<void> put(const serialization::pimpl::Data& element);
 
-                boost::future<boost::optional<serialization::pimpl::Data>>pollData(std::chrono::steady_clock::duration timeout);
+                boost::future<boost::optional<serialization::pimpl::Data>>pollData(std::chrono::milliseconds timeout);
 
                 boost::future<bool> remove(const serialization::pimpl::Data& element);
 

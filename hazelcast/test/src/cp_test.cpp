@@ -372,7 +372,11 @@ namespace hazelcast {
                 TEST_F(basic_latch_test, test_wait) {
                     cp_structure_->try_set_count(1).get();
                     std::thread([=]() {
-                        cp_structure_->count_down().get();
+                        try {
+                            cp_structure_->count_down().get();
+                        } catch (exception::HazelcastClientNotActiveException &) {
+                            // can get this exception if below wait finishes earlier and client is shutting down
+                        }
                     }).detach();
 
                     cp_structure_->wait().get();

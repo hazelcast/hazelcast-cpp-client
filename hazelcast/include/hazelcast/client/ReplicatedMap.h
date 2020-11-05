@@ -62,7 +62,7 @@ namespace hazelcast {
              *         <tt>empty</tt> if there was no mapping for <tt>key</tt>.
              */
             template<typename K, typename V, typename R = V>
-            boost::future<boost::optional<R>> put(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
+            boost::future<boost::optional<R>> put(const K &key, const V &value, std::chrono::milliseconds ttl) {
                 return toObject<R>(putData(toData(key), toData(value), ttl));
             }
 

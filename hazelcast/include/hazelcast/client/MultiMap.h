@@ -245,7 +245,7 @@ namespace hazelcast {
             * @param leaseTime time to wait before releasing the lock.
             */
             template<typename K>
-            boost::future<void> lock(const K &key, std::chrono::steady_clock::duration leaseTime) {
+            boost::future<void> lock(const K &key, std::chrono::milliseconds leaseTime) {
                 return proxy::MultiMapImpl::lock(toData(key), leaseTime);
             }
 
@@ -292,7 +292,7 @@ namespace hazelcast {
             *         if the waiting time elapsed before the lock was acquired.
             */
             template<typename K>
-            boost::future<bool> tryLock(const K &key, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> tryLock(const K &key, std::chrono::milliseconds timeout) {
                 return proxy::MultiMapImpl::tryLock(toData(key), timeout);
             }
 
@@ -315,7 +315,7 @@ namespace hazelcast {
             *         if the waiting time elapsed before the lock was acquired.
             */
             template <typename K>
-            boost::future<bool> tryLock(const K &key, std::chrono::steady_clock::duration timeout, std::chrono::steady_clock::duration leaseTime) {
+            boost::future<bool> tryLock(const K &key, std::chrono::milliseconds timeout, std::chrono::milliseconds leaseTime) {
                 return proxy::MultiMapImpl::tryLock(toData(key), timeout, leaseTime);
             }
 

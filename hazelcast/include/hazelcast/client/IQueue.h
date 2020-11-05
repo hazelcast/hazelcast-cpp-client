@@ -87,7 +87,7 @@ namespace hazelcast {
             *         the specified waiting time elapses before space is available
             */
             template<typename E>
-            boost::future<bool> offer(const E &element, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> offer(const E &element, std::chrono::milliseconds timeout) {
                 return proxy::IQueueImpl::offer(toData(element), timeout);
             }
 
@@ -106,7 +106,7 @@ namespace hazelcast {
             * @return the head of the queue. If queue is empty waits for specified time.
             */
             template<typename E>
-            boost::future<boost::optional<E>> poll(std::chrono::steady_clock::duration timeout) {
+            boost::future<boost::optional<E>> poll(std::chrono::milliseconds timeout) {
                 return toObject<E>(proxy::IQueueImpl::pollData(timeout));
             }
 
