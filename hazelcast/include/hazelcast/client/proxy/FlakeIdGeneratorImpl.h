@@ -118,7 +118,7 @@ namespace hazelcast {
 
                 class Block {
                 public:
-                    Block(IdBatch &&idBatch, std::chrono::steady_clock::duration validity);
+                    Block(IdBatch &&idBatch, std::chrono::milliseconds validity);
 
                     /**
                      * Returns next ID or INT64_MIN, if there is none.
@@ -136,7 +136,7 @@ namespace hazelcast {
                 int64_t newIdInternal();
 
                 int32_t batchSize;
-                std::chrono::steady_clock::duration validity;
+                std::chrono::milliseconds validity;
                 boost::atomic_shared_ptr<Block> block;
                 std::mutex lock;
             };

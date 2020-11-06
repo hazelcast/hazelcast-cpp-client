@@ -162,7 +162,7 @@ namespace hazelcast {
                 return lock(key, std::chrono::milliseconds(-1));
             }
 
-            boost::future<void> MultiMapImpl::lock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration leaseTime) {
+            boost::future<void> MultiMapImpl::lock(const serialization::pimpl::Data &key, std::chrono::milliseconds leaseTime) {
                 auto request = protocol::codec::multimap_lock_encode(getName(), key, util::getCurrentThreadId(),
                                                                           std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
                                                                           lockReferenceIdGenerator->getNextReferenceId());
@@ -182,11 +182,11 @@ namespace hazelcast {
                 return invokeAndGetFuture<bool>(request, key);
             }
 
-            boost::future<bool> MultiMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout) {
-                return tryLock(key, timeout, std::chrono::steady_clock::duration(INT64_MAX));
+            boost::future<bool> MultiMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout) {
+                return tryLock(key, timeout, std::chrono::milliseconds(INT64_MAX));
             }
 
-            boost::future<bool> MultiMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout, std::chrono::steady_clock::duration leaseTime) {
+            boost::future<bool> MultiMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout, std::chrono::milliseconds leaseTime) {
                 auto request = protocol::codec::multimap_trylock_encode(getName(), key, util::getCurrentThreadId(),
                         std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
                         std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
@@ -672,7 +672,7 @@ namespace hazelcast {
                 return protocol::codec::list_removelistener_encode(name, realRegistrationId);
             }
 
-            FlakeIdGeneratorImpl::Block::Block(IdBatch &&idBatch, std::chrono::steady_clock::duration validity)
+            FlakeIdGeneratorImpl::Block::Block(IdBatch &&idBatch, std::chrono::milliseconds validity)
                     : idBatch(idBatch), invalidSince(std::chrono::steady_clock::now() + validity), numReturned(0) {}
 
             int64_t FlakeIdGeneratorImpl::Block::next() {
@@ -803,7 +803,7 @@ namespace hazelcast {
                 return getContext().getClientListenerService().deregisterListener(registrationId);
             }
 
-            boost::future<bool> IQueueImpl::offer(const serialization::pimpl::Data &element, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> IQueueImpl::offer(const serialization::pimpl::Data &element, std::chrono::milliseconds timeout) {
                 auto request = protocol::codec::queue_offer_encode(getName(), element,
                                                                         std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
                 return invokeAndGetFuture<bool>(request, partitionId);
@@ -814,7 +814,7 @@ namespace hazelcast {
                 return toVoidFuture(invokeOnPartition(request, partitionId));
             }
 
-            boost::future<boost::optional<serialization::pimpl::Data>> IQueueImpl::pollData(std::chrono::steady_clock::duration timeout) {
+            boost::future<boost::optional<serialization::pimpl::Data>> IQueueImpl::pollData(std::chrono::milliseconds timeout) {
                 auto request = protocol::codec::queue_poll_encode(getName(), std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
                 return invokeAndGetFuture<boost::optional<serialization::pimpl::Data>>(request, partitionId);
             }
@@ -1055,7 +1055,7 @@ namespace hazelcast {
                 return invoke(request);
             }
 
-            boost::future<bool> IMapImpl::tryRemove(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> IMapImpl::tryRemove(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout) {
                 auto request = protocol::codec::map_tryremove_encode(getName(), key,
                                                                           util::getCurrentThreadId(),
                                                                           std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
@@ -1064,7 +1064,7 @@ namespace hazelcast {
             }
 
             boost::future<bool> IMapImpl::tryPut(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                                  std::chrono::steady_clock::duration timeout) {
+                                  std::chrono::milliseconds timeout) {
                 auto request = protocol::codec::map_tryput_encode(getName(), key, value,
                                                                        util::getCurrentThreadId(),
                                                                        std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
@@ -1074,7 +1074,7 @@ namespace hazelcast {
 
             boost::future<boost::optional<serialization::pimpl::Data>> IMapImpl::putData(const serialization::pimpl::Data &key,
                                                                           const serialization::pimpl::Data &value,
-                                                                          std::chrono::steady_clock::duration ttl) {
+                                                                          std::chrono::milliseconds ttl) {
                 auto request = protocol::codec::map_put_encode(getName(), key, value,
                                                                     util::getCurrentThreadId(),
                                                                     std::chrono::duration_cast<std::chrono::milliseconds>(ttl).count());
@@ -1082,7 +1082,7 @@ namespace hazelcast {
             }
 
             boost::future<protocol::ClientMessage> IMapImpl::putTransient(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                                        std::chrono::steady_clock::duration ttl) {
+                                        std::chrono::milliseconds ttl) {
                 auto request = protocol::codec::map_puttransient_encode(getName(), key, value,
                                                                              util::getCurrentThreadId(),
                                                                              std::chrono::duration_cast<std::chrono::milliseconds>(ttl).count());
@@ -1091,7 +1091,7 @@ namespace hazelcast {
 
             boost::future<boost::optional<serialization::pimpl::Data>> IMapImpl::putIfAbsentData(const serialization::pimpl::Data &key,
                                                                                   const serialization::pimpl::Data &value,
-                                                                                  std::chrono::steady_clock::duration ttl) {
+                                                                                  std::chrono::milliseconds ttl) {
                 auto request = protocol::codec::map_putifabsent_encode(getName(), key, value,
                                                                             util::getCurrentThreadId(),
                                                                             std::chrono::duration_cast<std::chrono::milliseconds>(ttl).count());
@@ -1117,7 +1117,7 @@ namespace hazelcast {
 
             boost::future<protocol::ClientMessage>
             IMapImpl::set(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                          std::chrono::steady_clock::duration ttl) {
+                          std::chrono::milliseconds ttl) {
                 auto request = protocol::codec::map_set_encode(getName(), key, value,
                                                                            util::getCurrentThreadId(),
                                                                            std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -1129,7 +1129,7 @@ namespace hazelcast {
                 return lock(key, std::chrono::milliseconds(-1));
             }
 
-            boost::future<protocol::ClientMessage> IMapImpl::lock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration leaseTime) {
+            boost::future<protocol::ClientMessage> IMapImpl::lock(const serialization::pimpl::Data &key, std::chrono::milliseconds leaseTime) {
                 auto request = protocol::codec::map_lock_encode(getName(), key, util::getCurrentThreadId(),
                                                                      std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
                                                                      lockReferenceIdGenerator->getNextReferenceId());
@@ -1142,13 +1142,13 @@ namespace hazelcast {
                 return invokeAndGetFuture<bool>(request, key);
             }
 
-            boost::future<bool> IMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> IMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout) {
                 return tryLock(key, timeout, std::chrono::milliseconds(-1));
             }
 
             boost::future<bool>
-            IMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::steady_clock::duration timeout,
-                              std::chrono::steady_clock::duration leaseTime) {
+            IMapImpl::tryLock(const serialization::pimpl::Data &key, std::chrono::milliseconds timeout,
+                              std::chrono::milliseconds leaseTime) {
                 auto request = protocol::codec::map_trylock_encode(getName(), key, util::getCurrentThreadId(),
                         std::chrono::duration_cast<std::chrono::milliseconds>(leaseTime).count(),
                         std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count(),
@@ -1429,14 +1429,14 @@ namespace hazelcast {
                                                            txn::TransactionProxy &transactionProxy)
                     : TransactionalObject(IQueue::SERVICE_NAME, name, transactionProxy) {}
 
-            boost::future<bool> TransactionalQueueImpl::offer(const serialization::pimpl::Data &e, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> TransactionalQueueImpl::offer(const serialization::pimpl::Data &e, std::chrono::milliseconds timeout) {
                 auto request = protocol::codec::transactionalqueue_offer_encode(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), e, std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
 
                 return invokeAndGetFuture<bool>(request);
             }
 
-            boost::future<boost::optional<serialization::pimpl::Data>> TransactionalQueueImpl::pollData(std::chrono::steady_clock::duration timeout) {
+            boost::future<boost::optional<serialization::pimpl::Data>> TransactionalQueueImpl::pollData(std::chrono::milliseconds timeout) {
                 auto request = protocol::codec::transactionalqueue_poll_encode(
                                 getName(), getTransactionId(), util::getCurrentThreadId(), std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count());
 

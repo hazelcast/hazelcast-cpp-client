@@ -332,8 +332,7 @@ namespace hazelcast {
 
             template<>
             std::shared_ptr<IMap> HazelcastClientInstanceImpl::getDistributedObject(const std::string& name) {
-                auto nearCacheConfig = clientConfig.getNearCacheConfig<serialization::pimpl::Data, serialization::pimpl::Data>(
-                        name);
+                auto nearCacheConfig = clientConfig.getNearCacheConfig(name);
                 if (nearCacheConfig) {
                     return proxyManager.getOrCreateProxy<map::NearCachedClientMapProxy<serialization::pimpl::Data, serialization::pimpl::Data>>(
                             IMap::SERVICE_NAME, name);

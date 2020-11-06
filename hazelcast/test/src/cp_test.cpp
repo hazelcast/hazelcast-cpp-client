@@ -372,7 +372,11 @@ namespace hazelcast {
                 TEST_F(basic_latch_test, test_wait) {
                     cp_structure_->try_set_count(1).get();
                     std::thread([=]() {
-                        cp_structure_->count_down().get();
+                        try {
+                            cp_structure_->count_down().get();
+                        } catch (exception::HazelcastClientNotActiveException &) {
+                            // can get this exception if below wait finishes earlier and client is shutting down
+                        }
                     }).detach();
 
                     cp_structure_->wait().get();
@@ -702,12 +706,13 @@ namespace hazelcast {
                     std::ostringstream script;
                     script << "result = instance_0.getCPSubsystem().getLock(\"" << proxy_name
                            << "\").isLocked() ? \"1\" : \"0\";";
-
                     Response response;
-                    remoteController->executeOnController(response, factory->getClusterId(), script.str().c_str(),
-                                                          Lang::JAVASCRIPT);
-                    ASSERT_TRUE(response.success);
-                    ASSERT_EQ("0", response.result);
+
+                    ASSERT_TRUE_EVENTUALLY((remoteController->executeOnController(response, factory->getClusterId(),
+                                                                                  script.str().c_str(),
+                                                                                  Lang::JAVASCRIPT), response.success &&
+                                                                                                     response.result ==
+                                                                                                     "0"));
                 }
 
                 class basic_sessionless_semaphore_test : public cp_test<counting_semaphore> {

@@ -420,11 +420,7 @@ namespace hazelcast {
              * if the waiting time elapsed before the count reached zero
              * @throws IllegalStateException if the Hazelcast instance is shutdown while waiting
              */
-            template<typename Rep, typename Period>
-            boost::future<std::cv_status> wait_for(const std::chrono::duration<Rep, Period> &rel_time) {
-                using namespace std::chrono;
-                return wait_for(duration_cast<milliseconds>(rel_time).count());
-            }
+            boost::future<std::cv_status> wait_for(std::chrono::milliseconds timeout);
 
             /**
              * see \wait_for for details of the operation.
@@ -438,7 +434,7 @@ namespace hazelcast {
             template<typename Clock, typename Duration>
             boost::future<std::cv_status> wait_until(const std::chrono::time_point<Clock, Duration> &timeout_time) {
                 using namespace std::chrono;
-                return wait_for(duration_cast<milliseconds>(timeout_time - Clock::now()).count());
+                return wait_for(duration_cast<milliseconds>(timeout_time - Clock::now()));
             }
 
         private:
@@ -448,7 +444,6 @@ namespace hazelcast {
 
             void count_down(int round, boost::uuids::uuid invocation_uid);
 
-            boost::future<std::cv_status> wait_for(int64_t milliseconds);
         };
 
         /**
@@ -638,7 +633,7 @@ namespace hazelcast {
              * @throws LockOwnershipLostException if the underlying CP session is
              *         closed while locking reentrantly
              */
-            boost::future<bool> try_lock(std::chrono::steady_clock::duration timeout);
+            boost::future<bool> try_lock(std::chrono::milliseconds timeout);
 
             /**
              * Acquires the lock only if it is free or already held by the current
@@ -797,7 +792,7 @@ namespace hazelcast {
              * @throws LockOwnershipLostException if the underlying CP session is
              *         closed while locking reentrantly
              */
-            boost::future<int64_t> try_lock_and_get_fence(std::chrono::steady_clock::duration timeout);
+            boost::future<int64_t> try_lock_and_get_fence(std::chrono::milliseconds timeout);
 
             /**
              * Releases the lock if the lock is currently held by the current thread.
@@ -903,7 +898,7 @@ namespace hazelcast {
 
             boost::future<int64_t>
             do_try_lock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid,
-                        std::chrono::steady_clock::duration timeout);
+                        std::chrono::milliseconds timeout);
 
             boost::future<bool>
             do_unlock(int64_t session_id, int64_t thread_id, boost::uuids::uuid invocation_uid);
@@ -956,7 +951,7 @@ namespace hazelcast {
          * one, when a caller makes its very first \acquire call, it starts
          * a new CP session with the underlying CP group. Then, liveliness of the
          * caller is tracked via this CP session. When the caller fails, permits
-         * acquired by this caller are automatically and safely released. However,
+         * acquired by this HazelcastInstance are automatically and safely released. However,
          * the session-aware version comes with a limitation, that is,
          * a HazelcastInstance cannot release permits before acquiring them
          * first. In other words, a Hazelcast client can release only
@@ -972,7 +967,7 @@ namespace hazelcast {
          * <li>
          * The second impl is sessionless. This impl
          * does not perform auto-cleanup of acquired permits on failures. Acquired
-         * permits are not bound to threads and permits can be released without
+         * permits are not bound to HazelcastInstance and permits can be released without
          * acquiring first. However, you need to handle failed permit owners on your own. If a Hazelcast
          * server or a client fails while holding some permits, they will not be
          * automatically released. You can use the sessionless CP \counting_semaphore
@@ -1036,14 +1031,14 @@ namespace hazelcast {
              * of them will unblock by acquiring the permit released by this call.
              * <p>
              * If the underlying \counting_semaphore is configured as non-JDK compatible
-             * via server side SemaphoreConfig then a thread can only release a permit which
-             * it has acquired before. In other words, a thread cannot release a permit
+             * via server side SemaphoreConfig then a HazelcastInstance can only release a permit which
+             * it has acquired before. In other words, a HazelcastInstance cannot release a permit
              * without acquiring it first.
              * <p>
              * Otherwise, which means the underlying impl is the JDK compatible
              * Semaphore is configured via server side SemaphoreConfig, there is no requirement
-             * that a thread that releases a permit must have acquired that permit by
-             * calling one of the \acquire methods. A thread can freely
+             * that a HazelcastInstance that releases a permit must have acquired that permit by
+             * calling one of the \acquire methods. A HazelcastInstance can freely
              * release a permit without acquiring it first. In this case, correct usage
              * of a semaphore is established by programming convention in the application.
              *
@@ -1095,22 +1090,16 @@ namespace hazelcast {
              * @throws InterruptedException  if the current server thread is interrupted
              * @throws IllegalStateException if hazelcast instance is shutdown while waiting
              */
-            template<class Rep, class Period>
-            boost::future<bool> try_acquire_for(const std::chrono::duration<Rep, Period>& rel_time, int32_t permits = 1) {
-                auto timeout = rel_time;
-                if (timeout < std::chrono::milliseconds::zero()) {
-                    timeout = std::chrono::duration<Rep, Period>::zero();
-                }
-                return try_acquire_for_millis(permits, std::chrono::duration_cast<std::chrono::milliseconds>(timeout));
-            }
+            boost::future<bool> try_acquire_for(std::chrono::milliseconds rel_time, int32_t permits = 1);
 
             /**
              * Same as \try_acquire_for except that the wait time is calculated from the \abs_time point.
              */
             template<class Clock, class Duration>
             boost::future<bool> try_acquire_until(const std::chrono::time_point<Clock, Duration>& abs_time, int32_t permits = 1) {
+                using namespace std::chrono;
                 auto now = Clock::now();
-                return try_acquire_for(abs_time - now, permits);
+                return try_acquire_for(duration_cast<milliseconds>(abs_time - now), permits);
             }
 
             //---- std::counting_semaphore method impl ends ----------

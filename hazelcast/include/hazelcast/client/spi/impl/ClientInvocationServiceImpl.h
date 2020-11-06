@@ -57,9 +57,9 @@ namespace hazelcast {
 
                     bool is_smart_routing() const;
 
-                    std::chrono::steady_clock::duration getInvocationTimeout() const;
+                    std::chrono::milliseconds getInvocationTimeout() const;
 
-                    std::chrono::steady_clock::duration getInvocationRetryPause() const;
+                    std::chrono::milliseconds getInvocationRetryPause() const;
 
                     bool isRedoOperation();
 
@@ -112,8 +112,8 @@ namespace hazelcast {
                     ClientContext &client;
                     logger &logger_;
                     std::atomic<bool> isShutdown{ false };
-                    std::chrono::steady_clock::duration invocationTimeout;
-                    std::chrono::steady_clock::duration invocationRetryPause;
+                    std::chrono::milliseconds invocationTimeout;
+                    std::chrono::milliseconds invocationRetryPause;
                     ResponseProcessor responseThread;
                     bool smart_routing_;
                     bool backup_acks_enabled_;

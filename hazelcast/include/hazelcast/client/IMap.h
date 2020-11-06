@@ -121,7 +121,7 @@ namespace hazelcast {
             * @return the previous value. if there is no mapping for key, then returns boost::none.
             */
             template<typename K, typename V, typename R=V>
-            boost::future<boost::optional<R>> put(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
+            boost::future<boost::optional<R>> put(const K &key, const V &value, std::chrono::milliseconds ttl) {
                 return toObject<R>(putInternal(toData(key), toData(value), ttl));
             }
 
@@ -180,7 +180,7 @@ namespace hazelcast {
             * @param timeout  maximum time to wait for acquiring the lock for the key
             */
             template<typename K>
-            boost::future<bool> tryRemove(const K &key, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> tryRemove(const K &key, std::chrono::milliseconds timeout) {
                 return tryRemoveInternal(toData(key), timeout);
             }
 
@@ -197,7 +197,7 @@ namespace hazelcast {
             *         otherwise.
             */
             template<typename K, typename V>
-            boost::future<bool> tryPut(const K &key, const V &value, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> tryPut(const K &key, const V &value, std::chrono::milliseconds timeout) {
                 return tryPutInternal(toData(key), toData(value), timeout);
             }
 
@@ -211,7 +211,7 @@ namespace hazelcast {
             * @param ttl  maximum time for this entry to stay in the map in milliseconds, 0 means infinite.
             */
             template<typename K, typename V>
-            boost::future<void> putTransient(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
+            boost::future<void> putTransient(const K &key, const V &value, std::chrono::milliseconds ttl) {
                 return toVoidFuture(tryPutTransientInternal(toData(key), toData(value), ttl));
             }
 
@@ -240,7 +240,7 @@ namespace hazelcast {
             * then returns boost::none.
             */
             template<typename K, typename V, typename R=V>
-            boost::future<boost::optional<V>> putIfAbsent(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
+            boost::future<boost::optional<V>> putIfAbsent(const K &key, const V &value, std::chrono::milliseconds ttl) {
                 return toObject<R>(putIfAbsentInternal(toData(key), toData(value), ttl));
             }
 
@@ -290,7 +290,7 @@ namespace hazelcast {
             0 means infinite.
             */
             template<typename K, typename V>
-            boost::future<void> set(const K &key, const V &value, std::chrono::steady_clock::duration ttl) {
+            boost::future<void> set(const K &key, const V &value, std::chrono::milliseconds ttl) {
                 return toVoidFuture(setInternal(toData(key), toData(value), ttl));
             }
 
@@ -332,7 +332,7 @@ namespace hazelcast {
             * @param leaseTime time to wait before releasing the lock.
             */
             template<typename K>
-            boost::future<void> lock(const K &key, std::chrono::steady_clock::duration leaseTime) {
+            boost::future<void> lock(const K &key, std::chrono::milliseconds leaseTime) {
                 return toVoidFuture(proxy::IMapImpl::lock(toData(key), leaseTime));
             }
 
@@ -380,7 +380,7 @@ namespace hazelcast {
             *         if the waiting time elapsed before the lock was acquired.
             */
             template<typename K>
-            boost::future<bool> tryLock(const K &key, std::chrono::steady_clock::duration timeout) {
+            boost::future<bool> tryLock(const K &key, std::chrono::milliseconds timeout) {
                 return proxy::IMapImpl::tryLock(toData(key), timeout);
             }
 
@@ -404,7 +404,7 @@ namespace hazelcast {
             *         if the waiting time elapsed before the lock was acquired.
             */
             template <typename K>
-            boost::future<bool> tryLock(const K &key, std::chrono::steady_clock::duration timeout, std::chrono::steady_clock::duration leaseTime) {
+            boost::future<bool> tryLock(const K &key, std::chrono::milliseconds timeout, std::chrono::milliseconds leaseTime) {
                 return proxy::IMapImpl::tryLock(toData(key), timeout, leaseTime);
             }
 
@@ -1029,30 +1029,30 @@ namespace hazelcast {
                 return proxy::IMapImpl::deleteEntry(keyData);
             }
 
-            virtual boost::future<bool> tryRemoveInternal(const serialization::pimpl::Data &keyData, std::chrono::steady_clock::duration timeout) {
+            virtual boost::future<bool> tryRemoveInternal(const serialization::pimpl::Data &keyData, std::chrono::milliseconds timeout) {
                 return proxy::IMapImpl::tryRemove(keyData, timeout);
             }
 
             virtual boost::future<bool> tryPutInternal(const serialization::pimpl::Data &keyData,
-                                                       const serialization::pimpl::Data &valueData, std::chrono::steady_clock::duration timeout) {
+                                                       const serialization::pimpl::Data &valueData, std::chrono::milliseconds timeout) {
                 return proxy::IMapImpl::tryPut(keyData, valueData, timeout);
             }
 
             virtual boost::future<boost::optional<serialization::pimpl::Data>> putInternal(const serialization::pimpl::Data &keyData,
                                                                                            const serialization::pimpl::Data &valueData,
-                                                                                           std::chrono::steady_clock::duration ttl) {
+                                                                                           std::chrono::milliseconds ttl) {
                 return proxy::IMapImpl::putData(keyData, valueData, ttl);
             }
 
             virtual boost::future<protocol::ClientMessage> tryPutTransientInternal(const serialization::pimpl::Data &keyData,
-                                                                                   const serialization::pimpl::Data &valueData, std::chrono::steady_clock::duration ttl) {
+                                                                                   const serialization::pimpl::Data &valueData, std::chrono::milliseconds ttl) {
                 return proxy::IMapImpl::putTransient(keyData, valueData, ttl);
             }
 
             virtual boost::future<boost::optional<serialization::pimpl::Data>>
             putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                 const serialization::pimpl::Data &valueData,
-                                std::chrono::steady_clock::duration ttl) {
+                                std::chrono::milliseconds ttl) {
                 return proxy::IMapImpl::putIfAbsentData(keyData, valueData, ttl);
             }
 
@@ -1070,7 +1070,7 @@ namespace hazelcast {
 
             virtual boost::future<protocol::ClientMessage>
             setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
-                        std::chrono::steady_clock::duration ttl) {
+                        std::chrono::milliseconds ttl) {
                 return proxy::IMapImpl::set(keyData, valueData, ttl);
             }
 

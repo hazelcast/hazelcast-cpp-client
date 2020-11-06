@@ -150,7 +150,7 @@ namespace hazelcast {
                     boost::uuids::uuid uuid_;
                     int partitionId;
                     std::chrono::steady_clock::time_point startTime;
-                    std::chrono::steady_clock::duration retryPause;
+                    std::chrono::milliseconds retryPause;
                     std::string objectName;
                     std::shared_ptr<connection::Connection> connection;
                     boost::atomic_shared_ptr<std::shared_ptr<connection::Connection>> sendConnection;

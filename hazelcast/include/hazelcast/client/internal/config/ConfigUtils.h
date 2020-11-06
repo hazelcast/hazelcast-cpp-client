@@ -30,19 +30,28 @@ namespace hazelcast {
                 class ConfigUtils {
                 public:
                     template<typename T>
-                    static std::shared_ptr<T>
+                    static const T *
                     lookupByPattern(const client::config::ConfigPatternMatcher &configPatternMatcher,
-                                    util::SynchronizedMap<std::string, T> &configPatterns, const std::string &itemName) {
-                        std::shared_ptr<T> candidate = configPatterns.get(itemName);
-                        if (candidate.get() != NULL) {
-                            return candidate;
+                                    const std::unordered_map<std::string, T> &configPatterns, const std::string &itemName) {
+                        auto candidate = configPatterns.find(itemName);
+                        if (candidate != configPatterns.end()) {
+                            return &candidate->second;
+                        }
+                        auto size = configPatterns.size();
+                        std::vector<std::string> keys(size);
+                        size_t index = 0;
+                        for (const auto &e : configPatterns) {
+                            keys[index] = e.first;
                         }
                         std::shared_ptr<std::string> configPatternKey = configPatternMatcher.matches(
-                                configPatterns.keys(), itemName);
-                        if (configPatternKey.get() != NULL) {
-                            return configPatterns.get(*configPatternKey);
+                                keys, itemName);
+                        if (configPatternKey) {
+                            candidate = configPatterns.find(*configPatternKey);
+                            if (candidate != configPatterns.end()) {
+                                return &candidate->second;
+                            }
                         }
-                        return std::shared_ptr<T>();
+                        return nullptr;
                     }
                 };
             }

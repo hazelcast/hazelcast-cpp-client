@@ -56,7 +56,7 @@ namespace hazelcast {
                 NearCachedClientMapProxy(const std::string &instanceName, spi::ClientContext *context)
                         : IMap(instanceName, context), cacheLocalEntries(false),
                           invalidateOnChange(false), keyStateMarker(NULL),
-                          nearCacheConfig(*context->getClientConfig().getNearCacheConfig<K, V>(instanceName)),
+                          nearCacheConfig(*context->getClientConfig().getNearCacheConfig(instanceName)),
                           logger_(context->getLogger()) {}
 
             protected:
@@ -192,7 +192,7 @@ namespace hazelcast {
                 }
 
                 boost::future<bool> tryRemoveInternal(const serialization::pimpl::Data &keyData,
-                                                              std::chrono::steady_clock::duration timeout) override {
+                                                              std::chrono::milliseconds timeout) override {
                     try {
                         auto response = IMap::tryRemoveInternal(keyData, timeout);
                         invalidateNearCache(keyData);
@@ -204,7 +204,7 @@ namespace hazelcast {
                 }
 
                 boost::future<bool> tryPutInternal(const serialization::pimpl::Data &keyData,
-                        const serialization::pimpl::Data &valueData, std::chrono::steady_clock::duration timeout) override {
+                        const serialization::pimpl::Data &valueData, std::chrono::milliseconds timeout) override {
                     try {
                         auto response = IMap::tryPutInternal(keyData, valueData, timeout);
                         invalidateNearCache(keyData);
@@ -216,7 +216,7 @@ namespace hazelcast {
                 }
 
                 boost::future<boost::optional<serialization::pimpl::Data>> putInternal(const serialization::pimpl::Data &keyData,
-                        const serialization::pimpl::Data &valueData, std::chrono::steady_clock::duration ttl) override {
+                        const serialization::pimpl::Data &valueData, std::chrono::milliseconds ttl) override {
                     try {
                         auto previousValue = IMap::putInternal(keyData, valueData, ttl);
                         invalidateNearCache(keyData);
@@ -230,7 +230,7 @@ namespace hazelcast {
                 boost::future<protocol::ClientMessage>
                 tryPutTransientInternal(const serialization::pimpl::Data &keyData,
                                         const serialization::pimpl::Data &valueData,
-                                        std::chrono::steady_clock::duration ttl) override {
+                                        std::chrono::milliseconds ttl) override {
                     try {
                         auto result = IMap::tryPutTransientInternal(keyData, valueData, ttl);
                         invalidateNearCache(keyData);
@@ -244,7 +244,7 @@ namespace hazelcast {
                 boost::future<boost::optional<serialization::pimpl::Data>>
                 putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &valueData,
-                                    std::chrono::steady_clock::duration ttl) override {
+                                    std::chrono::milliseconds ttl) override {
                     try {
                         auto previousValue = IMap::putIfAbsentData(keyData, valueData, ttl);
                         invalidateNearCache(keyData);
@@ -283,7 +283,7 @@ namespace hazelcast {
 
                 boost::future<protocol::ClientMessage>
                 setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
-                            std::chrono::steady_clock::duration ttl) override {
+                            std::chrono::milliseconds ttl) override {
                     try {
                         auto result = proxy::IMapImpl::set(keyData, valueData, ttl);
                         invalidateNearCache(keyData);
@@ -539,7 +539,7 @@ namespace hazelcast {
                 bool cacheLocalEntries;
                 bool invalidateOnChange;
                 impl::nearcache::KeyStateMarker *keyStateMarker;
-                const config::NearCacheConfig<K, V> &nearCacheConfig;
+                const config::NearCacheConfig &nearCacheConfig;
                 std::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V>> nearCache;
                 boost::uuids::uuid invalidationListenerId;
                 logger &logger_;

@@ -56,14 +56,14 @@ namespace hazelcast {
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> schedule(CompletionToken token,
-                                                                        const std::chrono::steady_clock::duration &delay) {
+                                                                        const std::chrono::milliseconds &delay) {
                         return scheduleWithRepetition(token, delay, std::chrono::seconds(0));
                     }
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetition(CompletionToken token,
-                                                                                      const std::chrono::steady_clock::duration &delay,
-                                                                                      const std::chrono::steady_clock::duration &period) {
+                                                                                      const std::chrono::milliseconds &delay,
+                                                                                      const std::chrono::milliseconds &period) {
                         auto timer = std::make_shared<boost::asio::steady_timer>(internalExecutor->get_executor());
                         return scheduleWithRepetitionInternal(token, delay, period, timer);
                     }
@@ -80,8 +80,8 @@ namespace hazelcast {
 
                     template<typename CompletionToken>
                     std::shared_ptr<boost::asio::steady_timer> scheduleWithRepetitionInternal(CompletionToken token,
-                                                                                              const std::chrono::steady_clock::duration &delay,
-                                                                                              const std::chrono::steady_clock::duration &period,
+                                                                                              const std::chrono::milliseconds &delay,
+                                                                                              const std::chrono::milliseconds &period,
                                                                                               std::shared_ptr<boost::asio::steady_timer> timer) {
                         if (delay.count() > 0) {
                             timer->expires_from_now(delay);
@@ -96,7 +96,7 @@ namespace hazelcast {
 
                             try {
                                 token();
-                            } catch (std::exception &) {
+                            } catch (std::exception &e) {
                                 assert(false);
                             }
 
