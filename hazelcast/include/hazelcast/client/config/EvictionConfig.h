@@ -104,8 +104,8 @@ namespace hazelcast {
 
             protected:
                 int32_t size_;
-                MaxSizePolicy maxSizePolicy_;
-                EvictionPolicy evictionPolicy_;
+                MaxSizePolicy max_size_policy_;
+                EvictionPolicy eviction_policy_;
             };
 
         }

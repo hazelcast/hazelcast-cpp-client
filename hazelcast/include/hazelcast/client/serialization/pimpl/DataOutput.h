@@ -46,7 +46,7 @@ namespace hazelcast {
                      * @return reference to the internal byte buffer.
                      */
                     inline const std::vector<byte> &to_byte_array() const {
-                        return outputStream_;
+                        return output_stream_;
                     }
 
                     /**
@@ -54,21 +54,21 @@ namespace hazelcast {
                      * @param bytes The bytes to be appended to the current buffer
                      */
                     inline void append_bytes(const std::vector<byte> &bytes) {
-                        outputStream_.insert(outputStream_.end(), bytes.begin(), bytes.end());
+                        output_stream_.insert(output_stream_.end(), bytes.begin(), bytes.end());
                     }
 
                     inline void write_zero_bytes(size_t number_of_bytes) {
-                        outputStream_.insert(outputStream_.end(), number_of_bytes, 0);
+                        output_stream_.insert(output_stream_.end(), number_of_bytes, 0);
                     }
 
                     inline size_t position() {
-                        return outputStream_.size();
+                        return output_stream_.size();
                     }
 
                     inline void position(size_t new_pos) {
-                        if (isNoWrite_) { return; }
-                        if (outputStream_.size() < new_pos) {
-                            outputStream_.resize(new_pos, 0);
+                        if (is_no_write_) { return; }
+                        if (output_stream_.size() < new_pos) {
+                            output_stream_.resize(new_pos, 0);
                         }
                     }
 
@@ -86,7 +86,7 @@ namespace hazelcast {
                             std::is_same<float, typename std::remove_cv<T>::type>::value ||
                             std::is_same<double, typename std::remove_cv<T>::type>::value ||
                             std::is_same<boost::uuids::uuid, typename std::remove_cv<T>::type>::value, void>::type
-                    inline write(T) { if (isNoWrite_) { return; } }
+                    inline write(T) { if (is_no_write_) { return; } }
 
                     template <typename T>
                     typename std::enable_if<std::is_same<std::string, T>::value, void>::type
@@ -99,7 +99,7 @@ namespace hazelcast {
                     template <typename T>
                     typename std::enable_if<std::is_same<std::string, T>::value ||
                                    std::is_same<HazelcastJsonValue, T>::value>::type
-                    inline write(const T &) { if (isNoWrite_) { return; }}
+                    inline write(const T &) { if (is_no_write_) { return; }}
 
                     /**
                     * @param value to vector of values to be written. Only supported built-in values can be written.
@@ -129,8 +129,8 @@ namespace hazelcast {
                     inline write(const T *value);
 
                 protected:
-                    bool isNoWrite_;
-                    std::vector<byte> outputStream_;
+                    bool is_no_write_;
+                    std::vector<byte> output_stream_;
 
                     void inline check_available(int index, int requested_length) {
                         if (index < 0) {
@@ -138,7 +138,7 @@ namespace hazelcast {
                                                                                       (boost::format("Negative pos! -> %1%") % index).str()));
                         }
 
-                        size_t available = outputStream_.size() - index;
+                        size_t available = output_stream_.size() - index;
 
                         if (requested_length > (int) available) {
                             BOOST_THROW_EXCEPTION(exception::IllegalArgumentException("DataOutput::checkAvailable",
@@ -152,9 +152,9 @@ namespace hazelcast {
                      * @param value The integer value to be written
                      */
                     inline void write_at(int index, int32_t value) {
-                        if (isNoWrite_) { return; }
+                        if (is_no_write_) { return; }
                         check_available(index, util::Bits::INT_SIZE_IN_BYTES);
-                        util::Bits::native_to_big_endian4(&value, &outputStream_[index]);
+                        util::Bits::native_to_big_endian4(&value, &output_stream_[index]);
                     }
                 };
 
@@ -197,7 +197,7 @@ namespace hazelcast {
                 template <typename T>
                 typename std::enable_if<std::is_same<std::string, T>::value, void>::type
                 DataOutput::write(const T *value) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     if (!value) {
                         write<int32_t>(util::Bits::NULL_ARRAY);
                         return;
@@ -209,7 +209,7 @@ namespace hazelcast {
                 template <typename T>
                 typename std::enable_if<std::is_same<char, T>::value, void>::type
                 DataOutput::write(const T *value) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     if (!value) {
                         write<int32_t>(util::Bits::NULL_ARRAY);
                         return;
@@ -228,7 +228,7 @@ namespace hazelcast {
                                         std::is_same<std::vector<double>, T>::value ||
                                         std::is_same<std::vector<std::string>, T>::value, void>::type
                 DataOutput::write(const T &value) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     int32_t len = (int32_t) value.size();
                     write<int32_t>(len);
                     if (len > 0) {
@@ -249,7 +249,7 @@ namespace hazelcast {
                                         std::is_same<std::vector<double>, T>::value ||
                                         std::is_same<std::vector<std::string>, T>::value, void>::type
                 DataOutput::write(const T *value) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     if (!value) {
                         write<int32_t>(util::Bits::NULL_ARRAY);
                         return;

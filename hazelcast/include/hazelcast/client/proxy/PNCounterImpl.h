@@ -320,14 +320,14 @@ namespace hazelcast {
                 static std::shared_ptr<cluster::impl::VectorClock>
                 to_vector_clock(const cluster::impl::VectorClock::TimestampVector &replica_logical_timestamps);
 
-                boost::atomic_shared_ptr<Member> currentTargetReplicaAddress_;
-                std::mutex targetSelectionMutex_;
-                std::atomic<int32_t> maxConfiguredReplicaCount_;
+                boost::atomic_shared_ptr<Member> current_target_replica_address_;
+                std::mutex target_selection_mutex_;
+                std::atomic<int32_t> max_configured_replica_count_;
                 /**
                  * The last vector clock observed by this proxy. It is used for maintaining
                  * session consistency guarantees when reading from different replicas.
                  */
-                util::Sync<std::shared_ptr<cluster::impl::VectorClock> > observedClock_;
+                util::Sync<std::shared_ptr<cluster::impl::VectorClock> > observed_clock_;
                 logger &logger_;
 
                 int64_t get_and_update_timestamps(boost::future<protocol::ClientMessage> f);

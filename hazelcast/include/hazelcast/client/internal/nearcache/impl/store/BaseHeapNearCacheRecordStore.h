@@ -53,7 +53,7 @@ namespace hazelcast {
                                 ANCRS::on_evict(key,
                                                record,
                                                was_expired);
-                                ANCRS::nearCacheStats_->decrement_owned_entry_memory_cost(
+                                ANCRS::near_cache_stats_->decrement_owned_entry_memory_cost(
                                         ANCRS::get_total_storage_memory_cost(key, record));
                             }
 
@@ -91,17 +91,17 @@ namespace hazelcast {
                             std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > create_near_cache_record_map(
                                     const client::config::NearCacheConfig &near_cache_config) override {
                                 return std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
-                                        new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serializationService_,
+                                        new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serialization_service_,
                                                                                 DEFAULT_INITIAL_CAPACITY));
                             }
 
                             std::shared_ptr<R> put_record(const std::shared_ptr<KS> &key,
                                                            const std::shared_ptr<R> &record) override {
                                 std::shared_ptr<R> oldRecord = ANCRS::records_->put(key, record);
-                                ANCRS::nearCacheStats_->increment_owned_entry_memory_cost(
+                                ANCRS::near_cache_stats_->increment_owned_entry_memory_cost(
                                         ANCRS::get_total_storage_memory_cost(key, record));
                                 if (oldRecord.get() != NULL) {
-                                    ANCRS::nearCacheStats_->decrement_owned_entry_memory_cost(
+                                    ANCRS::near_cache_stats_->decrement_owned_entry_memory_cost(
                                             ANCRS::get_total_storage_memory_cost(key, oldRecord));
                                 }
                                 return oldRecord;

@@ -142,7 +142,7 @@ namespace hazelcast {
 
                 const std::string name_;
 
-                const std::string serviceName_;
+                const std::string service_name_;
                 spi::ClientContext &context_;
             };
         }

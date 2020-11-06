@@ -520,17 +520,17 @@ namespace hazelcast {
                 class ConfiguredBehaviourTest : public ClientTestSupport {
                 public:
                     ConfiguredBehaviourTest() {
-                        clientConfig_.get_network_config().set_connection_timeout(std::chrono::seconds(2)).set_connection_attempt_limit(2).
+                        client_config_.get_network_config().set_connection_timeout(std::chrono::seconds(2)).set_connection_attempt_limit(2).
                                 set_connection_attempt_period(std::chrono::seconds(1));
                     }
 
                 protected:
-                    ClientConfig clientConfig_;
+                    ClientConfig client_config_;
                 };
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster) {
-                    clientConfig_.get_connection_strategy_config().set_async_start(true);
-                    HazelcastClient client(clientConfig_);
+                    client_config_.get_connection_strategy_config().set_async_start(true);
+                    HazelcastClient client(client_config_);
 
                     ASSERT_THROW((client.get_map(random_map_name())),
                                  exception::HazelcastClientOfflineException);
@@ -539,8 +539,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster_thenShutdown) {
-                    clientConfig_.get_connection_strategy_config().set_async_start(true);
-                    HazelcastClient client(clientConfig_);
+                    client_config_.get_connection_strategy_config().set_async_start(true);
+                    HazelcastClient client(client_config_);
                     client.shutdown();
                     ASSERT_THROW((client.get_map(random_map_name())), exception::HazelcastClientNotActiveException);
 
@@ -551,18 +551,18 @@ namespace hazelcast {
                     boost::latch connectedLatch(1);
 
                     // trying 8.8.8.8 address will delay the initial connection since no such server exist
-                    clientConfig_.get_network_config().add_address(Address("8.8.8.8", 5701))
+                    client_config_.get_network_config().add_address(Address("8.8.8.8", 5701))
                             .add_address(Address("127.0.0.1", 5701)).set_connection_attempt_limit(INT32_MAX);
-                    clientConfig_.set_property("hazelcast.client.shuffle.member.list", "false");
-                    clientConfig_.add_listener(
+                    client_config_.set_property("hazelcast.client.shuffle.member.list", "false");
+                    client_config_.add_listener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
-                    clientConfig_.get_connection_strategy_config().set_async_start(true);
+                    client_config_.get_connection_strategy_config().set_async_start(true);
 
-                    HazelcastClient client(clientConfig_);
+                    HazelcastClient client(client_config_);
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
@@ -579,9 +579,9 @@ namespace hazelcast {
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFSingleMember) {
                     HazelcastServer hazelcastInstance(*g_srvFactory);
 
-                    clientConfig_.get_connection_strategy_config().set_reconnect_mode(
+                    client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig_);
+                    HazelcastClient client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         LifecycleListener()
@@ -606,9 +606,9 @@ namespace hazelcast {
                     HazelcastServer server1(*g_srvFactory);
                     HazelcastServer server2(*g_srvFactory);
 
-                    clientConfig_.get_connection_strategy_config().set_reconnect_mode(
+                    client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig_);
+                    HazelcastClient client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         LifecycleListener()
@@ -633,9 +633,9 @@ namespace hazelcast {
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberInitiallyOffline) {
                     HazelcastServer hazelcastInstance(*g_srvFactory);
 
-                    clientConfig_.get_connection_strategy_config().set_reconnect_mode(
+                    client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(clientConfig_);
+                    HazelcastClient client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
                         LifecycleListener()
@@ -661,15 +661,15 @@ namespace hazelcast {
 
                     boost::latch connectedLatch(1);
 
-                    clientConfig_.add_listener(
+                    client_config_.add_listener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
-                    clientConfig_.get_connection_strategy_config().set_reconnect_mode(
+                    client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig_);
+                    HazelcastClient client(client_config_);
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
@@ -685,16 +685,16 @@ namespace hazelcast {
                     boost::latch initialConnectionLatch(1);
                     boost::latch reconnectedLatch(1);
 
-                    clientConfig_.get_network_config().set_connection_attempt_limit(INT32_MAX);
-                    clientConfig_.add_listener(
+                    client_config_.get_network_config().set_connection_attempt_limit(INT32_MAX);
+                    client_config_.add_listener(
                         LifecycleListener()
                             .on_connected([&initialConnectionLatch](){
                                 initialConnectionLatch.try_count_down();
                             })
                     );
-                    clientConfig_.get_connection_strategy_config().set_reconnect_mode(
+                    client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig_);
+                    HazelcastClient client(client_config_);
 
                     ASSERT_OPEN_EVENTUALLY(initialConnectionLatch);
 
@@ -724,16 +724,16 @@ namespace hazelcast {
 
                     boost::latch connectedLatch(1), disconnectedLatch(1), reconnectedLatch(1);
 
-                    clientConfig_.get_network_config().set_connection_attempt_limit(10);
-                    clientConfig_.add_listener(
+                    client_config_.get_network_config().set_connection_attempt_limit(10);
+                    client_config_.add_listener(
                         LifecycleListener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
-                    clientConfig_.get_connection_strategy_config().set_reconnect_mode(
+                    client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(clientConfig_);
+                    HazelcastClient client(client_config_);
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
@@ -1023,17 +1023,17 @@ namespace hazelcast {
         namespace test {
             class JsonValueSerializationTest : public ClientTestSupport {
             public:
-                JsonValueSerializationTest() : serializationService_(config_) {}
+                JsonValueSerializationTest() : serialization_service_(config_) {}
 
             protected:
-                serialization::pimpl::SerializationService serializationService_;
+                serialization::pimpl::SerializationService serialization_service_;
                 SerializationConfig config_;
             };
 
             TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue) {
                 HazelcastJsonValue jsonValue("{ \"key\": \"value\" }");
-                serialization::pimpl::Data jsonData = serializationService_.to_data<HazelcastJsonValue>(&jsonValue);
-                auto jsonDeserialized = serializationService_.to_object<HazelcastJsonValue>(jsonData);
+                serialization::pimpl::Data jsonData = serialization_service_.to_data<HazelcastJsonValue>(&jsonValue);
+                auto jsonDeserialized = serialization_service_.to_object<HazelcastJsonValue>(jsonData);
                 ASSERT_TRUE(jsonDeserialized.has_value());
                 ASSERT_EQ(jsonValue, jsonDeserialized.value());
             }
@@ -1709,7 +1709,7 @@ namespace hazelcast {
                     public:
                         NearCacheRecordStoreTest() {
                             ss_ = std::unique_ptr<serialization::pimpl::SerializationService>(
-                                    new serialization::pimpl::SerializationService(serializationConfig_));
+                                    new serialization::pimpl::SerializationService(serialization_config_));
                         }
 
                     protected:
@@ -2008,7 +2008,7 @@ namespace hazelcast {
                         }
 
                         std::unique_ptr<serialization::pimpl::SerializationService> ss_;
-                        SerializationConfig serializationConfig_;
+                        SerializationConfig serialization_config_;
                     };
 
                     const int NearCacheRecordStoreTest::DEFAULT_RECORD_COUNT = 100;

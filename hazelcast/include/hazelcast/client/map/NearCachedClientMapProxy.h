@@ -83,7 +83,7 @@ namespace hazelcast {
                         add_near_cache_invalidate_listener(invalidationHandler);
                     }
 
-                    localMapStats_ = monitor::impl::LocalMapStatsImpl(near_cache_->get_near_cache_stats());
+                    local_map_stats_ = monitor::impl::LocalMapStatsImpl(near_cache_->get_near_cache_stats());
                 }
 
                 void post_destroy() override {

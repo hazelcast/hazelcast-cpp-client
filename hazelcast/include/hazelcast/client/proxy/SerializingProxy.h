@@ -74,7 +74,7 @@ namespace hazelcast {
 
                 template<typename T>
                 serialization::pimpl::Data to_data(const T *object) {
-                    return serializationService_.template to_data<T>(object);
+                    return serialization_service_.template to_data<T>(object);
                 }
 
                 template<typename T>
@@ -84,7 +84,7 @@ namespace hazelcast {
 
                 template<typename T>
                 inline boost::optional<T> to_object(const serialization::pimpl::Data &data) {
-                    return serializationService_.template to_object<T>(data);
+                    return serialization_service_.template to_object<T>(data);
                 }
 
                 template<typename T>
@@ -256,8 +256,8 @@ namespace hazelcast {
                     });
                 }
 
-                serialization::pimpl::SerializationService &serializationService_;
-                spi::impl::ClientPartitionServiceImpl &partitionService_;
+                serialization::pimpl::SerializationService &serialization_service_;
+                spi::impl::ClientPartitionServiceImpl &partition_service_;
                 std::string object_name_;
                 spi::ClientContext &client_context_;
             };

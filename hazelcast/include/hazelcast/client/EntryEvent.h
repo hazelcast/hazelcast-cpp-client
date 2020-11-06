@@ -112,11 +112,11 @@ namespace hazelcast {
         protected:
             std::string name_;
             Member member_;
-            type eventType_;
+            type event_type_;
             TypedData key_;
             TypedData value_;
-            TypedData oldValue_;
-            TypedData mergingValue_;
+            TypedData old_value_;
+            TypedData merging_value_;
         };
     }
 }

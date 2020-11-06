@@ -653,7 +653,7 @@ namespace hazelcast {
             boost::future<std::vector<K>> key_set(query::PagingPredicate<K, V> &predicate) {
                 predicate.set_iteration_type(query::IterationType::KEY);
                 return key_set_for_paging_predicate_data(
-                        protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
+                        protocol::codec::holder::paging_predicate_holder::of(predicate, serialization_service_)).then(
                         [=, &predicate](
                                 boost::future<std::pair<std::vector<serialization::pimpl::Data>, query::anchor_data_list>> f) {
                     auto result = f.get();
@@ -706,7 +706,7 @@ namespace hazelcast {
             boost::future<std::vector<V>> values(query::PagingPredicate<K, V> &predicate) {
                 predicate.set_iteration_type(query::IterationType::VALUE);
                 return values_for_paging_predicate_data(
-                        protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
+                        protocol::codec::holder::paging_predicate_holder::of(predicate, serialization_service_)).then(
                         [=, &predicate](boost::future<std::pair<std::vector<serialization::pimpl::Data>, query::anchor_data_list>> f) {
                     auto result = f.get();
                     predicate.set_anchor_data_list(std::move(result.second));
@@ -761,7 +761,7 @@ namespace hazelcast {
             boost::future<std::vector<std::pair<K, V>>> entry_set(query::PagingPredicate<K, V> &predicate) {
                 predicate.set_iteration_type(query::IterationType::ENTRY);
                 return entry_set_for_paging_predicate_data(
-                        protocol::codec::holder::paging_predicate_holder::of(predicate, serializationService_)).then(
+                        protocol::codec::holder::paging_predicate_holder::of(predicate, serialization_service_)).then(
                         [=, &predicate](boost::future<std::pair<EntryVector, query::anchor_data_list>> f) {
                     auto result = f.get();
                     predicate.set_anchor_data_list(std::move(result.second));
@@ -972,7 +972,7 @@ namespace hazelcast {
              * @return this map's local statistics.
              */
             monitor::LocalMapStats &get_local_map_stats() {
-                return localMapStats_;
+                return local_map_stats_;
             }
 
             template<typename K, typename V>
@@ -1001,7 +1001,7 @@ namespace hazelcast {
              */
             static constexpr std::chrono::milliseconds UNSET{-1};
 
-            monitor::impl::LocalMapStatsImpl localMapStats_;
+            monitor::impl::LocalMapStatsImpl local_map_stats_;
 
             virtual boost::future<boost::optional<serialization::pimpl::Data>> get_internal(const serialization::pimpl::Data &key_data) {
                 return proxy::IMapImpl::get_data(key_data);

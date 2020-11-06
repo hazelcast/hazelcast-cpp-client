@@ -421,23 +421,23 @@ namespace hazelcast {
 
                 void ClassDefinitionWriter::end() {}
 
-                DataOutput::DataOutput(bool dont_write) :isNoWrite_(dont_write) {
-                    if (isNoWrite_) {
-                        outputStream_.reserve(0);
+                DataOutput::DataOutput(bool dont_write) :is_no_write_(dont_write) {
+                    if (is_no_write_) {
+                        output_stream_.reserve(0);
                     } else {
-                        outputStream_.reserve(DEFAULT_SIZE);
+                        output_stream_.reserve(DEFAULT_SIZE);
                     }
                 }
 
                 template<>
                 void DataOutput::write(byte i) {
-                    if (isNoWrite_) { return; }
-                    outputStream_.push_back(i);
+                    if (is_no_write_) { return; }
+                    output_stream_.push_back(i);
                 }
 
                 template<>
                 void DataOutput::write(char i) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     // C++ `char` is one byte only, `char16_t` is two bytes
                     write<byte>(0);
                     write<byte>(i);
@@ -445,41 +445,41 @@ namespace hazelcast {
 
                 template<>
                 void DataOutput::write(char16_t i) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     write<byte>(static_cast<byte>(i >> 8));
                     write<byte>(i);
                 }
 
                 template<>
                 void DataOutput::write(int16_t value) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     int16_t result;
                     byte *target = (byte *) &result;
                     util::Bits::native_to_big_endian2(&value, target);
-                    outputStream_.insert(outputStream_.end(), target, target + util::Bits::SHORT_SIZE_IN_BYTES);
+                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::SHORT_SIZE_IN_BYTES);
                 }
 
                 template<>
                 void DataOutput::write(int32_t v) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     int32_t result;
                     byte *target = (byte *) &result;
                     util::Bits::native_to_big_endian4(&v, target);
-                    outputStream_.insert(outputStream_.end(), target, target + util::Bits::INT_SIZE_IN_BYTES);
+                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::INT_SIZE_IN_BYTES);
                 }
 
                 template<>
                 void DataOutput::write(int64_t l) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     int64_t result;
                     byte *target = (byte *) &result;
                     util::Bits::native_to_big_endian8(&l, target);
-                    outputStream_.insert(outputStream_.end(), target, target + util::Bits::LONG_SIZE_IN_BYTES);
+                    output_stream_.insert(output_stream_.end(), target, target + util::Bits::LONG_SIZE_IN_BYTES);
                 }
 
                 template<>
                 void DataOutput::write(float x) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     union {
                         float f;
                         int32_t i;
@@ -490,7 +490,7 @@ namespace hazelcast {
 
                 template<>
                 void DataOutput::write(double v) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     union {
                         double d;
                         int64_t l;
@@ -501,19 +501,19 @@ namespace hazelcast {
 
                 template<>
                 void DataOutput::write(boost::uuids::uuid v) {
-                    if (isNoWrite_) { return; }
-                    outputStream_.insert(outputStream_.end(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
+                    if (is_no_write_) { return; }
+                    output_stream_.insert(output_stream_.end(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
                 }
 
                 template<>
                 void DataOutput::write(bool value) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     write<byte>(value);
                 }
 
                 template<>
                 void DataOutput::write(const std::string &str) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     int32_t len = util::UTFUtil::is_valid_ut_f8(str);
                     if (len < 0) {
                         BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::UTFDataFormatException>(
@@ -523,13 +523,13 @@ namespace hazelcast {
 
                     write<int32_t>(len);
                     if (len > 0) {
-                        outputStream_.insert(outputStream_.end(), str.begin(), str.end());
+                        output_stream_.insert(output_stream_.end(), str.begin(), str.end());
                     }
                 }
 
                 template<>
                 void DataOutput::write(const HazelcastJsonValue &value) {
-                    if (isNoWrite_) { return; }
+                    if (is_no_write_) { return; }
                     write<std::string>(value.to_string());
                 }
 
@@ -943,7 +943,7 @@ namespace hazelcast {
 
                 PortableReaderBase::PortableReaderBase(PortableSerializer &portable_ser, ObjectDataInput &input,
                                                        std::shared_ptr<ClassDefinition> cd)
-                        : cd_(cd), dataInput_(&input), portableSerializer_(&portable_ser), raw_(false) {
+                        : cd_(cd), data_input_(&input), portable_serializer_(&portable_ser), raw_(false) {
                     int fieldCount;
                     try {
                         // final position after portable is read
@@ -984,28 +984,28 @@ namespace hazelcast {
                                                                                          std::string(field_name)));
                     }
 
-                    dataInput_->position(offset_ + cd_->get_field(field_name).get_index() * util::Bits::INT_SIZE_IN_BYTES);
-                    int32_t pos = dataInput_->read<int32_t>();
+                    data_input_->position(offset_ + cd_->get_field(field_name).get_index() * util::Bits::INT_SIZE_IN_BYTES);
+                    int32_t pos = data_input_->read<int32_t>();
 
-                    dataInput_->position(pos);
-                    int16_t len = dataInput_->read<int16_t>();
+                    data_input_->position(pos);
+                    int16_t len = data_input_->read<int16_t>();
 
                     // name + len + type
-                    dataInput_->position(pos + util::Bits::SHORT_SIZE_IN_BYTES + len + 1);
+                    data_input_->position(pos + util::Bits::SHORT_SIZE_IN_BYTES + len + 1);
                 }
 
                 hazelcast::client::serialization::ObjectDataInput &PortableReaderBase::get_raw_data_input() {
                     if (!raw_) {
-                        dataInput_->position(offset_ + cd_->get_field_count() * util::Bits::INT_SIZE_IN_BYTES);
-                        int32_t pos = dataInput_->read<int32_t>();
-                        dataInput_->position(pos);
+                        data_input_->position(offset_ + cd_->get_field_count() * util::Bits::INT_SIZE_IN_BYTES);
+                        int32_t pos = data_input_->read<int32_t>();
+                        data_input_->position(pos);
                     }
                     raw_ = true;
-                    return *dataInput_;
+                    return *data_input_;
                 }
 
                 void PortableReaderBase::end() {
-                    dataInput_->position(final_position_);
+                    data_input_->position(final_position_);
                 }
 
                 void

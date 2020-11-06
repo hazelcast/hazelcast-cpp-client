@@ -80,9 +80,9 @@ namespace hazelcast {
                 std::string src_;
                 std::string msg_;
                 std::string details_;
-                int32_t errorCode_;
+                int32_t error_code_;
                 std::exception_ptr cause_;
-                bool runtimeException_;
+                bool runtime_exception_;
                 bool retryable_;
                 std::string report_;
             };

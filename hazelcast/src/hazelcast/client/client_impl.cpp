@@ -749,8 +749,8 @@ namespace hazelcast {
             IException::IException(const std::string &exception_name, const std::string &source,
                                    const std::string &message, const std::string &details, int32_t error_no,
                                    std::exception_ptr cause, bool is_runtime, bool retryable)
-                    : src_(source), msg_(message), details_(details), errorCode_(error_no), cause_(cause),
-                    runtimeException_(is_runtime), retryable_(retryable), report_((boost::format(
+                    : src_(source), msg_(message), details_(details), error_code_(error_no), cause_(cause),
+                    runtime_exception_(is_runtime), retryable_(retryable), report_((boost::format(
                             "%1% {%2%. Error code:%3%, Details:%4%.} at %5%.") % exception_name % message % error_no %
                                                     details % source).str()) {
             }
@@ -779,11 +779,11 @@ namespace hazelcast {
             }
 
             int32_t IException::get_error_code() const {
-                return errorCode_;
+                return error_code_;
             }
 
             bool IException::is_runtime_exception() const {
-                return runtimeException_;
+                return runtime_exception_;
             }
 
             bool IException::is_retryable() const {

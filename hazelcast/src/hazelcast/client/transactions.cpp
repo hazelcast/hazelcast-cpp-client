@@ -527,13 +527,13 @@ namespace hazelcast {
             
             TransactionalObject::TransactionalObject(const std::string &service_name, const std::string &object_name,
                                                      txn::TransactionProxy &context)
-                    : proxy::SerializingProxy(context.get_client_context(), object_name), serviceName_(service_name),
+                    : proxy::SerializingProxy(context.get_client_context(), object_name), service_name_(service_name),
                       name_(object_name), context_(context) {}
 
             TransactionalObject::~TransactionalObject() = default;
 
             const std::string &TransactionalObject::get_service_name() {
-                return serviceName_;
+                return service_name_;
             }
 
             const std::string &TransactionalObject::get_name() {
@@ -542,7 +542,7 @@ namespace hazelcast {
 
             boost::future<void> TransactionalObject::destroy() {
                 on_destroy();
-                auto request = protocol::codec::client_destroyproxy_encode(name_, serviceName_);
+                auto request = protocol::codec::client_destroyproxy_encode(name_, service_name_);
                 return to_void_future(invoke_on_connection(request, context_.get_connection()));
             }
 

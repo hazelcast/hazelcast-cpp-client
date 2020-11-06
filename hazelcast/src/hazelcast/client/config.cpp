@@ -509,8 +509,8 @@ namespace hazelcast {
 
             void index_config::add_attributes() {}
 
-            EvictionConfig::EvictionConfig() : size_(DEFAULT_MAX_ENTRY_COUNT), maxSizePolicy_(DEFAULT_MAX_SIZE_POLICY),
-                               evictionPolicy_(DEFAULT_EVICTION_POLICY) {}
+            EvictionConfig::EvictionConfig() : size_(DEFAULT_MAX_ENTRY_COUNT), max_size_policy_(DEFAULT_MAX_SIZE_POLICY),
+                               eviction_policy_(DEFAULT_EVICTION_POLICY) {}
 
             int32_t EvictionConfig::get_size() const {
                 return size_;
@@ -522,20 +522,20 @@ namespace hazelcast {
             }
 
             EvictionConfig::MaxSizePolicy EvictionConfig::get_maximum_size_policy() const {
-                return maxSizePolicy_;
+                return max_size_policy_;
             }
 
             EvictionConfig &EvictionConfig::set_maximum_size_policy(const EvictionConfig::MaxSizePolicy &max_size_policy) {
-                this->maxSizePolicy_ = max_size_policy;
+                this->max_size_policy_ = max_size_policy;
                 return *this;
             }
 
             EvictionPolicy EvictionConfig::get_eviction_policy() const {
-                return evictionPolicy_;
+                return eviction_policy_;
             }
 
             EvictionConfig &EvictionConfig::set_eviction_policy(EvictionPolicy policy) {
-                this->evictionPolicy_ = policy;
+                this->eviction_policy_ = policy;
                 return *this;
             }
 
@@ -545,13 +545,13 @@ namespace hazelcast {
             }
 
             internal::eviction::EvictionPolicyType EvictionConfig::get_eviction_policy_type() const {
-                if (evictionPolicy_ == LFU) {
+                if (eviction_policy_ == LFU) {
                     return internal::eviction::LFU;
-                } else if (evictionPolicy_ == LRU) {
+                } else if (eviction_policy_ == LRU) {
                     return internal::eviction::LRU;
-                } else if (evictionPolicy_ == RANDOM) {
+                } else if (eviction_policy_ == RANDOM) {
                     return internal::eviction::RANDOM;
-                } else if (evictionPolicy_ == NONE) {
+                } else if (eviction_policy_ == NONE) {
                     return internal::eviction::NONE;
                 } else {
                     assert(0);

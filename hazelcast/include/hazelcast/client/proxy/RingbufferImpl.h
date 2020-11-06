@@ -82,7 +82,7 @@ namespace hazelcast {
                 boost::shared_future<int64_t> capacity() {
                     if (!buffer_capacity_.valid()) {
                         auto request = protocol::codec::ringbuffer_capacity_encode(get_name());
-                        buffer_capacity_ = invoke_and_get_future<int64_t>(request, partitionId_).share();
+                        buffer_capacity_ = invoke_and_get_future<int64_t>(request, partition_id_).share();
                     }
                     return buffer_capacity_;
                 }
@@ -98,7 +98,7 @@ namespace hazelcast {
                 boost::future<int64_t> size() {
                     auto request = protocol::codec::ringbuffer_size_encode(get_name());
                     return invoke_and_get_future<int64_t>(
-                            request, partitionId_);
+                            request, partition_id_);
                 }
 
                 /**
@@ -111,7 +111,7 @@ namespace hazelcast {
                 boost::future<int64_t> tail_sequence() {
                     auto request = protocol::codec::ringbuffer_tailsequence_encode(get_name());
                     return invoke_and_get_future<int64_t>(
-                            request, partitionId_);
+                            request, partition_id_);
                 }
 
                 /**
@@ -127,7 +127,7 @@ namespace hazelcast {
                 boost::future<int64_t> head_sequence() {
                     auto request = protocol::codec::ringbuffer_headsequence_encode(get_name());
                     return invoke_and_get_future<int64_t>(
-                            request, partitionId_);
+                            request, partition_id_);
                 }
 
                 /**
@@ -142,7 +142,7 @@ namespace hazelcast {
                 boost::future<int64_t> remaining_capacity() {
                     auto request = protocol::codec::ringbuffer_remainingcapacity_encode(get_name());
                     return invoke_and_get_future<int64_t>(
-                            request, partitionId_);
+                            request, partition_id_);
                 }
 
             protected:
@@ -154,7 +154,7 @@ namespace hazelcast {
                                                                                   static_cast<int32_t>(ringbuffer::OverflowPolicy::OVERWRITE),
                                                                                   item_data);
                     return invoke_and_get_future<int64_t>(
-                            request, partitionId_);
+                            request, partition_id_);
                 }
 
                 boost::future<int64_t> add_data(serialization::pimpl::Data &&item_data, ringbuffer::OverflowPolicy policy) {
@@ -162,14 +162,14 @@ namespace hazelcast {
                                                                                   static_cast<int32_t>(policy),
                                                                                   item_data);
                     return invoke_and_get_future<int64_t>(
-                            request, partitionId_);
+                            request, partition_id_);
                 }
 
                 boost::future<boost::optional<serialization::pimpl::Data>>read_one_data(int64_t sequence) {
                     check_sequence(sequence);
                     auto request = protocol::codec::ringbuffer_readone_encode(get_name(), sequence);
                     return invoke_and_get_future<boost::optional<serialization::pimpl::Data>>(
-                            request, partitionId_);
+                            request, partition_id_);
                 }
 
                 boost::future<int64_t>
@@ -179,7 +179,7 @@ namespace hazelcast {
 
                     auto request = protocol::codec::ringbuffer_addall_encode(name_, items,
                                                                              static_cast<int32_t>(overflow_policy));
-                    return invoke_and_get_future<int64_t>(request, partitionId_);
+                    return invoke_and_get_future<int64_t>(request, partition_id_);
                 }
 
             protected:
@@ -214,7 +214,7 @@ namespace hazelcast {
                             max_count,
                             filter_data);
 
-                    return invoke_on_partition(request, partitionId_);
+                    return invoke_on_partition(request, partition_id_);
                 }
 
             private:

@@ -274,8 +274,8 @@ namespace hazelcast {
 
             PNCounterImpl::PNCounterImpl(const std::string &service_name, const std::string &object_name,
                                          spi::ClientContext *context)
-                    : ProxyImpl(service_name, object_name, context), maxConfiguredReplicaCount_(0),
-                      observedClock_(std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
+                    : ProxyImpl(service_name, object_name, context), max_configured_replica_count_(0),
+                      observed_clock_(std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
                       logger_(context->get_logger()) {
             }
 
@@ -373,26 +373,26 @@ namespace hazelcast {
             }
 
             boost::future<void> PNCounterImpl::reset() {
-                observedClock_ = std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock());
+                observed_clock_ = std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock());
                 return boost::make_ready_future();
             }
 
             boost::shared_ptr<Member>
             PNCounterImpl::get_crdt_operation_target(const std::unordered_set<Member> &excluded_addresses) {
-                auto replicaAddress = currentTargetReplicaAddress_.load();
+                auto replicaAddress = current_target_replica_address_.load();
                 if (replicaAddress && excluded_addresses.find(*replicaAddress) == excluded_addresses.end()) {
                     return replicaAddress;
                 }
 
                 {
-                    std::lock_guard<std::mutex> guard(targetSelectionMutex_);
-                    replicaAddress = currentTargetReplicaAddress_.load();
+                    std::lock_guard<std::mutex> guard(target_selection_mutex_);
+                    replicaAddress = current_target_replica_address_.load();
                     if (!replicaAddress ||
                         excluded_addresses.find(*replicaAddress) != excluded_addresses.end()) {
-                        currentTargetReplicaAddress_ = choose_target_replica(excluded_addresses);
+                        current_target_replica_address_ = choose_target_replica(excluded_addresses);
                     }
                 }
-                return currentTargetReplicaAddress_;
+                return current_target_replica_address_;
             }
 
             boost::shared_ptr<Member>
@@ -422,14 +422,14 @@ namespace hazelcast {
             }
 
             int32_t PNCounterImpl::get_max_configured_replica_count() {
-                if (maxConfiguredReplicaCount_ > 0) {
-                    return maxConfiguredReplicaCount_;
+                if (max_configured_replica_count_ > 0) {
+                    return max_configured_replica_count_;
                 } else {
                     auto request = protocol::codec::pncounter_getconfiguredreplicacount_encode(
                             get_name());
-                    maxConfiguredReplicaCount_ = invoke_and_get_future<int32_t>(request).get();
+                    max_configured_replica_count_ = invoke_and_get_future<int32_t>(request).get();
                 }
-                return maxConfiguredReplicaCount_;
+                return max_configured_replica_count_;
             }
 
             boost::shared_ptr<Member>
@@ -463,7 +463,7 @@ namespace hazelcast {
                     }
                 }
                 try {
-                    auto timestamps = observedClock_.get()->entry_set();
+                    auto timestamps = observed_clock_.get()->entry_set();
                     auto request = protocol::codec::pncounter_get_encode(get_name(), timestamps, target->get_uuid());
                     return invoke_on_member(request, target->get_uuid()).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
@@ -496,7 +496,7 @@ namespace hazelcast {
 
                 try {
                     auto request = protocol::codec::pncounter_add_encode(
-                            get_name(), delta, getBeforeUpdate, observedClock_.get()->entry_set(), target->get_uuid());
+                            get_name(), delta, getBeforeUpdate, observed_clock_.get()->entry_set(), target->get_uuid());
                     return invoke_on_member(request, target->get_uuid()).then(boost::launch::deferred, [=] (boost::future<protocol::ClientMessage> f) {
                         try {
                             return get_and_update_timestamps(std::move(f));
@@ -524,11 +524,11 @@ namespace hazelcast {
                     const cluster::impl::VectorClock::TimestampVector &received_logical_timestamps) {
                 std::shared_ptr<cluster::impl::VectorClock> received = to_vector_clock(received_logical_timestamps);
                 for (;;) {
-                    std::shared_ptr<cluster::impl::VectorClock> currentClock = this->observedClock_;
+                    std::shared_ptr<cluster::impl::VectorClock> currentClock = this->observed_clock_;
                     if (currentClock->is_after(*received)) {
                         break;
                     }
-                    if (observedClock_.compare_and_set(currentClock, received)) {
+                    if (observed_clock_.compare_and_set(currentClock, received)) {
                         break;
                     }
                 }
@@ -541,7 +541,7 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<Member> PNCounterImpl::get_current_target_replica_address() {
-                return currentTargetReplicaAddress_.load();
+                return current_target_replica_address_.load();
             }
 
             IListImpl::IListImpl(const std::string &instance_name, spi::ClientContext *context)
@@ -918,11 +918,11 @@ namespace hazelcast {
             ProxyImpl::~ProxyImpl() = default;
 
             SerializingProxy::SerializingProxy(spi::ClientContext &context, const std::string &object_name)
-                    : serializationService_(context.get_serialization_service()),
-                      partitionService_(context.get_partition_service()), object_name_(object_name), client_context_(context) {}
+                    : serialization_service_(context.get_serialization_service()),
+                      partition_service_(context.get_partition_service()), object_name_(object_name), client_context_(context) {}
 
             int SerializingProxy::get_partition_id(const serialization::pimpl::Data &key) {
-                return partitionService_.get_partition_id(key);
+                return partition_service_.get_partition_id(key);
             }
 
             boost::future<protocol::ClientMessage> SerializingProxy::invoke_on_partition(
@@ -1003,12 +1003,12 @@ namespace hazelcast {
             PartitionSpecificClientProxy::PartitionSpecificClientProxy(const std::string &service_name,
                                                                        const std::string &object_name,
                                                                        spi::ClientContext *context) : ProxyImpl(
-                    service_name, object_name, context), partitionId_(-1) {}
+                    service_name, object_name, context), partition_id_(-1) {}
 
             void PartitionSpecificClientProxy::on_initialize() {
                 std::string partitionKey = internal::partition::strategy::StringPartitioningStrategy::get_partition_key(
                         name_);
-                partitionId_ = get_context().get_partition_service().get_partition_id(to_data<std::string>(partitionKey));
+                partition_id_ = get_context().get_partition_service().get_partition_id(to_data<std::string>(partitionKey));
             }
             
             IMapImpl::IMapImpl(const std::string &instance_name, spi::ClientContext *context)
@@ -1754,15 +1754,15 @@ namespace hazelcast {
 
         EntryEvent::EntryEvent(const std::string &name, Member &&member, type event_type,
                    TypedData &&key, TypedData &&value, TypedData &&old_value, TypedData &&merging_value)
-                : name_(name), member_(std::move(member)), eventType_(event_type), key_(std::move(key)),
-                value_(std::move(value)), oldValue_(std::move(old_value)), mergingValue_(std::move(merging_value)) {}
+                : name_(name), member_(std::move(member)), event_type_(event_type), key_(std::move(key)),
+                value_(std::move(value)), old_value_(std::move(old_value)), merging_value_(std::move(merging_value)) {}
 
         const TypedData &EntryEvent::get_key() const {
             return key_;
         }
 
         const TypedData &EntryEvent::get_old_value() const {
-            return oldValue_;
+            return old_value_;
         }
 
         const TypedData &EntryEvent::get_value() const {
@@ -1770,7 +1770,7 @@ namespace hazelcast {
         }
 
         const TypedData &EntryEvent::get_merging_value() const {
-            return mergingValue_;
+            return merging_value_;
         }
 
         const Member &EntryEvent::get_member() const {
@@ -1778,7 +1778,7 @@ namespace hazelcast {
         }
 
         EntryEvent::type EntryEvent::get_event_type() const {
-            return eventType_;
+            return event_type_;
         }
 
         const std::string &EntryEvent::get_name() const {
@@ -1787,8 +1787,8 @@ namespace hazelcast {
 
         std::ostream &operator<<(std::ostream &os, const EntryEvent &event) {
             os << "name: " << event.name_ << " member: " << event.member_ << " eventType: " <<
-               static_cast<int>(event.eventType_) << " key: " << event.key_.get_type() << " value: " << event.value_.get_type() <<
-               " oldValue: " << event.oldValue_.get_type() << " mergingValue: " << event.mergingValue_.get_type();
+               static_cast<int>(event.event_type_) << " key: " << event.key_.get_type() << " value: " << event.value_.get_type() <<
+               " oldValue: " << event.old_value_.get_type() << " mergingValue: " << event.merging_value_.get_type();
             return os;
         }
 

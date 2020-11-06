@@ -467,16 +467,16 @@ namespace hazelcast {
                 protected:
                     void SetUp() override {
                         std::string testName = get_test_name();
-                        clientRingbuffer_ = client->get_ringbuffer(testName);
-                        client2Ringbuffer_ = client2->get_ringbuffer(testName);
+                        client_ringbuffer_ = client->get_ringbuffer(testName);
+                        client2_ringbuffer_ = client2->get_ringbuffer(testName);
                     }
 
                     void TearDown() override {
-                        if (clientRingbuffer_) {
-                            clientRingbuffer_->destroy().get();
+                        if (client_ringbuffer_) {
+                            client_ringbuffer_->destroy().get();
                         }
-                        if (client2Ringbuffer_) {
-                            client2Ringbuffer_->destroy().get();
+                        if (client2_ringbuffer_) {
+                            client2_ringbuffer_->destroy().get();
                         }
                     }
 
@@ -499,8 +499,8 @@ namespace hazelcast {
                     static HazelcastServer *instance;
                     static HazelcastClient *client;
                     static HazelcastClient *client2;
-                    std::shared_ptr<Ringbuffer> clientRingbuffer_;
-                    std::shared_ptr<Ringbuffer> client2Ringbuffer_;
+                    std::shared_ptr<Ringbuffer> client_ringbuffer_;
+                    std::shared_ptr<Ringbuffer> client2_ringbuffer_;
                     std::vector<std::string> items_;
 
                     static constexpr int64_t CAPACITY = 10;
@@ -568,8 +568,8 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, readManyAsync_whenHitsStale_useHeadAsStartSequence) {
-                    client2Ringbuffer_->add_all(items_, client::ringbuffer::OverflowPolicy::OVERWRITE);
-                    auto f = clientRingbuffer_->read_many<std::string>(1, 1, 10);
+                    client2_ringbuffer_->add_all(items_, client::ringbuffer::OverflowPolicy::OVERWRITE);
+                    auto f = client_ringbuffer_->read_many<std::string>(1, 1, 10);
                     auto rs = f.get();
                     ASSERT_EQ(10, rs.read_count());
                     ASSERT_EQ(std::string("1"), *rs.get_items()[0].get<std::string>());
@@ -580,51 +580,51 @@ namespace hazelcast {
                     std::shared_ptr<boost::latch> latch1 = std::make_shared<boost::latch>(1);
                     std::thread([=] () {
                         try {
-                            clientRingbuffer_->read_one<std::string>(0).get();
+                            client_ringbuffer_->read_one<std::string>(0).get();
                             latch1->count_down();
                         } catch (exception::StaleSequenceException &) {
                             latch1->count_down();
                         }
                     }).detach();
-                    client2Ringbuffer_->add_all(items_, client::ringbuffer::OverflowPolicy::OVERWRITE);
+                    client2_ringbuffer_->add_all(items_, client::ringbuffer::OverflowPolicy::OVERWRITE);
                     ASSERT_OPEN_EVENTUALLY(*latch1);
                 }
 
                 TEST_F(RingbufferTest, headSequence) {
                     for (int k = 0; k < 2 * CAPACITY; k++) {
-                        client2Ringbuffer_->add<std::string>("foo").get();
+                        client2_ringbuffer_->add<std::string>("foo").get();
                     }
 
-                    ASSERT_EQ(client2Ringbuffer_->head_sequence().get(), clientRingbuffer_->head_sequence().get());
+                    ASSERT_EQ(client2_ringbuffer_->head_sequence().get(), client_ringbuffer_->head_sequence().get());
                 }
 
                 TEST_F(RingbufferTest, tailSequence) {
                     for (int k = 0; k < 2 * CAPACITY; k++) {
-                        client2Ringbuffer_->add<std::string>("foo").get();
+                        client2_ringbuffer_->add<std::string>("foo").get();
                     }
 
-                    ASSERT_EQ(client2Ringbuffer_->tail_sequence().get(), clientRingbuffer_->tail_sequence().get());
+                    ASSERT_EQ(client2_ringbuffer_->tail_sequence().get(), client_ringbuffer_->tail_sequence().get());
                 }
 
                 TEST_F(RingbufferTest, size) {
-                    client2Ringbuffer_->add<std::string>("foo").get();
+                    client2_ringbuffer_->add<std::string>("foo").get();
 
-                    ASSERT_EQ(client2Ringbuffer_->tail_sequence().get(), clientRingbuffer_->tail_sequence().get());
+                    ASSERT_EQ(client2_ringbuffer_->tail_sequence().get(), client_ringbuffer_->tail_sequence().get());
                 }
 
                 TEST_F(RingbufferTest, capacity) {
-                    ASSERT_EQ(client2Ringbuffer_->capacity().get(), clientRingbuffer_->capacity().get());
+                    ASSERT_EQ(client2_ringbuffer_->capacity().get(), client_ringbuffer_->capacity().get());
                 }
 
                 TEST_F(RingbufferTest, remainingCapacity) {
-                    client2Ringbuffer_->add<std::string>("foo").get();
+                    client2_ringbuffer_->add<std::string>("foo").get();
 
-                    ASSERT_EQ(client2Ringbuffer_->remaining_capacity().get(), clientRingbuffer_->remaining_capacity().get());
+                    ASSERT_EQ(client2_ringbuffer_->remaining_capacity().get(), client_ringbuffer_->remaining_capacity().get());
                 }
 
                 TEST_F(RingbufferTest, add) {
-                    clientRingbuffer_->add<std::string>("foo").get();
-                    auto value = client2Ringbuffer_->read_one<std::string>(0).get();
+                    client_ringbuffer_->add<std::string>("foo").get();
+                    auto value = client2_ringbuffer_->read_one<std::string>(0).get();
                     ASSERT_TRUE(value.has_value());
                     ASSERT_EQ("foo", value.value());
                 }
@@ -633,32 +633,32 @@ namespace hazelcast {
                     std::vector<std::string> items;
                     items.push_back("foo");
                     items.push_back("bar");
-                    auto result = clientRingbuffer_->add_all(items, client::ringbuffer::OverflowPolicy::OVERWRITE).get();
+                    auto result = client_ringbuffer_->add_all(items, client::ringbuffer::OverflowPolicy::OVERWRITE).get();
 
-                    ASSERT_EQ(client2Ringbuffer_->tail_sequence().get(), result);
-                    auto val0 = client2Ringbuffer_->read_one<std::string>(0).get();
-                    auto val1 = client2Ringbuffer_->read_one<std::string>(1).get();
+                    ASSERT_EQ(client2_ringbuffer_->tail_sequence().get(), result);
+                    auto val0 = client2_ringbuffer_->read_one<std::string>(0).get();
+                    auto val1 = client2_ringbuffer_->read_one<std::string>(1).get();
                     ASSERT_TRUE(val0);
                     ASSERT_TRUE(val1);
                     ASSERT_EQ(val0.value(), "foo");
                     ASSERT_EQ(val1.value(), "bar");
-                    ASSERT_EQ(0, client2Ringbuffer_->head_sequence().get());
-                    ASSERT_EQ(1, client2Ringbuffer_->tail_sequence().get());
+                    ASSERT_EQ(0, client2_ringbuffer_->head_sequence().get());
+                    ASSERT_EQ(1, client2_ringbuffer_->tail_sequence().get());
                 }
 
                 TEST_F(RingbufferTest, readOne) {
-                    client2Ringbuffer_->add<std::string>("foo").get();
-                    auto value = clientRingbuffer_->read_one<std::string>(0).get();
+                    client2_ringbuffer_->add<std::string>("foo").get();
+                    auto value = client_ringbuffer_->read_one<std::string>(0).get();
                     ASSERT_TRUE(value.has_value());
                     ASSERT_EQ("foo", value.value());
                 }
 
                 TEST_F(RingbufferTest, readMany_noFilter) {
-                    client2Ringbuffer_->add<std::string>("1");
-                    client2Ringbuffer_->add<std::string>("2");
-                    client2Ringbuffer_->add<std::string>("3");
+                    client2_ringbuffer_->add<std::string>("1");
+                    client2_ringbuffer_->add<std::string>("2");
+                    client2_ringbuffer_->add<std::string>("3");
 
-                    auto rs = clientRingbuffer_->read_many(0, 3, 3).get();
+                    auto rs = client_ringbuffer_->read_many(0, 3, 3).get();
 
                     ASSERT_EQ(3, rs.read_count());
                     auto &items = rs.get_items();
@@ -669,14 +669,14 @@ namespace hazelcast {
 
                 // checks if the max count works. So if more results are available than needed, the surplus results should not be read.
                 TEST_F(RingbufferTest, readMany_maxCount) {
-                    client2Ringbuffer_->add<std::string>("1").get();
-                    client2Ringbuffer_->add<std::string>("2").get();
-                    client2Ringbuffer_->add<std::string>("3").get();
-                    client2Ringbuffer_->add<std::string>("4").get();
-                    client2Ringbuffer_->add<std::string>("5").get();
-                    client2Ringbuffer_->add<std::string>("6").get();
+                    client2_ringbuffer_->add<std::string>("1").get();
+                    client2_ringbuffer_->add<std::string>("2").get();
+                    client2_ringbuffer_->add<std::string>("3").get();
+                    client2_ringbuffer_->add<std::string>("4").get();
+                    client2_ringbuffer_->add<std::string>("5").get();
+                    client2_ringbuffer_->add<std::string>("6").get();
 
-                    client::ringbuffer::ReadResultSet rs = clientRingbuffer_->read_many<std::string>(0, 3, 3).get();
+                    client::ringbuffer::ReadResultSet rs = client_ringbuffer_->read_many<std::string>(0, 3, 3).get();
 
                     ASSERT_EQ(3, rs.read_count());
                     auto &items1 = rs.get_items();
@@ -686,15 +686,15 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, readManyAsync_withFilter) {
-                    client2Ringbuffer_->add<std::string>("good1").get();
-                    client2Ringbuffer_->add<std::string>("bad1").get();
-                    client2Ringbuffer_->add<std::string>("good2").get();
-                    client2Ringbuffer_->add<std::string>("bad2").get();
-                    client2Ringbuffer_->add<std::string>("good3").get();
-                    client2Ringbuffer_->add<std::string>("bad3").get();
+                    client2_ringbuffer_->add<std::string>("good1").get();
+                    client2_ringbuffer_->add<std::string>("bad1").get();
+                    client2_ringbuffer_->add<std::string>("good2").get();
+                    client2_ringbuffer_->add<std::string>("bad2").get();
+                    client2_ringbuffer_->add<std::string>("good3").get();
+                    client2_ringbuffer_->add<std::string>("bad3").get();
 
                     StartsWithStringFilter filter("good");
-                    auto rs = clientRingbuffer_->read_many<StartsWithStringFilter>(0, 3, 3, &filter).get();
+                    auto rs = client_ringbuffer_->read_many<StartsWithStringFilter>(0, 3, 3, &filter).get();
 
                     ASSERT_EQ(5, rs.read_count());
                     auto const &items = rs.get_items();
@@ -1666,7 +1666,7 @@ namespace hazelcast {
             protected:
                 virtual void SetUp() {
                     ASSERT_TRUE(client);
-                    flakeIdGenerator_ = client->get_flake_id_generator(testing::UnitTest::GetInstance()->current_test_info()->name());
+                    flake_id_generator_ = client->get_flake_id_generator(testing::UnitTest::GetInstance()->current_test_info()->name());
                 }
 
                 static void SetUpTestCase() {
@@ -1690,14 +1690,14 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
 
-                std::shared_ptr<FlakeIdGenerator> flakeIdGenerator_;
+                std::shared_ptr<FlakeIdGenerator> flake_id_generator_;
             };
 
             HazelcastServer *FlakeIdGeneratorApiTest::instance = nullptr;
             HazelcastClient *FlakeIdGeneratorApiTest::client = nullptr;
 
             TEST_F (FlakeIdGeneratorApiTest, testStartingValue) {
-                ASSERT_NO_THROW(flakeIdGenerator_->new_id().get());
+                ASSERT_NO_THROW(flake_id_generator_->new_id().get());
             }
 
             TEST_F (FlakeIdGeneratorApiTest, testSmoke) {
@@ -1711,7 +1711,7 @@ namespace hazelcast {
                         std::unordered_set<int64_t> localIds;
                         startLatch.wait();
                         for (size_t j = 0; j < NUM_IDS_PER_THREAD; ++j) {
-                            localIds.insert(flakeIdGenerator_->new_id().get());
+                            localIds.insert(flake_id_generator_->new_id().get());
                         }
 
                         return localIds;
@@ -1744,7 +1744,7 @@ namespace hazelcast {
 
             protected:
                 HazelcastServer instance_;
-                ClientConfig clientConfig_;
+                ClientConfig client_config_;
                 HazelcastClient client_;
             };
 
@@ -2129,11 +2129,11 @@ namespace hazelcast {
                 ~ClientTxnTest() override;
 
             protected:
-                HazelcastServerFactory & hazelcastInstanceFactory_;
+                HazelcastServerFactory & hazelcast_instance_factory_;
                 std::unique_ptr<HazelcastServer> server_;
                 std::unique_ptr<HazelcastServer> second_;
                 std::unique_ptr<HazelcastClient> client_;
-                std::unique_ptr<LoadBalancer> loadBalancer_;
+                std::unique_ptr<LoadBalancer> load_balancer_;
             };
 
             class MyLoadBalancer : public impl::AbstractLoadBalancer {
@@ -2162,14 +2162,14 @@ namespace hazelcast {
             }
 
             ClientTxnTest::ClientTxnTest()
-                    : hazelcastInstanceFactory_(*g_srvFactory) {
-                server_.reset(new HazelcastServer(hazelcastInstanceFactory_));
+                    : hazelcast_instance_factory_(*g_srvFactory) {
+                server_.reset(new HazelcastServer(hazelcast_instance_factory_));
                 ClientConfig clientConfig = get_config();
                 //always start the txn on first member
-                loadBalancer_.reset(new MyLoadBalancer());
-                clientConfig.set_load_balancer(loadBalancer_.get());
+                load_balancer_.reset(new MyLoadBalancer());
+                clientConfig.set_load_balancer(load_balancer_.get());
                 client_.reset(new HazelcastClient(clientConfig));
-                second_.reset(new HazelcastServer(hazelcastInstanceFactory_));
+                second_.reset(new HazelcastServer(hazelcast_instance_factory_));
             }
 
             ClientTxnTest::~ClientTxnTest() {
@@ -2342,7 +2342,7 @@ namespace hazelcast {
                 ~ClientTxnListTest() override;
             protected:
                 HazelcastServer instance_;
-                ClientConfig clientConfig_;
+                ClientConfig client_config_;
                 HazelcastClient client_;
             };
 

@@ -51,22 +51,22 @@ namespace hazelcast {
                         public:
                             AbstractNearCacheRecordStore(const client::config::NearCacheConfig &cache_config,
                                                          serialization::pimpl::SerializationService &ss)
-                                    : nearCacheConfig_(cache_config),
-                                      timeToLiveMillis_(cache_config.get_time_to_live_seconds() * MILLI_SECONDS_IN_A_SECOND),
-                                      maxIdleMillis_(cache_config.get_max_idle_seconds() * MILLI_SECONDS_IN_A_SECOND),
-                                      serializationService_(ss), nearCacheStats_(new monitor::impl::NearCacheStatsImpl) {
+                                    : near_cache_config_(cache_config),
+                                      time_to_live_millis_(cache_config.get_time_to_live_seconds() * MILLI_SECONDS_IN_A_SECOND),
+                                      max_idle_millis_(cache_config.get_max_idle_seconds() * MILLI_SECONDS_IN_A_SECOND),
+                                      serialization_service_(ss), near_cache_stats_(new monitor::impl::NearCacheStatsImpl) {
                                 auto &evictionConfig = const_cast<client::config::NearCacheConfig &>(cache_config).get_eviction_config();
-                                evictionPolicyType_ = evictionConfig.get_eviction_policy_type();
+                                eviction_policy_type_ = evictionConfig.get_eviction_policy_type();
                             }
 
                             void initialize() override {
-                                auto &evictionConfig = const_cast<client::config::NearCacheConfig &>(nearCacheConfig_).get_eviction_config();
-                                this->records_ = create_near_cache_record_map(nearCacheConfig_);
-                                this->maxSizeChecker_ = create_near_cache_max_size_checker(evictionConfig, nearCacheConfig_);
-                                this->evictionPolicyEvaluator_ = create_eviction_policy_evaluator(evictionConfig);
-                                this->evictionChecker_ = create_eviction_checker(nearCacheConfig_);
-                                this->evictionStrategy_ = create_eviction_strategy(evictionConfig);
-                                this->evictionPolicyType_ = evictionConfig.get_eviction_policy_type();
+                                auto &evictionConfig = const_cast<client::config::NearCacheConfig &>(near_cache_config_).get_eviction_config();
+                                this->records_ = create_near_cache_record_map(near_cache_config_);
+                                this->max_size_checker_ = create_near_cache_max_size_checker(evictionConfig, near_cache_config_);
+                                this->eviction_policy_evaluator_ = create_eviction_policy_evaluator(evictionConfig);
+                                this->eviction_checker_ = create_eviction_checker(near_cache_config_);
+                                this->eviction_strategy_ = create_eviction_strategy(evictionConfig);
+                                this->eviction_policy_type_ = evictionConfig.get_eviction_policy_type();
                             }
 
 /*
@@ -88,11 +88,11 @@ namespace hazelcast {
                             void on_evict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
                                                  bool was_expired) override {
                                 if (was_expired) {
-                                    nearCacheStats_->increment_expirations();
+                                    near_cache_stats_->increment_expirations();
                                 } else {
-                                    nearCacheStats_->increment_evictions();
+                                    near_cache_stats_->increment_evictions();
                                 }
-                                nearCacheStats_->decrement_owned_entry_count();
+                                near_cache_stats_->decrement_owned_entry_count();
                             }
 
                             std::shared_ptr<V> get(const std::shared_ptr<KS> &key) override {
@@ -109,12 +109,12 @@ namespace hazelcast {
                                             return std::shared_ptr<V>();
                                         }
                                         on_record_access(record);
-                                        nearCacheStats_->increment_hits();
+                                        near_cache_stats_->increment_hits();
                                         value = record_to_value(record.get());
                                         on_get(key, value, record);
                                         return value;
                                     } else {
-                                        nearCacheStats_->increment_misses();
+                                        near_cache_stats_->increment_misses();
                                         return std::shared_ptr<V>();
                                     }
                                 } catch (exception::IException &error) {
@@ -145,12 +145,12 @@ namespace hazelcast {
                                     record = remove_record(key);
                                     if (record.get() != NULL) {
                                         removed = true;
-                                        nearCacheStats_->decrement_owned_entry_count();
-                                        nearCacheStats_->decrement_owned_entry_memory_cost(
+                                        near_cache_stats_->decrement_owned_entry_count();
+                                        near_cache_stats_->decrement_owned_entry_memory_cost(
                                                 get_total_storage_memory_cost(key.get(), record.get()));
-                                        nearCacheStats_->increment_invalidations();
+                                        near_cache_stats_->increment_invalidations();
                                     }
-                                    nearCacheStats_->increment_invalidation_requests();
+                                    near_cache_stats_->increment_invalidation_requests();
                                     on_remove(key, record, removed);
                                     return record.get() != NULL;
                                 } catch (exception::IException &error) {
@@ -163,16 +163,16 @@ namespace hazelcast {
                                 check_available();
 
                                 clear_records();
-                                nearCacheStats_->set_owned_entry_count(0);
-                                nearCacheStats_->set_owned_entry_memory_cost(0L);
+                                near_cache_stats_->set_owned_entry_count(0);
+                                near_cache_stats_->set_owned_entry_memory_cost(0L);
                             }
 
                             void destroy() override {
                                 check_available();
 
                                 destroy_store();
-                                nearCacheStats_->set_owned_entry_count(0);
-                                nearCacheStats_->set_owned_entry_memory_cost(0L);
+                                near_cache_stats_->set_owned_entry_count(0);
+                                near_cache_stats_->set_owned_entry_memory_cost(0L);
                             }
 
                             int size() const override {
@@ -182,14 +182,14 @@ namespace hazelcast {
 
                             std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const override {
                                 check_available();
-                                return nearCacheStats_;
+                                return near_cache_stats_;
                             }
 
                             void do_eviction_if_required() override {
                                 check_available();
                                 if (is_eviction_enabled()) {
-                                    evictionStrategy_->evict(records_.get(), evictionPolicyEvaluator_.get(),
-                                                            evictionChecker_.get(), this);
+                                    eviction_strategy_->evict(records_.get(), eviction_policy_evaluator_.get(),
+                                                            eviction_checker_.get(), this);
                                 }
                             }
 
@@ -197,7 +197,7 @@ namespace hazelcast {
                                 check_available();
 
                                 if (is_eviction_enabled()) {
-                                    evictionStrategy_->evict(records_.get(), evictionPolicyEvaluator_.get(), NULL, this);
+                                    eviction_strategy_->evict(records_.get(), eviction_policy_evaluator_.get(), NULL, this);
                                 }
                             }
                         protected:
@@ -263,7 +263,7 @@ namespace hazelcast {
 
                             void check_available() const {
                                 if (!is_available()) {
-                                    BOOST_THROW_EXCEPTION(exception::IllegalStateException(nearCacheConfig_.get_name() +
+                                    BOOST_THROW_EXCEPTION(exception::IllegalStateException(near_cache_config_.get_name() +
                                                                                            " named Near Cache record store is not available"));
                                 }
                             }
@@ -283,7 +283,7 @@ namespace hazelcast {
                             std::unique_ptr<eviction::EvictionChecker> create_eviction_checker(
                                     const client::config::NearCacheConfig &cache_config) {
                                 return std::unique_ptr<eviction::EvictionChecker>(
-                                        new MaxSizeEvictionChecker(maxSizeChecker_.get()));
+                                        new MaxSizeEvictionChecker(max_size_checker_.get()));
                             }
 
                             bool is_available() const {
@@ -294,7 +294,7 @@ namespace hazelcast {
                                     const std::shared_ptr<V> &value) {
                                 if (value.get() != NULL) {
                                     return std::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(
-                                            serializationService_.to_data<V>(value.get())));
+                                            serialization_service_.to_data<V>(value.get())));
                                 } else {
                                     return std::shared_ptr<serialization::pimpl::Data>();
                                 }
@@ -309,7 +309,7 @@ namespace hazelcast {
 
                             std::shared_ptr<V> data_to_value(
                                     const std::shared_ptr<serialization::pimpl::Data> &data, const TypedData *dummy) {
-                                return std::shared_ptr<V>(new TypedData(*data, serializationService_));
+                                return std::shared_ptr<V>(new TypedData(*data, serialization_service_));
                             }
 
                             std::shared_ptr<V> data_to_value(
@@ -365,7 +365,7 @@ namespace hazelcast {
                                 if (record->is_expired_at(now)) {
                                     return true;
                                 } else {
-                                    return record->is_idle_at(maxIdleMillis_, now);
+                                    return record->is_idle_at(max_idle_millis_, now);
                                 }
                             }
 
@@ -419,13 +419,13 @@ namespace hazelcast {
                             }
 
                             void on_expire(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record) {
-                                nearCacheStats_->increment_expirations();
+                                near_cache_stats_->increment_expirations();
                             }
 
                             bool is_eviction_enabled() {
-                                return evictionStrategy_.get() != NULL
-                                       && evictionPolicyEvaluator_.get() != NULL
-                                       && evictionPolicyType_ != eviction::NONE;
+                                return eviction_strategy_.get() != NULL
+                                       && eviction_policy_evaluator_.get() != NULL
+                                       && eviction_policy_type_ != eviction::NONE;
                             }
 
                             void clear_records() {
@@ -439,17 +439,17 @@ namespace hazelcast {
                             /*
                         static const int REFERENCE_SIZE = MEM_AVAILABLE ? MEM.arrayIndexScale(Object[].class) : (Integer.SIZE / Byte.SIZE);
 */
-                            const client::config::NearCacheConfig &nearCacheConfig_;
-                            const int64_t timeToLiveMillis_;
-                            const int64_t maxIdleMillis_;
-                            serialization::pimpl::SerializationService &serializationService_;
-                            std::shared_ptr<monitor::impl::NearCacheStatsImpl> nearCacheStats_;
+                            const client::config::NearCacheConfig &near_cache_config_;
+                            const int64_t time_to_live_millis_;
+                            const int64_t max_idle_millis_;
+                            serialization::pimpl::SerializationService &serialization_service_;
+                            std::shared_ptr<monitor::impl::NearCacheStatsImpl> near_cache_stats_;
 
-                            std::unique_ptr<eviction::MaxSizeChecker> maxSizeChecker_;
-                            std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > evictionPolicyEvaluator_;
-                            std::unique_ptr<eviction::EvictionChecker> evictionChecker_;
-                            std::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > evictionStrategy_;
-                            eviction::EvictionPolicyType evictionPolicyType_;
+                            std::unique_ptr<eviction::MaxSizeChecker> max_size_checker_;
+                            std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > eviction_policy_evaluator_;
+                            std::unique_ptr<eviction::EvictionChecker> eviction_checker_;
+                            std::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > eviction_strategy_;
+                            eviction::EvictionPolicyType eviction_policy_type_;
                             std::unique_ptr<NCRM> records_;
 
 /*
@@ -476,7 +476,7 @@ namespace hazelcast {
 
                                 // if there is no eviction configured we return if the Near Cache is full and it's a new key
                                 // (we have to check the key, otherwise we might lose updates on existing keys)
-                                if (!is_eviction_enabled() && evictionChecker_->is_eviction_required() &&
+                                if (!is_eviction_enabled() && eviction_checker_->is_eviction_required() &&
                                     !contains_record_key(key)) {
                                     return;
                                 }
@@ -488,7 +488,7 @@ namespace hazelcast {
                                     on_record_create(key, record);
                                     oldRecord = put_record(key, record);
                                     if (oldRecord.get() == NULL) {
-                                        nearCacheStats_->increment_owned_entry_count();
+                                        near_cache_stats_->increment_owned_entry_count();
                                     }
                                     on_put(key, value, record, oldRecord);
                                 } catch (exception::IException &error) {

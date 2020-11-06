@@ -460,7 +460,7 @@ namespace hazelcast {
             }
 
             ClientProxy::ClientProxy(const std::string &name, const std::string &service_name, ClientContext &context)
-                    : name_(name), serviceName_(service_name), context_(context) {}
+                    : name_(name), service_name_(service_name), context_(context) {}
 
             ClientProxy::~ClientProxy() = default;
 
@@ -469,7 +469,7 @@ namespace hazelcast {
             }
 
             const std::string &ClientProxy::get_service_name() const {
-                return serviceName_;
+                return service_name_;
             }
 
             ClientContext &ClientProxy::get_context() {
