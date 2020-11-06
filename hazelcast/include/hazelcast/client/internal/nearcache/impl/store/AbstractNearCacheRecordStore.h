@@ -449,7 +449,7 @@ namespace hazelcast {
                             std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > eviction_policy_evaluator_;
                             std::unique_ptr<eviction::EvictionChecker> eviction_checker_;
                             std::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > eviction_strategy_;
-                            eviction::EvictionPolicyType eviction_policy_type_;
+                            eviction::eviction_policy_type eviction_policy_type_;
                             std::unique_ptr<NCRM> records_;
 
 /*

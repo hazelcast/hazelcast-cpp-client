@@ -33,7 +33,7 @@ namespace hazelcast {
             /**
             * Transaction type.
             */
-            enum struct TransactionType {
+            enum struct transaction_type {
                 TWO_PHASE = 1,
                 LOCAL = 2
             };
@@ -49,7 +49,7 @@ namespace hazelcast {
             *
             * @return the TransactionType.
             */
-            TransactionType get_transaction_type() const;
+            transaction_type get_transaction_type() const;
 
             /**
             * Sets the TransactionType.
@@ -63,7 +63,7 @@ namespace hazelcast {
             * @see #getTransactionType()
             * @see #setDurability(int)
             */
-            TransactionOptions& set_transaction_type(TransactionType transaction_type);
+            TransactionOptions& set_transaction_type(transaction_type transaction_type);
 
             /**
              *
@@ -105,7 +105,7 @@ namespace hazelcast {
         private:
             std::chrono::milliseconds timeout_;
             int durability_;
-            TransactionType transaction_type_;
+            transaction_type transaction_type_;
         };
     }
 }

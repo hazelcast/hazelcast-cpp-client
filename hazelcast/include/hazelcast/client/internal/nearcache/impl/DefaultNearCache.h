@@ -116,7 +116,7 @@ namespace hazelcast {
                             near_cache_record_store_->destroy();
                         }
 
-                        const client::config::InMemoryFormat get_in_memory_format() const override {
+                        const client::config::in_memory_format get_in_memory_format() const override {
                             return near_cache_config_.get_in_memory_format();
                         }
 
@@ -137,7 +137,7 @@ namespace hazelcast {
                         std::unique_ptr<NearCacheRecordStore<KS, V> >
                         create_near_cache_record_store(const std::string &name,
                                                    const client::config::NearCacheConfig &near_cache_config) {
-                            client::config::InMemoryFormat inMemoryFormat = near_cache_config.get_in_memory_format();
+                            client::config::in_memory_format inMemoryFormat = near_cache_config.get_in_memory_format();
                             switch (inMemoryFormat) {
                                 case client::config::BINARY:
                                     return std::unique_ptr<NearCacheRecordStore<KS, V> >(

@@ -1705,7 +1705,7 @@ namespace hazelcast {
             namespace internal {
                 namespace nearcache {
                     class NearCacheRecordStoreTest
-                            : public ClientTestSupport, public ::testing::WithParamInterface<config::InMemoryFormat> {
+                            : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
                     public:
                         NearCacheRecordStoreTest() {
                             ss_ = std::unique_ptr<serialization::pimpl::SerializationService>(
@@ -1716,7 +1716,7 @@ namespace hazelcast {
                         static const int DEFAULT_RECORD_COUNT;
                         static const char *DEFAULT_NEAR_CACHE_NAME;
 
-                        void put_and_get_record(config::InMemoryFormat in_memory_format) {
+                        void put_and_get_record(config::in_memory_format in_memory_format) {
                             auto nearCacheConfig = create_near_cache_config(
                                     DEFAULT_NEAR_CACHE_NAME, in_memory_format);
                             auto nearCacheRecordStore = create_near_cache_record_store(nearCacheConfig, in_memory_format);
@@ -1734,7 +1734,7 @@ namespace hazelcast {
                             }
                         }
 
-                        void put_and_remove_record(config::InMemoryFormat in_memory_format) {
+                        void put_and_remove_record(config::in_memory_format in_memory_format) {
                             auto nearCacheConfig = create_near_cache_config(
                                     DEFAULT_NEAR_CACHE_NAME, in_memory_format);
                             auto nearCacheRecordStore = create_near_cache_record_store(nearCacheConfig, in_memory_format);
@@ -1758,7 +1758,7 @@ namespace hazelcast {
                             ASSERT_EQ(0, nearCacheRecordStore->size());
                         }
 
-                        void clear_records_or_destroy_store(config::InMemoryFormat in_memory_format, bool destroy) {
+                        void clear_records_or_destroy_store(config::in_memory_format in_memory_format, bool destroy) {
                             auto nearCacheConfig = create_near_cache_config(
                                     DEFAULT_NEAR_CACHE_NAME, in_memory_format);
                             auto nearCacheRecordStore = create_near_cache_record_store(nearCacheConfig, in_memory_format);
@@ -1780,7 +1780,7 @@ namespace hazelcast {
                             ASSERT_EQ(0, nearCacheRecordStore->size());
                         }
 
-                        void stats_calculated(config::InMemoryFormat in_memory_format) {
+                        void stats_calculated(config::in_memory_format in_memory_format) {
                             int64_t creationStartTime = hazelcast::util::current_time_millis();
                             auto nearCacheConfig = create_near_cache_config(
                                     DEFAULT_NEAR_CACHE_NAME, in_memory_format);
@@ -1850,7 +1850,7 @@ namespace hazelcast {
                             }
                         }
 
-                        void ttl_evaluated(config::InMemoryFormat in_memory_format) {
+                        void ttl_evaluated(config::in_memory_format in_memory_format) {
                             int ttlSeconds = 3;
 
                             auto nearCacheConfig = create_near_cache_config(
@@ -1874,7 +1874,7 @@ namespace hazelcast {
                             }
                         }
 
-                        void max_idle_time_evaluated_successfully(config::InMemoryFormat in_memory_format) {
+                        void max_idle_time_evaluated_successfully(config::in_memory_format in_memory_format) {
                             int maxIdleSeconds = 3;
 
                             auto nearCacheConfig = create_near_cache_config(
@@ -1898,7 +1898,7 @@ namespace hazelcast {
                             }
                         }
 
-                        void expired_records_cleaned_up_successfully(config::InMemoryFormat in_memory_format,
+                        void expired_records_cleaned_up_successfully(config::in_memory_format in_memory_format,
                                                                  bool use_idle_time) {
                             int cleanUpThresholdSeconds = 3;
 
@@ -1927,8 +1927,8 @@ namespace hazelcast {
                             ASSERT_EQ(0, nearCacheStats->get_owned_entry_memory_cost());
                         }
 
-                        void create_near_cache_with_max_size_policy(config::InMemoryFormat in_memory_format,
-                                                              config::EvictionConfig::MaxSizePolicy max_size_policy,
+                        void create_near_cache_with_max_size_policy(config::in_memory_format in_memory_format,
+                                                              config::EvictionConfig::max_size_policy max_size_policy,
                                                               int32_t size) {
                             auto nearCacheConfig = create_near_cache_config(
                                     DEFAULT_NEAR_CACHE_NAME, in_memory_format);
@@ -1940,8 +1940,8 @@ namespace hazelcast {
                             auto nearCacheRecordStore = create_near_cache_record_store(nearCacheConfig, in_memory_format);
                         }
 
-                        void do_eviction_with_entry_count_max_size_policy(config::InMemoryFormat in_memory_format,
-                                                                   config::EvictionPolicy eviction_policy) {
+                        void do_eviction_with_entry_count_max_size_policy(config::in_memory_format in_memory_format,
+                                                                   config::eviction_policy eviction_policy) {
                             int32_t maxSize = DEFAULT_RECORD_COUNT / 2;
 
                             auto nearCacheConfig = create_near_cache_config(
@@ -1964,7 +1964,7 @@ namespace hazelcast {
 
                         std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> > create_near_cache_record_store(
                                 config::NearCacheConfig &near_cache_config,
-                                config::InMemoryFormat in_memory_format) {
+                                config::in_memory_format in_memory_format) {
                             std::unique_ptr<hazelcast::client::internal::nearcache::impl::NearCacheRecordStore<serialization::pimpl::Data, serialization::pimpl::Data> > recordStore;
                             switch (in_memory_format) {
                                 case config::BINARY:
@@ -1991,7 +1991,7 @@ namespace hazelcast {
 
                         config::NearCacheConfig
                         create_near_cache_config(const char *name,
-                                              config::InMemoryFormat in_memory_format) {
+                                              config::in_memory_format in_memory_format) {
                             config::NearCacheConfig config;
                             config.set_name(name).set_in_memory_format(in_memory_format);
                             return config;

@@ -27,13 +27,13 @@ namespace hazelcast {
         /**
         * Type of item event.
         */
-        enum struct HAZELCAST_API ItemEventType {
+        enum struct HAZELCAST_API item_event_type {
             ADDED = 1, REMOVED = 2
         };
 
         class HAZELCAST_API ItemEventBase {
         public:
-            ItemEventBase(const std::string &name, const Member &member, const ItemEventType &event_type);
+            ItemEventBase(const std::string &name, const Member &member, const item_event_type &event_type);
 
             virtual ~ItemEventBase();
 
@@ -49,7 +49,7 @@ namespace hazelcast {
              *
              * @return event type ItemEventType
              */
-            ItemEventType get_event_type() const;
+            item_event_type get_event_type() const;
 
             /**
              * Returns the name of the collection for this event.
@@ -61,7 +61,7 @@ namespace hazelcast {
         private:
             std::string name_;
             Member member_;
-            ItemEventType event_type_;
+            item_event_type event_type_;
         };
 
         /**
@@ -72,7 +72,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API ItemEvent : public ItemEventBase {
         public:
-            ItemEvent(const std::string &name, ItemEventType event_type, TypedData &&item, const Member &member)
+            ItemEvent(const std::string &name, item_event_type event_type, TypedData &&item, const Member &member)
             : ItemEventBase(name, member, event_type), item_(item) {}
 
             /**

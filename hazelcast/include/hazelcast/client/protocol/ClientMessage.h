@@ -172,7 +172,7 @@ namespace hazelcast {
             public:
                 static constexpr size_t EXPECTED_DATA_BLOCK_SIZE = 1024;
 
-                enum TypeSizes {
+                enum type_sizes {
                     INT8_SIZE = 1,
                     UINT8_SIZE = 1,
                     INT16_SIZE = 2,

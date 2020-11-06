@@ -41,7 +41,7 @@ namespace hazelcast {
                 /**
                  * Maximum Size Policy
                  */
-                enum MaxSizePolicy {
+                enum max_size_policy {
                     /**
                      * Policy based on maximum number of entries stored per data structure (map, cache etc)
                      */
@@ -75,12 +75,12 @@ namespace hazelcast {
                 /**
                  * Default Max-Size Policy.
                  */
-                static constexpr MaxSizePolicy DEFAULT_MAX_SIZE_POLICY = MaxSizePolicy::ENTRY_COUNT;
+                static constexpr max_size_policy DEFAULT_MAX_SIZE_POLICY = max_size_policy::ENTRY_COUNT;
 
                 /**
                  * Default Eviction Policy.
                  */
-                static constexpr EvictionPolicy DEFAULT_EVICTION_POLICY = EvictionPolicy::LRU;
+                static constexpr eviction_policy DEFAULT_EVICTION_POLICY = eviction_policy::LRU;
 
                 EvictionConfig();
 
@@ -88,24 +88,24 @@ namespace hazelcast {
 
                 EvictionConfig &set_size(int32_t size);
 
-                MaxSizePolicy get_maximum_size_policy() const;
+                max_size_policy get_maximum_size_policy() const;
 
-                EvictionConfig &set_maximum_size_policy(const MaxSizePolicy &max_size_policy);
+                EvictionConfig &set_maximum_size_policy(const max_size_policy &max_size_policy);
 
-                EvictionPolicy get_eviction_policy() const;
+                eviction_policy get_eviction_policy() const;
 
-                EvictionConfig &set_eviction_policy(EvictionPolicy policy);
+                EvictionConfig &set_eviction_policy(eviction_policy policy);
 
-                internal::eviction::EvictionStrategyType::Type get_eviction_strategy_type() const;
+                internal::eviction::EvictionStrategyType::type get_eviction_strategy_type() const;
 
-                internal::eviction::EvictionPolicyType get_eviction_policy_type() const;
+                internal::eviction::eviction_policy_type get_eviction_policy_type() const;
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &out, const EvictionConfig &config);
 
             protected:
                 int32_t size_;
-                MaxSizePolicy max_size_policy_;
-                EvictionPolicy eviction_policy_;
+                max_size_policy max_size_policy_;
+                eviction_policy eviction_policy_;
             };
 
         }

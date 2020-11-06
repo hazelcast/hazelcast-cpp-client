@@ -124,7 +124,7 @@ namespace hazelcast {
                             exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
                                                                 "Portable class id cannot be zero!"));
                 }
-                FieldDefinition fieldDefinition(index_++, field_name, FieldType::TYPE_PORTABLE, def->get_factory_id(),
+                FieldDefinition fieldDefinition(index_++, field_name, field_type::TYPE_PORTABLE, def->get_factory_id(),
                                                 def->get_class_id(), def->get_version());
                 field_definitions_.push_back(fieldDefinition);
                 return *this;
@@ -138,7 +138,7 @@ namespace hazelcast {
                             exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
                                                                 "Portable class id cannot be zero!"));
                 }
-                FieldDefinition fieldDefinition(index_++, field_name, FieldType::TYPE_PORTABLE_ARRAY,
+                FieldDefinition fieldDefinition(index_++, field_name, field_type::TYPE_PORTABLE_ARRAY,
                                                 def->get_factory_id(), def->get_class_id(), def->get_version());
                 field_definitions_.push_back(fieldDefinition);
                 return *this;
@@ -177,7 +177,7 @@ namespace hazelcast {
                 }
             }
 
-            void ClassDefinitionBuilder::add_field(const std::string &field_name, FieldType const &field_type) {
+            void ClassDefinitionBuilder::add_field(const std::string &field_name, field_type const &field_type) {
                 check();
                 FieldDefinition fieldDefinition(index_++, field_name, field_type, version_);
                 field_definitions_.push_back(fieldDefinition);
@@ -199,17 +199,17 @@ namespace hazelcast {
                     : index_(0), class_id_(0), factory_id_(0), version_(-1) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string &field_name, FieldType const &type,
+            FieldDefinition::FieldDefinition(int index, const std::string &field_name, field_type const &type,
                                              int version)
                     : index_(index), field_name_(field_name), type_(type), class_id_(0), factory_id_(0), version_(version) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string &field_name, FieldType const &type,
+            FieldDefinition::FieldDefinition(int index, const std::string &field_name, field_type const &type,
                                              int factory_id, int class_id, int version)
                     : index_(index), field_name_(field_name), type_(type), class_id_(class_id), factory_id_(factory_id),
                       version_(version) {}
 
-            const FieldType &FieldDefinition::get_type() const {
+            const field_type &FieldDefinition::get_type() const {
                 return type_;
             }
 
@@ -240,7 +240,7 @@ namespace hazelcast {
             void FieldDefinition::read_data(ObjectDataInput &data_input) {
                 index_ = data_input.read<int32_t>();
                 field_name_ = data_input.read<std::string>();
-                type_ = static_cast<FieldType>(data_input.read<byte>());
+                type_ = static_cast<field_type>(data_input.read<byte>());
                 factory_id_ = data_input.read<int32_t>();
                 class_id_ = data_input.read<int32_t>();
             }
@@ -293,7 +293,7 @@ namespace hazelcast {
             template<>
             void ObjectDataOutput::write_object(const char *object) {
                 if (!object) {
-                    write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_NULL));
+                    write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL));
                     return;
                 }
                 write_object<std::string>(std::string(object));
@@ -332,7 +332,7 @@ namespace hazelcast {
                 return field_definitions_map_.find(field_name) != field_definitions_map_.end();
             }
 
-            FieldType ClassDefinition::get_field_type(const std::string &field_name) const {
+            field_type ClassDefinition::get_field_type(const std::string &field_name) const {
                 FieldDefinition const &fd = get_field(field_name);
                 return fd.get_type();
             }
@@ -533,7 +533,7 @@ namespace hazelcast {
                     write<std::string>(value.to_string());
                 }
 
-                ObjectType::ObjectType() : type_id(SerializationConstants::CONSTANT_TYPE_NULL), factory_id(-1), class_id(-1) {}
+                ObjectType::ObjectType() : type_id(serialization_constants::CONSTANT_TYPE_NULL), factory_id(-1), class_id(-1) {}
 
                 std::ostream &operator<<(std::ostream &os, const ObjectType &type) {
                     os << "typeId: " << static_cast<int32_t>(type.type_id) << " factoryId: " << type.factory_id << " classId: "
@@ -582,12 +582,12 @@ namespace hazelcast {
                         in.read_fully(chars);
                         chars.push_back('\0');
 
-                        FieldType type(static_cast<FieldType>(in.read<byte>()));
+                        field_type type(static_cast<field_type>(in.read<byte>()));
                         std::string name((char *) &(chars[0]));
                         int fieldFactoryId = 0;
                         int fieldClassId = 0;
                         int fieldVersion = version;
-                        if (type == FieldType::TYPE_PORTABLE) {
+                        if (type == field_type::TYPE_PORTABLE) {
                             // is null
                             if (in.read<bool>()) {
                                 shouldRegister = false;
@@ -600,7 +600,7 @@ namespace hazelcast {
                                 fieldVersion = in.read<int32_t>();
                                 read_class_definition(in, fieldFactoryId, fieldClassId, fieldVersion);
                             }
-                        } else if (type == FieldType::TYPE_PORTABLE_ARRAY) {
+                        } else if (type == field_type::TYPE_PORTABLE_ARRAY) {
                             int k = in.read<int32_t>();
                             if (k > 0) {
                                 fieldFactoryId = in.read<int32_t>();
@@ -673,7 +673,7 @@ namespace hazelcast {
                     object_data_output_.write_zero_bytes(fieldIndexesLength);
                 }
 
-                FieldDefinition const &DefaultPortableWriter::set_position(const std::string &field_name, FieldType field_type) {
+                FieldDefinition const &DefaultPortableWriter::set_position(const std::string &field_name, field_type field_type) {
                     if (raw_) {
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableWriter::setPosition",
                                                                                          "Cannot write Portable fields after getRawDataOutput() is called!"));
@@ -729,7 +729,7 @@ namespace hazelcast {
 
                 bool SerializationService::is_null_data(const Data &data) {
                     return data.data_size() == 0 &&
-                           data.get_type() == static_cast<int32_t>(SerializationConstants::CONSTANT_TYPE_NULL);
+                           data.get_type() == static_cast<int32_t>(serialization_constants::CONSTANT_TYPE_NULL);
                 }
 
                 template<>
@@ -749,18 +749,18 @@ namespace hazelcast {
                     ObjectType type;
 
                     if (NULL == data) {
-                        type.type_id = SerializationConstants::CONSTANT_TYPE_NULL;
+                        type.type_id = serialization_constants::CONSTANT_TYPE_NULL;
                         return type;
                     }
 
-                    type.type_id = static_cast<SerializationConstants>(data->get_type());
+                    type.type_id = static_cast<serialization_constants>(data->get_type());
 
-                    if (SerializationConstants::CONSTANT_TYPE_DATA == type.type_id ||
-                        SerializationConstants::CONSTANT_TYPE_PORTABLE == type.type_id) {
+                    if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id ||
+                        serialization_constants::CONSTANT_TYPE_PORTABLE == type.type_id) {
                         // 8 (Data Header) = Hash(4-bytes) + Data TypeId(4 bytes)
                         DataInput<std::vector<byte>> dataInput(data->to_byte_array(), 8);
 
-                        if (SerializationConstants::CONSTANT_TYPE_DATA == type.type_id) {
+                        if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id) {
                             bool identified = dataInput.read<bool>();
                             if (!identified) {
                                 BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
@@ -846,7 +846,7 @@ namespace hazelcast {
 
                 int32_t Data::get_type() const {
                     if (total_size() == 0) {
-                        return static_cast<int32_t>(SerializationConstants::CONSTANT_TYPE_NULL);
+                        return static_cast<int32_t>(serialization_constants::CONSTANT_TYPE_NULL);
                     }
                     return util::Bits::read_int_b(data_, Data::TYPE_OFFSET);
                 }
@@ -965,7 +965,7 @@ namespace hazelcast {
                     this->offset_ = input.position();
                 }
                 
-                void PortableReaderBase::set_position(const std::string &field_name, FieldType const &field_type) {
+                void PortableReaderBase::set_position(const std::string &field_name, field_type const &field_type) {
                     if (raw_) {
                         BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("PortableReader::getPosition ",
                                                                                          "Cannot read Portable fields after getRawDataInput() is called!"));

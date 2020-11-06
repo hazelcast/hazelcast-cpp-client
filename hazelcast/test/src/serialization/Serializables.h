@@ -26,7 +26,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            enum struct TestSerializationConstants {
+            enum struct test_serialization_constants {
                 EMPLOYEE = 2,
                 CHILD_TEMPLATED_PORTABLE_1 = 1,
                 CHILD_TEMPLATED_PORTABLE_2 = 2,
@@ -373,11 +373,11 @@ namespace hazelcast {
             template<typename P>
             struct hz_serializer<test::ObjectCarryingPortable<P>> : public portable_serializer {
                 static int32_t get_factory_id() {
-                    return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                    return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
                 }
 
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::TestSerializationConstants::OBJECT_CARRYING_PORTABLE);
+                    return static_cast<int32_t>(test::test_serialization_constants::OBJECT_CARRYING_PORTABLE);
                 }
 
                 static void write_portable(const test::ObjectCarryingPortable<P> &object, PortableWriter &writer) {
@@ -416,11 +416,11 @@ namespace hazelcast {
             template<typename P>
             struct hz_serializer<test::ParentTemplatedPortable<P>> : public portable_serializer {
                 static int32_t get_factory_id() {
-                    return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                    return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
                 }
 
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::TestSerializationConstants::PARENT_TEMPLATED_CONSTANTS);
+                    return static_cast<int32_t>(test::test_serialization_constants::PARENT_TEMPLATED_CONSTANTS);
                 }
 
                 static void write_portable(const test::ParentTemplatedPortable<P> &object, PortableWriter &out) {

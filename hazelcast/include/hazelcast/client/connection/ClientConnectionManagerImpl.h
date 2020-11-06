@@ -206,7 +206,7 @@ namespace hazelcast {
                 std::unique_ptr<boost::asio::io_context::work> io_guard_;
                 std::atomic<int32_t> partition_count_;
                 const bool async_start_;
-                const config::ClientConnectionStrategyConfig::ReconnectMode reconnect_mode_;
+                const config::ClientConnectionStrategyConfig::reconnect_mode reconnect_mode_;
                 const bool smart_routing_enabled_;
                 boost::optional<boost::asio::steady_timer> connect_to_members_timer_;
                 std::atomic_bool connect_to_cluster_task_submitted_;
@@ -223,7 +223,7 @@ namespace hazelcast {
 
                 void schedule_connect_to_all_members();
 
-                void fire_life_cycle_event(LifecycleEvent::LifecycleState state);
+                void fire_life_cycle_event(LifecycleEvent::lifecycle_state state);
 
                 void check_partition_count(int32_t new_partition_count);
 

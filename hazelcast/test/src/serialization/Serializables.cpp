@@ -298,7 +298,7 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::EmployeeEntryComparator>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::EMPLOYEE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::EMPLOYEE_FACTORY);
             }
 
             int32_t hz_serializer<test::EmployeeEntryComparator>::get_class_id() {
@@ -314,7 +314,7 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::EmployeeEntryKeyComparator>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::EMPLOYEE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::EMPLOYEE_FACTORY);
             }
 
             int32_t hz_serializer<test::EmployeeEntryKeyComparator>::get_class_id() {
@@ -329,11 +329,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestMainPortable>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::TestMainPortable>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_MAIN_PORTABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_MAIN_PORTABLE);
             }
 
             void hz_serializer<test::TestMainPortable>::write_portable(const test::TestMainPortable &object,
@@ -370,11 +370,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestRawDataPortable>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::TestRawDataPortable>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_RAW_DATA_PORTABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_RAW_DATA_PORTABLE);
             }
 
             void hz_serializer<test::TestRawDataPortable>::write_portable(const test::TestRawDataPortable &object,
@@ -404,11 +404,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestDataSerializable>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_DATA_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_DATA_FACTORY);
             }
 
             int32_t hz_serializer<test::TestDataSerializable>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_DATA_SERIALIZABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_DATA_SERIALIZABLE);
             }
 
             void
@@ -424,11 +424,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestNamedPortable>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::TestNamedPortable>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_NAMED_PORTABLE);
             }
 
             void hz_serializer<test::TestNamedPortable>::write_portable(const test::TestNamedPortable &object,
@@ -442,11 +442,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestInnerPortable>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::TestInnerPortable>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_INNER_PORTABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_INNER_PORTABLE);
             }
 
             void hz_serializer<test::TestInnerPortable>::write_portable(const test::TestInnerPortable &object,
@@ -479,11 +479,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestNamedPortableV2>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::TestNamedPortableV2>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_NAMED_PORTABLE);
             }
 
             int32_t hz_serializer<test::TestNamedPortableV2>::get_class_version() {
@@ -503,11 +503,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestNamedPortableV3>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::TestNamedPortableV3>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_NAMED_PORTABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_NAMED_PORTABLE);
             }
 
             int32_t hz_serializer<test::TestNamedPortableV3>::get_class_version() {
@@ -525,11 +525,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestInvalidWritePortable>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::TestInvalidWritePortable>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_INVALID_WRITE_PORTABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_INVALID_WRITE_PORTABLE);
             }
 
             void
@@ -548,11 +548,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::TestInvalidReadPortable>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::TestInvalidReadPortable>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_INVALID_READ_PORTABLE);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_INVALID_READ_PORTABLE);
             }
 
             void
@@ -618,11 +618,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::ChildTemplatedPortable1>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::ChildTemplatedPortable1>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::CHILD_TEMPLATED_PORTABLE_1);
+                return static_cast<int32_t>(test::test_serialization_constants::CHILD_TEMPLATED_PORTABLE_1);
             }
 
             void
@@ -638,11 +638,11 @@ namespace hazelcast {
             }
 
             int32_t hz_serializer<test::ChildTemplatedPortable2>::get_factory_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::TEST_PORTABLE_FACTORY);
+                return static_cast<int32_t>(test::test_serialization_constants::TEST_PORTABLE_FACTORY);
             }
 
             int32_t hz_serializer<test::ChildTemplatedPortable2>::get_class_id() {
-                return static_cast<int32_t>(test::TestSerializationConstants::CHILD_TEMPLATED_PORTABLE_2);
+                return static_cast<int32_t>(test::test_serialization_constants::CHILD_TEMPLATED_PORTABLE_2);
             }
 
             void

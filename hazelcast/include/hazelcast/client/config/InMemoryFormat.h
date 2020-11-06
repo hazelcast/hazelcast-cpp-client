@@ -25,7 +25,7 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            enum HAZELCAST_API InMemoryFormat {
+            enum HAZELCAST_API in_memory_format {
                     /**
                      * As Binary
                      */

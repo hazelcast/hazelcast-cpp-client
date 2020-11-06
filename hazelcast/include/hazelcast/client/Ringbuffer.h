@@ -152,7 +152,7 @@ namespace hazelcast {
              * @return the sequenceId of the added item, or -1 if the add failed.
              */
             template<typename E>
-            boost::future<int64_t> add(const E &item, ringbuffer::OverflowPolicy overflow_policy) {
+            boost::future<int64_t> add(const E &item, ringbuffer::overflow_policy overflow_policy) {
                 return addData(to_data(item), overflow_policy);
             }
 
@@ -183,7 +183,7 @@ namespace hazelcast {
              */
             template<typename E>
             boost::future<int64_t>
-            add_all(const std::vector<E> &items, ringbuffer::OverflowPolicy overflow_policy) { 
+            add_all(const std::vector<E> &items, ringbuffer::overflow_policy overflow_policy) { 
                 return add_all_data(to_data_collection(items), overflow_policy);
             }
 

@@ -651,7 +651,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<std::vector<K>> key_set(query::PagingPredicate<K, V> &predicate) {
-                predicate.set_iteration_type(query::IterationType::KEY);
+                predicate.set_iteration_type(query::iteration_type::KEY);
                 return key_set_for_paging_predicate_data(
                         protocol::codec::holder::paging_predicate_holder::of(predicate, serialization_service_)).then(
                         [=, &predicate](
@@ -704,7 +704,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<std::vector<V>> values(query::PagingPredicate<K, V> &predicate) {
-                predicate.set_iteration_type(query::IterationType::VALUE);
+                predicate.set_iteration_type(query::iteration_type::VALUE);
                 return values_for_paging_predicate_data(
                         protocol::codec::holder::paging_predicate_holder::of(predicate, serialization_service_)).then(
                         [=, &predicate](boost::future<std::pair<std::vector<serialization::pimpl::Data>, query::anchor_data_list>> f) {
@@ -759,7 +759,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             boost::future<std::vector<std::pair<K, V>>> entry_set(query::PagingPredicate<K, V> &predicate) {
-                predicate.set_iteration_type(query::IterationType::ENTRY);
+                predicate.set_iteration_type(query::iteration_type::ENTRY);
                 return entry_set_for_paging_predicate_data(
                         protocol::codec::holder::paging_predicate_holder::of(predicate, serialization_service_)).then(
                         [=, &predicate](boost::future<std::pair<EntryVector, query::anchor_data_list>> f) {
@@ -1113,7 +1113,7 @@ namespace hazelcast {
         private:
 
             template<typename K, typename V>
-            std::vector<std::pair<K, boost::optional<V>>> sort_and_get(query::PagingPredicate<K, V> &predicate, query::IterationType iteration_type, std::vector<std::pair<K, V>> entries) {
+            std::vector<std::pair<K, boost::optional<V>>> sort_and_get(query::PagingPredicate<K, V> &predicate, query::iteration_type iteration_type, std::vector<std::pair<K, V>> entries) {
                 std::vector<std::pair<K, boost::optional<V>>> optionalEntries;
                 optionalEntries.reserve(entries.size());
                 for(auto &&pair : entries) {
@@ -1123,12 +1123,12 @@ namespace hazelcast {
             }
 
             template<typename K, typename V>
-            std::vector<std::pair<K, boost::optional<V>>> sort_and_get(query::PagingPredicate<K, V> &predicate, query::IterationType iteration_type, std::vector<std::pair<K, boost::optional<V>>> entries) {
+            std::vector<std::pair<K, boost::optional<V>>> sort_and_get(query::PagingPredicate<K, V> &predicate, query::iteration_type iteration_type, std::vector<std::pair<K, boost::optional<V>>> entries) {
                 std::sort(entries.begin(), entries.end(), [&] (const std::pair<K, boost::optional<V>> &lhs, const std::pair<K, boost::optional<V>> &rhs) {
                     auto comparator = predicate.getComparator();
                     if (!comparator) {
                         switch(predicate.getIterationType()) {
-                            case query::IterationType::VALUE:
+                            case query::iteration_type::VALUE:
                                 return lhs.second < rhs.second;
                             default:
                                 return lhs.first < rhs.first;

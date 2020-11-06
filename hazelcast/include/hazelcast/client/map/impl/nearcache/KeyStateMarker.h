@@ -56,7 +56,7 @@ namespace hazelcast {
 
                         virtual void init() = 0;
 
-                        enum STATE {
+                        enum state {
                             UNMARKED,
                             MARKED,
                             REMOVED

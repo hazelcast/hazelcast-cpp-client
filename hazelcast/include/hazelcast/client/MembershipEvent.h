@@ -43,7 +43,7 @@ namespace hazelcast {
              * MEMBER_JOINED = 1,
              * MEMBER_LEFT = 2,
              */
-            enum MembershipEventType {
+            enum membership_event_type {
                 MEMBER_JOINED = 1,
                 MEMBER_LEFT = 2,
             };
@@ -52,7 +52,7 @@ namespace hazelcast {
              * Internal API.
              * Constructor.
              */
-            MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType event_type,
+            MembershipEvent(Cluster &cluster, const Member &member, membership_event_type event_type,
                             const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &members_list);
 
             /**
@@ -88,7 +88,7 @@ namespace hazelcast {
              *
              * @return the membership event type
              */
-            virtual MembershipEventType get_event_type() const;
+            virtual membership_event_type get_event_type() const;
 
             /**
              * Returns the removed or added member.
@@ -100,7 +100,7 @@ namespace hazelcast {
         private:
             Cluster &cluster_;
             Member member_;
-            MembershipEventType event_type_;
+            membership_event_type event_type_;
             std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> members_;
         };
     }

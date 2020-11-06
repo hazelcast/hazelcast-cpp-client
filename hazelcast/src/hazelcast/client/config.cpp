@@ -85,12 +85,12 @@ namespace hazelcast {
                 return *this;
             }
 
-            SSLConfig &SSLConfig::set_protocol(SSLProtocol protocol) {
+            SSLConfig &SSLConfig::set_protocol(ssl_protocol protocol) {
                 this->ssl_protocol_ = protocol;
                 return *this;
             }
 
-            SSLProtocol SSLConfig::get_protocol() const {
+            ssl_protocol SSLConfig::get_protocol() const {
                 return ssl_protocol_;
             }
 
@@ -245,7 +245,7 @@ namespace hazelcast {
             ClientConnectionStrategyConfig::ClientConnectionStrategyConfig() : async_start_(false), reconnect_mode_(ON) {
             }
 
-            ClientConnectionStrategyConfig::ReconnectMode ClientConnectionStrategyConfig::get_reconnect_mode() const {
+            ClientConnectionStrategyConfig::reconnect_mode ClientConnectionStrategyConfig::get_reconnect_mode() const {
                 return reconnect_mode_;
             }
 
@@ -259,7 +259,7 @@ namespace hazelcast {
             }
 
             ClientConnectionStrategyConfig &
-            ClientConnectionStrategyConfig::set_reconnect_mode(ReconnectMode reconnect_mode) {
+            ClientConnectionStrategyConfig::set_reconnect_mode(reconnect_mode reconnect_mode) {
                 this->reconnect_mode_ = reconnect_mode;
                 return *this;
             }
@@ -521,30 +521,30 @@ namespace hazelcast {
                 return *this;
             }
 
-            EvictionConfig::MaxSizePolicy EvictionConfig::get_maximum_size_policy() const {
+            EvictionConfig::max_size_policy EvictionConfig::get_maximum_size_policy() const {
                 return max_size_policy_;
             }
 
-            EvictionConfig &EvictionConfig::set_maximum_size_policy(const EvictionConfig::MaxSizePolicy &max_size_policy) {
+            EvictionConfig &EvictionConfig::set_maximum_size_policy(const EvictionConfig::max_size_policy &max_size_policy) {
                 this->max_size_policy_ = max_size_policy;
                 return *this;
             }
 
-            EvictionPolicy EvictionConfig::get_eviction_policy() const {
+            eviction_policy EvictionConfig::get_eviction_policy() const {
                 return eviction_policy_;
             }
 
-            EvictionConfig &EvictionConfig::set_eviction_policy(EvictionPolicy policy) {
+            EvictionConfig &EvictionConfig::set_eviction_policy(eviction_policy policy) {
                 this->eviction_policy_ = policy;
                 return *this;
             }
 
-            internal::eviction::EvictionStrategyType::Type EvictionConfig::get_eviction_strategy_type() const {
+            internal::eviction::EvictionStrategyType::type EvictionConfig::get_eviction_strategy_type() const {
                 // TODO: add support for other/custom eviction strategies
                 return internal::eviction::EvictionStrategyType::DEFAULT_EVICTION_STRATEGY;
             }
 
-            internal::eviction::EvictionPolicyType EvictionConfig::get_eviction_policy_type() const {
+            internal::eviction::eviction_policy_type EvictionConfig::get_eviction_policy_type() const {
                 if (eviction_policy_ == LFU) {
                     return internal::eviction::LFU;
                 } else if (eviction_policy_ == LRU) {
@@ -580,13 +580,13 @@ namespace hazelcast {
                 name_ = cache_name;
             }
 
-            NearCacheConfig::NearCacheConfig(const std::string &cache_name, InMemoryFormat memory_format)
+            NearCacheConfig::NearCacheConfig(const std::string &cache_name, in_memory_format memory_format)
                     : NearCacheConfig(name_) {
                 this->in_memory_format_ = memory_format;
             }
 
             NearCacheConfig::NearCacheConfig(int32_t time_to_live_seconds, int32_t max_idle_seconds, bool invalidate_on_change,
-                                             InMemoryFormat in_memory_format, const EvictionConfig &evict_config)
+                                             in_memory_format in_memory_format, const EvictionConfig &evict_config)
                     : NearCacheConfig(name_, in_memory_format) {
                 this->time_to_live_seconds_ = time_to_live_seconds;
                 this->max_idle_seconds_ = max_idle_seconds;
@@ -632,11 +632,11 @@ namespace hazelcast {
                 return *this;
             }
 
-            const InMemoryFormat &NearCacheConfig::get_in_memory_format() const {
+            const in_memory_format &NearCacheConfig::get_in_memory_format() const {
                 return in_memory_format_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_in_memory_format(const InMemoryFormat &in_memory_format) {
+            NearCacheConfig &NearCacheConfig::set_in_memory_format(const in_memory_format &in_memory_format) {
                 this->in_memory_format_ = in_memory_format;
                 return *this;
             }
@@ -650,11 +650,11 @@ namespace hazelcast {
                 return *this;
             }
 
-            const NearCacheConfig::LocalUpdatePolicy &NearCacheConfig::get_local_update_policy() const {
+            const NearCacheConfig::local_update_policy &NearCacheConfig::get_local_update_policy() const {
                 return local_update_policy_;
             }
 
-            NearCacheConfig &NearCacheConfig::set_local_update_policy(const LocalUpdatePolicy &local_update_policy) {
+            NearCacheConfig &NearCacheConfig::set_local_update_policy(const local_update_policy &local_update_policy) {
                 this->local_update_policy_ = local_update_policy;
                 return *this;
             }

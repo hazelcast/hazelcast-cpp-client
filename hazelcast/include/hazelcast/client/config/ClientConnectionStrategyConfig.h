@@ -35,7 +35,7 @@ namespace hazelcast {
                 /**
                  * Reconnect options.
                  */
-                enum ReconnectMode {
+                enum reconnect_mode {
                     /**
                      * Prevent reconnect to cluster after a disconnect
                      */
@@ -73,7 +73,7 @@ namespace hazelcast {
                 /**
                  * @return reconnect mode
                  */
-                ReconnectMode get_reconnect_mode() const;
+                reconnect_mode get_reconnect_mode() const;
 
                 /**
                  * How a client reconnect to cluster after a disconnect can be configured. This parameter is used by default strategy and
@@ -82,11 +82,11 @@ namespace hazelcast {
                  * @param reconnectMode
                  * @return the updated ClientConnectionStrategyConfig
                  */
-                ClientConnectionStrategyConfig &set_reconnect_mode(ReconnectMode reconnect_mode);
+                ClientConnectionStrategyConfig &set_reconnect_mode(reconnect_mode reconnect_mode);
 
             private:
                 bool async_start_;
-                ReconnectMode reconnect_mode_;
+                reconnect_mode reconnect_mode_;
 
             };
 

@@ -135,7 +135,7 @@ namespace hazelcast {
             return socket_address_;
         }
 
-        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType event_type,
+        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, membership_event_type event_type,
                                          const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &members_list) :
                 cluster_(cluster), member_(member), event_type_(event_type), members_(members_list) {
         }
@@ -150,7 +150,7 @@ namespace hazelcast {
             return cluster_;
         }
 
-        MembershipEvent::MembershipEventType MembershipEvent::get_event_type() const {
+        MembershipEvent::membership_event_type MembershipEvent::get_event_type() const {
             return event_type_;
         }
 

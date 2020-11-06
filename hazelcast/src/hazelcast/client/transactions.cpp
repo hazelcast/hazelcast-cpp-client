@@ -207,7 +207,7 @@ namespace hazelcast {
                 }
             }
 
-            TxnState::TxnState(State value)
+            TxnState::TxnState(state value)
                     : value(value) {
                 values.resize(9);
                 values[0] = NO_TXN;
@@ -583,13 +583,13 @@ namespace hazelcast {
         }
 
         TransactionOptions::TransactionOptions() : timeout_(std::chrono::minutes(2)), durability_(1),
-                                                   transaction_type_(TransactionType::TWO_PHASE) {}
+                                                   transaction_type_(transaction_type::TWO_PHASE) {}
 
-        TransactionOptions::TransactionType TransactionOptions::get_transaction_type() const {
+        TransactionOptions::transaction_type TransactionOptions::get_transaction_type() const {
             return transaction_type_;
         }
 
-        TransactionOptions &TransactionOptions::set_transaction_type(TransactionType type) {
+        TransactionOptions &TransactionOptions::set_transaction_type(transaction_type type) {
             transaction_type_ = type;
             return *this;
         }

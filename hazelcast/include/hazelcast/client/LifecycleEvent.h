@@ -39,7 +39,7 @@ namespace hazelcast {
             /**
              * State enum.
              */
-            enum LifecycleState {
+            enum lifecycle_state {
                 STARTING,
                 STARTED,
                 SHUTTING_DOWN,
@@ -51,15 +51,15 @@ namespace hazelcast {
             /**
              * Constructor
              */
-            LifecycleEvent(LifecycleState state);
+            LifecycleEvent(lifecycle_state state);
 
             /**
              * @return State;
              */
-            LifecycleState get_state() const;
+            lifecycle_state get_state() const;
 
         private:
-            LifecycleState state_;
+            lifecycle_state state_;
         };
     }
 }

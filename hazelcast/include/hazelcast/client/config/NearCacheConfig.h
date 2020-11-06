@@ -45,12 +45,12 @@ namespace hazelcast {
                 /**
                  * Default value for the in-memory format.
                  */
-                static constexpr InMemoryFormat DEFAULT_MEMORY_FORMAT = InMemoryFormat::BINARY;
+                static constexpr in_memory_format DEFAULT_MEMORY_FORMAT = in_memory_format::BINARY;
 
                 /**
                  * Local Update Policy enum.
                  */
-                enum LocalUpdatePolicy {
+                enum local_update_policy {
                     /**
                      * INVALIDATE POLICY
                      */
@@ -66,10 +66,10 @@ namespace hazelcast {
 
                 NearCacheConfig(const std::string &cache_name);
 
-                NearCacheConfig(const std::string &cache_name, InMemoryFormat memory_format);
+                NearCacheConfig(const std::string &cache_name, in_memory_format memory_format);
 
                 NearCacheConfig(int32_t time_to_live_seconds, int32_t max_idle_seconds, bool invalidate_on_change,
-                                InMemoryFormat in_memory_format, const EvictionConfig &evict_config);
+                                in_memory_format in_memory_format, const EvictionConfig &evict_config);
 
                 virtual ~NearCacheConfig() = default;
 
@@ -158,7 +158,7 @@ namespace hazelcast {
                  *
                  * @return The data type used to store entries.
                  */
-                const InMemoryFormat &get_in_memory_format() const;
+                const in_memory_format &get_in_memory_format() const;
 
                 /**
                  * Sets the data type used to store entries.
@@ -169,7 +169,7 @@ namespace hazelcast {
                  * @param inMemoryFormat The data type used to store entries.
                  * @return This Near Cache config instance.
                  */
-                virtual NearCacheConfig &set_in_memory_format(const InMemoryFormat &in_memory_format);
+                virtual NearCacheConfig &set_in_memory_format(const in_memory_format &in_memory_format);
 
                 /**
                  * If true, cache local entries also.
@@ -188,9 +188,9 @@ namespace hazelcast {
                  */
                 NearCacheConfig &set_cache_local_entries(bool cache_local_entries);
 
-                const LocalUpdatePolicy &get_local_update_policy() const;
+                const local_update_policy &get_local_update_policy() const;
 
-                NearCacheConfig &set_local_update_policy(const LocalUpdatePolicy &local_update_policy);
+                NearCacheConfig &set_local_update_policy(const local_update_policy &local_update_policy);
 
                 /**
                  * The eviction configuration.
@@ -214,9 +214,9 @@ namespace hazelcast {
                 int32_t time_to_live_seconds_;
                 int32_t max_idle_seconds_;
 
-                InMemoryFormat in_memory_format_;
+                in_memory_format in_memory_format_;
 
-                LocalUpdatePolicy local_update_policy_;
+                local_update_policy local_update_policy_;
 
                 bool invalidate_on_change_;
                 bool cache_local_entries_;

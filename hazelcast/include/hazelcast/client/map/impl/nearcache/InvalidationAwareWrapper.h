@@ -98,7 +98,7 @@ namespace hazelcast {
                             near_cache_->destroy();
                         }
 
-                        const config::InMemoryFormat get_in_memory_format() const override {
+                        const config::in_memory_format get_in_memory_format() const override {
                             return near_cache_->get_in_memory_format();
                         }
 

@@ -29,7 +29,7 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            enum HAZELCAST_API SSLProtocol
+            enum HAZELCAST_API ssl_protocol
             {
                 /// Generic SSL version 2.
                         sslv2 = 0, // boost::asio::ssl::context_base::sslv2
@@ -79,12 +79,12 @@ namespace hazelcast {
                  *
                  * @param protocol One of the supported protocols
                  */
-                SSLConfig &set_protocol(SSLProtocol protocol);
+                SSLConfig &set_protocol(ssl_protocol protocol);
 
                 /**
                  * @return The configured SSL protocol
                  */
-                SSLProtocol get_protocol() const;
+                ssl_protocol get_protocol() const;
 
                 /**
                  * @return The list of all configured certificate verify files for the client.
@@ -119,7 +119,7 @@ namespace hazelcast {
                 SSLConfig &set_cipher_list(const std::string &ciphers);
             private:
                 bool enabled_;
-                SSLProtocol ssl_protocol_;
+                ssl_protocol ssl_protocol_;
                 std::vector<std::string> client_verify_files_;
                 std::string cipher_list_;
             };

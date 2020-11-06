@@ -47,7 +47,7 @@ namespace hazelcast {
 
                         void init() override;
                     private:
-                        bool cas_state(const serialization::pimpl::Data &key, STATE expect, STATE update);
+                        bool cas_state(const serialization::pimpl::Data &key, state expect, state update);
 
                         int get_slot(const serialization::pimpl::Data &key);
 

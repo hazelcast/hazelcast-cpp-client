@@ -270,7 +270,7 @@ namespace hazelcast {
                     throw;
                 }
 
-                auto authentication_status = (protocol::AuthenticationStatus) result.status;
+                auto authentication_status = (protocol::authentication_status) result.status;
                 switch (authentication_status) {
                     case protocol::AUTHENTICATED: {
                         handle_successful_auth(connection, std::move(result));
@@ -542,7 +542,7 @@ namespace hazelcast {
                     );
 
                     if (active_connections_.empty()) {
-                        fire_life_cycle_event(LifecycleEvent::LifecycleState::CLIENT_DISCONNECTED);
+                        fire_life_cycle_event(LifecycleEvent::lifecycle_state::CLIENT_DISCONNECTED);
 
                         trigger_cluster_reconnection();
                     }
@@ -621,7 +621,7 @@ namespace hazelcast {
 
                 if (initial_connection) {
                     cluster_id_ = new_cluster_id;
-                    fire_life_cycle_event(LifecycleEvent::LifecycleState::CLIENT_CONNECTED);
+                    fire_life_cycle_event(LifecycleEvent::lifecycle_state::CLIENT_CONNECTED);
                 }
 
                 auto local_address = connection->get_local_socket_address();
@@ -644,7 +644,7 @@ namespace hazelcast {
                 fire_connection_added_event(connection);
             }
 
-            void ClientConnectionManagerImpl::fire_life_cycle_event(LifecycleEvent::LifecycleState state) {
+            void ClientConnectionManagerImpl::fire_life_cycle_event(LifecycleEvent::lifecycle_state state) {
                 client_.get_lifecycle_service().fire_lifecycle_event(state);
             }
 
@@ -659,7 +659,7 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::trigger_cluster_reconnection() {
-                if (reconnect_mode_ == config::ClientConnectionStrategyConfig::ReconnectMode::OFF) {
+                if (reconnect_mode_ == config::ClientConnectionStrategyConfig::reconnect_mode::OFF) {
                     HZ_LOG(logger_, info, "RECONNECT MODE is off. Shutting down the client.");
                     shutdown_with_external_thread(client_.get_hazelcast_client_implementation());
                     return;
@@ -703,7 +703,7 @@ namespace hazelcast {
                     BOOST_THROW_EXCEPTION(exception::HazelcastClientOfflineException(
                             "ClientConnectionManagerImpl::check_invocation_allowed",
                             "No connection found to cluster and async start is configured."));
-                } else if (reconnect_mode_ == config::ClientConnectionStrategyConfig::ReconnectMode::ASYNC) {
+                } else if (reconnect_mode_ == config::ClientConnectionStrategyConfig::reconnect_mode::ASYNC) {
                     BOOST_THROW_EXCEPTION(exception::HazelcastClientOfflineException(
                             "ClientConnectionManagerImpl::check_invocation_allowed",
                             "No connection found to cluster and reconnect mode is async."));

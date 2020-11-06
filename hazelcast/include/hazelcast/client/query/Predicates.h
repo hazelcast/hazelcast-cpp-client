@@ -66,7 +66,7 @@ namespace hazelcast {
                 }
             };
 
-            enum struct PredicateDataSerializerHook {
+            enum struct predicate_data_serializer_hook {
                 F_ID = -20,
 
                 SQL_PREDICATE = 0,
@@ -260,7 +260,7 @@ namespace hazelcast {
                  * @return factory id
                  */
                 static constexpr int32_t get_factory_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::F_ID);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::F_ID);
                 }
 
                 /**
@@ -287,7 +287,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::BETWEEN_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::BETWEEN_PREDICATE);
                 }
             };
 
@@ -297,7 +297,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::EQUAL_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::EQUAL_PREDICATE);
                 }
             };
 
@@ -307,7 +307,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::NOTEQUAL_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::NOTEQUAL_PREDICATE);
                 }
             };
 
@@ -318,7 +318,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::GREATERLESS_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::GREATERLESS_PREDICATE);
                 }
             };
 
@@ -328,7 +328,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::FALSE_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::FALSE_PREDICATE);
                 }
             };
 
@@ -338,7 +338,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::TRUE_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::TRUE_PREDICATE);
                 }
             };
 
@@ -348,7 +348,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::LIKE_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::LIKE_PREDICATE);
                 }
             };
 
@@ -359,7 +359,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::INSTANCEOF_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::INSTANCEOF_PREDICATE);
                 }
             };
 
@@ -370,7 +370,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::SQL_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::SQL_PREDICATE);
                 }
             };
 
@@ -380,7 +380,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::ILIKE_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::ILIKE_PREDICATE);
                 }
             };
 
@@ -390,7 +390,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::REGEX_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::REGEX_PREDICATE);
                 }
             };
 
@@ -400,7 +400,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::IN_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::IN_PREDICATE);
                 }
             };
 
@@ -410,7 +410,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::AND_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::AND_PREDICATE);
                 }
             };
 
@@ -420,7 +420,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::OR_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::OR_PREDICATE);
                 }
             };
 
@@ -430,7 +430,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::NOT_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::NOT_PREDICATE);
                 }
             };
         };

@@ -29,7 +29,7 @@ namespace hazelcast {
                 /**
                  * Enum for eviction policy types.
                  */
-                enum HAZELCAST_API EvictionPolicyType {
+                enum HAZELCAST_API eviction_policy_type {
                     /**
                      * Least Recently Used
                      */

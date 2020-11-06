@@ -25,7 +25,7 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-           enum HAZELCAST_API EvictionPolicy {
+           enum HAZELCAST_API eviction_policy {
                /**
                 * Least Recently Used
                 */

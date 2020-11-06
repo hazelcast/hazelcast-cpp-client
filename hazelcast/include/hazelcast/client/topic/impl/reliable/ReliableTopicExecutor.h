@@ -37,13 +37,13 @@ namespace hazelcast {
                 namespace reliable {
                     class HAZELCAST_API ReliableTopicExecutor {
                     public:
-                        enum MessageType {
+                        enum message_type {
                             GET_ONE_MESSAGE,
                             CANCEL
                         };
 
                         struct Message {
-                            MessageType type;
+                            message_type type;
                             int64_t sequence;
                             int32_t max_count;
                             std::shared_ptr<ExecutionCallback<ringbuffer::ReadResultSet>> callback;

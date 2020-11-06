@@ -568,7 +568,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, readManyAsync_whenHitsStale_useHeadAsStartSequence) {
-                    client2_ringbuffer_->add_all(items_, client::ringbuffer::OverflowPolicy::OVERWRITE);
+                    client2_ringbuffer_->add_all(items_, client::ringbuffer::overflow_policy::OVERWRITE);
                     auto f = client_ringbuffer_->read_many<std::string>(1, 1, 10);
                     auto rs = f.get();
                     ASSERT_EQ(10, rs.read_count());
@@ -586,7 +586,7 @@ namespace hazelcast {
                             latch1->count_down();
                         }
                     }).detach();
-                    client2_ringbuffer_->add_all(items_, client::ringbuffer::OverflowPolicy::OVERWRITE);
+                    client2_ringbuffer_->add_all(items_, client::ringbuffer::overflow_policy::OVERWRITE);
                     ASSERT_OPEN_EVENTUALLY(*latch1);
                 }
 
@@ -633,7 +633,7 @@ namespace hazelcast {
                     std::vector<std::string> items;
                     items.push_back("foo");
                     items.push_back("bar");
-                    auto result = client_ringbuffer_->add_all(items, client::ringbuffer::OverflowPolicy::OVERWRITE).get();
+                    auto result = client_ringbuffer_->add_all(items, client::ringbuffer::overflow_policy::OVERWRITE).get();
 
                     ASSERT_EQ(client2_ringbuffer_->tail_sequence().get(), result);
                     auto val0 = client2_ringbuffer_->read_one<std::string>(0).get();
@@ -2234,7 +2234,7 @@ namespace hazelcast {
             TEST_F(ClientTxnTest, testTxnCommitWithOptions) {
                 std::string queueName = random_string();
                 TransactionOptions transactionOptions;
-                transactionOptions.set_transaction_type(TransactionOptions::TransactionType::TWO_PHASE);
+                transactionOptions.set_transaction_type(TransactionOptions::transaction_type::TWO_PHASE);
                 transactionOptions.set_timeout(std::chrono::seconds(60));
                 transactionOptions.set_durability(2);
                 TransactionContext context = client_->new_transaction_context(transactionOptions);

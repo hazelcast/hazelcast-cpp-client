@@ -46,7 +46,7 @@ namespace hazelcast {
                      */
                     static std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > get_eviction_strategy(
                             const client::config::EvictionConfig &eviction_config) {
-                        EvictionStrategyType::Type evictionStrategyType = eviction_config.get_eviction_strategy_type();
+                        EvictionStrategyType::type evictionStrategyType = eviction_config.get_eviction_strategy_type();
 
                         return EvictionStrategyProvider<MAPKEY, MAPVALUE, A, E, S>::EVICTION_STRATEGY_MAP[evictionStrategyType];
 
@@ -64,18 +64,18 @@ namespace hazelcast {
                         return EvictionStrategyProvider<MAPKEY, MAPVALUE, A, E, S>::EVICTION_STRATEGY_MAP[EvictionStrategyType::DEFAULT_EVICTION_STRATEGY];
                     }
 
-                    static std::unordered_map<EvictionStrategyType::Type, std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > > init() {
-                        std::unordered_map<EvictionStrategyType::Type, std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > > map;
+                    static std::unordered_map<EvictionStrategyType::type, std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > > init() {
+                        std::unordered_map<EvictionStrategyType::type, std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > > map;
                         map[EvictionStrategyType::SAMPLING_BASED_EVICTION] = std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> >(new impl::strategy::sampling::SamplingBasedEvictionStrategy<MAPKEY, MAPVALUE, A, E, S>());
                         return map;
                     }
 
                 private:
-                    static std::unordered_map<EvictionStrategyType::Type, std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > > EVICTION_STRATEGY_MAP;
+                    static std::unordered_map<EvictionStrategyType::type, std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > > EVICTION_STRATEGY_MAP;
                 };
 
                 template<typename MAPKEY, typename MAPVALUE, typename A, typename E, typename S>
-                std::unordered_map<EvictionStrategyType::Type, std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > > EvictionStrategyProvider<MAPKEY, MAPVALUE, A, E, S>::EVICTION_STRATEGY_MAP = EvictionStrategyProvider<MAPKEY, MAPVALUE, A, E, S>::init();
+                std::unordered_map<EvictionStrategyType::type, std::shared_ptr<EvictionStrategy<MAPKEY, MAPVALUE, A, E, S> > > EvictionStrategyProvider<MAPKEY, MAPVALUE, A, E, S>::EVICTION_STRATEGY_MAP = EvictionStrategyProvider<MAPKEY, MAPVALUE, A, E, S>::init();
             }
         }
     }

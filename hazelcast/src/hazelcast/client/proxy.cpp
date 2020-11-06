@@ -1818,14 +1818,14 @@ namespace hazelcast {
             return os;
         }
 
-        ItemEventBase::ItemEventBase(const std::string &name, const Member &member, const ItemEventType &event_type)
+        ItemEventBase::ItemEventBase(const std::string &name, const Member &member, const item_event_type &event_type)
                 : name_(name), member_(member), event_type_(event_type) {}
 
         const Member &ItemEventBase::get_member() const {
             return member_;
         }
 
-        ItemEventType ItemEventBase::get_event_type() const {
+        item_event_type ItemEventBase::get_event_type() const {
             return event_type_;
         }
 

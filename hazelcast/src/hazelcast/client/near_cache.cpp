@@ -128,7 +128,7 @@ namespace hazelcast {
                     }
 
                     bool
-                    KeyStateMarkerImpl::cas_state(const serialization::pimpl::Data &key, STATE expect, STATE update) {
+                    KeyStateMarkerImpl::cas_state(const serialization::pimpl::Data &key, state expect, state update) {
                         int slot = get_slot(key);
                         int expected = expect;
                         return marks_[slot].compare_exchange_strong(expected, update);

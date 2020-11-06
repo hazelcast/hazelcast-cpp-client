@@ -221,7 +221,7 @@ namespace hazelcast {
                 template<typename K, typename V>
                 std::pair<size_t, size_t> update_anchor(std::vector<std::pair<K, boost::optional<V>>> &entries,
                                                        query::PagingPredicate<K, V> &predicate,
-                                                       query::IterationType iteration_type) {
+                                                       query::iteration_type iteration_type) {
                     if (0 == entries.size()) {
                         return std::pair<size_t, size_t>(0, 0);
                     }

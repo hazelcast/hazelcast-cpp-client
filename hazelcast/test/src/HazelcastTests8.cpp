@@ -112,7 +112,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class BasicClientNearCacheTest
-                    : public ClientTestSupport, public ::testing::WithParamInterface<config::InMemoryFormat> {
+                    : public ClientTestSupport, public ::testing::WithParamInterface<config::in_memory_format> {
             public:
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(*g_srvFactory);
@@ -160,7 +160,7 @@ namespace hazelcast {
                      * @return the {@link NearCacheConfig}
                      */
                     static config::NearCacheConfig create_near_cache_config(
-                            config::InMemoryFormat in_memory_format, const std::string &map_name) {
+                            config::in_memory_format in_memory_format, const std::string &map_name) {
                         config::NearCacheConfig nearCacheConfig;
                         nearCacheConfig.set_name(map_name).set_in_memory_format(in_memory_format).set_invalidate_on_change(true);
 
@@ -176,8 +176,8 @@ namespace hazelcast {
                      * @param maxSize         the max size to set
                      */
                     static void set_eviction_config(config::NearCacheConfig &near_cache_config,
-                                                  config::EvictionPolicy eviction_policy,
-                                                  typename config::EvictionConfig::MaxSizePolicy max_size_policy,
+                                                  config::eviction_policy eviction_policy,
+                                                  typename config::EvictionConfig::max_size_policy max_size_policy,
                                                   int max_size) {
                         near_cache_config.get_eviction_config().set_eviction_policy(eviction_policy)
                                 .set_maximum_size_policy(max_size_policy)

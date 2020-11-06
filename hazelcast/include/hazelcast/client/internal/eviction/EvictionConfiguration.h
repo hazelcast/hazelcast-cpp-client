@@ -43,14 +43,14 @@ namespace hazelcast {
                      *
                      * @return the type of eviction strategy
                      */
-                    virtual EvictionStrategyType::Type get_eviction_strategy_type() const = 0;
+                    virtual EvictionStrategyType::type get_eviction_strategy_type() const = 0;
 
                     /**
                      * Gets the type of eviction policy.
                      *
                      * @return the type of eviction policy
                      */
-                    virtual EvictionPolicyType get_eviction_policy_type() const = 0;
+                    virtual eviction_policy_type get_eviction_policy_type() const = 0;
 
                     /**
                      * Gets the class name of the configured {@link EvictionPolicyComparator} implementation.

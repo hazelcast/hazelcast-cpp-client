@@ -37,7 +37,7 @@ namespace hazelcast {
              * @see Ringbuffer#addAsync(const E &, OverflowPolicy)
              * @see Ringbuffer#add_allAsync(const std::vector<E> &, OverflowPolicy)
              */
-            enum struct OverflowPolicy {
+            enum struct overflow_policy {
 
                 /**
                  * Using this policy the oldest item is overwritten no matter it is not old enough to retire. Using this policy you are
@@ -151,13 +151,13 @@ namespace hazelcast {
 
                 boost::future<int64_t> add_data(serialization::pimpl::Data &&item_data) {
                     auto request = protocol::codec::ringbuffer_add_encode(get_name(),
-                                                                                  static_cast<int32_t>(ringbuffer::OverflowPolicy::OVERWRITE),
+                                                                                  static_cast<int32_t>(ringbuffer::overflow_policy::OVERWRITE),
                                                                                   item_data);
                     return invoke_and_get_future<int64_t>(
                             request, partition_id_);
                 }
 
-                boost::future<int64_t> add_data(serialization::pimpl::Data &&item_data, ringbuffer::OverflowPolicy policy) {
+                boost::future<int64_t> add_data(serialization::pimpl::Data &&item_data, ringbuffer::overflow_policy policy) {
                     auto request = protocol::codec::ringbuffer_add_encode(get_name(),
                                                                                   static_cast<int32_t>(policy),
                                                                                   item_data);
@@ -173,7 +173,7 @@ namespace hazelcast {
                 }
 
                 boost::future<int64_t>
-                add_all_data(std::vector<serialization::pimpl::Data> &&items, ringbuffer::OverflowPolicy overflow_policy) {
+                add_all_data(std::vector<serialization::pimpl::Data> &&items, ringbuffer::overflow_policy overflow_policy) {
                     util::Preconditions::check_not_empty(items, "items can't be empty");
                     util::Preconditions::check_max((int32_t) items.size(), MAX_BATCH_SIZE, "items");
 

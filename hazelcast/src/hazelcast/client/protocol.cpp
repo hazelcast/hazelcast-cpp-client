@@ -500,7 +500,7 @@ namespace hazelcast {
                 }
                 auto factory = error_code_to_factory_.find(begin->error_code);
                 if (error_code_to_factory_.end() == factory) {
-                    factory = error_code_to_factory_.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
+                    factory = error_code_to_factory_.find(protocol::client_protocol_error_codes::UNDEFINED);
                 }
                 return factory->second->create_exception(*this, begin->class_name, begin->message.value_or("nullptr"),
                                                   begin->to_string(), create_exception(begin + 1, end));

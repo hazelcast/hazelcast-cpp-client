@@ -85,11 +85,11 @@ namespace hazelcast {
                 cluster), members_(std::move(members)) {
         }
 
-        LifecycleEvent::LifecycleEvent(LifecycleState state)
+        LifecycleEvent::LifecycleEvent(lifecycle_state state)
                 : state_(state) {
         }
 
-        LifecycleEvent::LifecycleState LifecycleEvent::get_state() const {
+        LifecycleEvent::lifecycle_state LifecycleEvent::get_state() const {
             return state_;
         }
 
@@ -905,7 +905,7 @@ namespace hazelcast {
 
                     // removal events should be added before added events
                     for (auto const &e : previous_members) {
-                        events.emplace_back(client_.get_cluster(), e.second, MembershipEvent::MembershipEventType::MEMBER_LEFT, current_members);
+                        events.emplace_back(client_.get_cluster(), e.second, MembershipEvent::membership_event_type::MEMBER_LEFT, current_members);
                         auto connection = client_.get_connection_manager().get_connection(e.second.get_uuid());
                         if (connection) {
                             connection->close("", std::make_exception_ptr(exception::TargetDisconnectedException(
@@ -915,7 +915,7 @@ namespace hazelcast {
                         }
                     }
                     for (auto const &member : new_members) {
-                        events.emplace_back(client_.get_cluster(), member, MembershipEvent::MembershipEventType::MEMBER_JOINED, current_members);
+                        events.emplace_back(client_.get_cluster(), member, MembershipEvent::membership_event_type::MEMBER_JOINED, current_members);
                     }
 
                     if (!events.empty()) {
@@ -933,7 +933,7 @@ namespace hazelcast {
                     for (auto const &event : events) {
                         for (auto &item : listeners_) {
                             MembershipListener &listener = item.second;
-                            if (event.get_event_type() == MembershipEvent::MembershipEventType::MEMBER_JOINED) {
+                            if (event.get_event_type() == MembershipEvent::membership_event_type::MEMBER_JOINED) {
                                 listener.joined_(event);
                             } else {
                                 listener.left_(event);
@@ -1589,7 +1589,7 @@ namespace hazelcast {
                     auto &client_config = client_.get_client_config();
                     auto &connection_strategy_Config = client_config.get_connection_strategy_config();
                     auto reconnect_mode = connection_strategy_Config.get_reconnect_mode();
-                    if (reconnect_mode == config::ClientConnectionStrategyConfig::ReconnectMode::ASYNC) {
+                    if (reconnect_mode == config::ClientConnectionStrategyConfig::reconnect_mode::ASYNC) {
                         BOOST_THROW_EXCEPTION(exception::HazelcastClientOfflineException(
                                 "ClientTransactionManagerServiceImpl::throw_exception", ""));
                     }

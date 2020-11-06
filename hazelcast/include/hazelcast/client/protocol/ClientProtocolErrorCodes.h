@@ -18,7 +18,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            enum ClientProtocolErrorCodes {
+            enum client_protocol_error_codes {
                 UNDEFINED = 0,
                 ARRAY_INDEX_OUT_OF_BOUNDS = 1,
                 ARRAY_STORE = 2,

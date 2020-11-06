@@ -42,7 +42,7 @@ namespace hazelcast {
             * PUT even type representing an addition of an attribute
             * REMOVE event type representing a deletion of an attribute
             */
-            enum MemberAttributeOperationType {
+            enum member_attribute_operation_type {
                 PUT = 1,
                 REMOVE = 2
             };

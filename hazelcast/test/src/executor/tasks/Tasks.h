@@ -25,7 +25,7 @@ namespace hazelcast {
         namespace test {
             namespace executor {
                 namespace tasks {
-                    enum struct TASK_IDS {
+                    enum struct task_ids {
                         APPEND_CALLABLE = 5,
                         CANCELLATION_AWARE_TASK = 6,
                         FAILING_CALLABLE = 7,
@@ -120,7 +120,7 @@ namespace hazelcast {
             struct hz_serializer<test::executor::tasks::AppendCallable>
                     : public TaskSerializerNoOpRead<test::executor::tasks::AppendCallable> {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::APPEND_CALLABLE);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::APPEND_CALLABLE);
                 }
 
                 static void write_data(const test::executor::tasks::AppendCallable &object, ObjectDataOutput &out) {
@@ -131,7 +131,7 @@ namespace hazelcast {
             template<>
             struct hz_serializer<test::executor::tasks::CancellationAwareTask> : public TaskSerializerFactory  {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::CANCELLATION_AWARE_TASK);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::CANCELLATION_AWARE_TASK);
                 }
 
                 static void write_data(const test::executor::tasks::CancellationAwareTask &object, ObjectDataOutput &out) {
@@ -147,7 +147,7 @@ namespace hazelcast {
             struct hz_serializer<test::executor::tasks::FailingCallable>
                     : public TaskSerializerBase<test::executor::tasks::FailingCallable> {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::FAILING_CALLABLE);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::FAILING_CALLABLE);
                 }
             };
 
@@ -155,14 +155,14 @@ namespace hazelcast {
             struct hz_serializer<test::executor::tasks::GetMemberUuidTask>
                     : public TaskSerializerBase<test::executor::tasks::GetMemberUuidTask> {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::GET_MEMBER_UUID_TASK);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::GET_MEMBER_UUID_TASK);
                 }
             };
 
             template<typename T>
             struct hz_serializer<test::executor::tasks::MapPutPartitionAwareCallable<T>> : public TaskSerializerFactory {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::MAP_PUTPARTITIONAWARE_CALLABLE);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::MAP_PUTPARTITIONAWARE_CALLABLE);
                 }
 
                 static void write_data(const test::executor::tasks::MapPutPartitionAwareCallable<T> &object, ObjectDataOutput &out) {
@@ -175,7 +175,7 @@ namespace hazelcast {
             struct hz_serializer<test::executor::tasks::NullCallable>
                     : public TaskSerializerBase<test::executor::tasks::NullCallable> {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::NULL_CALLABLE);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::NULL_CALLABLE);
                 }
             };
 
@@ -183,7 +183,7 @@ namespace hazelcast {
             struct hz_serializer<test::executor::tasks::SelectAllMembers>
                     : public TaskSerializerBase<test::executor::tasks::SelectAllMembers> {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::SELECT_ALL_MEMBERS);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::SELECT_ALL_MEMBERS);
                 }
             };
 
@@ -191,7 +191,7 @@ namespace hazelcast {
             struct hz_serializer<test::executor::tasks::SelectNoMembers>
                     : public TaskSerializerBase<test::executor::tasks::SelectNoMembers> {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::SELECT_NO_MEMBERS);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::SELECT_NO_MEMBERS);
                 }
             };
 
@@ -199,7 +199,7 @@ namespace hazelcast {
             struct hz_serializer<test::executor::tasks::TaskWithUnserializableResponse>
                     : public TaskSerializerBase<test::executor::tasks::TaskWithUnserializableResponse> {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::TASK_WITH_UNSERIALIZABLE_RESPONSE);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::TASK_WITH_UNSERIALIZABLE_RESPONSE);
                 }
             };
 
@@ -207,7 +207,7 @@ namespace hazelcast {
             struct hz_serializer<test::executor::tasks::SerializedCounterCallable>
                     : public TaskSerializerNoOpRead<test::executor::tasks::SerializedCounterCallable> {
                 static int32_t get_class_id() {
-                    return static_cast<int32_t>(test::executor::tasks::TASK_IDS::SERIALIZED_COUNTER_CALLABLE);
+                    return static_cast<int32_t>(test::executor::tasks::task_ids::SERIALIZED_COUNTER_CALLABLE);
                 }
 
                 static void write_data(const test::executor::tasks::SerializedCounterCallable &object, ObjectDataOutput &out) {

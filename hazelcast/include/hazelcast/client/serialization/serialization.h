@@ -63,7 +63,7 @@ namespace hazelcast {
 
                 class SerializationService;
 
-                enum struct HAZELCAST_API SerializationConstants {
+                enum struct HAZELCAST_API serialization_constants {
                     CONSTANT_TYPE_NULL = 0,
                     CONSTANT_TYPE_PORTABLE = -1,
                     CONSTANT_TYPE_DATA = -2,
@@ -109,7 +109,7 @@ namespace hazelcast {
                 struct HAZELCAST_API ObjectType {
                     ObjectType();
 
-                    SerializationConstants type_id;
+                    serialization_constants type_id;
                     int32_t factory_id;
                     int32_t class_id;
 
@@ -189,8 +189,8 @@ namespace hazelcast {
             struct global_serializer {
                 virtual ~global_serializer() = default;
 
-                static pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_GLOBAL;
+                static pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_GLOBAL;
                 }
 
                 virtual void write(const boost::any &object, ObjectDataOutput &out) = 0;
@@ -224,80 +224,80 @@ namespace hazelcast {
             template<>
             struct HAZELCAST_API hz_serializer<byte> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_BYTE;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_BYTE;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<bool> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_BOOLEAN;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_BOOLEAN;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<char> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_CHAR;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_CHAR;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<char16_t> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_CHAR;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_CHAR;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<int16_t> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_SHORT;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_SHORT;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<int32_t> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_INTEGER;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_INTEGER;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<int64_t> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_LONG;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_LONG;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<float> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_FLOAT;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_FLOAT;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<double> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_DOUBLE;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_DOUBLE;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::string> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_STRING;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_STRING;
                 }
             };
 
@@ -305,92 +305,92 @@ namespace hazelcast {
             template<>
             struct HAZELCAST_API hz_serializer<HazelcastJsonValue> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::JAVASCRIPT_JSON_SERIALIZATION_TYPE;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::JAVASCRIPT_JSON_SERIALIZATION_TYPE;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<byte>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_BYTE_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<bool>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_BOOLEAN_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<char>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_CHAR_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<int16_t>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_SHORT_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<int32_t>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_INTEGER_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<int64_t>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_LONG_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<float>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_FLOAT_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<double>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_DOUBLE_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<std::vector<std::string>> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_STRING_ARRAY;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_STRING_ARRAY;
                 }
             };
 
             template<>
             struct HAZELCAST_API hz_serializer<boost::uuids::uuid> : public builtin_serializer {
             public:
-                static inline pimpl::SerializationConstants get_type_id() {
-                    return pimpl::SerializationConstants::CONSTANT_TYPE_UUID;
+                static inline pimpl::serialization_constants get_type_id() {
+                    return pimpl::serialization_constants::CONSTANT_TYPE_UUID;
                 }
             };
 
-            enum struct FieldType {
+            enum struct field_type {
                 TYPE_PORTABLE = 0,
                 TYPE_BYTE = 1,
                 TYPE_BOOLEAN = 2,
@@ -434,18 +434,18 @@ namespace hazelcast {
                 /**
                 * Constructor
                 */
-                FieldDefinition(int, const std::string &, FieldType const &type, int version);
+                FieldDefinition(int, const std::string &, field_type const &type, int version);
 
                 /**
                 * Constructor
                 */
-                FieldDefinition(int index, const std::string &field_name, FieldType const &type, int factory_id,
+                FieldDefinition(int index, const std::string &field_name, field_type const &type, int factory_id,
                                 int class_id, int version);
 
                 /**
                 * @return field type
                 */
-                const FieldType &get_type() const;
+                const field_type &get_type() const;
 
                 /**
                 * @return field name
@@ -487,7 +487,7 @@ namespace hazelcast {
             private:
                 int index_;
                 std::string field_name_;
-                FieldType type_;
+                field_type type_;
                 int class_id_;
                 int factory_id_;
                 int version_;
@@ -533,7 +533,7 @@ namespace hazelcast {
                 * @return type of given field
                 * @throws IllegalArgumentException
                 */
-                FieldType get_field_type(const std::string &field_name) const;
+                field_type get_field_type(const std::string &field_name) const;
 
                 /**
                 * @return total field count
@@ -612,7 +612,7 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder &add_field(FieldDefinition &field_definition);
 
-                void add_field(const std::string &field_name, FieldType const &field_type);
+                void add_field(const std::string &field_name, field_type const &field_type);
 
                 std::shared_ptr<ClassDefinition> build();
 
@@ -799,82 +799,82 @@ namespace hazelcast {
                     const SerializationConfig &get_serialization_config() const;
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<byte, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_BYTE; }
+                    typename std::enable_if<std::is_same<byte, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_BYTE; }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<char, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_CHAR; }
-
-
-                    template<typename T>
-                    typename std::enable_if<std::is_same<char16_t, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_CHAR; }
-
-                    template<typename T>
-                    typename std::enable_if<std::is_same<bool, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_BOOLEAN; }
-
-                    template<typename T>
-                    typename std::enable_if<std::is_same<int16_t, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_SHORT; }
-
-                    template<typename T>
-                    typename std::enable_if<std::is_same<int32_t, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_INT; }
-
-                    template<typename T>
-                    typename std::enable_if<std::is_same<int64_t, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_LONG; }
-
-                    template<typename T>
-                    typename std::enable_if<std::is_same<float, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_FLOAT; }
-
-                    template<typename T>
-                    typename std::enable_if<std::is_same<double, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_DOUBLE; }
-
-                    template<typename T>
-                    typename std::enable_if<std::is_same<std::string, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_UTF; }
+                    typename std::enable_if<std::is_same<char, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_CHAR; }
 
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<byte>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_BYTE_ARRAY; }
+                    typename std::enable_if<std::is_same<char16_t, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_CHAR; }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<char>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_CHAR_ARRAY; }
+                    typename std::enable_if<std::is_same<bool, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_BOOLEAN; }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_BOOLEAN_ARRAY; }
+                    typename std::enable_if<std::is_same<int16_t, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_SHORT; }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<int16_t>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_SHORT_ARRAY; }
+                    typename std::enable_if<std::is_same<int32_t, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_INT; }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<int32_t>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_INT_ARRAY; }
+                    typename std::enable_if<std::is_same<int64_t, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_LONG; }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<int64_t>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_LONG_ARRAY; }
+                    typename std::enable_if<std::is_same<float, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_FLOAT; }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<float>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_FLOAT_ARRAY; }
+                    typename std::enable_if<std::is_same<double, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_DOUBLE; }
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<double>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_DOUBLE_ARRAY; }
+                    typename std::enable_if<std::is_same<std::string, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_UTF; }
+
 
                     template<typename T>
-                    typename std::enable_if<std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value, FieldType>::type
-                    static get_type() { return FieldType::TYPE_UTF_ARRAY; }
+                    typename std::enable_if<std::is_same<std::vector<byte>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_BYTE_ARRAY; }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<char>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_CHAR_ARRAY; }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<bool>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_BOOLEAN_ARRAY; }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<int16_t>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_SHORT_ARRAY; }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<int32_t>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_INT_ARRAY; }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<int64_t>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_LONG_ARRAY; }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<float>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_FLOAT_ARRAY; }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<double>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_DOUBLE_ARRAY; }
+
+                    template<typename T>
+                    typename std::enable_if<std::is_same<std::vector<std::string>, typename std::remove_cv<T>::type>::value, field_type>::type
+                    static get_type() { return field_type::TYPE_UTF_ARRAY; }
 
                 private:
                     PortableContext(const PortableContext &) = delete;
@@ -1022,7 +1022,7 @@ namespace hazelcast {
                     void end();
 
                 protected:
-                    void set_position(const std::string &field_name, FieldType const &field_type);
+                    void set_position(const std::string &field_name, field_type const &field_type);
 
                     void check_factory_and_class(FieldDefinition fd, int factory_id, int class_id) const;
 
@@ -1066,7 +1066,7 @@ namespace hazelcast {
                         if (!cd_->has_field(field_name)) {
                             return 0;
                         }
-                        const FieldType &currentFieldType = cd_->get_field_type(field_name);
+                        const field_type &currentFieldType = cd_->get_field_type(field_name);
                         return read_morphing<T>(currentFieldType, field_name);
                     }
 
@@ -1126,11 +1126,11 @@ namespace hazelcast {
                 private:
                     template <typename T>
                     typename std::enable_if<std::is_same<int16_t, typename std::remove_cv<T>::type>::value, T>::type
-                    read_morphing(FieldType current_field_type, const std::string &field_name) {
+                    read_morphing(field_type current_field_type, const std::string &field_name) {
                         switch(current_field_type) {
-                            case FieldType::TYPE_BYTE:
+                            case field_type::TYPE_BYTE:
                                 return PortableReaderBase::read<byte>(field_name);
-                            case FieldType::TYPE_SHORT:
+                            case field_type::TYPE_SHORT:
                                 return PortableReaderBase::read<int16_t>(field_name);
                             default:
                                 BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("MorphingPortableReader::*",
@@ -1140,11 +1140,11 @@ namespace hazelcast {
 
                     template <typename T>
                     typename std::enable_if<std::is_same<int32_t, typename std::remove_cv<T>::type>::value, T>::type
-                    read_morphing(FieldType current_field_type, const std::string &field_name) {
+                    read_morphing(field_type current_field_type, const std::string &field_name) {
                         switch(current_field_type) {
-                            case FieldType::TYPE_INT:
+                            case field_type::TYPE_INT:
                                 return PortableReaderBase::read<int32_t>(field_name);
-                            case FieldType::TYPE_CHAR:
+                            case field_type::TYPE_CHAR:
                                 return PortableReaderBase::read<char>(field_name);
                             default:
                                 return read_morphing<int16_t>(current_field_type, field_name);
@@ -1153,9 +1153,9 @@ namespace hazelcast {
 
                     template <typename T>
                     typename std::enable_if<std::is_same<int64_t, typename std::remove_cv<T>::type>::value, T>::type
-                    read_morphing(FieldType current_field_type, const std::string &field_name) {
+                    read_morphing(field_type current_field_type, const std::string &field_name) {
                         switch(current_field_type) {
-                            case FieldType::TYPE_LONG:
+                            case field_type::TYPE_LONG:
                                 return PortableReaderBase::read<int64_t>(field_name);
                             default:
                                 return read_morphing<int32_t>(current_field_type, field_name);
@@ -1164,9 +1164,9 @@ namespace hazelcast {
 
                     template <typename T>
                     typename std::enable_if<std::is_same<float, typename std::remove_cv<T>::type>::value, T>::type
-                    read_morphing(FieldType current_field_type, const std::string &field_name) {
+                    read_morphing(field_type current_field_type, const std::string &field_name) {
                         switch(current_field_type) {
-                            case FieldType::TYPE_FLOAT:
+                            case field_type::TYPE_FLOAT:
                                 return PortableReaderBase::read<float>(field_name);
                             default:
                                 return static_cast<float>(read_morphing<int32_t>(current_field_type, field_name));
@@ -1175,11 +1175,11 @@ namespace hazelcast {
 
                     template <typename T>
                     typename std::enable_if<std::is_same<double, typename std::remove_cv<T>::type>::value, T>::type
-                    read_morphing(FieldType current_field_type, const std::string &field_name) {
+                    read_morphing(field_type current_field_type, const std::string &field_name) {
                         switch(current_field_type) {
-                            case FieldType::TYPE_DOUBLE:
+                            case field_type::TYPE_DOUBLE:
                                 return PortableReaderBase::read<double>(field_name);
-                            case FieldType::TYPE_FLOAT:
+                            case field_type::TYPE_FLOAT:
                                 return PortableReaderBase::read<float>(field_name);
                             default:
                                 return static_cast<double>(read_morphing<int64_t>(current_field_type, field_name));
@@ -1285,7 +1285,7 @@ namespace hazelcast {
                     void write_portable_array(const std::string &field_name, const std::vector<T> *values);
 
                 private:
-                    FieldDefinition const &set_position(const std::string &field_name, FieldType field_type);
+                    FieldDefinition const &set_position(const std::string &field_name, field_type field_type);
 
                     template<typename T>
                     void check_portable_attributes(const FieldDefinition &fd);
@@ -1651,7 +1651,7 @@ namespace hazelcast {
             void ObjectDataOutput::write_object(const T *object) {
                 if (is_no_write_) { return; }
                 if (!object) {
-                    write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_NULL));
+                    write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL));
                     return;
                 }
 
@@ -1663,7 +1663,7 @@ namespace hazelcast {
             ObjectDataOutput::write_object(const boost::optional<T> &object) {
                 if (is_no_write_) { return; }
                 if (!object) {
-                    write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_NULL));
+                    write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL));
                     return;
                 }
 
@@ -1674,7 +1674,7 @@ namespace hazelcast {
             typename std::enable_if<std::is_base_of<identified_data_serializer, hz_serializer<T>>::value, void>::type
             inline ObjectDataOutput::write_object(const T &object) {
                 if (is_no_write_) { return; }
-                write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_DATA));
+                write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_DATA));
                 pimpl::DataSerializer::write<T>(object, *this);
             }
 
@@ -1682,7 +1682,7 @@ namespace hazelcast {
             typename std::enable_if<std::is_base_of<portable_serializer, hz_serializer<T>>::value, void>::type
             inline ObjectDataOutput::write_object(const T &object) {
                 if (is_no_write_) { return; }
-                write<int32_t>(static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE));
+                write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_PORTABLE));
                 portable_serializer_->write<T>(object, *this);
             }
 
@@ -1737,7 +1737,7 @@ namespace hazelcast {
                                       std::is_same<typename std::remove_all_extents<T>::type, char>::value), boost::optional<T>>::type
             inline ObjectDataInput::read_object() {
                 int32_t typeId = read<int32_t>();
-                if (static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_NULL) == typeId) {
+                if (static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL) == typeId) {
                     return boost::none;
                 }
                 return read_object<T>(typeId);
@@ -1753,7 +1753,7 @@ namespace hazelcast {
             template<typename T>
             typename std::enable_if<std::is_base_of<identified_data_serializer, hz_serializer<T>>::value, boost::optional<T>>::type
             inline ObjectDataInput::read_object(int32_t type_id) {
-                if (type_id != static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_DATA)) {
+                if (type_id != static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_DATA)) {
                     BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
                                                   "ObjectDataInput::read_object<identified_data_serializer>",
                                                           (boost::format(
@@ -1767,7 +1767,7 @@ namespace hazelcast {
             template<typename T>
             typename std::enable_if<std::is_base_of<portable_serializer, hz_serializer<T>>::value, boost::optional<T>>::type
             inline ObjectDataInput::read_object(int32_t type_id) {
-                if (type_id != static_cast<int32_t>(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE)) {
+                if (type_id != static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_PORTABLE)) {
                     BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException(
                                                   "ObjectDataInput::read_object<portable_serializer>",
                                                           (boost::format(
@@ -1835,12 +1835,12 @@ namespace hazelcast {
 
                 template<typename T>
                 boost::optional<std::vector<T>> DefaultPortableReader::read_portable_array(const std::string &field_name) {
-                    PortableReaderBase::set_position(field_name, FieldType::TYPE_PORTABLE_ARRAY);
+                    PortableReaderBase::set_position(field_name, field_type::TYPE_PORTABLE_ARRAY);
 
                     data_input_->read<int32_t>();
                     std::vector<T> portables;
 
-                    set_position(field_name, FieldType::TYPE_PORTABLE_ARRAY);
+                    set_position(field_name, field_type::TYPE_PORTABLE_ARRAY);
 
                     int32_t len = data_input_->read<int32_t>();
                     if (len == util::Bits::NULL_ARRAY) {
@@ -1871,12 +1871,12 @@ namespace hazelcast {
 
                 template<typename T>
                 boost::optional<std::vector<T>> MorphingPortableReader::read_portable_array(const std::string &field_name) {
-                    PortableReaderBase::set_position(field_name, FieldType::TYPE_PORTABLE_ARRAY);
+                    PortableReaderBase::set_position(field_name, field_type::TYPE_PORTABLE_ARRAY);
 
                     data_input_->read<int32_t>();
                     std::vector<T> portables;
 
-                    set_position(field_name, FieldType::TYPE_PORTABLE_ARRAY);
+                    set_position(field_name, field_type::TYPE_PORTABLE_ARRAY);
 
                     int32_t len = data_input_->read<int32_t>();
                     if (len == util::Bits::NULL_ARRAY) {
@@ -2001,7 +2001,7 @@ namespace hazelcast {
 
                 template<typename T>
                 boost::optional<T> PortableReaderBase::get_portable_instance(const std::string &field_name) {
-                    set_position(field_name, FieldType::TYPE_PORTABLE);
+                    set_position(field_name, field_type::TYPE_PORTABLE);
 
                     bool isNull = data_input_->read<bool>();
                     int32_t factoryId = data_input_->read<int32_t>();
@@ -2018,7 +2018,7 @@ namespace hazelcast {
 
                 template<typename T>
                 void DefaultPortableWriter::write_null_portable(const std::string &field_name) {
-                    set_position(field_name, FieldType::TYPE_PORTABLE);
+                    set_position(field_name, field_type::TYPE_PORTABLE);
                     object_data_output_.write<bool>(true);
                     object_data_output_.write<int32_t>(hz_serializer<T>::getFactoryId());
                     object_data_output_.write<int32_t>(hz_serializer<T>::getClassId());
@@ -2026,7 +2026,7 @@ namespace hazelcast {
 
                 template<typename T>
                 void DefaultPortableWriter::write_portable(const std::string &field_name, const T *portable) {
-                    FieldDefinition const &fd = set_position(field_name, FieldType::TYPE_PORTABLE);
+                    FieldDefinition const &fd = set_position(field_name, field_type::TYPE_PORTABLE);
                     bool isNull = (nullptr == portable);
                     object_data_output_.write<bool>(isNull);
 
@@ -2043,7 +2043,7 @@ namespace hazelcast {
 
                 template<typename T>
                 void DefaultPortableWriter::write_portable_array(const std::string &field_name, const std::vector<T> *values) {
-                    FieldDefinition const &fd = set_position(field_name, FieldType::TYPE_PORTABLE_ARRAY);
+                    FieldDefinition const &fd = set_position(field_name, field_type::TYPE_PORTABLE_ARRAY);
                     check_portable_attributes<T>(fd);
 
                     int32_t len = (values ? static_cast<int32_t>(values->size()) : util::Bits::NULL_ARRAY);

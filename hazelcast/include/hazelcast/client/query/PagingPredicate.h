@@ -47,7 +47,7 @@ namespace hazelcast {
              * To differentiate users selection on result collection on map-wide operations
              * like values , keySet , query etc.
              */
-            enum struct HAZELCAST_API IterationType {
+            enum struct HAZELCAST_API iteration_type {
                 /**
                  * Iterate over keys
                  */
@@ -117,7 +117,7 @@ namespace hazelcast {
                  * resets for reuse
                  */
                 void reset() {
-                    iteration_type_ = IterationType::VALUE;
+                    iteration_type_ = iteration_type::VALUE;
                     anchor_data_list_.page_list.clear();
                     anchor_data_list_.data_list.clear();
                     page_ = 0;
@@ -139,11 +139,11 @@ namespace hazelcast {
                     }
                 }
 
-                IterationType get_iteration_type() const {
+                iteration_type get_iteration_type() const {
                     return iteration_type_;
                 }
 
-                void set_iteration_type(IterationType type) {
+                void set_iteration_type(iteration_type type) {
                     iteration_type_ = type;
                 }
 
@@ -173,7 +173,7 @@ namespace hazelcast {
                 serialization::ObjectDataOutput out_stream_;
                 size_t page_size_;
                 size_t page_;
-                IterationType iteration_type_;
+                iteration_type iteration_type_;
                 boost::optional<serialization::pimpl::Data> comparator_data_;
                 boost::optional<serialization::pimpl::Data> predicate_data_;
 
@@ -187,7 +187,7 @@ namespace hazelcast {
                  */
                 PagingPredicate(serialization::pimpl::SerializationService &serialization_service,
                         size_t predicate_page_size) : out_stream_(serialization_service.new_output_stream()),
-                        page_size_(predicate_page_size), page_(0), iteration_type_(IterationType::VALUE) {
+                        page_size_(predicate_page_size), page_(0), iteration_type_(iteration_type::VALUE) {
                     out_stream_.write_object<bool>(nullptr);
                     out_stream_.write_object<bool>(nullptr);
                 }
@@ -206,7 +206,7 @@ namespace hazelcast {
                 PagingPredicate(serialization::pimpl::SerializationService &serialization_service,
                         size_t predicate_page_size, const INNER_PREDICATE &predicate)
                         : out_stream_(serialization_service.new_output_stream()), page_size_(predicate_page_size), page_(0),
-                        iteration_type_(IterationType::VALUE) {
+                        iteration_type_(iteration_type::VALUE) {
                     out_stream_.write_object(predicate);
                     out_stream_.write_object<bool>(nullptr);
                     predicate_data_ = serialization_service.to_data<INNER_PREDICATE>(predicate);
@@ -225,7 +225,7 @@ namespace hazelcast {
                 PagingPredicate(serialization::pimpl::SerializationService &serialization_service,
                         COMPARATOR &&comp, size_t predicate_page_size)
                         : out_stream_(serialization_service.new_output_stream()), page_size_(predicate_page_size), page_(0),
-                        iteration_type_(IterationType::VALUE) {
+                        iteration_type_(iteration_type::VALUE) {
                     out_stream_.write_object<bool>(nullptr);
                     out_stream_.write_object(comp);
                     comparator_data_ = serialization_service.to_data<COMPARATOR>(comp);
@@ -247,7 +247,7 @@ namespace hazelcast {
                 PagingPredicate(serialization::pimpl::SerializationService &serialization_service,
                         const INNER_PREDICATE &predicate, COMPARATOR &&comp, size_t predicate_page_size)
                         : out_stream_(serialization_service.new_output_stream()), page_size_(predicate_page_size), page_(0),
-                        iteration_type_(IterationType::VALUE) {
+                        iteration_type_(iteration_type::VALUE) {
                     out_stream_.write_object(predicate);
                     out_stream_.write_object(comp);
                     predicate_data_ = serialization_service.to_data<INNER_PREDICATE>(predicate);
@@ -264,14 +264,14 @@ namespace hazelcast {
                  * @return factory id
                  */
                 static constexpr int32_t get_factory_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::F_ID);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::F_ID);
                 }
 
                 /**
                  * @return class id
                  */
                 static constexpr int32_t get_class_id() noexcept {
-                    return static_cast<int32_t>(query::PredicateDataSerializerHook::PAGING_PREDICATE);
+                    return static_cast<int32_t>(query::predicate_data_serializer_hook::PAGING_PREDICATE);
                 }
 
                 /**

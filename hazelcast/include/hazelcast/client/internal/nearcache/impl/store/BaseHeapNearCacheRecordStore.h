@@ -74,7 +74,7 @@ namespace hazelcast {
                             std::unique_ptr<eviction::MaxSizeChecker> create_near_cache_max_size_checker(
                                     const client::config::EvictionConfig &eviction_config,
                                     const client::config::NearCacheConfig &near_cache_config) override {
-                                typename client::config::EvictionConfig::MaxSizePolicy maxSizePolicy = eviction_config.get_maximum_size_policy();
+                                typename client::config::EvictionConfig::max_size_policy maxSizePolicy = eviction_config.get_maximum_size_policy();
                                 if (maxSizePolicy == client::config::EvictionConfig::ENTRY_COUNT) {
                                     return std::unique_ptr<eviction::MaxSizeChecker>(
                                             new maxsize::EntryCountNearCacheMaxSizeChecker<K, V, KS, R>(

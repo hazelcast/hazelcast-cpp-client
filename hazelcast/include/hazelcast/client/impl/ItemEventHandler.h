@@ -41,11 +41,11 @@ namespace hazelcast {
                         val = TypedData(std::move(*item), serialization_service_);
                     }
                     auto member = cluster_service_.get_member(uuid);
-                    ItemEventType type(static_cast<ItemEventType>(event_type));
+                    item_event_type type(static_cast<item_event_type>(event_type));
                     ItemEvent itemEvent(instance_name_, type, std::move(val), std::move(member).value());
-                    if (type == ItemEventType::ADDED) {
+                    if (type == item_event_type::ADDED) {
                         listener_.added_(std::move(itemEvent));
-                    } else if (type == ItemEventType::REMOVED) {
+                    } else if (type == item_event_type::REMOVED) {
                         listener_.removed_(std::move(itemEvent));
                     }
                 }

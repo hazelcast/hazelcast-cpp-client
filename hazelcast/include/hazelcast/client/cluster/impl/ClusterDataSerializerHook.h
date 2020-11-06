@@ -24,7 +24,7 @@ namespace hazelcast {
     namespace client {
         namespace cluster {
             namespace impl {
-                enum ClusterDataSerializerHook {
+                enum cluster_data_serializer_hook {
                     F_ID = 0,
 
                     ADDRESS = 1

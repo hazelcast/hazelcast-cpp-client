@@ -159,7 +159,7 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.config.InMemoryFormat} of the storage for internal records
                      */
-                    virtual const client::config::InMemoryFormat get_in_memory_format() const {
+                    virtual const client::config::in_memory_format get_in_memory_format() const {
                         assert(0);
                         return client::config::BINARY;
                     }

@@ -526,7 +526,7 @@ namespace hazelcast {
 
                 listener.on_added([&latch1](ItemEvent &&item_event) {
                     auto type = item_event.get_event_type();
-                    ASSERT_EQ(ItemEventType::ADDED, type);
+                    ASSERT_EQ(item_event_type::ADDED, type);
                     ASSERT_EQ("MyList", item_event.get_name());
                     std::string host = item_event.get_member().get_address().get_host();
                     ASSERT_TRUE(host == "localhost" || host == "127.0.0.1");
