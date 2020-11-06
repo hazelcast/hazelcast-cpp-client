@@ -19,24 +19,24 @@
 #include <vector>
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/client_config.h>
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
 #include <hazelcast/client/connection/ClientConnectionManagerImpl.h>
 #include <hazelcast/client/connection/Connection.h>
-#include <hazelcast/client/serialization/pimpl/DataInput.h>
+#include <hazelcast/client/serialization/pimpl/data_input.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
 #include <ctime>
 #include <errno.h>
-#include <hazelcast/client/LifecycleListener.h>
-#include "hazelcast/client/LifecycleEvent.h"
+#include <hazelcast/client/lifecycle_listener.h>
+#include "hazelcast/client/lifecycle_event.h"
 #include "serialization/Serializables.h"
-#include <hazelcast/client/SerializationConfig.h>
-#include <hazelcast/client/HazelcastJsonValue.h>
+#include <hazelcast/client/serialization_config.h>
+#include <hazelcast/client/hazelcast_json_value.h>
 #include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
@@ -55,16 +55,16 @@
 
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/IMap.h"
+#include "hazelcast/client/initial_membership_event.h"
+#include "hazelcast/client/socket_interceptor.h"
+#include "hazelcast/client/imap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
-#include "hazelcast/client/Pipelining.h"
+#include "hazelcast/client/pipelining.h"
 #include "hazelcast/util/MurmurHash3.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -255,7 +255,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(UTFUtilTest, readValidUTF8) {
-                    serialization::pimpl::DataInput<std::string> in(VALID_UTF_STRING);
+                    serialization::pimpl::data_input<std::string> in(VALID_UTF_STRING);
                     std::string utfBuffer;
                     int numberOfUtfChars = hazelcast::util::UTFUtil::is_valid_ut_f8(VALID_UTF_STRING);
                     for (int i = 0; i < numberOfUtfChars; ++i) {
@@ -268,7 +268,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(UTFUtilTest, readInvalidUTF8) {
-                    serialization::pimpl::DataInput<std::string> in(INVALID_UTF_STRING_INSUFFICIENT_BYTES);
+                    serialization::pimpl::data_input<std::string> in(INVALID_UTF_STRING_INSUFFICIENT_BYTES);
                     std::string utfBuffer;
                     for (int i = 0; i < 5; ++i) {
                         byte c = in.read<byte>();
@@ -467,7 +467,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
 
-        class HazelcastClient;
+        class hazelcast_client;
 
         namespace test {
             class ClientConfigTest : public ClientTestSupport
@@ -530,19 +530,19 @@ namespace hazelcast {
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster) {
                     client_config_.get_connection_strategy_config().set_async_start(true);
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
 
                     ASSERT_THROW((client.get_map(random_map_name())),
-                                 exception::HazelcastClientOfflineException);
+                                 exception::hazelcast_clientOfflineException);
 
                     client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster_thenShutdown) {
                     client_config_.get_connection_strategy_config().set_async_start(true);
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
                     client.shutdown();
-                    ASSERT_THROW((client.get_map(random_map_name())), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW((client.get_map(random_map_name())), exception::hazelcast_clientNotActiveException);
 
                     client.shutdown();
                 }
@@ -555,14 +555,14 @@ namespace hazelcast {
                             .add_address(address("127.0.0.1", 5701)).set_connection_attempt_limit(INT32_MAX);
                     client_config_.set_property("hazelcast.client.shuffle.member.list", "false");
                     client_config_.add_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
                     client_config_.get_connection_strategy_config().set_async_start(true);
 
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
@@ -581,10 +581,10 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_shutdown([&shutdownLatch](){
                                 shutdownLatch.try_count_down();
                             })
@@ -597,7 +597,7 @@ namespace hazelcast {
                     hazelcastInstance.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5).get(), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_clientNotActiveException);
 
                     client.shutdown();
                 }
@@ -608,10 +608,10 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_shutdown([&shutdownLatch](){
                                 shutdownLatch.try_count_down();
                             })
@@ -625,7 +625,7 @@ namespace hazelcast {
                     server2.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5).get(), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_clientNotActiveException);
 
                     client.shutdown();
                 }
@@ -635,10 +635,10 @@ namespace hazelcast {
 
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::OFF);
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
                     boost::latch shutdownLatch(1);
                     client.add_lifecycle_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_shutdown([&shutdownLatch](){
                                 shutdownLatch.try_count_down();
                             })
@@ -651,7 +651,7 @@ namespace hazelcast {
                     hazelcastInstance.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map->put(1, 5).get(), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW(map->put(1, 5).get(), exception::hazelcast_clientNotActiveException);
 
                     client.shutdown();
                 }
@@ -662,14 +662,14 @@ namespace hazelcast {
                     boost::latch connectedLatch(1);
 
                     client_config_.add_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
                     ASSERT_OPEN_EVENTUALLY(connectedLatch);
 
@@ -687,21 +687,21 @@ namespace hazelcast {
 
                     client_config_.get_network_config().set_connection_attempt_limit(INT32_MAX);
                     client_config_.add_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_connected([&initialConnectionLatch](){
                                 initialConnectionLatch.try_count_down();
                             })
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
 
                     ASSERT_OPEN_EVENTUALLY(initialConnectionLatch);
 
                     hazelcastInstance.shutdown();
 
                     client.add_lifecycle_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_connected([&reconnectedLatch](){
                                 reconnectedLatch.try_count_down();
                             })
@@ -726,14 +726,14 @@ namespace hazelcast {
 
                     client_config_.get_network_config().set_connection_attempt_limit(10);
                     client_config_.add_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_connected([&connectedLatch](){
                                 connectedLatch.try_count_down();
                             })
                     );
                     client_config_.get_connection_strategy_config().set_reconnect_mode(
                             config::ClientConnectionStrategyConfig::ASYNC);
-                    HazelcastClient client(client_config_);
+                    hazelcast_client client(client_config_);
 
                     ASSERT_TRUE(client.get_lifecycle_service().is_running());
 
@@ -743,14 +743,14 @@ namespace hazelcast {
                     map->put(1, 5).get();
 
                     client.add_lifecycle_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_disconnected([&disconnectedLatch](){
                                 disconnectedLatch.try_count_down();
                             })
                     );
 
                     client.add_lifecycle_listener(
-                        LifecycleListener()
+                        lifecycle_listener()
                             .on_connected([&reconnectedLatch](){
                                 reconnectedLatch.try_count_down();
                             })
@@ -781,7 +781,7 @@ namespace hazelcast {
             public:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(client_config());
+                    client = new hazelcast_client(client_config());
 
                     map = client->get_map(MAP_NAME);
                     expected = new std::vector<int>;
@@ -802,7 +802,7 @@ namespace hazelcast {
                 }
 
             protected:
-                static void test_pipelining(const std::shared_ptr<Pipelining<int> > &pipelining) {
+                static void test_pipelining(const std::shared_ptr<pipelining<int> > &pipelining) {
                     for (int k = 0; k < MAP_SIZE; k++) {
                         pipelining->add(map->get<int, int>(k));
                     }
@@ -816,30 +816,30 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
-                static HazelcastClient *client;
+                static hazelcast_client *client;
                 static const char *MAP_NAME;
-                static std::shared_ptr<IMap> map;
+                static std::shared_ptr<imap> map;
                 static std::vector<int> *expected;
                 static const int MAP_SIZE = 10000;
             };
 
             HazelcastServer *PipeliningTest::instance = nullptr;
-            std::shared_ptr<IMap> PipeliningTest::map;
-            HazelcastClient *PipeliningTest::client = nullptr;
+            std::shared_ptr<imap> PipeliningTest::map;
+            hazelcast_client *PipeliningTest::client = nullptr;
             const char *PipeliningTest::MAP_NAME = "PipeliningTestMap";
             std::vector<int> *PipeliningTest::expected = nullptr;
 
             TEST_F(PipeliningTest, testConstructor_whenNegativeDepth) {
-                ASSERT_THROW(Pipelining<std::string>::create(0), exception::IllegalArgumentException);
-                ASSERT_THROW(Pipelining<std::string>::create(-1), exception::IllegalArgumentException);
+                ASSERT_THROW(pipelining<std::string>::create(0), exception::IllegalArgumentException);
+                ASSERT_THROW(pipelining<std::string>::create(-1), exception::IllegalArgumentException);
             }
 
             TEST_F(PipeliningTest, testPipeliningFunctionalityDepthOne) {
-                test_pipelining(Pipelining<int>::create(1));
+                test_pipelining(pipelining<int>::create(1));
             }
 
             TEST_F(PipeliningTest, testPipeliningFunctionalityDepth100) {
-                test_pipelining(Pipelining<int>::create(100));
+                test_pipelining(pipelining<int>::create(100));
             }
         }
     }
@@ -889,10 +889,10 @@ namespace hazelcast {
 
             // Test for issue https://github.com/hazelcast/hazelcast/issues/12733
             TEST_F(PortableVersionTest, test_nestedPortable_versionedSerializer) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService ss1(serializationConfig);
 
-                SerializationConfig serializationConfig2;
+                serialization_config serializationConfig2;
                 serializationConfig2.set_portable_version(6);
                 serialization::pimpl::SerializationService ss2(serializationConfig2);
 
@@ -919,11 +919,11 @@ namespace hazelcast {
                 }
 
                 static void write_portable(const test::PortableVersionTest::Child &object,
-                                          PortableWriter &writer) {
+                                          portable_writer &writer) {
                     writer.write("name", object.get_name());
                 }
 
-                static test::PortableVersionTest::Child read_portable(PortableReader &reader) {
+                static test::PortableVersionTest::Child read_portable(portable_reader &reader) {
                     return test::PortableVersionTest::Child(reader.read<std::string>("name"));
                 }
             };
@@ -938,11 +938,11 @@ namespace hazelcast {
                     return 1;
                 }
 
-                static void write_portable(const test::PortableVersionTest::Parent &object, PortableWriter &writer) {
+                static void write_portable(const test::PortableVersionTest::Parent &object, portable_writer &writer) {
                     writer.write_portable<test::PortableVersionTest::Child>("child", &object.get_child());
                 }
 
-                static test::PortableVersionTest::Parent read_portable(PortableReader &reader) {
+                static test::PortableVersionTest::Parent read_portable(portable_reader &reader) {
                     return test::PortableVersionTest::Parent(
                             reader.read_portable<test::PortableVersionTest::Child>("child").value());
                 }
@@ -957,7 +957,7 @@ namespace hazelcast {
         namespace test {
             class PartitionAwareTest : public ClientTestSupport {
             public:
-                class SimplePartitionAwareObject : public PartitionAware<int> {
+                class SimplePartitionAwareObject : public partition_aware<int> {
                 public:
                     SimplePartitionAwareObject() : test_key_(5) {}
 
@@ -974,7 +974,7 @@ namespace hazelcast {
             };
 
             TEST_F(PartitionAwareTest, testSimplePartitionAwareObjectSerialisation) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 SimplePartitionAwareObject obj;
@@ -988,7 +988,7 @@ namespace hazelcast {
             }
 
             TEST_F(PartitionAwareTest, testNonPartitionAwareObjectSerialisation) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 int obj = 7;
@@ -1008,9 +1008,9 @@ namespace hazelcast {
                     return 2;
                 }
 
-                static void write_data(const test::PartitionAwareTest::SimplePartitionAwareObject &object, ObjectDataOutput &out) {}
+                static void write_data(const test::PartitionAwareTest::SimplePartitionAwareObject &object, object_data_output &out) {}
 
-                static test::PartitionAwareTest::SimplePartitionAwareObject read_data(ObjectDataInput &in) {
+                static test::PartitionAwareTest::SimplePartitionAwareObject read_data(object_data_input &in) {
                     return test::PartitionAwareTest::SimplePartitionAwareObject();
                 }
             };
@@ -1027,13 +1027,13 @@ namespace hazelcast {
 
             protected:
                 serialization::pimpl::SerializationService serialization_service_;
-                SerializationConfig config_;
+                serialization_config config_;
             };
 
             TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue) {
-                HazelcastJsonValue jsonValue("{ \"key\": \"value\" }");
-                serialization::pimpl::data json_data = serialization_service_.to_data<HazelcastJsonValue>(&jsonValue);
-                auto jsonDeserialized = serialization_service_.to_object<HazelcastJsonValue>(json_data);
+                hazelcast_json_value jsonValue("{ \"key\": \"value\" }");
+                serialization::pimpl::data json_data = serialization_service_.to_data<hazelcast_json_value>(&jsonValue);
+                auto jsonDeserialized = serialization_service_.to_object<hazelcast_json_value>(json_data);
                 ASSERT_TRUE(jsonDeserialized.has_value());
                 ASSERT_EQ(jsonValue, jsonDeserialized.value());
             }
@@ -1074,12 +1074,12 @@ namespace hazelcast {
 
                 class DummyGlobalSerializer : public serialization::global_serializer {
                 public:
-                    void write(const boost::any &object, serialization::ObjectDataOutput &out) override {
+                    void write(const boost::any &object, serialization::object_data_output &out) override {
                         auto const &obj = boost::any_cast<NonSerializableObject>(object);
                         out.write<std::string>(obj.s);
                     }
 
-                    boost::any read(serialization::ObjectDataInput &in) override {
+                    boost::any read(serialization::object_data_input &in) override {
                         return boost::any(NonSerializableObject{in.read<std::string>()});
                     }
                 };
@@ -1099,7 +1099,7 @@ namespace hazelcast {
             // library with std::bad_alloc with 10 MB
 
             TEST_F(ClientSerializationTest, testCustomSerialization) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
@@ -1118,7 +1118,7 @@ namespace hazelcast {
 
 
             TEST_F(ClientSerializationTest, testRawData) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
@@ -1136,7 +1136,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testIdentifiedDataSerializable) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 serialization::pimpl::data data;
@@ -1155,7 +1155,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testRawDataWithoutRegistering) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 char charA[] = "test chars";
@@ -1173,7 +1173,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testInvalidWrite) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 TestInvalidWritePortable p{2131, 123, "q4edfd"};
@@ -1182,7 +1182,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testInvalidRead) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 TestInvalidReadPortable p{2131, 123, "q4edfd"};
@@ -1192,11 +1192,11 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testDifferentVersions) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                SerializationConfig serializationConfig2;
+                serialization_config serializationConfig2;
                 serializationConfig2.set_portable_version(2);
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
@@ -1220,7 +1220,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testBasicFunctionality) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 serialization::pimpl::data data;
@@ -1268,7 +1268,7 @@ namespace hazelcast {
 
             TEST_F(ClientSerializationTest, testStringLiterals) {
                 auto literal = R"delimeter(My example string literal)delimeter";
-                SerializationConfig config;
+                serialization_config config;
                 serialization::pimpl::SerializationService serializationService(config);
                 auto data = serializationService.to_data(literal);
                 auto obj = serializationService.to_object<decltype(literal)>(data);
@@ -1277,7 +1277,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testBasicFunctionalityWithLargeData) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 serialization::pimpl::data data;
@@ -1308,11 +1308,11 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testBasicFunctionalityWithDifferentVersions) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                SerializationConfig serializationConfig2;
+                serialization_config serializationConfig2;
                 serializationConfig2.set_portable_version(2);
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
                 serialization::pimpl::data data;
@@ -1360,7 +1360,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testDataHash) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 std::string serializable = "key1";
                 serialization::pimpl::data data = serializationService.to_data<std::string>(&serializable);
@@ -1370,7 +1370,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testPrimitives) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
                 byte by = 2;
                 bool boolean = true;
@@ -1396,7 +1396,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testPrimitiveArrays) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 char charArray[] = {'c', 'h', 'a', 'r'};
@@ -1434,7 +1434,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testWriteObjectWithPortable) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
                 ObjectCarryingPortable<TestNamedPortable> objectCarryingPortable{TestNamedPortable{"name", 2}};
@@ -1445,7 +1445,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testWriteObjectWithIdentifiedDataSerializable) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
                 ObjectCarryingPortable <TestDataSerializable> objectCarryingPortable{TestDataSerializable{2, 'c'}};
@@ -1456,7 +1456,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testWriteObjectWithCustomXSerializable) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
                 ObjectCarryingPortable <TestCustomXSerializable> objectCarryingPortable{TestCustomXSerializable{131321}};
                 serialization::pimpl::data data = ss.to_data < ObjectCarryingPortable < TestCustomXSerializable > > (
@@ -1466,7 +1466,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testWriteObjectWithCustomPersonSerializable) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
 
                 ObjectCarryingPortable <TestCustomPerson> objectCarryingPortable{TestCustomPerson{"TestCustomPerson"}};
@@ -1479,14 +1479,14 @@ namespace hazelcast {
 
             TEST_F(ClientSerializationTest, testNullData) {
                 serialization::pimpl::data data;
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
                 auto ptr = ss.to_object<int32_t>(data);
                 ASSERT_FALSE(ptr.has_value());
             }
 
             TEST_F(ClientSerializationTest, testMorphingPortableV1ToV2Conversion) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
@@ -1501,7 +1501,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testMorphingPortableV2ToV1Conversion) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
@@ -1515,7 +1515,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testMorphingPortableV1ToV3Conversion) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
@@ -1526,11 +1526,11 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, testMorphingPortableWithDifferentTypes_differentVersions_V2ToV1) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                SerializationConfig serializationConfig2;
+                serialization_config serializationConfig2;
                 serializationConfig.set_portable_version(5);
                 serialization::pimpl::SerializationService serializationService2(serializationConfig2);
 
@@ -1543,12 +1543,12 @@ namespace hazelcast {
                 ASSERT_EQ(123, t1->k);
             }
 
-            TEST_F(ClientSerializationTest, ObjectDataInputOutput) {
-                SerializationConfig serializationConfig;
+            TEST_F(ClientSerializationTest, object_data_input_output) {
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                serialization::ObjectDataOutput out;
+                serialization::object_data_output out;
 
                 byte by = 2;
                 bool boolean = true;
@@ -1604,7 +1604,7 @@ namespace hazelcast {
                 out.write<std::string>(nullptr);
                 out.write<std::vector<std::string>>(nullptr);
 
-                serialization::ObjectDataInput in(out.to_byte_array(), 0, serializationService.get_portable_serializer(), serializationService.get_data_serializer(),
+                serialization::object_data_input in(out.to_byte_array(), 0, serializationService.get_portable_serializer(), serializationService.get_data_serializer(),
                                                   serializationConfig.get_global_serializer());
 
                 ASSERT_EQ(by, in.read<byte>());
@@ -1649,11 +1649,11 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testGetUTF8CharCount) {
                 std::string utfStr = "xyzä123";
 
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_portable_version(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                serialization::ObjectDataOutput out;
+                serialization::object_data_output out;
 
                 out.write(utfStr);
                 auto byteArray = out.to_byte_array();
@@ -1664,7 +1664,7 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testExtendedAscii) {
                 std::string utfStr = "Num\xc3\xa9ro";
 
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 serialization::pimpl::data data = serializationService.to_data<std::string>(&utfStr);
@@ -1676,14 +1676,14 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testExtendedAsciiIncorrectUtf8Write) {
                 std::string utfStr = "Num\351ro";
 
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 ASSERT_THROW(serializationService.to_data<std::string>(&utfStr), exception::UTFDataFormatException);
             }
 
             TEST_F(ClientSerializationTest, testGlobalSerializer) {
-                SerializationConfig serializationConfig;
+                serialization_config serializationConfig;
                 serializationConfig.set_global_serializer(std::make_shared<DummyGlobalSerializer>());
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
@@ -2008,7 +2008,7 @@ namespace hazelcast {
                         }
 
                         std::unique_ptr<serialization::pimpl::SerializationService> ss_;
-                        SerializationConfig serialization_config_;
+                        serialization_config serialization_config_;
                     };
 
                     const int NearCacheRecordStoreTest::DEFAULT_RECORD_COUNT = 100;

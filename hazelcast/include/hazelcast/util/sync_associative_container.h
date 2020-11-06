@@ -18,7 +18,7 @@
 
 #include <unordered_set>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include <mutex>
 
 

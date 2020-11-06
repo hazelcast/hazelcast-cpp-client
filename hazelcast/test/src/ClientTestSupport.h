@@ -33,7 +33,7 @@ namespace hazelcast {
     namespace client {
         class client_config;
 
-        class HazelcastClient;
+        class hazelcast_client;
 
         namespace test {
             class HazelcastServerFactory;

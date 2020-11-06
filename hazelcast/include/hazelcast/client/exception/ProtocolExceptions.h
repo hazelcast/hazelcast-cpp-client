@@ -202,9 +202,9 @@ namespace hazelcast {
                                          const std::string &details = "", std::exception_ptr cause = nullptr);
             };
 
-            DEFINE_EXCEPTION_CLASS(HazelcastClientNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE, true);
+            DEFINE_EXCEPTION_CLASS(hazelcast_clientNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE, true);
 
-            DEFINE_EXCEPTION_CLASS(HazelcastClientOfflineException, protocol::HAZELCAST_CLIENT_OFFLINE, true);
+            DEFINE_EXCEPTION_CLASS(hazelcast_clientOfflineException, protocol::HAZELCAST_CLIENT_OFFLINE, true);
 
             // -----------------    Client side runtime exceptions finish here --------------------------------
 

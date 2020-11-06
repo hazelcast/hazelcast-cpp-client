@@ -16,20 +16,20 @@
 
 #pragma once
 
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 
 class NearCacheSupport {
 public:
     static constexpr int CACHE_INVALIDATION_MESSAGE_BATCH_FREQUENCY_SECONDS = 10; // seconds
 
-    static void print_near_cache_stats(std::shared_ptr<hazelcast::client::IMap> &map, const char *message) {
+    static void print_near_cache_stats(std::shared_ptr<hazelcast::client::imap> &map, const char *message) {
         auto stats = map->get_local_map_stats().get_near_cache_stats();
         printf("%s (%ld entries, %ld hits, %ld misses, %ld evictions, %ld expirations)\n",
                message, (long) stats->get_owned_entry_count(), (long) stats->get_hits(), (long) stats->get_misses(),
                (long) stats->get_evictions(), (long) stats->get_expirations());
     }
 
-    static void print_near_cache_stats(std::shared_ptr<hazelcast::client::IMap> &map) {
+    static void print_near_cache_stats(std::shared_ptr<hazelcast::client::imap> &map) {
         auto stats = map->get_local_map_stats().get_near_cache_stats();
 
         printf("The Near Cache contains %ld entries.\n", (long) stats->get_owned_entry_count());
@@ -44,7 +44,7 @@ public:
     }
 
     static void
-    wait_for_near_cache_eviction_count(std::shared_ptr<hazelcast::client::IMap> &map, int64_t expected_eviction_count) {
+    wait_for_near_cache_eviction_count(std::shared_ptr<hazelcast::client::imap> &map, int64_t expected_eviction_count) {
         int64_t evictionCount;
         do {
             auto stats = map->get_local_map_stats().get_near_cache_stats();

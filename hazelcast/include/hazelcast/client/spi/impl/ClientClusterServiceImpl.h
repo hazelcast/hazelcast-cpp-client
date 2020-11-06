@@ -22,13 +22,13 @@
 #include <boost/functional/hash.hpp>
 #include <boost/smart_ptr/atomic_shared_ptr.hpp>
 
-#include "hazelcast/client/MembershipEvent.h"
+#include "hazelcast/client/membership_event.h"
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/address.h"
 #include "hazelcast/client/member.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/Client.h"
+#include "hazelcast/client/hz_client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -46,7 +46,7 @@ namespace hazelcast {
             }
         }
         
-        class InitialMembershipEvent;
+        class initial_membership_event;
 
         namespace spi {
             class ClientContext;
@@ -69,9 +69,9 @@ namespace hazelcast {
                     std::vector<member> get_members(
                             const cluster::memberselector::MemberSelector &selector) const;
 
-                    Client get_local_client() const;
+                    hz_client get_local_client() const;
 
-                    boost::uuids::uuid add_membership_listener(MembershipListener &&listener);
+                    boost::uuids::uuid add_membership_listener(membership_listener &&listener);
 
                     bool remove_membership_listener(boost::uuids::uuid registration_id);
 
@@ -90,7 +90,7 @@ namespace hazelcast {
 
                     ClientContext &client_;
                     std::shared_ptr<ClientMembershipListener> client_membership_listener_;
-                    std::unordered_map<boost::uuids::uuid, MembershipListener, boost::hash<boost::uuids::uuid>> listeners_;
+                    std::unordered_map<boost::uuids::uuid, membership_listener, boost::hash<boost::uuids::uuid>> listeners_;
                     std::mutex listeners_lock_;
                     std::mutex cluster_view_lock_;
                     boost::atomic_shared_ptr<member_list_snapshot> member_list_snapshot_;
@@ -99,9 +99,9 @@ namespace hazelcast {
 
                     static const boost::shared_ptr<member_list_snapshot> EMPTY_SNAPSHOT;
 
-                    boost::uuids::uuid add_membership_listener_without_init(MembershipListener &&listener);
+                    boost::uuids::uuid add_membership_listener_without_init(membership_listener &&listener);
 
-                    void fire_initial_membership_event(const InitialMembershipEvent &event);
+                    void fire_initial_membership_event(const initial_membership_event &event);
 
                     static member_list_snapshot create_snapshot(int32_t version, const std::vector<member> &vector);
 
@@ -109,11 +109,11 @@ namespace hazelcast {
 
                     void apply_initial_state(int32_t version, const std::vector<member> &member_infos);
 
-                    std::vector<MembershipEvent>
+                    std::vector<membership_event>
                     detect_membership_events(std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> previous_members,
                                              const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>>& current_members);
 
-                    void fire_events(std::vector<MembershipEvent> events);
+                    void fire_events(std::vector<membership_event> events);
                 };
 
             }

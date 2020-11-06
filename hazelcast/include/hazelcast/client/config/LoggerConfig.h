@@ -19,7 +19,7 @@
 #include <string>
 
 #include "hazelcast/logger.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/Preconditions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

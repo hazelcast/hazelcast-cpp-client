@@ -31,14 +31,14 @@
  */
 
 #include "hazelcast/client/client_config.h"
-#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/client/serialization_config.h"
 #include "hazelcast/client/config/ssl_config.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
 #include "hazelcast/client/address.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
+#include "hazelcast/client/config/client_network_config.h"
 #include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
@@ -46,27 +46,27 @@
 #include "hazelcast/client/config/index_config.h"
 #include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
 #include "hazelcast/client/query/Predicates.h"
-#include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/lifecycle_listener.h"
 
 namespace hazelcast {
     namespace client {
-        SerializationConfig::SerializationConfig() : version_(0) {
+        serialization_config::serialization_config() : version_(0) {
         }
 
-        int SerializationConfig::get_portable_version() const {
+        int serialization_config::get_portable_version() const {
             return version_;
         }
 
-        SerializationConfig &SerializationConfig::set_portable_version(int v) {
+        serialization_config &serialization_config::set_portable_version(int v) {
             this->version_ = v;
             return *this;
         }
 
-        std::shared_ptr<serialization::global_serializer> SerializationConfig::get_global_serializer() const {
+        std::shared_ptr<serialization::global_serializer> serialization_config::get_global_serializer() const {
             return global_serializer_;
         }
 
-        void SerializationConfig::set_global_serializer(
+        void serialization_config::set_global_serializer(
                 const std::shared_ptr<serialization::global_serializer> &global_serializer) {
             global_serializer_ = global_serializer;
         }
@@ -151,91 +151,91 @@ namespace hazelcast {
                 return *this;
             }
 
-            int32_t ClientNetworkConfig::CONNECTION_ATTEMPT_PERIOD = 3000;
+            int32_t client_network_config::CONNECTION_ATTEMPT_PERIOD = 3000;
 
-            ClientNetworkConfig::ClientNetworkConfig()
+            client_network_config::client_network_config()
                     : connection_timeout_(5000), smart_routing_(true), connection_attempt_limit_(-1),
                       connection_attempt_period_(CONNECTION_ATTEMPT_PERIOD) {}
 
-            ssl_config &ClientNetworkConfig::get_ssl_config() {
+            ssl_config &client_network_config::get_ssl_config() {
                 return ssl_config_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_ssl_config(const config::ssl_config &config) {
+            client_network_config &client_network_config::set_ssl_config(const config::ssl_config &config) {
                 ssl_config_ = config;
                 return *this;
             }
 
-            std::chrono::milliseconds ClientNetworkConfig::get_connection_timeout() const {
+            std::chrono::milliseconds client_network_config::get_connection_timeout() const {
                 return connection_timeout_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_aws_config(const client_aws_config &client_aws_config) {
+            client_network_config &client_network_config::set_aws_config(const client_aws_config &client_aws_config) {
                 this->client_aws_config_ = client_aws_config;
                 return *this;
             }
 
-            client_aws_config &ClientNetworkConfig::get_aws_config() {
+            client_aws_config &client_network_config::get_aws_config() {
                 return client_aws_config_;
             }
 
-            bool ClientNetworkConfig::is_smart_routing() const {
+            bool client_network_config::is_smart_routing() const {
                 return smart_routing_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_smart_routing(bool smart_routing) {
-                ClientNetworkConfig::smart_routing_ = smart_routing;
+            client_network_config &client_network_config::set_smart_routing(bool smart_routing) {
+                client_network_config::smart_routing_ = smart_routing;
                 return *this;
             }
 
-            int32_t ClientNetworkConfig::get_connection_attempt_limit() const {
+            int32_t client_network_config::get_connection_attempt_limit() const {
                 return connection_attempt_limit_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_connection_attempt_limit(int32_t connection_attempt_limit) {
+            client_network_config &client_network_config::set_connection_attempt_limit(int32_t connection_attempt_limit) {
                 if (connection_attempt_limit < 0) {
                     BOOST_THROW_EXCEPTION(
-                            exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptLimit",
+                            exception::IllegalArgumentException("client_network_config::setConnectionAttemptLimit",
                                                                 "connectionAttemptLimit cannot be negative"));
                 }
                 this->connection_attempt_limit_ = connection_attempt_limit;
                 return *this;
             }
 
-            std::chrono::milliseconds ClientNetworkConfig::get_connection_attempt_period() const {
+            std::chrono::milliseconds client_network_config::get_connection_attempt_period() const {
                 return connection_attempt_period_;
             }
 
-            std::vector<address> ClientNetworkConfig::get_addresses() const {
+            std::vector<address> client_network_config::get_addresses() const {
                 return address_list_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::add_addresses(const std::vector<address> &addresses) {
+            client_network_config &client_network_config::add_addresses(const std::vector<address> &addresses) {
                 address_list_.insert(address_list_.end(), addresses.begin(), addresses.end());
                 return *this;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_addresses(const std::vector<address> &addresses) {
+            client_network_config &client_network_config::set_addresses(const std::vector<address> &addresses) {
                 address_list_ = addresses;
                 return *this;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::add_address(const address &address) {
+            client_network_config &client_network_config::add_address(const address &address) {
                 address_list_.push_back(address);
                 return *this;
             }
 
-            SocketOptions &ClientNetworkConfig::get_socket_options() {
+            SocketOptions &client_network_config::get_socket_options() {
                 return socket_options_;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::set_connection_timeout(const std::chrono::milliseconds &timeout) {
+            client_network_config &client_network_config::set_connection_timeout(const std::chrono::milliseconds &timeout) {
                 connection_timeout_ = timeout;
                 return *this;
             }
 
-            ClientNetworkConfig &
-            ClientNetworkConfig::set_connection_attempt_period(const std::chrono::milliseconds &interval) {
+            client_network_config &
+            client_network_config::set_connection_attempt_period(const std::chrono::milliseconds &interval) {
                 util::Preconditions::check_not_negative(interval.count(), (boost::format(
                         "Provided connectionAttemptPeriod(%1% msecs) cannot be negative") % interval.count()).str());
                 connection_attempt_period_ = interval;
@@ -435,7 +435,7 @@ namespace hazelcast {
             }
 
             std::ostream &operator<<(std::ostream &out, const client_aws_config &config) {
-                return out << "ClientAwsConfig{"
+                return out << "client_aws_config{"
                            << "enabled=" << config.is_enabled()
                            << ", region='" << config.get_region() << '\''
                            << ", securityGroupName='" << config.get_security_group_name() << '\''
@@ -700,13 +700,13 @@ namespace hazelcast {
             return redo_operation_;
         }
 
-        LoadBalancer *const client_config::get_load_balancer() {
+        load_balancer *const client_config::get_load_balancer() {
             if (!load_balancer_)
                 return &default_load_balancer_;
             return load_balancer_;
         }
 
-        client_config &client_config::set_load_balancer(LoadBalancer *load_balancer) {
+        client_config &client_config::set_load_balancer(load_balancer *load_balancer) {
             this->load_balancer_ = load_balancer;
             return *this;
         }
@@ -715,38 +715,38 @@ namespace hazelcast {
             return logger_config_;
         }
 
-        client_config &client_config::add_listener(LifecycleListener &&listener) {
+        client_config &client_config::add_listener(lifecycle_listener &&listener) {
             lifecycle_listeners_.emplace_back(std::move(listener));
             return *this;
         }
 
-        client_config &client_config::add_listener(MembershipListener &&listener) {
+        client_config &client_config::add_listener(membership_listener &&listener) {
             membership_listeners_.emplace_back(std::move(listener));
             return *this;
         }
 
-        const std::vector<LifecycleListener> &client_config::get_lifecycle_listeners() const {
+        const std::vector<lifecycle_listener> &client_config::get_lifecycle_listeners() const {
             return lifecycle_listeners_;
         }
 
-        const std::vector<MembershipListener> &client_config::get_membership_listeners() const {
+        const std::vector<membership_listener> &client_config::get_membership_listeners() const {
             return membership_listeners_;
         }
 
-        client_config &client_config::set_socket_interceptor(SocketInterceptor &&interceptor) {
+        client_config &client_config::set_socket_interceptor(socket_interceptor &&interceptor) {
             this->socket_interceptor_ = std::move(interceptor);
             return *this;
         }
 
-        const SocketInterceptor &client_config::get_socket_interceptor() const {
+        const socket_interceptor &client_config::get_socket_interceptor() const {
             return socket_interceptor_;
         }
 
-        SerializationConfig &client_config::get_serialization_config() {
+        serialization_config &client_config::get_serialization_config() {
             return serialization_config_;
         }
 
-        client_config &client_config::set_serialization_config(SerializationConfig const &serialization_config) {
+        client_config &client_config::set_serialization_config(serialization_config const &serialization_config) {
             this->serialization_config_ = serialization_config;
             return *this;
         }
@@ -774,7 +774,7 @@ namespace hazelcast {
             return reliable_topic_config_map_[name];
         }
 
-        config::ClientNetworkConfig &client_config::get_network_config() {
+        config::client_network_config &client_config::get_network_config() {
             return network_config_;
         }
 
@@ -800,7 +800,7 @@ namespace hazelcast {
             return nullptr;
         }
 
-        client_config &client_config::set_network_config(const config::ClientNetworkConfig &network_config) {
+        client_config &client_config::set_network_config(const config::client_network_config &network_config) {
             this->network_config_ = network_config;
             return *this;
         }

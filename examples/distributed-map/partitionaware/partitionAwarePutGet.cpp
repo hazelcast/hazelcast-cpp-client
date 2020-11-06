@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/PartitionAware.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/partition_aware.h>
 
-struct PartitionAwareString : public hazelcast::client::PartitionAware<std::string> {
+struct PartitionAwareString : public hazelcast::client::partition_aware<std::string> {
     PartitionAwareString(const std::string &actual_key) : actual_key(actual_key) {}
 
     const std::string *get_partition_key() const override {
@@ -41,11 +41,11 @@ namespace hazelcast {
                 }
 
                 static void
-                write_data(const PartitionAwareString &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                write_data(const PartitionAwareString &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(object.actual_key);
                 }
 
-                static PartitionAwareString read_data(hazelcast::client::serialization::ObjectDataInput &in) {
+                static PartitionAwareString read_data(hazelcast::client::serialization::object_data_input &in) {
                     return PartitionAwareString{in.read<std::string>()};
                 }
             };
@@ -57,7 +57,7 @@ namespace hazelcast {
 const std::string PartitionAwareString::desiredPartitionString = "desiredKeyString";
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
     PartitionAwareString partitionKey{"MyString"};
 

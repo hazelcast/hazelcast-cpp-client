@@ -601,7 +601,7 @@ namespace hazelcast {
                  * the MapPartitionLostListener using the removePartitionLostListener(String) method.
                  * There is no check for duplicate registrations, so if you register the listener twice, it will get events twice.
                  * IMPORTANT: Please see com.hazelcast.partition.PartitionLostListener for weaknesses.
-                 * IMPORTANT: Listeners registered from HazelcastClient may miss some of the map partition lost events due
+                 * IMPORTANT: Listeners registered from hazelcast_client may miss some of the map partition lost events due
                  * to design limitations.
                  */
                 ClientMessage HAZELCAST_API map_addpartitionlostlistener_encode(const std::string  & name, bool local_only);

@@ -15,8 +15,8 @@
  */
 #include <random>
 
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/Pipelining.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/pipelining.h>
 
 using namespace std;
 using namespace hazelcast::client;
@@ -42,7 +42,7 @@ public:
         cout << "Starting pipelined with depth:" << depth << endl;
         int64_t startMs = current_time_millis();
         for (int i = 0; i < iterations; i++) {
-            std::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(depth);
+            std::shared_ptr<pipelining<string> > pipelining = pipelining<string>::create(depth);
             for (long k = 0; k < getsPerIteration; k++) {
                 int key = dist_(gen_) % keyDomain;
                 pipelining->add(map_->get<int, std::string>(key));
@@ -73,8 +73,8 @@ public:
     }
 
 private:
-    HazelcastClient client_;
-    std::shared_ptr<IMap> map_;
+    hazelcast_client client_;
+    std::shared_ptr<imap> map_;
     client_config client_config_;
     static const int keyDomain = 100000;
     static const int iterations = 500;

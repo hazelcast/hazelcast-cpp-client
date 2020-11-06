@@ -33,29 +33,28 @@
 
 #include <hazelcast/client/txn/ClientTransactionUtil.h>
 #include "hazelcast/client/txn/TransactionProxy.h"
-#include "hazelcast/client/TransactionOptions.h"
+#include "hazelcast/client/transaction_options.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
-#include "hazelcast/util/Util.h"
 #include "hazelcast/client/proxy/TransactionalMapImpl.h"
 #include "hazelcast/client/proxy/TransactionalMultiMapImpl.h"
 #include "hazelcast/client/proxy/TransactionalListImpl.h"
 #include "hazelcast/client/proxy/TransactionalQueueImpl.h"
 #include "hazelcast/client/proxy/TransactionalSetImpl.h"
-#include "hazelcast/client/IMap.h"
-#include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/IList.h"
-#include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/ISet.h"
-#include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/imap.h"
+#include "hazelcast/client/multi_map.h"
+#include "hazelcast/client/ilist.h"
+#include "hazelcast/client/iqueue.h"
+#include "hazelcast/client/iset.h"
+#include "hazelcast/client/transaction_context.h"
 #include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
 
 namespace hazelcast {
     namespace client {
         namespace txn {
-            TransactionProxy::TransactionProxy(TransactionOptions &txn_options, spi::ClientContext &client_context,
+            TransactionProxy::TransactionProxy(transaction_options &txn_options, spi::ClientContext &client_context,
                                                std::shared_ptr<connection::Connection> connection)
                     : options_(txn_options), client_context_(client_context), connection_(connection),
                       thread_id_(util::get_current_thread_id()), state_(TxnState::NO_TXN) {}
@@ -276,7 +275,7 @@ namespace hazelcast {
 
         namespace proxy {
             TransactionalMapImpl::TransactionalMapImpl(const std::string &name, txn::TransactionProxy &transaction_proxy)
-                    : TransactionalObject(IMap::SERVICE_NAME, name, transaction_proxy) {}
+                    : TransactionalObject(imap::SERVICE_NAME, name, transaction_proxy) {}
 
             boost::future<bool> TransactionalMapImpl::contains_key_data(const serialization::pimpl::data &key) {
                 auto request = protocol::codec::transactionalmap_containskey_encode(
@@ -419,7 +418,7 @@ namespace hazelcast {
 
             TransactionalMultiMapImpl::TransactionalMultiMapImpl(const std::string &name,
                                                                  txn::TransactionProxy &transaction_proxy)
-                    : TransactionalObject(MultiMap::SERVICE_NAME, name, transaction_proxy) {}
+                    : TransactionalObject(multi_map::SERVICE_NAME, name, transaction_proxy) {}
 
             boost::future<bool> TransactionalMultiMapImpl::put_data(const serialization::pimpl::data &key,
                                                 const serialization::pimpl::data &value) {
@@ -474,7 +473,7 @@ namespace hazelcast {
             }
 
             TransactionalListImpl::TransactionalListImpl(const std::string &object_name, txn::TransactionProxy &context)
-                    : TransactionalObject(IList::SERVICE_NAME, object_name, context) {}
+                    : TransactionalObject(ilist::SERVICE_NAME, object_name, context) {}
 
             boost::future<bool> TransactionalListImpl::add(const serialization::pimpl::data &e) {
                 auto request = protocol::codec::transactionallist_add_encode(
@@ -501,7 +500,7 @@ namespace hazelcast {
             }
 
             TransactionalSetImpl::TransactionalSetImpl(const std::string &name, txn::TransactionProxy &transaction_proxy)
-                    : TransactionalObject(ISet::SERVICE_NAME, name, transaction_proxy) {}
+                    : TransactionalObject(iset::SERVICE_NAME, name, transaction_proxy) {}
 
             boost::future<bool> TransactionalSetImpl::add_data(const serialization::pimpl::data &e) {
                 auto request = protocol::codec::transactionalset_add_encode(
@@ -557,48 +556,48 @@ namespace hazelcast {
             }
         }
 
-        TransactionContext::TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transaction_manager,
-                                               const TransactionOptions &txn_options) : options_(txn_options),
-                                                                                       txn_connection_(
+        transaction_context::transaction_context(spi::impl::ClientTransactionManagerServiceImpl &transaction_manager,
+                                                 const transaction_options &txn_options) : options_(txn_options),
+                                                                                           txn_connection_(
                                                                                                transaction_manager.connect()),
-                                                                                       transaction_(options_,
+                                                                                           transaction_(options_,
                                                                                                    transaction_manager.get_client(),
                                                                                                    txn_connection_) {
         }
 
-        boost::uuids::uuid  TransactionContext::get_txn_id() const {
+        boost::uuids::uuid  transaction_context::get_txn_id() const {
             return transaction_.get_txn_id();
         }
 
-        boost::future<void> TransactionContext::begin_transaction() {
+        boost::future<void> transaction_context::begin_transaction() {
             return transaction_.begin();
         }
 
-        boost::future<void> TransactionContext::commit_transaction() {
+        boost::future<void> transaction_context::commit_transaction() {
             return transaction_.commit();
         }
 
-        boost::future<void> TransactionContext::rollback_transaction() {
+        boost::future<void> transaction_context::rollback_transaction() {
             return transaction_.rollback();
         }
 
-        TransactionOptions::TransactionOptions() : timeout_(std::chrono::minutes(2)), durability_(1),
-                                                   transaction_type_(transaction_type::TWO_PHASE) {}
+        transaction_options::transaction_options() : timeout_(std::chrono::minutes(2)), durability_(1),
+                                                     transaction_type_(transaction_type::TWO_PHASE) {}
 
-        TransactionOptions::transaction_type TransactionOptions::get_transaction_type() const {
+        transaction_options::transaction_type transaction_options::get_transaction_type() const {
             return transaction_type_;
         }
 
-        TransactionOptions &TransactionOptions::set_transaction_type(transaction_type type) {
+        transaction_options &transaction_options::set_transaction_type(transaction_type type) {
             transaction_type_ = type;
             return *this;
         }
 
-        std::chrono::milliseconds TransactionOptions::get_timeout() const {
+        std::chrono::milliseconds transaction_options::get_timeout() const {
             return timeout_;
         }
 
-        TransactionOptions &TransactionOptions::set_timeout(std::chrono::milliseconds duration) {
+        transaction_options &transaction_options::set_timeout(std::chrono::milliseconds duration) {
             if (duration.count() <= 0) {
                 BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setTimeout",
                                                                        "Timeout must be positive!"));
@@ -607,11 +606,11 @@ namespace hazelcast {
             return *this;
         }
 
-        int TransactionOptions::get_durability() const {
+        int transaction_options::get_durability() const {
             return durability_;
         }
 
-        TransactionOptions &TransactionOptions::set_durability(int num_machines) {
+        transaction_options &transaction_options::set_durability(int num_machines) {
             if (num_machines < 0) {
                 BOOST_THROW_EXCEPTION(exception::IllegalStateException("TransactionOptions::setDurability",
                                                                        "Durability cannot be negative!"));

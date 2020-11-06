@@ -20,8 +20,8 @@
 #include <memory>
 #include <boost/thread/future.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/util/hazelcast_dll.h"
+#include "hazelcast/client/distributed_object.h"
 #include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -47,7 +47,7 @@ namespace hazelcast {
              * Base Interface for client proxies.
              *
              */
-            class HAZELCAST_API ClientProxy : public DistributedObject {
+            class HAZELCAST_API ClientProxy : public distributed_object {
             public:
                 ClientProxy(const std::string &name, const std::string &service_name, ClientContext &context);
 

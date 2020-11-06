@@ -17,7 +17,7 @@
 #include "HazelcastServer.h"
 #include "IdentifiedSerializables.h"
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 namespace hazelcast {
     namespace client {
@@ -35,7 +35,7 @@ namespace hazelcast {
                     }
 
                     virtual void SetUp() {
-                        client_.reset(new HazelcastClient(get_client_config()));
+                        client_.reset(new hazelcast_client(get_client_config()));
                         auto test_name = get_test_name();
                         cp_structure_ = get_cp_structure(test_name + "@cp_test_group");
                     }
@@ -68,7 +68,7 @@ namespace hazelcast {
                     static HazelcastServer *server1;
                     static HazelcastServer *server2;
                     static HazelcastServer *server3;
-                    std::unique_ptr<HazelcastClient> client_;
+                    std::unique_ptr<hazelcast_client> client_;
 
                     std::shared_ptr<T> cp_structure_;
                 };
@@ -374,7 +374,7 @@ namespace hazelcast {
                     std::thread([=]() {
                         try {
                             cp_structure_->count_down().get();
-                        } catch (exception::HazelcastClientNotActiveException &) {
+                        } catch (exception::hazelcast_clientNotActiveException &) {
                             // can get this exception if below wait finishes earlier and client is shutting down
                         }
                     }).detach();
@@ -696,7 +696,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_lock_test, test_lock_auto_release_on_client_shutdown) {
-                    HazelcastClient c(get_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
+                    hazelcast_client c(get_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
                     auto proxy_name = get_test_name();
                     auto l = c.get_cp_subsystem().get_lock(proxy_name);
                     l->lock().get();
@@ -1027,7 +1027,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_sessionless_semaphore_test, test_acquire_on_multiple_proxies) {
-                    HazelcastClient client2(client_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
+                    hazelcast_client client2(client_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
                     auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name());
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());
@@ -1381,7 +1381,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(basic_session_semaphore_test, test_acquire_on_multiple_proxies) {
-                    HazelcastClient client2(client_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
+                    hazelcast_client client2(client_config().set_cluster_name(client_->get_client_config().get_cluster_name()));
                     auto semaphore2 = client2.get_cp_subsystem().get_semaphore(cp_structure_->get_name());
                     ASSERT_TRUE(cp_structure_->init(1).get());
                     ASSERT_TRUE(cp_structure_->try_acquire().get());

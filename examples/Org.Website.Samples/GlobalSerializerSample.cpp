@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 
 using namespace hazelcast::client;
 
@@ -32,14 +32,14 @@ std::ostream &operator<<(std::ostream &os, const Person &person) {
 
 class MyGlobalSerializer : public hazelcast::client::serialization::global_serializer {
 public:
-    void write(const boost::any &obj, hazelcast::client::serialization::ObjectDataOutput &out) override {
+    void write(const boost::any &obj, hazelcast::client::serialization::object_data_output &out) override {
         auto const &object = boost::any_cast<Person>(obj);
         out.write(object.name);
         out.write(object.male);
         out.write(object.age);
     }
 
-    boost::any read(hazelcast::client::serialization::ObjectDataInput &in) override {
+    boost::any read(hazelcast::client::serialization::object_data_input &in) override {
         return boost::any(Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()});
     }
 };
@@ -47,11 +47,11 @@ public:
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     hazelcast::client::client_config config;
-    hazelcast::client::SerializationConfig serializationConfig;
+    hazelcast::client::serialization_config serializationConfig;
     serializationConfig.set_global_serializer(std::make_shared<MyGlobalSerializer>());
     config.set_serialization_config(serializationConfig);
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     return 0;
 }

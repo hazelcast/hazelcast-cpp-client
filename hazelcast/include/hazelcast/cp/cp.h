@@ -1285,7 +1285,7 @@ namespace hazelcast {
          * layer for a set of distributed data structures. Its APIs can be used for
          * implementing distributed coordination use cases, such as leader election,
          * distributed locking, synchronization, and metadata management.
-         * It is accessed via HazelcastClient::get_cp_subsystem. Its data
+         * It is accessed via hazelcast_client::get_cp_subsystem. Its data
          * structures are CP with respect to the CAP principle, i.e., they always
          * maintain linearizability and prefer consistency over availability during
          * network partitions. Besides network partitions, CP Subsystem withstands
@@ -1408,7 +1408,7 @@ namespace hazelcast {
             std::shared_ptr<counting_semaphore> get_semaphore(const std::string &name);
 
         private:
-            friend client::impl::HazelcastClientInstanceImpl;
+            friend client::impl::hazelcast_client_instance_impl;
             client::spi::ClientContext &context_;
             raft_proxy_factory proxy_factory_;
 

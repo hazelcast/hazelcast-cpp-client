@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 
 using namespace hazelcast::client;
 
@@ -41,13 +41,13 @@ using namespace hazelcast::client;
 //    }
 //
 //    @Override
-//    public void writeData(ObjectDataOutput out)
+//    public void writeData(object_data_output out)
 //            throws IOException {
 //        out.writeUTF(message);
 //    }
 //
 //    @Override
-//    public void readData(ObjectDataInput in)
+//    public void readData(object_data_input in)
 //            throws IOException {
 //        message = in.readUTF();
 //    }
@@ -77,11 +77,11 @@ namespace hazelcast {
                 }
 
                 static void
-                write_data(const MessagePrinter &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                write_data(const MessagePrinter &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(object.message);
                 }
 
-                static MessagePrinter read_data(hazelcast::client::serialization::ObjectDataInput &in) {
+                static MessagePrinter read_data(hazelcast::client::serialization::object_data_input &in) {
                     return MessagePrinter{in.read<std::string>()};
                 }
             };
@@ -89,7 +89,7 @@ namespace hazelcast {
     }
 }
 
-class PrinterCallback : public ExecutionCallback<std::string> {
+class PrinterCallback : public execution_callback<std::string> {
 public:
     void on_response(const boost::optional<std::string> &response) override {
         std::cout << "The execution of the task is completed successfully and server returned:" << *response
@@ -123,9 +123,9 @@ public:
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get the Distributed Executor Service
-    std::shared_ptr<IExecutorService> ex = hz.get_executor_service("my-distributed-executor");
+    std::shared_ptr<iexecutor_service> ex = hz.get_executor_service("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
     auto promise = ex->submit<MessagePrinter, std::string>(MessagePrinter{"message to any node"});
     // Wait for the result of the submitted task and print the result

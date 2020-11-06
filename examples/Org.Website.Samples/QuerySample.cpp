@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 #include <hazelcast/client/query/Predicates.h>
 
 using namespace hazelcast::client;
@@ -42,13 +42,13 @@ namespace hazelcast {
                     return 3;
                 }
 
-                static void write_portable(const User &object, hazelcast::client::serialization::PortableWriter &out) {
+                static void write_portable(const User &object, hazelcast::client::serialization::portable_writer &out) {
                     out.write("username", object.username);
                     out.write("age", object.age);
                     out.write("active", object.active);
                 }
 
-                static User read_portable(hazelcast::client::serialization::PortableReader &in) {
+                static User read_portable(hazelcast::client::serialization::portable_reader &in) {
                     return User{in.read<std::string>("username"), in.read<int32_t>("age"), in.read<bool>("active")};
                 }
             };
@@ -57,14 +57,14 @@ namespace hazelcast {
 }
 
 
-void generate_users(std::shared_ptr<IMap> users) {
+void generate_users(std::shared_ptr<imap> users) {
     users->put<std::string, User>("Rod", User{"Rod", 19, true}).get();
     users->put<std::string, User>("Jane", User{"Jane", 20, true}).get();
     users->put<std::string, User>("Freddy", User{"Freddy", 23, true}).get();
 }
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get a Distributed Map called "users"
     auto users = hz.get_map("users");
     // Add some users to the Distributed Map

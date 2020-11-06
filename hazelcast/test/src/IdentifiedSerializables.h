@@ -48,11 +48,11 @@ namespace hazelcast {
                     return static_cast<int32_t>(test::identified_class_ids::MULTIPLICATION);
                 }
 
-                static void write_data(const test::multiplication &object, ObjectDataOutput &out) {
+                static void write_data(const test::multiplication &object, object_data_output &out) {
                     out.write(object.multiplier);
                 }
 
-                static struct test::multiplication read_data(ObjectDataInput &in) {
+                static struct test::multiplication read_data(object_data_input &in) {
                     return {in.read<int64_t>()};
                 }
             };
@@ -64,11 +64,11 @@ namespace hazelcast {
                     return static_cast<int32_t>(test::identified_class_ids::APPEND_STRING);
                 }
 
-                static void write_data(const test::append_string &object, ObjectDataOutput &out) {
+                static void write_data(const test::append_string &object, object_data_output &out) {
                     out.write(object.suffix);
                 }
 
-                static struct test::append_string read_data(ObjectDataInput &in) {
+                static struct test::append_string read_data(object_data_input &in) {
                     return {in.read<std::string>()};
                 }
             };

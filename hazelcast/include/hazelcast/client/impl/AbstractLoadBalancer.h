@@ -16,7 +16,7 @@
 #pragma once
 
 #include "hazelcast/client/member.h"
-#include "hazelcast/client/LoadBalancer.h"
+#include "hazelcast/client/load_balancer.h"
 #include <mutex>
 
 #include <vector>
@@ -28,10 +28,10 @@
 
 namespace hazelcast {
     namespace client {
-        class Cluster;
+        class hz_cluster;
 
         namespace impl {
-            class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer {
+            class HAZELCAST_API AbstractLoadBalancer : public load_balancer {
             public:
                 AbstractLoadBalancer();
 
@@ -43,14 +43,14 @@ namespace hazelcast {
 
                 std::vector<member> get_members();
 
-                void init(Cluster &cluster) override;
+                void init(hz_cluster &cluster) override;
 
                 ~AbstractLoadBalancer() override;
 
             private:
                 mutable std::mutex members_lock_;
                 std::vector<member> members_ref_;
-                Cluster *cluster_;
+                hz_cluster *cluster_;
             };
         }
     }

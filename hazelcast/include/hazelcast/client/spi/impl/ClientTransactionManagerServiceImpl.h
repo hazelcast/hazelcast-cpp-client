@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/address.h"
 
@@ -29,7 +29,7 @@
 
 namespace hazelcast {
     namespace client {
-        class LoadBalancer;
+        class load_balancer;
 
         namespace connection {
             class Connection;

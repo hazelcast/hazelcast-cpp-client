@@ -15,7 +15,7 @@
  */
 #include <stdint.h>
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 class WaitMultiplierProcessor {};
 
@@ -32,12 +32,12 @@ namespace hazelcast {
                     return 8;
                 }
 
-                static void write_data(const WaitMultiplierProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const WaitMultiplierProcessor &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(INT32_MAX);
                     out.write(5);
                 }
 
-                static WaitMultiplierProcessor read_data(hazelcast::client::serialization::ObjectDataInput &in) {
+                static WaitMultiplierProcessor read_data(hazelcast::client::serialization::object_data_input &in) {
                     return WaitMultiplierProcessor{};
                 }
             };
@@ -77,7 +77,7 @@ int main() {
      */
     config.set_property("hazelcast.client.invocation.backoff.timeout.millis", "2000");
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     auto map = hz.get_map("MyMap");
     

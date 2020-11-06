@@ -17,9 +17,9 @@
 
 #include <memory>
 
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/MapEvent.h"
-#include "hazelcast/client/EntryListener.h"
+#include "hazelcast/client/entry_event.h"
+#include "hazelcast/client/map_event.h"
+#include "hazelcast/client/entry_listener.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -39,7 +39,7 @@ namespace hazelcast {
             public:
                 EntryEventHandler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
                                   serialization::pimpl::SerializationService &serialization_service,
-                                  EntryListener &&listener, bool include_value, logger &lg)
+                                  entry_listener &&listener, bool include_value, logger &lg)
                 : instance_name_(instance_name), cluster_service_(cluster_service), serialization_service_(serialization_service)
                 , listener_(std::move(listener)), include_value_(include_value), logger_(lg) {}
 
@@ -49,7 +49,7 @@ namespace hazelcast {
                                   const boost::optional<serialization::pimpl::data> &merging_value,
                                   int32_t event_type, boost::uuids::uuid uuid,
                                   int32_t number_of_affected_entries) override {
-                    if (event_type == static_cast<int32_t>(EntryEvent::type::EVICT_ALL) || event_type == static_cast<int32_t>(EntryEvent::type::CLEAR_ALL)) {
+                    if (event_type == static_cast<int32_t>(entry_event::type::EVICT_ALL) || event_type == static_cast<int32_t>(entry_event::type::CLEAR_ALL)) {
                         fire_map_wide_event(key, value, old_value, merging_value, event_type, uuid, number_of_affected_entries);
                         return;
                     }
@@ -65,12 +65,12 @@ namespace hazelcast {
                                       int32_t event_type, boost::uuids::uuid uuid,
                                       int32_t number_of_affected_entries) {
                     auto member = cluster_service_.get_member(uuid);
-                    auto mapEventType = static_cast<EntryEvent::type>(event_type);
-                    MapEvent mapEvent(std::move(member).value(), mapEventType, instance_name_, number_of_affected_entries);
+                    auto mapEventType = static_cast<entry_event::type>(event_type);
+                    map_event mapEvent(std::move(member).value(), mapEventType, instance_name_, number_of_affected_entries);
 
-                    if (mapEventType == EntryEvent::type::CLEAR_ALL) {
+                    if (mapEventType == entry_event::type::CLEAR_ALL) {
                         listener_.map_cleared_(std::move(mapEvent));
-                    } else if (mapEventType == EntryEvent::type::EVICT_ALL) {
+                    } else if (mapEventType == entry_event::type::EVICT_ALL) {
                         listener_.map_evicted_(std::move(mapEvent));
                     }
                 }
@@ -100,26 +100,26 @@ namespace hazelcast {
                     if (!m.has_value()) {
                         m = member(uuid);
                     }
-                    auto type = static_cast<EntryEvent::type>(event_type);
-                    EntryEvent entryEvent(instance_name_, std::move(m.value()), type, std::move(eventKey), std::move(val),
-                                          std::move(oldVal), std::move(mergingVal));
+                    auto type = static_cast<entry_event::type>(event_type);
+                    entry_event entryEvent(instance_name_, std::move(m.value()), type, std::move(eventKey), std::move(val),
+                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
-                        case EntryEvent::type::ADDED:
+                        case entry_event::type::ADDED:
                             listener_.added_(std::move(entryEvent));
                             break;
-                        case EntryEvent::type::REMOVED:
+                        case entry_event::type::REMOVED:
                             listener_.removed_(std::move(entryEvent));
                             break;
-                        case EntryEvent::type::UPDATED:
+                        case entry_event::type::UPDATED:
                             listener_.updated_(std::move(entryEvent));
                             break;
-                        case EntryEvent::type::EVICTED:
+                        case entry_event::type::EVICTED:
                             listener_.evicted_(std::move(entryEvent));
                             break;
-                        case EntryEvent::type::EXPIRED:
+                        case entry_event::type::EXPIRED:
                             listener_.expired_(std::move(entryEvent));
                             break;
-                        case EntryEvent::type::MERGED:
+                        case entry_event::type::MERGED:
                             listener_.merged_(std::move(entryEvent));
                             break;
                         default:
@@ -134,7 +134,7 @@ namespace hazelcast {
                 const std::string& instance_name_;
                 spi::impl::ClientClusterServiceImpl &cluster_service_;
                 serialization::pimpl::SerializationService& serialization_service_;
-                EntryListener listener_;
+                entry_listener listener_;
                 bool include_value_;
                 logger &logger_;
             };

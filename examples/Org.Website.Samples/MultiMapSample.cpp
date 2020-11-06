@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get the Distributed MultiMap from Cluster.
     auto multiMap = hz.get_multi_map("my-distributed-multimap");
     // Put values in the map against the same key

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 void publish_with_default_config() {
-    hazelcast::client::HazelcastClient client;
+    hazelcast::client::hazelcast_client client;
 
     auto topic = client.get_reliable_topic("MyReliableTopic");
     topic->publish(std::string("My first message")).get();
@@ -28,7 +28,7 @@ void publish_with_non_default_config() {
     hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
     reliableTopicConfig.set_read_batch_size(5);
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
-    hazelcast::client::HazelcastClient client(clientConfig);
+    hazelcast::client::hazelcast_client client(clientConfig);
 
     auto topic = client.get_reliable_topic(topicName);
 

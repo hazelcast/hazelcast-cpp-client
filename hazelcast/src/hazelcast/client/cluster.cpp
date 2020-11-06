@@ -33,13 +33,13 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/functional/hash.hpp>
 
-#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/hz_cluster.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
+#include "hazelcast/client/membership_listener.h"
+#include "hazelcast/client/initial_membership_event.h"
 #include "hazelcast/client/member.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/MembershipEvent.h"
+#include "hazelcast/client/membership_event.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/client/cluster/impl/VectorClock.h"
 #include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
@@ -47,19 +47,19 @@
 
 namespace hazelcast {
     namespace client {
-        Cluster::Cluster(spi::impl::ClientClusterServiceImpl &cluster_service)
+        hz_cluster::hz_cluster(spi::impl::ClientClusterServiceImpl &cluster_service)
                 : cluster_service_(cluster_service) {
         }
 
-        std::vector<member> Cluster::get_members() {
+        std::vector<member> hz_cluster::get_members() {
             return cluster_service_.get_member_list();
         }
 
-        boost::uuids::uuid Cluster::add_membership_listener(MembershipListener &&listener) {
+        boost::uuids::uuid hz_cluster::add_membership_listener(membership_listener &&listener) {
             return cluster_service_.add_membership_listener(std::move(listener));
         }
 
-        bool Cluster::remove_membership_listener(boost::uuids::uuid registration_id) {
+        bool hz_cluster::remove_membership_listener(boost::uuids::uuid registration_id) {
             return cluster_service_.remove_membership_listener(registration_id);
         }
 
@@ -124,52 +124,52 @@ namespace hazelcast {
             return uuid_ < rhs.uuid_;
         }
 
-        Endpoint::Endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address)
+        endpoint::endpoint(boost::uuids::uuid uuid, boost::optional<address> socket_address)
                 : uuid_(uuid), socket_address_(std::move(socket_address)) {}
 
-        boost::uuids::uuid Endpoint::get_uuid() const {
+        boost::uuids::uuid endpoint::get_uuid() const {
             return uuid_;
         }
 
-        const boost::optional<address> &Endpoint::get_socket_address() const {
+        const boost::optional<address> &endpoint::get_socket_address() const {
             return socket_address_;
         }
 
-        MembershipEvent::MembershipEvent(Cluster &cluster, const member &m, membership_event_type event_type,
-                                         const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> &members_list) :
+        membership_event::membership_event(hz_cluster &cluster, const member &m, membership_event_type event_type,
+                                           const std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> &members_list) :
                 cluster_(cluster), member_(m), event_type_(event_type), members_(members_list) {
         }
 
-        MembershipEvent::~MembershipEvent() = default;
+        membership_event::~membership_event() = default;
 
-        std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> MembershipEvent::get_members() const {
+        std::unordered_map<boost::uuids::uuid, member, boost::hash<boost::uuids::uuid>> membership_event::get_members() const {
             return members_;
         }
 
-        const Cluster &MembershipEvent::get_cluster() const {
+        const hz_cluster &membership_event::get_cluster() const {
             return cluster_;
         }
 
-        MembershipEvent::membership_event_type MembershipEvent::get_event_type() const {
+        membership_event::membership_event_type membership_event::get_event_type() const {
             return event_type_;
         }
 
-        const member &MembershipEvent::get_member() const {
+        const member &membership_event::get_member() const {
             return member_;
         }
 
-        Client::Client(boost::uuids::uuid uuid, boost::optional<address> socket_address, std::string name,
-                       std::unordered_set<std::string> labels) : Endpoint(uuid, std::move(socket_address)), name_(std::move(name)),
-                                                                 labels_(std::move(labels)) {}
+        hz_client::hz_client(boost::uuids::uuid uuid, boost::optional<address> socket_address, std::string name,
+                             std::unordered_set<std::string> labels) : endpoint(uuid, std::move(socket_address)), name_(std::move(name)),
+                                                                       labels_(std::move(labels)) {}
 
-        const std::string &Client::get_name() const {
+        const std::string &hz_client::get_name() const {
             return name_;
         }
 
         namespace impl {
             RoundRobinLB::RoundRobinLB() = default;
 
-            void RoundRobinLB::init(Cluster &cluster) {
+            void RoundRobinLB::init(hz_cluster &cluster) {
                 AbstractLoadBalancer::init(cluster);
             }
 
@@ -199,19 +199,19 @@ namespace hazelcast {
                 cluster_ = rhs.cluster_;
             }
 
-            void AbstractLoadBalancer::init(Cluster &cluster) {
+            void AbstractLoadBalancer::init(hz_cluster &cluster) {
                 this->cluster_ = &cluster;
                 set_members_ref();
 
                 cluster.add_membership_listener(
-                    MembershipListener()
-                        .on_init([this](const InitialMembershipEvent &){
+                        membership_listener()
+                        .on_init([this](const initial_membership_event &){
                             set_members_ref();
                         })
-                        .on_joined([this](const MembershipEvent &){
+                        .on_joined([this](const membership_event &){
                             set_members_ref();
                         })
-                        .on_left([this](const MembershipEvent &){
+                        .on_left([this](const membership_event &){
                             set_members_ref();
                         })
                 );

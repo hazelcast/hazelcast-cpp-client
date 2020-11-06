@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 
 using namespace hazelcast::client;
 
@@ -34,10 +34,10 @@ namespace hazelcast {
                 }
 
                 static void
-                write_data(const IncEntryProcessor &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                write_data(const IncEntryProcessor &object, hazelcast::client::serialization::object_data_output &out) {
                 }
 
-                static IncEntryProcessor read_data(hazelcast::client::serialization::ObjectDataInput &in) {
+                static IncEntryProcessor read_data(hazelcast::client::serialization::object_data_input &in) {
                     return IncEntryProcessor{};
                 }
             };
@@ -47,7 +47,7 @@ namespace hazelcast {
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get the Distributed Map from Cluster.
     auto map = hz.get_map("my-distributed-map");
     // Put the integer value of 0 into the Distributed Map

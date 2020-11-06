@@ -35,10 +35,10 @@
 
 #include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/client_properties.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/lifecycle_service.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/protocol/codec/codecs.h"

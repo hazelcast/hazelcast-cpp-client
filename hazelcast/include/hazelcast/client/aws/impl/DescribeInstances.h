@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/aws/security/EC2RequestSigner.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 
@@ -51,7 +51,7 @@ namespace hazelcast {
                     /**
                      * Invoke the service to describe the instances, unmarshal the response and return the discovered node map.
                      * The map contains mappings from private to public IP and all contained nodes match the filtering rules defined by
-                     * the {@link #ClientAwsConfig}.
+                     * the {@link #client_aws_config}.
                      *
                      * @return map from private to public IP or empty map in case of failed response unmarshalling
                      * @throws IException if there is an exception invoking the service

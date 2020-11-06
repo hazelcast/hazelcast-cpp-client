@@ -33,8 +33,8 @@
 #include <cstdlib>
 #include <unordered_set>
 
-#include "hazelcast/client/ExecutionCallback.h"
-#include "hazelcast/client/LifecycleEvent.h"
+#include "hazelcast/client/execution_callback.h"
+#include "hazelcast/client/lifecycle_event.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/util/Util.h"
@@ -49,11 +49,11 @@
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/client_config.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/socket_interceptor.h"
+#include "hazelcast/client/config/client_network_config.h"
+#include "hazelcast/client/client_properties.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 #include "hazelcast/client/spi/impl/listener/listener_service_impl.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
@@ -86,13 +86,13 @@ namespace hazelcast {
                       authentication_timeout_(boost::chrono::milliseconds(heartbeat_.get_heartbeat_timeout().count())),
                       cluster_id_(boost::uuids::nil_uuid()),
                       load_balancer_(client.get_client_config().get_load_balancer()) {
-                config::ClientNetworkConfig &networkConfig = client.get_client_config().get_network_config();
+                config::client_network_config &networkConfig = client.get_client_config().get_network_config();
                 auto connTimeout = networkConfig.get_connection_timeout();
                 if (connTimeout.count() > 0) {
                     connection_timeout_millis_ = std::chrono::milliseconds(connTimeout);
                 }
 
-                ClientProperties &clientProperties = client.get_client_properties();
+                client_properties &clientProperties = client.get_client_properties();
                 shuffle_member_list_ = clientProperties.get_boolean(clientProperties.get_shuffle_member_list());
 
                 ClientConnectionManagerImpl::address_providers_ = address_providers;
@@ -344,10 +344,10 @@ namespace hazelcast {
 
             void
             ClientConnectionManagerImpl::shutdown_with_external_thread(
-                    const std::weak_ptr<client::impl::HazelcastClientInstanceImpl>& client_impl) {
+                    const std::weak_ptr<client::impl::hazelcast_client_instance_impl>& client_impl) {
 
                 std::thread([client_impl] {
-                    std::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = client_impl.lock();
+                    std::shared_ptr<client::impl::hazelcast_client_instance_impl> clientInstance = client_impl.lock();
                     if (!clientInstance || !clientInstance->get_lifecycle_service().is_running()) {
                         return;
                     }
@@ -542,7 +542,7 @@ namespace hazelcast {
                     );
 
                     if (active_connections_.empty()) {
-                        fire_life_cycle_event(LifecycleEvent::lifecycle_state::CLIENT_DISCONNECTED);
+                        fire_life_cycle_event(lifecycle_event::lifecycle_state::CLIENT_DISCONNECTED);
 
                         trigger_cluster_reconnection();
                     }
@@ -573,7 +573,7 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::check_client_active() {
                 if (!client_.get_lifecycle_service().is_running()) {
-                    BOOST_THROW_EXCEPTION(exception::HazelcastClientNotActiveException(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_clientNotActiveException(
                             "ClientConnectionManagerImpl::check_client_active", "Client is shutdown"));
                 }
             }
@@ -621,7 +621,7 @@ namespace hazelcast {
 
                 if (initial_connection) {
                     cluster_id_ = new_cluster_id;
-                    fire_life_cycle_event(LifecycleEvent::lifecycle_state::CLIENT_CONNECTED);
+                    fire_life_cycle_event(lifecycle_event::lifecycle_state::CLIENT_CONNECTED);
                 }
 
                 auto local_address = connection->get_local_socket_address();
@@ -644,7 +644,7 @@ namespace hazelcast {
                 fire_connection_added_event(connection);
             }
 
-            void ClientConnectionManagerImpl::fire_life_cycle_event(LifecycleEvent::lifecycle_state state) {
+            void ClientConnectionManagerImpl::fire_life_cycle_event(lifecycle_event::lifecycle_state state) {
                 client_.get_lifecycle_service().fire_lifecycle_event(state);
             }
 
@@ -700,11 +700,11 @@ namespace hazelcast {
                 }
 
                 if (async_start_) {
-                    BOOST_THROW_EXCEPTION(exception::HazelcastClientOfflineException(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_clientOfflineException(
                             "ClientConnectionManagerImpl::check_invocation_allowed",
                             "No connection found to cluster and async start is configured."));
                 } else if (reconnect_mode_ == config::ClientConnectionStrategyConfig::reconnect_mode::ASYNC) {
-                    BOOST_THROW_EXCEPTION(exception::HazelcastClientOfflineException(
+                    BOOST_THROW_EXCEPTION(exception::hazelcast_clientOfflineException(
                             "ClientConnectionManagerImpl::check_invocation_allowed",
                             "No connection found to cluster and reconnect mode is async."));
                 } else {
@@ -1026,7 +1026,7 @@ namespace hazelcast {
                 return start_time_;
             }
 
-            Socket &Connection::get_socket() {
+            hz_socket &Connection::get_socket() {
                 return *socket_;
             }
 
@@ -1045,15 +1045,15 @@ namespace hazelcast {
             HeartbeatManager::HeartbeatManager(spi::ClientContext &client,
                                                ClientConnectionManagerImpl &connection_manager)
                     : client_(client), client_connection_manager_(connection_manager), logger_(client.get_logger()) {
-                ClientProperties &clientProperties = client.get_client_properties();
+                client_properties &clientProperties = client.get_client_properties();
                 auto timeout_millis = clientProperties.get_long(clientProperties.get_heartbeat_timeout());
                 heartbeat_timeout_ = std::chrono::milliseconds(
                         timeout_millis > 0 ? timeout_millis : util::IOUtil::to_value<int64_t>(
-                                ClientProperties::PROP_HEARTBEAT_TIMEOUT_DEFAULT));
+                                client_properties::PROP_HEARTBEAT_TIMEOUT_DEFAULT));
 
                 auto interval_millis = clientProperties.get_long(clientProperties.get_heartbeat_interval());
                 heartbeat_interval_ = std::chrono::milliseconds(interval_millis > 0 ? interval_millis
-                                                                                    : util::IOUtil::to_value<int64_t>(ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT));
+                                                                                    : util::IOUtil::to_value<int64_t>(client_properties::PROP_HEARTBEAT_INTERVAL_DEFAULT));
             }
 
             void HeartbeatManager::start() {
@@ -1175,19 +1175,19 @@ namespace hazelcast {
                     return true;
                 }
 
-                std::unique_ptr<Socket> SocketFactory::create(const address &address,
-                                                              std::chrono::milliseconds &connect_timeout_in_millis) {
+                std::unique_ptr<hz_socket> SocketFactory::create(const address &address,
+                                                                 std::chrono::milliseconds &connect_timeout_in_millis) {
 #ifdef HZ_BUILD_WITH_SSL
                     if (ssl_context_.get()) {
-                        return std::unique_ptr<Socket>(new internal::socket::SSLSocket(io_, *ssl_context_, address,
+                        return std::unique_ptr<hz_socket>(new internal::socket::SSLSocket(io_, *ssl_context_, address,
                                                                                        client_context_.get_client_config().get_network_config().get_socket_options(),
                                                                                        connect_timeout_in_millis, io_resolver_));
                     }
 #endif
 
-                    return std::unique_ptr<Socket>(new internal::socket::TcpSocket(io_, address,
-                                                                                   client_context_.get_client_config().get_network_config().get_socket_options(),
-                                                                                   connect_timeout_in_millis, io_resolver_));
+                    return std::unique_ptr<hz_socket>(new internal::socket::TcpSocket(io_, address,
+                                                                                      client_context_.get_client_config().get_network_config().get_socket_options(),
+                                                                                      connect_timeout_in_millis, io_resolver_));
                 }
 
 #ifdef HZ_BUILD_WITH_SSL

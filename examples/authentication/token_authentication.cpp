@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 // You should use the config file hazelcast-token-credentials.xml when starting the server
 // so that the server will authenticate the client successfully.
 int main() {
     std::vector<hazelcast::byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
 
-    HazelcastClient hz(client_config().set_cluster_name("token-credentials-dev").set_credentials(
+    hazelcast_client hz(client_config().set_cluster_name("token-credentials-dev").set_credentials(
             std::make_shared<security::token_credentials>(my_token)));
 
     auto map = hz.get_map("MyMap");

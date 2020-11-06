@@ -19,9 +19,9 @@
 #include <memory>
 
 #include "hazelcast/client/serialization/pimpl/data.h"
-#include "hazelcast/client/topic/Message.h"
+#include "hazelcast/client/topic/message.h"
 #include "hazelcast/client/member.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -63,9 +63,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_data(const topic::impl::reliable::ReliableTopicMessage &object, ObjectDataOutput &out);
+                static void write_data(const topic::impl::reliable::ReliableTopicMessage &object, object_data_output &out);
 
-                static topic::impl::reliable::ReliableTopicMessage read_data(ObjectDataInput &in);
+                static topic::impl::reliable::ReliableTopicMessage read_data(object_data_input &in);
             };
         }
     }

@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,7 +30,7 @@ namespace hazelcast {
         namespace config {
             /**
              * The {@code ClientFlakeIdGeneratorConfig} contains the configuration for the client
-             * regarding {@link HazelcastClient#getFlakeIdGenerator(const std::string &)
+             * regarding {@link hazelcast_client#getFlakeIdGenerator(const std::string &)
              * Flake ID Generator}.
              */
             class HAZELCAST_API ClientFlakeIdGeneratorConfig {

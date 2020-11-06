@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 
 int main() {
@@ -24,7 +24,7 @@ int main() {
     // will disable the logs completely.
     config.get_logger_config().level(hazelcast::logger::level::off);
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     return 0;
 }

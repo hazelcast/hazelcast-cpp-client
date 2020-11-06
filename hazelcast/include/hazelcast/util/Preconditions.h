@@ -18,7 +18,7 @@
 #include <string>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 

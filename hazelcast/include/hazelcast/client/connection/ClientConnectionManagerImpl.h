@@ -27,7 +27,7 @@
 #include <hazelcast/util/sync_associative_container.h>
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/ConcurrentSet.h"
-#include "hazelcast/client/LifecycleEvent.h"
+#include "hazelcast/client/lifecycle_event.h"
 #include "hazelcast/client/address.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -37,7 +37,7 @@
 #include "hazelcast/client/connection/ConnectionListenable.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
-#include "hazelcast/client/SocketInterceptor.h"
+#include "hazelcast/client/socket_interceptor.h"
 #include "hazelcast/logger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -52,7 +52,7 @@ namespace hazelcast {
     }
     namespace client {
         class Credentials;
-        class LoadBalancer;
+        class load_balancer;
 
         namespace protocol {
             class ClientMessage;
@@ -65,7 +65,7 @@ namespace hazelcast {
         }
 
         namespace impl {
-            class HazelcastClientInstanceImpl;
+            class hazelcast_client_instance_impl;
         }
 
         namespace security {
@@ -156,7 +156,7 @@ namespace hazelcast {
                 void connect_to_all_members();
 
                 static void
-                shutdown_with_external_thread(const std::weak_ptr<client::impl::HazelcastClientInstanceImpl>& client_impl);
+                shutdown_with_external_thread(const std::weak_ptr<client::impl::hazelcast_client_instance_impl>& client_impl);
 
                 bool do_connect_to_cluster();
 
@@ -184,7 +184,7 @@ namespace hazelcast {
                 std::chrono::milliseconds connection_timeout_millis_;
                 spi::ClientContext &client_;
                 std::unique_ptr<boost::asio::io_context> io_context_;
-                SocketInterceptor socket_interceptor_;
+                socket_interceptor socket_interceptor_;
                 spi::impl::ClientExecutionServiceImpl &execution_service_;
                 std::shared_ptr<AddressTranslator> translator_;
                 util::SynchronizedMap<boost::uuids::uuid, Connection, boost::hash<boost::uuids::uuid>> active_connections_;
@@ -219,11 +219,11 @@ namespace hazelcast {
                 std::atomic<boost::uuids::uuid> cluster_id_;
 #endif
                 std::vector<std::string> labels_;
-                LoadBalancer *load_balancer_;
+                load_balancer *load_balancer_;
 
                 void schedule_connect_to_all_members();
 
-                void fire_life_cycle_event(LifecycleEvent::lifecycle_state state);
+                void fire_life_cycle_event(lifecycle_event::lifecycle_state state);
 
                 void check_partition_count(int32_t new_partition_count);
 

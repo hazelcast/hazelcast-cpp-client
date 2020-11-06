@@ -21,7 +21,7 @@
 #include <memory>
 #include <iostream>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include <mutex>
 
 

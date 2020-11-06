@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 class MapInterceptor {};
 
@@ -31,9 +31,9 @@ namespace hazelcast {
                     return 7;
                 }
 
-                static void write_data(const MapInterceptor &object, hazelcast::client::serialization::ObjectDataOutput &out) {}
+                static void write_data(const MapInterceptor &object, hazelcast::client::serialization::object_data_output &out) {}
 
-                static MapInterceptor read_data(hazelcast::client::serialization::ObjectDataInput &in) {
+                static MapInterceptor read_data(hazelcast::client::serialization::object_data_input &in) {
                     return MapInterceptor{};
                 }
             };
@@ -42,7 +42,7 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
     auto map = hz.get_map("themap");
 

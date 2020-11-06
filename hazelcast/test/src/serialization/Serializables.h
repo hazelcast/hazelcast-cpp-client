@@ -240,9 +240,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::employee &object, PortableWriter &writer);
+                static void write_portable(const test::employee &object, portable_writer &writer);
 
-                static test::employee read_portable(PortableReader &reader);
+                static test::employee read_portable(portable_reader &reader);
             };
 
             template<>
@@ -251,9 +251,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_data(const test::EmployeeEntryComparator &object, ObjectDataOutput &writer);
+                static void write_data(const test::EmployeeEntryComparator &object, object_data_output &writer);
 
-                static test::EmployeeEntryComparator read_data(ObjectDataInput &reader);
+                static test::EmployeeEntryComparator read_data(object_data_input &reader);
             };
 
             template<>
@@ -262,9 +262,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_data(const test::EmployeeEntryKeyComparator &object, ObjectDataOutput &writer);
+                static void write_data(const test::EmployeeEntryKeyComparator &object, object_data_output &writer);
 
-                static test::EmployeeEntryKeyComparator read_data(ObjectDataInput &reader);
+                static test::EmployeeEntryKeyComparator read_data(object_data_input &reader);
             };
 
             template<>
@@ -273,9 +273,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::TestMainPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestMainPortable &object, portable_writer &writer);
 
-                static test::TestMainPortable read_portable(PortableReader &reader);
+                static test::TestMainPortable read_portable(portable_reader &reader);
             };
 
             template<>
@@ -284,9 +284,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::TestRawDataPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestRawDataPortable &object, portable_writer &writer);
 
-                static test::TestRawDataPortable read_portable(PortableReader &reader);
+                static test::TestRawDataPortable read_portable(portable_reader &reader);
             };
 
             template<>
@@ -295,9 +295,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_data(const test::TestDataSerializable &object, ObjectDataOutput &out);
+                static void write_data(const test::TestDataSerializable &object, object_data_output &out);
 
-                static test::TestDataSerializable read_data(ObjectDataInput &in);
+                static test::TestDataSerializable read_data(object_data_input &in);
             };
 
             template<>
@@ -306,9 +306,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::TestInnerPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestInnerPortable &object, portable_writer &writer);
 
-                static test::TestInnerPortable read_portable(PortableReader &reader);
+                static test::TestInnerPortable read_portable(portable_reader &reader);
             };
 
             template<>
@@ -317,9 +317,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::TestNamedPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestNamedPortable &object, portable_writer &writer);
 
-                static test::TestNamedPortable read_portable(PortableReader &reader);
+                static test::TestNamedPortable read_portable(portable_reader &reader);
             };
 
             template<>
@@ -330,9 +330,9 @@ namespace hazelcast {
 
                 static int32_t get_class_version();
 
-                static void write_portable(const test::TestNamedPortableV2 &object, PortableWriter &writer);
+                static void write_portable(const test::TestNamedPortableV2 &object, portable_writer &writer);
 
-                static test::TestNamedPortableV2 read_portable(PortableReader &reader);
+                static test::TestNamedPortableV2 read_portable(portable_reader &reader);
             };
 
             template<>
@@ -343,9 +343,9 @@ namespace hazelcast {
 
                 static int32_t get_class_version();
 
-                static void write_portable(const test::TestNamedPortableV3 &object, PortableWriter &writer);
+                static void write_portable(const test::TestNamedPortableV3 &object, portable_writer &writer);
 
-                static test::TestNamedPortableV3 read_portable(PortableReader &reader);
+                static test::TestNamedPortableV3 read_portable(portable_reader &reader);
             };
 
             template<>
@@ -354,9 +354,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::TestInvalidWritePortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestInvalidWritePortable &object, portable_writer &writer);
 
-                static test::TestInvalidWritePortable read_portable(PortableReader &reader);
+                static test::TestInvalidWritePortable read_portable(portable_reader &reader);
             };
 
             template<>
@@ -365,9 +365,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::TestInvalidReadPortable &object, PortableWriter &writer);
+                static void write_portable(const test::TestInvalidReadPortable &object, portable_writer &writer);
 
-                static test::TestInvalidReadPortable read_portable(PortableReader &reader);
+                static test::TestInvalidReadPortable read_portable(portable_reader &reader);
             };
 
             template<typename P>
@@ -380,13 +380,13 @@ namespace hazelcast {
                     return static_cast<int32_t>(test::test_serialization_constants::OBJECT_CARRYING_PORTABLE);
                 }
 
-                static void write_portable(const test::ObjectCarryingPortable<P> &object, PortableWriter &writer) {
+                static void write_portable(const test::ObjectCarryingPortable<P> &object, portable_writer &writer) {
                     auto &output = writer.get_raw_data_output();
                     output.write_object<P>(object.carried_object);
                 }
 
-                static test::ObjectCarryingPortable<P> read_portable(PortableReader &reader) {
-                    ObjectDataInput& input = reader.get_raw_data_input();
+                static test::ObjectCarryingPortable<P> read_portable(portable_reader &reader) {
+                    object_data_input& input = reader.get_raw_data_input();
                     return test::ObjectCarryingPortable<P>{input.read_object<P>().value()};
                 }
             };
@@ -397,9 +397,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::ChildTemplatedPortable1 &object, PortableWriter &writer);
+                static void write_portable(const test::ChildTemplatedPortable1 &object, portable_writer &writer);
 
-                static test::ChildTemplatedPortable1 read_portable(PortableReader &reader);
+                static test::ChildTemplatedPortable1 read_portable(portable_reader &reader);
             };
 
             template<>
@@ -408,9 +408,9 @@ namespace hazelcast {
 
                 static int32_t get_class_id();
 
-                static void write_portable(const test::ChildTemplatedPortable2 &object, PortableWriter &writer);
+                static void write_portable(const test::ChildTemplatedPortable2 &object, portable_writer &writer);
 
-                static test::ChildTemplatedPortable2 read_portable(PortableReader &reader);
+                static test::ChildTemplatedPortable2 read_portable(portable_reader &reader);
             };
 
             template<typename P>
@@ -423,11 +423,11 @@ namespace hazelcast {
                     return static_cast<int32_t>(test::test_serialization_constants::PARENT_TEMPLATED_CONSTANTS);
                 }
 
-                static void write_portable(const test::ParentTemplatedPortable<P> &object, PortableWriter &out) {
+                static void write_portable(const test::ParentTemplatedPortable<P> &object, portable_writer &out) {
                     out.write_portable("c", object.child.get_ptr());
                 }
 
-                static test::ParentTemplatedPortable<P> read_portable(PortableReader &in) {
+                static test::ParentTemplatedPortable<P> read_portable(portable_reader &in) {
                     return test::ParentTemplatedPortable<P>{in.read_portable<P>()};
                 }
             };
@@ -438,9 +438,9 @@ namespace hazelcast {
                     return 666;
                 }
 
-                static void write(const test::TestCustomPerson &object, ObjectDataOutput & out);
+                static void write(const test::TestCustomPerson &object, object_data_output & out);
 
-                static test::TestCustomPerson read(ObjectDataInput &in);
+                static test::TestCustomPerson read(object_data_input &in);
             };
 
             template<>
@@ -449,9 +449,9 @@ namespace hazelcast {
                     return 666;
                 }
 
-                static void write(const test::TestCustomXSerializable &object, ObjectDataOutput &out);
+                static void write(const test::TestCustomXSerializable &object, object_data_output &out);
 
-                static test::TestCustomXSerializable read(ObjectDataInput &in);
+                static test::TestCustomXSerializable read(object_data_input &in);
             };
 
         }

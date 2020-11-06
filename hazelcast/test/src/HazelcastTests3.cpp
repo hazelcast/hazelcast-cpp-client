@@ -22,7 +22,7 @@
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/client_config.h>
 #include <hazelcast/client/exception/IllegalStateException.h>
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
@@ -33,9 +33,9 @@
 #include <ClientTestSupport.h>
 #include <memory>
 #include <hazelcast/client/proxy/PNCounterImpl.h>
-#include <hazelcast/client/serialization/pimpl/DataInput.h>
+#include <hazelcast/client/serialization/pimpl/data_input.h>
 #include <hazelcast/util/AddressUtil.h>
-#include <hazelcast/client/serialization/pimpl/DataOutput.h>
+#include <hazelcast/client/serialization/pimpl/data_output.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
@@ -47,10 +47,10 @@
 #include <ostream>
 #include <ctime>
 #include <errno.h>
-#include <hazelcast/client/LifecycleListener.h>
+#include <hazelcast/client/lifecycle_listener.h>
 #include "serialization/Serializables.h"
-#include <hazelcast/client/SerializationConfig.h>
-#include <hazelcast/client/HazelcastJsonValue.h>
+#include <hazelcast/client/serialization_config.h>
+#include <hazelcast/client/hazelcast_json_value.h>
 #include <hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
@@ -74,7 +74,7 @@
 #include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
 #include "hazelcast/client/client_config.h"
-#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/hazelcast_client.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
@@ -82,15 +82,15 @@
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/connection/Connection.h"
 
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/membership_listener.h"
+#include "hazelcast/client/initial_membership_event.h"
+#include "hazelcast/client/lifecycle_listener.h"
+#include "hazelcast/client/socket_interceptor.h"
+#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/hz_cluster.h"
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/IMap.h"
+#include "hazelcast/client/imap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/client/exception/IOException.h"
@@ -98,29 +98,29 @@
 #include "hazelcast/util/UTFUtil.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
-#include "hazelcast/client/ExecutionCallback.h"
-#include "hazelcast/client/Pipelining.h"
+#include "hazelcast/client/execution_callback.h"
+#include "hazelcast/client/pipelining.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/client/serialization_config.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/ITopic.h"
+#include "hazelcast/client/itopic.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/MultiMap.h"
+#include "hazelcast/client/multi_map.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
-#include "hazelcast/client/IList.h"
-#include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/entry_event.h"
+#include "hazelcast/client/hazelcast_json_value.h"
+#include "hazelcast/client/ilist.h"
+#include "hazelcast/client/iqueue.h"
+#include "hazelcast/client/client_properties.h"
 #include "hazelcast/client/config/client_aws_config.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
-#include "hazelcast/client/ISet.h"
-#include "hazelcast/client/ReliableTopic.h"
+#include "hazelcast/client/iset.h"
+#include "hazelcast/client/reliable_topic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -146,7 +146,7 @@ namespace hazelcast {
                     }
                 }
 
-                void verify_entries_in_map(const std::shared_ptr<ReplicatedMap>& map) {
+                void verify_entries_in_map(const std::shared_ptr<replicated_map>& map) {
                     auto entries = map->entry_set<typed_data, typed_data>().get();
                     ASSERT_EQ(OPERATION_COUNT, entries.size());
                     for (auto &entry : entries) {
@@ -159,12 +159,12 @@ namespace hazelcast {
                     }
                 }
                 
-                void get_and_verify_entries_in_map(const std::shared_ptr<ReplicatedMap> &map) {
+                void get_and_verify_entries_in_map(const std::shared_ptr<replicated_map> &map) {
                     get_and_verify_entries_in_map(map, "bar");
                 }
 
                 void
-                get_and_verify_entries_in_map(const std::shared_ptr<ReplicatedMap>& map, const std::string &expected_value) {
+                get_and_verify_entries_in_map(const std::shared_ptr<replicated_map>& map, const std::string &expected_value) {
                     execute_for_each([=] (size_t i) {
                         auto key = std::string("foo-") + std::to_string(i);
                         boost::optional<std::string> val = map->get<std::string, std::string>(key).get();
@@ -173,7 +173,7 @@ namespace hazelcast {
                     });
                 }
 
-                void put_all_entries_into_map(std::shared_ptr<ReplicatedMap> map) {
+                void put_all_entries_into_map(std::shared_ptr<replicated_map> map) {
                     std::unordered_map<std::string, std::string> mapTest;
                     execute_for_each([=, &mapTest] (size_t i) {
                         mapTest[std::string("foo-") + std::to_string(i)] = "bar";
@@ -182,7 +182,7 @@ namespace hazelcast {
                     ASSERT_EQ((int) OPERATION_COUNT, map->size().get());
                 }
 
-                void put_entries_into_map(const std::shared_ptr<ReplicatedMap>& map) {
+                void put_entries_into_map(const std::shared_ptr<replicated_map>& map) {
                     execute_for_each([=] (size_t i) {
                         auto oldEntry = map->put<std::string, std::string>(std::string("foo-") + std::to_string(i),
                                                                            "bar").get();
@@ -190,7 +190,7 @@ namespace hazelcast {
                     });
                 }
 
-                void put_entries_into_map(const std::shared_ptr<ReplicatedMap> &map, const std::string value) {
+                void put_entries_into_map(const std::shared_ptr<replicated_map> &map, const std::string value) {
                     execute_for_each([&] (size_t i) {
                         map->put<std::string, std::string>(std::string("foo-") + std::to_string(i),
                                                                            value).get();
@@ -232,8 +232,8 @@ namespace hazelcast {
                             "hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                     instance1 = new HazelcastServer(*factory);
                     auto config = get_config().set_cluster_name("replicated-map-binary-test");
-                    client = new HazelcastClient(config);
-                    client2 = new HazelcastClient(config);
+                    client = new hazelcast_client(config);
+                    client2 = new hazelcast_client(config);
                 }
 
                 static void TearDownTestCase() {
@@ -255,19 +255,19 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance1;
-                static HazelcastClient *client;
-                static HazelcastClient *client2;
+                static hazelcast_client *client;
+                static hazelcast_client *client2;
                 static HazelcastServerFactory *factory;
             };
 
             HazelcastServer *ClientReplicatedMapTest::instance1 = nullptr;
-            HazelcastClient *ClientReplicatedMapTest::client = nullptr;
-            HazelcastClient *ClientReplicatedMapTest::client2 = nullptr;
+            hazelcast_client *ClientReplicatedMapTest::client = nullptr;
+            hazelcast_client *ClientReplicatedMapTest::client2 = nullptr;
             HazelcastServerFactory *ClientReplicatedMapTest::factory = nullptr;
             constexpr size_t ClientReplicatedMapTest::OPERATION_COUNT;
 
             TEST_F(ClientReplicatedMapTest, testEmptyMapIsEmpty) {
-                std::shared_ptr<ReplicatedMap> map = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map = client->get_replicated_map(get_test_name());
                 ASSERT_TRUE(map->is_empty().get()) << "map should be empty";
             }
 
@@ -278,8 +278,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testPutAll) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 put_all_entries_into_map(map1);
                 verify_entries_in_map(map1);
@@ -289,8 +289,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testGet) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
                 put_entries_into_map(map1);
                 get_and_verify_entries_in_map(map1);
                 get_and_verify_entries_in_map(map2);
@@ -310,8 +310,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testAdd) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 put_entries_into_map(map1);
                 ASSERT_EQ(OPERATION_COUNT, map2->size().get());
@@ -321,8 +321,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testClear) {
-                std::shared_ptr<ReplicatedMap> map1 =client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 =client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 =client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 =client2->get_replicated_map(get_test_name());
 
                 put_entries_into_map(map1);
                 ASSERT_EQ(OPERATION_COUNT, map2->size().get());
@@ -336,8 +336,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testUpdate) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 put_entries_into_map(map1);
                 ASSERT_EQ(OPERATION_COUNT, map2->size().get());
@@ -352,8 +352,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testRemove) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 put_entries_into_map(map1);
                 ASSERT_EQ(OPERATION_COUNT, map2->size().get());
@@ -377,8 +377,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testSize) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -393,8 +393,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testContainsKey) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 put_entries_into_map(map1);
 
@@ -408,8 +408,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testContainsValue) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -429,8 +429,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testValues) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -449,8 +449,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testKeySet) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -470,8 +470,8 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testEntrySet) {
-                std::shared_ptr<ReplicatedMap> map1 = client->get_replicated_map(get_test_name());
-                std::shared_ptr<ReplicatedMap> map2 = client2->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map1 = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map2 = client2->get_replicated_map(get_test_name());
 
                 TEST_VALUES_TYPE testValues = build_test_values();
                 size_t half = testValues.size() / 2;
@@ -498,7 +498,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testRetrieveUnknownValue) {
-                std::shared_ptr<ReplicatedMap> map = client->get_replicated_map(get_test_name());
+                std::shared_ptr<replicated_map> map = client->get_replicated_map(get_test_name());
                 auto value = map->get<std::string, std::string>("foo").get();
                 ASSERT_FALSE(value.has_value()) << "No entry with key foo should exist";
             }
@@ -507,8 +507,8 @@ namespace hazelcast {
                 std::string mapName = random_string();
 
                 client_config clientConfig = get_client_config_with_near_cache_invalidation_enabled();
-                HazelcastClient client1(clientConfig);
-                HazelcastClient client2(clientConfig);
+                hazelcast_client client1(clientConfig);
+                hazelcast_client client2(clientConfig);
 
                 auto replicatedMap1 = client1.get_replicated_map(mapName);
 
@@ -543,11 +543,11 @@ namespace hazelcast {
                     return 6;
                 }
 
-                static void write_portable(test::ClientReplicatedMapTest::SamplePortable object, serialization::PortableWriter &out) {
+                static void write_portable(test::ClientReplicatedMapTest::SamplePortable object, serialization::portable_writer &out) {
                     out.write<int32_t>("a", object.a);
                 }
 
-                static test::ClientReplicatedMapTest::SamplePortable read_portable(serialization::PortableReader &reader) {
+                static test::ClientReplicatedMapTest::SamplePortable read_portable(serialization::portable_reader &reader) {
                     return {reader.read<int32_t>("a")};
                 }
             };
@@ -568,32 +568,32 @@ namespace hazelcast {
                     map_clear_count{ 0 }, map_evict_count{ 0 };
                 };
 
-                EntryListener make_event_counting_listener(ListenerState &state) {
-                    const auto pushKey = [&state](const EntryEvent &event) {
+                entry_listener make_event_counting_listener(ListenerState &state) {
+                    const auto pushKey = [&state](const entry_event &event) {
                         state.keys.push(event.get_key().get<int>().value());
                     };
 
-                    return EntryListener().
-                            on_added([&state, pushKey](EntryEvent &&event) {
+                    return entry_listener().
+                            on_added([&state, pushKey](entry_event &&event) {
                                 pushKey(event);
                                 ++state.add_count;
                             }).
-                            on_removed([&state, pushKey](EntryEvent &&event) {
+                            on_removed([&state, pushKey](entry_event &&event) {
                                 pushKey(event);
                                 ++state.remove_count;
                             }).
-                            on_updated([&state, pushKey](EntryEvent &&event) {
+                            on_updated([&state, pushKey](entry_event &&event) {
                                 pushKey(event);
                                 ++state.update_count;
                             }).
-                            on_evicted([&state, pushKey](EntryEvent &&event) {
+                            on_evicted([&state, pushKey](entry_event &&event) {
                                 pushKey(event);
                                 ++state.evict_count;
                             }).
-                            on_map_evicted([&state](MapEvent &&) {
+                            on_map_evicted([&state](map_event &&) {
                                 ++state.map_evict_count;
                             }).
-                            on_map_cleared([&state](MapEvent &&) {
+                            on_map_cleared([&state](map_event &&) {
                                 ++state.map_clear_count;
                             });
                 }
@@ -601,8 +601,8 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance1 = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(get_config());
-                    client2 = new HazelcastClient(get_config());
+                    client = new hazelcast_client(get_config());
+                    client2 = new hazelcast_client(get_config());
                 }
 
                 static void TearDownTestCase() {
@@ -619,15 +619,15 @@ namespace hazelcast {
 
                 static HazelcastServer *instance1;
                 static HazelcastServer *instance2;
-                static HazelcastClient *client;
-                static HazelcastClient *client2;
+                static hazelcast_client *client;
+                static hazelcast_client *client2;
                 ListenerState state_;
             };
 
             HazelcastServer *ClientReplicatedMapListenerTest::instance1 = nullptr;
             HazelcastServer *ClientReplicatedMapListenerTest::instance2 = nullptr;
-            HazelcastClient *ClientReplicatedMapListenerTest::client = nullptr;
-            HazelcastClient *ClientReplicatedMapListenerTest::client2 = nullptr;
+            hazelcast_client *ClientReplicatedMapListenerTest::client = nullptr;
+            hazelcast_client *ClientReplicatedMapListenerTest::client2 = nullptr;
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryAdded) {
                 auto replicatedMap = client->get_replicated_map(get_test_name());
@@ -815,14 +815,14 @@ namespace hazelcast {
                 }
 
                 void create_no_near_cache_context() {
-                    client_ = std::unique_ptr<HazelcastClient>(new HazelcastClient(get_config()));
+                    client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(get_config()));
                     no_near_cache_map_ = client_->get_replicated_map(get_test_name());
                 }
 
                 void create_near_cache_context() {
                     client_config nearCachedClientConfig = get_config();
                     nearCachedClientConfig.add_near_cache_config(near_cache_config_);
-                    near_cached_client_ = std::unique_ptr<HazelcastClient>(new HazelcastClient(nearCachedClientConfig));
+                    near_cached_client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(nearCachedClientConfig));
                     near_cached_map_ = near_cached_client_->get_replicated_map(get_test_name());
                     spi::ClientContext clientContext(*near_cached_client_);
                     near_cache_manager_ = &clientContext.get_near_cache_manager();
@@ -852,7 +852,7 @@ namespace hazelcast {
                     ASSERT_FALSE(near_cached_map_->contains_key(5).get());
 
                     // remove a key which is in the Near Cache
-                    std::shared_ptr<ReplicatedMap> &adapter = use_near_cached_map_for_removal
+                    std::shared_ptr<replicated_map> &adapter = use_near_cached_map_for_removal
                                                                                  ? near_cached_map_
                                                                                  : no_near_cache_map_;
                     adapter->remove<int, std::string>(1).get();
@@ -950,7 +950,7 @@ namespace hazelcast {
                     }
 
                     // this should invalidate the Near Cache
-                    std::shared_ptr<ReplicatedMap> &adapter = use_near_cache_adapter ? near_cached_map_ : no_near_cache_map_;
+                    std::shared_ptr<replicated_map> &adapter = use_near_cache_adapter ? near_cached_map_ : no_near_cache_map_;
                     adapter->put_all(invalidationMap).get();
 
                     WAIT_EQ_EVENTUALLY(0, near_cache_->size());
@@ -958,10 +958,10 @@ namespace hazelcast {
                 }
 
                 config::NearCacheConfig near_cache_config_;
-                std::unique_ptr<HazelcastClient> client_;
-                std::unique_ptr<HazelcastClient> near_cached_client_;
-                std::shared_ptr<ReplicatedMap> no_near_cache_map_;
-                std::shared_ptr<ReplicatedMap> near_cached_map_;
+                std::unique_ptr<hazelcast_client> client_;
+                std::unique_ptr<hazelcast_client> near_cached_client_;
+                std::shared_ptr<replicated_map> no_near_cache_map_;
+                std::shared_ptr<replicated_map> near_cached_map_;
                 hazelcast::client::internal::nearcache::NearCacheManager *near_cache_manager_{};
                 std::shared_ptr<hazelcast::client::internal::nearcache::NearCache<serialization::pimpl::data, serialization::pimpl::data>> near_cache_;
                 std::shared_ptr<monitor::NearCacheStats> stats_;
@@ -1241,7 +1241,7 @@ namespace hazelcast {
                     return std::unique_ptr<client_config>(new client_config(get_config()));
                 }
 
-                std::shared_ptr<ReplicatedMap> get_near_cached_map_from_client(
+                std::shared_ptr<replicated_map> get_near_cached_map_from_client(
                         config::NearCacheConfig config) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
 
@@ -1250,12 +1250,12 @@ namespace hazelcast {
                     client_config_ = new_client_config();
                     client_config_->add_near_cache_config(config);
 
-                    client_ = std::unique_ptr<HazelcastClient>(new HazelcastClient(*client_config_));
+                    client_ = std::unique_ptr<hazelcast_client>(new hazelcast_client(*client_config_));
                     map_ = client_->get_replicated_map(mapName);
                     return map_;
                 }
 
-                std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats(ReplicatedMap &rep_map) {
+                std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats(replicated_map &rep_map) {
                     spi::ClientContext clientContext(*client_);
                     auto nearCacheManager = &clientContext.get_near_cache_manager();
                     auto nearCache = nearCacheManager->
@@ -1263,14 +1263,14 @@ namespace hazelcast {
                     return nearCache->get_near_cache_stats();
                 }
 
-                void assert_that_owned_entry_count_equals(ReplicatedMap &client_map, int64_t expected) {
+                void assert_that_owned_entry_count_equals(replicated_map &client_map, int64_t expected) {
                     ASSERT_EQ(expected, get_near_cache_stats(client_map)->get_owned_entry_count());
                 }
 
                 std::unique_ptr<client_config> client_config_;
                 config::NearCacheConfig near_cache_config_;
-                std::unique_ptr<HazelcastClient> client_;
-                std::shared_ptr<ReplicatedMap> map_;
+                std::unique_ptr<hazelcast_client> client_;
+                std::shared_ptr<replicated_map> map_;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
             };
@@ -1350,8 +1350,8 @@ namespace hazelcast {
             protected:
                 HazelcastServer instance_;
                 client_config client_config_;
-                HazelcastClient client_;
-                std::shared_ptr<ITopic> topic_;
+                hazelcast_client client_;
+                std::shared_ptr<itopic> topic_;
             };
 
             ClientTopicTest::ClientTopicTest() : instance_(*g_srvFactory), client_(get_new_client()),
@@ -1361,7 +1361,7 @@ namespace hazelcast {
                 boost::latch latch1(10);
                 auto id = topic_->add_message_listener(
                     topic::Listener().
-                        on_received([&latch1](topic::Message &&) {
+                        on_received([&latch1](topic::message &&) {
                             latch1.count_down();
                         })
                 ).get();

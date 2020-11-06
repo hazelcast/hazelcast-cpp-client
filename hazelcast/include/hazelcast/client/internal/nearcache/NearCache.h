@@ -21,7 +21,7 @@
 #include <memory>
 
 #include "hazelcast/client/config/InMemoryFormat.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/Clearable.h"
 #include "hazelcast/util/Destroyable.h"
 #include "hazelcast/client/spi/InitializingObject.h"

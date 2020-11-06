@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/DefaultNearCache.h"
 #include "hazelcast/client/serialization/serialization.h"

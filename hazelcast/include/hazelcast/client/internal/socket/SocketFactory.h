@@ -17,7 +17,7 @@
 
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #ifdef HZ_BUILD_WITH_SSL
 
@@ -33,7 +33,7 @@
 
 namespace hazelcast {
     namespace client {
-        class Socket;
+        class hz_socket;
 
         class address;
 
@@ -49,7 +49,7 @@ namespace hazelcast {
 
                     bool start();
 
-                    std::unique_ptr<Socket>
+                    std::unique_ptr<hz_socket>
                     create(const address &address, std::chrono::milliseconds &connect_timeout_in_millis);
 
                 private:

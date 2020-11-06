@@ -34,7 +34,7 @@
 #include <utility>
 
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/HazelcastJsonValue.h"
+#include "hazelcast/client/hazelcast_json_value.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/IOUtil.h"
@@ -45,28 +45,28 @@
 
 namespace hazelcast {
     namespace client {
-        HazelcastJsonValue::HazelcastJsonValue(std::string json_string) : json_string_(std::move(json_string)) {
+        hazelcast_json_value::hazelcast_json_value(std::string json_string) : json_string_(std::move(json_string)) {
         }
 
-        HazelcastJsonValue::~HazelcastJsonValue() = default;
+        hazelcast_json_value::~hazelcast_json_value() = default;
 
-        const std::string &HazelcastJsonValue::to_string() const {
+        const std::string &hazelcast_json_value::to_string() const {
             return json_string_;
         }
 
-        bool HazelcastJsonValue::operator==(const HazelcastJsonValue &rhs) const {
+        bool hazelcast_json_value::operator==(const hazelcast_json_value &rhs) const {
             return json_string_ == rhs.json_string_;
         }
 
-        bool HazelcastJsonValue::operator!=(const HazelcastJsonValue &rhs) const {
+        bool hazelcast_json_value::operator!=(const hazelcast_json_value &rhs) const {
             return !(rhs == *this);
         }
 
-        bool HazelcastJsonValue::operator<(const HazelcastJsonValue &rhs) const {
+        bool hazelcast_json_value::operator<(const hazelcast_json_value &rhs) const {
             return json_string_ < rhs.json_string_;
         }
 
-        std::ostream &operator<<(std::ostream &os, const HazelcastJsonValue &value) {
+        std::ostream &operator<<(std::ostream &os, const hazelcast_json_value &value) {
             os << "jsonString: " << value.json_string_;
             return os;
         }
@@ -78,7 +78,7 @@ namespace hazelcast {
                                serialization::pimpl::SerializationService &serialization_service) : data_(std::move(d)),
                                                                                                  ss_(&serialization_service) {}
 
-        serialization::pimpl::ObjectType typed_data::get_type() const {
+        serialization::pimpl::object_type typed_data::get_type() const {
             return ss_->get_object_type(&data_);
         }
 
@@ -94,20 +94,20 @@ namespace hazelcast {
         }
 
         namespace serialization {
-            PortableWriter::PortableWriter(pimpl::DefaultPortableWriter *default_portable_writer)
+            portable_writer::portable_writer(pimpl::DefaultPortableWriter *default_portable_writer)
                     : default_portable_writer_(default_portable_writer), class_definition_writer_(nullptr), is_default_writer_(true) {}
 
-            PortableWriter::PortableWriter(pimpl::ClassDefinitionWriter *class_definition_writer)
+            portable_writer::portable_writer(pimpl::ClassDefinitionWriter *class_definition_writer)
                     : default_portable_writer_(nullptr), class_definition_writer_(class_definition_writer),
                       is_default_writer_(false) {}
 
-            void PortableWriter::end() {
+            void portable_writer::end() {
                 if (is_default_writer_)
                     return default_portable_writer_->end();
                 return class_definition_writer_->end();
             }
 
-            ObjectDataOutput &PortableWriter::get_raw_data_output() {
+            object_data_output &portable_writer::get_raw_data_output() {
                 if (is_default_writer_)
                     return default_portable_writer_->get_raw_data_output();
                 return class_definition_writer_->get_raw_data_output();
@@ -229,7 +229,7 @@ namespace hazelcast {
                 return class_id_;
             }
 
-            void FieldDefinition::write_data(pimpl::DataOutput &data_output) {
+            void FieldDefinition::write_data(pimpl::data_output &data_output) {
                 data_output.write<int32_t>(index_);
                 data_output.write<std::string>(field_name_);
                 data_output.write<byte>(static_cast<int32_t>(type_));
@@ -237,7 +237,7 @@ namespace hazelcast {
                 data_output.write<int32_t>(class_id_);
             }
 
-            void FieldDefinition::read_data(ObjectDataInput &data_input) {
+            void FieldDefinition::read_data(object_data_input &data_input) {
                 index_ = data_input.read<int32_t>();
                 field_name_ = data_input.read<std::string>();
                 type_ = static_cast<field_type>(data_input.read<byte>());
@@ -264,18 +264,18 @@ namespace hazelcast {
                 return os;
             }
 
-            ObjectDataInput::ObjectDataInput(const std::vector<byte> &buffer, int offset,
-                    pimpl::PortableSerializer &portable_ser, pimpl::DataSerializer &data_ser,
-                    std::shared_ptr<serialization::global_serializer> global_serializer)
-                    : pimpl::DataInput<std::vector<byte>>(buffer, offset), portable_serializer_(portable_ser), data_serializer_(data_ser),
+            object_data_input::object_data_input(const std::vector<byte> &buffer, int offset,
+                                                 pimpl::PortableSerializer &portable_ser, pimpl::DataSerializer &data_ser,
+                                                 std::shared_ptr<serialization::global_serializer> global_serializer)
+                    : pimpl::data_input<std::vector<byte>>(buffer, offset), portable_serializer_(portable_ser), data_serializer_(data_ser),
                       global_serializer_(std::move(global_serializer)) {}
 
-            ObjectDataOutput::ObjectDataOutput(bool dont_write, pimpl::PortableSerializer *portable_ser,
-                                               std::shared_ptr<serialization::global_serializer> global_serializer)
-                    : DataOutput(dont_write), portable_serializer_(portable_ser), global_serializer_(std::move(global_serializer)) {}
+            object_data_output::object_data_output(bool dont_write, pimpl::PortableSerializer *portable_ser,
+                                                   std::shared_ptr<serialization::global_serializer> global_serializer)
+                    : data_output(dont_write), portable_serializer_(portable_ser), global_serializer_(std::move(global_serializer)) {}
 
-            PortableReader::PortableReader(pimpl::PortableSerializer &portable_ser, ObjectDataInput &input,
-                                           const std::shared_ptr<ClassDefinition> &cd, bool is_default_reader)
+            portable_reader::portable_reader(pimpl::PortableSerializer &portable_ser, object_data_input &input,
+                                             const std::shared_ptr<ClassDefinition> &cd, bool is_default_reader)
                     : is_default_reader_(is_default_reader) {
                 if (is_default_reader) {
                     default_portable_reader_ = boost::make_optional(pimpl::DefaultPortableReader(portable_ser, input, cd));
@@ -284,14 +284,14 @@ namespace hazelcast {
                 }
             }
 
-            ObjectDataInput &PortableReader::get_raw_data_input() {
+            object_data_input &portable_reader::get_raw_data_input() {
                 if (is_default_reader_)
                     return default_portable_reader_->get_raw_data_input();
                 return morphing_portable_reader_->get_raw_data_input();
             }
 
             template<>
-            void ObjectDataOutput::write_object(const char *object) {
+            void object_data_output::write_object(const char *object) {
                 if (!object) {
                     write<int32_t>(static_cast<int32_t>(pimpl::serialization_constants::CONSTANT_TYPE_NULL));
                     return;
@@ -299,7 +299,7 @@ namespace hazelcast {
                 write_object<std::string>(std::string(object));
             }
 
-            void PortableReader::end() {
+            void portable_reader::end() {
                 if (is_default_reader_)
                     return default_portable_reader_->end();
                 return morphing_portable_reader_->end();
@@ -360,7 +360,7 @@ namespace hazelcast {
                 }
             }
 
-            void ClassDefinition::write_data(pimpl::DataOutput &data_output) {
+            void ClassDefinition::write_data(pimpl::data_output &data_output) {
                 data_output.write<int32_t>(factory_id_);
                 data_output.write<int32_t>(class_id_);
                 data_output.write<int32_t>(version_);
@@ -370,7 +370,7 @@ namespace hazelcast {
                 }
             }
 
-            void ClassDefinition::read_data(ObjectDataInput &data_input) {
+            void ClassDefinition::read_data(object_data_input &data_input) {
                 factory_id_ = data_input.read<int32_t>();
                 class_id_ = data_input.read<int32_t>();
                 version_ = data_input.read<int32_t>();
@@ -415,13 +415,13 @@ namespace hazelcast {
                     return context_.register_class_definition(cd);
                 }
 
-                ObjectDataOutput &ClassDefinitionWriter::get_raw_data_output() {
+                object_data_output &ClassDefinitionWriter::get_raw_data_output() {
                     return empty_data_output_;
                 }
 
                 void ClassDefinitionWriter::end() {}
 
-                DataOutput::DataOutput(bool dont_write) :is_no_write_(dont_write) {
+                data_output::data_output(bool dont_write) : is_no_write_(dont_write) {
                     if (is_no_write_) {
                         output_stream_.reserve(0);
                     } else {
@@ -430,13 +430,13 @@ namespace hazelcast {
                 }
 
                 template<>
-                void DataOutput::write(byte i) {
+                void data_output::write(byte i) {
                     if (is_no_write_) { return; }
                     output_stream_.push_back(i);
                 }
 
                 template<>
-                void DataOutput::write(char i) {
+                void data_output::write(char i) {
                     if (is_no_write_) { return; }
                     // C++ `char` is one byte only, `char16_t` is two bytes
                     write<byte>(0);
@@ -444,14 +444,14 @@ namespace hazelcast {
                 }
 
                 template<>
-                void DataOutput::write(char16_t i) {
+                void data_output::write(char16_t i) {
                     if (is_no_write_) { return; }
                     write<byte>(static_cast<byte>(i >> 8));
                     write<byte>(i);
                 }
 
                 template<>
-                void DataOutput::write(int16_t value) {
+                void data_output::write(int16_t value) {
                     if (is_no_write_) { return; }
                     int16_t result;
                     byte *target = (byte *) &result;
@@ -460,7 +460,7 @@ namespace hazelcast {
                 }
 
                 template<>
-                void DataOutput::write(int32_t v) {
+                void data_output::write(int32_t v) {
                     if (is_no_write_) { return; }
                     int32_t result;
                     byte *target = (byte *) &result;
@@ -469,7 +469,7 @@ namespace hazelcast {
                 }
 
                 template<>
-                void DataOutput::write(int64_t l) {
+                void data_output::write(int64_t l) {
                     if (is_no_write_) { return; }
                     int64_t result;
                     byte *target = (byte *) &result;
@@ -478,7 +478,7 @@ namespace hazelcast {
                 }
 
                 template<>
-                void DataOutput::write(float x) {
+                void data_output::write(float x) {
                     if (is_no_write_) { return; }
                     union {
                         float f;
@@ -489,7 +489,7 @@ namespace hazelcast {
                 }
 
                 template<>
-                void DataOutput::write(double v) {
+                void data_output::write(double v) {
                     if (is_no_write_) { return; }
                     union {
                         double d;
@@ -500,19 +500,19 @@ namespace hazelcast {
                 }
 
                 template<>
-                void DataOutput::write(boost::uuids::uuid v) {
+                void data_output::write(boost::uuids::uuid v) {
                     if (is_no_write_) { return; }
                     output_stream_.insert(output_stream_.end(), v.data, v.data + util::Bits::UUID_SIZE_IN_BYTES);
                 }
 
                 template<>
-                void DataOutput::write(bool value) {
+                void data_output::write(bool value) {
                     if (is_no_write_) { return; }
                     write<byte>(value);
                 }
 
                 template<>
-                void DataOutput::write(const std::string &str) {
+                void data_output::write(const std::string &str) {
                     if (is_no_write_) { return; }
                     int32_t len = util::UTFUtil::is_valid_ut_f8(str);
                     if (len < 0) {
@@ -528,24 +528,24 @@ namespace hazelcast {
                 }
 
                 template<>
-                void DataOutput::write(const HazelcastJsonValue &value) {
+                void data_output::write(const hazelcast_json_value &value) {
                     if (is_no_write_) { return; }
                     write<std::string>(value.to_string());
                 }
 
-                ObjectType::ObjectType() : type_id(serialization_constants::CONSTANT_TYPE_NULL), factory_id(-1), class_id(-1) {}
+                object_type::object_type() : type_id(serialization_constants::CONSTANT_TYPE_NULL), factory_id(-1), class_id(-1) {}
 
-                std::ostream &operator<<(std::ostream &os, const ObjectType &type) {
+                std::ostream &operator<<(std::ostream &os, const object_type &type) {
                     os << "typeId: " << static_cast<int32_t>(type.type_id) << " factoryId: " << type.factory_id << " classId: "
                        << type.class_id;
                     return os;
                 }
 
-                int32_t DataSerializer::read_int(ObjectDataInput &in) const {
+                int32_t DataSerializer::read_int(object_data_input &in) const {
                     return in.read<int32_t>();
                 }
 
-                PortableContext::PortableContext(const SerializationConfig &serialization_conf) :
+                PortableContext::PortableContext(const serialization_config &serialization_conf) :
                         serialization_config_(serialization_conf) {}
 
                 int PortableContext::get_class_version(int factory_id, int class_id) {
@@ -562,7 +562,7 @@ namespace hazelcast {
                 }
 
                 std::shared_ptr<ClassDefinition>
-                PortableContext::read_class_definition(ObjectDataInput &in, int factory_id, int class_id, int version) {
+                PortableContext::read_class_definition(object_data_input &in, int factory_id, int class_id, int version) {
                     bool shouldRegister = true;
                     ClassDefinitionBuilder builder(factory_id, class_id, version);
 
@@ -649,17 +649,17 @@ namespace hazelcast {
                     return *value;
                 }
 
-                const SerializationConfig &PortableContext::get_serialization_config() const {
+                const serialization_config &PortableContext::get_serialization_config() const {
                     return serialization_config_;
                 }
 
-                SerializationService::SerializationService(const SerializationConfig &config)
+                SerializationService::SerializationService(const serialization_config &config)
                         : serialization_config_(config), portable_context_(serialization_config_),
                           portable_serializer_(portable_context_) {}
 
                 DefaultPortableWriter::DefaultPortableWriter(PortableSerializer &portable_ser,
                                                              std::shared_ptr<ClassDefinition> cd,
-                                                             ObjectDataOutput &output)
+                                                             object_data_output &output)
                         : raw_(false), portable_serializer_(portable_ser), object_data_output_(output), 
                         begin_(object_data_output_.position()), cd_(cd) {
                     // room for final offset
@@ -713,7 +713,7 @@ namespace hazelcast {
 
                 }
 
-                ObjectDataOutput &DefaultPortableWriter::get_raw_data_output() {
+                object_data_output &DefaultPortableWriter::get_raw_data_output() {
                     if (!raw_) {
                         size_t pos = object_data_output_.position();
                         int32_t index = cd_->get_field_count(); // last index
@@ -745,8 +745,8 @@ namespace hazelcast {
                     return 1;
                 }
 
-                ObjectType SerializationService::get_object_type(const data *data) {
-                    ObjectType type;
+                object_type SerializationService::get_object_type(const data *data) {
+                    object_type type;
 
                     if (NULL == data) {
                         type.type_id = serialization_constants::CONSTANT_TYPE_NULL;
@@ -758,7 +758,7 @@ namespace hazelcast {
                     if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id ||
                         serialization_constants::CONSTANT_TYPE_PORTABLE == type.type_id) {
                         // 8 (data Header) = Hash(4-bytes) + data TypeId(4 bytes)
-                        DataInput<std::vector<byte>> dataInput(data->to_byte_array(), 8);
+                        data_input<std::vector<byte>> dataInput(data->to_byte_array(), 8);
 
                         if (serialization_constants::CONSTANT_TYPE_DATA == type.type_id) {
                             bool identified = dataInput.read<bool>();
@@ -787,8 +787,8 @@ namespace hazelcast {
                     return data_serializer_;
                 }
 
-                ObjectDataOutput SerializationService::new_output_stream() {
-                    return ObjectDataOutput(false, &portable_serializer_, serialization_config_.get_global_serializer());
+                object_data_output SerializationService::new_output_stream() {
+                    return object_data_output(false, &portable_serializer_, serialization_config_.get_global_serializer());
                 }
 
                 template<>
@@ -936,11 +936,11 @@ namespace hazelcast {
                 }
 
                 DefaultPortableReader::DefaultPortableReader(PortableSerializer &portable_ser,
-                                                             ObjectDataInput &input,
+                                                             object_data_input &input,
                                                              std::shared_ptr<ClassDefinition> cd)
                         : PortableReaderBase(portable_ser, input, cd) {}
 
-                PortableReaderBase::PortableReaderBase(PortableSerializer &portable_ser, ObjectDataInput &input,
+                PortableReaderBase::PortableReaderBase(PortableSerializer &portable_ser, object_data_input &input,
                                                        std::shared_ptr<ClassDefinition> cd)
                         : cd_(cd), data_input_(&input), portable_serializer_(&portable_ser), raw_(false) {
                     int fieldCount;
@@ -993,7 +993,7 @@ namespace hazelcast {
                     data_input_->position(pos + util::Bits::SHORT_SIZE_IN_BYTES + len + 1);
                 }
 
-                hazelcast::client::serialization::ObjectDataInput &PortableReaderBase::get_raw_data_input() {
+                hazelcast::client::serialization::object_data_input &PortableReaderBase::get_raw_data_input() {
                     if (!raw_) {
                         data_input_->position(offset_ + cd_->get_field_count() * util::Bits::INT_SIZE_IN_BYTES);
                         int32_t pos = data_input_->read<int32_t>();
@@ -1027,15 +1027,15 @@ namespace hazelcast {
                     }
                 }
 
-                MorphingPortableReader::MorphingPortableReader(PortableSerializer &portable_ser, ObjectDataInput &input,
+                MorphingPortableReader::MorphingPortableReader(PortableSerializer &portable_ser, object_data_input &input,
                                                                std::shared_ptr<ClassDefinition> cd)
                         : PortableReaderBase(portable_ser, input, cd) {}
 
                 PortableSerializer::PortableSerializer(PortableContext &portable_context) : context_(portable_context) {}
 
-                PortableReader
-                PortableSerializer::create_reader(ObjectDataInput &input, int factory_id, int class_id, int version,
-                                                 int portable_version) {
+                portable_reader
+                PortableSerializer::create_reader(object_data_input &input, int factory_id, int class_id, int version,
+                                                  int portable_version) {
 
                     int effectiveVersion = version;
                     if (version < 0) {
@@ -1050,10 +1050,10 @@ namespace hazelcast {
                         input.position(begin);
                     }
 
-                    return PortableReader(*this, input, cd, effectiveVersion == portable_version);
+                    return portable_reader(*this, input, cd, effectiveVersion == portable_version);
                 }
 
-                int32_t PortableSerializer::read_int(ObjectDataInput &in) const {
+                int32_t PortableSerializer::read_int(object_data_input &in) const {
                     return in.read<int32_t>();
                 }
             }
@@ -1062,8 +1062,8 @@ namespace hazelcast {
 }
 
 namespace std {
-    std::size_t hash<hazelcast::client::HazelcastJsonValue>::operator()(
-            const hazelcast::client::HazelcastJsonValue &object) const noexcept {
+    std::size_t hash<hazelcast::client::hazelcast_json_value>::operator()(
+            const hazelcast::client::hazelcast_json_value &object) const noexcept {
         return std::hash<std::string>{}(object.to_string());
     }
 

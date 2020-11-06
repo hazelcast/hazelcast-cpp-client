@@ -31,7 +31,7 @@ namespace hazelcast {
     namespace client {
         class client_config;
 
-        class HazelcastClient;
+        class hazelcast_client;
 
         namespace test {
             class HazelcastServerFactory;
@@ -56,7 +56,7 @@ namespace hazelcast {
             protected:
                 static const std::string get_ssl_cluster_name();
 
-                static HazelcastClient get_new_client();
+                static hazelcast_client get_new_client();
 
                 static const std::string get_ssl_file_path();
 

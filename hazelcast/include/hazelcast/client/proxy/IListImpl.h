@@ -55,7 +55,7 @@ namespace hazelcast {
                 IListImpl(const std::string& instance_name, spi::ClientContext *context);
 
                 boost::future<boost::uuids::uuid>
-                add_item_listener(std::unique_ptr<impl::ItemEventHandler<protocol::codec::list_addlistener_handler>> &&item_event_handler, bool include_value) {
+                add_item_listener(std::unique_ptr<impl::item_event_handler<protocol::codec::list_addlistener_handler>> &&item_event_handler, bool include_value) {
                     return register_listener(create_item_listener_codec(include_value), std::move(item_event_handler));
                 }
 

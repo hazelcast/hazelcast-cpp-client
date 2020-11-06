@@ -22,7 +22,7 @@
 
 #include <boost/any.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/spi/DefaultObjectNamespace.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

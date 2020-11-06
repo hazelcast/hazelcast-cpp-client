@@ -19,7 +19,7 @@
 #include <ostream>
 #include <stdint.h>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,10 +30,10 @@ namespace hazelcast {
     namespace client {
         namespace config {
             /**
-             * The ClientAwsConfig contains the configuration for client
+             * The client_aws_config contains the configuration for client
              * to connect to nodes in aws environment.
              *
-             * The ClientAwsConfig contains the configuration for AWS join mechanism.
+             * The client_aws_config contains the configuration for AWS join mechanism.
              * <p/>
              * what happens behind the scenes is that data about the running AWS instances in a specific region are downloaded using the
              * accesskey/secretkey and are potential Hazelcast members.
@@ -64,7 +64,7 @@ namespace hazelcast {
                  * Sets the access key to access AWS.
                  *
                  * @param accessKey the access key to access AWS
-                 * @return the updated ClientAwsConfig.
+                 * @return the updated client_aws_config.
                  * @throws IllegalArgumentException if accessKey is empty.
                  * @see #getAccessKey()
                  * @see #setSecretKey(std::string)
@@ -82,7 +82,7 @@ namespace hazelcast {
                  * Sets the secret key to access AWS.
                  *
                  * @param secretKey the secret key to access AWS
-                 * @return the updated ClientAwsConfig.
+                 * @return the updated client_aws_config.
                  * @throws IllegalArgumentException if secretKey is empty.
                  * @see #getSecretKey()
                  * @see #setAccessKey(std::string)
@@ -100,7 +100,7 @@ namespace hazelcast {
                  * Sets the region where the EC2 instances running the Hazelcast members will be running.
                  *
                  * @param region the region where the EC2 instances running the Hazelcast members will be running
-                 * @return the updated ClientAwsConfig
+                 * @return the updated client_aws_config
                  * @throws IllegalArgumentException if region is empty.
                  */
                 client_aws_config &set_region(const std::string &region);
@@ -115,7 +115,7 @@ namespace hazelcast {
                  * Sets the host header; the address where the EC2 API can be found.
                  *
                  * @param hostHeader the new host header; the address where the EC2 API can be found
-                 * @return the updated ClientAwsConfig
+                 * @return the updated client_aws_config
                  * @throws IllegalArgumentException if hostHeader is an empty string.
                  */
                 client_aws_config &set_host_header(const std::string &host_header);
@@ -124,7 +124,7 @@ namespace hazelcast {
                  * Enables or disables the aws join mechanism.
                  *
                  * @param enabled true if enabled, false otherwise.
-                 * @return the updated ClientAwsConfig.
+                 * @return the updated client_aws_config.
                  */
                 client_aws_config &set_enabled(bool enabled);
                 /**
@@ -138,7 +138,7 @@ namespace hazelcast {
                  * Sets the security group name. See the filtering section above for more information.
                  *
                  * @param securityGroupName the security group name.
-                 * @return the updated ClientAwsConfig.
+                 * @return the updated client_aws_config.
                  * @see #getSecurityGroupName()
                  */
                 client_aws_config &set_security_group_name(const std::string &security_group_name);
@@ -154,7 +154,7 @@ namespace hazelcast {
                  * Sets the tag key. See the filtering section above for more information.
                  *
                  * @param tagKey the tag key. See the filtering section above for more information.
-                 * @return the updated ClientAwsConfig.
+                 * @return the updated client_aws_config.
                  * @see #setTagKey(std::string)
                  */
                 client_aws_config &set_tag_key(const std::string &tag_key);
@@ -170,7 +170,7 @@ namespace hazelcast {
                  * Sets the tag value. See the filtering section above for more information.
                  *
                  * @param tagValue the tag value. See the filtering section above for more information.
-                 * @return the updated ClientAwsConfig.
+                 * @return the updated client_aws_config.
                  * @see #setTagKey(std::string)
                  * @see #getTagValue()
                  */
@@ -195,7 +195,7 @@ namespace hazelcast {
                  * Sets the tag value. See the filtering section above for more information.
                  *
                  * @param iamRole the IAM Role name.
-                 * @return the updated ClientAwsConfig.
+                 * @return the updated client_aws_config.
                  * @see #getIamRole()
                  */
                 client_aws_config &set_iam_role(const std::string &iam_role);

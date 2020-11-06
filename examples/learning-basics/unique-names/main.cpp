@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
     auto flakeIdGenerator = hz.get_flake_id_generator("idGenerator");
     std::ostringstream out("somemap");

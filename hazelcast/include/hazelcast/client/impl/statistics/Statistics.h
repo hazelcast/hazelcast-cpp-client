@@ -22,7 +22,7 @@
 
 #include <boost/asio/steady_timer.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/Sync.h"
 
 namespace hazelcast {
@@ -34,7 +34,7 @@ namespace hazelcast {
         namespace connection {
             class Connection;
         }
-        class ClientProperties;
+        class client_properties;
 
         namespace spi {
             class ClientContext;
@@ -98,7 +98,7 @@ namespace hazelcast {
                     static std::string escape_special_characters(const std::string &name);
 
                     spi::ClientContext &client_context_;
-                    ClientProperties &client_properties_;
+                    client_properties &client_properties_;
                     logger &logger_;
                     bool enabled_;
                     PeriodicStatistics periodic_stats_;

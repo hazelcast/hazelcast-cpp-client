@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include <unordered_map>
 #include <string>
 #include <vector>

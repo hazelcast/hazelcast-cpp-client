@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/query/Predicates.h>
 #include "employee.h"
 
@@ -46,13 +46,13 @@ namespace hazelcast {
                     return 3;
                 }
 
-                static void write_data(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Person &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person read_data(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Person read_data(hazelcast::client::serialization::object_data_input &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
@@ -62,23 +62,23 @@ namespace hazelcast {
 
 class PredicateMember {
 public:
-    std::vector<Person> get_with_name(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &person_map) {
+    std::vector<Person> get_with_name(hazelcast_client &hz, const std::string &name, hazelcast::client::imap &person_map) {
         return person_map.values<Person>(query::SqlPredicate(hz, std::string("name==") + name)).get();
     }
 
     std::vector<Person>
-    get_not_with_name(HazelcastClient &hz, const std::string &name, hazelcast::client::IMap &person_map) {
+    get_not_with_name(hazelcast_client &hz, const std::string &name, hazelcast::client::imap &person_map) {
         return person_map.values<Person>(query::SqlPredicate(hz, std::string("name!=") + name)).get();
     }
 
-    std::vector<Person> get_with_name_and_age(HazelcastClient &hz, const std::string &name, int32_t age,
-                                          hazelcast::client::IMap &person_map) {
+    std::vector<Person> get_with_name_and_age(hazelcast_client &hz, const std::string &name, int32_t age,
+                                          hazelcast::client::imap &person_map) {
         return person_map.values<Person>(
                 query::SqlPredicate(hz, (boost::format("name == %1% AND age == %2%") % name % age).str())).get();
     }
 
     void run() {
-        hazelcast::client::HazelcastClient hz;
+        hazelcast::client::hazelcast_client hz;
 
         auto personMap = hz.get_map("personMap");
 
@@ -116,7 +116,7 @@ public:
 };
 
 void query_map_using_paging_predicate() {
-    hazelcast::client::HazelcastClient client;
+    hazelcast::client::hazelcast_client client;
 
     auto intMap = client.get_map("testIntMapValuesWithPagingPredicate");
 
@@ -175,7 +175,7 @@ void query_map_using_paging_predicate() {
 }
 
 void query_map_using_different_predicates() {
-    hazelcast::client::HazelcastClient client;
+    hazelcast::client::hazelcast_client client;
 
     auto intMap = client.get_map("testValuesWithPredicateIntMap");
 

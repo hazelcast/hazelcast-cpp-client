@@ -16,10 +16,10 @@
 #include <future>
 #include <chrono>
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/config/ClientConnectionStrategyConfig.h>
-#include <hazelcast/client/LifecycleListener.h>
-#include "hazelcast/client/LifecycleEvent.h"
+#include <hazelcast/client/lifecycle_listener.h>
+#include "hazelcast/client/lifecycle_event.h"
 
 
 int main() {
@@ -34,7 +34,7 @@ int main() {
      */
     config.get_connection_strategy_config().set_reconnect_mode(hazelcast::client::config::ClientConnectionStrategyConfig::OFF);
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     auto map = hz.get_map("MyMap");
 
@@ -43,7 +43,7 @@ int main() {
     std::promise<void> disconnected, connected;
 
     hz.add_lifecycle_listener(
-        hazelcast::client::LifecycleListener()
+        hazelcast::client::lifecycle_listener()
             .on_connected([&connected](){
                 connected.set_value();
             })

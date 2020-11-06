@@ -39,7 +39,7 @@ namespace hazelcast {
                 }
             }
         }
-        class IMap;
+        class imap;
         namespace query {
             class PagingPredicateMarker {};
 
@@ -107,7 +107,7 @@ namespace hazelcast {
              */
             template<typename K, typename V>
             class PagingPredicate : public Predicate, public PagingPredicateMarker {
-                friend IMap;
+                friend imap;
                 friend protocol::codec::holder::paging_predicate_holder;
                 friend serialization::hz_serializer<query::PagingPredicate<K, V>>;
             public:
@@ -170,7 +170,7 @@ namespace hazelcast {
             private:
                 anchor_data_list anchor_data_list_;
                 std::shared_ptr<query::EntryComparator<K, V>> comparator_;
-                serialization::ObjectDataOutput out_stream_;
+                serialization::object_data_output out_stream_;
                 size_t page_size_;
                 size_t page_;
                 iteration_type iteration_type_;
@@ -276,9 +276,9 @@ namespace hazelcast {
 
                 /**
                  * Defines how this class will be written.
-                 * @param writer ObjectDataOutput
+                 * @param writer object_data_output
                  */
-                static void write_data(const query::PagingPredicate<K, V> &obj, ObjectDataOutput &out) {
+                static void write_data(const query::PagingPredicate<K, V> &obj, object_data_output &out) {
                     out.write_bytes(obj.outStream.toByteArray());
                     out.write<int32_t>((int32_t) obj.page);
                     out.write<int32_t>((int32_t) obj.pageSize);
@@ -296,7 +296,7 @@ namespace hazelcast {
                 /**
                  * Should not be called at the client side!
                  */
-                static query::PagingPredicate<K, V> read_data(ObjectDataInput &in) {
+                static query::PagingPredicate<K, V> read_data(object_data_input &in) {
                     // Not need to read at the client side
                     BOOST_THROW_EXCEPTION(exception::HazelcastSerializationException("readData",
                                                                                      "Client should not need to use readdata method!!!"));

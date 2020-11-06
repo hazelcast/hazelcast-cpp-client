@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/EntryListener.h>
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/entry_listener.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
     hazelcast::client::client_config config;
@@ -36,35 +36,35 @@ int main() {
      */
     config.set_property("hazelcast.client.event.queue.capacity", "50000");
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     auto map = hz.get_map("MyMap");
 
-    hazelcast::client::EntryListener listener;
+    hazelcast::client::entry_listener listener;
 
     listener.
-        on_added([](hazelcast::client::EntryEvent &&event) {
+        on_added([](hazelcast::client::entry_event &&event) {
             std::cout << "Entry added:" << event.get_key().get<int>().value();
         }).
-        on_removed([](hazelcast::client::EntryEvent &&event) {
+        on_removed([](hazelcast::client::entry_event &&event) {
             std::cout << "Entry removed:" << event.get_key().get<int>().value();
         }).
-        on_updated([](hazelcast::client::EntryEvent &&event) {
+        on_updated([](hazelcast::client::entry_event &&event) {
             std::cout << "Entry updated:" << event.get_key().get<int>().value();
         }).
-        on_evicted([](hazelcast::client::EntryEvent &&event) {
+        on_evicted([](hazelcast::client::entry_event &&event) {
             std::cout << "Entry evicted:" << event.get_key().get<int>().value();
         }).
-        on_expired([](hazelcast::client::EntryEvent &&event) {
+        on_expired([](hazelcast::client::entry_event &&event) {
             std::cout << "Entry expired:" << event.get_key().get<int>().value();
         }).
-        on_merged([](hazelcast::client::EntryEvent &&event) {
+        on_merged([](hazelcast::client::entry_event &&event) {
             std::cout << "Entry merged:" << event.get_key().get<int>().value();
         }).
-        on_map_evicted([](hazelcast::client::MapEvent &&event) {
+        on_map_evicted([](hazelcast::client::map_event &&event) {
             std::cout << "Map evicted:" << event.get_name();
         }).
-        on_map_cleared([](hazelcast::client::MapEvent &&event) {
+        on_map_cleared([](hazelcast::client::map_event &&event) {
             std::cout << "Map cleared:" << event.get_name();
         });
 

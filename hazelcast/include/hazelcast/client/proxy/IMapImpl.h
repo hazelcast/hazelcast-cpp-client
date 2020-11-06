@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include <hazelcast/client/EntryEvent.h>
+#include <hazelcast/client/entry_event.h>
 #include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/query/Predicates.h"
 #include "hazelcast/util/Util.h"

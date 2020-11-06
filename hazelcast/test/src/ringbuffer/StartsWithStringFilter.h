@@ -23,7 +23,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            namespace ringbuffer {
+            namespace rb {
                 class StartsWithStringFilter {
                     friend serialization::hz_serializer<StartsWithStringFilter>;
                 public:
@@ -35,14 +35,14 @@ namespace hazelcast {
         }
         namespace serialization {
             template<>
-            struct hz_serializer<test::ringbuffer::StartsWithStringFilter> : public identified_data_serializer {
+            struct hz_serializer<test::rb::StartsWithStringFilter> : public identified_data_serializer {
                 static int32_t get_factory_id();
 
                 static int32_t get_class_id();
 
-                static void write_data(const test::ringbuffer::StartsWithStringFilter &object, ObjectDataOutput &out);
+                static void write_data(const test::rb::StartsWithStringFilter &object, object_data_output &out);
 
-                static test::ringbuffer::StartsWithStringFilter read_data(ObjectDataInput &in);
+                static test::rb::StartsWithStringFilter read_data(object_data_input &in);
             };
         }
     }

@@ -16,7 +16,7 @@
 #pragma once
 
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/topic/Message.h"
+#include "hazelcast/client/topic/message.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/topic/Listener.h"
 
@@ -38,7 +38,7 @@ namespace hazelcast {
                             serialization_service_(serialization_service), listener_(std::move(message_listener)) {}
 
                     void handle_topic(data const & item, int64_t publish_time, boost::uuids::uuid uuid) override {
-                        listener_.received_(Message(instance_name_, typed_data(std::move(item), serialization_service_), publish_time,
+                        listener_.received_(message(instance_name_, typed_data(std::move(item), serialization_service_), publish_time,
                                                     cluster_service_.get_member(uuid)));
                     }
                 private:

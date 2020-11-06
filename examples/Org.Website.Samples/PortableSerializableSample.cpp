@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 
 using namespace hazelcast::client;
 
@@ -37,13 +37,13 @@ namespace hazelcast {
                 }
 
                 static void write_portable(const PortableSerializableSample &object,
-                                          hazelcast::client::serialization::PortableWriter &out) {
+                                          hazelcast::client::serialization::portable_writer &out) {
                     out.write("name", object.name);
                     out.write("id", object.id);
                     out.write("lastOrder", object.last_order);
                 }
 
-                static PortableSerializableSample read_portable(hazelcast::client::serialization::PortableReader &in) {
+                static PortableSerializableSample read_portable(hazelcast::client::serialization::portable_reader &in) {
                     return PortableSerializableSample{in.read<std::string>("name"), in.read<int32_t>("id"),
                                                       in.read<int64_t>("lastOrder")};
                 }
@@ -53,7 +53,7 @@ namespace hazelcast {
 }
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
     //PortableSerializableSample can be used here
     hz.shutdown();
 

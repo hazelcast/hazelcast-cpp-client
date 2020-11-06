@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
     const char *serverIp = "127.0.0.1";
@@ -22,7 +22,7 @@ int main() {
     hazelcast::client::client_config config;
     hazelcast::client::address addr(serverIp, port);
     config.get_network_config().add_address(addr);
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     auto map = hz.get_map("test map");
 

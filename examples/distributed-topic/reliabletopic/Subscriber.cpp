@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
-hazelcast::client::topic::ReliableListener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
+hazelcast::client::topic::reliable_listener make_listener(std::atomic<int> &n_received_messages, int64_t sequence_id = -1) {
     using namespace hazelcast::client::topic;
 
-    return ReliableListener(false, sequence_id)
-        .on_received([&n_received_messages](Message &&message){
+    return reliable_listener(false, sequence_id)
+        .on_received([&n_received_messages](message &&message){
             ++n_received_messages;
 
             auto object = message.get_message_object().get<std::string>();
@@ -33,7 +33,7 @@ hazelcast::client::topic::ReliableListener make_listener(std::atomic<int> &n_rec
 }
 
 void listen_with_default_config() {
-    hazelcast::client::HazelcastClient client;
+    hazelcast::client::hazelcast_client client;
 
     std::string topicName("MyReliableTopic");
     auto topic = client.get_reliable_topic(topicName);
@@ -60,7 +60,7 @@ void listen_with_config() {
     hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
     reliableTopicConfig.set_read_batch_size(5);
     clientConfig.add_reliable_topic_config(reliableTopicConfig);
-    hazelcast::client::HazelcastClient client(clientConfig);
+    hazelcast::client::hazelcast_client client(clientConfig);
 
     auto topic = client.get_reliable_topic(topicName);
 

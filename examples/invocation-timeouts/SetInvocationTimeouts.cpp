@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
     hazelcast::client::client_config config;
@@ -39,7 +39,7 @@ int main() {
      */
     config.set_property("hazelcast.client.invocation.timeout.seconds", "30");
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     auto map = hz.get_map("MyMap");
     

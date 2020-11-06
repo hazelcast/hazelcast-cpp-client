@@ -16,7 +16,7 @@
 /**
  * You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
     hazelcast::client::client_config config;
@@ -29,7 +29,7 @@ int main() {
             set_cipher_list("HIGH");     // optional setting (values for string are described at
                                        // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html)
     
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     auto map = hz.get_map("MyMap");
     

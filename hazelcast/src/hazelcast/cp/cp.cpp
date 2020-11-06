@@ -22,7 +22,7 @@
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
 
 namespace hazelcast {
     namespace cp {

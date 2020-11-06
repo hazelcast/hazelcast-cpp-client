@@ -19,7 +19,7 @@
  * DO NOT FORGET to make sure that openssl is installed.
  *
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,7 +39,7 @@ int main() {
             set_tag_key("aws-test-tag").set_tag_value("aws-tag-value-1").set_security_group_name("MySecureGroup").
             set_region("us-east-1");
     
-    hazelcast::client::HazelcastClient hz(clientConfig);
+    hazelcast::client::hazelcast_client hz(clientConfig);
 
     auto map = hz.get_map("MyMap");
     

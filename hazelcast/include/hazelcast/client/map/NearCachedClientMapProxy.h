@@ -17,7 +17,7 @@
 
 #include <memory>
 
-#include "hazelcast/client/IMap.h"
+#include "hazelcast/client/imap.h"
 #include "hazelcast/client/client_config.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/map/impl/nearcache/InvalidationAwareWrapper.h"
@@ -29,8 +29,8 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/entry_event.h"
+#include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/logger.h"
 
@@ -50,11 +50,11 @@ namespace hazelcast {
              */
             template<typename K = serialization::pimpl::data, typename V = serialization::pimpl::data>
             class NearCachedClientMapProxy
-                    : public IMap,
+                    : public imap,
                       public std::enable_shared_from_this<NearCachedClientMapProxy<K, V> > {
             public:
                 NearCachedClientMapProxy(const std::string &instance_name, spi::ClientContext *context)
-                        : IMap(instance_name, context), cache_local_entries_(false),
+                        : imap(instance_name, context), cache_local_entries_(false),
                           invalidate_on_change_(false), key_state_marker_(NULL),
                           near_cache_config_(*context->get_client_config().get_near_cache_config(instance_name)),
                           logger_(context->get_logger()) {}
@@ -63,7 +63,7 @@ namespace hazelcast {
                 typedef std::unordered_map<std::shared_ptr<serialization::pimpl::data>, bool> MARKER_MAP;
 
                 void on_initialize() override {
-                    IMap::on_initialize();
+                    imap::on_initialize();
 
                     internal::nearcache::NearCacheManager &nearCacheManager = this->get_context().get_near_cache_manager();
                     cache_local_entries_ = near_cache_config_.is_cache_local_entries();
@@ -101,7 +101,7 @@ namespace hazelcast {
                     remove_near_cache_invalidation_listener();
                     spi::ClientProxy::get_context().get_near_cache_manager().destroy_near_cache(spi::ClientProxy::get_name());
 
-                    IMap::on_shutdown();
+                    imap::on_shutdown();
                 }
 
                 boost::future<bool> contains_key_internal(const serialization::pimpl::data &key_data) override {
@@ -111,7 +111,7 @@ namespace hazelcast {
                         return boost::make_ready_future(internal::nearcache::NearCache<K, V>::NULL_OBJECT != cached);
                     }
 
-                    return IMap::contains_key_internal(*key);
+                    return imap::contains_key_internal(*key);
                 }
 
                 boost::future<boost::optional<serialization::pimpl::data>> get_internal(const serialization::pimpl::data &key_data) override {
@@ -127,7 +127,7 @@ namespace hazelcast {
                     bool marked = key_state_marker_->try_mark(*key);
 
                     try {
-                        auto future = IMap::get_internal(*key);
+                        auto future = imap::get_internal(*key);
                         if (marked) {
                             return future.then(boost::launch::deferred, [=](boost::future<boost::optional<serialization::pimpl::data>> f) {
                                 auto data = f.get();
@@ -147,7 +147,7 @@ namespace hazelcast {
                 boost::future<bool> remove_internal(
                         const serialization::pimpl::data &key, const serialization::pimpl::data &value) override {
                     try {
-                        auto response = IMap::remove_internal(key, value);
+                        auto response = imap::remove_internal(key, value);
                         invalidate_near_cache(key);
                         return response;
                     } catch (exception::IException &) {
@@ -160,7 +160,7 @@ namespace hazelcast {
                         const serialization::pimpl::data &key_data) override {
                     try {
                         invalidate_near_cache(key_data);
-                        auto response = IMap::remove_internal(key_data);
+                        auto response = imap::remove_internal(key_data);
                         return response;
                     } catch (exception::IException &) {
                         invalidate_near_cache(key_data);
@@ -171,7 +171,7 @@ namespace hazelcast {
                 boost::future<protocol::ClientMessage>
                 remove_all_internal(const serialization::pimpl::data &predicate_data) override {
                     try {
-                        auto response = IMap::remove_all_internal(predicate_data);
+                        auto response = imap::remove_all_internal(predicate_data);
                         near_cache_->clear();
                         return response;
                     } catch (exception::IException &) {
@@ -182,7 +182,7 @@ namespace hazelcast {
 
                 boost::future<protocol::ClientMessage> delete_internal(const serialization::pimpl::data &key) override {
                     try {
-                        auto response = IMap::delete_internal(key);
+                        auto response = imap::delete_internal(key);
                         invalidate_near_cache(key);
                         return response;
                     } catch (exception::IException &) {
@@ -194,7 +194,7 @@ namespace hazelcast {
                 boost::future<bool> try_remove_internal(const serialization::pimpl::data &key_data,
                                                               std::chrono::milliseconds timeout) override {
                     try {
-                        auto response = IMap::try_remove_internal(key_data, timeout);
+                        auto response = imap::try_remove_internal(key_data, timeout);
                         invalidate_near_cache(key_data);
                         return response;
                     } catch (exception::IException &) {
@@ -206,7 +206,7 @@ namespace hazelcast {
                 boost::future<bool> try_put_internal(const serialization::pimpl::data &key_data,
                         const serialization::pimpl::data &value_data, std::chrono::milliseconds timeout) override {
                     try {
-                        auto response = IMap::try_put_internal(key_data, value_data, timeout);
+                        auto response = imap::try_put_internal(key_data, value_data, timeout);
                         invalidate_near_cache(key_data);
                         return response;
                     } catch (exception::IException &) {
@@ -218,7 +218,7 @@ namespace hazelcast {
                 boost::future<boost::optional<serialization::pimpl::data>> put_internal(const serialization::pimpl::data &key_data,
                         const serialization::pimpl::data &value_data, std::chrono::milliseconds ttl) override {
                     try {
-                        auto previousValue = IMap::put_internal(key_data, value_data, ttl);
+                        auto previousValue = imap::put_internal(key_data, value_data, ttl);
                         invalidate_near_cache(key_data);
                         return previousValue;
                     } catch (exception::IException &) {
@@ -232,7 +232,7 @@ namespace hazelcast {
                                         const serialization::pimpl::data &value_data,
                                         std::chrono::milliseconds ttl) override {
                     try {
-                        auto result = IMap::try_put_transient_internal(key_data, value_data, ttl);
+                        auto result = imap::try_put_transient_internal(key_data, value_data, ttl);
                         invalidate_near_cache(key_data);
                         return result;
                     } catch (exception::IException &) {
@@ -246,7 +246,7 @@ namespace hazelcast {
                                     const serialization::pimpl::data &value_data,
                                     std::chrono::milliseconds ttl) override {
                     try {
-                        auto previousValue = IMap::put_if_absent_data(key_data, value_data, ttl);
+                        auto previousValue = imap::put_if_absent_data(key_data, value_data, ttl);
                         invalidate_near_cache(key_data);
                         return previousValue;
                     } catch (exception::IException &) {
@@ -328,7 +328,7 @@ namespace hazelcast {
                             return boost::make_ready_future(result);
                         }
 
-                        return IMap::get_all_internal(partition_id, remainingKeys).then(
+                        return imap::get_all_internal(partition_id, remainingKeys).then(
                                 boost::launch::deferred, [=](boost::future<EntryVector> f) {
                             EntryVector allEntries(result);
                             for (auto &entry : f.get()) {
@@ -362,7 +362,7 @@ namespace hazelcast {
                 execute_on_key_internal(const serialization::pimpl::data &key_data,
                                      const serialization::pimpl::data &processor) override {
                     try {
-                        auto response = IMap::execute_on_key_data(key_data, processor);
+                        auto response = imap::execute_on_key_data(key_data, processor);
                         invalidate_near_cache(key_data);
                         return response;
                     } catch (exception::IException &) {
@@ -374,7 +374,7 @@ namespace hazelcast {
                 boost::future<protocol::ClientMessage>
                 put_all_internal(int partition_id, const EntryVector &entries) override {
                     try {
-                        auto result = IMap::put_all_internal(partition_id, entries);
+                        auto result = imap::put_all_internal(partition_id, entries);
                         invalidate_entries(entries);
                         return result;
                     } catch (exception::IException &) {
@@ -468,16 +468,16 @@ namespace hazelcast {
                         return protocol::codec::map_removeentrylistener_encode(name_, real_registration_id);
                     }
 
-                    NearCacheEntryListenerMessageCodec(const std::string &name, EntryEvent::type listener_flags)
+                    NearCacheEntryListenerMessageCodec(const std::string &name, entry_event::type listener_flags)
                             : name_(name), listener_flags_(listener_flags) {}
 
                 private:
                     const std::string &name_;
-                    EntryEvent::type listener_flags_;
+                    entry_event::type listener_flags_;
                 };
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec> create_near_cache_entry_listener_codec() {
-                    EntryEvent::type listenerFlags = EntryEvent::type::INVALIDATION;
+                    entry_event::type listenerFlags = entry_event::type::INVALIDATION;
                     return std::shared_ptr<spi::impl::ListenerMessageCodec>(
                             new NearCacheEntryListenerMessageCodec(spi::ClientProxy::get_name(), listenerFlags));
                 }

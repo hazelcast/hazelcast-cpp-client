@@ -228,7 +228,7 @@ namespace hazelcast {
                 return 2;
             }
 
-            void hz_serializer<test::employee>::write_portable(const test::employee &object, PortableWriter &writer) {
+            void hz_serializer<test::employee>::write_portable(const test::employee &object, portable_writer &writer) {
                 writer.write("n", object.name_);
                 writer.write<int32_t>("a", object.age_);
 
@@ -251,7 +251,7 @@ namespace hazelcast {
                 writer.write("ff", object.ff_);
                 writer.write("dd", object.dd_);
 
-                serialization::ObjectDataOutput &out = writer.get_raw_data_output();
+                serialization::object_data_output &out = writer.get_raw_data_output();
                 out.write_object<byte>(&object.by_);
                 out.write_object<char>(object.c_);
                 out.write_object<bool>(&object.boolean_);
@@ -263,7 +263,7 @@ namespace hazelcast {
                 out.write_object<std::string>(&object.utf_str_);
             }
 
-            test::employee hz_serializer<test::employee>::read_portable(PortableReader &reader) {
+            test::employee hz_serializer<test::employee>::read_portable(portable_reader &reader) {
                 test::employee employee;
                 employee.name_ = reader.read<std::string>("n");
                 employee.age_ = reader.read<int32_t>("a");
@@ -284,7 +284,7 @@ namespace hazelcast {
                 employee.ii_ = *reader.read<std::vector<int32_t>>("ii");
                 employee.ff_ = *reader.read<std::vector<float>>("ff");
                 employee.dd_ = *reader.read<std::vector<double>>("dd");
-                serialization::ObjectDataInput &in = reader.get_raw_data_input();
+                serialization::object_data_input &in = reader.get_raw_data_input();
                 employee.by_ = *in.read_object<byte>();
                 employee.c_ = *in.read_object<char>();
                 employee.boolean_ = *in.read_object<bool>();
@@ -306,10 +306,10 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::EmployeeEntryComparator>::write_data(const test::EmployeeEntryComparator &object,
-                                                                         ObjectDataOutput &writer) {}
+                                                                          object_data_output &writer) {}
 
             test::EmployeeEntryComparator
-            hz_serializer<test::EmployeeEntryComparator>::read_data(ObjectDataInput &reader) {
+            hz_serializer<test::EmployeeEntryComparator>::read_data(object_data_input &reader) {
                 return test::EmployeeEntryComparator();
             }
 
@@ -322,9 +322,9 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::EmployeeEntryKeyComparator>::write_data(const test::EmployeeEntryKeyComparator &,
-                                                                            ObjectDataOutput &) {}
+                                                                             object_data_output &) {}
 
-            test::EmployeeEntryKeyComparator hz_serializer<test::EmployeeEntryKeyComparator>::read_data(ObjectDataInput &) {
+            test::EmployeeEntryKeyComparator hz_serializer<test::EmployeeEntryKeyComparator>::read_data(object_data_input &) {
                 return test::EmployeeEntryKeyComparator();
             }
 
@@ -337,7 +337,7 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::TestMainPortable>::write_portable(const test::TestMainPortable &object,
-                                                                      serialization::PortableWriter &writer) {
+                                                                      serialization::portable_writer &writer) {
                 writer.write<byte>("b", object.b);
                 writer.write("bool", object.boolean);
                 writer.write("c", object.c);
@@ -351,7 +351,7 @@ namespace hazelcast {
             }
 
             test::TestMainPortable
-            hz_serializer<test::TestMainPortable>::read_portable(serialization::PortableReader &reader) {
+            hz_serializer<test::TestMainPortable>::read_portable(serialization::portable_reader &reader) {
                 test::TestMainPortable object;
                 object.b = reader.read<byte>("b");
                 object.boolean = reader.read<bool>("bool");
@@ -378,25 +378,25 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::TestRawDataPortable>::write_portable(const test::TestRawDataPortable &object,
-                                                                         serialization::PortableWriter &writer) {
+                                                                         serialization::portable_writer &writer) {
                 writer.write("l", object.l);
                 writer.write("c", object.c);
                 writer.write_portable("p", &object.p);
-                serialization::ObjectDataOutput &out = writer.get_raw_data_output();
+                serialization::object_data_output &out = writer.get_raw_data_output();
                 out.write<int32_t>(object.k);
                 out.write(object.s);
                 hz_serializer<test::TestDataSerializable>::write_data(object.ds, out);
             }
 
             test::TestRawDataPortable
-            hz_serializer<test::TestRawDataPortable>::read_portable(serialization::PortableReader &reader) {
+            hz_serializer<test::TestRawDataPortable>::read_portable(serialization::portable_reader &reader) {
                 test::TestRawDataPortable object;
                 object.l = reader.read<int64_t>("l");
                 object.c = std::move(reader.read<std::vector<char>>("c")).value();
                 auto namedPortable = reader.read_portable<test::TestNamedPortable>("p");
                 if (namedPortable.has_value())
                     object.p = namedPortable.value();
-                serialization::ObjectDataInput &in = reader.get_raw_data_input();
+                serialization::object_data_input &in = reader.get_raw_data_input();
                 object.k = in.read<int32_t>();
                 object.s = in.read<std::string>();
                 object.ds = hz_serializer<test::TestDataSerializable>::read_data(in);
@@ -413,13 +413,13 @@ namespace hazelcast {
 
             void
             hz_serializer<test::TestDataSerializable>::write_data(const test::TestDataSerializable &object,
-                                                                 serialization::ObjectDataOutput &out) {
+                                                                 serialization::object_data_output &out) {
                 out.write<int32_t>(object.i);
                 out.write(object.c);
             }
 
             test::TestDataSerializable
-            hz_serializer<test::TestDataSerializable>::read_data(serialization::ObjectDataInput &in) {
+            hz_serializer<test::TestDataSerializable>::read_data(serialization::object_data_input &in) {
                 return test::TestDataSerializable{in.read<int32_t>(), in.read<char>()};
             }
 
@@ -432,12 +432,12 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::TestNamedPortable>::write_portable(const test::TestNamedPortable &object,
-                                                                       PortableWriter &writer) {
+                                                                        portable_writer &writer) {
                 writer.write("name", object.name);
                 writer.write<int32_t>("myint", object.k);
             }
 
-            test::TestNamedPortable hz_serializer<test::TestNamedPortable>::read_portable(PortableReader &reader) {
+            test::TestNamedPortable hz_serializer<test::TestNamedPortable>::read_portable(portable_reader &reader) {
                 return test::TestNamedPortable{reader.read<std::string>("name"), reader.read<int32_t>("myint")};
             }
 
@@ -450,7 +450,7 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::TestInnerPortable>::write_portable(const test::TestInnerPortable &object,
-                                                                       PortableWriter &writer) {
+                                                                        portable_writer &writer) {
                 writer.write("b", object.bb);
                 writer.write("ba", object.ba);
                 writer.write("c", object.cc);
@@ -463,7 +463,7 @@ namespace hazelcast {
                 writer.write_portable_array("nn", &object.nn);
             }
 
-            test::TestInnerPortable hz_serializer<test::TestInnerPortable>::read_portable(PortableReader &reader) {
+            test::TestInnerPortable hz_serializer<test::TestInnerPortable>::read_portable(portable_reader &reader) {
                 test::TestInnerPortable object;
                 object.bb = *reader.read<std::vector<byte>>("b");
                 object.ba = *reader.read<std::vector<bool>>("ba");
@@ -491,13 +491,13 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::TestNamedPortableV2>::write_portable(const test::TestNamedPortableV2 &object,
-                                                                         PortableWriter &writer) {
+                                                                          portable_writer &writer) {
                 writer.write("name", object.name);
                 writer.write<int32_t>("myint", object.k);
                 writer.write<int32_t>("v", object.v);
             }
 
-            test::TestNamedPortableV2 hz_serializer<test::TestNamedPortableV2>::read_portable(PortableReader &reader) {
+            test::TestNamedPortableV2 hz_serializer<test::TestNamedPortableV2>::read_portable(portable_reader &reader) {
                 return test::TestNamedPortableV2{reader.read<std::string>("name"), reader.read<int32_t>("myint"),
                                                  reader.read<int32_t>("v")};
             }
@@ -515,12 +515,12 @@ namespace hazelcast {
             }
 
             void hz_serializer<test::TestNamedPortableV3>::write_portable(const test::TestNamedPortableV3 &object,
-                                                                         PortableWriter &writer) {
+                                                                          portable_writer &writer) {
                 writer.write("name", object.name);
                 writer.write<int16_t>("myint", object.k);
             }
 
-            test::TestNamedPortableV3 hz_serializer<test::TestNamedPortableV3>::read_portable(PortableReader &reader) {
+            test::TestNamedPortableV3 hz_serializer<test::TestNamedPortableV3>::read_portable(portable_reader &reader) {
                 return test::TestNamedPortableV3{reader.read<std::string>("name"), reader.read<int16_t>("myint")};
             }
 
@@ -534,15 +534,15 @@ namespace hazelcast {
 
             void
             hz_serializer<test::TestInvalidWritePortable>::write_portable(const test::TestInvalidWritePortable &object,
-                                                                         PortableWriter &writer) {
+                                                                          portable_writer &writer) {
                 writer.write<int64_t>("l", object.l);
-                serialization::ObjectDataOutput &out = writer.get_raw_data_output();
+                serialization::object_data_output &out = writer.get_raw_data_output();
                 out.write<int32_t>(object.i);
                 writer.write("s", object.s);
             }
 
             test::TestInvalidWritePortable
-            hz_serializer<test::TestInvalidWritePortable>::read_portable(PortableReader &reader) {
+            hz_serializer<test::TestInvalidWritePortable>::read_portable(portable_reader &reader) {
                 return test::TestInvalidWritePortable{reader.read<int64_t>("l"), reader.read<int32_t>("i"),
                                                       reader.read<std::string>("s")};
             }
@@ -557,29 +557,29 @@ namespace hazelcast {
 
             void
             hz_serializer<test::TestInvalidReadPortable>::write_portable(const test::TestInvalidReadPortable &object,
-                                                                         PortableWriter &writer) {
+                                                                         portable_writer &writer) {
                 writer.write<int64_t>("l", object.l);
                 writer.write<int32_t>("i", object.i);
                 writer.write("s", object.s);
             }
 
             test::TestInvalidReadPortable
-            hz_serializer<test::TestInvalidReadPortable>::read_portable(PortableReader &reader) {
+            hz_serializer<test::TestInvalidReadPortable>::read_portable(portable_reader &reader) {
                 test::TestInvalidReadPortable obj;
                 obj.l = reader.read<int64_t>("l");
-                serialization::ObjectDataInput &in = reader.get_raw_data_input();
+                serialization::object_data_input &in = reader.get_raw_data_input();
                 obj.i = in.read<int32_t>();
                 obj.s = reader.read<std::string>("s");
                 return obj;
             }
 
-            void hz_serializer<test::TestCustomPerson>::write(const test::TestCustomPerson &object, ObjectDataOutput &out) {
+            void hz_serializer<test::TestCustomPerson>::write(const test::TestCustomPerson &object, object_data_output &out) {
                 out.write<int32_t>(999);
                 out.write(object.name);
                 out.write<int32_t>(999);
             }
 
-            test::TestCustomPerson hz_serializer<test::TestCustomPerson>::read(ObjectDataInput &in) {
+            test::TestCustomPerson hz_serializer<test::TestCustomPerson>::read(object_data_input &in) {
                 {
                     int t = in.read<int32_t>();
                     assert(999 == t);
@@ -595,13 +595,13 @@ namespace hazelcast {
                 return object;
             }
 
-            void hz_serializer<test::TestCustomXSerializable>::write(const test::TestCustomXSerializable &object, ObjectDataOutput &out) {
+            void hz_serializer<test::TestCustomXSerializable>::write(const test::TestCustomXSerializable &object, object_data_output &out) {
                 out.write<int32_t>(666);
                 out.write(object.id);
                 out.write<int32_t>(666);
             }
 
-            test::TestCustomXSerializable hz_serializer<test::TestCustomXSerializable>::read(ObjectDataInput &in) {
+            test::TestCustomXSerializable hz_serializer<test::TestCustomXSerializable>::read(object_data_input &in) {
                 {
                     int t = in.read<int32_t>();
                     assert(666 == t);
@@ -627,13 +627,13 @@ namespace hazelcast {
 
             void
             hz_serializer<test::ChildTemplatedPortable1>::write_portable(const test::ChildTemplatedPortable1 &object,
-                                                                         PortableWriter &out) {
+                                                                         portable_writer &out) {
                 out.write("s1", object.s1);
                 out.write("s1", object.s2);
             }
 
             test::ChildTemplatedPortable1
-            hz_serializer<test::ChildTemplatedPortable1>::read_portable(PortableReader &reader) {
+            hz_serializer<test::ChildTemplatedPortable1>::read_portable(portable_reader &reader) {
                 return test::ChildTemplatedPortable1{reader.read<std::string>("s1"), reader.read<std::string>("s2")};
             }
 
@@ -647,12 +647,12 @@ namespace hazelcast {
 
             void
             hz_serializer<test::ChildTemplatedPortable2>::write_portable(const test::ChildTemplatedPortable2 &object,
-                                                                         PortableWriter &out) {
+                                                                         portable_writer &out) {
                 out.write("s1", object.s1);
             }
 
             test::ChildTemplatedPortable2
-            hz_serializer<test::ChildTemplatedPortable2>::read_portable(PortableReader &reader) {
+            hz_serializer<test::ChildTemplatedPortable2>::read_portable(portable_reader &reader) {
                 return test::ChildTemplatedPortable2{reader.read<std::string>("s1")};
             }
 

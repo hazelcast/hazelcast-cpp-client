@@ -47,7 +47,7 @@ namespace hazelcast {
         }
 
         namespace spi {
-            class LifecycleService;
+            class lifecycle_service;
 
             class ClientContext;
 
@@ -141,7 +141,7 @@ namespace hazelcast {
                     static constexpr int UNASSIGNED_PARTITION = -1;
 
                     logger &logger_;
-                    LifecycleService &lifecycle_service_;
+                    lifecycle_service &lifecycle_service_;
                     ClientClusterServiceImpl &client_cluster_service_;
                     ClientInvocationServiceImpl &invocation_service_;
                     std::shared_ptr<ClientExecutionServiceImpl> execution_service_;

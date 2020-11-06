@@ -20,7 +20,7 @@
 
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/spi/EventHandler.h"
-#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/execution_callback.h"
 #include "hazelcast/client/impl/Partition.h"
 #include "hazelcast/logger.h"
 

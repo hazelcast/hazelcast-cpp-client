@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/HazelcastJsonValue.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/hazelcast_json_value.h>
 #include <hazelcast/client/query/Predicates.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
     auto map = hz.get_map("map");
 
-    map->put("item1", hazelcast::client::HazelcastJsonValue("{ \"age\": 4 }")).get();
-    map->put("item2", hazelcast::client::HazelcastJsonValue("{ \"age\": 20 }")).get();
+    map->put("item1", hazelcast::client::hazelcast_json_value("{ \"age\": 4 }")).get();
+    map->put("item2", hazelcast::client::hazelcast_json_value("{ \"age\": 20 }")).get();
 
     // Get the objects whose age is less than 6
-    auto result = map->values<hazelcast::client::HazelcastJsonValue>(
+    auto result = map->values<hazelcast::client::hazelcast_json_value>(
             hazelcast::client::query::GreaterLessPredicate(hz, "age", 6, false, true)).get();
 
     std::cout << "Retrieved " << result.size() << " values whose age is less than 6." << std::endl;

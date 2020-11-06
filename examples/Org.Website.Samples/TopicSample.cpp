@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 
 using namespace hazelcast::client;
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    HazelcastClient hz;
+    hazelcast_client hz;
     // Get a Topic called "my-distributed-topic"
     auto topic = hz.get_topic("my-distributed-topic");
     // Add a Listener to the Topic
     topic->add_message_listener(
         topic::Listener().
-            on_received([](topic::Message &&message) {
+            on_received([](topic::message &&message) {
                 std::cout << "Got message " << message.get_message_object().get<std::string>().value_or("null") << std::endl;
             })
     ).get();

@@ -20,7 +20,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/post.hpp>
 
-#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/lifecycle_service.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/hz_thread_pool.h"
 
@@ -35,15 +35,15 @@ namespace hazelcast {
     }
 
     namespace client {
-        class ClientProperties;
+        class client_properties;
 
         namespace spi {
             namespace impl {
                 class HAZELCAST_API ClientExecutionServiceImpl :
                         public std::enable_shared_from_this<ClientExecutionServiceImpl> {
                 public:
-                    ClientExecutionServiceImpl(const std::string &name, const ClientProperties &properties,
-                                               int32_t pool_size, spi::LifecycleService &service);
+                    ClientExecutionServiceImpl(const std::string &name, const client_properties &properties,
+                                               int32_t pool_size, spi::lifecycle_service &service);
 
                     void start();
 
@@ -74,8 +74,8 @@ namespace hazelcast {
                 private:
                     std::unique_ptr<hazelcast::util::hz_thread_pool> internal_executor_;
                     std::unique_ptr<hazelcast::util::hz_thread_pool> user_executor_;
-                    spi::LifecycleService &lifecycle_service_;
-                    const ClientProperties &client_properties_;
+                    spi::lifecycle_service &lifecycle_service_;
+                    const client_properties &client_properties_;
                     int user_executor_pool_size_;
 
                     template<typename CompletionToken>

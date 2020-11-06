@@ -23,22 +23,22 @@
 #include <hazelcast/client/serialization/serialization.h>
 
 #include "hazelcast/client/address.h"
-#include "hazelcast/client/SerializationConfig.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/LoadBalancer.h"
+#include "hazelcast/client/serialization_config.h"
+#include "hazelcast/client/socket_interceptor.h"
+#include "hazelcast/client/load_balancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
-#include "hazelcast/client/config/ClientNetworkConfig.h"
+#include "hazelcast/client/config/client_network_config.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
 #include "hazelcast/client/config/matcher/matching_point_config_pattern_matcher.h"
 #include "hazelcast/client/internal/config/ConfigUtils.h"
 #include "hazelcast/client/config/LoggerConfig.h"
 #include "hazelcast/client/serialization/serialization.h"
-#include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/client/MembershipListener.h"
+#include "hazelcast/client/lifecycle_listener.h"
+#include "hazelcast/client/membership_listener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -47,7 +47,7 @@
 
 namespace hazelcast {
     namespace client {
-        class InitialMembershipEvent;
+        class initial_membership_event;
 
         namespace connection {
              class ClientConnectionManagerImpl;
@@ -99,7 +99,7 @@ namespace hazelcast {
         };
 
         /**
-        * HazelcastClient configuration class.
+        * hazelcast_client configuration class.
         */
         class HAZELCAST_API client_config {
             friend class spi::impl::ClientClusterServiceImpl;
@@ -160,33 +160,33 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            client_config &set_socket_interceptor(SocketInterceptor &&interceptor);
+            client_config &set_socket_interceptor(socket_interceptor &&interceptor);
 
             /**
             * Will be called with the Socket, each time client creates a connection to any Member.
             */
-            const SocketInterceptor &get_socket_interceptor() const;
+            const socket_interceptor &get_socket_interceptor() const;
 
             /**
-            * Adds a listener to configuration to be registered when HazelcastClient starts.
+            * Adds a listener to configuration to be registered when hazelcast_client starts.
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
             * otherwise it will slow down the system.
             *
             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
             *
-            * \param listener LifecycleListener
+            * \param listener lifecycle_listener
             * \return itself ClientConfig
             */
-            client_config &add_listener(LifecycleListener &&listener);
+            client_config &add_listener(lifecycle_listener &&listener);
 
             /**
             *
             * \return registered lifecycleListeners
             */
-            const std::vector<LifecycleListener> &get_lifecycle_listeners() const;
+            const std::vector<lifecycle_listener> &get_lifecycle_listeners() const;
 
             /**
-            * Adds a listener to configuration to be registered when HazelcastClient starts.
+            * Adds a listener to configuration to be registered when hazelcast_client starts.
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
             * otherwise it will slow down the system.
             *
@@ -195,21 +195,21 @@ namespace hazelcast {
             * \param listener MembershipListener
             * \return itself ClientConfig
             */
-            client_config &add_listener(MembershipListener &&listener);
+            client_config &add_listener(membership_listener &&listener);
 
             /**
             * Returns registered membershipListeners
             *
             * \return registered membershipListeners
             */
-            const std::vector<MembershipListener> &get_membership_listeners() const;
+            const std::vector<membership_listener> &get_membership_listeners() const;
 
             /**
             * Used to distribute the operations to multiple Endpoints.
             *
             * \return loadBalancer
             */
-            LoadBalancer *const get_load_balancer();
+            load_balancer *const get_load_balancer();
 
             /**
             * Used to distribute the operations to multiple Endpoints.
@@ -219,13 +219,13 @@ namespace hazelcast {
             *
             * \return itself ClientConfig
             */
-            client_config &set_load_balancer(LoadBalancer *load_balancer);
+            client_config &set_load_balancer(load_balancer *load_balancer);
 
             /**
             *
             *  \return serializationConfig
             */
-            SerializationConfig &get_serialization_config();
+            serialization_config &get_serialization_config();
 
             /**
             * SerializationConfig is used to
@@ -234,7 +234,7 @@ namespace hazelcast {
             * \param serializationConfig
             * \return itself ClientConfig
             */
-            client_config &set_serialization_config(SerializationConfig const &serialization_config);
+            client_config &set_serialization_config(serialization_config const &serialization_config);
 
             /**
             * Gets a reference to properties map
@@ -274,7 +274,7 @@ namespace hazelcast {
              * Helper method to add a new NearCacheConfig
              *
              * \param nearCacheConfig NearCacheConfig to be added
-             * \return configured ClientConfig for chaining
+             * \return configured client_config for chaining
              * @see NearCacheConfig
              * 
              * Memory ownership of the config is passed to the client config
@@ -291,21 +291,21 @@ namespace hazelcast {
             const config::NearCacheConfig *get_near_cache_config(const std::string &name) const;
 
             /**
-             * Gets {\link com.hazelcast.client.config.ClientNetworkConfig}
+             * Gets {\link com.hazelcast.client.config.client_network_config}
              *
-             * \return {\link com.hazelcast.client.config.ClientNetworkConfig}
-             * @see com.hazelcast.client.config.ClientNetworkConfig
+             * \return {\link com.hazelcast.client.config.client_network_config}
+             * @see com.hazelcast.client.config.client_network_config
              */
-            config::ClientNetworkConfig &get_network_config();
+            config::client_network_config &get_network_config();
 
             /**
-             * Sets {\link com.hazelcast.client.config.ClientNetworkConfig}
+             * Sets {\link com.hazelcast.client.config.client_network_config}
              *
-             * \param networkConfig {\link com.hazelcast.client.config.ClientNetworkConfig} to be set
-             * \return configured ClientConfig for chaining
-             * @see com.hazelcast.client.config.ClientNetworkConfig
+             * \param networkConfig {\link com.hazelcast.client.config.client_network_config} to be set
+             * \return configured client_config for chaining
+             * @see com.hazelcast.client.config.client_network_config
              */
-            client_config &set_network_config(const config::ClientNetworkConfig &network_config);
+            client_config &set_network_config(const config::client_network_config &network_config);
 
             const std::shared_ptr<std::string> &get_instance_name() const;
 
@@ -322,7 +322,7 @@ namespace hazelcast {
              * Sets Client side Executor pool size.
              *
              * \param executorPoolSize pool size
-             * \return configured ClientConfig for chaining
+             * \return configured client_config for chaining
              */
             void set_executor_pool_size(int32_t executor_pool_size);
 
@@ -419,23 +419,23 @@ namespace hazelcast {
         private:
             std::string cluster_name_;
 
-            config::ClientNetworkConfig network_config_;
+            config::client_network_config network_config_;
 
-            SerializationConfig serialization_config_;
+            serialization_config serialization_config_;
 
-            LoadBalancer *load_balancer_;
+            load_balancer *load_balancer_;
 
             impl::RoundRobinLB default_load_balancer_;
 
-            std::vector<MembershipListener> membership_listeners_;
+            std::vector<membership_listener> membership_listeners_;
 
-            std::vector<LifecycleListener> lifecycle_listeners_;
+            std::vector<lifecycle_listener> lifecycle_listeners_;
 
             std::unordered_map<std::string, std::string> properties_;
 
             bool redo_operation_;
 
-            SocketInterceptor socket_interceptor_;
+            socket_interceptor socket_interceptor_;
 
             std::shared_ptr<security::credentials> credentials_;
 

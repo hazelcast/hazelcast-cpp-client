@@ -22,7 +22,7 @@
 #include <unordered_map>
 #include <boost/asio.hpp>
 
-#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/hz_socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Closeable.h"
@@ -55,7 +55,7 @@ namespace hazelcast {
 
         class address;
 
-        class SocketInterceptor;
+        class socket_interceptor;
 
         namespace connection {
             class ConnectionFuture;
@@ -113,7 +113,7 @@ namespace hazelcast {
 
                 std::chrono::system_clock::time_point get_start_time() const;
 
-                Socket &get_socket();
+                hz_socket &get_socket();
 
                 void deregister_invocation(int64_t call_id);
 
@@ -130,7 +130,7 @@ namespace hazelcast {
                 std::atomic<std::chrono::milliseconds> closed_time_duration_;
                 spi::ClientContext &client_context_;
                 protocol::IMessageHandler &invocation_service_;
-                std::unique_ptr<Socket> socket_;
+                std::unique_ptr<hz_socket> socket_;
                 int32_t connection_id_;
                 std::string close_reason_;
                 std::exception_ptr close_cause_;

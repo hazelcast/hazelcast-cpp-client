@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastAll.h>
+#include <hazelcast/client/Hazelcast.h>
 
 using namespace hazelcast::client;
 
@@ -39,13 +39,13 @@ namespace hazelcast {
                     return 3;
                 }
 
-                static void write(const Person &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write(const Person &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(object.name);
                     out.write(object.male);
                     out.write(object.age);
                 }
 
-                static Person read(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Person read(hazelcast::client::serialization::object_data_input &in) {
                     return Person{in.read<std::string>(), in.read<bool>(), in.read<int32_t>()};
                 }
             };
@@ -54,7 +54,7 @@ namespace hazelcast {
 }
 
 int main() {
-    HazelcastClient hz;
+    hazelcast_client hz;
 
     auto map = hz.get_map("customMap");
     map->put(1L, Person{"My Person", false, 57}).get();

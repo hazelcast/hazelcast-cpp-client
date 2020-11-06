@@ -18,7 +18,7 @@
 
 #include <string>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 namespace hazelcast {
     namespace util {

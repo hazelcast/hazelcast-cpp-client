@@ -36,8 +36,8 @@
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/proxy/PNCounterImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
-#include "hazelcast/client/proxy/FlakeIdGeneratorImpl.h"
+#include "hazelcast/client/impl/hazelcast_client_instance_impl.h"
+#include "hazelcast/client/proxy/flake_id_generator_impl.h"
 #include "hazelcast/client/spi/impl/listener/listener_service_impl.h"
 #include "hazelcast/client/proxy/ReliableTopicImpl.h"
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
@@ -51,7 +51,7 @@
 
 namespace hazelcast {
     namespace client {
-        constexpr std::chrono::milliseconds IMap::UNSET;
+        constexpr std::chrono::milliseconds imap::UNSET;
 
         namespace impl {
             ClientLockReferenceIdGenerator::ClientLockReferenceIdGenerator() : reference_id_counter_(0) {}
@@ -63,7 +63,7 @@ namespace hazelcast {
 
         namespace proxy {
             MultiMapImpl::MultiMapImpl(const std::string &instance_name, spi::ClientContext *context)
-                    : ProxyImpl(MultiMap::SERVICE_NAME, instance_name, context) {
+                    : ProxyImpl(multi_map::SERVICE_NAME, instance_name, context) {
                 // TODO: remove this line once the client instance get_distributed_object works as expected in Java for this proxy type
                 lock_reference_id_generator_ = get_context().get_lock_reference_id_generator();
             }
@@ -257,10 +257,10 @@ namespace hazelcast {
 
 
             ReliableTopicImpl::ReliableTopicImpl(const std::string &instance_name, spi::ClientContext *context)
-                    : proxy::ProxyImpl(ReliableTopic::SERVICE_NAME, instance_name, context),
+                    : proxy::ProxyImpl(reliable_topic::SERVICE_NAME, instance_name, context),
                       logger_(context->get_logger()),
                       config_(context->get_client_config().get_reliable_topic_config(instance_name)) {
-                ringbuffer_ = context->get_hazelcast_client_implementation()->get_distributed_object<Ringbuffer>(
+                ringbuffer_ = context->get_hazelcast_client_implementation()->get_distributed_object<ringbuffer>(
                         std::string(TOPIC_RB_PREFIX) + name_);
             }
 
@@ -672,10 +672,10 @@ namespace hazelcast {
                 return protocol::codec::list_removelistener_encode(name_, real_registration_id);
             }
 
-            FlakeIdGeneratorImpl::Block::Block(IdBatch &&id_batch, std::chrono::milliseconds validity)
+            flake_id_generator_impl::Block::Block(IdBatch &&id_batch, std::chrono::milliseconds validity)
                     : id_batch_(id_batch), invalid_since_(std::chrono::steady_clock::now() + validity), num_returned_(0) {}
 
-            int64_t FlakeIdGeneratorImpl::Block::next() {
+            int64_t flake_id_generator_impl::Block::next() {
                 if (invalid_since_ <= std::chrono::steady_clock::now()) {
                     return INT64_MIN;
                 }
@@ -690,48 +690,48 @@ namespace hazelcast {
                 return id_batch_.get_base() + index * id_batch_.get_increment();
             }
 
-            FlakeIdGeneratorImpl::IdBatch::IdIterator FlakeIdGeneratorImpl::IdBatch::endOfBatch;
+            flake_id_generator_impl::IdBatch::IdIterator flake_id_generator_impl::IdBatch::endOfBatch;
 
-            const int64_t FlakeIdGeneratorImpl::IdBatch::get_base() const {
+            const int64_t flake_id_generator_impl::IdBatch::get_base() const {
                 return base_;
             }
 
-            const int64_t FlakeIdGeneratorImpl::IdBatch::get_increment() const {
+            const int64_t flake_id_generator_impl::IdBatch::get_increment() const {
                 return increment_;
             }
 
-            const int32_t FlakeIdGeneratorImpl::IdBatch::get_batch_size() const {
+            const int32_t flake_id_generator_impl::IdBatch::get_batch_size() const {
                 return batch_size_;
             }
 
-            FlakeIdGeneratorImpl::IdBatch::IdBatch(int64_t base, int64_t increment, int32_t batch_size)
+            flake_id_generator_impl::IdBatch::IdBatch(int64_t base, int64_t increment, int32_t batch_size)
                     : base_(base), increment_(increment), batch_size_(batch_size) {}
 
-            FlakeIdGeneratorImpl::IdBatch::IdIterator &FlakeIdGeneratorImpl::IdBatch::end() {
+            flake_id_generator_impl::IdBatch::IdIterator &flake_id_generator_impl::IdBatch::end() {
                 return endOfBatch;
             }
 
-            FlakeIdGeneratorImpl::IdBatch::IdIterator FlakeIdGeneratorImpl::IdBatch::iterator() {
-                return FlakeIdGeneratorImpl::IdBatch::IdIterator(base_, increment_, batch_size_);
+            flake_id_generator_impl::IdBatch::IdIterator flake_id_generator_impl::IdBatch::iterator() {
+                return flake_id_generator_impl::IdBatch::IdIterator(base_, increment_, batch_size_);
             }
 
-            FlakeIdGeneratorImpl::IdBatch::IdIterator::IdIterator(int64_t base2, const int64_t increment, int32_t remaining) : base2_(
+            flake_id_generator_impl::IdBatch::IdIterator::IdIterator(int64_t base2, const int64_t increment, int32_t remaining) : base2_(
                     base2), increment_(increment), remaining_(remaining) {}
 
-            bool FlakeIdGeneratorImpl::IdBatch::IdIterator::operator==(const FlakeIdGeneratorImpl::IdBatch::IdIterator &rhs) const {
+            bool flake_id_generator_impl::IdBatch::IdIterator::operator==(const flake_id_generator_impl::IdBatch::IdIterator &rhs) const {
                 return base2_ == rhs.base2_ && increment_ == rhs.increment_ && remaining_ == rhs.remaining_;
             }
 
-            bool FlakeIdGeneratorImpl::IdBatch::IdIterator::operator!=(const FlakeIdGeneratorImpl::IdBatch::IdIterator &rhs) const {
+            bool flake_id_generator_impl::IdBatch::IdIterator::operator!=(const flake_id_generator_impl::IdBatch::IdIterator &rhs) const {
                 return !(rhs == *this);
             }
 
-            FlakeIdGeneratorImpl::IdBatch::IdIterator::IdIterator() : base2_(-1), increment_(-1), remaining_(-1) {
+            flake_id_generator_impl::IdBatch::IdIterator::IdIterator() : base2_(-1), increment_(-1), remaining_(-1) {
             }
 
-            FlakeIdGeneratorImpl::IdBatch::IdIterator &FlakeIdGeneratorImpl::IdBatch::IdIterator::operator++() {
+            flake_id_generator_impl::IdBatch::IdIterator &flake_id_generator_impl::IdBatch::IdIterator::operator++() {
                 if (remaining_ == 0) {
-                    return FlakeIdGeneratorImpl::IdBatch::end();
+                    return flake_id_generator_impl::IdBatch::end();
                 }
 
                 --remaining_;
@@ -742,15 +742,15 @@ namespace hazelcast {
             }
 
 
-            FlakeIdGeneratorImpl::FlakeIdGeneratorImpl(const std::string &service_name, const std::string &object_name,
-                                                       spi::ClientContext *context)
+            flake_id_generator_impl::flake_id_generator_impl(const std::string &service_name, const std::string &object_name,
+                                                             spi::ClientContext *context)
                     : ProxyImpl(service_name, object_name, context), block_(nullptr) {
                 auto config = context->get_client_config().find_flake_id_generator_config(object_name);
                 batch_size_ = config->get_prefetch_count();
                 validity_ = config->get_prefetch_validity_duration();
             }
 
-            int64_t FlakeIdGeneratorImpl::new_id_internal() {
+            int64_t flake_id_generator_impl::new_id_internal() {
                 auto b = block_.load();
                 if (b) {
                     int64_t res = b->next();
@@ -762,12 +762,12 @@ namespace hazelcast {
                 throw std::overflow_error("");
             }
 
-            boost::future<int64_t> FlakeIdGeneratorImpl::new_id() {
+            boost::future<int64_t> flake_id_generator_impl::new_id() {
                 try {
                     return boost::make_ready_future(new_id_internal());
                 } catch (std::overflow_error &) {
                     return new_id_batch(batch_size_).then(boost::launch::deferred,
-                                                      [=](boost::future<FlakeIdGeneratorImpl::IdBatch> f) {
+                                                      [=](boost::future<flake_id_generator_impl::IdBatch> f) {
                                                           auto newBlock = boost::make_shared<Block>(f.get(), validity_);
                                                           auto value = newBlock->next();
                                                           auto b = block_.load();
@@ -777,7 +777,7 @@ namespace hazelcast {
                 }
             }
 
-            boost::future<FlakeIdGeneratorImpl::IdBatch> FlakeIdGeneratorImpl::new_id_batch(int32_t size) {
+            boost::future<flake_id_generator_impl::IdBatch> flake_id_generator_impl::new_id_batch(int32_t size) {
                 auto request = protocol::codec::flakeidgenerator_newidbatch_encode(
                         get_name(), size);
                 return invoke(request).then(boost::launch::deferred, [] (boost::future<protocol::ClientMessage> f) {
@@ -787,7 +787,7 @@ namespace hazelcast {
                     auto base = msg.get<int64_t>();
                     auto increment = msg.get<int64_t>();
                     auto batch_size = msg.get<int32_t>();
-                    return FlakeIdGeneratorImpl::IdBatch(base, increment, batch_size);
+                    return flake_id_generator_impl::IdBatch(base, increment, batch_size);
                 });
             }
 
@@ -1427,7 +1427,7 @@ namespace hazelcast {
 
             TransactionalQueueImpl::TransactionalQueueImpl(const std::string &name,
                                                            txn::TransactionProxy &transaction_proxy)
-                    : TransactionalObject(IQueue::SERVICE_NAME, name, transaction_proxy) {}
+                    : TransactionalObject(iqueue::SERVICE_NAME, name, transaction_proxy) {}
 
             boost::future<bool> TransactionalQueueImpl::offer(const serialization::pimpl::data &e, std::chrono::milliseconds timeout) {
                 auto request = protocol::codec::transactionalqueue_offer_encode(
@@ -1451,7 +1451,7 @@ namespace hazelcast {
             }
 
             ISetImpl::ISetImpl(const std::string &instance_name, spi::ClientContext *client_context)
-                    : ProxyImpl(ISet::SERVICE_NAME, instance_name, client_context) {
+                    : ProxyImpl(iset::SERVICE_NAME, instance_name, client_context) {
                 serialization::pimpl::data key_data = get_context().get_serialization_service().to_data<std::string>(
                         &instance_name);
                 partition_id_ = get_partition_id(key_data);
@@ -1639,7 +1639,7 @@ namespace hazelcast {
         namespace topic {
             namespace impl {
                 namespace reliable {
-                    ReliableTopicExecutor::ReliableTopicExecutor(std::shared_ptr<Ringbuffer> rb,
+                    ReliableTopicExecutor::ReliableTopicExecutor(std::shared_ptr<ringbuffer> rb,
                                                                  logger &lg)
                             : ringbuffer_(std::move(rb)), q_(10), shutdown_(false) {
                         runner_thread_ = std::thread([&]() { Task(ringbuffer_, q_, shutdown_).run(); });
@@ -1681,7 +1681,7 @@ namespace hazelcast {
                                 auto f = rb_->read_many(m.sequence, 1, m.max_count);
                                 while (!shutdown_ && f.wait_for(boost::chrono::seconds(1)) != boost::future_status::ready) {}
                                 if (f.is_ready()) {
-                                    m.callback->on_response(boost::make_optional<ringbuffer::ReadResultSet>(f.get()));
+                                    m.callback->on_response(boost::make_optional<rb::read_result_set>(f.get()));
                                 }
                             } catch (exception::IException &) {
                                 m.callback->on_failure(std::current_exception());
@@ -1693,7 +1693,7 @@ namespace hazelcast {
                         return "ReliableTopicExecutor Task";
                     }
 
-                    ReliableTopicExecutor::Task::Task(std::shared_ptr<Ringbuffer> rb,
+                    ReliableTopicExecutor::Task::Task(std::shared_ptr<ringbuffer> rb,
                                                       util::BlockingConcurrentQueue<ReliableTopicExecutor::Message> &q,
                                                       std::atomic<bool> &shutdown) : rb_(std::move(rb)), q_(q),
                                                                                        shutdown_(shutdown) {}
@@ -1735,14 +1735,14 @@ namespace hazelcast {
             }
 
             void hz_serializer<topic::impl::reliable::ReliableTopicMessage>::write_data(
-                    const topic::impl::reliable::ReliableTopicMessage &object, ObjectDataOutput &out) {
+                    const topic::impl::reliable::ReliableTopicMessage &object, object_data_output &out) {
                 out.write<int64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(object.publish_time_.time_since_epoch()).count());
                 out.write_object(object.publisher_address_);
                 out.write(object.payload_.to_byte_array());
             }
 
             topic::impl::reliable::ReliableTopicMessage
-            hz_serializer<topic::impl::reliable::ReliableTopicMessage>::read_data(ObjectDataInput &in) {
+            hz_serializer<topic::impl::reliable::ReliableTopicMessage>::read_data(object_data_input &in) {
                 topic::impl::reliable::ReliableTopicMessage message;
                 auto now = std::chrono::system_clock::now();
                 message.publish_time_ = now + std::chrono::milliseconds(in.read<int64_t>()) - now.time_since_epoch();
@@ -1752,90 +1752,90 @@ namespace hazelcast {
             }
         }
 
-        EntryEvent::EntryEvent(const std::string &name, member &&member, type event_type,
-                               typed_data &&key, typed_data &&value, typed_data &&old_value, typed_data &&merging_value)
+        entry_event::entry_event(const std::string &name, member &&member, type event_type,
+                                 typed_data &&key, typed_data &&value, typed_data &&old_value, typed_data &&merging_value)
                 : name_(name), member_(std::move(member)), event_type_(event_type), key_(std::move(key)),
                 value_(std::move(value)), old_value_(std::move(old_value)), merging_value_(std::move(merging_value)) {}
 
-        const typed_data &EntryEvent::get_key() const {
+        const typed_data &entry_event::get_key() const {
             return key_;
         }
 
-        const typed_data &EntryEvent::get_old_value() const {
+        const typed_data &entry_event::get_old_value() const {
             return old_value_;
         }
 
-        const typed_data &EntryEvent::get_value() const {
+        const typed_data &entry_event::get_value() const {
             return value_;
         }
 
-        const typed_data &EntryEvent::get_merging_value() const {
+        const typed_data &entry_event::get_merging_value() const {
             return merging_value_;
         }
 
-        const member &EntryEvent::get_member() const {
+        const member &entry_event::get_member() const {
             return member_;
         }
 
-        EntryEvent::type EntryEvent::get_event_type() const {
+        entry_event::type entry_event::get_event_type() const {
             return event_type_;
         }
 
-        const std::string &EntryEvent::get_name() const {
+        const std::string &entry_event::get_name() const {
             return name_;
         }
 
-        std::ostream &operator<<(std::ostream &os, const EntryEvent &event) {
+        std::ostream &operator<<(std::ostream &os, const entry_event &event) {
             os << "name: " << event.name_ << " member: " << event.member_ << " eventType: " <<
                static_cast<int>(event.event_type_) << " key: " << event.key_.get_type() << " value: " << event.value_.get_type() <<
                " oldValue: " << event.old_value_.get_type() << " mergingValue: " << event.merging_value_.get_type();
             return os;
         }
 
-        MapEvent::MapEvent(member &&member, EntryEvent::type event_type, const std::string &name,
-                           int number_of_entries_affected)
+        map_event::map_event(member &&member, entry_event::type event_type, const std::string &name,
+                             int number_of_entries_affected)
                 : member_(member), event_type_(event_type), name_(name), number_of_entries_affected_(number_of_entries_affected) {}
 
-        const member &MapEvent::get_member() const {
+        const member &map_event::get_member() const {
             return member_;
         }
 
-        EntryEvent::type MapEvent::get_event_type() const {
+        entry_event::type map_event::get_event_type() const {
             return event_type_;
         }
 
-        const std::string &MapEvent::get_name() const {
+        const std::string &map_event::get_name() const {
             return name_;
         }
 
-        int MapEvent::get_number_of_entries_affected() const {
+        int map_event::get_number_of_entries_affected() const {
             return number_of_entries_affected_;
         }
 
-        std::ostream &operator<<(std::ostream &os, const MapEvent &event) {
+        std::ostream &operator<<(std::ostream &os, const map_event &event) {
             os << "MapEvent{member: " << event.member_ << " eventType: " << static_cast<int>(event.event_type_) << " name: " << event.name_
                << " numberOfEntriesAffected: " << event.number_of_entries_affected_;
             return os;
         }
 
-        ItemEventBase::ItemEventBase(const std::string &name, const member &member, const item_event_type &event_type)
+        item_event_base::item_event_base(const std::string &name, const member &member, const item_event_type &event_type)
                 : name_(name), member_(member), event_type_(event_type) {}
 
-        const member &ItemEventBase::get_member() const {
+        const member &item_event_base::get_member() const {
             return member_;
         }
 
-        item_event_type ItemEventBase::get_event_type() const {
+        item_event_type item_event_base::get_event_type() const {
             return event_type_;
         }
 
-        const std::string &ItemEventBase::get_name() const {
+        const std::string &item_event_base::get_name() const {
             return name_;
         }
 
-        ItemEventBase::~ItemEventBase() = default;
+        item_event_base::~item_event_base() = default;
 
-        FlakeIdGenerator::FlakeIdGenerator(const std::string &object_name, spi::ClientContext *context)
-                : FlakeIdGeneratorImpl(SERVICE_NAME, object_name, context) {}
+        flake_id_generator::flake_id_generator(const std::string &object_name, spi::ClientContext *context)
+                : flake_id_generator_impl(SERVICE_NAME, object_name, context) {}
     }
 }

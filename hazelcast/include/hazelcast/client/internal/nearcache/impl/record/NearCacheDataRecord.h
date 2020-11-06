@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/serialization/pimpl/data.h"
 #include "hazelcast/client/internal/nearcache/impl/record/AbstractNearCacheRecord.h"
 

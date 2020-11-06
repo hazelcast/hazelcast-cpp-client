@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 
 int main() {
@@ -22,7 +22,7 @@ int main() {
 
     config.get_logger_config().level(hazelcast::logger::level::finest);
 
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     return 0;
 }

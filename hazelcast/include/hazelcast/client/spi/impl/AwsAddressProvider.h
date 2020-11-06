@@ -20,7 +20,7 @@
 
 #include "hazelcast/client/aws/AWSClient.h"
 #include "hazelcast/util/Sync.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 #include "hazelcast/logger.h"
 
@@ -32,7 +32,7 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            class ClientNetworkConfig;
+            class client_network_config;
         }
         namespace spi {
             namespace impl {

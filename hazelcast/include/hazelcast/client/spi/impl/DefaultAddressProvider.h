@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/connection/AddressProvider.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -27,19 +27,19 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            class ClientNetworkConfig;
+            class client_network_config;
         }
         namespace spi {
             namespace impl {
                 class HAZELCAST_API DefaultAddressProvider : public connection::AddressProvider {
                 public:
-                    DefaultAddressProvider(config::ClientNetworkConfig &network_config,
+                    DefaultAddressProvider(config::client_network_config &network_config,
                                            bool no_other_address_provider_exist);
 
                     std::vector<address> load_addresses() override;
 
                 private:
-                    config::ClientNetworkConfig &network_config_;
+                    config::client_network_config &network_config_;
                     bool no_other_address_provider_exist_;
 
                 };

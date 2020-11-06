@@ -19,7 +19,7 @@
  * DO NOT FORGET to make sure that openssl is installed.
  *
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
     hazelcast::client::client_config clientConfig;
@@ -29,7 +29,7 @@ int main() {
     clientConfig.get_network_config().get_aws_config().set_enabled(true).set_tag_key("aws-test-tag").
         set_tag_value("aws-tag-value-1").set_iam_role("MyInstanceRole").set_inside_aws(true);
     
-    hazelcast::client::HazelcastClient hz(clientConfig);
+    hazelcast::client::hazelcast_client hz(clientConfig);
 
     auto map = hz.get_map("MyMap");
     

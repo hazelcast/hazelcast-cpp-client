@@ -24,7 +24,7 @@
 #include <boost/asio/ssl/stream.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

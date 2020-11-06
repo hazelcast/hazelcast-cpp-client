@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/client/ringbuffer/ReadResultSet.h"
+#include "hazelcast/client/ringbuffer/read_result_set.h"
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/proxy/PartitionSpecificClientProxy.h"
 
@@ -27,7 +27,7 @@
 
 namespace hazelcast {
     namespace client {
-        namespace ringbuffer {
+        namespace rb {
             /**
              * Using this policy one can control the behavior what should to be done when an item is about to be added to the ringbuffer,
              * but there is 0 remaining capacity.
@@ -151,13 +151,13 @@ namespace hazelcast {
 
                 boost::future<int64_t> add_data(serialization::pimpl::data &&item_data) {
                     auto request = protocol::codec::ringbuffer_add_encode(get_name(),
-                                                                                  static_cast<int32_t>(ringbuffer::overflow_policy::OVERWRITE),
+                                                                                  static_cast<int32_t>(rb::overflow_policy::OVERWRITE),
                                                                                   item_data);
                     return invoke_and_get_future<int64_t>(
                             request, partition_id_);
                 }
 
-                boost::future<int64_t> add_data(serialization::pimpl::data &&item_data, ringbuffer::overflow_policy policy) {
+                boost::future<int64_t> add_data(serialization::pimpl::data &&item_data, rb::overflow_policy policy) {
                     auto request = protocol::codec::ringbuffer_add_encode(get_name(),
                                                                                   static_cast<int32_t>(policy),
                                                                                   item_data);
@@ -173,7 +173,7 @@ namespace hazelcast {
                 }
 
                 boost::future<int64_t>
-                add_all_data(std::vector<serialization::pimpl::data> &&items, ringbuffer::overflow_policy overflow_policy) {
+                add_all_data(std::vector<serialization::pimpl::data> &&items, rb::overflow_policy overflow_policy) {
                     util::Preconditions::check_not_empty(items, "items can't be empty");
                     util::Preconditions::check_max((int32_t) items.size(), MAX_BATCH_SIZE, "items");
 

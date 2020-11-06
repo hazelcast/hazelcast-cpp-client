@@ -17,7 +17,7 @@
 
 #include <functional>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/util/type_traits.h"
 #include "hazelcast/util/noop.h"
 
@@ -29,7 +29,7 @@
 namespace hazelcast {
     namespace client {
         namespace topic {
-            class Message;
+            class message;
             namespace impl {
                 class TopicEventHandlerImpl;
             }
@@ -67,9 +67,9 @@ namespace hazelcast {
                 }
 
             private:
-                using HandlerType = std::function<void(Message &&)>;
+                using HandlerType = std::function<void(message &&)>;
 
-                HandlerType received_ = util::noop<Message &&>;
+                HandlerType received_ = util::noop<message &&>;
 
                 friend class impl::TopicEventHandlerImpl;
             };

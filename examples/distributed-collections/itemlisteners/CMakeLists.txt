@@ -13,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(itemlistener ./ItemListener.cpp)
+add_executable(itemlistener item_listener.cpp)
 add_executable(collectionchanger ./CollectionChanger.cpp)
 

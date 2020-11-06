@@ -55,7 +55,7 @@ namespace hazelcast {
                     };
 
                     template<typename T>
-                    struct MapPutPartitionAwareCallable : public PartitionAware<T> {
+                    struct MapPutPartitionAwareCallable : public partition_aware<T> {
                         const T *get_partition_key() const override {
                             return &partition_key;
                         }
@@ -106,14 +106,14 @@ namespace hazelcast {
                     return 66;
                 }
 
-                static T read_data(ObjectDataInput &in) {
+                static T read_data(object_data_input &in) {
                     return T{};
                 }
             };
 
             template<typename T>
             struct TaskSerializerBase : public TaskSerializerNoOpRead<T> {
-                static void write_data(const T &object, ObjectDataOutput &out) {}
+                static void write_data(const T &object, object_data_output &out) {}
             };
 
             template<>
@@ -123,7 +123,7 @@ namespace hazelcast {
                     return static_cast<int32_t>(test::executor::tasks::task_ids::APPEND_CALLABLE);
                 }
 
-                static void write_data(const test::executor::tasks::AppendCallable &object, ObjectDataOutput &out) {
+                static void write_data(const test::executor::tasks::AppendCallable &object, object_data_output &out) {
                     out.write(object.msg);
                 }
             };
@@ -134,11 +134,11 @@ namespace hazelcast {
                     return static_cast<int32_t>(test::executor::tasks::task_ids::CANCELLATION_AWARE_TASK);
                 }
 
-                static void write_data(const test::executor::tasks::CancellationAwareTask &object, ObjectDataOutput &out) {
+                static void write_data(const test::executor::tasks::CancellationAwareTask &object, object_data_output &out) {
                     out.write(object.sleep_time);
                 }
 
-                static test::executor::tasks::CancellationAwareTask read_data(ObjectDataInput &in) {
+                static test::executor::tasks::CancellationAwareTask read_data(object_data_input &in) {
                     return test::executor::tasks::CancellationAwareTask{in.read<int64_t>()};
                 }
             };
@@ -165,7 +165,7 @@ namespace hazelcast {
                     return static_cast<int32_t>(test::executor::tasks::task_ids::MAP_PUTPARTITIONAWARE_CALLABLE);
                 }
 
-                static void write_data(const test::executor::tasks::MapPutPartitionAwareCallable<T> &object, ObjectDataOutput &out) {
+                static void write_data(const test::executor::tasks::MapPutPartitionAwareCallable<T> &object, object_data_output &out) {
                     out.write(object.map_name);
                     out.write_object(object.partition_key);
                 }
@@ -210,11 +210,11 @@ namespace hazelcast {
                     return static_cast<int32_t>(test::executor::tasks::task_ids::SERIALIZED_COUNTER_CALLABLE);
                 }
 
-                static void write_data(const test::executor::tasks::SerializedCounterCallable &object, ObjectDataOutput &out) {
+                static void write_data(const test::executor::tasks::SerializedCounterCallable &object, object_data_output &out) {
                     out.write(object.counter + 1);
                 }
 
-                static test::executor::tasks::SerializedCounterCallable read_data(ObjectDataInput &in) {
+                static test::executor::tasks::SerializedCounterCallable read_data(object_data_input &in) {
                     return test::executor::tasks::SerializedCounterCallable{in.read<int32_t>() + 1};
                 }
             };

@@ -18,12 +18,12 @@
 #include "ClientTestSupport.h"
 #include <vector>
 #include <chrono>
-#include "hazelcast/client/LifecycleEvent.h"
+#include "hazelcast/client/lifecycle_event.h"
 #include "hazelcast/logger.h"
 #include "ringbuffer/StartsWithStringFilter.h"
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/client_config.h>
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
@@ -33,14 +33,14 @@
 #include <hazelcast/client/connection/Connection.h>
 #include <memory>
 #include <hazelcast/client/proxy/PNCounterImpl.h>
-#include <hazelcast/client/serialization/pimpl/DataInput.h>
+#include <hazelcast/client/serialization/pimpl/data_input.h>
 #include <hazelcast/util/AddressUtil.h>
-#include <hazelcast/client/serialization/pimpl/DataOutput.h>
+#include <hazelcast/client/serialization/pimpl/data_output.h>
 #include <hazelcast/util/AddressHelper.h>
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
-#include <hazelcast/client/LifecycleListener.h>
+#include <hazelcast/client/lifecycle_listener.h>
 #include "serialization/Serializables.h"
 #include <unordered_set>
 #include <cmath>
@@ -57,19 +57,19 @@
 
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
-#include "hazelcast/client/MembershipListener.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/IMap.h"
+#include "hazelcast/client/membership_listener.h"
+#include "hazelcast/client/initial_membership_event.h"
+#include "hazelcast/client/socket_interceptor.h"
+#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/hz_cluster.h"
+#include "hazelcast/client/imap.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "hazelcast/client/ITopic.h"
-#include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/ReliableTopic.h"
+#include "hazelcast/client/itopic.h"
+#include "hazelcast/client/multi_map.h"
+#include "hazelcast/client/entry_event.h"
+#include "hazelcast/client/reliable_topic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -145,17 +145,17 @@ namespace hazelcast {
                     return response.success && !response.result.empty();
                 }
 
-                std::unique_ptr<HazelcastClient> create_hazelcast_client() {
+                std::unique_ptr<hazelcast_client> create_hazelcast_client() {
                     client_config clientConfig;
-                    clientConfig.set_property(ClientProperties::STATISTICS_ENABLED, "true")
-                            .set_property(ClientProperties::STATISTICS_PERIOD_SECONDS,
-                                         std::to_string(STATS_PERIOD_SECONDS))
+                    clientConfig.set_property(client_properties::STATISTICS_ENABLED, "true")
+                            .set_property(client_properties::STATISTICS_PERIOD_SECONDS,
+                                          std::to_string(STATS_PERIOD_SECONDS))
                                     // add IMap Near Cache config
                             .add_near_cache_config(config::NearCacheConfig(get_test_name()));
 
                     clientConfig.get_network_config().set_connection_attempt_limit(20);
 
-                    return std::unique_ptr<HazelcastClient>(new HazelcastClient(clientConfig));
+                    return std::unique_ptr<hazelcast_client>(new hazelcast_client(clientConfig));
                 }
 
                 void wait_for_first_statistics_collection() {
@@ -163,7 +163,7 @@ namespace hazelcast {
                                                         3 * STATS_PERIOD_SECONDS);
                 }
 
-                std::string get_client_local_address(HazelcastClient &client) {
+                std::string get_client_local_address(hazelcast_client &client) {
                     spi::ClientContext clientContext(client);
                     connection::ClientConnectionManagerImpl &connectionManager = clientContext.get_connection_manager();
                     auto connection = connectionManager.get_random_connection();
@@ -181,12 +181,12 @@ namespace hazelcast {
                     return false;
                 }
 
-                void produce_some_stats(HazelcastClient &client) {
+                void produce_some_stats(hazelcast_client &client) {
                     auto map = client.get_map(get_test_name());
                     produce_some_stats(map);
                 }
 
-                void produce_some_stats(std::shared_ptr<IMap> &map) {
+                void produce_some_stats(std::shared_ptr<imap> &map) {
                     map->put(5, 10).get();
                     auto nearCacheStatsImpl = std::static_pointer_cast<monitor::impl::NearCacheStatsImpl>(
                             map->get_local_map_stats().get_near_cache_stats());
@@ -219,9 +219,9 @@ namespace hazelcast {
             TEST_F(ClientStatisticsTest, testClientStatisticsDisabledByDefault) {
 
                 client_config clientConfig;
-                clientConfig.set_property(ClientProperties::STATISTICS_PERIOD_SECONDS, "1");
+                clientConfig.set_property(client_properties::STATISTICS_PERIOD_SECONDS, "1");
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
                 // sleep twice the collection period
                 sleep_seconds(2);
@@ -233,10 +233,10 @@ namespace hazelcast {
 
             TEST_F(ClientStatisticsTest, testNoUpdateWhenDisabled) {
                 client_config clientConfig;
-                clientConfig.set_property(ClientProperties::STATISTICS_ENABLED, "false").set_property(
-                        ClientProperties::STATISTICS_PERIOD_SECONDS, "1");
+                clientConfig.set_property(client_properties::STATISTICS_ENABLED, "false").set_property(
+                        client_properties::STATISTICS_PERIOD_SECONDS, "1");
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
                 ASSERT_TRUE_ALL_THE_TIME(get_stats().empty(), 2);
             }
@@ -244,9 +244,9 @@ namespace hazelcast {
             TEST_F(ClientStatisticsTest, testClientStatisticsDisabledWithWrongValue) {
 
                 client_config clientConfig;
-                clientConfig.set_property(ClientProperties::STATISTICS_ENABLED, "trueee");
+                clientConfig.set_property(client_properties::STATISTICS_ENABLED, "trueee");
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
                 // sleep twice the collection period
                 sleep_seconds(2);
@@ -260,10 +260,10 @@ namespace hazelcast {
                 client_config clientConfig;
                 std::string mapName = get_test_name();
                 clientConfig.add_near_cache_config(config::NearCacheConfig(mapName));
-                clientConfig.set_property(ClientProperties::STATISTICS_ENABLED, "true").set_property(
-                        ClientProperties::STATISTICS_PERIOD_SECONDS, "1");
+                clientConfig.set_property(client_properties::STATISTICS_ENABLED, "true").set_property(
+                        client_properties::STATISTICS_PERIOD_SECONDS, "1");
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
                 // initialize near cache
                 client.get_map(mapName);
@@ -329,7 +329,7 @@ namespace hazelcast {
                     previous_stat_time = statsMap["clusterConnectionTimestamp"];
                 }
 
-                std::unique_ptr<HazelcastClient> client = create_hazelcast_client();
+                std::unique_ptr<hazelcast_client> client = create_hazelcast_client();
 
                 int64_t clientConnectionTime = util::current_time_millis();
 
@@ -402,7 +402,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientStatisticsTest, testStatisticsPeriod) {
-                std::unique_ptr<HazelcastClient> client = create_hazelcast_client();
+                std::unique_ptr<hazelcast_client> client = create_hazelcast_client();
 
                 // wait enough time for statistics collection
                 wait_for_first_statistics_collection();
@@ -424,29 +424,29 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            namespace ringbuffer {
+            namespace rb {
                 StartsWithStringFilter::StartsWithStringFilter(const std::string &start_string) : start_string_(
                         start_string) {}
             }
         }
 
         namespace serialization {
-            int32_t hz_serializer<test::ringbuffer::StartsWithStringFilter>::get_factory_id() {
+            int32_t hz_serializer<test::rb::StartsWithStringFilter>::get_factory_id() {
                 return 666;
             }
 
-            int32_t hz_serializer<test::ringbuffer::StartsWithStringFilter>::get_class_id() {
+            int32_t hz_serializer<test::rb::StartsWithStringFilter>::get_class_id() {
                 return 14;
             }
 
-            void hz_serializer<test::ringbuffer::StartsWithStringFilter>::write_data(
-                    const test::ringbuffer::StartsWithStringFilter &object, ObjectDataOutput &out) {
+            void hz_serializer<test::rb::StartsWithStringFilter>::write_data(
+                    const test::rb::StartsWithStringFilter &object, object_data_output &out) {
                 out.write(object.start_string_);
             }
 
-            test::ringbuffer::StartsWithStringFilter
-            hz_serializer<test::ringbuffer::StartsWithStringFilter>::read_data(ObjectDataInput &in) {
-                return test::ringbuffer::StartsWithStringFilter(in.read<std::string>());
+            test::rb::StartsWithStringFilter
+            hz_serializer<test::rb::StartsWithStringFilter>::read_data(object_data_input &in) {
+                return test::rb::StartsWithStringFilter(in.read<std::string>());
             }
         }
     }
@@ -455,7 +455,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            namespace ringbuffer {
+            namespace rb {
                 class RingbufferTest : public ClientTestSupport {
                 public:
                     RingbufferTest() {
@@ -482,8 +482,8 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
-                        client = new HazelcastClient(get_config());
-                        client2 = new HazelcastClient(get_config());
+                        client = new hazelcast_client(get_config());
+                        client2 = new hazelcast_client(get_config());
                     }
 
                     static void TearDownTestCase() {
@@ -497,10 +497,10 @@ namespace hazelcast {
                     }
 
                     static HazelcastServer *instance;
-                    static HazelcastClient *client;
-                    static HazelcastClient *client2;
-                    std::shared_ptr<Ringbuffer> client_ringbuffer_;
-                    std::shared_ptr<Ringbuffer> client2_ringbuffer_;
+                    static hazelcast_client *client;
+                    static hazelcast_client *client2;
+                    std::shared_ptr<ringbuffer> client_ringbuffer_;
+                    std::shared_ptr<ringbuffer> client2_ringbuffer_;
                     std::vector<std::string> items_;
 
                     static constexpr int64_t CAPACITY = 10;
@@ -509,11 +509,11 @@ namespace hazelcast {
                 constexpr int64_t RingbufferTest::CAPACITY;
                 
                 HazelcastServer *RingbufferTest::instance = nullptr;
-                HazelcastClient *RingbufferTest::client = nullptr;
-                HazelcastClient *RingbufferTest::client2 = nullptr;
+                hazelcast_client *RingbufferTest::client = nullptr;
+                hazelcast_client *RingbufferTest::client2 = nullptr;
 
                 TEST_F(RingbufferTest, testAPI) {
-                    std::shared_ptr<Ringbuffer> rb = client->get_ringbuffer(get_test_name() + "2");
+                    std::shared_ptr<ringbuffer> rb = client->get_ringbuffer(get_test_name() + "2");
                     ASSERT_EQ(CAPACITY, rb->capacity().get());
                     ASSERT_EQ(0, rb->head_sequence().get());
                     ASSERT_EQ(-1, rb->tail_sequence().get());
@@ -568,7 +568,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, readManyAsync_whenHitsStale_useHeadAsStartSequence) {
-                    client2_ringbuffer_->add_all(items_, client::ringbuffer::overflow_policy::OVERWRITE);
+                    client2_ringbuffer_->add_all(items_, client::rb::overflow_policy::OVERWRITE);
                     auto f = client_ringbuffer_->read_many<std::string>(1, 1, 10);
                     auto rs = f.get();
                     ASSERT_EQ(10, rs.read_count());
@@ -586,7 +586,7 @@ namespace hazelcast {
                             latch1->count_down();
                         }
                     }).detach();
-                    client2_ringbuffer_->add_all(items_, client::ringbuffer::overflow_policy::OVERWRITE);
+                    client2_ringbuffer_->add_all(items_, client::rb::overflow_policy::OVERWRITE);
                     ASSERT_OPEN_EVENTUALLY(*latch1);
                 }
 
@@ -633,7 +633,7 @@ namespace hazelcast {
                     std::vector<std::string> items;
                     items.push_back("foo");
                     items.push_back("bar");
-                    auto result = client_ringbuffer_->add_all(items, client::ringbuffer::overflow_policy::OVERWRITE).get();
+                    auto result = client_ringbuffer_->add_all(items, client::rb::overflow_policy::OVERWRITE).get();
 
                     ASSERT_EQ(client2_ringbuffer_->tail_sequence().get(), result);
                     auto val0 = client2_ringbuffer_->read_one<std::string>(0).get();
@@ -676,7 +676,7 @@ namespace hazelcast {
                     client2_ringbuffer_->add<std::string>("5").get();
                     client2_ringbuffer_->add<std::string>("6").get();
 
-                    client::ringbuffer::ReadResultSet rs = client_ringbuffer_->read_many<std::string>(0, 3, 3).get();
+                    client::rb::read_result_set rs = client_ringbuffer_->read_many<std::string>(0, 3, 3).get();
 
                     ASSERT_EQ(3, rs.read_count());
                     auto &items1 = rs.get_items();
@@ -725,8 +725,8 @@ namespace hazelcast {
                 return clientConfig;
             }
 
-            HazelcastClient ClientTestSupportBase::get_new_client() {
-                return HazelcastClient(get_config());
+            hazelcast_client ClientTestSupportBase::get_new_client() {
+                return hazelcast_client(get_config());
             }
 
             const std::string ClientTestSupportBase::get_ssl_file_path() {
@@ -830,7 +830,7 @@ namespace hazelcast {
             protected:
 #ifdef HZ_BUILD_WITH_SSL
                 std::vector<hazelcast::client::internal::socket::SSLSocket::CipherInfo> get_ciphers(client_config &config) {
-                    HazelcastClient client(config);
+                    hazelcast_client client(config);
                     spi::ClientContext context(client);
                     std::vector<std::shared_ptr<connection::Connection> > conns = context.get_connection_manager().get_active_connections();
                     EXPECT_GT(conns.size(), (size_t) 0);
@@ -847,7 +847,7 @@ namespace hazelcast {
                 client_config config;
                 config.get_network_config().set_connection_attempt_period(std::chrono::seconds(1)).set_connection_timeout(std::chrono::seconds (2)).add_address(
                         address("8.8.8.8", 5701));
-                ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(config), exception::IllegalStateException);
             }
 
 #ifdef HZ_BUILD_WITH_SSL
@@ -858,7 +858,7 @@ namespace hazelcast {
                 config.set_cluster_name(get_ssl_cluster_name()).get_network_config().
                         set_connection_attempt_period(std::chrono::seconds(1)).set_connection_timeout(std::chrono::seconds(2)).add_address(
                         address("8.8.8.8", 5701)).get_ssl_config().set_enabled(true).add_verify_file(get_ca_file_path());
-                ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(config), exception::IllegalStateException);
             }
 
             TEST_F(ClientConnectionTest, testSSLWrongCAFilePath) {
@@ -867,7 +867,7 @@ namespace hazelcast {
                 client_config config = get_config();
                 config.set_cluster_name(get_ssl_cluster_name());
                 config.get_network_config().get_ssl_config().set_enabled(true).add_verify_file("abc");
-                ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(config), exception::IllegalStateException);
             }
 
             TEST_F(ClientConnectionTest, testExcludedCipher) {
@@ -907,13 +907,13 @@ namespace hazelcast {
                 ClusterTest() : ssl_factory_(g_srvFactory->get_server_address(), get_ssl_file_path()) {}
 
             protected:
-                LifecycleListener make_all_states_listener(boost::latch &starting,
-                                                        boost::latch &started,
-                                                        boost::latch &connected,
-                                                        boost::latch &disconnected,
-                                                        boost::latch &shutting_down,
-                                                        boost::latch &shutdown) {
-                    return LifecycleListener()
+                lifecycle_listener make_all_states_listener(boost::latch &starting,
+                                                            boost::latch &started,
+                                                            boost::latch &connected,
+                                                            boost::latch &disconnected,
+                                                            boost::latch &shutting_down,
+                                                            boost::latch &shutdown) {
+                    return lifecycle_listener()
                         .on_starting([&starting](){
                             starting.count_down();
                         })
@@ -947,13 +947,13 @@ namespace hazelcast {
             };
 
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
-                ASSERT_THROW(HazelcastClient client(GetParam()), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(GetParam()), exception::IllegalStateException);
             }
 
             TEST_P(ClusterTest, testDummyClientBehaviourWhenClusterNotFound) {
                 auto clientConfig = GetParam();
                 clientConfig.get_network_config().set_smart_routing(false);
-                ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
+                ASSERT_THROW(hazelcast_client client(clientConfig), exception::IllegalStateException);
             }
 
             TEST_P(ClusterTest, testAllClientStates) {
@@ -973,7 +973,7 @@ namespace hazelcast {
                                                       shuttingDownLatch, shutdownLatch);
                 clientConfig.add_listener(std::move(listener));
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
                 ASSERT_OPEN_EVENTUALLY(startingLatch);
                 ASSERT_OPEN_EVENTUALLY(startedLatch);
@@ -994,7 +994,7 @@ namespace hazelcast {
 
                 int64_t startTimeMillis = hazelcast::util::current_time_millis();
                 try {
-                    HazelcastClient client(clientConfig);
+                    hazelcast_client client(clientConfig);
                 } catch (exception::IllegalStateException &) {
                     // this is expected
                 }
@@ -1015,7 +1015,7 @@ namespace hazelcast {
                                                       shuttingDownLatch, shutdownLatch);
                 clientConfig.add_listener(std::move(listener));
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
                 ASSERT_OPEN_EVENTUALLY(startingLatch);
                 ASSERT_OPEN_EVENTUALLY(startedLatch);
@@ -1052,7 +1052,7 @@ namespace hazelcast {
                 client_config config = get_config();
                 config.set_property("hazelcast_client_heartbeat_interval", "1");
 
-                HazelcastClient client(config);
+                hazelcast_client client(config);
 
                 // sleep enough time so that the client ping is sent to the server
                 std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -1069,9 +1069,9 @@ namespace hazelcast {
             class SocketInterceptorTest : public ClientTestSupport {
             };
 
-            SocketInterceptor make_socket_interceptor(boost::latch &l) {
-                return SocketInterceptor()
-                    .on_connect([&l](const hazelcast::client::Socket &connected_sock) {
+            socket_interceptor make_socket_interceptor(boost::latch &l) {
+                return socket_interceptor()
+                    .on_connect([&l](const hazelcast::client::hz_socket &connected_sock) {
                         ASSERT_EQ("127.0.0.1", connected_sock.get_address().get_host());
                         ASSERT_NE(0, connected_sock.get_address().get_port());
                         l.count_down();
@@ -1086,7 +1086,7 @@ namespace hazelcast {
                 boost::latch interceptorLatch(1);
                 auto interceptor = make_socket_interceptor(interceptorLatch);
                 config.set_socket_interceptor(std::move(interceptor));
-                HazelcastClient client(config);
+                hazelcast_client client(config);
                 interceptorLatch.wait_for(boost::chrono::seconds(2));
             }
 
@@ -1098,7 +1098,7 @@ namespace hazelcast {
                 boost::latch interceptorLatch(1);
                 auto interceptor = make_socket_interceptor(interceptorLatch);
                 config.set_socket_interceptor(std::move(interceptor));
-                HazelcastClient client(config);
+                hazelcast_client client(config);
                 interceptorLatch.wait_for(boost::chrono::seconds(2));
             }
         }
@@ -1119,7 +1119,7 @@ namespace hazelcast {
                 clientConfig.get_network_config().get_socket_options().set_keep_alive(false).set_reuse_address(
                         true).set_tcp_no_delay(false).set_linger_seconds(5).set_buffer_size_in_bytes(bufferSize);
 
-                HazelcastClient client(clientConfig);
+                hazelcast_client client(clientConfig);
 
                 config::SocketOptions &socketOptions = client.get_client_config().get_network_config().get_socket_options();
                 ASSERT_FALSE(socketOptions.is_keep_alive());
@@ -1140,7 +1140,7 @@ namespace hazelcast {
             TEST_F(ClientAuthenticationTest, testUserPasswordCredentials) {
                 HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-username-password.xml");
                 HazelcastServer instance(factory);
-                HazelcastClient client(client_config().set_cluster_name("username-pass-dev").set_credentials(
+                hazelcast_client client(client_config().set_cluster_name("username-pass-dev").set_credentials(
                         std::make_shared<security::username_password_credentials>("test-user", "test-pass")));
             }
 
@@ -1148,7 +1148,7 @@ namespace hazelcast {
                 HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-token-credentials.xml");
                 HazelcastServer instance(factory);
                 std::vector<byte> my_token = {'S', 'G', 'F', '6', 'Z', 'W'};
-                HazelcastClient client(client_config().set_cluster_name("token-credentials-dev").set_credentials(
+                hazelcast_client client(client_config().set_cluster_name("token-credentials-dev").set_credentials(
                         std::make_shared<security::token_credentials>(my_token)));
             }
 
@@ -1157,7 +1157,7 @@ namespace hazelcast {
                 client_config config;
                 config.set_cluster_name("invalid cluster");
 
-                ASSERT_THROW((HazelcastClient(config)), exception::IllegalStateException);
+                ASSERT_THROW((hazelcast_client(config)), exception::IllegalStateException);
             }
         }
     }
@@ -1172,9 +1172,9 @@ namespace hazelcast {
             TEST_F(ClientEnpointTest, testConnectedClientEnpoint) {
                 HazelcastServer instance(*g_srvFactory);
 
-                HazelcastClient client;
+                hazelcast_client client;
                 ASSERT_EQ_EVENTUALLY(1, client.get_cluster().get_members().size());
-                const Client endpoint = client.get_local_endpoint();
+                const hz_client endpoint = client.get_local_endpoint();
                 spi::ClientContext context(client);
                 ASSERT_EQ(context.get_name(), endpoint.get_name());
 
@@ -1200,8 +1200,8 @@ namespace hazelcast {
 
             TEST_F(MemberAttributeTest, testInitialValues) {
                 HazelcastServer instance(*g_srvFactory);
-                HazelcastClient hazelcastClient(get_new_client());
-                Cluster cluster = hazelcastClient.get_cluster();
+                hazelcast_client hazelcastClient(get_new_client());
+                hz_cluster cluster = hazelcastClient.get_cluster();
                 std::vector<member> members = cluster.get_members();
                 ASSERT_EQ(1U, members.size());
                 member &member = members[0];
@@ -1223,7 +1223,7 @@ namespace hazelcast {
                     public:
                         static void SetUpTestCase() {
                             instance = new HazelcastServer(*g_srvFactory);
-                            client = new HazelcastClient(get_config());
+                            client = new hazelcast_client(get_config());
                         }
 
                         static void TearDownTestCase() {
@@ -1235,14 +1235,14 @@ namespace hazelcast {
                         }
 
                         static HazelcastServer *instance;
-                        static HazelcastClient *client;
+                        static hazelcast_client *client;
                     };
 
                     HazelcastServer *BasicPnCounterAPITest::instance = nullptr;
-                    HazelcastClient *BasicPnCounterAPITest::client = nullptr;
+                    hazelcast_client *BasicPnCounterAPITest::client = nullptr;
 
                     TEST_F(BasicPnCounterAPITest, testGetStart) {
-                        std::shared_ptr<PNCounter> pnCounter = client->get_pn_counter(
+                        std::shared_ptr<pn_counter> pnCounter = client->get_pn_counter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
                         ASSERT_EQ(0, pnCounter->get().get());
                     }
@@ -1321,7 +1321,7 @@ namespace hazelcast {
                     public:
                         static void SetUpTestCase() {
                             instance = new HazelcastServer(*g_srvFactory);
-                            client = new HazelcastClient;
+                            client = new hazelcast_client;
                         }
 
                         static void TearDownTestCase() {
@@ -1334,16 +1334,16 @@ namespace hazelcast {
 
                     protected:
                         static HazelcastServer *instance;
-                        static HazelcastClient *client;
+                        static hazelcast_client *client;
                     };
 
                     HazelcastServer *PnCounterFunctionalityTest::instance = nullptr;
-                    HazelcastClient *PnCounterFunctionalityTest::client = nullptr;
+                    hazelcast_client *PnCounterFunctionalityTest::client = nullptr;
 
                     TEST_F(PnCounterFunctionalityTest, testSimpleReplication) {
                         const char *name = testing::UnitTest::GetInstance()->current_test_info()->name();
-                        std::shared_ptr<PNCounter> counter1 = client->get_pn_counter(name);
-                        std::shared_ptr<PNCounter> counter2 = client->get_pn_counter(name);
+                        std::shared_ptr<pn_counter> counter1 = client->get_pn_counter(name);
+                        std::shared_ptr<pn_counter> counter2 = client->get_pn_counter(name);
 
                         ASSERT_EQ(5, counter1->add_and_get(5).get());
 
@@ -1353,8 +1353,8 @@ namespace hazelcast {
 
                     TEST_F(PnCounterFunctionalityTest, testParallelism) {
                         const char *name = testing::UnitTest::GetInstance()->current_test_info()->name();
-                        std::shared_ptr<PNCounter> counter1 = client->get_pn_counter(name);
-                        std::shared_ptr<PNCounter> counter2 = client->get_pn_counter(name);
+                        std::shared_ptr<pn_counter> counter1 = client->get_pn_counter(name);
+                        std::shared_ptr<pn_counter> counter2 = client->get_pn_counter(name);
 
                         int parallelism = 5;
                         int loopsPerThread = 100;
@@ -1386,7 +1386,7 @@ namespace hazelcast {
                         HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-lite-member.xml");
                         HazelcastServer instance(factory);
 
-                        HazelcastClient client(client_config().set_cluster_name("lite-dev"));
+                        hazelcast_client client(client_config().set_cluster_name("lite-dev"));
 
                         auto pnCounter = client.get_pn_counter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
@@ -1400,7 +1400,7 @@ namespace hazelcast {
                     class ClientPNCounterConsistencyLostTest : public ClientTestSupport {
                     protected:
                         boost::shared_ptr<member> get_current_target_replica_address(
-                                const std::shared_ptr<PNCounter> &pn_counter) {
+                                const std::shared_ptr<pn_counter> &pn_counter) {
                             return pn_counter->get_current_target_replica_address();
                         }
 
@@ -1423,7 +1423,7 @@ namespace hazelcast {
                         HazelcastServer instance(factory);
                         HazelcastServer instance2(factory);
 
-                        HazelcastClient client(client_config().set_cluster_name("consistency-lost-dev"));
+                        hazelcast_client client(client_config().set_cluster_name("consistency-lost-dev"));
 
                         auto pnCounter = client.get_pn_counter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
@@ -1445,7 +1445,7 @@ namespace hazelcast {
                         HazelcastServer instance(factory);
                         HazelcastServer instance2(factory);
 
-                        HazelcastClient client(client_config().set_cluster_name("consistency-lost-dev"));
+                        hazelcast_client client(client_config().set_cluster_name("consistency-lost-dev"));
 
                         auto pnCounter = client.get_pn_counter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
@@ -1477,28 +1477,28 @@ namespace hazelcast {
                 SimpleListenerTest() = default;
 
             protected:
-                MembershipListener make_membership_listener(boost::latch &joined, boost::latch &left) {
-                    return MembershipListener()
-                        .on_joined([&joined](const MembershipEvent &) {
+                membership_listener make_membership_listener(boost::latch &joined, boost::latch &left) {
+                    return membership_listener()
+                        .on_joined([&joined](const membership_event &) {
                             joined.count_down();
                         })
-                        .on_left([&left](const MembershipEvent &) {
+                        .on_left([&left](const membership_event &) {
                             left.count_down();
                         });
                 }
 
-                MembershipListener make_initial_membership_listener(boost::latch &joined, boost::latch &left) {
-                    return MembershipListener()
-                        .on_init([&joined](const InitialMembershipEvent &event) {
+                membership_listener make_initial_membership_listener(boost::latch &joined, boost::latch &left) {
+                    return membership_listener()
+                        .on_init([&joined](const initial_membership_event &event) {
                             auto &members = event.get_members();
                             if (members.size() == 1) {
                                 joined.count_down();
                             }
                         })
-                        .on_joined([&joined](const MembershipEvent &) {
+                        .on_joined([&joined](const membership_event &) {
                             joined.count_down();
                         })
-                        .on_left([&left](const MembershipEvent &) {
+                        .on_left([&left](const membership_event &) {
                             left.count_down();
                         });
                 }
@@ -1506,8 +1506,8 @@ namespace hazelcast {
 
             TEST_P(SimpleListenerTest, testSharedClusterListeners) {
                 HazelcastServer instance(*g_srvFactory);
-                HazelcastClient hazelcastClient(GetParam());
-                Cluster cluster = hazelcastClient.get_cluster();
+                hazelcast_client hazelcastClient(GetParam());
+                hz_cluster cluster = hazelcastClient.get_cluster();
                 boost::latch memberAdded(1);
                 boost::latch memberAddedInit(2);
                 boost::latch memberRemoved(1);
@@ -1537,8 +1537,8 @@ namespace hazelcast {
 
             TEST_P(SimpleListenerTest, testClusterListeners) {
                 HazelcastServer instance(*g_srvFactory);
-                HazelcastClient hazelcastClient(GetParam());
-                Cluster cluster = hazelcastClient.get_cluster();
+                hazelcast_client hazelcastClient(GetParam());
+                hz_cluster cluster = hazelcastClient.get_cluster();
                 boost::latch memberAdded(1);
                 boost::latch memberAddedInit(2);
                 boost::latch memberRemoved(1);
@@ -1579,7 +1579,7 @@ namespace hazelcast {
                 clientConfig.add_listener(std::move(listener));
 
                 HazelcastServer instance(*g_srvFactory);
-                HazelcastClient hazelcastClient(clientConfig);
+                hazelcast_client hazelcastClient(clientConfig);
 
                 HazelcastServer instance2(*g_srvFactory);
 
@@ -1597,7 +1597,7 @@ namespace hazelcast {
             TEST_P(SimpleListenerTest, testDeregisterListener) {
                 HazelcastServer instance(*g_srvFactory);
                 client_config clientConfig = GetParam();
-                HazelcastClient hazelcastClient(clientConfig);
+                hazelcast_client hazelcastClient(clientConfig);
 
                 auto map = hazelcastClient.get_map("testDeregisterListener");
 
@@ -1605,11 +1605,11 @@ namespace hazelcast {
 
                 boost::latch map_clearedLatch(1);
 
-                EntryListener listener;
+                entry_listener listener;
 
-                listener.on_map_cleared([&map_clearedLatch](MapEvent &&event) {
+                listener.on_map_cleared([&map_clearedLatch](map_event &&event) {
                     ASSERT_EQ("testDeregisterListener", event.get_name());
-                    ASSERT_EQ(EntryEvent::type::CLEAR_ALL, event.get_event_type());
+                    ASSERT_EQ(entry_event::type::CLEAR_ALL, event.get_event_type());
                     const std::string &hostName = event.get_member().get_address().get_host();
                     ASSERT_TRUE(hostName == "127.0.0.1" || hostName == "localhost");
                     ASSERT_EQ(5701, event.get_member().get_address().get_port());
@@ -1627,12 +1627,12 @@ namespace hazelcast {
 
             TEST_P(SimpleListenerTest, testEmptyListener) {
                 HazelcastServer instance(*g_srvFactory);
-                HazelcastClient hazelcastClient(GetParam());
+                hazelcast_client hazelcastClient(GetParam());
 
                 auto map = hazelcastClient.get_map("testEmptyListener");
 
                 // empty listener with no handlers
-                EntryListener listener;
+                entry_listener listener;
 
                 auto listenerRegistrationId = map->add_entry_listener(std::move(listener), true).get();
 
@@ -1675,7 +1675,7 @@ namespace hazelcast {
                     config::ClientFlakeIdGeneratorConfig flakeIdConfig("test*");
                     flakeIdConfig.set_prefetch_count(10).set_prefetch_validity_duration(std::chrono::seconds(20));
                     clientConfig.add_flake_id_generator_config(flakeIdConfig);
-                    client = new HazelcastClient(clientConfig);
+                    client = new hazelcast_client(clientConfig);
                 }
 
                 static void TearDownTestCase() {
@@ -1688,13 +1688,13 @@ namespace hazelcast {
 
             protected:
                 static HazelcastServer *instance;
-                static HazelcastClient *client;
+                static hazelcast_client *client;
 
-                std::shared_ptr<FlakeIdGenerator> flake_id_generator_;
+                std::shared_ptr<flake_id_generator> flake_id_generator_;
             };
 
             HazelcastServer *FlakeIdGeneratorApiTest::instance = nullptr;
-            HazelcastClient *FlakeIdGeneratorApiTest::client = nullptr;
+            hazelcast_client *FlakeIdGeneratorApiTest::client = nullptr;
 
             TEST_F (FlakeIdGeneratorApiTest, testStartingValue) {
                 ASSERT_NO_THROW(flake_id_generator_->new_id().get());
@@ -1745,7 +1745,7 @@ namespace hazelcast {
             protected:
                 HazelcastServer instance_;
                 client_config client_config_;
-                HazelcastClient client_;
+                hazelcast_client client_;
             };
 
             ClientTxnMapTest::ClientTxnMapTest() : instance_(*g_srvFactory), client_(get_new_client()) {
@@ -1756,7 +1756,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testPutGet) {
                 std::string name = "testPutGet";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -1774,7 +1774,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testRemove) {
                 std::string name = "testRemove";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -1798,7 +1798,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testRemoveIfSame) {
                 std::string name = "testRemoveIfSame";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -1821,7 +1821,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testDeleteEntry) {
                 std::string name = "testDeleteEntry";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -1846,7 +1846,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testReplace) {
                 std::string name = "testReplace";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -1866,7 +1866,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testSet) {
                 std::string name = "testSet";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -1896,7 +1896,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testContains) {
                 std::string name = "testContains";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -1920,7 +1920,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testReplaceIfSame) {
                 std::string name = "testReplaceIfSame";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -1941,7 +1941,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testPutIfSame) {
                 std::string name = "testPutIfSame";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -2008,7 +2008,7 @@ namespace hazelcast {
                 map->put<std::string, std::string>("key1", "value1").get();
                 map->put<std::string, std::string>("key2", "value2").get();
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
                 auto txMap = context.get_map(name);
                 ASSERT_FALSE((txMap->put<std::string, std::string>("key3", "value3").get().has_value()));
@@ -2034,7 +2034,7 @@ namespace hazelcast {
 
                 map->put<employee, employee>(emp1, emp1).get();
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto txMap = context.get_map(name);
@@ -2058,7 +2058,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testIsEmpty) {
                 std::string name = "testIsEmpty";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
 
                 auto map = context.get_map(name);
@@ -2090,7 +2090,7 @@ namespace hazelcast {
 
             protected:
                 HazelcastServer instance_;
-                HazelcastClient client_;
+                hazelcast_client client_;
             };
 
             ClientTxnSetTest::ClientTxnSetTest() : instance_(*g_srvFactory), client_(get_new_client()) {
@@ -2102,7 +2102,7 @@ namespace hazelcast {
                 auto s = client_.get_set("testAddRemove");
                 s->add<std::string>("item1").get();
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
                 auto set = context.get_set("testAddRemove");
                 ASSERT_TRUE(set->add<std::string>("item2").get());
@@ -2132,8 +2132,8 @@ namespace hazelcast {
                 HazelcastServerFactory & hazelcast_instance_factory_;
                 std::unique_ptr<HazelcastServer> server_;
                 std::unique_ptr<HazelcastServer> second_;
-                std::unique_ptr<HazelcastClient> client_;
-                std::unique_ptr<LoadBalancer> load_balancer_;
+                std::unique_ptr<hazelcast_client> client_;
+                std::unique_ptr<load_balancer> load_balancer_;
             };
 
             class MyLoadBalancer : public impl::AbstractLoadBalancer {
@@ -2154,9 +2154,9 @@ namespace hazelcast {
 
             };
 
-            MembershipListener make_member_removed_listener(boost::latch &l) {
-                return MembershipListener()
-                    .on_left([&l](const MembershipEvent &){
+            membership_listener make_member_removed_listener(boost::latch &l) {
+                return membership_listener()
+                    .on_left([&l](const membership_event &){
                         l.count_down();
                     });
             }
@@ -2168,7 +2168,7 @@ namespace hazelcast {
                 //always start the txn on first member
                 load_balancer_.reset(new MyLoadBalancer());
                 clientConfig.set_load_balancer(load_balancer_.get());
-                client_.reset(new HazelcastClient(clientConfig));
+                client_.reset(new hazelcast_client(clientConfig));
                 second_.reset(new HazelcastServer(hazelcast_instance_factory_));
             }
 
@@ -2180,11 +2180,11 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnConnectAfterClientShutdown) {
                 client_->shutdown();
-                ASSERT_THROW(client_->new_transaction_context(), exception::HazelcastClientNotActiveException);
+                ASSERT_THROW(client_->new_transaction_context(), exception::hazelcast_clientNotActiveException);
             }
 
             TEST_F(ClientTxnTest, testTxnCommitAfterClusterShutdown) {
-                TransactionContext context = client_->new_transaction_context();
+                transaction_context context = client_->new_transaction_context();
                 context.begin_transaction().get();
 
                 server_->shutdown();
@@ -2195,7 +2195,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnCommit) {
                 std::string queueName = random_string();
-                TransactionContext context = client_->new_transaction_context();
+                transaction_context context = client_->new_transaction_context();
                 context.begin_transaction().get();
                 ASSERT_FALSE(context.get_txn_id().is_nil());
                 auto queue = context.get_queue(queueName);
@@ -2213,10 +2213,10 @@ namespace hazelcast {
             TEST_F(ClientTxnTest, testTxnCommitUniSocket) {
                 client_config clientConfig;
                 clientConfig.get_network_config().set_smart_routing(false);
-                HazelcastClient uniSocketClient(clientConfig);
+                hazelcast_client uniSocketClient(clientConfig);
 
                 std::string queueName = random_string();
-                TransactionContext context = uniSocketClient.new_transaction_context();
+                transaction_context context = uniSocketClient.new_transaction_context();
                 context.begin_transaction().get();
                 ASSERT_FALSE(context.get_txn_id().is_nil());
                 auto queue = context.get_queue(queueName);
@@ -2233,11 +2233,11 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnCommitWithOptions) {
                 std::string queueName = random_string();
-                TransactionOptions transactionOptions;
-                transactionOptions.set_transaction_type(TransactionOptions::transaction_type::TWO_PHASE);
+                transaction_options transactionOptions;
+                transactionOptions.set_transaction_type(transaction_options::transaction_type::TWO_PHASE);
                 transactionOptions.set_timeout(std::chrono::seconds(60));
                 transactionOptions.set_durability(2);
-                TransactionContext context = client_->new_transaction_context(transactionOptions);
+                transaction_context context = client_->new_transaction_context(transactionOptions);
 
                 context.begin_transaction().get();
                 ASSERT_FALSE(context.get_txn_id().is_nil());
@@ -2255,7 +2255,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnCommitAfterClientShutdown) {
                 std::string queueName = random_string();
-                TransactionContext context = client_->new_transaction_context();
+                transaction_context context = client_->new_transaction_context();
                 context.begin_transaction().get();
                 auto queue = context.get_queue(queueName);
                 std::string value = random_string();
@@ -2269,7 +2269,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnRollback) {
                 std::string queueName = random_string();
-                TransactionContext context = client_->new_transaction_context();
+                transaction_context context = client_->new_transaction_context();
                 boost::latch txnRollbackLatch(1);
                 boost::latch memberRemovedLatch(1);
                 auto listener = make_member_removed_listener(memberRemovedLatch);
@@ -2301,7 +2301,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash) {
                 std::string queueName = random_string();
-                TransactionContext context = client_->new_transaction_context();
+                transaction_context context = client_->new_transaction_context();
                 boost::latch txnRollbackLatch(1);
                 boost::latch memberRemovedLatch(1);
 
@@ -2333,7 +2333,7 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace client {
-        class HazelcastClient;
+        class hazelcast_client;
 
         namespace test {
             class ClientTxnListTest : public ClientTestSupport {
@@ -2343,7 +2343,7 @@ namespace hazelcast {
             protected:
                 HazelcastServer instance_;
                 client_config client_config_;
-                HazelcastClient client_;
+                hazelcast_client client_;
             };
 
             ClientTxnListTest::ClientTxnListTest() : instance_(*g_srvFactory), client_(get_new_client()) {}
@@ -2354,7 +2354,7 @@ namespace hazelcast {
                 auto l = client_.get_list("testAddRemove");
                 l->add<std::string>("item1").get();
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
                 auto list = context.get_list("testAddRemove");
                 ASSERT_TRUE(list->add<std::string>("item2").get());
@@ -2380,7 +2380,7 @@ namespace hazelcast {
                 ~ClientTxnMultiMapTest() override;
             protected:
                 HazelcastServer instance_;
-                HazelcastClient client_;
+                hazelcast_client client_;
             };
 
             ClientTxnMultiMapTest::ClientTxnMultiMapTest()
@@ -2389,7 +2389,7 @@ namespace hazelcast {
             ClientTxnMultiMapTest::~ClientTxnMultiMapTest() = default;
 
             TEST_F(ClientTxnMultiMapTest, testRemoveIfExists) {
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
                 auto multiMap = context.get_multi_map("testRemoveIfExists");
                 std::string key("MyKey");
@@ -2420,7 +2420,7 @@ namespace hazelcast {
                         std::string key = std::to_string(hazelcast::util::get_current_thread_id());
                         std::string key2 = key + "2";
                         client_.get_multi_map("testPutGetRemove")->put(key, "value").get();
-                        TransactionContext context = client_.new_transaction_context();
+                        transaction_context context = client_.new_transaction_context();
                         context.begin_transaction().get();
                         auto multiMap = context.get_multi_map("testPutGetRemove");
                         ASSERT_FALSE(multiMap->put(key, "value").get());
@@ -2455,7 +2455,7 @@ namespace hazelcast {
                 ~ClientTxnQueueTest() override;
             protected:
                 HazelcastServer instance_;
-                HazelcastClient client_;
+                hazelcast_client client_;
             };
 
             ClientTxnQueueTest::ClientTxnQueueTest() : instance_(*g_srvFactory), client_(get_new_client()) {}
@@ -2465,7 +2465,7 @@ namespace hazelcast {
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll1) {
                 std::string name = "defQueue";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
                 auto q = context.get_queue(name);
                 ASSERT_TRUE(q->offer("ali").get());
@@ -2479,7 +2479,7 @@ namespace hazelcast {
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPollByteVector) {
                 std::string name = "defQueue";
 
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
                 auto q = context.get_queue(name);
                 std::vector<byte> value(3);
@@ -2493,7 +2493,7 @@ namespace hazelcast {
 
             void test_transactional_offer_poll2_thread(hazelcast::util::ThreadArgs &args) {
                 boost::latch *latch1 = (boost::latch *) args.arg0;
-                HazelcastClient *client = (HazelcastClient *) args.arg1;
+                hazelcast_client *client = (hazelcast_client *) args.arg1;
                 latch1->wait();
                 client->get_queue("defQueue0")->offer("item0").get();
             }
@@ -2501,7 +2501,7 @@ namespace hazelcast {
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll2) {
                 boost::latch latch1(1);
                 hazelcast::util::StartedThread t(test_transactional_offer_poll2_thread, &latch1, &client_);
-                TransactionContext context = client_.new_transaction_context();
+                transaction_context context = client_.new_transaction_context();
                 context.begin_transaction().get();
                 auto q0 = context.get_queue("defQueue0");
                 auto q1 = context.get_queue("defQueue1");
@@ -2529,45 +2529,45 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadByte) {
                     std::vector<byte> bytes{0x01, 0x12};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     ASSERT_EQ(0x01, dataInput.read<byte>());
                     ASSERT_EQ(0x12, dataInput.read<byte>());
                 }
 
                 TEST_F(DataInputTest, testReadBoolean) {
                     std::vector<byte> bytes{0x00, 0x10};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     ASSERT_FALSE(dataInput.read<bool>());
                     ASSERT_TRUE(dataInput.read<bool>());
                 }
 
                 TEST_F(DataInputTest, testReadChar) {
                     std::vector<byte> bytes{'a', 'b'};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     ASSERT_EQ('b', dataInput.read<char>());
                 }
 
                 TEST_F(DataInputTest, testReadShort) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     ASSERT_EQ(0x1234, dataInput.read<int16_t>());
                 }
 
                 TEST_F(DataInputTest, testReadInteger) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78, 0x90};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     ASSERT_EQ(INT32_C(0x12345678), dataInput.read<int32_t>());
                 }
 
                 TEST_F(DataInputTest, testReadLong) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78, 0x90, 0x9A, 0x9B, 0x9C};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     ASSERT_EQ(INT64_C(0x12345678909A9B9C), dataInput.read<int64_t>());
                 }
 
                 TEST_F(DataInputTest, testReadUTF) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x04, 'b', 'd', 'f', 'h'};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     ASSERT_EQ("bdfh", dataInput.read<std::string>());
                 }
 
@@ -2575,7 +2575,7 @@ namespace hazelcast {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02};
                     std::vector<byte> actualDataBytes{0x12, 0x34};
                     bytes.insert(bytes.end(), actualDataBytes.begin(), actualDataBytes.end());
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     auto readBytes = dataInput.read<std::vector<byte>>();
                     ASSERT_TRUE(readBytes.has_value());
                     ASSERT_EQ(actualDataBytes, *readBytes);
@@ -2583,7 +2583,7 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadBooleanArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x00, 0x01};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     auto booleanArray = dataInput.read<std::vector<bool>>();
                     ASSERT_TRUE(booleanArray);
                     ASSERT_EQ(2U, booleanArray->size());
@@ -2593,7 +2593,7 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadCharArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x00, 'f', 0x00, 'h'};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     auto charArray = dataInput.read<std::vector<char>>();
                     ASSERT_TRUE(charArray);
                     ASSERT_EQ(2U, charArray->size());
@@ -2603,7 +2603,7 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadShortArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     auto array = dataInput.read<std::vector<int16_t>>();
                     ASSERT_TRUE(array);
                     ASSERT_EQ(2U, array->size());
@@ -2613,7 +2613,7 @@ namespace hazelcast {
 
                 TEST_F(DataInputTest, testReadIntegerArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x1A, 0xBC, 0xDE, 0xEF};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     auto array = dataInput.read<std::vector<int32_t>>();
                     ASSERT_TRUE(array.has_value());
                     ASSERT_EQ(2U, array->size());
@@ -2624,7 +2624,7 @@ namespace hazelcast {
                 TEST_F(DataInputTest, testReadLongArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xEF,
                                             0x11, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8};
-                    serialization::pimpl::DataInput<std::vector<byte>> dataInput(bytes);
+                    serialization::pimpl::data_input<std::vector<byte>> dataInput(bytes);
                     auto array = dataInput.read<std::vector<int64_t>>();
                     ASSERT_TRUE(array.has_value());
                     ASSERT_EQ(2U, array->size());
@@ -2783,7 +2783,7 @@ namespace hazelcast {
 
                 TEST_F(DataOutputTest, testWriteByte) {
                     std::vector<byte> bytes{0x01, 0x12};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<byte>((byte) 0x01);
                     dataOutput.write<byte>(0x12);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
@@ -2791,7 +2791,7 @@ namespace hazelcast {
 
                 TEST_F(DataOutputTest, testWriteBoolean) {
                     std::vector<byte> bytes{0x00, 0x01};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<bool>(false);
                     dataOutput.write<bool>(true);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
@@ -2801,35 +2801,35 @@ namespace hazelcast {
                     std::vector<byte> bytes;
                     bytes.push_back(0);
                     bytes.push_back('b');
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<char>('b');
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteShort) {
                     std::vector<byte> bytes{0x12, 0x34};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<int16_t>(0x1234);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteInteger) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<int32_t>(INT32_C(0x12345678));
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteLong) {
                     std::vector<byte> bytes{0x12, 0x34, 0x56, 0x78, 0x90, 0x9A, 0x9B, 0x9C};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<int64_t>(INT64_C(0x12345678909A9B9C));
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
 
                 TEST_F(DataOutputTest, testWriteUTF) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x04, 'b', 'd', 'f', 'h'};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     std::string value("bdfh");
                     dataOutput.write<std::string>(&value);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
@@ -2839,7 +2839,7 @@ namespace hazelcast {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02};
                     std::vector<byte> actualDataBytes{0x12, 0x34};
                     bytes.insert(bytes.end(), actualDataBytes.begin(), actualDataBytes.end());
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write(&actualDataBytes);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2849,7 +2849,7 @@ namespace hazelcast {
                     std::vector<bool> actualValues;
                     actualValues.push_back(false);
                     actualValues.push_back(true);
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<std::vector<bool>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2857,7 +2857,7 @@ namespace hazelcast {
                 TEST_F(DataOutputTest, testWriteCharArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0, 'f', 0, 'h'};
                     std::vector<char> actualChars{'f', 'h'};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<std::vector<char>>(actualChars);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2865,7 +2865,7 @@ namespace hazelcast {
                 TEST_F(DataOutputTest, testWriteShortArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78};
                     std::vector<int16_t> actualValues{0x1234, 0x5678};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<std::vector<int16_t>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2873,7 +2873,7 @@ namespace hazelcast {
                 TEST_F(DataOutputTest, testWriteIntegerArray) {
                     std::vector<byte> bytes{0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x1A, 0xBC, 0xDE, 0xEF};
                     std::vector<int32_t> actualValues{INT32_C(0x12345678), INT32_C(0x1ABCDEEF)};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<std::vector<int32_t>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }
@@ -2882,7 +2882,7 @@ namespace hazelcast {
                     std::vector<byte> bytes = {0x00, 0x00, 0x00, 0x02, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xEF,
                                                0x01, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8};
                     std::vector<int64_t> actualValues{INT64_C(0x123456789ABCDEEF), INT64_C(0x01A2A3A4A5A6A7A8)};
-                    serialization::pimpl::DataOutput dataOutput;
+                    serialization::pimpl::data_output dataOutput;
                     dataOutput.write<std::vector<int64_t>>(&actualValues);
                     ASSERT_EQ(bytes, dataOutput.to_byte_array());
                 }

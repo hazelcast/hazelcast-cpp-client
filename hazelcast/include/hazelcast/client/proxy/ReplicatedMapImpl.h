@@ -370,14 +370,14 @@ namespace hazelcast {
                                       int32_t event_type, boost::uuids::uuid uuid,
                                       int32_t number_of_affected_entries) override {
                         switch (event_type) {
-                            case static_cast<int32_t>(EntryEvent::type::ADDED):
-                            case static_cast<int32_t>(EntryEvent::type::REMOVED):
-                            case static_cast<int32_t>(EntryEvent::type::UPDATED):
-                            case static_cast<int32_t>(EntryEvent::type::EVICTED): {
+                            case static_cast<int32_t>(entry_event::type::ADDED):
+                            case static_cast<int32_t>(entry_event::type::REMOVED):
+                            case static_cast<int32_t>(entry_event::type::UPDATED):
+                            case static_cast<int32_t>(entry_event::type::EVICTED): {
                                 near_cache_->invalidate(std::make_shared<serialization::pimpl::data>(std::move(*key)));
                                 break;
                             }
-                            case static_cast<int32_t>(EntryEvent::type::CLEAR_ALL):
+                            case static_cast<int32_t>(entry_event::type::CLEAR_ALL):
                                 near_cache_->clear();
                                 break;
                             default:

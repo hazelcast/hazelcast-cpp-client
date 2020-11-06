@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -46,22 +46,22 @@ namespace hazelcast {
                             ON,
                     /**
                      * Reconnect to cluster without blocking invocations. Invocations will receive
-                     * {@link HazelcastClientOfflineException}
+                     * {@link hazelcast_clientOfflineException}
                      */
                             ASYNC
                 };
 
                 /**
-                 * Client instance creation won't block on {@link HazelcastClient(ClientConfig &)} if this value is true
+                 * Client instance creation won't block on {@link hazelcast_client(ClientConfig &)} if this value is true
                  * @return if client connects to cluster asynchronously
                  */
 
                 bool is_async_start() const;
 
                 /**
-                 * Set true for non blocking {@link HazelcastClient(const ClientConfig &)}. The client creation won't wait to
+                 * Set true for non blocking {@link hazelcast_client(const client_config &)}. The client creation won't wait to
                  * connect to cluster. The client instace will throw exception until it connects to cluster and become ready.
-                 * If set to false, {@link HazelcastClient(const ClientConfig &)} will block until a cluster connection established and it's
+                 * If set to false, {@link hazelcast_client(const client_config &)} will block until a cluster connection established and it's
                  * ready to use client instance
                  *
                  * default value is false

@@ -16,14 +16,14 @@
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
-#include <hazelcast/client/EntryListener.h>
+#include <hazelcast/client/entry_listener.h>
 #include "serialization/Serializables.h"
 #include <regex>
 #include <vector>
 #include <fstream>
 #include "ClientTestSupportBase.h"
 #include <hazelcast/client/client_config.h>
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <hazelcast/client/impl/Partition.h>
 #include <gtest/gtest.h>
@@ -34,8 +34,8 @@
 #include <hazelcast/util/Util.h>
 #include <TestHelperFunctions.h>
 #include <ostream>
-#include <hazelcast/client/LifecycleListener.h>
-#include <hazelcast/client/HazelcastJsonValue.h>
+#include <hazelcast/client/lifecycle_listener.h>
+#include <hazelcast/client/hazelcast_json_value.h>
 #include <hazelcast/client/internal/nearcache/impl/store/NearCacheObjectRecordStore.h>
 #include <hazelcast/client/query/Predicates.h>
 #include <cmath>
@@ -51,17 +51,17 @@
 
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/internal/socket/SSLSocket.h"
-#include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/SocketInterceptor.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/IMap.h"
+#include "hazelcast/client/initial_membership_event.h"
+#include "hazelcast/client/socket_interceptor.h"
+#include "hazelcast/client/hz_socket.h"
+#include "hazelcast/client/imap.h"
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/Pipelining.h"
+#include "hazelcast/client/pipelining.h"
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
-#include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/multi_map.h"
+#include "hazelcast/client/entry_event.h"
+#include "hazelcast/client/client_properties.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -378,12 +378,12 @@ namespace hazelcast {
 
                 class WriteReadIntGlobalSerializer : public serialization::global_serializer {
                 public:
-                    void write(const boost::any &object, serialization::ObjectDataOutput &out) override {
+                    void write(const boost::any &object, serialization::object_data_output &out) override {
                         auto const &obj = boost::any_cast<UnknownObject>(object);
                         out.write<int32_t>(obj.get_value());
                     }
 
-                    boost::any read(serialization::ObjectDataInput &in) override {
+                    boost::any read(serialization::object_data_input &in) override {
                         return boost::any(UnknownObject(in.read<int32_t>()));
                     }
                 };
@@ -394,7 +394,7 @@ namespace hazelcast {
                     client_config clientConfig = get_config();
                     clientConfig.get_serialization_config().set_global_serializer(
                             std::make_shared<WriteReadIntGlobalSerializer>());
-                    client = new HazelcastClient(clientConfig);
+                    client = new hazelcast_client(clientConfig);
                     imap = client->get_map("UnknownObject");
                 }
 
@@ -408,13 +408,13 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
-                static HazelcastClient *client;
-                static std::shared_ptr<IMap> imap;
+                static hazelcast_client *client;
+                static std::shared_ptr<imap> imap;
             };
 
             HazelcastServer *MapGlobalSerializerTest::instance = nullptr;
-            HazelcastClient *MapGlobalSerializerTest::client = nullptr;
-            std::shared_ptr<IMap> MapGlobalSerializerTest::imap;
+            hazelcast_client *MapGlobalSerializerTest::client = nullptr;
+            std::shared_ptr<imap> MapGlobalSerializerTest::imap;
 
             TEST_F(MapGlobalSerializerTest, testPutGetUnserializableObject) {
                 MapGlobalSerializerTest::UnknownObject myObject(8);
@@ -442,7 +442,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    client = new HazelcastClient(get_config());
+                    client = new hazelcast_client(get_config());
                     imap = client->get_map("IntMap");
                 }
 
@@ -459,23 +459,23 @@ namespace hazelcast {
 
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
-                static HazelcastClient *client;
-                static std::shared_ptr<IMap> imap;
+                static hazelcast_client *client;
+                static std::shared_ptr<imap> imap;
             };
 
             HazelcastServer *ClientExpirationListenerTest::instance = nullptr;
             HazelcastServer *ClientExpirationListenerTest::instance2 = nullptr;
-            HazelcastClient *ClientExpirationListenerTest::client = nullptr;
-            std::shared_ptr<IMap> ClientExpirationListenerTest::imap = nullptr;
+            hazelcast_client *ClientExpirationListenerTest::client = nullptr;
+            std::shared_ptr<imap> ClientExpirationListenerTest::imap = nullptr;
 
             TEST_F(ClientExpirationListenerTest, notified_afterExpirationOfEntries) {
                 int numberOfPutOperations = 10000;
                 boost::latch expirationEventArrivalCount(numberOfPutOperations);
 
-                EntryListener expirationListener;
+                entry_listener expirationListener;
 
                 expirationListener.
-                    on_expired([&expirationEventArrivalCount](EntryEvent &&) {
+                    on_expired([&expirationEventArrivalCount](entry_event &&) {
                         expirationEventArrivalCount.count_down();
                     });
 
@@ -508,8 +508,8 @@ namespace hazelcast {
                 static void SetUpTestSuite() {
                     instance = new HazelcastServer(*g_srvFactory);
                     client_config clientConfig(get_config());
-                    clientConfig.set_property(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "20");
-                    client = new HazelcastClient(clientConfig);
+                    clientConfig.set_property(client_properties::PROP_HEARTBEAT_TIMEOUT, "20");
+                    client = new hazelcast_client(clientConfig);
                     map = client->get_map("map");
                 }
 
@@ -527,20 +527,20 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
-                static HazelcastClient *client;
-                static std::shared_ptr<IMap> map;
+                static hazelcast_client *client;
+                static std::shared_ptr<imap> map;
             };
 
             HazelcastServer *ClientListenerFunctionObjectsTest::instance = nullptr;
-            HazelcastClient *ClientListenerFunctionObjectsTest::client = nullptr;
-            std::shared_ptr<IMap> ClientListenerFunctionObjectsTest::map = nullptr;
+            hazelcast_client *ClientListenerFunctionObjectsTest::client = nullptr;
+            std::shared_ptr<imap> ClientListenerFunctionObjectsTest::map = nullptr;
 
             TEST_F(ClientListenerFunctionObjectsTest, lambda) {
                 boost::latch called {1};
 
                 auto id = map->add_entry_listener(
-                    EntryListener().
-                        on_added([&called](EntryEvent &&e) {
+                        entry_listener().
+                        on_added([&called](entry_event &&e) {
                             ASSERT_EQ(1, e.get_key().get<int>().get());
                             ASSERT_EQ(2, e.get_value().get<int>().get());
                             called.count_down();
@@ -558,7 +558,7 @@ namespace hazelcast {
                 struct OnEntryAdded {
                     boost::latch& latch;
 
-                    void operator()(EntryEvent &&e) {
+                    void operator()(entry_event &&e) {
                         ASSERT_EQ(1, e.get_key().get<int>().get());
                         ASSERT_EQ(2, e.get_value().get<int>().get());
                         latch.count_down();
@@ -569,7 +569,7 @@ namespace hazelcast {
                 OnEntryAdded handler {called};
 
                 auto id = map->add_entry_listener(
-                    EntryListener().on_added(std::move(handler))
+                        entry_listener().on_added(std::move(handler))
                 , true).get();
 
                 map->put(1, 2).get();
@@ -583,7 +583,7 @@ namespace hazelcast {
                 static boost::latch called {1};
 
                 struct OnEntryAdded {
-                    static void handler(EntryEvent &&e) {
+                    static void handler(entry_event &&e) {
                         ASSERT_EQ(1, e.get_key().get<int>().get());
                         ASSERT_EQ(2, e.get_value().get<int>().get());
                         called.count_down();
@@ -591,7 +591,7 @@ namespace hazelcast {
                 };
 
                 auto id = map->add_entry_listener(
-                    EntryListener().on_added(&OnEntryAdded::handler)
+                        entry_listener().on_added(&OnEntryAdded::handler)
                 , true).get();
 
                 map->put(1, 2).get();
@@ -607,7 +607,7 @@ namespace hazelcast {
                 struct MyListener {
                     boost::latch &latch;
 
-                    void added(EntryEvent &&e) {
+                    void added(entry_event &&e) {
                         ASSERT_EQ(1, e.get_key().get<int>().get());
                         ASSERT_EQ(2, e.get_value().get<int>().get());
                         latch.count_down();
@@ -618,7 +618,7 @@ namespace hazelcast {
                 auto handler = std::bind(&MyListener::added, &listener, std::placeholders::_1);
 
                 auto id = map->add_entry_listener(
-                    EntryListener().on_added(std::move(handler))
+                        entry_listener().on_added(std::move(handler))
                 , true).get();
 
                 map->put(1, 2).get();
@@ -634,7 +634,7 @@ namespace hazelcast {
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PartitionAwareInt : public PartitionAware<int> {
+            class PartitionAwareInt : public partition_aware<int> {
             public:
                 PartitionAwareInt() : partition_key_(0), actual_key_(0) {}
 
@@ -695,7 +695,7 @@ namespace hazelcast {
 
             class ClientMapTest : public ClientTestSupport, public ::testing::WithParamInterface<client_config> {
             public:
-                ClientMapTest() : client_(HazelcastClient(GetParam())),
+                ClientMapTest() : client_(hazelcast_client(GetParam())),
                                   imap_(client_.get_map(MapClientConfig::imapName)),
                                   int_map_(client_.get_map(MapClientConfig::intMapName)),
                                   employees_(client_.get_map(MapClientConfig::employeesMapName)) {
@@ -759,7 +759,7 @@ namespace hazelcast {
 
                 static void try_put_thread(hazelcast::util::ThreadArgs &args) {
                     auto *latch1 = (boost::latch *) args.arg0;
-                    IMap *pMap = (IMap *) args.arg1;
+                    imap *pMap = (imap *) args.arg1;
                     bool result = pMap->try_put("key1", "value3", std::chrono::seconds(1)).get();
                     if (!result) {
                         latch1->count_down();
@@ -768,7 +768,7 @@ namespace hazelcast {
 
                 static void try_remove_thread(hazelcast::util::ThreadArgs &args) {
                     auto *latch1 = (boost::latch *) args.arg0;
-                    IMap *pMap = (IMap *) args.arg1;
+                    imap *pMap = (imap *) args.arg1;
                     bool result = pMap->try_remove("key2", std::chrono::seconds(1)).get();
                     if (!result) {
                         latch1->count_down();
@@ -777,21 +777,21 @@ namespace hazelcast {
 
                 static void test_lock_thread(hazelcast::util::ThreadArgs &args) {
                     auto *latch1 = (boost::latch *) args.arg0;
-                    IMap *pMap = (IMap *) args.arg1;
+                    imap *pMap = (imap *) args.arg1;
                     pMap->try_put("key1", "value2", std::chrono::milliseconds(1)).get();
                     latch1->count_down();
                 }
 
                 static void test_lock_ttl_thread(hazelcast::util::ThreadArgs &args) {
                     auto *latch1 = (boost::latch *) args.arg0;
-                    IMap *pMap = (IMap *) args.arg1;
+                    imap *pMap = (imap *) args.arg1;
                     pMap->try_put("key1", "value2", std::chrono::seconds(5)).get();
                     latch1->count_down();
                 }
 
                 static void test_lock_tt_l2_thread(hazelcast::util::ThreadArgs &args) {
                     auto *latch1 = (boost::latch *) args.arg0;
-                    IMap *pMap = (IMap *) args.arg1;
+                    imap *pMap = (imap *) args.arg1;
                     if (!pMap->try_lock("key1").get()) {
                         latch1->count_down();
                     }
@@ -802,7 +802,7 @@ namespace hazelcast {
 
                 static void test_map_try_lock_thread1(hazelcast::util::ThreadArgs &args) {
                     auto *latch1 = (boost::latch *) args.arg0;
-                    IMap *pMap = (IMap *) args.arg1;
+                    imap *pMap = (imap *) args.arg1;
                     if (!pMap->try_lock("key1", std::chrono::milliseconds(2)).get()) {
                         latch1->count_down();
                     }
@@ -810,7 +810,7 @@ namespace hazelcast {
 
                 static void test_map_try_lock_thread2(hazelcast::util::ThreadArgs &args) {
                     auto *latch1 = (boost::latch *) args.arg0;
-                    IMap *pMap = (IMap *) args.arg1;
+                    imap *pMap = (imap *) args.arg1;
                     if (pMap->try_lock("key1", std::chrono::seconds(20)).get()) {
                         latch1->count_down();
                     }
@@ -818,30 +818,30 @@ namespace hazelcast {
 
                 static void test_map_force_unlock_thread(hazelcast::util::ThreadArgs &args) {
                     auto *latch1 = (boost::latch *) args.arg0;
-                    IMap *pMap = (IMap *) args.arg1;
+                    imap *pMap = (imap *) args.arg1;
                     pMap->force_unlock("key1").get();
                     latch1->count_down();
                 }
 
-                EntryListener make_countdown_listener(boost::latch &add_latch,
-                                                    boost::latch &remove_latch,
-                                                    boost::latch &update_latch,
-                                                    boost::latch &expiry_latch,
-                                                    boost::latch *evict_latch = nullptr) {
-                    return EntryListener().
-                        on_added([&add_latch](EntryEvent &&) {
+                entry_listener make_countdown_listener(boost::latch &add_latch,
+                                                       boost::latch &remove_latch,
+                                                       boost::latch &update_latch,
+                                                       boost::latch &expiry_latch,
+                                                       boost::latch *evict_latch = nullptr) {
+                    return entry_listener().
+                        on_added([&add_latch](entry_event &&) {
                             add_latch.count_down();
                         }).
-                        on_removed([&remove_latch](EntryEvent &&) {
+                        on_removed([&remove_latch](entry_event &&) {
                             remove_latch.count_down();
                         }).
-                        on_updated([&update_latch](EntryEvent &&) {
+                        on_updated([&update_latch](entry_event &&) {
                             update_latch.count_down();
                         }).
-                        on_expired([&expiry_latch](EntryEvent &&) {
+                        on_expired([&expiry_latch](entry_event &&) {
                             expiry_latch.count_down();
                         }).
-                        on_evicted([evict_latch](EntryEvent &&) {
+                        on_evicted([evict_latch](entry_event &&) {
                             if (!evict_latch) {
                                 return;
                             }
@@ -849,7 +849,7 @@ namespace hazelcast {
                         });
                 }
 
-                void validate_expiry_invalidations(std::shared_ptr<IMap> map, std::function<void()> f) {
+                void validate_expiry_invalidations(std::shared_ptr<imap> map, std::function<void()> f) {
                     boost::latch dummy(10), expiry(1);
                     auto id = map->add_entry_listener(make_countdown_listener(dummy, dummy, dummy, expiry), false).get();
 
@@ -879,10 +879,10 @@ namespace hazelcast {
                     ASSERT_TRUE(map->remove_entry_listener(id).get());
                 }
 
-                HazelcastClient client_;
-                std::shared_ptr<IMap> imap_;
-                std::shared_ptr<IMap> int_map_;
-                std::shared_ptr<IMap> employees_;
+                hazelcast_client client_;
+                std::shared_ptr<imap> imap_;
+                std::shared_ptr<imap> int_map_;
+                std::shared_ptr<imap> employees_;
 
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
@@ -899,13 +899,13 @@ namespace hazelcast {
                 boost::latch latch1(2);
                 boost::latch nullLatch(1);
 
-                EntryListener listener;
+                entry_listener listener;
 
                 listener.
-                    on_added([&latch1](EntryEvent &&) {
+                    on_added([&latch1](entry_event &&) {
                         latch1.count_down();
                     }).
-                    on_expired([&latch1, &nullLatch](EntryEvent &&event) {
+                    on_expired([&latch1, &nullLatch](entry_event &&event) {
                         auto oldValue = event.get_old_value().get<std::string>();
                         if (!oldValue.has_value() || oldValue.value().compare("")) {
                             nullLatch.count_down();
@@ -952,7 +952,7 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testPartitionAwareKey) {
                 int partitionKey = 5;
                 int value = 25;
-                std::shared_ptr<IMap> map = client_.get_map(MapClientConfig::intMapName);
+                std::shared_ptr<imap> map = client_.get_map(MapClientConfig::intMapName);
                 PartitionAwareInt partitionAwareInt(partitionKey, 7);
                 map->put(partitionAwareInt, value).get();
                 boost::optional<int> val = map->get<PartitionAwareInt, int>(partitionAwareInt).get();
@@ -1054,7 +1054,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testPutConfigTtl) {
-                std::shared_ptr<IMap> map = client_.get_map(MapClientConfig::ONE_SECOND_MAP_NAME);
+                std::shared_ptr<imap> map = client_.get_map(MapClientConfig::ONE_SECOND_MAP_NAME);
                 validate_expiry_invalidations(map, [=] () { map->put<std::string, std::string>("key1", "value1").get(); });
             }
 
@@ -1085,7 +1085,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testSetConfigTtl) {
-                std::shared_ptr<IMap> map = client_.get_map(MapClientConfig::ONE_SECOND_MAP_NAME);
+                std::shared_ptr<imap> map = client_.get_map(MapClientConfig::ONE_SECOND_MAP_NAME);
                 validate_expiry_invalidations(map, [=] () { map->set("key1", "value1").get(); });
             }
 
@@ -1179,25 +1179,25 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testJsonValues) {
                 const int numItems = 5;
                 for (int i = 0; i < numItems; ++i) {
-                    imap_->put("key_" + std::to_string(i), HazelcastJsonValue("{ \"value\"=\"value_" + std::to_string(i) + "\"}")).get();
+                    imap_->put("key_" + std::to_string(i), hazelcast_json_value("{ \"value\"=\"value_" + std::to_string(i) + "\"}")).get();
                 }
-                auto values = imap_->values<HazelcastJsonValue>().get();
+                auto values = imap_->values<hazelcast_json_value>().get();
                 ASSERT_EQ(numItems, (int) values.size());
             }
 
             /**
              * Fails with `HazelcastSerializationException {Not comparable { "value"="value_2"}`
-             * The HazelcastJsonValue should be comparable at Java server side to make it work.
+             * The hazelcast_json_value should be comparable at Java server side to make it work.
              */
             TEST_P(ClientMapTest, DISABLED_testJsonValuesWithPagingPredicate) {
                 const int numItems = 5;
                 const int predSize = 3;
                 for (int i = 0; i < numItems; ++i) {
-                    imap_->put<std::string, HazelcastJsonValue>("key_" + std::to_string(i), HazelcastJsonValue(
+                    imap_->put<std::string, hazelcast_json_value>("key_" + std::to_string(i), hazelcast_json_value(
                             "{ \"value\"=\"value_" + std::to_string(i) + "\"}")).get();
                 }
-                auto predicate = imap_->new_paging_predicate<std::string, HazelcastJsonValue>((size_t) predSize);
-                auto values = imap_->values<std::string, HazelcastJsonValue>(predicate).get();
+                auto predicate = imap_->new_paging_predicate<std::string, hazelcast_json_value>((size_t) predSize);
+                auto values = imap_->values<std::string, hazelcast_json_value>(predicate).get();
                 ASSERT_EQ(predSize, (int) values.size());
             }
 
@@ -2377,13 +2377,13 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testListenerWithPortableKey) {
-                std::shared_ptr<IMap> tradeMap = client_.get_map("tradeMap");
+                std::shared_ptr<imap> tradeMap = client_.get_map("tradeMap");
                 boost::latch countDownLatch(1);
                 std::atomic<int> atomicInteger(0);
 
-                EntryListener listener;
+                entry_listener listener;
                 listener.
-                    on_added([&countDownLatch, &atomicInteger](EntryEvent &&event) {
+                    on_added([&countDownLatch, &atomicInteger](entry_event &&event) {
                         ++atomicInteger;
                         countDownLatch.count_down();
                     });
@@ -2853,9 +2853,9 @@ namespace hazelcast {
             TEST_P(ClientMapTest, testClearEvent) {
                 boost::latch latch1(1);
 
-                EntryListener clearListener;
+                entry_listener clearListener;
                 clearListener.
-                    on_map_cleared([&latch1](MapEvent &&) {
+                    on_map_cleared([&latch1](map_event &&) {
                         latch1.count_down();
                     });
 
@@ -2868,10 +2868,10 @@ namespace hazelcast {
 
             TEST_P(ClientMapTest, testEvictAllEvent) {
                 boost::latch latch1(1);
-                EntryListener evictListener;
+                entry_listener evictListener;
 
                 evictListener.
-                    on_map_evicted([&latch1](MapEvent &&event) {
+                    on_map_evicted([&latch1](map_event &&event) {
                         latch1.count_down();
                     });
 
@@ -3333,26 +3333,26 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testJsonPutGet) {
-                std::shared_ptr<IMap> map = client_.get_map(get_test_name());
-                HazelcastJsonValue value("{ \"age\": 4 }");
+                std::shared_ptr<imap> map = client_.get_map(get_test_name());
+                hazelcast_json_value value("{ \"age\": 4 }");
                 map->put("item1", value).get();
-                boost::optional<HazelcastJsonValue> retrieved = map->get<std::string, HazelcastJsonValue>("item1").get();
+                boost::optional<hazelcast_json_value> retrieved = map->get<std::string, hazelcast_json_value>("item1").get();
 
                 ASSERT_TRUE(retrieved.has_value());
                 ASSERT_EQ(value, retrieved.value());
             }
 
             TEST_P(ClientMapTest, testQueryOverJsonObject) {
-                std::shared_ptr<IMap> map = client_.get_map(get_test_name());
-                HazelcastJsonValue young("{ \"age\": 4 }");
-                HazelcastJsonValue old("{ \"age\": 20 }");
+                std::shared_ptr<imap> map = client_.get_map(get_test_name());
+                hazelcast_json_value young("{ \"age\": 4 }");
+                hazelcast_json_value old("{ \"age\": 20 }");
                 map->put("item1", young).get();
                 map->put("item2", old).get();
 
                 ASSERT_EQ(2, map->size().get());
 
 // Get the objects whose age is less than 6
-                std::vector<HazelcastJsonValue> result = map->values<HazelcastJsonValue>(
+                std::vector<hazelcast_json_value> result = map->values<hazelcast_json_value>(
                         query::GreaterLessPredicate(client_, "age", 6, false, true)).get();
                 ASSERT_EQ(1U, result.size());
                 ASSERT_EQ(young, result[0]);
@@ -3380,11 +3380,11 @@ namespace hazelcast {
                     return 3;
                 }
 
-                static void write_data(const test::ClientMapTest::EntryMultiplier &object, ObjectDataOutput &writer) {
+                static void write_data(const test::ClientMapTest::EntryMultiplier &object, object_data_output &writer) {
                     writer.write<int32_t>(object.get_multiplier());
                 }
 
-                static test::ClientMapTest::EntryMultiplier read_data(ObjectDataInput &reader) {
+                static test::ClientMapTest::EntryMultiplier read_data(object_data_input &reader) {
                     return test::ClientMapTest::EntryMultiplier(reader.read<int32_t>());
                 }
             };
@@ -3400,11 +3400,11 @@ namespace hazelcast {
                     return 9;
                 }
 
-                static void write_data(const test::PartitionAwareInt &object, ObjectDataOutput &out) {
+                static void write_data(const test::PartitionAwareInt &object, object_data_output &out) {
                     out.write<int32_t>(object.get_actual_key());
                 }
 
-                static test::PartitionAwareInt read_data(ObjectDataInput &in) {
+                static test::PartitionAwareInt read_data(object_data_input &in) {
                     int value = in.read<int32_t>();
                     return test::PartitionAwareInt(value, value);
                 }
@@ -3420,11 +3420,11 @@ namespace hazelcast {
                     return 6;
                 }
 
-                static void write_data(const test::ClientMapTest::MapGetInterceptor &object, ObjectDataOutput &writer) {
+                static void write_data(const test::ClientMapTest::MapGetInterceptor &object, object_data_output &writer) {
                     writer.write(object.prefix_);
                 }
 
-                static test::ClientMapTest::MapGetInterceptor read_data(ObjectDataInput &reader) {
+                static test::ClientMapTest::MapGetInterceptor read_data(object_data_input &reader) {
                     return test::ClientMapTest::MapGetInterceptor(reader.read<std::string>());
                 }
             };

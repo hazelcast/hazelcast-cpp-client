@@ -13,38 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/MembershipListener.h>
-#include <hazelcast/client/InitialMembershipEvent.h>
-#include <hazelcast/client/MembershipEvent.h>
+#include <hazelcast/client/hazelcast_client.h>
+#include <hazelcast/client/membership_listener.h>
+#include <hazelcast/client/initial_membership_event.h>
+#include <hazelcast/client/membership_event.h>
 
 
-MembershipListener make_membership_listener() {
-    return MembershipListener()
-        .on_joined([](const hazelcast::client::MembershipEvent &membership_event) {
+membership_listener make_membership_listener() {
+    return membership_listener()
+        .on_joined([](const hazelcast::client::membership_event &membership_event) {
             std::cout << "New member joined: "
                 << membership_event.get_member().get_address() << std::endl;
         })
-        .on_left([](const hazelcast::client::MembershipEvent &membership_event) {
+        .on_left([](const hazelcast::client::membership_event &membership_event) {
             std::cout << "Member left: " 
                 << membership_event.get_member().get_address() << std::endl;
         });
 }
 
-MembershipListener make_initial_membership_listener() {
-    return MembershipListener()
-        .on_init([](const hazelcast::client::InitialMembershipEvent &event){
+membership_listener make_initial_membership_listener() {
+    return membership_listener()
+        .on_init([](const hazelcast::client::initial_membership_event &event){
             auto members = event.get_members();
             std::cout << "The following are the initial members in the cluster:" << std::endl;
             for (const auto &member : members) {
                 std::cout << member.get_address() << std::endl;
             }
         })
-        .on_joined([](const hazelcast::client::MembershipEvent &membership_event) {
+        .on_joined([](const hazelcast::client::membership_event &membership_event) {
             std::cout << "New member joined: " <<
             membership_event.get_member().get_address() << std::endl;
         })
-        .on_left([](const hazelcast::client::MembershipEvent &membership_event) {
+        .on_left([](const hazelcast::client::membership_event &membership_event) {
             std::cout << "Member left: " <<
             membership_event.get_member().get_address() << std::endl;
         });
@@ -54,12 +54,12 @@ int main() {
     auto memberListener = make_membership_listener();
     auto initialMemberListener = make_initial_membership_listener();
 
-    hazelcast::client::Cluster *clusterPtr = nullptr;
+    hazelcast::client::hz_cluster *clusterPtr = nullptr;
     boost::uuids::uuid listenerId, initialListenerId;
     try {
-        hazelcast::client::HazelcastClient hz;
+        hazelcast::client::hazelcast_client hz;
 
-        hazelcast::client::Cluster &cluster = hz.get_cluster();
+        hazelcast::client::hz_cluster &cluster = hz.get_cluster();
         clusterPtr = &cluster;
         auto members = cluster.get_members();
         std::cout << "The following are members in the cluster:" << std::endl;

@@ -15,7 +15,7 @@
  */
 #include <stdint.h>
 
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 using namespace hazelcast::client;
 
@@ -36,7 +36,7 @@ int main() {
     config.set_property("hazelcast.client.statistics.period.seconds", "5");
 
     config.add_near_cache_config(config::NearCacheConfig("MyMap"));
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::hazelcast_client hz(config);
 
     auto map = hz.get_map("MyMap");
     

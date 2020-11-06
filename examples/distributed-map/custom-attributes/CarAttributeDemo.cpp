@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 #include <hazelcast/client/serialization/serialization.h>
 #include <memory>
 #include <map>
@@ -61,7 +61,7 @@ namespace hazelcast {
                     return 4;
                 }
 
-                static void write_data(const Car &object, hazelcast::client::serialization::ObjectDataOutput &out) {
+                static void write_data(const Car &object, hazelcast::client::serialization::object_data_output &out) {
                     out.write(static_cast<int32_t>(object.attributes.size()));
                     for (auto &entry : object.attributes) {
                         out.write(entry.first);
@@ -69,7 +69,7 @@ namespace hazelcast {
                     }
                 }
 
-                static Car read_data(hazelcast::client::serialization::ObjectDataInput &in) {
+                static Car read_data(hazelcast::client::serialization::object_data_input &in) {
                     Car object;
                     int32_t size = in.read<int32_t>();
                     if (size > 0) {
@@ -85,7 +85,7 @@ namespace hazelcast {
 }
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
     auto map = hz.get_map("cars");
 

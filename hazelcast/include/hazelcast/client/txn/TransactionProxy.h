@@ -33,7 +33,7 @@ namespace hazelcast {
         namespace connection {
             class Connection;
         }
-        class TransactionOptions;
+        class transaction_options;
 
         namespace spi {
             class ClientContext;
@@ -75,7 +75,7 @@ namespace hazelcast {
 
             class HAZELCAST_API TransactionProxy {
             public:
-                TransactionProxy(TransactionOptions&, spi::ClientContext& client_context, std::shared_ptr<connection::Connection> connection);
+                TransactionProxy(transaction_options&, spi::ClientContext& client_context, std::shared_ptr<connection::Connection> connection);
 
                 TransactionProxy(const TransactionProxy &rhs);
 
@@ -98,7 +98,7 @@ namespace hazelcast {
                 spi::ClientContext &get_client_context() const;
 
             private:
-                TransactionOptions& options_;
+                transaction_options& options_;
                 spi::ClientContext& client_context_;
                 std::shared_ptr<connection::Connection> connection_;
 

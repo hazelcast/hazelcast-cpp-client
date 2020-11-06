@@ -20,7 +20,7 @@
 #include <string>
 #include <memory>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include "hazelcast/client/spi/EventHandler.h"
 #include "hazelcast/logger.h"
 

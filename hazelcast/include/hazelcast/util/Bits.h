@@ -62,7 +62,7 @@
 
 #endif
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 #include <vector>
 #include <memory>
 

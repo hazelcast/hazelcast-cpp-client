@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/hazelcast_dll.h"
 namespace hazelcast {
     namespace util {
         class HAZELCAST_API HashUtil {

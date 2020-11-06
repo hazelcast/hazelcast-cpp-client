@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/hazelcast_client.h>
 
 int main() {
-    hazelcast::client::HazelcastClient hz;
+    hazelcast::client::hazelcast_client hz;
 
-    hazelcast::client::TransactionOptions txOptions;
+    hazelcast::client::transaction_options txOptions;
     txOptions.set_timeout(std::chrono::seconds(10));
 
-    hazelcast::client::TransactionContext txCxt = hz.new_transaction_context(txOptions);
+    hazelcast::client::transaction_context txCxt = hz.new_transaction_context(txOptions);
 
     try {
         txCxt.begin_transaction().get();

@@ -17,8 +17,8 @@
 
 #include "hazelcast/client/protocol/codec/codecs.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/ItemListener.h"
-#include "hazelcast/client/ItemEvent.h"
+#include "hazelcast/client/item_listener.h"
+#include "hazelcast/client/item_event.h"
 #include "hazelcast/client/serialization/serialization.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 
@@ -26,11 +26,11 @@ namespace hazelcast {
     namespace client {
         namespace impl {
             template<typename BaseType>
-            class ItemEventHandler : public BaseType {
+            class item_event_handler : public BaseType {
             public:
-                ItemEventHandler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
-                                 serialization::pimpl::SerializationService &serialization_service,
-                                 ItemListener &&listener, bool include_value)
+                item_event_handler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
+                                   serialization::pimpl::SerializationService &serialization_service,
+                                   item_listener &&listener, bool include_value)
                         : instance_name_(instance_name), cluster_service_(cluster_service),
                           serialization_service_(serialization_service), listener_(std::move(listener)), include_value_(include_value) {};
 
@@ -42,7 +42,7 @@ namespace hazelcast {
                     }
                     auto member = cluster_service_.get_member(uuid);
                     item_event_type type(static_cast<item_event_type>(event_type));
-                    ItemEvent itemEvent(instance_name_, type, std::move(val), std::move(member).value());
+                    item_event itemEvent(instance_name_, type, std::move(val), std::move(member).value());
                     if (type == item_event_type::ADDED) {
                         listener_.added_(std::move(itemEvent));
                     } else if (type == item_event_type::REMOVED) {
@@ -54,7 +54,7 @@ namespace hazelcast {
                 const std::string &instance_name_;
                 spi::impl::ClientClusterServiceImpl &cluster_service_;
                 serialization::pimpl::SerializationService &serialization_service_;
-                ItemListener listener_;
+                item_listener listener_;
                 bool include_value_;
             };
         }
