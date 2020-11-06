@@ -48,32 +48,32 @@
 namespace hazelcast {
     namespace client {
         Cluster::Cluster(spi::impl::ClientClusterServiceImpl &cluster_service)
-                : clusterService_(cluster_service) {
+                : cluster_service_(cluster_service) {
         }
 
         std::vector<Member> Cluster::get_members() {
-            return clusterService_.get_member_list();
+            return cluster_service_.get_member_list();
         }
 
         boost::uuids::uuid Cluster::add_membership_listener(MembershipListener &&listener) {
-            return clusterService_.add_membership_listener(std::move(listener));
+            return cluster_service_.add_membership_listener(std::move(listener));
         }
 
         bool Cluster::remove_membership_listener(boost::uuids::uuid registration_id) {
-            return clusterService_.remove_membership_listener(registration_id);
+            return cluster_service_.remove_membership_listener(registration_id);
         }
 
-        Member::Member() : liteMember_(false) {
+        Member::Member() : lite_member_(false) {
         }
 
         Member::Member(Address address, boost::uuids::uuid uuid, bool lite, std::unordered_map<std::string, std::string> attr) :
-                address_(address), uuid_(uuid), liteMember_(lite), attributes_(attr) {
+                address_(address), uuid_(uuid), lite_member_(lite), attributes_(attr) {
         }
 
-        Member::Member(Address member_address) : address_(member_address), liteMember_(false) {
+        Member::Member(Address member_address) : address_(member_address), lite_member_(false) {
         }
 
-        Member::Member(boost::uuids::uuid uuid) : uuid_(uuid), liteMember_(false) {
+        Member::Member(boost::uuids::uuid uuid) : uuid_(uuid), lite_member_(false) {
         }
 
         bool Member::operator==(const Member &rhs) const {
@@ -89,7 +89,7 @@ namespace hazelcast {
         }
 
         bool Member::is_lite_member() const {
-            return liteMember_;
+            return lite_member_;
         }
 
         const std::unordered_map<std::string, std::string> &Member::get_attributes() const {
@@ -125,19 +125,19 @@ namespace hazelcast {
         }
 
         Endpoint::Endpoint(boost::uuids::uuid uuid, boost::optional<Address> socket_address)
-                : uuid_(uuid), socketAddress_(std::move(socket_address)) {}
+                : uuid_(uuid), socket_address_(std::move(socket_address)) {}
 
         boost::uuids::uuid Endpoint::get_uuid() const {
             return uuid_;
         }
 
         const boost::optional<Address> &Endpoint::get_socket_address() const {
-            return socketAddress_;
+            return socket_address_;
         }
 
         MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType event_type,
                                          const std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> &members_list) :
-                cluster_(cluster), member_(member), eventType_(event_type), members_(members_list) {
+                cluster_(cluster), member_(member), event_type_(event_type), members_(members_list) {
         }
 
         MembershipEvent::~MembershipEvent() = default;
@@ -151,7 +151,7 @@ namespace hazelcast {
         }
 
         MembershipEvent::MembershipEventType MembershipEvent::get_event_type() const {
-            return eventType_;
+            return event_type_;
         }
 
         const Member &MembershipEvent::get_member() const {
@@ -193,9 +193,9 @@ namespace hazelcast {
             }
 
             void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
-                std::lock_guard<std::mutex> lg(rhs.membersLock_);
-                std::lock_guard<std::mutex> lg2(membersLock_);
-                membersRef_ = rhs.membersRef_;
+                std::lock_guard<std::mutex> lg(rhs.members_lock_);
+                std::lock_guard<std::mutex> lg2(members_lock_);
+                members_ref_ = rhs.members_ref_;
                 cluster_ = rhs.cluster_;
             }
 
@@ -218,13 +218,13 @@ namespace hazelcast {
             }
 
             void AbstractLoadBalancer::set_members_ref() {
-                std::lock_guard<std::mutex> lg(membersLock_);
-                membersRef_ = cluster_->get_members();
+                std::lock_guard<std::mutex> lg(members_lock_);
+                members_ref_ = cluster_->get_members();
             }
 
             std::vector<Member> AbstractLoadBalancer::get_members() {
-                std::lock_guard<std::mutex> lg(membersLock_);
-                return membersRef_;
+                std::lock_guard<std::mutex> lg(members_lock_);
+                return members_ref_;
             }
 
             AbstractLoadBalancer::~AbstractLoadBalancer() = default;
@@ -251,19 +251,19 @@ namespace hazelcast {
                 VectorClock::VectorClock() = default;
 
                 VectorClock::VectorClock(const VectorClock::TimestampVector &replica_logical_timestamps)
-                        : replicaTimestampEntries_(replica_logical_timestamps) {
+                        : replica_timestamp_entries_(replica_logical_timestamps) {
                     for (const VectorClock::TimestampVector::value_type &replicaTimestamp : replica_logical_timestamps) {
-                        replicaTimestamps_[replicaTimestamp.first] = replicaTimestamp.second;
+                        replica_timestamps_[replicaTimestamp.first] = replicaTimestamp.second;
                     }
                 }
 
                 VectorClock::TimestampVector VectorClock::entry_set() {
-                    return replicaTimestampEntries_;
+                    return replica_timestamp_entries_;
                 }
 
                 bool VectorClock::is_after(VectorClock &other) {
                     bool anyTimestampGreater = false;
-                    for (const VectorClock::TimestampMap::value_type &otherEntry : other.replicaTimestamps_) {
+                    for (const VectorClock::TimestampMap::value_type &otherEntry : other.replica_timestamps_) {
                         const auto &replicaId = otherEntry.first;
                         int64_t otherReplicaTimestamp = otherEntry.second;
                         std::pair<bool, int64_t> localReplicaTimestamp = get_timestamp_for_replica(replicaId);
@@ -276,14 +276,14 @@ namespace hazelcast {
                         }
                     }
                     // there is at least one local timestamp greater or local vector clock has additional timestamps
-                    return anyTimestampGreater || other.replicaTimestamps_.size() < replicaTimestamps_.size();
+                    return anyTimestampGreater || other.replica_timestamps_.size() < replica_timestamps_.size();
                 }
 
                 std::pair<bool, int64_t> VectorClock::get_timestamp_for_replica(boost::uuids::uuid replica_id) {
-                    if (replicaTimestamps_.count(replica_id) == 0) {
+                    if (replica_timestamps_.count(replica_id) == 0) {
                         return std::make_pair(false, -1);
                     }
-                    return std::make_pair(true, replicaTimestamps_[replica_id]);
+                    return std::make_pair(true, replica_timestamps_[replica_id]);
                 }
             }
         }

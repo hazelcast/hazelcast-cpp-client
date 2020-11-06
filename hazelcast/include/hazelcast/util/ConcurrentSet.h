@@ -53,7 +53,7 @@ namespace hazelcast {
              */
             bool add(const T &e) {
                 std::lock_guard<std::mutex> lg(m_);
-                return internalSet_.insert(e).second;
+                return internal_set_.insert(e).second;
             }
 
             /**
@@ -63,7 +63,7 @@ namespace hazelcast {
              */
             size_t size() {
                 std::lock_guard<std::mutex> lg(m_);
-                return internalSet_.size();
+                return internal_set_.size();
             }
 
             /**
@@ -73,7 +73,7 @@ namespace hazelcast {
              */
             bool is_empty() {
                 std::lock_guard<std::mutex> lg(m_);
-                return internalSet_.empty();
+                return internal_set_.empty();
             }
 
             /**
@@ -92,7 +92,7 @@ namespace hazelcast {
             std::vector<T> to_array() {
                 std::lock_guard<std::mutex> lg(m_);
                 std::vector<T> result;
-                for (const typename std::unordered_set<T>::value_type &value  : internalSet_) {
+                for (const typename std::unordered_set<T>::value_type &value  : internal_set_) {
                                 result.push_back(value);
                             }
                 return result;
@@ -100,11 +100,11 @@ namespace hazelcast {
 
             void clear() {
                 std::lock_guard<std::mutex> lg(m_);
-                internalSet_.clear();
+                internal_set_.clear();
             }
         private:
             std::mutex m_;
-            std::unordered_set<T> internalSet_;
+            std::unordered_set<T> internal_set_;
         };
     }
 }

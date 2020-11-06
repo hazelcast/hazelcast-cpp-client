@@ -53,7 +53,7 @@ namespace hazelcast {
                      */
                     template<typename K, typename V, typename KS>
                     std::shared_ptr<NearCache<KS, V> > get_near_cache(const std::string &name) {
-                        return std::static_pointer_cast<NearCache<KS, V> >(nearCacheMap_.get(name));
+                        return std::static_pointer_cast<NearCache<KS, V> >(near_cache_map_.get(name));
                     };
 
                     /**
@@ -71,16 +71,16 @@ namespace hazelcast {
                     template<typename K, typename V, typename KS>
                     std::shared_ptr<NearCache<KS, V> > get_or_create_near_cache(
                             const std::string &name, const client::config::NearCacheConfig &near_cache_config) {
-                        std::shared_ptr<BaseNearCache> nearCache = nearCacheMap_.get(name);
+                        std::shared_ptr<BaseNearCache> nearCache = near_cache_map_.get(name);
                         if (NULL == nearCache.get()) {
                             {
                                 std::lock_guard<std::mutex> guard(mutex_);
-                                nearCache = nearCacheMap_.get(name);
+                                nearCache = near_cache_map_.get(name);
                                 if (NULL == nearCache.get()) {
                                     nearCache = create_near_cache<K, V, KS>(name, near_cache_config);
                                     nearCache->initialize();
 
-                                    nearCacheMap_.put(name, nearCache);
+                                    near_cache_map_.put(name, nearCache);
                                 }
 
                             }
@@ -126,13 +126,13 @@ namespace hazelcast {
                             const std::string &name, const client::config::NearCacheConfig &near_cache_config) {
                         return std::unique_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
-                                        name, near_cache_config, executionService_, serializationService_, logger_));
+                                        name, near_cache_config, execution_service_, serialization_service_, logger_));
                     }
                 private:
-                    std::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService_;
-                    serialization::pimpl::SerializationService &serializationService_;
+                    std::shared_ptr<spi::impl::ClientExecutionServiceImpl> execution_service_;
+                    serialization::pimpl::SerializationService &serialization_service_;
                     logger &logger_;
-                    util::SynchronizedMap<std::string, BaseNearCache> nearCacheMap_;
+                    util::SynchronizedMap<std::string, BaseNearCache> near_cache_map_;
                     std::mutex mutex_;
                 };
             }

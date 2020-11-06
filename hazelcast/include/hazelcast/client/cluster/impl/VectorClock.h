@@ -60,8 +60,8 @@ namespace hazelcast {
                      */
                     std::pair<bool, int64_t> get_timestamp_for_replica(boost::uuids::uuid replica_id);
 
-                    TimestampMap replicaTimestamps_;
-                    VectorClock::TimestampVector replicaTimestampEntries_;
+                    TimestampMap replica_timestamps_;
+                    VectorClock::TimestampVector replica_timestamp_entries_;
                 };
             }
         }

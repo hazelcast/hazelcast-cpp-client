@@ -109,8 +109,8 @@ namespace hazelcast {
 
             private:
                 std::string name_;
-                int32_t prefetchCount_;
-                std::chrono::milliseconds prefetchValidityDuration_;
+                int32_t prefetch_count_;
+                std::chrono::milliseconds prefetch_validity_duration_;
             };
         }
     }

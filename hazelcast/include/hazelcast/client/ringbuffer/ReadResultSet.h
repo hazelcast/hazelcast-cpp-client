@@ -37,7 +37,7 @@ namespace hazelcast {
                 ReadResultSet(int32_t read_count, std::vector<serialization::pimpl::Data> &&data_items,
                               serialization::pimpl::SerializationService &serialization_service,
                               boost::optional<std::vector<int64_t>> &item_seqs, int64_t next_seq)
-                              : itemsReadCount_(read_count), itemSeqs_(std::move(item_seqs)), nextSeq_(next_seq) {
+                              : items_read_count_(read_count), item_seqs_(std::move(item_seqs)), next_seq_(next_seq) {
                     for (auto &&item : data_items) {
                         items_.emplace_back(item, serialization_service);
                     }
@@ -57,7 +57,7 @@ namespace hazelcast {
                  * @return the number of items read (including the filtered ones).
                  */
                 int32_t read_count() const {
-                    return itemsReadCount_;
+                    return items_read_count_;
                 }
 
                 const std::vector<TypedData> &get_items() const {
@@ -73,14 +73,14 @@ namespace hazelcast {
                  * @since 3.9
                  */
                 int64_t get_sequence(int32_t index) const {
-                    if (index >= (int32_t) itemSeqs_->size() || index < 0) {
+                    if (index >= (int32_t) item_seqs_->size() || index < 0) {
                         BOOST_THROW_EXCEPTION((exception::ExceptionBuilder<exception::IllegalArgumentException>(
                                 "ReadResultSet::getSequence") << "Index " << index
                                                               << " is out of bounds. Sequences size is:"
-                                                              << itemSeqs_->size()).build());
+                                                              << item_seqs_->size()).build());
                     }
 
-                    return (*itemSeqs_)[index];
+                    return (*item_seqs_)[index];
                 }
 
                 /**
@@ -105,14 +105,14 @@ namespace hazelcast {
                  * @since 3.10
                  */
                 int64_t get_next_sequence_to_read_from() const {
-                    return nextSeq_;
+                    return next_seq_;
                 }
 
             private:
-                int32_t itemsReadCount_;
+                int32_t items_read_count_;
                 std::vector<TypedData> items_;
-                boost::optional<std::vector<int64_t>> itemSeqs_;
-                int64_t nextSeq_;
+                boost::optional<std::vector<int64_t>> item_seqs_;
+                int64_t next_seq_;
             };
         }
     }

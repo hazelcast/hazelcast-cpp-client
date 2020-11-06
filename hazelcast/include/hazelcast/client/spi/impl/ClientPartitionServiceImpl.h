@@ -79,9 +79,9 @@ namespace hazelcast {
                         boost::optional<Member> get_owner() const override;
 
                     private:
-                        int partitionId_;
+                        int partition_id_;
                         ClientContext &client_;
-                        ClientPartitionServiceImpl &partitionService_;
+                        ClientPartitionServiceImpl &partition_service_;
                     };
 
                     bool should_be_applied(const std::shared_ptr<connection::Connection>& connection, int32_t version,
@@ -96,7 +96,7 @@ namespace hazelcast {
 
                     ClientContext &client_;
                     logger &logger_;
-                    std::atomic<int32_t> partitionCount_;
+                    std::atomic<int32_t> partition_count_;
                     boost::atomic_shared_ptr<partition_table> partition_table_;
                 };
             }

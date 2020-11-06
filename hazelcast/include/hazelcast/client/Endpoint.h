@@ -51,7 +51,7 @@ namespace hazelcast {
 
         private:
             boost::uuids::uuid uuid_;
-            boost::optional<Address> socketAddress_;
+            boost::optional<Address> socket_address_;
         };
     }
 }

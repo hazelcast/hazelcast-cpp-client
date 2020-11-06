@@ -966,7 +966,7 @@ namespace hazelcast {
                 }
 
                 bool retryable_;
-                std::string operationName_;
+                std::string operation_name_;
 
                 std::vector<std::vector<byte>> data_buffer_;
                 size_t buffer_index_;

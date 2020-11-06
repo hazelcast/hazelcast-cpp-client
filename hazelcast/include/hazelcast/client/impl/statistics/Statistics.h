@@ -97,13 +97,13 @@ namespace hazelcast {
 
                     static std::string escape_special_characters(const std::string &name);
 
-                    spi::ClientContext &clientContext_;
-                    ClientProperties &clientProperties_;
+                    spi::ClientContext &client_context_;
+                    ClientProperties &client_properties_;
                     logger &logger_;
                     bool enabled_;
-                    PeriodicStatistics periodicStats_;
-                    util::Sync<std::shared_ptr<Address> > cachedOwnerAddress_;
-                    std::shared_ptr<boost::asio::steady_timer> sendTaskTimer_;
+                    PeriodicStatistics periodic_stats_;
+                    util::Sync<std::shared_ptr<Address> > cached_owner_address_;
+                    std::shared_ptr<boost::asio::steady_timer> send_task_timer_;
                 };
 
                 template<>

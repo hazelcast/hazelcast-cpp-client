@@ -43,11 +43,11 @@ namespace hazelcast {
                 NearCacheManager::NearCacheManager(const std::shared_ptr<spi::impl::ClientExecutionServiceImpl> &es,
                                                    serialization::pimpl::SerializationService &ss,
                                                    logger &lg)
-                        : executionService_(es), serializationService_(ss), logger_(lg) {
+                        : execution_service_(es), serialization_service_(ss), logger_(lg) {
                 }
 
                 bool NearCacheManager::clear_near_cache(const std::string &name) {
-                    std::shared_ptr<BaseNearCache> nearCache = nearCacheMap_.get(name);
+                    std::shared_ptr<BaseNearCache> nearCache = near_cache_map_.get(name);
                     if (nearCache.get() != NULL) {
                         nearCache->clear();
                     }
@@ -55,7 +55,7 @@ namespace hazelcast {
                 }
 
                 void NearCacheManager::clear_all_near_caches() {
-                    std::vector<std::shared_ptr<BaseNearCache> > caches = nearCacheMap_.values();
+                    std::vector<std::shared_ptr<BaseNearCache> > caches = near_cache_map_.values();
                     for (std::vector<std::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
                          it != caches.end(); ++it) {
                         (*it)->clear();
@@ -63,7 +63,7 @@ namespace hazelcast {
                 }
 
                 bool NearCacheManager::destroy_near_cache(const std::string &name) {
-                    std::shared_ptr<BaseNearCache> nearCache = nearCacheMap_.remove(name);
+                    std::shared_ptr<BaseNearCache> nearCache = near_cache_map_.remove(name);
                     if (nearCache.get() != NULL) {
                         nearCache->destroy();
                     }
@@ -71,7 +71,7 @@ namespace hazelcast {
                 }
 
                 void NearCacheManager::destroy_all_near_caches() {
-                    std::vector<std::shared_ptr<BaseNearCache> > caches = nearCacheMap_.values();
+                    std::vector<std::shared_ptr<BaseNearCache> > caches = near_cache_map_.values();
                     for (std::vector<std::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
                          it != caches.end(); ++it) {
                         (*it)->destroy();
@@ -79,7 +79,7 @@ namespace hazelcast {
                 }
 
                 std::vector<std::shared_ptr<BaseNearCache> > NearCacheManager::list_all_near_caches() {
-                    return nearCacheMap_.values();
+                    return near_cache_map_.values();
                 }
 
                 namespace impl {
@@ -93,7 +93,7 @@ namespace hazelcast {
                         }
                     }
 
-                    KeyStateMarkerImpl::KeyStateMarkerImpl(int count) : markCount_(count),
+                    KeyStateMarkerImpl::KeyStateMarkerImpl(int count) : mark_count_(count),
                                                                         marks_(new std::atomic<int32_t>[count]) {
                         for (int i = 0; i < count; ++i) {
                             marks_[i] = 0;
@@ -122,7 +122,7 @@ namespace hazelcast {
                     }
 
                     void KeyStateMarkerImpl::init() {
-                        for (int i = 0; i < markCount_; ++i) {
+                        for (int i = 0; i < mark_count_; ++i) {
                             marks_[i] = UNMARKED;
                         }
                     }
@@ -135,7 +135,7 @@ namespace hazelcast {
                     }
 
                     int KeyStateMarkerImpl::get_slot(const serialization::pimpl::Data &key) {
-                        return util::HashUtil::hash_to_index(key.get_partition_hash(), markCount_);
+                        return util::HashUtil::hash_to_index(key.get_partition_hash(), mark_count_);
                     }
 
                 }

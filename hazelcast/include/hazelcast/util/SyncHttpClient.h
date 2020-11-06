@@ -35,11 +35,11 @@ namespace hazelcast {
             std::istream &open_connection();
         private:
             std::string server_;
-            std::string uriPath_;
-            boost::asio::io_service ioService_;
+            std::string uri_path_;
+            boost::asio::io_service io_service_;
             boost::asio::ip::tcp::socket socket_;
             boost::asio::streambuf response_;
-            std::istream responseStream_;
+            std::istream response_stream_;
         };
     }
 }

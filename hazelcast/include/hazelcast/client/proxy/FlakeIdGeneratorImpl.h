@@ -111,7 +111,7 @@ namespace hazelcast {
                 private:
                     int64_t base_;
                     int64_t increment_;
-                    int32_t batchSize_;
+                    int32_t batch_size_;
 
                     static IdIterator endOfBatch;
                 };
@@ -126,16 +126,16 @@ namespace hazelcast {
                     int64_t next();
 
                 private:
-                    IdBatch idBatch_;
-                    std::chrono::steady_clock::time_point invalidSince_;
-                    std::atomic<int32_t> numReturned_;
+                    IdBatch id_batch_;
+                    std::chrono::steady_clock::time_point invalid_since_;
+                    std::atomic<int32_t> num_returned_;
                 };
 
                 boost::future<FlakeIdGeneratorImpl::IdBatch> new_id_batch(int32_t size);
 
                 int64_t new_id_internal();
 
-                int32_t batchSize_;
+                int32_t batch_size_;
                 std::chrono::milliseconds validity_;
                 boost::atomic_shared_ptr<Block> block_;
                 std::mutex lock_;

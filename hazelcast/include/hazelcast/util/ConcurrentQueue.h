@@ -36,15 +36,15 @@ namespace hazelcast {
 
             void offer(T *e) {
                 std::lock_guard<std::mutex> lg(m_);
-                internalQueue_.push_back(e);
+                internal_queue_.push_back(e);
             }
 
             T *poll() {
                 T *e = nullptr;
                 std::lock_guard<std::mutex> lg(m_);
-                if (!internalQueue_.empty()) {
-                    e = internalQueue_.front();
-                    internalQueue_.pop_front();
+                if (!internal_queue_.empty()) {
+                    e = internal_queue_.front();
+                    internal_queue_.pop_front();
                 }
                 return e;
             }
@@ -61,10 +61,10 @@ namespace hazelcast {
                 bool isFound;
                 do {
                     isFound = false;
-                    for (typename std::deque<T *>::iterator it = internalQueue_.begin();it != internalQueue_.end(); ++it) {
+                    for (typename std::deque<T *>::iterator it = internal_queue_.begin();it != internal_queue_.end(); ++it) {
                         T *e = *it;
                         if (item_to_be_removed == e) {
-                            internalQueue_.erase(it);
+                            internal_queue_.erase(it);
                             isFound = true;
                             ++numErased;
                             break;
@@ -80,7 +80,7 @@ namespace hazelcast {
              * Did not choose std::list which shall give better remove_all performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
-            std::deque<T *> internalQueue_;
+            std::deque<T *> internal_queue_;
         };
     }
 }

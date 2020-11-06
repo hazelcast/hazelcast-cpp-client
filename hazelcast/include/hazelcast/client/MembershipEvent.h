@@ -100,7 +100,7 @@ namespace hazelcast {
         private:
             Cluster &cluster_;
             Member member_;
-            MembershipEventType eventType_;
+            MembershipEventType event_type_;
             std::unordered_map<boost::uuids::uuid, Member, boost::hash<boost::uuids::uuid>> members_;
         };
     }

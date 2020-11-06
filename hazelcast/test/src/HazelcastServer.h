@@ -48,8 +48,8 @@ namespace hazelcast {
 
             private:
                 HazelcastServerFactory & factory_;
-                std::atomic_bool isStarted_;
-                std::atomic_bool isShutdown_;
+                std::atomic_bool is_started_;
+                std::atomic_bool is_shutdown_;
                 remote::Member member_;
                 std::shared_ptr<logger> logger_;
             };

@@ -99,16 +99,16 @@ namespace hazelcast {
 
             private:
                 TransactionOptions& options_;
-                spi::ClientContext& clientContext_;
+                spi::ClientContext& client_context_;
                 std::shared_ptr<connection::Connection> connection_;
 
-                std::atomic<bool> TRANSACTION_EXISTS_{ false };
+                std::atomic<bool> transaction_exists_{ false };
 
-                int64_t threadId_;
-                boost::uuids::uuid txnId_;
+                int64_t thread_id_;
+                boost::uuids::uuid txn_id_;
 
                 TxnState state_;
-                std::chrono::steady_clock::time_point startTime_;
+                std::chrono::steady_clock::time_point start_time_;
 
                 void check_thread();
 

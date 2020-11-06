@@ -105,23 +105,23 @@ namespace hazelcast {
                     std::string to_string() override;
 
                 private:
-                    std::atomic<int64_t> creationTime_;
-                    std::atomic<int64_t> ownedEntryCount_;
-                    std::atomic<int64_t> ownedEntryMemoryCost_;
+                    std::atomic<int64_t> creation_time_;
+                    std::atomic<int64_t> owned_entry_count_;
+                    std::atomic<int64_t> owned_entry_memory_cost_;
                     std::atomic<int64_t> hits_;
                     std::atomic<int64_t> misses_;
                     std::atomic<int64_t> evictions_;
                     std::atomic<int64_t> expirations_;
 
                     std::atomic<int64_t> invalidations_;
-                    std::atomic<int64_t> invalidationRequests_;
+                    std::atomic<int64_t> invalidation_requests_;
 
-                    std::atomic<int64_t> persistenceCount_;
-                    std::atomic<int64_t> lastPersistenceTime_;
-                    std::atomic<int64_t> lastPersistenceDuration_;
-                    std::atomic<int64_t> lastPersistenceWrittenBytes_;
-                    std::atomic<int64_t> lastPersistenceKeyCount_;
-                    util::Sync<std::string> lastPersistenceFailure_;
+                    std::atomic<int64_t> persistence_count_;
+                    std::atomic<int64_t> last_persistence_time_;
+                    std::atomic<int64_t> last_persistence_duration_;
+                    std::atomic<int64_t> last_persistence_written_bytes_;
+                    std::atomic<int64_t> last_persistence_key_count_;
+                    util::Sync<std::string> last_persistence_failure_;
 
                     static const double PERCENTAGE;
                 };

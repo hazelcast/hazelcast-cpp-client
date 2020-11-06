@@ -34,34 +34,34 @@ namespace hazelcast {
         /* Blocking - synchronized queue */
         class BlockingConcurrentQueue {
         public:
-            BlockingConcurrentQueue(size_t max_queue_capacity) : capacity_(max_queue_capacity), isInterrupted_(false) {
+            BlockingConcurrentQueue(size_t max_queue_capacity) : capacity_(max_queue_capacity), is_interrupted_(false) {
             }
 
             void push(const T &e) {
                 std::unique_lock<std::mutex> lock(m_);
-                while (internalQueue_.size() == capacity_) {
-                    if (isInterrupted_) {
+                while (internal_queue_.size() == capacity_) {
+                    if (is_interrupted_) {
                         throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
                     }
                     // wait on condition
-                    notFull_.wait(lock);
+                    not_full_.wait(lock);
                 }
-                internalQueue_.push_back(e);
-                notEmpty_.notify_one();
+                internal_queue_.push_back(e);
+                not_empty_.notify_one();
             }
 
             T pop() {
                 std::unique_lock<std::mutex> lock(m_);
-                while (internalQueue_.empty()) {
-                    if (isInterrupted_) {
+                while (internal_queue_.empty()) {
+                    if (is_interrupted_) {
                         throw client::exception::InterruptedException("BlockingConcurrentQueue::pop");
                     }
                     // wait for notEmpty condition
-                    notEmpty_.wait(lock);
+                    not_empty_.wait(lock);
                 }
-                T element = internalQueue_.front();
-                internalQueue_.pop_front();
-                notFull_.notify_one();
+                T element = internal_queue_.front();
+                internal_queue_.pop_front();
+                not_full_.notify_one();
                 return element;
             }
 
@@ -72,24 +72,24 @@ namespace hazelcast {
              */
             void clear() {
                 std::unique_lock<std::mutex> lock(m_);
-                internalQueue_.clear();
-                notFull_.notify_one();
+                internal_queue_.clear();
+                not_full_.notify_one();
             }
 
             void interrupt() {
-                notFull_.notify_one();
-                notEmpty_.notify_one();
-                isInterrupted_ = true;
+                not_full_.notify_one();
+                not_empty_.notify_one();
+                is_interrupted_ = true;
             }
 
             bool is_empty() {
                 std::lock_guard<std::mutex> lock(m_);
-                return internalQueue_.empty();
+                return internal_queue_.empty();
             }
 
             size_t size() {
                 std::unique_lock<std::mutex> lock(m_);
-                return internalQueue_.size();
+                return internal_queue_.size();
             }
 
         private:
@@ -98,11 +98,11 @@ namespace hazelcast {
              * Did not choose std::list which shall give better remove_all performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
-            std::list<T> internalQueue_;
+            std::list<T> internal_queue_;
             size_t capacity_;
-            std::condition_variable notFull_;
-            std::condition_variable notEmpty_;
-            bool isInterrupted_;
+            std::condition_variable not_full_;
+            std::condition_variable not_empty_;
+            bool is_interrupted_;
         };
     }
 }

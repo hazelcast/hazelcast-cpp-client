@@ -51,7 +51,7 @@ namespace hazelcast {
 
             private:
                 std::shared_ptr<logger> logger_;
-                std::string testName_;
+                std::string test_name_;
             };
 
             class CountDownLatchWaiter {

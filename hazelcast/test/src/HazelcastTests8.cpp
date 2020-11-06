@@ -1476,8 +1476,8 @@ namespace hazelcast {
         namespace test {
             HazelcastServer::HazelcastServer(HazelcastServerFactory &factory) 
                 : factory_(factory)
-                , isStarted_(false)
-                , isShutdown_(false)
+                , is_started_(false)
+                , is_shutdown_(false)
                 , logger_(std::make_shared<logger>("HazelcastServer", "HazelcastServer", 
                                                    logger::level::info, logger::default_handler)) {
                 start();
@@ -1485,30 +1485,30 @@ namespace hazelcast {
 
             bool HazelcastServer::start() {
                 bool expected = false;
-                if (!isStarted_.compare_exchange_strong(expected, true)) {
+                if (!is_started_.compare_exchange_strong(expected, true)) {
                     return true;
                 }
 
                 try {
                     member_ = factory_.start_server();
-                    isStarted_ = true;
+                    is_started_ = true;
                     return true;
                 } catch (exception::IllegalStateException &e) {
                     HZ_LOG(*logger_, severe,
                         boost::str(boost::format("Could not start new member!!! %1%") % e.what())
                     );
-                    isStarted_ = false;
+                    is_started_ = false;
                     return false;
                 }
             }
 
             bool HazelcastServer::shutdown() {
                 bool expected = false;
-                if (!isShutdown_.compare_exchange_strong(expected, true)) {
+                if (!is_shutdown_.compare_exchange_strong(expected, true)) {
                     return false;
                 }
 
-                if (!isStarted_) {
+                if (!is_started_) {
                     return true;
                 }
 
@@ -1516,17 +1516,17 @@ namespace hazelcast {
                     return false;
                 }
 
-                isStarted_ = false;
+                is_started_ = false;
                 return true;
             }
 
             bool HazelcastServer::terminate() {
                 bool expected = false;
-                if (!isShutdown_.compare_exchange_strong(expected, true)) {
+                if (!is_shutdown_.compare_exchange_strong(expected, true)) {
                     return false;
                 }
 
-                if (!isStarted_) {
+                if (!is_started_) {
                     return true;
                 }
 
@@ -1534,7 +1534,7 @@ namespace hazelcast {
                     return false;
                 }
 
-                isStarted_ = false;
+                is_started_ = false;
                 return true;
             }
 
@@ -1557,8 +1557,8 @@ namespace hazelcast {
                 const testing::TestInfo *testInfo = testing::UnitTest::GetInstance()->current_test_info();
                 std::ostringstream out;
                 out << testInfo->test_case_name() << "_" << testInfo->name();
-                testName_ = out.str();
-                logger_ = std::make_shared<logger>("Test", testName_, logger::level::info, logger::default_handler);
+                test_name_ = out.str();
+                logger_ = std::make_shared<logger>("Test", test_name_, logger::level::info, logger::default_handler);
             }
 
             logger &ClientTestSupport::get_logger() {
@@ -1566,7 +1566,7 @@ namespace hazelcast {
             }
 
             const std::string &ClientTestSupport::get_test_name() const {
-                return testName_;
+                return test_name_;
             }
 
             CountDownLatchWaiter &CountDownLatchWaiter::add(boost::latch &latch1) {

@@ -83,11 +83,11 @@ namespace hazelcast {
             */
             template<typename Listener>
             std::string add_message_listener(Listener &&listener) {
-                int id = ++runnerCounter_;
+                int id = ++runner_counter_;
                 std::shared_ptr<MessageRunner < Listener>>
                 runner(new MessageRunner<Listener>(id, std::forward<Listener>(listener), ringbuffer_, get_name(),
                                                    get_serialization_service(), config_, logger_));
-                runnersMap_.put(id, runner);
+                runners_map_.put(id, runner);
                 runner->next();
                 return std::to_string(id);
             }
@@ -102,18 +102,18 @@ namespace hazelcast {
             */
             bool remove_message_listener(const std::string &registration_id) {
                 int id = util::IOUtil::to_value<int>(registration_id);
-                auto runner = runnersMap_.get(id);
+                auto runner = runners_map_.get(id);
                 if (!runner) {
                     return false;
                 }
                 runner->cancel();
-                runnersMap_.remove(id);
+                runners_map_.remove(id);
                 return true;
             };
         protected:
             void on_destroy() override {
                 // cancel all runners
-                for (auto &entry : runnersMap_.clear()) {
+                for (auto &entry : runners_map_.clear()) {
                     entry.second->cancel();
                 }
 
@@ -135,7 +135,7 @@ namespace hazelcast {
                               const std::string &topic_name, serialization::pimpl::SerializationService &service,
                               const config::ReliableTopicConfig &reliable_topic_config, logger &lg)
                         : listener_(listener), id_(id), ringbuffer_(rb), cancelled_(false), logger_(lg),
-                        name_(topic_name), executor_(rb, lg), serializationService_(service),
+                        name_(topic_name), executor_(rb, lg), serialization_service_(service),
                         config_(reliable_topic_config) {
                     // we are going to listen to next publication. We don't care about what already has been published.
                     int64_t initialSequence = listener.initial_sequence_id_;
@@ -278,7 +278,7 @@ namespace hazelcast {
                     if (addr.has_value()) {
                         member = boost::make_optional<Member>(addr.value());
                     }
-                    return topic::Message(name_, TypedData(std::move(m->get_payload()), serializationService_),
+                    return topic::Message(name_, TypedData(std::move(m->get_payload()), serialization_service_),
                                           m->get_publish_time(), std::move(member));
                 }
 
@@ -324,12 +324,12 @@ namespace hazelcast {
                 logger &logger_;
                 const std::string &name_;
                 topic::impl::reliable::ReliableTopicExecutor executor_;
-                serialization::pimpl::SerializationService &serializationService_;
+                serialization::pimpl::SerializationService &serialization_service_;
                 const config::ReliableTopicConfig &config_;
             };
 
-            util::SynchronizedMap<int, util::concurrent::Cancellable> runnersMap_;
-            std::atomic<int> runnerCounter_{ 0 };
+            util::SynchronizedMap<int, util::concurrent::Cancellable> runners_map_;
+            std::atomic<int> runner_counter_{ 0 };
         };
     }
 }

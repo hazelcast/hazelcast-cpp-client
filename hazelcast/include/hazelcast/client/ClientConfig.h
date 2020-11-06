@@ -419,44 +419,44 @@ namespace hazelcast {
         private:
             std::string cluster_name_;
 
-            config::ClientNetworkConfig networkConfig_;
+            config::ClientNetworkConfig network_config_;
 
-            SerializationConfig serializationConfig_;
+            SerializationConfig serialization_config_;
 
-            LoadBalancer *loadBalancer_;
+            LoadBalancer *load_balancer_;
 
-            impl::RoundRobinLB defaultLoadBalancer_;
+            impl::RoundRobinLB default_load_balancer_;
 
-            std::vector<MembershipListener> membershipListeners_;
+            std::vector<MembershipListener> membership_listeners_;
 
-            std::vector<LifecycleListener> lifecycleListeners_;
+            std::vector<LifecycleListener> lifecycle_listeners_;
 
             std::unordered_map<std::string, std::string> properties_;
 
-            bool redoOperation_;
+            bool redo_operation_;
 
-            SocketInterceptor socketInterceptor_;
+            SocketInterceptor socket_interceptor_;
 
             std::shared_ptr<security::credentials> credentials_;
 
-            std::unordered_map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap_;
+            std::unordered_map<std::string, config::ReliableTopicConfig> reliable_topic_config_map_;
 
-            std::unordered_map<std::string, config::NearCacheConfig> nearCacheConfigMap_;
+            std::unordered_map<std::string, config::NearCacheConfig> near_cache_config_map_;
 
-            std::shared_ptr<std::string> instanceName_;
+            std::shared_ptr<std::string> instance_name_;
 
             /**
              * pool-size for internal ExecutorService which handles responses etc.
              */
-            int32_t executorPoolSize_;
+            int32_t executor_pool_size_;
 
-            config::ClientConnectionStrategyConfig connectionStrategyConfig_;
+            config::ClientConnectionStrategyConfig connection_strategy_config_;
 
-            std::unordered_map<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap_;
+            std::unordered_map<std::string, config::ClientFlakeIdGeneratorConfig> flake_id_generator_config_map_;
 
-            config::matcher::MatchingPointConfigPatternMatcher configPatternMatcher_;
+            config::matcher::MatchingPointConfigPatternMatcher config_pattern_matcher_;
 
-            config::LoggerConfig loggerConfig_;
+            config::LoggerConfig logger_config_;
 
             std::unordered_set<std::string> labels_;
 

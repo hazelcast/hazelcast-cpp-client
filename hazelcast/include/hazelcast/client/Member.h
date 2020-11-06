@@ -106,7 +106,7 @@ namespace hazelcast {
         private:
             Address address_;
             boost::uuids::uuid uuid_;
-            bool liteMember_;
+            bool lite_member_;
             std::unordered_map<std::string, std::string> attributes_;
         };
 

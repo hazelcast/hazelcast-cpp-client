@@ -40,7 +40,7 @@ namespace hazelcast {
                 std::unordered_map<std::string, std::string> get_addresses();
 
             private:
-                config::ClientAwsConfig &awsConfig_;
+                config::ClientAwsConfig &aws_config_;
                 std::string endpoint_;
                 logger &logger_;
             };

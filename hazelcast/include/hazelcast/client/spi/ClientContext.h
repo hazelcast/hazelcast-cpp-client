@@ -148,7 +148,7 @@ namespace hazelcast {
 
                 cp::internal::session::proxy_session_manager &get_proxy_session_manager();
             private:
-                client::impl::HazelcastClientInstanceImpl &hazelcastClient_;
+                client::impl::HazelcastClientInstanceImpl &hazelcast_client_;
             };
         }
     }

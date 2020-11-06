@@ -74,10 +74,10 @@ namespace hazelcast {
                     void add_filters();
 
                     std::unique_ptr<security::EC2RequestSigner> rs_;
-                    config::ClientAwsConfig &awsConfig_;
+                    config::ClientAwsConfig &aws_config_;
                     const std::string &endpoint_;
                     std::unordered_map<std::string, std::string> attributes_;
-                    std::unique_ptr<util::SyncHttpsClient> httpsClient_;
+                    std::unique_ptr<util::SyncHttpsClient> https_client_;
                     logger &logger_;
 
                     static const std::string QUERY_PREFIX;

@@ -55,9 +55,9 @@ namespace hazelcast {
                 float f_;
                 double d_;
                 std::string str_;
-                std::string utfStr_;
+                std::string utf_str_;
 
-                std::vector<byte> byteVec_;
+                std::vector<byte> byte_vec_;
                 std::vector<char> cc_;
                 std::vector<bool> ba_;
                 std::vector<int16_t> ss_;

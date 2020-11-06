@@ -51,7 +51,7 @@ namespace hazelcast {
 
                         int get_slot(const serialization::pimpl::Data &key);
 
-                        const int markCount_;
+                        const int mark_count_;
                         std::atomic<int32_t> *marks_;
                     };
                 }

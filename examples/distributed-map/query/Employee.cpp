@@ -30,10 +30,10 @@ namespace hazelcast {
                 f_ = 3.14f;
                 d_ = 3.14334;
                 str_ = "Hello world";
-                utfStr_ = "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
+                utf_str_ = "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
 
                 byte byteArray[] = {50, 100, 150, 200};
-                byteVec_ = std::vector<byte>(byteArray, byteArray + 4);
+                byte_vec_ = std::vector<byte>(byteArray, byteArray + 4);
                 char charArray[] = {'c', 'h', 'a', 'r'};
                 cc_ = std::vector<char>(charArray, charArray + 4);
                 bool boolArray[] = {true, false, false, true};
@@ -166,9 +166,9 @@ namespace hazelcast {
                 writer.write<float>("f", object.f_);
                 writer.write<double>("d", object.d_);
                 writer.write("str", object.str_);
-                writer.write("utfstr", &object.utfStr_);
+                writer.write("utfstr", &object.utf_str_);
 
-                writer.write("bb", object.byteVec_);
+                writer.write("bb", object.byte_vec_);
                 writer.write("cc", object.cc_);
                 writer.write("ba", object.ba_);
                 writer.write("ss", object.ss_);
@@ -185,7 +185,7 @@ namespace hazelcast {
                 out.write_object<float>(&object.f_);
                 out.write_object<double>(&object.d_);
                 out.write_object<std::string>(&object.str_);
-                out.write_object<std::string>(&object.utfStr_);
+                out.write_object<std::string>(&object.utf_str_);
             }
 
             examples::Employee hz_serializer<examples::Employee>::read_portable(PortableReader &reader) {
@@ -201,8 +201,8 @@ namespace hazelcast {
                 employee.f_ = reader.read<float>("f");
                 employee.d_ = reader.read<double>("d");
                 employee.str_ = reader.read<std::string>("str");
-                employee.utfStr_ = reader.read<std::string>("utfstr");
-                employee.byteVec_ = *reader.read<std::vector<byte>>("bb");
+                employee.utf_str_ = reader.read<std::string>("utfstr");
+                employee.byte_vec_ = *reader.read<std::vector<byte>>("bb");
                 employee.cc_ = *reader.read<std::vector<char>>("cc");
                 employee.ba_ = *reader.read<std::vector<bool>>("ba");
                 employee.ss_ = *reader.read<std::vector<int16_t>>("ss");
@@ -218,7 +218,7 @@ namespace hazelcast {
                 employee.f_ = *in.read_object<float>();
                 employee.d_ = *in.read_object<double>();
                 employee.str_ = *in.read_object<std::string>();
-                employee.utfStr_ = *in.read_object<std::string>();
+                employee.utf_str_ = *in.read_object<std::string>();
                 return employee;
             }
 

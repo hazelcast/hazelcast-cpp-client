@@ -129,7 +129,7 @@ namespace hazelcast {
                     ThreeSecondDelayCompleteOperation(spi::impl::sequence::CallIdSequenceWithBackpressure &sequence,
                                                       boost::latch &next_called_latch) : sequence_(
                             sequence),
-                                                                                       nextCalledLatch_(
+                                                                                       next_called_latch_(
                                                                                                next_called_latch) {}
 
                     virtual const std::string get_name() const {
@@ -138,14 +138,14 @@ namespace hazelcast {
 
                     virtual void run() {
                         sequence_.next();
-                        nextCalledLatch_.count_down();
+                        next_called_latch_.count_down();
                         sleep_seconds(3);
                         sequence_.complete();
                     }
 
                 private:
                     spi::impl::sequence::CallIdSequenceWithBackpressure &sequence_;
-                    boost::latch &nextCalledLatch_;
+                    boost::latch &next_called_latch_;
                 };
 
                 int64_t next_call_id(spi::impl::sequence::CallIdSequence &seq, bool is_urgent) {
@@ -302,35 +302,35 @@ namespace hazelcast {
                                                            const std::string &server_xml_config_file_path)
                     : logger_(std::make_shared<logger>("HazelcastServerFactory", "HazelcastServerFactory",
                                                        logger::level::info, logger::default_handler)),
-                      serverAddress_(server_address) {
+                      server_address_(server_address) {
                 std::string xmlConfig = read_from_xml_file(server_xml_config_file_path);
 
                 remote::Cluster cluster;
                 remoteController->createClusterKeepClusterName(cluster, HAZELCAST_VERSION, xmlConfig);
 
-                this->clusterId_ = cluster.id;
+                this->cluster_id_ = cluster.id;
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-                remoteController->shutdownCluster(clusterId_);
+                remoteController->shutdownCluster(cluster_id_);
             }
 
             remote::Member HazelcastServerFactory::start_server() {
                 remote::Member member;
-                remoteController->startMember(member, clusterId_);
+                remoteController->startMember(member, cluster_id_);
                 return member;
             }
 
             bool HazelcastServerFactory::shutdown_server(const remote::Member &member) {
-                return remoteController->shutdownMember(clusterId_, member.uuid);
+                return remoteController->shutdownMember(cluster_id_, member.uuid);
             }
 
             bool HazelcastServerFactory::terminate_server(const remote::Member &member) {
-                return remoteController->terminateMember(clusterId_, member.uuid);
+                return remoteController->terminateMember(cluster_id_, member.uuid);
             }
 
             const std::string &HazelcastServerFactory::get_server_address() {
-                return serverAddress_;
+                return server_address_;
             }
 
             std::string HazelcastServerFactory::read_from_xml_file(const std::string &xml_file_path) {
@@ -352,7 +352,7 @@ namespace hazelcast {
             }
 
             const std::string &HazelcastServerFactory::get_cluster_id() const {
-                return clusterId_;
+                return cluster_id_;
             }
 
         }
@@ -636,21 +636,21 @@ namespace hazelcast {
         namespace test {
             class PartitionAwareInt : public PartitionAware<int> {
             public:
-                PartitionAwareInt() : partitionKey_(0), actualKey_(0) {}
+                PartitionAwareInt() : partition_key_(0), actual_key_(0) {}
 
                 PartitionAwareInt(int partition_key, int actual_key)
-                        : partitionKey_(partition_key), actualKey_(actual_key) {}
+                        : partition_key_(partition_key), actual_key_(actual_key) {}
 
                 const int *get_partition_key() const override {
-                    return &partitionKey_;
+                    return &partition_key_;
                 }
 
                 int get_actual_key() const {
-                    return actualKey_;
+                    return actual_key_;
                 }
             private:
-                int partitionKey_;
-                int actualKey_;
+                int partition_key_;
+                int actual_key_;
             };
 
             class MapClientConfig : public ClientConfig {

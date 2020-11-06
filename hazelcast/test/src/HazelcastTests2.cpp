@@ -298,11 +298,11 @@ namespace hazelcast {
                         ConcurrentQueueTask(hazelcast::util::ConcurrentQueue<int> &q,
                                             boost::latch &start_latch,
                                             boost::latch &start_remove_latch, int removal_value) : q_(q),
-                                                                                                startLatch_(
+                                                                                                start_latch_(
                                                                                                         start_latch),
-                                                                                                startRemoveLatch_(
+                                                                                                start_remove_latch_(
                                                                                                         start_remove_latch),
-                                                                                                removalValue_(
+                                                                                                removal_value_(
                                                                                                         removal_value) {}
 
                         virtual void run() {
@@ -310,9 +310,9 @@ namespace hazelcast {
 
                             std::vector<int> values((size_t) numItems);
 
-                            startLatch_.count_down();
+                            start_latch_.count_down();
 
-                            ASSERT_OPEN_EVENTUALLY(startLatch_);
+                            ASSERT_OPEN_EVENTUALLY(start_latch_);
 
                             // insert items
                             for (int i = 0; i < numItems; ++i) {
@@ -320,8 +320,8 @@ namespace hazelcast {
                                 q_.offer(&values[i]);
                             }
 
-                            q_.offer(&removalValue_);
-                            startRemoveLatch_.count_down();
+                            q_.offer(&removal_value_);
+                            start_remove_latch_.count_down();
 
                             // poll items
                             for (int i = 0; i < numItems; ++i) {
@@ -336,9 +336,9 @@ namespace hazelcast {
 
                     private:
                         hazelcast::util::ConcurrentQueue<int> &q_;
-                        boost::latch &startLatch_;
-                        boost::latch &startRemoveLatch_;
-                        int removalValue_;
+                        boost::latch &start_latch_;
+                        boost::latch &start_remove_latch_;
+                        int removal_value_;
                     };
                 };
 
@@ -959,17 +959,17 @@ namespace hazelcast {
             public:
                 class SimplePartitionAwareObject : public PartitionAware<int> {
                 public:
-                    SimplePartitionAwareObject() : testKey_(5) {}
+                    SimplePartitionAwareObject() : test_key_(5) {}
 
                     const int *get_partition_key() const override {
-                        return &testKey_;
+                        return &test_key_;
                     }
 
                     int get_test_key() const {
-                        return testKey_;
+                        return test_key_;
                     }
                 private:
-                    int testKey_;
+                    int test_key_;
                 };
             };
 

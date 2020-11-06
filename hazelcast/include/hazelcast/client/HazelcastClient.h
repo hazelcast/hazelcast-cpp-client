@@ -76,7 +76,7 @@ namespace hazelcast {
             */
             template<typename T>
             std::shared_ptr<T> get_distributed_object(const std::string& name) {
-                return clientImpl_->get_distributed_object<T>(name);
+                return client_impl_->get_distributed_object<T>(name);
             }
 
             /**
@@ -89,7 +89,7 @@ namespace hazelcast {
             * @return distributed map instance with the specified name
             */
             std::shared_ptr<IMap> get_map(const std::string &name) {
-                return clientImpl_->get_distributed_object<IMap>(name);
+                return client_impl_->get_distributed_object<IMap>(name);
             }
 
             /**
@@ -99,11 +99,11 @@ namespace hazelcast {
             * @return distributed multimap instance with the specified name
             */
             std::shared_ptr<MultiMap> get_multi_map(const std::string& name) {
-                return clientImpl_->get_distributed_object<MultiMap>(name);
+                return client_impl_->get_distributed_object<MultiMap>(name);
             }
 
             std::shared_ptr<ReplicatedMap> get_replicated_map(const std::string &name) {
-                return clientImpl_->get_distributed_object<ReplicatedMap>(name);
+                return client_impl_->get_distributed_object<ReplicatedMap>(name);
             }
 
             /**
@@ -113,7 +113,7 @@ namespace hazelcast {
             * @return distributed queue instance with the specified name
             */
             std::shared_ptr<IQueue> get_queue(const std::string& name) {
-                return clientImpl_->get_distributed_object<IQueue>(name);
+                return client_impl_->get_distributed_object<IQueue>(name);
             }
 
             /**
@@ -124,7 +124,7 @@ namespace hazelcast {
             * @return distributed set instance with the specified name
             */
             std::shared_ptr<ISet> get_set(const std::string& name) {
-                return clientImpl_->get_distributed_object<ISet>(name);
+                return client_impl_->get_distributed_object<ISet>(name);
             }
 
             /**
@@ -135,7 +135,7 @@ namespace hazelcast {
             * @return distributed list instance with the specified name
             */
             std::shared_ptr<IList> get_list(const std::string& name) {
-                return clientImpl_->get_distributed_object<IList>(name);
+                return client_impl_->get_distributed_object<IList>(name);
             }
 
             /**
@@ -145,7 +145,7 @@ namespace hazelcast {
             * @return distributed topic instance with the specified name
             */
             std::shared_ptr<ITopic> get_topic(const std::string& name) {
-                return clientImpl_->get_distributed_object<ITopic>(name);
+                return client_impl_->get_distributed_object<ITopic>(name);
             };
 
             /**
@@ -155,7 +155,7 @@ namespace hazelcast {
             * @return distributed topic instance with the specified name
             */
             std::shared_ptr<ReliableTopic> get_reliable_topic(const std::string& name) {
-                return clientImpl_->get_distributed_object<ReliableTopic>(name);
+                return client_impl_->get_distributed_object<ReliableTopic>(name);
             }
 
             /**
@@ -175,7 +175,7 @@ namespace hazelcast {
              * @return FlakeIdGenerator for the given name
              */
             std::shared_ptr<FlakeIdGenerator> get_flake_id_generator(const std::string& name) {
-                return clientImpl_->get_distributed_object<FlakeIdGenerator>(name);
+                return client_impl_->get_distributed_object<FlakeIdGenerator>(name);
             }
 
             /**
@@ -191,7 +191,7 @@ namespace hazelcast {
              * @return a {@link PNCounter}
              */
             std::shared_ptr<PNCounter> get_pn_counter(const std::string& name) {
-                return clientImpl_->get_distributed_object<PNCounter>(name);
+                return client_impl_->get_distributed_object<PNCounter>(name);
             }
 
             /**
@@ -201,7 +201,7 @@ namespace hazelcast {
              * @return distributed RingBuffer instance with the specified name
              */
             std::shared_ptr<Ringbuffer> get_ringbuffer(const std::string& name) {
-                return clientImpl_->get_distributed_object<Ringbuffer>(name);
+                return client_impl_->get_distributed_object<Ringbuffer>(name);
             }
 
             /**
@@ -216,7 +216,7 @@ namespace hazelcast {
              * @return the distributed executor service for the given name
              */
             std::shared_ptr<IExecutorService> get_executor_service(const std::string &name) {
-                return clientImpl_->get_distributed_object<IExecutorService>(name);
+                return client_impl_->get_distributed_object<IExecutorService>(name);
             }
 
             /**
@@ -298,7 +298,7 @@ namespace hazelcast {
             cp::cp_subsystem &get_cp_subsystem();
 
         private:
-            std::shared_ptr<impl::HazelcastClientInstanceImpl> clientImpl_;
+            std::shared_ptr<impl::HazelcastClientInstanceImpl> client_impl_;
         };
 
         /**

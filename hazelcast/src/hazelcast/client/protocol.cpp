@@ -225,11 +225,11 @@ namespace hazelcast {
             }
 
             std::string ClientMessage::get_operation_name() const {
-                return operationName_;
+                return operation_name_;
             }
 
             void ClientMessage::set_operation_name(const std::string &name) {
-                this->operationName_ = name;
+                this->operation_name_ = name;
             }
 
             std::ostream &operator<<(std::ostream &os, const ClientMessage &msg) {
@@ -476,21 +476,21 @@ namespace hazelcast {
             ClientExceptionFactory::~ClientExceptionFactory() {
                 // release memory for the factories
                 for (std::unordered_map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it =
-                        errorCodeToFactory_.begin(); errorCodeToFactory_.end() != it; ++it) {
+                        error_code_to_factory_.begin(); error_code_to_factory_.end() != it; ++it) {
                     delete (it->second);
                 }
             }
 
             void ClientExceptionFactory::register_exception(int32_t error_code, ExceptionFactory *factory) {
-                auto it = errorCodeToFactory_.find(error_code);
-                if (errorCodeToFactory_.end() != it) {
+                auto it = error_code_to_factory_.find(error_code);
+                if (error_code_to_factory_.end() != it) {
                     char msg[100];
                     util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", error_code);
                     BOOST_THROW_EXCEPTION(
                             exception::IllegalStateException("ClientExceptionFactory::registerException", msg));
                 }
 
-                errorCodeToFactory_[error_code] = factory;
+                error_code_to_factory_[error_code] = factory;
             }
 
             std::exception_ptr ClientExceptionFactory::create_exception(std::vector<codec::ErrorHolder>::const_iterator begin,
@@ -498,9 +498,9 @@ namespace hazelcast {
                 if (begin == end) {
                     return nullptr;
                 }
-                auto factory = errorCodeToFactory_.find(begin->error_code);
-                if (errorCodeToFactory_.end() == factory) {
-                    factory = errorCodeToFactory_.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
+                auto factory = error_code_to_factory_.find(begin->error_code);
+                if (error_code_to_factory_.end() == factory) {
+                    factory = error_code_to_factory_.find(protocol::ClientProtocolErrorCodes::UNDEFINED);
                 }
                 return factory->second->create_exception(*this, begin->class_name, begin->message.value_or("nullptr"),
                                                   begin->to_string(), create_exception(begin + 1, end));

@@ -218,16 +218,16 @@ namespace hazelcast {
                 ClientAwsConfig &set_inside_aws(bool inside_aws);
             private:
                 bool enabled_;
-                std::string accessKey_;
-                std::string secretKey_;
+                std::string access_key_;
+                std::string secret_key_;
                 std::string region_;
-                std::string securityGroupName_;
-                std::string tagKey_;
-                std::string tagValue_;
-                std::string hostHeader_;
-                std::string iamRole_;
+                std::string security_group_name_;
+                std::string tag_key_;
+                std::string tag_value_;
+                std::string host_header_;
+                std::string iam_role_;
 
-                bool insideAws_;
+                bool inside_aws_;
             };
 
             std::ostream HAZELCAST_API &operator<<(std::ostream &out, const ClientAwsConfig &config);

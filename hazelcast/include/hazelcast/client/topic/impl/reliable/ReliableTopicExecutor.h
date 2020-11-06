@@ -79,7 +79,7 @@ namespace hazelcast {
                         };
 
                         std::shared_ptr<Ringbuffer> ringbuffer_;
-                        std::thread runnerThread_;
+                        std::thread runner_thread_;
                         util::BlockingConcurrentQueue<Message> q_;
                         std::atomic<bool> shutdown_;
                     };

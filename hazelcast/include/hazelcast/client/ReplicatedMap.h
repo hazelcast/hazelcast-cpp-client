@@ -264,7 +264,7 @@ namespace hazelcast {
                 EntryEventHandler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
                                   serialization::pimpl::SerializationService &serialization_service,
                                   EntryListener &&listener, logger &lg)
-                        : instanceName_(instance_name), clusterService_(cluster_service), serializationService_(serialization_service)
+                        : instance_name_(instance_name), cluster_service_(cluster_service), serialization_service_(serialization_service)
                         , listener_(std::move(listener)), logger_(lg) {}
 
                 void handle_entry(const boost::optional<Data> &key, const boost::optional<Data> &value,
@@ -284,9 +284,9 @@ namespace hazelcast {
                                       const boost::optional<Data> &old_value, const boost::optional<Data> &merging_value,
                                       int32_t event_type, boost::uuids::uuid uuid,
                                       int32_t number_of_affected_entries) {
-                    auto member = clusterService_.get_member(uuid);
+                    auto member = cluster_service_.get_member(uuid);
                     auto mapEventType = static_cast<EntryEvent::type>(event_type);
-                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName_, number_of_affected_entries);
+                    MapEvent mapEvent(std::move(member).value(), mapEventType, instance_name_, number_of_affected_entries);
                     listener_.map_cleared_(std::move(mapEvent));
                 }
 
@@ -296,23 +296,23 @@ namespace hazelcast {
                                     int32_t number_of_affected_entries) {
                     TypedData eventKey, val, oldVal, mergingVal;
                     if (value) {
-                        val = TypedData(std::move(*value), serializationService_);
+                        val = TypedData(std::move(*value), serialization_service_);
                     }
                     if (old_value) {
-                        oldVal = TypedData(std::move(*old_value), serializationService_);
+                        oldVal = TypedData(std::move(*old_value), serialization_service_);
                     }
                     if (merging_value) {
-                        mergingVal = TypedData(std::move(*merging_value), serializationService_);
+                        mergingVal = TypedData(std::move(*merging_value), serialization_service_);
                     }
                     if (key) {
-                        eventKey = TypedData(std::move(*key), serializationService_);
+                        eventKey = TypedData(std::move(*key), serialization_service_);
                     }
-                    auto member = clusterService_.get_member(uuid);
+                    auto member = cluster_service_.get_member(uuid);
                     if (!member.has_value()) {
                         member = Member(uuid);
                     }
                     auto type = static_cast<EntryEvent::type>(event_type);
-                    EntryEvent entryEvent(instanceName_, std::move(member.value()), type, std::move(eventKey), std::move(val),
+                    EntryEvent entryEvent(instance_name_, std::move(member.value()), type, std::move(eventKey), std::move(val),
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
                         case EntryEvent::type::ADDED:
@@ -336,9 +336,9 @@ namespace hazelcast {
                     }
                 }
             private:
-                const std::string& instanceName_;
-                spi::impl::ClientClusterServiceImpl &clusterService_;
-                serialization::pimpl::SerializationService& serializationService_;
+                const std::string& instance_name_;
+                spi::impl::ClientClusterServiceImpl &cluster_service_;
+                serialization::pimpl::SerializationService& serialization_service_;
                 EntryListener listener_;
                 logger &logger_;
             };

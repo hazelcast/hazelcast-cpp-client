@@ -62,15 +62,15 @@ namespace hazelcast {
                 serialization::pimpl::Data key_;
                 serialization::pimpl::Data value_;
                 int64_t cost_;
-                int64_t creationTime_;
-                int64_t expirationTime_;
+                int64_t creation_time_;
+                int64_t expiration_time_;
                 int64_t hits_;
-                int64_t lastAccessTime_;
-                int64_t lastStoredTime_;
-                int64_t lastUpdateTime_;
+                int64_t last_access_time_;
+                int64_t last_stored_time_;
+                int64_t last_update_time_;
                 int64_t version_;
                 int64_t ttl_;
-                int64_t maxIdle_;
+                int64_t max_idle_;
             };
         }
     }

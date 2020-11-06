@@ -78,7 +78,7 @@ namespace hazelcast {
 
             private:
                 void add_to_partial_messages(int64_t fragmentation_id, std::unique_ptr<ClientMessage> &message) {
-                    partialMessages_[fragmentation_id] = std::move(message);
+                    partial_messages_[fragmentation_id] = std::move(message);
                 }
 
                 /**
@@ -88,14 +88,14 @@ namespace hazelcast {
                                                   bool is_end_fragment) {
                     bool result = false;
 
-                    auto found = partialMessages_.find(fragmentation_id);
-                    if (partialMessages_.end() != found) {
+                    auto found = partial_messages_.find(fragmentation_id);
+                    if (partial_messages_.end() != found) {
                         found->second->append(std::move(msg));
                         if (is_end_fragment) {
                             // remove from message from map
                             std::shared_ptr<ClientMessage> foundMessage(found->second);
 
-                            partialMessages_.erase(found);
+                            partial_messages_.erase(found);
 
                             foundMessage->wrap_for_read();
                             message_handler_.handle_client_message(foundMessage);
@@ -112,7 +112,7 @@ namespace hazelcast {
 
                 typedef std::unordered_map<int64_t, std::shared_ptr<ClientMessage> > MessageMap;
 
-                MessageMap partialMessages_;
+                MessageMap partial_messages_;
 
                 std::unique_ptr<ClientMessage> message_;
                 MessageHandler &message_handler_;

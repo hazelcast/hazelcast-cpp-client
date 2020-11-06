@@ -89,7 +89,7 @@ namespace hazelcast {
                     static std::string NEW_LINE;
                     static size_t DATE_LENGTH;
 
-                    const config::ClientAwsConfig &awsConfig_;
+                    const config::ClientAwsConfig &aws_config_;
                     std::string timestamp_;
                     const std::string &endpoint_;
                 };

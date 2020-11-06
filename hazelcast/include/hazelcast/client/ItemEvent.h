@@ -61,7 +61,7 @@ namespace hazelcast {
         private:
             std::string name_;
             Member member_;
-            ItemEventType eventType_;
+            ItemEventType event_type_;
         };
 
         /**

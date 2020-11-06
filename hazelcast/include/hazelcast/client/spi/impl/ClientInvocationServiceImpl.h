@@ -111,10 +111,10 @@ namespace hazelcast {
 
                     ClientContext &client_;
                     logger &logger_;
-                    std::atomic<bool> isShutdown_{ false };
-                    std::chrono::milliseconds invocationTimeout_;
-                    std::chrono::milliseconds invocationRetryPause_;
-                    ResponseProcessor responseThread_;
+                    std::atomic<bool> is_shutdown_{ false };
+                    std::chrono::milliseconds invocation_timeout_;
+                    std::chrono::milliseconds invocation_retry_pause_;
+                    ResponseProcessor response_thread_;
                     bool smart_routing_;
                     bool backup_acks_enabled_;
                     bool fail_on_indeterminate_operation_state_;

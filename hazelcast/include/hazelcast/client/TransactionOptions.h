@@ -105,7 +105,7 @@ namespace hazelcast {
         private:
             std::chrono::milliseconds timeout_;
             int durability_;
-            TransactionType transactionType_;
+            TransactionType transaction_type_;
         };
     }
 }

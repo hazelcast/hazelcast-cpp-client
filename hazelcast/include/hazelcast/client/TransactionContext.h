@@ -164,10 +164,10 @@ namespace hazelcast {
                                                              message));
                 }
                 auto key = std::make_pair(service_name, name);
-                std::shared_ptr<T> obj = std::static_pointer_cast<T>(txnObjectMap_.get(key));
+                std::shared_ptr<T> obj = std::static_pointer_cast<T>(txn_object_map_.get(key));
                 if (!obj) {
                     obj = std::shared_ptr<T>(new T(name, transaction_));
-                    txnObjectMap_.put(key, obj);
+                    txn_object_map_.put(key, obj);
                 }
 
                 return obj;
@@ -175,9 +175,9 @@ namespace hazelcast {
 
         private :
             TransactionOptions options_;
-            std::shared_ptr<connection::Connection> txnConnection_;
+            std::shared_ptr<connection::Connection> txn_connection_;
             txn::TransactionProxy transaction_;
-            util::SynchronizedMap<std::pair<std::string, std::string>, proxy::TransactionalObject> txnObjectMap_;
+            util::SynchronizedMap<std::pair<std::string, std::string>, proxy::TransactionalObject> txn_object_map_;
         };
     }
 }

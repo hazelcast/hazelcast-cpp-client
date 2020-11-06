@@ -80,11 +80,11 @@ namespace hazelcast {
                  * @return the capacity.
                  */
                 boost::shared_future<int64_t> capacity() {
-                    if (!bufferCapacity_.valid()) {
+                    if (!buffer_capacity_.valid()) {
                         auto request = protocol::codec::ringbuffer_capacity_encode(get_name());
-                        bufferCapacity_ = invoke_and_get_future<int64_t>(request, partitionId_).share();
+                        buffer_capacity_ = invoke_and_get_future<int64_t>(request, partitionId_).share();
                     }
-                    return bufferCapacity_;
+                    return buffer_capacity_;
                 }
 
                 /**
@@ -203,7 +203,7 @@ namespace hazelcast {
                         }
                     }
 
-                    util::Preconditions::check_true(max_count <= bufferCapacity_.get(),
+                    util::Preconditions::check_true(max_count <= buffer_capacity_.get(),
                                                    "the maxCount should be smaller than or equal to the capacity");
                     util::Preconditions::check_max(max_count, RingbufferImpl::MAX_BATCH_SIZE, "maxCount");
 
@@ -218,7 +218,7 @@ namespace hazelcast {
                 }
 
             private:
-                boost::shared_future<int64_t> bufferCapacity_;
+                boost::shared_future<int64_t> buffer_capacity_;
 
                 static void check_sequence(int64_t sequence) {
                     if (sequence < 0) {

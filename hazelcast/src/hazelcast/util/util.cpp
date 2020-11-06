@@ -135,22 +135,22 @@ namespace hazelcast {
 namespace hazelcast {
     namespace util {
         SyncHttpsClient::SyncHttpsClient(const std::string &server_ip, const std::string &uri_path) : server_(server_ip),
-                                                                                                    uriPath_(uri_path),
+                                                                                                    uri_path_(uri_path),
 #ifdef HZ_BUILD_WITH_SSL
-                                                                                                    sslContext_(
+                                                                                                    ssl_context_(
                                                                                                             boost::asio::ssl::context::sslv23),
 #endif
-                                                                                                    responseStream_(
+                                                                                                    response_stream_(
                                                                                                             &response_) {
             util::Preconditions::check_ssl("SyncHttpsClient::SyncHttpsClient");
 
 #ifdef HZ_BUILD_WITH_SSL
-            sslContext_.set_default_verify_paths();
-            sslContext_.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
+            ssl_context_.set_default_verify_paths();
+            ssl_context_.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
                                    boost::asio::ssl::context::single_dh_use);
 
             socket_ = std::unique_ptr<boost::asio::ssl::stream<boost::asio::ip::tcp::socket> >(
-                    new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(ioService_, sslContext_));
+                    new boost::asio::ssl::stream<boost::asio::ip::tcp::socket>(io_service_, ssl_context_));
 #endif // HZ_BUILD_WITH_SSL
         }
 
@@ -160,7 +160,7 @@ namespace hazelcast {
 #ifdef HZ_BUILD_WITH_SSL
             try {
                 // Get a list of endpoints corresponding to the server name.
-                boost::asio::ip::tcp::resolver resolver(ioService_);
+                boost::asio::ip::tcp::resolver resolver(io_service_);
                 boost::asio::ip::tcp::resolver::query query(server_, "https");
                 boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
@@ -176,7 +176,7 @@ namespace hazelcast {
                 // allow us to treat all data up until the EOF as the content.
                 boost::asio::streambuf request;
                 std::ostream request_stream(&request);
-                request_stream << "GET " << uriPath_ << " HTTP/1.0\r\n";
+                request_stream << "GET " << uri_path_ << " HTTP/1.0\r\n";
                 request_stream << "Host: " << server_ << "\r\n";
                 request_stream << "Accept: */*\r\n";
                 request_stream << "Connection: close\r\n\r\n";
@@ -191,12 +191,12 @@ namespace hazelcast {
 
                 // Check that response is OK.
                 std::string httpVersion;
-                responseStream_ >> httpVersion;
+                response_stream_ >> httpVersion;
                 unsigned int statusCode;
-                responseStream_ >> statusCode;
+                response_stream_ >> statusCode;
                 std::string statusMessage;
-                std::getline(responseStream_, statusMessage);
-                if (!responseStream_ || httpVersion.substr(0, 5) != "HTTP/") {
+                std::getline(response_stream_, statusMessage);
+                if (!response_stream_ || httpVersion.substr(0, 5) != "HTTP/") {
                     throw client::exception::IOException("openConnection", "Invalid response");
                 }
                 if (statusCode != 200) {
@@ -210,7 +210,7 @@ namespace hazelcast {
 
                 // Process the response headers.
                 std::string header;
-                while (std::getline(responseStream_, header) && header != "\r");
+                while (std::getline(response_stream_, header) && header != "\r");
 
                 // Read until EOF
                 boost::system::error_code error;
@@ -225,12 +225,12 @@ namespace hazelcast {
                 }
             } catch (boost::system::system_error &e) {
                 std::ostringstream out;
-                out << "Could not retrieve response from https://" << server_ << uriPath_ << " Error:" << e.what();
+                out << "Could not retrieve response from https://" << server_ << uri_path_ << " Error:" << e.what();
                 throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());
             }
 #endif // HZ_BUILD_WITH_SSL
 
-            return responseStream_;
+            return response_stream_;
         }
     }
 }
@@ -476,13 +476,13 @@ namespace hazelcast {
 namespace hazelcast {
     namespace util {
         SyncHttpClient::SyncHttpClient(const std::string &server_ip, const std::string &uri_path)
-                : server_(server_ip), uriPath_(uri_path), socket_(ioService_), responseStream_(&response_) {
+                : server_(server_ip), uri_path_(uri_path), socket_(io_service_), response_stream_(&response_) {
         }
 
         std::istream &SyncHttpClient::open_connection() {
             try {
                 // Get a list of endpoints corresponding to the server name.
-                boost::asio::ip::tcp::resolver resolver(ioService_);
+                boost::asio::ip::tcp::resolver resolver(io_service_);
                 boost::asio::ip::tcp::resolver::query query(server_, "http");
                 boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
@@ -495,7 +495,7 @@ namespace hazelcast {
                 // allow us to treat all data up until the EOF as the content.
                 boost::asio::streambuf request;
                 std::ostream request_stream(&request);
-                request_stream << "GET " << uriPath_ << " HTTP/1.0\r\n";
+                request_stream << "GET " << uri_path_ << " HTTP/1.0\r\n";
                 request_stream << "Host: " << server_ << "\r\n";
                 request_stream << "Accept: */*\r\n";
                 request_stream << "Connection: close\r\n\r\n";
@@ -510,12 +510,12 @@ namespace hazelcast {
 
                 // Check that response is OK.
                 std::string httpVersion;
-                responseStream_ >> httpVersion;
+                response_stream_ >> httpVersion;
                 unsigned int statusCode;
-                responseStream_ >> statusCode;
+                response_stream_ >> statusCode;
                 std::string statusMessage;
-                std::getline(responseStream_, statusMessage);
-                if (!responseStream_ || httpVersion.substr(0, 5) != "HTTP/") {
+                std::getline(response_stream_, statusMessage);
+                if (!response_stream_ || httpVersion.substr(0, 5) != "HTTP/") {
                     throw client::exception::IOException("openConnection", "Invalid response");
                 }
                 if (statusCode != 200) {
@@ -529,7 +529,7 @@ namespace hazelcast {
 
                 // Process the response headers.
                 std::string header;
-                while (std::getline(responseStream_, header) && header != "\r");
+                while (std::getline(response_stream_, header) && header != "\r");
 
                 // Read until EOF
                 boost::system::error_code error;
@@ -543,10 +543,10 @@ namespace hazelcast {
                     throw boost::system::system_error(error);
                 }
 
-                return responseStream_;
+                return response_stream_;
             } catch (boost::system::system_error &e) {
                 std::ostringstream out;
-                out << "Could not retrieve response from http://" << server_ << uriPath_ << " Error:" << e.what();
+                out << "Could not retrieve response from http://" << server_ << uri_path_ << " Error:" << e.what();
                 throw client::exception::IOException("SyncHttpClient::openConnection", out.str());
             }
         }
@@ -604,35 +604,35 @@ namespace hazelcast {
                 Preconditions::check_not_negative(min_park_period_ns, "minParkPeriodNs must be positive or zero");
                 Preconditions::check_not_negative(max_park_period_ns - min_park_period_ns,
                                                 "maxParkPeriodNs must be greater than or equal to minParkPeriodNs");
-                this->yieldThreshold_ = max_spins;
-                this->parkThreshold_ = max_spins + max_yields;
-                this->minParkPeriodNs_ = min_park_period_ns;
-                this->maxParkPeriodNs_ = max_park_period_ns;
-                this->maxShift_ = Int64Util::number_of_leading_zeros(min_park_period_ns) -
+                this->yield_threshold_ = max_spins;
+                this->park_threshold_ = max_spins + max_yields;
+                this->min_park_period_ns_ = min_park_period_ns;
+                this->max_park_period_ns_ = max_park_period_ns;
+                this->max_shift_ = Int64Util::number_of_leading_zeros(min_park_period_ns) -
                                  Int64Util::number_of_leading_zeros(max_park_period_ns);
 
             }
 
             bool BackoffIdleStrategy::idle(int64_t n) {
-                if (n < yieldThreshold_) {
+                if (n < yield_threshold_) {
                     return false;
                 }
-                if (n < parkThreshold_) {
+                if (n < park_threshold_) {
                     std::this_thread::yield();
                     return false;
                 }
                 int64_t time = park_time(n);
                 locks::LockSupport::park_nanos(time);
-                return time == maxParkPeriodNs_;
+                return time == max_park_period_ns_;
             }
 
             int64_t BackoffIdleStrategy::park_time(int64_t n) const {
-                const int64_t proposedShift = n - parkThreshold_;
-                const int64_t allowedShift = min<int64_t>(maxShift_, proposedShift);
-                return proposedShift > maxShift_ ? maxParkPeriodNs_
-                                                : proposedShift < maxShift_ ? minParkPeriodNs_ << allowedShift
-                                                                           : min(minParkPeriodNs_ << allowedShift,
-                                                                                 maxParkPeriodNs_);
+                const int64_t proposedShift = n - park_threshold_;
+                const int64_t allowedShift = min<int64_t>(max_shift_, proposedShift);
+                return proposedShift > max_shift_ ? max_park_period_ns_
+                                                : proposedShift < max_shift_ ? min_park_period_ns_ << allowedShift
+                                                                           : min(min_park_period_ns_ << allowedShift,
+                                                                                 max_park_period_ns_);
             }
         }
     }
@@ -730,7 +730,7 @@ namespace hazelcast {
         }
 
         AddressHolder::AddressHolder(const std::string &address, const std::string &scope_id, int port) : address_(
-                address), scopeId_(scope_id), port_(port) {}
+                address), scope_id_(scope_id), port_(port) {}
 
         std::ostream &operator<<(std::ostream &os, const AddressHolder &holder) {
             os << "AddressHolder [" << holder.address_ + "]:" << holder.port_;
@@ -742,7 +742,7 @@ namespace hazelcast {
         }
 
         const std::string &AddressHolder::get_scope_id() const {
-            return scopeId_;
+            return scope_id_;
         }
 
         int AddressHolder::get_port() const {

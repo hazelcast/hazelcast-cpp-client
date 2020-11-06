@@ -49,26 +49,26 @@ namespace hazelcast {
                         InvalidationAwareWrapper(
                                 std::shared_ptr<internal::nearcache::NearCache<K, V> > cache,
                                 int partition_count)
-                                : nearCache_(cache),
-                                  keyStateMarker_(new internal::nearcache::impl::KeyStateMarkerImpl(partition_count)) {
+                                : near_cache_(cache),
+                                  key_state_marker_(new internal::nearcache::impl::KeyStateMarkerImpl(partition_count)) {
                         }
 
                         ~InvalidationAwareWrapper() override = default;
 
                         void initialize() override {
-                            nearCache_->initialize();
+                            near_cache_->initialize();
                         }
 
                         const std::string &get_name() const override {
-                            return nearCache_->get_name();
+                            return near_cache_->get_name();
                         }
 
                         std::shared_ptr<V> get(const std::shared_ptr<K> &key) override {
-                            return nearCache_->get(key);
+                            return near_cache_->get(key);
                         }
 
                         void put(const std::shared_ptr<K> &key, const std::shared_ptr<V> &value) override {
-                            nearCache_->put(key, value);
+                            near_cache_->put(key, value);
                         }
 
 /*
@@ -80,42 +80,42 @@ namespace hazelcast {
 */
 
                         bool invalidate(const std::shared_ptr<K> &key) override {
-                            keyStateMarker_->try_remove(*key);
-                            return nearCache_->invalidate(key);
+                            key_state_marker_->try_remove(*key);
+                            return near_cache_->invalidate(key);
                         }
 
                         bool is_invalidated_on_change() const override {
-                            return nearCache_->is_invalidated_on_change();
+                            return near_cache_->is_invalidated_on_change();
                         }
 
                         void clear() override {
-                            keyStateMarker_->init();
-                            nearCache_->clear();
+                            key_state_marker_->init();
+                            near_cache_->clear();
                         }
 
                         void destroy() override {
-                            keyStateMarker_->init();
-                            nearCache_->destroy();
+                            key_state_marker_->init();
+                            near_cache_->destroy();
                         }
 
                         const config::InMemoryFormat get_in_memory_format() const override {
-                            return nearCache_->get_in_memory_format();
+                            return near_cache_->get_in_memory_format();
                         }
 
                         std::shared_ptr<monitor::NearCacheStats> get_near_cache_stats() const override {
-                            return nearCache_->get_near_cache_stats();
+                            return near_cache_->get_near_cache_stats();
                         }
 
                         int size() const override {
-                            return nearCache_->size();
+                            return near_cache_->size();
                         }
 
                         KeyStateMarker *get_key_state_marker() {
-                            return keyStateMarker_.get();
+                            return key_state_marker_.get();
                         }
                     private:
-                        std::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache_;
-                        std::unique_ptr<KeyStateMarker> keyStateMarker_;
+                        std::shared_ptr<internal::nearcache::NearCache<K, V> > near_cache_;
+                        std::unique_ptr<KeyStateMarker> key_state_marker_;
                     };
                 }
             }

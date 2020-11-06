@@ -71,7 +71,7 @@ namespace hazelcast {
 
                 private:
                     std::vector<byte> data_;
-                    int cachedHashValue_;
+                    int cached_hash_value_;
 
                     inline int calculate_hash() const;
                 };

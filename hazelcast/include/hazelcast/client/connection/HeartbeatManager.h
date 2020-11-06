@@ -45,7 +45,7 @@ namespace hazelcast {
 
             private:
                 spi::ClientContext &client_;
-                ClientConnectionManagerImpl &clientConnectionManager_;
+                ClientConnectionManagerImpl &client_connection_manager_;
                 logger &logger_;
                 std::chrono::milliseconds heartbeat_interval_;
                 std::chrono::milliseconds heartbeat_timeout_;

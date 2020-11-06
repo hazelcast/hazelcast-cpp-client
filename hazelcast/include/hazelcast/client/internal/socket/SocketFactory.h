@@ -53,11 +53,11 @@ namespace hazelcast {
                     create(const Address &address, std::chrono::milliseconds &connect_timeout_in_millis);
 
                 private:
-                    spi::ClientContext &clientContext_;
+                    spi::ClientContext &client_context_;
                     boost::asio::io_context &io_;
-                    boost::asio::ip::tcp::resolver &ioResolver_;
+                    boost::asio::ip::tcp::resolver &io_resolver_;
 #ifdef HZ_BUILD_WITH_SSL
-                    std::unique_ptr<boost::asio::ssl::context> sslContext_;
+                    std::unique_ptr<boost::asio::ssl::context> ssl_context_;
 #endif
                 };
             }

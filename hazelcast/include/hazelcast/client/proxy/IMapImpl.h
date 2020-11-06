@@ -266,7 +266,7 @@ namespace hazelcast {
                 void on_initialize() override;
 
             private:
-                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator_;
+                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lock_reference_id_generator_;
 
                 class MapEntryListenerWithPredicateMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
@@ -279,8 +279,8 @@ namespace hazelcast {
                     protocol::ClientMessage encode_remove_request(boost::uuids::uuid real_registration_id) const override;
                 private:
                     std::string name_;
-                    bool includeValue_;
-                    int32_t listenerFlags_;
+                    bool include_value_;
+                    int32_t listener_flags_;
                     serialization::pimpl::Data predicate_;
                 };
 
@@ -295,8 +295,8 @@ namespace hazelcast {
 
                 private:
                     std::string name_;
-                    bool includeValue_;
-                    int32_t listenerFlags_;
+                    bool include_value_;
+                    int32_t listener_flags_;
                 };
 
                 class MapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
@@ -310,8 +310,8 @@ namespace hazelcast {
 
                 private:
                     std::string name_;
-                    bool includeValue_;
-                    int32_t listenerFlags_;
+                    bool include_value_;
+                    int32_t listener_flags_;
                     serialization::pimpl::Data key_;
                 };
 

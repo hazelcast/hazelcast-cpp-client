@@ -119,9 +119,9 @@ namespace hazelcast {
                 SSLConfig &set_cipher_list(const std::string &ciphers);
             private:
                 bool enabled_;
-                SSLProtocol sslProtocol_;
-                std::vector<std::string> clientVerifyFiles_;
-                std::string cipherList_;
+                SSLProtocol ssl_protocol_;
+                std::vector<std::string> client_verify_files_;
+                std::string cipher_list_;
             };
         }
     }

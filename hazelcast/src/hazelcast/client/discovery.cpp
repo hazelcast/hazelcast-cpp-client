@@ -65,7 +65,7 @@ namespace hazelcast {
 
                 EC2RequestSigner::EC2RequestSigner(const config::ClientAwsConfig &aws_config,
                                                    const std::string &timestamp,
-                                                   const std::string &endpoint) : awsConfig_(aws_config),
+                                                   const std::string &endpoint) : aws_config_(aws_config),
                                                                                   timestamp_(timestamp),
                                                                                   endpoint_(endpoint) {
                 }
@@ -82,8 +82,8 @@ namespace hazelcast {
 
                 std::string EC2RequestSigner::create_formatted_credential() const {
                     std::stringstream out;
-                    out << awsConfig_.get_access_key() << '/' << timestamp_.substr(0, DATE_LENGTH) << '/'
-                        << awsConfig_.get_region() << '/' << "ec2/aws4_request";
+                    out << aws_config_.get_access_key() << '/' << timestamp_.substr(0, DATE_LENGTH) << '/'
+                        << aws_config_.get_region() << '/' << "ec2/aws4_request";
                     return out.str();
                 }
 
@@ -154,13 +154,13 @@ namespace hazelcast {
                     // datestamp/region/service/API_TERMINATOR
                     // dateStamp
                     std::ostringstream out;
-                    out << timestamp_.substr(0, DATE_LENGTH) << "/" << awsConfig_.get_region() << "/ec2/aws4_request";
+                    out << timestamp_.substr(0, DATE_LENGTH) << "/" << aws_config_.get_region() << "/ec2/aws4_request";
                     return out.str();
                 }
 
                 /* Task 3 */
                 std::vector<unsigned char> EC2RequestSigner::derive_signing_key() const {
-                    const std::string &signKey = awsConfig_.get_secret_key();
+                    const std::string &signKey = aws_config_.get_secret_key();
                     std::string dateStamp = timestamp_.substr(0, DATE_LENGTH);
                     // this is derived from
                     // http://docs.aws.amazon.com/general/latest/gr/signature-v4-examples.html#signature-v4-examples-python
@@ -170,7 +170,7 @@ namespace hazelcast {
                     int kDateLen = hmac_sh_a256_bytes(key, dateStamp, kDate);
 
                     unsigned char kRegion[32];
-                    int kRegionLen = hmac_sh_a256_bytes(kDate, kDateLen, awsConfig_.get_region(), kRegion);
+                    int kRegionLen = hmac_sh_a256_bytes(kDate, kDateLen, aws_config_.get_region(), kRegion);
 
                     unsigned char kService[32];
                     int kServiceLen = hmac_sh_a256_bytes(kRegion, kRegionLen, "ec2", kService);
@@ -319,13 +319,13 @@ namespace hazelcast {
                 AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &aws_config, logger &lg)
                         : logger_(lg) {
                     if (aws_config.is_enabled() && !aws_config.is_inside_aws()) {
-                        awsClient_ = std::unique_ptr<AWSClient>(new AWSClient(aws_config, lg));
+                        aws_client_ = std::unique_ptr<AWSClient>(new AWSClient(aws_config, lg));
                     }
                 }
 
                 Address AwsAddressTranslator::translate(const Address &address) {
                     // if no translation is needed just return the address as it is
-                    if (NULL == awsClient_.get()) {
+                    if (NULL == aws_client_.get()) {
                         return address;
                     }
 
@@ -348,8 +348,8 @@ namespace hazelcast {
 
                 void AwsAddressTranslator::refresh() {
                     try {
-                        privateToPublic_ = std::shared_ptr<std::unordered_map<std::string, std::string> >(
-                                new std::unordered_map<std::string, std::string>(awsClient_->get_addresses()));
+                        private_to_public_ = std::shared_ptr<std::unordered_map<std::string, std::string> >(
+                                new std::unordered_map<std::string, std::string>(aws_client_->get_addresses()));
                     } catch (exception::IException &e) {
                         HZ_LOG(logger_, warning,
                             boost::str(boost::format("AWS addresses failed to load: %1%") % e.what()));
@@ -357,7 +357,7 @@ namespace hazelcast {
                 }
 
                 bool AwsAddressTranslator::find_from_cache(const Address &address, Address &translated_address) {
-                    std::shared_ptr<std::unordered_map<std::string, std::string> > mapping = privateToPublic_;
+                    std::shared_ptr<std::unordered_map<std::string, std::string> > mapping = private_to_public_;
                     if (mapping.get() == NULL) {
                         return false;
                     }
@@ -381,7 +381,7 @@ namespace hazelcast {
                 const std::string DescribeInstances::IAM_TASK_ROLE_ENDPOINT = "169.254.170.2";
 
                 DescribeInstances::DescribeInstances(config::ClientAwsConfig &aws_config, const std::string &endpoint,
-                                                     logger &lg) : awsConfig_(aws_config), endpoint_(endpoint),
+                                                     logger &lg) : aws_config_(aws_config), endpoint_(endpoint),
                                                                               logger_(lg) {
                     check_keys_from_iam_roles();
 
@@ -421,15 +421,15 @@ namespace hazelcast {
 
                 std::istream &DescribeInstances::call_service() {
                     std::string query = rs_->get_canonicalized_query_string(attributes_);
-                    httpsClient_ = std::unique_ptr<util::SyncHttpsClient>(
+                    https_client_ = std::unique_ptr<util::SyncHttpsClient>(
                             new util::SyncHttpsClient(endpoint_.c_str(), QUERY_PREFIX + query));
-                    return httpsClient_->open_connection();
+                    return https_client_->open_connection();
                 }
 
                 void DescribeInstances::check_keys_from_iam_roles() {
-                    if (awsConfig_.get_access_key().empty() || !awsConfig_.get_iam_role().empty()) {
+                    if (aws_config_.get_access_key().empty() || !aws_config_.get_iam_role().empty()) {
                         try_get_default_iam_role();
-                        if (!awsConfig_.get_iam_role().empty()) {
+                        if (!aws_config_.get_iam_role().empty()) {
                             get_keys_from_iam_role();
                         } else {
                             get_keys_from_iam_task_role();
@@ -439,7 +439,7 @@ namespace hazelcast {
 
                 void DescribeInstances::try_get_default_iam_role() {
                     // if none of the below are true
-                    if (!(awsConfig_.get_iam_role().empty() || awsConfig_.get_iam_role() == "DEFAULT")) {
+                    if (!(aws_config_.get_iam_role().empty() || aws_config_.get_iam_role() == "DEFAULT")) {
                         // stop here. No point looking up the default role.
                         return;
                     }
@@ -448,7 +448,7 @@ namespace hazelcast {
                         std::string roleName;
                         std::istream &responseStream = httpClient.open_connection();
                         responseStream >> roleName;
-                        awsConfig_.set_iam_role(roleName);
+                        aws_config_.set_iam_role(roleName);
                     } catch (exception::IOException &e) {
                         BOOST_THROW_EXCEPTION(exception::InvalidConfigurationException("tryGetDefaultIamRole",
                                                                                        std::string(
@@ -487,7 +487,7 @@ namespace hazelcast {
                 }
 
                 void DescribeInstances::get_keys_from_iam_role() {
-                    std::string query = "/latest/meta-data/iam/security-credentials/" + awsConfig_.get_iam_role();
+                    std::string query = "/latest/meta-data/iam/security-credentials/" + aws_config_.get_iam_role();
 
                     util::SyncHttpClient httpClient(IAM_ROLE_ENDPOINT, query);
 
@@ -504,7 +504,7 @@ namespace hazelcast {
                 }
 
                 void DescribeInstances::parse_and_store_role_creds(std::istream &in) {
-                    utility::CloudUtility::unmarshal_json_response(in, awsConfig_, attributes_);
+                    utility::CloudUtility::unmarshal_json_response(in, aws_config_, attributes_);
                 }
 
                 /**
@@ -512,18 +512,18 @@ namespace hazelcast {
                  */
                 void DescribeInstances::add_filters() {
                     Filter filter;
-                    if (!awsConfig_.get_tag_key().empty()) {
-                        if (!awsConfig_.get_tag_value().empty()) {
-                            filter.add_filter(std::string("tag:") + awsConfig_.get_tag_key(), awsConfig_.get_tag_value());
+                    if (!aws_config_.get_tag_key().empty()) {
+                        if (!aws_config_.get_tag_value().empty()) {
+                            filter.add_filter(std::string("tag:") + aws_config_.get_tag_key(), aws_config_.get_tag_value());
                         } else {
-                            filter.add_filter("tag-key", awsConfig_.get_tag_key());
+                            filter.add_filter("tag-key", aws_config_.get_tag_key());
                         }
-                    } else if (!awsConfig_.get_tag_value().empty()) {
-                        filter.add_filter("tag-value", awsConfig_.get_tag_value());
+                    } else if (!aws_config_.get_tag_value().empty()) {
+                        filter.add_filter("tag-value", aws_config_.get_tag_value());
                     }
 
-                    if (!awsConfig_.get_security_group_name().empty()) {
-                        filter.add_filter("instance.group-name", awsConfig_.get_security_group_name());
+                    if (!aws_config_.get_security_group_name().empty()) {
+                        filter.add_filter("instance.group-name", aws_config_.get_security_group_name());
                     }
 
                     filter.add_filter("instance-state-name", "running");
@@ -610,7 +610,7 @@ namespace hazelcast {
 
             }
 
-            AWSClient::AWSClient(config::ClientAwsConfig &aws_config, logger &lg) : awsConfig_(aws_config),
+            AWSClient::AWSClient(config::ClientAwsConfig &aws_config, logger &lg) : aws_config_(aws_config),
                                                                                               logger_(lg) {
                 this->endpoint_ = aws_config.get_host_header();
                 if (!aws_config.get_region().empty() && aws_config.get_region().length() > 0) {
@@ -623,7 +623,7 @@ namespace hazelcast {
             }
 
             std::unordered_map<std::string, std::string> AWSClient::get_addresses() {
-                return impl::DescribeInstances(awsConfig_, endpoint_, logger_).execute();
+                return impl::DescribeInstances(aws_config_, endpoint_, logger_).execute();
             }
 
         }

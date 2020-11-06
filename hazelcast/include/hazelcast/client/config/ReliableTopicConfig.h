@@ -68,7 +68,7 @@ namespace hazelcast {
                  */
                 ReliableTopicConfig &set_read_batch_size(int batch_size);
             private:
-                int readBatchSize_;
+                int read_batch_size_;
                 std::string name_;
             };
         }

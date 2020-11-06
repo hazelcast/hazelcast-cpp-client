@@ -929,14 +929,14 @@ namespace hazelcast {
                     MultiExecutionCompletionCallback(std::string msg,
                                                      std::shared_ptr<boost::latch> response_latch,
                                                      const std::shared_ptr<boost::latch> &complete_latch) : msg_(std::move(msg)),
-                                                                                                           responseLatch_(std::move(
+                                                                                                           response_latch_(std::move(
                                                                                                                    response_latch)),
-                                                                                                           completeLatch_(
+                                                                                                           complete_latch_(
                                                                                                                    complete_latch) {}
 
                     void on_response(const Member &member, const boost::optional<std::string> &response) override {
                         if (response && *response == msg_ + APPENDAGE) {
-                            responseLatch_->count_down();
+                            response_latch_->count_down();
                         }
                     }
 
@@ -950,26 +950,26 @@ namespace hazelcast {
                         std::string expectedValue(msg_ + APPENDAGE);
                         for (const VALUE_MAP::value_type &entry  : values) {
                             if (entry.second && *entry.second == expectedValue) {
-                                completeLatch_->count_down();
+                                complete_latch_->count_down();
                             }
                         }
                     }
 
                 private:
                     std::string msg_;
-                    const std::shared_ptr<boost::latch> responseLatch_;
-                    const std::shared_ptr<boost::latch> completeLatch_;
+                    const std::shared_ptr<boost::latch> response_latch_;
+                    const std::shared_ptr<boost::latch> complete_latch_;
                 };
 
                 class MultiExecutionNullCallback : public MultiExecutionCallback<std::string> {
                 public:
                     MultiExecutionNullCallback(std::shared_ptr<boost::latch> response_latch,
                                                std::shared_ptr<boost::latch> complete_latch)
-                            : responseLatch_(std::move(response_latch)), completeLatch_(std::move(complete_latch)) {}
+                            : response_latch_(std::move(response_latch)), complete_latch_(std::move(complete_latch)) {}
 
                     void on_response(const Member &member, const boost::optional<std::string> &response) override {
                         if (!response) {
-                            responseLatch_->count_down();
+                            response_latch_->count_down();
                         }
                     }
 
@@ -982,14 +982,14 @@ namespace hazelcast {
                         typedef std::unordered_map<Member, boost::optional<std::string> > VALUE_MAP;
                         for (const VALUE_MAP::value_type &entry  : values) {
                             if (!entry.second) {
-                                completeLatch_->count_down();
+                                complete_latch_->count_down();
                             }
                         }
                     }
 
                 private:
-                    const std::shared_ptr<boost::latch> responseLatch_;
-                    const std::shared_ptr<boost::latch> completeLatch_;
+                    const std::shared_ptr<boost::latch> response_latch_;
+                    const std::shared_ptr<boost::latch> complete_latch_;
                 };
 
                 static std::vector<HazelcastServer *> instances;

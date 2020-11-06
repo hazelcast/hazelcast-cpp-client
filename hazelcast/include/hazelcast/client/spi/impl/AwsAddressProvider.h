@@ -45,10 +45,10 @@ namespace hazelcast {
                     std::vector<Address> load_addresses() override;
 
                 private:
-                    std::string awsMemberPort_;
+                    std::string aws_member_port_;
                     logger &logger_;
-                    aws::AWSClient awsClient_;
-                    util::Sync<std::unordered_map<std::string, std::string> > privateToPublic_;
+                    aws::AWSClient aws_client_;
+                    util::Sync<std::unordered_map<std::string, std::string> > private_to_public_;
 
                     void update_lookup_table();
 

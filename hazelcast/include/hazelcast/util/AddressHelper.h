@@ -48,7 +48,7 @@ namespace hazelcast {
 
         private:
             std::string address_;
-            std::string scopeId_;
+            std::string scope_id_;
             int port_;
         };
 

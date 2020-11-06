@@ -73,7 +73,7 @@ namespace hazelcast {
             friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const HazelcastJsonValue &value);
 
         private:
-            std::string jsonString_;
+            std::string json_string_;
         };
     }
 }

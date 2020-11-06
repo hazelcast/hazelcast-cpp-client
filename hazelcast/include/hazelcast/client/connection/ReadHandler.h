@@ -55,7 +55,7 @@ namespace hazelcast {
             private:
 
                 protocol::ClientMessageBuilder<Connection> builder_;
-                std::atomic<std::chrono::milliseconds> lastReadTimeDuration_;
+                std::atomic<std::chrono::milliseconds> last_read_time_duration_;
             };
         }
     }

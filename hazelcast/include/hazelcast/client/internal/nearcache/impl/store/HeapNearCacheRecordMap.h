@@ -48,7 +48,7 @@ namespace hazelcast {
                             HeapNearCacheRecordMap(serialization::pimpl::SerializationService &ss,
                                                    int32_t initial_capacity)
                                     : util::SampleableConcurrentHashMap<K, V, KS, R>(initial_capacity),
-                                      serializationService_(ss) {
+                                      serialization_service_(ss) {
                             }
 
                             ~HeapNearCacheRecordMap() override = default;
@@ -62,7 +62,7 @@ namespace hazelcast {
                                                                 serialization::pimpl::SerializationService &ss)
                                         : util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry(key,
                                                                                                         value),
-                                          serializationService_(ss) {
+                                          serialization_service_(ss) {
                                 }
 
                                 ~NearCacheEvictableSamplingEntry() override = default;
@@ -76,12 +76,12 @@ namespace hazelcast {
                                 }
 
                                 std::shared_ptr<K> get_key() const override {
-                                    return serializationService_.to_shared_object<K>(
+                                    return serialization_service_.to_shared_object<K>(
                                             util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key_);
                                 }
 
                                 std::shared_ptr<V> get_value() const override {
-                                    return std::shared_ptr<V>(serializationService_.to_shared_object<V>(
+                                    return std::shared_ptr<V>(serialization_service_.to_shared_object<V>(
                                             util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value_->get_value()));
                                 }
 
@@ -98,7 +98,7 @@ namespace hazelcast {
                                 }
 
                             private:
-                                serialization::pimpl::SerializationService &serializationService_;
+                                serialization::pimpl::SerializationService &serialization_service_;
                             };
 
                             int evict(std::vector<std::shared_ptr<C> > *eviction_candidates,
@@ -138,9 +138,9 @@ namespace hazelcast {
                             public:
                                 EvictionCandidateAdapter(
                                         std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > &samples_iterable)
-                                        : adaptedIterable_(std::move(samples_iterable)) {
-                                    adaptedIterator_ = std::unique_ptr<util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > >(
-                                            new EvictionCandidateIterator(*adaptedIterable_->iterator()));
+                                        : adapted_iterable_(std::move(samples_iterable)) {
+                                    adapted_iterator_ = std::unique_ptr<util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > >(
+                                            new EvictionCandidateIterator(*adapted_iterable_->iterator()));
                                 }
 
                                 class EvictionCandidateIterator
@@ -172,12 +172,12 @@ namespace hazelcast {
                                 };
 
                                 util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > *iterator() override {
-                                    return adaptedIterator_.get();
+                                    return adapted_iterator_.get();
                                 }
 
                             private:
-                                std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > adaptedIterable_;
-                                std::unique_ptr<util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > > adaptedIterator_;
+                                std::unique_ptr<util::Iterable<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> > adapted_iterable_;
+                                std::unique_ptr<util::Iterator<eviction::EvictionCandidate<K, V, KS, R> > > adapted_iterator_;
                             };
 
                         protected:
@@ -185,11 +185,11 @@ namespace hazelcast {
                                     std::shared_ptr<KS> &key,
                                     std::shared_ptr<R> &value) const override {
                                 return std::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry>(
-                                        new NearCacheEvictableSamplingEntry(key, value, serializationService_));
+                                        new NearCacheEvictableSamplingEntry(key, value, serialization_service_));
                             }
 
                         private:
-                            serialization::pimpl::SerializationService &serializationService_;
+                            serialization::pimpl::SerializationService &serialization_service_;
                         };
                     }
                 }

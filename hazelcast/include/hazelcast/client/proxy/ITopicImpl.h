@@ -53,7 +53,7 @@ namespace hazelcast {
                     std::string name_;
                 };
 
-                int partitionId_;
+                int partition_id_;
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec> create_item_listener_codec();
             };

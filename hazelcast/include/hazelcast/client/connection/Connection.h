@@ -126,15 +126,15 @@ namespace hazelcast {
 
                 void inner_close();
 
-                std::chrono::system_clock::time_point startTime_;
-                std::atomic<std::chrono::milliseconds> closedTimeDuration_;
-                spi::ClientContext &clientContext_;
-                protocol::IMessageHandler &invocationService_;
+                std::chrono::system_clock::time_point start_time_;
+                std::atomic<std::chrono::milliseconds> closed_time_duration_;
+                spi::ClientContext &client_context_;
+                protocol::IMessageHandler &invocation_service_;
                 std::unique_ptr<Socket> socket_;
-                int32_t connectionId_;
-                std::string closeReason_;
-                std::exception_ptr closeCause_;
-                std::string connectedServerVersionString_;
+                int32_t connection_id_;
+                std::string close_reason_;
+                std::exception_ptr close_cause_;
+                std::string connected_server_version_string_;
                 // TODO: check if they need to be atomic
                 boost::optional<Address> remote_address_;
                 boost::uuids::uuid remote_uuid_;

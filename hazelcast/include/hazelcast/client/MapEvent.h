@@ -73,9 +73,9 @@ namespace hazelcast {
 
         private:
             Member member_;
-            EntryEvent::type eventType_;
+            EntryEvent::type event_type_;
             std::string name_;
-            int numberOfEntriesAffected_;
+            int number_of_entries_affected_;
         };
     }
 }

@@ -86,10 +86,10 @@ namespace hazelcast {
 
                 private:
                     std::string  name_;
-                    bool includeValue_;
+                    bool include_value_;
                 };
 
-                int partitionId_;
+                int partition_id_;
 
                 std::shared_ptr<spi::impl::ListenerMessageCodec> create_item_listener_codec(bool include_value);
             };

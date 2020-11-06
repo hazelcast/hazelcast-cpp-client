@@ -211,15 +211,15 @@ namespace hazelcast {
             private:
                 std::string name_;
 
-                int32_t timeToLiveSeconds_;
-                int32_t maxIdleSeconds_;
+                int32_t time_to_live_seconds_;
+                int32_t max_idle_seconds_;
 
-                InMemoryFormat inMemoryFormat_;
+                InMemoryFormat in_memory_format_;
 
-                LocalUpdatePolicy localUpdatePolicy_;
+                LocalUpdatePolicy local_update_policy_;
 
-                bool invalidateOnChange_;
-                bool cacheLocalEntries_;
+                bool invalidate_on_change_;
+                bool cache_local_entries_;
 
                 /**
                  * Default value of eviction config is
@@ -229,7 +229,7 @@ namespace hazelcast {
                  * <li>LRU as eviction policy</li>
                  * </ul>
                  */
-                EvictionConfig evictionConfig_;
+                EvictionConfig eviction_config_;
 
                 int32_t calculate_max_size(int32_t max_size);
             };

@@ -87,7 +87,7 @@ namespace hazelcast {
             std::string host_;
             int port_;
             byte type_;
-            unsigned long scopeId_;
+            unsigned long scope_id_;
 
             static const byte IPV4;
             static const byte IPV6;

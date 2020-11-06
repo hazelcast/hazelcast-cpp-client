@@ -48,8 +48,8 @@ namespace hazelcast {
                 ~AbstractLoadBalancer() override;
 
             private:
-                mutable std::mutex membersLock_;
-                std::vector<Member> membersRef_;
+                mutable std::mutex members_lock_;
+                std::vector<Member> members_ref_;
                 Cluster *cluster_;
             };
         }

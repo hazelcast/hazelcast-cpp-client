@@ -141,22 +141,22 @@ namespace hazelcast {
                     static constexpr int UNASSIGNED_PARTITION = -1;
 
                     logger &logger_;
-                    LifecycleService &lifecycleService_;
-                    ClientClusterServiceImpl &clientClusterService_;
-                    ClientInvocationServiceImpl &invocationService_;
-                    std::shared_ptr<ClientExecutionServiceImpl> executionService_;
-                    boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>> clientMessage_;
-                    std::shared_ptr<sequence::CallIdSequence> callIdSequence_;
+                    LifecycleService &lifecycle_service_;
+                    ClientClusterServiceImpl &client_cluster_service_;
+                    ClientInvocationServiceImpl &invocation_service_;
+                    std::shared_ptr<ClientExecutionServiceImpl> execution_service_;
+                    boost::atomic_shared_ptr<std::shared_ptr<protocol::ClientMessage>> client_message_;
+                    std::shared_ptr<sequence::CallIdSequence> call_id_sequence_;
                     boost::uuids::uuid uuid_;
-                    int partitionId_;
-                    std::chrono::steady_clock::time_point startTime_;
-                    std::chrono::milliseconds retryPause_;
-                    std::string objectName_;
+                    int partition_id_;
+                    std::chrono::steady_clock::time_point start_time_;
+                    std::chrono::milliseconds retry_pause_;
+                    std::string object_name_;
                     std::shared_ptr<connection::Connection> connection_;
-                    boost::atomic_shared_ptr<std::shared_ptr<connection::Connection>> sendConnection_;
-                    std::shared_ptr<EventHandler < protocol::ClientMessage>> eventHandler_;
-                    std::atomic<int64_t> invokeCount_;
-                    boost::promise<protocol::ClientMessage> invocationPromise_;
+                    boost::atomic_shared_ptr<std::shared_ptr<connection::Connection>> send_connection_;
+                    std::shared_ptr<EventHandler < protocol::ClientMessage>> event_handler_;
+                    std::atomic<int64_t> invoke_count_;
+                    boost::promise<protocol::ClientMessage> invocation_promise_;
                     bool urgent_;
                     bool smart_routing_;
 

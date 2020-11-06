@@ -425,7 +425,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace ringbuffer {
-                StartsWithStringFilter::StartsWithStringFilter(const std::string &start_string) : startString_(
+                StartsWithStringFilter::StartsWithStringFilter(const std::string &start_string) : start_string_(
                         start_string) {}
             }
         }
@@ -441,7 +441,7 @@ namespace hazelcast {
 
             void hz_serializer<test::ringbuffer::StartsWithStringFilter>::write_data(
                     const test::ringbuffer::StartsWithStringFilter &object, ObjectDataOutput &out) {
-                out.write(object.startString_);
+                out.write(object.start_string_);
             }
 
             test::ringbuffer::StartsWithStringFilter
@@ -787,17 +787,17 @@ namespace hazelcast {
         }
 
         void StartedThread::init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3) {
-            threadArgs_.arg0 = arg0;
-            threadArgs_.arg1 = arg1;
-            threadArgs_.arg2 = arg2;
-            threadArgs_.arg3 = arg3;
-            threadArgs_.func = func;
+            thread_args_.arg0 = arg0;
+            thread_args_.arg1 = arg1;
+            thread_args_.arg2 = arg2;
+            thread_args_.arg3 = arg3;
+            thread_args_.func = func;
 
-            thread_ = std::thread([=]() { func(threadArgs_); });
+            thread_ = std::thread([=]() { func(thread_args_); });
         }
 
         void StartedThread::run() {
-            threadArgs_.func(threadArgs_);
+            thread_args_.func(thread_args_);
         }
 
         const std::string StartedThread::get_name() const {
@@ -904,7 +904,7 @@ namespace hazelcast {
         namespace test {
             class ClusterTest : public ClientTestSupportBase, public ::testing::TestWithParam<ClientConfig> {
             public:
-                ClusterTest() : sslFactory_(g_srvFactory->get_server_address(), get_ssl_file_path()) {}
+                ClusterTest() : ssl_factory_(g_srvFactory->get_server_address(), get_ssl_file_path()) {}
 
             protected:
                 LifecycleListener make_all_states_listener(boost::latch &starting,
@@ -936,14 +936,14 @@ namespace hazelcast {
                 
                 std::unique_ptr<HazelcastServer> start_server(ClientConfig &client_config) {
                     if (client_config.get_network_config().get_ssl_config().is_enabled()) {
-                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(sslFactory_));
+                        return std::unique_ptr<HazelcastServer>(new HazelcastServer(ssl_factory_));
                     } else {
                         return std::unique_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                     }
                 }
 
             private:
-                HazelcastServerFactory sslFactory_;
+                HazelcastServerFactory ssl_factory_;
             };
 
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {

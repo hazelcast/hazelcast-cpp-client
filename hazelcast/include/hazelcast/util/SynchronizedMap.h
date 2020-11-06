@@ -48,19 +48,19 @@ namespace hazelcast {
             }
 
             void operator=(const SynchronizedMap<K, V> &rhs) {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                std::lock_guard<std::mutex> lgRhs(rhs.mapLock_);
-                internalMap_ = rhs.internalMap_;
+                std::lock_guard<std::mutex> lg(map_lock_);
+                std::lock_guard<std::mutex> lgRhs(rhs.map_lock_);
+                internal_map_ = rhs.internal_map_;
             }
 
             virtual ~SynchronizedMap() {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                internalMap_.clear();
+                std::lock_guard<std::mutex> lg(map_lock_);
+                internal_map_.clear();
             }
 
             bool contains_key(const K &key) const {
-                std::lock_guard<std::mutex> guard(mapLock_);
-                return internalMap_.find(key) != internalMap_.end();
+                std::lock_guard<std::mutex> guard(map_lock_);
+                return internal_map_.find(key) != internal_map_.end();
             }
 
             /**
@@ -69,11 +69,11 @@ namespace hazelcast {
              *         or <tt>null</tt> if there was no mapping for the key
              */
             std::shared_ptr<V> put_if_absent(const K &key, std::shared_ptr<V> value) {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                if (internalMap_.count(key) > 0) {
-                    return internalMap_[key];
+                std::lock_guard<std::mutex> lg(map_lock_);
+                if (internal_map_.count(key) > 0) {
+                    return internal_map_[key];
                 } else {
-                    internalMap_[key] = value;
+                    internal_map_[key] = value;
                     return nullptr;
                 }
             }
@@ -84,13 +84,13 @@ namespace hazelcast {
              *         or <tt>null</tt> if there was no mapping for the key
              */
             std::shared_ptr<V> put(const K &key, std::shared_ptr<V> value) {
-                std::lock_guard<std::mutex> lg(mapLock_);
+                std::lock_guard<std::mutex> lg(map_lock_);
                 std::shared_ptr<V> returnValue;
-                auto foundIter = internalMap_.find(key);
-                if (foundIter != internalMap_.end()) {
+                auto foundIter = internal_map_.find(key);
+                if (foundIter != internal_map_.end()) {
                     returnValue = foundIter->second;
                 }
-                internalMap_[key] = value;
+                internal_map_[key] = value;
                 return returnValue;
             }
 
@@ -100,9 +100,9 @@ namespace hazelcast {
              *
              */
             std::shared_ptr<V> get(const K &key) {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                auto foundIter = internalMap_.find(key);
-                if (foundIter != internalMap_.end()) {
+                std::lock_guard<std::mutex> lg(map_lock_);
+                auto foundIter = internal_map_.find(key);
+                if (foundIter != internal_map_.end()) {
                     return foundIter->second;
                 }
 
@@ -116,11 +116,11 @@ namespace hazelcast {
             *
             */
             std::shared_ptr<V> remove(const K &key) {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                auto foundIter = internalMap_.find(key);
-                if (foundIter != internalMap_.end()) {
+                std::lock_guard<std::mutex> lg(map_lock_);
+                auto foundIter = internal_map_.find(key);
+                if (foundIter != internal_map_.end()) {
                     std::shared_ptr<V> v = foundIter->second;
-                    internalMap_.erase(foundIter);
+                    internal_map_.erase(foundIter);
                     return v;
                 }
 
@@ -128,18 +128,18 @@ namespace hazelcast {
             }
 
             bool remove(const K &key, const std::shared_ptr<V> &value) {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                auto foundIter = internalMap_.find(key);
-                if (foundIter != internalMap_.end()) {
+                std::lock_guard<std::mutex> lg(map_lock_);
+                auto foundIter = internal_map_.find(key);
+                if (foundIter != internal_map_.end()) {
                     auto &foundValue = foundIter->second;
                     if (!value || !foundValue) {
                         if (value == foundValue) {
-                            internalMap_.erase(foundIter);
+                            internal_map_.erase(foundIter);
                             return true;
                         }
                     }
                     if (value == foundValue || *value == *foundValue) {
-                        internalMap_.erase(foundIter);
+                        internal_map_.erase(foundIter);
                         return true;
                     }
                 }
@@ -148,39 +148,39 @@ namespace hazelcast {
             }
 
             std::vector<std::pair<K, std::shared_ptr<V> > > entry_set() {
-                std::lock_guard<std::mutex> lg(mapLock_);
+                std::lock_guard<std::mutex> lg(map_lock_);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
-                entries.reserve(internalMap_.size());
-                for (const auto &v : internalMap_) {
+                entries.reserve(internal_map_.size());
+                for (const auto &v : internal_map_) {
                     entries.emplace_back(v.first, v.second);
                 }
                 return entries;
             }
 
             std::vector<std::pair<K, std::shared_ptr<V> > > clear() {
-                std::lock_guard<std::mutex> lg(mapLock_);
+                std::lock_guard<std::mutex> lg(map_lock_);
                 std::vector<std::pair<K, std::shared_ptr<V> > > entries;
-                entries.reserve(internalMap_.size());
-                for (const auto &v : internalMap_) {
+                entries.reserve(internal_map_.size());
+                for (const auto &v : internal_map_) {
                     entries.emplace_back(v.first, v.second);
                 }
-                internalMap_.clear();
+                internal_map_.clear();
                 return entries;
             }
 
             std::vector<std::shared_ptr<V> > values() {
-                std::lock_guard<std::mutex> lg(mapLock_);
+                std::lock_guard<std::mutex> lg(map_lock_);
                 std::vector<std::shared_ptr<V> > valueArray;
-                for (const auto &v : internalMap_) {
+                for (const auto &v : internal_map_) {
                     valueArray.emplace_back(v.second);
                 }
                 return valueArray;
             }
 
             std::vector<K> keys() {
-                std::lock_guard<std::mutex> lg(mapLock_);
+                std::lock_guard<std::mutex> lg(map_lock_);
                 std::vector<K> keysArray;
-                for (const auto &v : internalMap_) {
+                for (const auto &v : internal_map_) {
                     keysArray.emplace_back(v.first);
                 }
                 return keysArray;
@@ -197,16 +197,16 @@ namespace hazelcast {
             }
 
             virtual size_t size() const {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                return internalMap_.size();
+                std::lock_guard<std::mutex> lg(map_lock_);
+                return internal_map_.size();
             }
 
             std::unique_ptr<std::pair<K, std::shared_ptr<V> > > get_entry(size_t index) const {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                if (index < 0 || index >= internalMap_.size()) {
+                std::lock_guard<std::mutex> lg(map_lock_);
+                if (index < 0 || index >= internal_map_.size()) {
                     return std::unique_ptr<std::pair<K, std::shared_ptr<V> > >();
                 }
-                auto it = internalMap_.begin();
+                auto it = internal_map_.begin();
                 for (size_t i = 0; i < index; ++i) {
                     ++it;
                 }
@@ -215,13 +215,13 @@ namespace hazelcast {
             }
 
             bool empty() const {
-                std::lock_guard<std::mutex> lg(mapLock_);
-                return internalMap_.empty();
+                std::lock_guard<std::mutex> lg(map_lock_);
+                return internal_map_.empty();
             }
 
         private:
-            std::unordered_map<K, std::shared_ptr<V>, Hash> internalMap_;
-            mutable std::mutex mapLock_;
+            std::unordered_map<K, std::shared_ptr<V>, Hash> internal_map_;
+            mutable std::mutex map_lock_;
         };
     }
 }

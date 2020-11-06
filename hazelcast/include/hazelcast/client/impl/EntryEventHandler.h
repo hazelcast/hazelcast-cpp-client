@@ -40,8 +40,8 @@ namespace hazelcast {
                 EntryEventHandler(const std::string &instance_name, spi::impl::ClientClusterServiceImpl &cluster_service,
                                   serialization::pimpl::SerializationService &serialization_service,
                                   EntryListener &&listener, bool include_value, logger &lg)
-                : instanceName_(instance_name), clusterService_(cluster_service), serializationService_(serialization_service)
-                , listener_(std::move(listener)), includeValue_(include_value), logger_(lg) {}
+                : instance_name_(instance_name), cluster_service_(cluster_service), serialization_service_(serialization_service)
+                , listener_(std::move(listener)), include_value_(include_value), logger_(lg) {}
 
                 void handle_entry(const boost::optional<serialization::pimpl::Data> &key,
                                   const boost::optional<serialization::pimpl::Data> &value,
@@ -64,9 +64,9 @@ namespace hazelcast {
                                       const boost::optional<serialization::pimpl::Data> &merging_value,
                                       int32_t event_type, boost::uuids::uuid uuid,
                                       int32_t number_of_affected_entries) {
-                    auto member = clusterService_.get_member(uuid);
+                    auto member = cluster_service_.get_member(uuid);
                     auto mapEventType = static_cast<EntryEvent::type>(event_type);
-                    MapEvent mapEvent(std::move(member).value(), mapEventType, instanceName_, number_of_affected_entries);
+                    MapEvent mapEvent(std::move(member).value(), mapEventType, instance_name_, number_of_affected_entries);
 
                     if (mapEventType == EntryEvent::type::CLEAR_ALL) {
                         listener_.map_cleared_(std::move(mapEvent));
@@ -82,26 +82,26 @@ namespace hazelcast {
                                     int32_t event_type, boost::uuids::uuid uuid,
                                     int32_t number_of_affected_entries) {
                     TypedData eventKey, val, oldVal, mergingVal;
-                    if (includeValue_) {
+                    if (include_value_) {
                         if (value) {
-                            val = TypedData(*value, serializationService_);
+                            val = TypedData(*value, serialization_service_);
                         }
                         if (old_value) {
-                            oldVal = TypedData(*old_value, serializationService_);
+                            oldVal = TypedData(*old_value, serialization_service_);
                         }
                         if (merging_value) {
-                            mergingVal = TypedData(*merging_value, serializationService_);
+                            mergingVal = TypedData(*merging_value, serialization_service_);
                         }
                     }
                     if (key) {
-                        eventKey = TypedData(*key, serializationService_);
+                        eventKey = TypedData(*key, serialization_service_);
                     }
-                    auto member = clusterService_.get_member(uuid);
+                    auto member = cluster_service_.get_member(uuid);
                     if (!member.has_value()) {
                         member = Member(uuid);
                     }
                     auto type = static_cast<EntryEvent::type>(event_type);
-                    EntryEvent entryEvent(instanceName_, std::move(member.value()), type, std::move(eventKey), std::move(val),
+                    EntryEvent entryEvent(instance_name_, std::move(member.value()), type, std::move(eventKey), std::move(val),
                                           std::move(oldVal), std::move(mergingVal));
                     switch(type) {
                         case EntryEvent::type::ADDED:
@@ -131,11 +131,11 @@ namespace hazelcast {
                     }
                 }
             private:
-                const std::string& instanceName_;
-                spi::impl::ClientClusterServiceImpl &clusterService_;
-                serialization::pimpl::SerializationService& serializationService_;
+                const std::string& instance_name_;
+                spi::impl::ClientClusterServiceImpl &cluster_service_;
+                serialization::pimpl::SerializationService& serialization_service_;
                 EntryListener listener_;
-                bool includeValue_;
+                bool include_value_;
                 logger &logger_;
             };
         }
